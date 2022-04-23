@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
+import { Note } from 'second-brain-parser/dist/parser/models';
 import { sdk } from 'src/boot/axios';
 
 interface NotesState {
-  // TODO: master add real type
-  notes: any[];
+  notes: Note[];
 }
 
 export const useNotesStore = defineStore('notes', {
@@ -18,11 +18,10 @@ export const useNotesStore = defineStore('notes', {
   },
 
   actions: {
-    // TODO: master add type
-    async loadNotes(): any {
+    async loadNotes() {
       try {
         const notes = await sdk.getNotes();
-        this.$state.notes = notes;
+        this.$state.notes = notes.data;
       } catch (e) {
         // TODO: master real error handling
         console.log('🦄: [line 24][notes.ts] [35me: ', e);
