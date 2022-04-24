@@ -1,5 +1,5 @@
 <template>
-  <div v-if="props.notes">
+  <div v-if="props.notes" class="q-pa-md row items-start q-gutter-md">
     <div v-for="note of props.notes" v-bind:key="note.id">
       <public-note-view :note="note"></public-note-view>
     </div>
@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, defineProps } from 'vue';
+import { defineComponent } from 'vue';
 
 import { Note } from 'second-brain-parser/dist/parser/models';
 import PublicNoteView from './PublicNoteView.vue';

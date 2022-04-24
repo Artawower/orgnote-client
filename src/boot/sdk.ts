@@ -4,12 +4,17 @@ import { Note } from 'second-brain-parser/dist/parser/models';
 
 export interface Sdk {
   getNotes: (/* filters here*/) => Promise<{ data: Note[] }>; // Note type ere
+  getNote: (arg0: string) => Promise<{ data: Note }>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
   return {
     getNotes: async (): Promise<{ data: Note[] }> => {
       const rspns = await axios.get<{ data: Note[] }>('/notes');
+      return rspns.data;
+    },
+    getNote: async (id: string): Promise<{ data: Note }> => {
+      const rspns = await axios.get<{ data: Note }>(`/notes/${id}`);
       return rspns.data;
     },
   };
