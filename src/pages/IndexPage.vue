@@ -1,6 +1,5 @@
 <template>
-  <h1>Hey</h1>
-  <public-notes></public-notes>
+  <public-notes :notes="notesState.notes"></public-notes>
 </template>
 
 <script lang="ts">
@@ -16,6 +15,10 @@ export default defineComponent({
   setup() {
     const notesState = useNotesStore();
     notesState.loadNotes();
+
+    return {
+      notesState,
+    };
   },
 });
 </script>

@@ -11,17 +11,13 @@ export const useNotesStore = defineStore('notes', {
     notes: [],
   }),
 
-  getters: {
-    notes(state: NotesState) {
-      return state.notes;
-    },
-  },
+  getters: {},
 
   actions: {
     async loadNotes() {
       try {
-        const notes = await sdk.getNotes();
-        this.$state.notes = notes.data;
+        const rspns = await sdk.getNotes();
+        this.notes = rspns.data;
       } catch (e) {
         // TODO: master real error handling
         console.log('🦄: [line 24][notes.ts] [35me: ', e);

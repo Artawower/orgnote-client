@@ -1,4 +1,4 @@
-import { AxiosInstance, AxiosResponse } from 'axios';
+import { AxiosInstance } from 'axios';
 // TODO: master add type export form second brain parser
 import { Note } from 'second-brain-parser/dist/parser/models';
 
