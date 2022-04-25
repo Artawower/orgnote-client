@@ -29,7 +29,7 @@ export const useNotesStore = defineStore('notes', {
       this.selectedNote = note;
     },
     async selectNoteById(noteId: string) {
-      console.log('🦄: [line 32][notes.ts] [35mnoteId: ', noteId);
+      // console.log('🦄: [line 32][notes.ts] [35mnoteId: ', noteId);
       const alreadySelected = this.selectedNote?.id === noteId;
       if (alreadySelected) {
         return;
@@ -42,7 +42,7 @@ export const useNotesStore = defineStore('notes', {
 
       try {
         const rspns = await sdk.getNote(noteId);
-        console.log('🦄: [line 43][notes.ts] [35mrspns: ', rspns);
+        // console.log('🦄: [line 43][notes.ts] [35mrspns: ', rspns);
         this.selectedNote = rspns.data;
       } catch (e) {
         // TODO: master  handle todo here

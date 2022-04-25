@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue';
+import { defineComponent, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Note } from 'second-brain-parser/dist/parser/models';

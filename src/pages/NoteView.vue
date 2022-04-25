@@ -1,12 +1,21 @@
 <template>
-  <h1>{{ selectedNote?.meta.title }}</h1>
+  <div>
+    <h1>{{ selectedNote?.meta.title }}</h1>
+    <content-renderer :content="selectedNote?.content"></content-renderer>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue';
+import { defineComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useNotesStore } from 'stores/notes';
 import { storeToRefs } from 'pinia';
+
+import ContentRenderer from 'components/ContentRenderer.vue';
+
+defineComponent({
+  ContentRenderer,
+});
 
 const noteStore = useNotesStore();
 const route = useRoute();

@@ -4751,6 +4751,11 @@ uniorg@0.4.0:
   resolved "https://registry.yarnpkg.com/uniorg/-/uniorg-0.4.0.tgz#a9a7480236f31f78f0372d00dc40a63f041f45c5"
   integrity sha512-J2Qf7ZYo8AHovMiYfdL1Uqr1HMthEMFIS7C3/7LsTQAuohnzwzC57bT+8c5zu0AOSPPhf6EvL76uNqQ11k4rqQ==
 
+uniorg@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/uniorg/-/uniorg-0.5.0.tgz#c8d051859af6e888c2c587ad556130e2cc865cb3"
+  integrity sha512-aXXYZywd9fh0xJmXyho7IwJ8goQhj90LwscsCj9p49jOpZgs1uvBFLjwa3QvO0hP8ejTq2tl87a3lfsNWWW2dg==
+
 unique-string@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/unique-string/-/unique-string-2.0.0.tgz#39c6451f81afb2749de2b233e3f7c5e8843bd89d"
