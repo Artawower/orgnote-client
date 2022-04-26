@@ -1,16 +1,26 @@
 <template>
-  <div>
+  <template v-if="content?.type === 'text'">
+    <component :is="typedComponents['text']" :content="content"></component>
+  </template>
+  <template v-else>
     <component
       v-for="c of content?.children"
-      v-bind:key="c.position"
+      :key="c.position"
       :is="typedComponents[c.type]"
       :content="c"
     ></component>
-  </div>
+  </template>
 </template>
 
 <script setup lang="ts">
-import type { OrgData, OrgNode } from 'uniorg';
+import type {
+  ElementType,
+  GreaterElementType,
+  Link,
+  ObjectType,
+  OrgData,
+  OrgNode,
+} from 'uniorg';
 import { defineComponent, toRefs } from 'vue';
 import type { Component } from 'vue';
 
@@ -19,6 +29,9 @@ import OrgHeadline from './OrgHeadline.vue';
 import OrgQuote from './OrgQuote.vue';
 import OrgParagraph from './OrgParagraph.vue';
 import OrgText from './OrgText.vue';
+import OrgPlainList from './OrgPlainList.vue';
+import OrgLink from './OrgLink.vue';
+import OrgSrcBlock from './OrgSrcBlock.vue';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -26,14 +39,19 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   'quote-block': OrgQuote,
   paragraph: OrgParagraph,
   text: OrgText,
+  'plain-list': OrgPlainList,
+  link: OrgLink,
+  'src-block': OrgSrcBlock,
 };
 
 defineComponent(typedComponents);
 
 const props = defineProps<{
-  content: OrgData;
+  content: OrgData | GreaterElementType | ElementType | Link | ObjectType;
 }>();
 
 const { content } = toRefs(props);
-console.log('content: ', content.value);
+if (content.value?.type === 'text') {
+  console.log(content.value);
+}
 </script>

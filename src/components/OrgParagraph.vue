@@ -13,5 +13,4 @@ const props = defineProps<{
 }>();
 
 const content = toRef(props, 'content');
-console.log('cotent: ', content.value);
 </script>

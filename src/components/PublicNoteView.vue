@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, toRefs } from 'vue';
+import { toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Note } from 'second-brain-parser/dist/parser/models';
@@ -53,6 +53,7 @@ const router = useRouter();
 
 const openNoteDetail = (note: Note) => {
   notesStore.selectNote(note);
+  console.log(note);
   router.push({ name: RouteNames.NoteView, params: { id: note.id } });
 };
 </script>

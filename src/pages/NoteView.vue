@@ -10,7 +10,6 @@ import { defineComponent, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useNotesStore } from 'stores/notes';
 import { storeToRefs } from 'pinia';
-
 import ContentRenderer from 'components/ContentRenderer.vue';
 
 defineComponent({

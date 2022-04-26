@@ -1,6 +1,4 @@
-<template>
-  {{ content.value }}
-</template>
+<template>{{ content.value }}</template>
 
 <script setup lang="ts">
 import { Text } from 'uniorg';
