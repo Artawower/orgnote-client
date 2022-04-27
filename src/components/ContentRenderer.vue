@@ -32,6 +32,7 @@ import OrgText from './OrgText.vue';
 import OrgPlainList from './OrgPlainList.vue';
 import OrgLink from './OrgLink.vue';
 import OrgSrcBlock from './OrgSrcBlock.vue';
+import OrgStrikeThrough from './OrgStrikeThrough.vue';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -42,6 +43,7 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   'plain-list': OrgPlainList,
   link: OrgLink,
   'src-block': OrgSrcBlock,
+  'strike-through': OrgStrikeThrough,
 };
 
 defineComponent(typedComponents);
@@ -51,7 +53,4 @@ const props = defineProps<{
 }>();
 
 const { content } = toRefs(props);
-if (content.value?.type === 'text') {
-  console.log(content.value);
-}
 </script>
