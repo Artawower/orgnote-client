@@ -1,5 +1,6 @@
 <template>
   <q-select
+    class="language-select"
     v-model="locale"
     :options="localeOptions"
     label="Pick language"
@@ -8,7 +9,6 @@
     emit-value
     map-options
     options-dense
-    style="min-width: 150px"
   />
 </template>
 
@@ -22,3 +22,9 @@ const localeOptions = [
   { value: 'ru-RU', label: 'Russian' },
 ];
 </script>
+
+<style lang="scss">
+.language-select {
+  width: 100%;
+}
+</style>

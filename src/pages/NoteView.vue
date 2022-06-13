@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <q-page padding>
     <h1>{{ selectedNote?.meta.title }}</h1>
     <content-renderer :content="selectedNote?.content"></content-renderer>
-  </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
