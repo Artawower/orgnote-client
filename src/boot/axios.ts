@@ -18,6 +18,8 @@ const api = axios.create({ baseURL: `${process.env.API_URL}/api/v1` });
 const sdk = buildSdk(api);
 
 export default boot(({ app }) => {
+  console.log('axios init');
+
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
   app.config.globalProperties.$axios = axios;

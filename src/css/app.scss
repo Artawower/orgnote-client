@@ -1,5 +1,13 @@
-// app global css in SCSS form
+@use 'sass:meta';
 
 .pointer {
   cursor: pointer;
+}
+
+body.body--dark {
+  @import 'highlight.js/styles/stackoverflow-light';
+}
+
+body.body--dark {
+  @import 'highlight.js/styles/atom-one-dark';
 }

@@ -11,7 +11,9 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title>Second brain</q-toolbar-title>
+        <q-toolbar-title @click="goToMainPage" class="cursor-pointer"
+          >Second brain</q-toolbar-title
+        >
 
         <q-icon
           @click="toggleDarkMode"
@@ -62,6 +64,8 @@
 import { ref } from 'vue';
 import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
+import { MAIN_PAGE_ROUTE } from 'src/router/routes';
 
 const $q = useQuasar();
 
@@ -71,6 +75,9 @@ const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
 const toggleDarkMode = () => {
   $q.dark.set(!$q.dark.isActive);
 };
+
+const router = useRouter();
+const goToMainPage = () => router.push(MAIN_PAGE_ROUTE);
 </script>
 
 <style scss>
