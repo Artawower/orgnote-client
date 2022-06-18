@@ -34,6 +34,7 @@ import OrgLink from './OrgLink.vue';
 import OrgSrcBlock from './OrgSrcBlock.vue';
 import OrgStrikeThrough from './OrgStrikeThrough.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
+import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -46,6 +47,7 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   'src-block': OrgSrcBlock,
   'strike-through': OrgStrikeThrough,
   'fixed-width': OrgSrcBlockResult,
+  verbatim: OrgSrcInlineCode,
 };
 
 defineComponent(typedComponents);

@@ -9,6 +9,7 @@ import { SrcBlock } from 'uniorg';
 import { toRef } from 'vue';
 
 import 'highlight.js/lib/common';
+import 'highlight.js/styles/stackoverflow-light.css';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
 
 const highlightjs = hljsVuePlugin.component;

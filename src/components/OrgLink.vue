@@ -33,5 +33,4 @@ const content = toRef(props, 'content');
 
 const buildMediaPath = (path) =>
   `http://127.0.0.1:3000/media/${extractFileNameFromPath(path)}`;
-console.log(content.value);
 </script>
