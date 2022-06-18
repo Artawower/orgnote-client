@@ -1,6 +1,7 @@
 <template>
   <div class="src-code-wrapper">
-    <highlightjs :autodetect="true" :code="content.value" />
+    {{ $t('output') }}
+    <highlightjs language="bash" :code="content.value" />
   </div>
 </template>
 
