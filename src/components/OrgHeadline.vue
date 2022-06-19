@@ -33,7 +33,7 @@ const content = toRef(props, 'content');
   margin: 0;
   padding: 0;
   position: relative;
-  top: -26px;
+  top: -10px;
 
   .q-badge {
     cursor: pointer;

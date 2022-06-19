@@ -1,5 +1,6 @@
 <template>
   <div class="src-code-wrapper">
+    <!-- TODO: master  separated component -->
     <q-icon
       @click="copyToClipboard"
       :name="copied ? 'done' : 'content_copy'"
