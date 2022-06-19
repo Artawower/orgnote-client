@@ -1,6 +1,11 @@
 <template>
   <div class="src-code-wrapper">
-    <div @click="copyToClipboard" class="copy-btn"></div>
+    <q-icon
+      @click="copyToClipboard"
+      name="content_copy"
+      size="1.5rem"
+      class="copy-btn"
+    />
     <highlightjs :autodetect="true" :code="content.value" />
   </div>
 </template>
@@ -37,9 +42,8 @@ const copyToClipboard = () => {
     cursor: pointer;
     position: absolute;
     right: 14px;
-    top: 14px;
-    /* TODO: master  add variable and icon*/
-    background: red;
+    top: 12px;
+    color: $smog;
   }
 
   &:hover {

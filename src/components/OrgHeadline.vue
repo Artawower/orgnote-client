@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { Headline } from 'uniorg';
-import { defineComponent, toRef } from 'vue';
+import { toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{

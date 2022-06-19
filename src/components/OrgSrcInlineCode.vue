@@ -18,7 +18,6 @@ const $q = useQuasar();
 const darkMode = toRef($q.dark, 'isActive');
 
 const content = toRef(props, 'content');
-console.log(content.value);
 </script>
 
 <style lang="scss">
