@@ -1,5 +1,9 @@
 <template>
-  <ul v-for="(c, i) in content.children" v-bind:key="i">
+  <component
+    :is="parentListTag"
+    v-for="(c, i) in content.children"
+    v-bind:key="i"
+  >
     <li>
       <content-renderer
         v-for="(nc, j) in c.children"
@@ -7,7 +11,7 @@
         :content="nc"
       ></content-renderer>
     </li>
-  </ul>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -24,4 +28,5 @@ const props = defineProps<{
 }>();
 
 const content = toRef(props, 'content');
+const parentListTag = props.content.listType === 'ordered' ? 'ol' : 'ul';
 </script>
