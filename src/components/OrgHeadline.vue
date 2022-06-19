@@ -1,7 +1,9 @@
 <template>
   <component :is="'h' + content.level">
-    {{ content.rawValue }}
-    <div class="tag-footer">
+    <template v-for="c of content.children" :key="c">
+      <content-renderer :content="c"></content-renderer>
+    </template>
+    <div v-if="content.tags?.length" class="tag-footer">
       <q-badge
         v-for="tag in content.tags"
         :key="tag"
@@ -16,7 +18,8 @@
 
 <script setup lang="ts">
 import { Headline } from 'uniorg';
-import { toRef } from 'vue';
+import { defineComponent, toRef } from 'vue';
+import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
   content: Headline;

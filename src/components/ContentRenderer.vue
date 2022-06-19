@@ -2,6 +2,9 @@
   <template v-if="content?.type === 'text'">
     <component :is="typedComponents['text']" :content="content"></component>
   </template>
+  <template v-else-if="content?.type === 'link'">
+    <component :is="typedComponents['link']" :content="content"></component>
+  </template>
   <template v-else>
     <component
       v-for="c of content?.children"
