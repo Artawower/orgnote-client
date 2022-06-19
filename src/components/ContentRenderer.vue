@@ -39,6 +39,8 @@ import OrgStrikeThrough from './OrgStrikeThrough.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 import OrgTable from './OrgTable.vue';
+import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
+import OrgKeyword from './OrgKeyword.vue';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -55,11 +57,17 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   table: OrgTable,
 };
 
-defineComponent(typedComponents);
-
 const props = defineProps<{
   content: OrgData | GreaterElementType | ElementType | Link | ObjectType;
+  isPrivate?: boolean;
 }>();
+
+if (props.isPrivate) {
+  typedComponents['property-drawer'] = OrgPropertyDrawer;
+  typedComponents['keyword'] = OrgKeyword;
+}
+
+defineComponent(typedComponents);
 
 const { content } = toRefs(props);
 </script>
