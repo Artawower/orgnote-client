@@ -5031,7 +5031,14 @@ vue-router@^4.0.0:
   dependencies:
     "@vue/devtools-api" "^6.0.0"
 
-vue@^3.0.0:
+vue3-easy-data-table@^1.2.9:
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/vue3-easy-data-table/-/vue3-easy-data-table-1.2.9.tgz#3d833803ac70500f38221f683a89477dd2b57482"
+  integrity sha512-r8/uOOEKpkvGFz6sRIiVhKUVXYpmqTL+BWnxTLTW9lpdwDoMvaxlBq7/uXe565xH5xaCU/Il5ZlM7hi2JYVmKQ==
+  dependencies:
+    vue "^3.2.25"
+
+vue@^3.0.0, vue@^3.2.25:
   version "3.2.37"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.2.37.tgz#da220ccb618d78579d25b06c7c21498ca4e5452e"
   integrity sha512-bOKEZxrm8Eh+fveCqS1/NkG/n6aMidsI6hahas7pa0w/l7jkbssJVsRhVDs07IdDq7h9KHswZOgItnwJAgtVtQ==
