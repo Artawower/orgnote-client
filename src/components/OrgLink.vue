@@ -7,11 +7,13 @@
     ></content-renderer>
   </a>
   <!-- TODO: master  Add attribute reading for handle width setting-->
-  <img
+  <a
     v-else-if="content.linkType === 'file'"
-    :src="buildMediaPath(content.path)"
-    width="100%"
-  />
+    :href="buildMediaPath(content.path)"
+    target="_blank"
+  >
+    <img class="org-image" :src="buildMediaPath(content.path)" />
+  </a>
 </template>
 
 <script setup lang="ts">
@@ -34,3 +36,11 @@ const content = toRef(props, 'content');
 const buildMediaPath = (path) =>
   `http://127.0.0.1:3000/media/${extractFileNameFromPath(path)}`;
 </script>
+
+<style lang="scss">
+.org-image {
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+</style>

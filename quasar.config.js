@@ -118,6 +118,9 @@ module.exports = configure(function (ctx) {
         '/api': {
           target: process.env.API_URL || 'http://localhost:8000',
         },
+        '/media': {
+          target: process.env.API_URL || 'http://localhost:8000',
+        },
       },
     },
 

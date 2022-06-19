@@ -27,6 +27,7 @@ const rows = ref(props.content).value.children;
 // TODO: master tmp. Need to respect marup within the header.
 const headers: Header[] = rows[0].children.map((children) => {
   // TODO: master  need to replace any type casting. Cause some types don't have the property 'value'.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rawText = children.children.map((c) => (c as any).value).join(' ');
   return {
     value: rawText,

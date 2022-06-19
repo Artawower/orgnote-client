@@ -17,7 +17,7 @@
 
         <q-icon
           @click="toggleDarkMode"
-          name="dark_mode"
+          name="brightness_4"
           size="2rem"
           class="dark-mode-btn"
         />
