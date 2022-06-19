@@ -2,9 +2,10 @@
   <div class="src-code-wrapper">
     <q-icon
       @click="copyToClipboard"
-      name="content_copy"
-      size="1.5rem"
+      :name="copied ? 'done' : 'content_copy'"
+      size="1rem"
       class="copy-btn"
+      :class="{ copied }"
     />
     <highlightjs :autodetect="true" :code="content.value" />
   </div>
@@ -12,7 +13,7 @@
 
 <script setup lang="ts">
 import { SrcBlock } from 'uniorg';
-import { toRef } from 'vue';
+import { Ref, ref, toRef } from 'vue';
 
 import 'highlight.js/lib/common';
 import 'highlight.js/styles/stackoverflow-light.css';
@@ -25,9 +26,18 @@ const props = defineProps<{
 }>();
 
 const content = toRef(props, 'content');
+let copied: Ref<boolean> = ref(false);
+
+const showCopied = () => {
+  copied.value = true;
+  setTimeout(() => {
+    copied.value = false;
+  }, 1000);
+};
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(content.value.value);
+  showCopied();
 };
 </script>
 
@@ -41,15 +51,29 @@ const copyToClipboard = () => {
     height: 20px;
     cursor: pointer;
     position: absolute;
-    right: 14px;
-    top: 12px;
-    color: $smog;
+    right: 10px;
+    top: 8px;
+    color: $night;
+    box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    border: 1px solid;
+    border-color: $smog;
+    border-radius: 6px;
+    padding: 6px;
+
+    &.copied {
+      color: $grass;
+      border-color: $grass;
+    }
   }
 
   &:hover {
     .copy-btn {
-      display: block;
+      display: flex;
     }
+  }
+  .copy-btn.copied {
+    display: flex;
   }
 }
 </style>
