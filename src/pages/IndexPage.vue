@@ -4,23 +4,10 @@
   </q-page>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
 import PublicNotes from 'components/PublicNotes.vue';
 import { useNotesStore } from 'stores/notes';
 
-export default defineComponent({
-  name: 'IndexPage',
-  components: {
-    PublicNotes,
-  },
-  setup() {
-    const notesState = useNotesStore();
-    notesState.loadNotes();
-
-    return {
-      notesState,
-    };
-  },
-});
+const notesState = useNotesStore();
+notesState.loadNotes();
 </script>

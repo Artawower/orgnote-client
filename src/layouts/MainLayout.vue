@@ -77,7 +77,8 @@ const toggleDarkMode = () => {
 };
 
 const router = useRouter();
-const goToMainPage = () => router.push(MAIN_PAGE_ROUTE);
+
+const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
 </script>
 
 <style scss>

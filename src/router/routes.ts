@@ -21,8 +21,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
 
 const routes: RouteRecordRaw[] = [
   MAIN_PAGE_ROUTE,
-  // Always leave this as last one,
-  // but you can also remove it
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
