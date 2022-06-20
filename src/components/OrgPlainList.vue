@@ -1,10 +1,6 @@
 <template>
-  <component
-    :is="parentListTag"
-    v-for="(c, i) in content.children"
-    v-bind:key="i"
-  >
-    <li>
+  <component :is="parentListTag">
+    <li v-for="(c, i) in content.children" v-bind:key="i">
       <content-renderer
         v-for="(nc, j) in c.children"
         v-bind:key="j"
