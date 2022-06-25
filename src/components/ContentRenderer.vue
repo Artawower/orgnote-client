@@ -41,6 +41,7 @@ import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 import OrgTable from './OrgTable.vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
 import OrgKeyword from './OrgKeyword.vue';
+import OrgBold from './OrgBold.vue';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -55,6 +56,7 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   'fixed-width': OrgSrcBlockResult,
   verbatim: OrgSrcInlineCode,
   table: OrgTable,
+  bold: OrgBold,
 };
 
 const props = defineProps<{
