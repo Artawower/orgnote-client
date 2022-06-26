@@ -6,12 +6,16 @@
     <component :is="typedComponents['link']" :content="content"></component>
   </template>
   <template v-else>
-    <component
-      v-for="c of content?.children"
-      :key="c.position"
-      :is="typedComponents[c.type]"
-      :content="c"
-    ></component>
+    <!-- TODO: master  revise types -->
+    <template v-for="c of content?.children" :key="c.position">
+      <component
+        v-if="isVisible(c)"
+        :is="typedComponents[c.type]"
+        :content="c"
+        :headlineFolding="headlineFolding"
+      >
+      </component>
+    </template>
   </template>
 </template>
 
@@ -24,7 +28,7 @@ import type {
   OrgData,
   OrgNode,
 } from 'uniorg';
-import { defineComponent, toRefs } from 'vue';
+import { defineComponent, toRef, toRefs } from 'vue';
 import type { Component } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
@@ -42,6 +46,7 @@ import OrgTable from './OrgTable.vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
 import OrgKeyword from './OrgKeyword.vue';
 import OrgBold from './OrgBold.vue';
+import { HeadlineFolding } from 'src/stores/view';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -62,6 +67,9 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
 const props = defineProps<{
   content: OrgData | GreaterElementType | ElementType | Link | ObjectType;
   isPrivate?: boolean;
+  // TODO master (low priority): this enum should be placed inside content renderer.
+  // Not in the state.
+  headlineFolding: HeadlineFolding;
 }>();
 
 if (props.isPrivate) {
@@ -69,7 +77,27 @@ if (props.isPrivate) {
   typedComponents['keyword'] = OrgKeyword;
 }
 
+const headlineFolding = toRef(props, 'headlineFolding');
+
 defineComponent(typedComponents);
 
 const { content } = toRefs(props);
+
+const alwaysOnDisplayTypes: OrgNode['type'][] = [
+  'property-drawer',
+  'section',
+  'org-data',
+  'keyword',
+];
+
+const isVisible = (c: OrgNode['data']) => {
+  return (
+    alwaysOnDisplayTypes.find((t) => t === c.type) ||
+    headlineFolding.value == null ||
+    headlineFolding.value === HeadlineFolding.ShowAll ||
+    (c.type === 'headline' &&
+      headlineFolding.value === HeadlineFolding.ShowHeadline) ||
+    (c.type === 'headline' && c.level === 1)
+  );
+};
 </script>

@@ -2,7 +2,10 @@
   <q-page padding>
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
-    <content-renderer :content="selectedNote?.content"></content-renderer>
+    <content-renderer
+      :content="selectedNote?.content"
+      :headlineFolding="headlineFolding"
+    ></content-renderer>
     <note-footer>
       <div v-if="selectedNote?.meta?.tags" class="tags-wrapper">
         <q-badge
@@ -27,6 +30,7 @@ import { useNotesStore } from 'stores/notes';
 import { storeToRefs } from 'pinia';
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
+import { useViewStore } from 'src/stores/view';
 
 const noteStore = useNotesStore();
 const route = useRoute();
@@ -48,6 +52,9 @@ const searchByTag = (tag: string) => {
   console.log(tag);
   throw new Error('Method not implemented.');
 };
+
+const viewStore = useViewStore();
+const { headlineFolding } = storeToRefs(viewStore);
 </script>
 
 <style lang="scss" scoped>

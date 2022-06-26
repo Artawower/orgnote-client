@@ -21,6 +21,16 @@
           size="2rem"
           class="dark-mode-btn"
         />
+        <q-icon
+          @click="cycleToggleHeadlines"
+          size="2rem"
+          :name="
+            headlineFolding === HeadlineFolding.ShowAll
+              ? 'unfold_more'
+              : 'unfold_less'
+          "
+          class="cursor-pointer fold-btn"
+        ></q-icon>
       </q-toolbar>
     </q-header>
 
@@ -66,6 +76,8 @@ import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { MAIN_PAGE_ROUTE } from 'src/router/routes';
+import { storeToRefs } from 'pinia';
+import { useViewStore, HeadlineFolding } from 'src/stores/view';
 
 const $q = useQuasar();
 
@@ -79,6 +91,13 @@ const toggleDarkMode = () => {
 const router = useRouter();
 
 const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
+
+const viewStore = useViewStore();
+const { headlineFolding } = storeToRefs(viewStore);
+
+const cycleToggleHeadlines = () => {
+  viewStore.cycleToggleHeadlineFolding();
+};
 </script>
 
 <style scss>
@@ -89,5 +108,9 @@ const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
 .content {
   max-width: 1080px;
   margin: auto;
+}
+
+.fold-btn {
+  margin-left: 10px;
 }
 </style>
