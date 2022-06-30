@@ -69,7 +69,7 @@ const props = defineProps<{
   isPrivate?: boolean;
   // TODO master (low priority): this enum should be placed inside content renderer.
   // Not in the state.
-  headlineFolding: HeadlineFolding;
+  headlineFolding?: HeadlineFolding;
 }>();
 
 if (props.isPrivate) {

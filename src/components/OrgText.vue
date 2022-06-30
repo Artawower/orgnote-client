@@ -6,6 +6,7 @@ import { toRef } from 'vue';
 
 const props = defineProps<{
   content: Text;
+  headlineFolding?: boolean;
 }>();
 
 const content = toRef(props, 'content');
