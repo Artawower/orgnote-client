@@ -41,20 +41,20 @@ if (!selectedNote?.value && route.params.id) {
   noteStore.selectNoteById(route.params.id as string);
 }
 
-watch(
-  () => route.params.id,
-  (id) => {
-    noteStore.selectNoteById(id as string);
-  }
-);
-
 const searchByTag = (tag: string) => {
   console.log(tag);
   throw new Error('Method not implemented.');
 };
 
 const viewStore = useViewStore();
-const { headlineFolding } = storeToRefs(viewStore);
+
+watch(
+  () => route.params.id,
+  (id) => {
+    noteStore.selectNoteById(id as string);
+    viewStore.resetView();
+  }
+);
 </script>
 
 <style lang="scss" scoped>

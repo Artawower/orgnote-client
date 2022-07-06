@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { SrcBlock } from 'uniorg';
 import { Ref, ref, toRef } from 'vue';
 
 import 'highlight.js/lib/common';
@@ -23,7 +22,7 @@ import hljsVuePlugin from '@highlightjs/vue-plugin';
 const highlightjs = hljsVuePlugin.component;
 
 const props = defineProps<{
-  content: SrcBlock;
+  content: OrgSrcBlock;
 }>();
 
 const content = toRef(props, 'content');

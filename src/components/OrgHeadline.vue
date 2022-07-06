@@ -1,8 +1,13 @@
 <template>
-  <component :is="'h' + content.level">
+  <component
+    :is="'h' + (+content.level + 1)"
+    class="headline"
+    @click="toggleContent"
+  >
     <template v-for="c of content.children" :key="c">
       <content-renderer :content="c"></content-renderer>
     </template>
+    <template v-if="!visible">...</template>
     <div v-if="content.tags?.length" class="tag-footer">
       <q-badge
         v-for="tag in content.tags"
@@ -17,6 +22,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from '@vue/reactivity';
+import { useViewStore } from 'src/stores/view';
 import { Headline } from 'uniorg';
 import { toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
@@ -25,7 +32,15 @@ const props = defineProps<{
   content: Headline;
 }>();
 
+const viewStore = useViewStore();
+
 const content = toRef(props, 'content');
+
+const visible = computed(() => viewStore.isHeadlineVisible(content.value));
+
+const toggleContent = () => {
+  viewStore.setHeadlineFoldingStatus(content.value, !visible.value);
+};
 </script>
 
 <style lang="scss">
@@ -38,5 +53,8 @@ const content = toRef(props, 'content');
   .q-badge {
     cursor: pointer;
   }
+}
+.headline {
+  cursor: pointer;
 }
 </style>

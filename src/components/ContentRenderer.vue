@@ -7,9 +7,8 @@
   </template>
   <template v-else>
     <!-- TODO: master  revise types -->
-    <template v-for="c of content?.children" :key="c.position">
+    <template v-for="c of children" :key="c.position">
       <component
-        v-if="isVisible(c)"
         :is="typedComponents[c.type]"
         :content="c"
         :headlineFolding="headlineFolding"
@@ -28,7 +27,7 @@ import type {
   OrgData,
   OrgNode,
 } from 'uniorg';
-import { defineComponent, toRef, toRefs } from 'vue';
+import { computed, defineComponent, toRef, toRefs } from 'vue';
 import type { Component } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
@@ -46,7 +45,7 @@ import OrgTable from './OrgTable.vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
 import OrgKeyword from './OrgKeyword.vue';
 import OrgBold from './OrgBold.vue';
-import { HeadlineFolding } from 'src/stores/view';
+import { HeadlineFolding, useViewStore } from 'src/stores/view';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -83,21 +82,19 @@ defineComponent(typedComponents);
 
 const { content } = toRefs(props);
 
-const alwaysOnDisplayTypes: OrgNode['type'][] = [
-  'property-drawer',
-  'section',
-  'org-data',
-  'keyword',
-];
+const viewStore = useViewStore();
 
-const isVisible = (c: OrgNode['data']) => {
-  return (
-    alwaysOnDisplayTypes.find((t) => t === c.type) ||
-    headlineFolding.value == null ||
-    headlineFolding.value === HeadlineFolding.ShowAll ||
-    (c.type === 'headline' &&
-      headlineFolding.value === HeadlineFolding.ShowHeadline) ||
-    (c.type === 'headline' && c.level === 1)
-  );
-};
+// TODO: master remove any casting. Proof of concept approach.
+(content.value as unknown as { children: OrgNode[] })?.children?.forEach(
+  (c) => {
+    viewStore.registerNestedNode(c);
+    if (c?.type === 'headline') {
+      viewStore.registerHeadline(c);
+    }
+  }
+);
+
+const children = computed(() =>
+  (content.value as any)?.children?.filter((v) => viewStore.isNodeVisible(v))
+);
 </script>

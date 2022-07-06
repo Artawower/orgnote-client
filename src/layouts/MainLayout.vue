@@ -1,5 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
+    <!-- TODO: master  header as high level different component -->
     <q-header elevated>
       <q-toolbar>
         <q-btn
@@ -22,13 +23,10 @@
           class="dark-mode-btn"
         />
         <q-icon
-          @click="cycleToggleHeadlines"
+          v-if="isViewDetailPage"
+          @click="toggleCollapse"
           size="2rem"
-          :name="
-            headlineFolding === HeadlineFolding.ShowAll
-              ? 'unfold_more'
-              : 'unfold_less'
-          "
+          :name="isExpanded ? 'unfold_less' : 'unfold_more'"
           class="cursor-pointer fold-btn"
         ></q-icon>
       </q-toolbar>
@@ -71,13 +69,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { MAIN_PAGE_ROUTE } from 'src/router/routes';
 import { storeToRefs } from 'pinia';
-import { useViewStore, HeadlineFolding } from 'src/stores/view';
+import { useViewStore } from 'src/stores/view';
+import { RouteNames } from 'src/router/routes';
 
 const $q = useQuasar();
 
@@ -89,14 +88,16 @@ const toggleDarkMode = () => {
 };
 
 const router = useRouter();
-
 const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
+const isViewDetailPage = computed(
+  () => router.currentRoute.value.name === RouteNames.NoteView
+);
 
 const viewStore = useViewStore();
-const { headlineFolding } = storeToRefs(viewStore);
+const isExpanded = computed(() => viewStore.someNodeVisible);
 
-const cycleToggleHeadlines = () => {
-  viewStore.cycleToggleHeadlineFolding();
+const toggleCollapse = () => {
+  viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
 };
 </script>
 
