@@ -1,5 +1,10 @@
 @use 'sass:meta';
 
+@font-face {
+  font-family: montserrat;
+  src: url(./fonts/montserrat.ttf);
+}
+
 .pointer {
   cursor: pointer;
 }
@@ -11,4 +16,24 @@ body.body--dark {
 body.body--dark {
   @import 'highlight.js/styles/atom-one-dark';
   background: rgb(34, 39, 46);
+}
+.note-view {
+  .org-paragraph,
+  ul {
+    font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-size: 20px;
+    line-height: 32px;
+    -webkit-font-smoothing: antialiased;
+  }
+  pre {
+    font-size: 16px;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 500;
+  }
 }

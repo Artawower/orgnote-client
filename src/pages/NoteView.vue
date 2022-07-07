@@ -1,5 +1,5 @@
 <template>
-  <q-page padding>
+  <q-page padding class="note-view">
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
     <content-renderer
