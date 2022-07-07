@@ -88,6 +88,7 @@ export const useViewStore = defineStore('view', {
       if (
         !this.lastHeadlineInfo ||
         this._isUnfoldedNode(node) ||
+        this._isUnfoldedNode(node) ||
         ((node as Headline).type === 'headline' &&
           (node as Headline).level === 1)
       ) {
@@ -114,6 +115,8 @@ export const useViewStore = defineStore('view', {
         'section',
         'org-data',
         'keyword',
+        'table-cell',
+        'text',
       ];
       return !!alwaysOnDisplayTypes.find((t) => t === node.type);
     },

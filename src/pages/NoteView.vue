@@ -2,10 +2,7 @@
   <q-page padding class="note-view">
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
-    <content-renderer
-      :content="selectedNote?.content"
-      :headlineFolding="headlineFolding"
-    ></content-renderer>
+    <content-renderer :content="selectedNote?.content"></content-renderer>
     <note-footer>
       <div v-if="selectedNote?.meta?.tags" class="tags-wrapper">
         <q-badge
