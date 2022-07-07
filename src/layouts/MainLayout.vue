@@ -1,8 +1,13 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <!-- TODO: master  header as high level different component -->
-    <q-header elevated>
-      <q-toolbar>
+    <q-header
+      :class="[
+        $q.dark.isActive ? 'dark-header text-grey-12' : 'bg-white text-grey-10',
+      ]"
+      bordered
+    >
+      <q-toolbar class="header-content">
         <q-btn
           flat
           dense
@@ -101,7 +106,11 @@ const toggleCollapse = () => {
 };
 </script>
 
-<style scss>
+<style lang="scss">
+.dark-header {
+  background: $dark-smog !important;
+}
+
 .dark-mode-btn {
   cursor: pointer;
 }
@@ -113,5 +122,10 @@ const toggleCollapse = () => {
 
 .fold-btn {
   margin-left: 10px;
+}
+
+.header-content {
+  max-width: 1066px;
+  margin: auto;
 }
 </style>

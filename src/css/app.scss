@@ -9,14 +9,42 @@
   cursor: pointer;
 }
 
-body.body--dark {
+body.body--light {
   @import 'highlight.js/styles/stackoverflow-light';
+  .note-view {
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    strong,
+    b {
+      color: $dark;
+    }
+  }
 }
 
 body.body--dark {
   @import 'highlight.js/styles/atom-one-dark';
   background: rgb(34, 39, 46);
+  .note-view {
+    a {
+      color: $light;
+    }
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    strong,
+    b {
+      color: $light;
+    }
+  }
 }
+
 .note-view {
   .org-paragraph,
   ul {
@@ -27,6 +55,9 @@ body.body--dark {
   }
   pre {
     font-size: 16px;
+  }
+  a {
+    color: $dark;
   }
   h1,
   h2,
