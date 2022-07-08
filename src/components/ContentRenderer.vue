@@ -8,12 +8,7 @@
   <template v-else>
     <!-- TODO: master  revise types -->
     <template v-for="c of children" :key="c.position">
-      <component
-        :is="typedComponents[c.type]"
-        :content="c"
-        :headlineFolding="headlineFolding"
-      >
-      </component>
+      <component :is="typedComponents[c.type]" :content="c"> </component>
     </template>
   </template>
 </template>
@@ -27,7 +22,7 @@ import type {
   OrgData,
   OrgNode,
 } from 'uniorg';
-import { computed, defineComponent, toRef, toRefs } from 'vue';
+import { computed, defineComponent, toRefs } from 'vue';
 import type { Component } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
@@ -45,7 +40,7 @@ import OrgTable from './OrgTable.vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
 import OrgKeyword from './OrgKeyword.vue';
 import OrgBold from './OrgBold.vue';
-import { HeadlineFolding, useViewStore } from 'src/stores/view';
+import { useViewStore } from 'src/stores/view';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
   section: ContentRenderer,
@@ -66,17 +61,12 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
 const props = defineProps<{
   content: OrgData | GreaterElementType | ElementType | Link | ObjectType;
   isPrivate?: boolean;
-  // TODO master (low priority): this enum should be placed inside content renderer.
-  // Not in the state.
-  headlineFolding?: HeadlineFolding;
 }>();
 
 if (props.isPrivate) {
   typedComponents['property-drawer'] = OrgPropertyDrawer;
   typedComponents['keyword'] = OrgKeyword;
 }
-
-const headlineFolding = toRef(props, 'headlineFolding');
 
 defineComponent(typedComponents);
 

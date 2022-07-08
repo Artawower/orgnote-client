@@ -5,7 +5,6 @@
       :class="[
         $q.dark.isActive ? 'dark-header text-grey-12' : 'bg-white text-grey-10',
       ]"
-      bordered
     >
       <q-toolbar class="header-content">
         <q-btn
@@ -79,7 +78,6 @@ import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { MAIN_PAGE_ROUTE } from 'src/router/routes';
-import { storeToRefs } from 'pinia';
 import { useViewStore } from 'src/stores/view';
 import { RouteNames } from 'src/router/routes';
 

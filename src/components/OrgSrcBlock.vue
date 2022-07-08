@@ -6,7 +6,7 @@
       :name="copied ? 'done' : 'content_copy'"
       size="1rem"
       class="copy-btn"
-      :class="{ copied }"
+      :class="{ copied, dark: $q.dark.isActive }"
     />
     <highlightjs :autodetect="true" :code="content.value" />
   </div>
@@ -18,6 +18,7 @@ import { Ref, ref, toRef } from 'vue';
 import 'highlight.js/lib/common';
 import 'highlight.js/styles/stackoverflow-light.css';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
+import { OrgSrcBlock } from 'src/types/org';
 
 const highlightjs = hljsVuePlugin.component;
 
@@ -60,6 +61,10 @@ const copyToClipboard = () => {
     border-color: $smog;
     border-radius: 6px;
     padding: 6px;
+
+    &.dark {
+      color: $light;
+    }
 
     &.copied {
       color: $grass;
