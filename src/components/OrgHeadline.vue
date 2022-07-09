@@ -22,10 +22,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from '@vue/reactivity';
 import { useViewStore } from 'src/stores/view';
 import { Headline } from 'uniorg';
-import { toRef } from 'vue';
+import { computed, toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{

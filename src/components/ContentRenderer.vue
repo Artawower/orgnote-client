@@ -40,6 +40,7 @@ import OrgTable from './OrgTable.vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
 import OrgKeyword from './OrgKeyword.vue';
 import OrgBold from './OrgBold.vue';
+import OrgExportBlock from './OrgExportBlock.vue';
 import { useViewStore } from 'src/stores/view';
 
 const typedComponents: { [key in OrgNode['type']]?: Component } = {
@@ -56,6 +57,8 @@ const typedComponents: { [key in OrgNode['type']]?: Component } = {
   verbatim: OrgSrcInlineCode,
   table: OrgTable,
   bold: OrgBold,
+  'export-block': OrgExportBlock,
+  'latex-environment': OrgExportBlock,
 };
 
 const props = defineProps<{

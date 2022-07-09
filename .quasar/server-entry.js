@@ -10,78 +10,68 @@
  *
  * Boot files are your "main.js"
  **/
-import { createApp, unref } from 'vue'
+import { createApp, unref } from 'vue';
 
+import '@quasar/extras/roboto-font/roboto-font.css';
 
-import '@quasar/extras/roboto-font/roboto-font.css'
-
-import '@quasar/extras/material-icons/material-icons.css'
-
-
-
+import '@quasar/extras/material-icons/material-icons.css';
 
 // We load Quasar stylesheet file
-import 'quasar/dist/quasar.sass'
+import 'quasar/dist/quasar.sass';
 
+import 'src/css/app.scss';
 
+import createQuasarApp from './app.js';
+import quasarUserOptions from './quasar-user-options.js';
 
+const publicPath = `/`;
 
-import 'src/css/app.scss'
+const httpRE = /^https?:\/\//;
 
-
-import createQuasarApp from './app.js'
-import quasarUserOptions from './quasar-user-options.js'
-
-
-
-const publicPath = `/`
-
-
-const httpRE = /^https?:\/\//
-
-function getRedirectUrl (url, router) {
+function getRedirectUrl(url, router) {
   if (typeof url === 'string' && httpRE.test(url) === true) {
-    return url
+    return url;
   }
 
-  try { return router.resolve(url).href }
-  catch (err) {}
+  try {
+    return router.resolve(url).href;
+  } catch (err) {}
 
-  return url
+  return url;
 }
 
-const { components, directives, ...qUserOptions } = quasarUserOptions
-
+const { components, directives, ...qUserOptions } = quasarUserOptions;
 
 const bootFiles = Promise.all([
-  
   import('boot/i18n'),
-  
-  import('boot/axios')
-  
-]).then(bootFiles => bootFiles.map(entry => entry.default).filter(entry => typeof entry === 'function'))
 
+  import('boot/axios'),
+  import('boot/katex'),
+]).then((bootFiles) =>
+  bootFiles
+    .map((entry) => entry.default)
+    .filter((entry) => typeof entry === 'function')
+);
 
 // This is where we perform data-prefetching to determine the
 // state of our application before actually rendering it.
 // Since data fetching is async, this function is expected to
 // return a Promise that resolves to the app instance.
-export default ssrContext => {
+export default (ssrContext) => {
   return new Promise(async (resolve, reject) => {
-    
-    const bootFunctions = await bootFiles
-    
+    const bootFunctions = await bootFiles;
 
-    const {
-      app, router, store
-    } = await createQuasarApp(createApp, qUserOptions, ssrContext)
+    const { app, router, store } = await createQuasarApp(
+      createApp,
+      qUserOptions,
+      ssrContext
+    );
 
-    
-    let hasRedirected = false
+    let hasRedirected = false;
     const redirect = (url, httpStatusCode) => {
-      hasRedirected = true
-      reject({ url: getRedirectUrl(url, router), code: httpStatusCode })
-    }
+      hasRedirected = true;
+      reject({ url: getRedirectUrl(url, router), code: httpStatusCode });
+    };
 
     for (let i = 0; hasRedirected === false && i < bootFunctions.length; i++) {
       try {
@@ -92,50 +82,47 @@ export default ssrContext => {
           ssrContext,
           redirect,
           urlPath: ssrContext.req.url,
-          publicPath
-        })
-      }
-      catch (err) {
-        reject(err)
-        return
+          publicPath,
+        });
+      } catch (err) {
+        reject(err);
+        return;
       }
     }
 
     if (hasRedirected === true) {
-      return
+      return;
     }
-    
 
-    app.use(router)
-    
+    app.use(router);
 
-    const url = ssrContext.req.url
-    const { fullPath } = router.resolve(url)
+    const url = ssrContext.req.url;
+    const { fullPath } = router.resolve(url);
 
     if (fullPath !== url) {
-      return reject({ url: fullPath })
+      return reject({ url: fullPath });
     }
 
     // set router's location
-    router.push(url).catch(() => {})
+    router.push(url).catch(() => {});
 
     // wait until router has resolved possible async hooks
-    router.isReady().then(() => {
-      let matchedComponents = router.currentRoute.value.matched
-        .flatMap(record => Object.values(record.components))
+    router
+      .isReady()
+      .then(() => {
+        let matchedComponents = router.currentRoute.value.matched.flatMap(
+          (record) => Object.values(record.components)
+        );
 
-      // no matched routes
-      if (matchedComponents.length === 0) {
-        return reject({ code: 404 })
-      }
+        // no matched routes
+        if (matchedComponents.length === 0) {
+          return reject({ code: 404 });
+        }
 
-      
+        ssrContext.state = unref(store.state);
 
-        ssrContext.state = unref(store.state)
-
-        resolve(app)
-
-      
-    }).catch(reject)
-  })
-}
+        resolve(app);
+      })
+      .catch(reject);
+  });
+};

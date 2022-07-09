@@ -139,7 +139,9 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/i18n'),
       
-      import('boot/axios')
+      import('boot/axios'),
+      
+      import('boot/katex')
       
     ]).then(bootFiles => {
       const boot = bootFiles
