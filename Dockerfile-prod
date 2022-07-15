@@ -1,0 +1,16 @@
+FROM node:16-alpine3.15
+USER root
+RUN npm install -g pnpm
+RUN npm install -g @quasar/cli && \
+    npm install -g @vue/cli && \
+    npm install -g @vue/cli-init
+
+WORKDIR /app
+
+COPY pnpm-lock.yaml package.json ./
+RUN pnpm install --frozen-lockfile
+
+RUN ls
+COPY . .
+
+CMD ["pnpm", "run", "build"]
