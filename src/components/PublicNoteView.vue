@@ -1,7 +1,18 @@
 <template>
-  <q-card class="my-card" flat bordered>
-    <q-card-section horizontal>
-      <q-card-section class="q-pt-xs">
+  <q-card flat bordered>
+    <q-card-section
+      horizontal
+      :class="{ 'note-card-content': isTile, column: isTile }"
+    >
+      <img v-if="isTile" src="https://cdn.quasar.dev/img/parallax2.jpg" />
+
+      <q-card-section class="flex col-3 flex-start" v-else>
+        <q-img
+          class="pointer rounded-borders"
+          src="https://cdn.quasar.dev/img/parallax2.jpg"
+        />
+      </q-card-section>
+      <q-card-section>
         <div class="text-overline">{{ note.meta.category }}</div>
         <div
           class="text-h5 q-mt-sm q-mb-xs pointer"
@@ -12,13 +23,6 @@
         <div class="text-caption text-grey">
           {{ note.meta.description }}
         </div>
-      </q-card-section>
-
-      <q-card-section class="col-5 flex flex-center">
-        <q-img
-          class="pointer rounded-borders"
-          src="https://cdn.quasar.dev/img/parallax2.jpg"
-        />
       </q-card-section>
     </q-card-section>
 
@@ -35,13 +39,14 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { Note } from 'second-brain-parser/dist/parser/models';
 
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
+import { useViewStore } from 'src/stores/view';
 
 const props = defineProps<{
   note: Note;
@@ -56,4 +61,14 @@ const openNoteDetail = (note: Note) => {
   console.log(note);
   router.push({ name: RouteNames.NoteView, params: { id: note.id } });
 };
+
+const viewStore = useViewStore();
+const isTile = computed(() => viewStore.tile);
 </script>
+
+<style lang="scss">
+.note-card-content {
+  max-height: 310px;
+  min-height: 310px;
+}
+</style>

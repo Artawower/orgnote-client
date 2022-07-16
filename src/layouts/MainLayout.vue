@@ -21,6 +21,13 @@
         >
 
         <q-icon
+          v-if="isListPage"
+          @click="toggleTile"
+          :name="isTile ? 'format_list_bulleted' : 'grid_view'"
+          size="2rem"
+          class="tile-mode-btn cursor-pointer"
+        />
+        <q-icon
           @click="toggleDarkMode"
           name="brightness_4"
           size="2rem"
@@ -102,6 +109,15 @@ const isExpanded = computed(() => viewStore.someNodeVisible);
 const toggleCollapse = () => {
   viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
 };
+
+const isTile = computed(() => viewStore.tile);
+const toggleTile = () => {
+  viewStore.toggleTile();
+};
+
+const isListPage = computed(
+  () => router.currentRoute.value.name === RouteNames.NoteList
+);
 </script>
 
 <style lang="scss">
@@ -109,8 +125,8 @@ const toggleCollapse = () => {
   background: $dark-smog !important;
 }
 
-.dark-mode-btn {
-  cursor: pointer;
+.tile-mode-btn {
+  margin-right: 1rem;
 }
 
 .content {

@@ -19,12 +19,14 @@ interface ViewState {
   headlineFoldings: { [key: string]: HeadlineVisibleStatus };
   nodeVisibleStatus: { [key: string]: boolean };
   lastHeadlineInfo?: HeadlineInfo;
+  tile?: boolean;
 }
 
 const defaultState: ViewState = {
   headlineFoldings: {},
   nodeVisibleStatus: {},
   lastHeadlineInfo: null,
+  tile: false,
 };
 
 export const useViewStore = defineStore('view', {
@@ -187,6 +189,9 @@ export const useViewStore = defineStore('view', {
       this.headlineFoldings = defaultState.headlineFoldings;
       this.nodeVisibleStatus = defaultState.nodeVisibleStatus;
       this.lastHeadlineInfo = defaultState.lastHeadlineInfo;
+    },
+    toggleTile(): void {
+      this.tile = !this.tile;
     },
   },
 });
