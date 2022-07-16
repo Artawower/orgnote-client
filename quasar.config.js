@@ -12,7 +12,6 @@ const { configure } = require('quasar/wrappers');
 const path = require('path');
 
 module.exports = configure(function (ctx) {
-  console.log(process.env.API_URL);
   return {
     eslint: {
       // fix: true,
@@ -115,8 +114,9 @@ module.exports = configure(function (ctx) {
       port: '3000',
       open: true, // opens browser window automatically
       proxy: {
-        '/api': {
+        '/v1': {
           target: process.env.API_URL || 'http://localhost:8000',
+          changeOrigin: true,
         },
         '/media': {
           target: process.env.API_URL || 'http://localhost:8000',
