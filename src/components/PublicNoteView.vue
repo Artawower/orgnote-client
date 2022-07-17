@@ -20,7 +20,7 @@
         >
           {{ note.meta.title }}
         </div>
-        <div class="text-caption text-grey">
+        <div class="text-caption text-grey rft">
           {{ note.meta.description }}
         </div>
       </q-card-section>
@@ -34,6 +34,7 @@
       <q-btn @click="openNoteDetail(note)" flat color="primary">
         {{ $t('read') }}
       </q-btn>
+      <tag-list :tags="note?.meta?.tags" />
     </q-card-actions>
   </q-card>
 </template>
@@ -47,6 +48,8 @@ import { Note } from 'second-brain-parser/dist/parser/models';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
+
+import TagList from 'components/TagList.vue';
 
 const props = defineProps<{
   note: Note;
@@ -64,6 +67,10 @@ const openNoteDetail = (note: Note) => {
 
 const viewStore = useViewStore();
 const isTile = computed(() => viewStore.tile);
+
+const searchByTag = (tag: string) => {
+  // TODO: implement search here
+};
 </script>
 
 <style lang="scss">

@@ -4,18 +4,7 @@
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
     <content-renderer :content="selectedNote?.content"></content-renderer>
     <note-footer>
-      <div v-if="selectedNote?.meta?.tags" class="tags-wrapper">
-        <q-badge
-          v-for="tag in selectedNote?.meta?.tags"
-          :key="tag"
-          @click="searchByTag(tag)"
-          rounded
-          outline
-          color="primary"
-          class="tag"
-          :label="tag"
-        />
-      </div>
+      <tag-list :tags="selectedNote?.meta?.tags" />
     </note-footer>
   </q-page>
 </template>
@@ -27,6 +16,7 @@ import { useNotesStore } from 'stores/notes';
 import { storeToRefs } from 'pinia';
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
+import TagList from 'components/TagList.vue';
 import { useViewStore } from 'src/stores/view';
 
 const noteStore = useNotesStore();
@@ -37,11 +27,6 @@ const { selectedNote } = storeToRefs(noteStore);
 if (!selectedNote?.value && route.params.id) {
   noteStore.selectNoteById(route.params.id as string);
 }
-
-const searchByTag = (tag: string) => {
-  console.log(tag);
-  throw new Error('Method not implemented.');
-};
 
 const viewStore = useViewStore();
 
@@ -59,11 +44,5 @@ watch(
   color: $smog;
   /* TODO: master  choose font for cursive*/
   font-style: italic;
-}
-.tag {
-  cursor: pointer;
-  &:not(:first-child) {
-    margin-left: 0.5rem;
-  }
 }
 </style>

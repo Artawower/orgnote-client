@@ -1,11 +1,6 @@
 @use 'sass:meta';
 @import '../../node_modules/katex/dist/katex.min.css';
 
-@font-face {
-  font-family: montserrat;
-  src: url(./fonts/montserrat.ttf);
-}
-
 .pointer {
   cursor: pointer;
 }
@@ -44,6 +39,12 @@ body.body--dark {
       color: $light;
     }
   }
+}
+
+.rft {
+  font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 16px;
 }
 
 .note-view {
