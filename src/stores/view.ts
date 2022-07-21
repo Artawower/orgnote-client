@@ -20,6 +20,7 @@ interface ViewState {
   nodeVisibleStatus: { [key: string]: boolean };
   lastHeadlineInfo?: HeadlineInfo;
   tile?: boolean;
+  loadingCount: number;
 }
 
 const defaultState: ViewState = {
@@ -27,6 +28,7 @@ const defaultState: ViewState = {
   nodeVisibleStatus: {},
   lastHeadlineInfo: null,
   tile: false,
+  loadingCount: 0,
 };
 
 export const useViewStore = defineStore('view', {
@@ -51,6 +53,9 @@ export const useViewStore = defineStore('view', {
     },
     someNodeVisible(): boolean {
       return Object.values(this.nodeVisibleStatus).some((s) => s);
+    },
+    hasGlobalLoading(): boolean {
+      return this.loadingCount > 0;
     },
   },
   actions: {
@@ -192,6 +197,12 @@ export const useViewStore = defineStore('view', {
     },
     toggleTile(): void {
       this.tile = !this.tile;
+    },
+    addLoading(): void {
+      this.loadingCount += 1;
+    },
+    removeLoading(): void {
+      this.loadingCount -= 1;
     },
   },
 });

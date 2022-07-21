@@ -31,7 +31,7 @@
           @click="toggleDarkMode"
           name="brightness_4"
           size="2rem"
-          class="dark-mode-btn"
+          class="dark-mode-btn cursor-pointer"
         />
         <q-icon
           v-if="isViewDetailPage"
@@ -46,8 +46,23 @@
     <q-drawer v-model="leftDrawerOpen" bordered>
       <q-scroll-area class="fit">
         <q-list>
-          <q-item-label header> Essential Links </q-item-label>
-
+          <q-item-label header> {{ $t('Menu') }} </q-item-label>
+          <q-item
+            clickable
+            v-if="user"
+            class="column justify-center"
+            @click="openProfile"
+          >
+            <q-avatar size="160px" class="q-mx-auto">
+              <img :src="user.avatarUrl" />
+            </q-avatar>
+            <div class="text-center q-mt-lg">
+              {{ user.username }}
+            </div>
+            <div class="text-center subtitle text-weight-light text-italic">
+              {{ user.email }}
+            </div>
+          </q-item>
           <q-item clickable>
             <q-item-section avatar>
               <q-icon name="inbox" />
@@ -59,6 +74,8 @@
           <q-item>
             <language-switcher></language-switcher>
           </q-item>
+
+          <login-buttons v-if="!user" />
 
           <q-separator />
 
@@ -86,7 +103,9 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { MAIN_PAGE_ROUTE } from 'src/router/routes';
 import { useViewStore } from 'src/stores/view';
+import LoginButtons from 'components/LoginButtons.vue';
 import { RouteNames } from 'src/router/routes';
+import { useAuthStore } from 'src/stores/auth';
 
 const $q = useQuasar();
 
@@ -118,6 +137,13 @@ const toggleTile = () => {
 const isListPage = computed(
   () => router.currentRoute.value.name === RouteNames.NoteList
 );
+
+const authStore = useAuthStore();
+const user = computed(() => authStore.user);
+
+const openProfile = () => {
+  window.open(user.value.profileUrl, '_blank');
+};
 </script>
 
 <style lang="scss">

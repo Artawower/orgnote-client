@@ -4,6 +4,7 @@ export enum RouteNames {
   Home = 'Home',
   NoteList = 'NoteList',
   NoteView = 'NoteView',
+  AuthPage = 'AuthPage',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -12,14 +13,19 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   name: RouteNames.Home,
   children: [
     {
-      path: '',
-      name: RouteNames.NoteList,
-      component: () => import('pages/IndexPage.vue'),
+      path: 'auth/login',
+      name: RouteNames.AuthPage,
+      component: () => import('pages/AuthPage.vue'),
     },
     {
       path: ':id',
       name: RouteNames.NoteView,
       component: () => import('pages/NoteView.vue'),
+    },
+    {
+      path: '',
+      name: RouteNames.NoteList,
+      component: () => import('pages/IndexPage.vue'),
     },
   ],
 };
