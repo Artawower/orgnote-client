@@ -1,0 +1,17 @@
+name: Build quasar app
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 6.0.2
+      - name: Install dependencies
+        run: pnpm i -g @quasar/cli && pnpm install
+      - name: Build
+        run: pnpm run build

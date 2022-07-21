@@ -1,0 +1,27 @@
+name: Lint
+
+on: [push, pull_request]
+
+permissions:
+  checks: write
+  contents: write
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+      - name: Install Node.js dependencies
+        run: pnpm install
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true
+          prettier: true
