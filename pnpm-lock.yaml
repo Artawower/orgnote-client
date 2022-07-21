@@ -17,6 +17,7 @@ specifiers:
   highlight.js: ^11.5.1
   katex: ^0.16.0
   pinia: ^2.0.11
+  pinia-plugin-persistedstate: ^1.6.3
   postcss: ^8.4.14
   prettier: ^2.5.1
   quasar: ^2.6.0
@@ -45,6 +46,7 @@ dependencies:
   highlight.js: 11.5.1
   katex: 0.16.0
   pinia: 2.0.14_j6bzmzd4ujpabbp5objtwxyjp4
+  pinia-plugin-persistedstate: 1.6.3_pinia@2.0.14
   postcss: 8.4.14
   quasar: 2.7.5
   rollup: 2.76.0
@@ -4253,6 +4255,14 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
     dev: true
+
+  /pinia-plugin-persistedstate/1.6.3_pinia@2.0.14:
+    resolution: {integrity: sha512-vwxUca3DZKW6+wnGsgu6hA0ESVKoLovF8vH1jMOPBhaH4VpCSTgn5AsprTxXyg3uMk047m0B+NggeMTcCC8H6w==}
+    peerDependencies:
+      pinia: ^2.0.0
+    dependencies:
+      pinia: 2.0.14_j6bzmzd4ujpabbp5objtwxyjp4
+    dev: false
 
   /pinia/2.0.14_j6bzmzd4ujpabbp5objtwxyjp4:
     resolution: {integrity: sha512-0nPuZR4TetT/WcLN+feMSjWJku3SQU7dBbXC6uw+R6FLQJCsg+/0pzXyD82T1FmAYe0lsx+jnEDQ1BLgkRKlxA==}

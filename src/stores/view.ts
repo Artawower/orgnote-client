@@ -205,4 +205,5 @@ export const useViewStore = defineStore('view', {
       this.loadingCount -= 1;
     },
   },
+  persist: true,
 });
