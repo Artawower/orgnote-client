@@ -8,6 +8,7 @@ export interface Sdk {
   getNotes: (/* filters here*/) => Promise<{ data: Note[] }>; // Note type ere
   getNote: (arg0: string) => Promise<{ data: Note }>;
   login: (arg0: OAuthProvider) => Promise<{ data: { redirectUrl: string } }>;
+  logout: (arg0: OAuthProvider) => Promise<void>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
@@ -21,12 +22,19 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
       return rspns.data;
     },
     login: async (provider: OAuthProvider) => {
-      const rspns = await axios.get('/auth/github/login', {
+      const rspns = await axios.get(`/auth/${provider}/login`, {
         params: {
           provider,
         },
       });
       return rspns.data;
+    },
+    logout: async (provider: OAuthProvider) => {
+      await axios.get(`/auth/logout`, {
+        params: {
+          provider,
+        },
+      });
     },
   };
 };

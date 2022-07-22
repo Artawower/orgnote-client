@@ -46,7 +46,6 @@
     <q-drawer v-model="leftDrawerOpen" bordered>
       <q-scroll-area class="fit">
         <q-list>
-          <q-item-label header> {{ $t('Menu') }} </q-item-label>
           <q-item
             clickable
             v-if="user"
@@ -69,6 +68,13 @@
             </q-item-section>
 
             <q-item-section> Inbox </q-item-section>
+          </q-item>
+          <q-item v-if="user" @click="logout" clickable>
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+
+            <q-item-section> Logout </q-item-section>
           </q-item>
 
           <q-item>
@@ -144,6 +150,8 @@ const user = computed(() => authStore.user);
 const openProfile = () => {
   window.open(user.value.profileUrl, '_blank');
 };
+
+const logout = () => authStore.logout();
 </script>
 
 <style lang="scss">
