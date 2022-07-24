@@ -1,14 +1,19 @@
 import { AxiosInstance } from 'axios';
 // TODO: master add type export form second brain parser
 import { Note } from 'second-brain-parser/dist/parser/models';
+import { Token, User } from 'src/models';
 
 export type OAuthProvider = 'github' | 'google';
 
+// TODO: master add generic for response datatype
 export interface Sdk {
   getNotes: (/* filters here*/) => Promise<{ data: Note[] }>; // Note type ere
   getNote: (arg0: string) => Promise<{ data: Note }>;
   login: (arg0: OAuthProvider) => Promise<{ data: { redirectUrl: string } }>;
   logout: (arg0: OAuthProvider) => Promise<void>;
+  createToken: () => Promise<{ data: Token }>;
+  deleteToken: (arg0: string) => Promise<void>;
+  verifyUser: () => Promise<{ data: { data: User } }>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
@@ -35,6 +40,22 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
           provider,
         },
       });
+    },
+    async createToken(): Promise<{ data: Token }> {
+      const rspns = await axios.post<{ data: Token }>('/auth/token');
+      return rspns.data;
+    },
+
+    async deleteToken(tokenId: string): Promise<void> {
+      await axios.delete('/auth/token', {
+        data: {
+          tokenId,
+        },
+      });
+    },
+    async verifyUser(): Promise<{ data: { data: User } }> {
+      const rspns = await axios.get('/auth/verify');
+      return rspns.data.data;
     },
   };
 };

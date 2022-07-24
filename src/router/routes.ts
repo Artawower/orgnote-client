@@ -5,6 +5,7 @@ export enum RouteNames {
   NoteList = 'NoteList',
   NoteView = 'NoteView',
   AuthPage = 'AuthPage',
+  Settings = 'Settings',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -16,6 +17,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'auth/login',
       name: RouteNames.AuthPage,
       component: () => import('pages/AuthPage.vue'),
+    },
+    {
+      path: 'settings',
+      name: RouteNames.Settings,
+      component: () => import('pages/SettingsPage.vue'),
     },
     {
       path: ':id',

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/boot/sdk';
 import { User } from 'src/models';
+import { useSettingsStore } from './settings';
 
 interface AuthState {
   user?: User;
@@ -25,7 +26,6 @@ export const useAuthStore = defineStore('auth', {
         window.location.replace(rspns.data.redirectUrl);
       } catch (e) {
         // TODO: master  add error handler
-        console.log('🦄: [line 14][auth.ts] [35me: ', JSON.stringify(e));
       }
     },
     authUser(user: User, token: string) {
@@ -33,9 +33,18 @@ export const useAuthStore = defineStore('auth', {
       this.token = token;
     },
     async logout() {
+      const settingsStore = useSettingsStore();
+      settingsStore.reset();
       this.user = null;
       this.token = null;
       sdk.logout(this.provider);
+    },
+    async verifyUser() {
+      if (!this.token) {
+        return;
+      }
+      const { data } = await sdk.verifyUser();
+      this.user = data.data;
     },
   },
   persist: true,

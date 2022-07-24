@@ -56,7 +56,7 @@
               <img :src="user.avatarUrl" />
             </q-avatar>
             <div class="text-center q-mt-lg">
-              {{ user.username }}
+              {{ user.nickName }}
             </div>
             <div class="text-center subtitle text-weight-light text-italic">
               {{ user.email }}
@@ -74,7 +74,7 @@
               <q-icon name="logout" />
             </q-item-section>
 
-            <q-item-section> Logout </q-item-section>
+            <q-item-section> {{ $t('logout') }} </q-item-section>
           </q-item>
 
           <q-item>
@@ -85,7 +85,7 @@
 
           <q-separator />
 
-          <q-item clickable>
+          <q-item @click="goToSettings" clickable>
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
@@ -146,12 +146,14 @@ const isListPage = computed(
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
+authStore.verifyUser();
 
 const openProfile = () => {
   window.open(user.value.profileUrl, '_blank');
 };
 
 const logout = () => authStore.logout();
+const goToSettings = () => router.push({ name: RouteNames.Settings });
 </script>
 
 <style lang="scss">

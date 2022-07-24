@@ -7,4 +7,8 @@ export default {
   success: 'Action was successful',
   read: 'read',
   output: 'output',
+  keys: 'keys',
+  logout: 'logout',
+  key: 'key',
+  'Create new token': 'Create new token',
 };

@@ -17,7 +17,7 @@ authStore.authUser(
   {
     avatarUrl: route.query.avatarUrl as string,
     email: route.query.email as string,
-    username: route.query.username as string,
+    nickName: route.query.username as string,
     profileUrl: route.query.profileUrl as string,
   },
   route.query.token as string

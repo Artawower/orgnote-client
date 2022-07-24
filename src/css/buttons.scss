@@ -1,0 +1,16 @@
+@import 'colors';
+
+.flat-btn {
+  width: 34px;
+  height: 34px;
+  min-height: 0 !important;
+  box-shadow: none;
+
+  border: 1px solid;
+  border-color: $smog;
+  border-radius: 6px;
+
+  &::before {
+    box-shadow: none;
+  }
+}
