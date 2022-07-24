@@ -35,6 +35,7 @@ const copyToClipboard = () => {
     position: absolute;
     right: 10px;
     top: 8px;
+    display: none;
   }
 
   &:hover {

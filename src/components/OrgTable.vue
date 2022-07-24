@@ -1,7 +1,11 @@
 <template>
   <EasyDataTable :headers="headers" :items="items">
-    <template v-for="h of headers" v-slot:[h.value]="props" :key="h.value">
-      <ContentRenderer :content="props[h.value]" />
+    <template
+      v-for="h of headers"
+      #[`item-${h.value}`]="slotProps"
+      :key="h.value"
+    >
+      <ContentRenderer :content="slotProps[h.value]" />
     </template>
   </EasyDataTable>
 </template>
@@ -28,7 +32,7 @@ const rows = ref(props.content).value.children;
 const headers: Header[] = rows[0].children.map((children) => {
   // TODO: master  need to replace any type casting. Cause some types don't have the property 'value'.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawText = children.children.map((c) => (c as any).value).join(' ');
+  const rawText = children.children.map((c) => (c as any).value).join('');
   return {
     value: rawText,
     text: rawText,
@@ -42,7 +46,6 @@ const items: Item[] = rows.slice(1, rows.length - 1).map((row) => {
   }, {});
   return item;
 });
-console.log(items);
 </script>
 
 <style lang="scss">
