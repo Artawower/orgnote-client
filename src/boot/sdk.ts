@@ -55,7 +55,7 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
     },
     async verifyUser(): Promise<{ data: { data: User } }> {
       const rspns = await axios.get('/auth/verify');
-      return rspns.data.data;
+      return rspns.data;
     },
   };
 };

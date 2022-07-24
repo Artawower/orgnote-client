@@ -1,7 +1,9 @@
+import { useAuthStore } from 'src/stores/auth';
 import { RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
   Home = 'Home',
+  UserNotes = 'AllNoteList',
   NoteList = 'NoteList',
   NoteView = 'NoteView',
   AuthPage = 'AuthPage',
@@ -22,11 +24,23 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'settings',
       name: RouteNames.Settings,
       component: () => import('pages/SettingsPage.vue'),
+      beforeEnter: () => {
+        const authStore = useAuthStore();
+        if (!authStore.user) {
+          return { name: RouteNames.NoteList };
+        }
+        return true;
+      },
     },
     {
-      path: ':id',
+      path: 'detail/:id',
       name: RouteNames.NoteView,
       component: () => import('pages/NoteView.vue'),
+    },
+    {
+      path: ':name?',
+      name: RouteNames.UserNotes,
+      component: () => import('pages/IndexPage.vue'),
     },
     {
       path: '',
