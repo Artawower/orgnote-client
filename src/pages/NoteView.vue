@@ -1,5 +1,9 @@
 <template>
   <q-page padding class="note-view">
+    <author-info
+      v-if="selectedNote"
+      :author="selectedNote?.author"
+    ></author-info>
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
     <content-renderer :content="selectedNote?.content"></content-renderer>
@@ -18,6 +22,7 @@ import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import { useViewStore } from 'src/stores/view';
+import AuthorInfo from './AuthorInfo.vue';
 
 const noteStore = useNotesStore();
 const route = useRoute();

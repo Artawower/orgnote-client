@@ -1,5 +1,9 @@
 <template>
-  <q-card flat bordered>
+  <q-card flat>
+    <div v-if="showUserProfiles" class="q-px-md">
+      <author-info :author="note.author"></author-info>
+    </div>
+
     <q-card-section
       horizontal
       :class="{ 'note-card-content': isTile, column: isTile }"
@@ -43,13 +47,14 @@
 import { computed, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { Note } from 'second-brain-parser/dist/parser/models';
-
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 
 import TagList from 'components/TagList.vue';
+import AuthorInfo from 'src/pages/AuthorInfo.vue';
+import { Note } from 'src/models';
+import { useSettingsStore } from 'src/stores/settings';
 
 const props = defineProps<{
   note: Note;
@@ -71,6 +76,10 @@ const isTile = computed(() => viewStore.tile);
 const searchByTag = (tag: string) => {
   // TODO: implement search here
 };
+
+const settingsStore = useSettingsStore();
+
+const { showUserProfiles } = toRefs(settingsStore);
 </script>
 
 <style lang="scss">

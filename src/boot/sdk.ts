@@ -13,7 +13,7 @@ export interface Sdk {
   logout: (arg0: OAuthProvider) => Promise<void>;
   createToken: () => Promise<{ data: Token }>;
   deleteToken: (arg0: string) => Promise<void>;
-  verifyUser: () => Promise<{ data: { data: User } }>;
+  verifyUser: () => Promise<{ data: User }>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {

@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/boot/sdk';
@@ -43,8 +44,15 @@ export const useAuthStore = defineStore('auth', {
       if (!this.token) {
         return;
       }
-      const { data } = await sdk.verifyUser();
-      this.user = data.data;
+      try {
+        const { data } = await sdk.verifyUser();
+        this.user = data;
+      } catch (e: any) {
+        if (e.response.status === 400) {
+          this.user = null;
+          this.token = null;
+        }
+      }
     },
   },
   persist: true,

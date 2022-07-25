@@ -4,6 +4,7 @@ import { Token } from 'src/models';
 
 interface SettingsState {
   tokens?: Token[];
+  showUserProfiles?: boolean;
 }
 
 // for correct type
@@ -12,6 +13,7 @@ const p = { persist: true };
 export const useSettingsStore = defineStore('settings', {
   state: (): SettingsState => ({
     tokens: [],
+    showUserProfiles: true,
   }),
   getters: {},
   actions: {
@@ -33,6 +35,9 @@ export const useSettingsStore = defineStore('settings', {
         // TODO: master  real error handling
         this.tokens = [...this.tokens, token];
       }
+    },
+    toggleProfileVisibility() {
+      this.showUserProfiles = !this.showUserProfiles;
     },
   },
   ...p,

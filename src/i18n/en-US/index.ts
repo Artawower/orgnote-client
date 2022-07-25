@@ -11,4 +11,6 @@ export default {
   logout: 'logout',
   key: 'key',
   'Create new token': 'Create new token',
+  'View settings': 'View settings',
+  'Show author profile info': 'Show author profile info',
 };

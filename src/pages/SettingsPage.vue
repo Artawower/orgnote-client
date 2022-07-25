@@ -16,7 +16,8 @@
             @click="settingsStore.removeToken(token)"
             icon="delete"
             class="flat-btn delete-btn q-mr-xs"
-          ></q-btn>
+          >
+          </q-btn>
           <copy-btn @copied="copyToken(token)"></copy-btn>
         </div>
       </template>
@@ -33,6 +34,14 @@
       class="full-width"
       :label="$t('Create new token')"
     />
+  </div>
+
+  <div class="col-12">
+    <h4 class="text-h4">{{ $t('View settings') }}</h4>
+    <q-toggle
+      v-model="settingsStore.showUserProfiles"
+      :label="$t('Show author profile info')"
+    ></q-toggle>
   </div>
 </template>
 

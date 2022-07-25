@@ -62,12 +62,19 @@
               {{ user.email }}
             </div>
           </q-item>
-          <q-item clickable>
+          <q-item v-if="isMyNotePage" @click="goToMainPage" clickable>
             <q-item-section avatar>
-              <q-icon name="inbox" />
+              <q-icon name="feed" />
             </q-item-section>
 
-            <q-item-section> Inbox </q-item-section>
+            <q-item-section> All articles </q-item-section>
+          </q-item>
+          <q-item v-else clickable @click="goToMyNotes">
+            <q-item-section avatar>
+              <q-icon name="account_box" />
+            </q-item-section>
+
+            <q-item-section> My notes </q-item-section>
           </q-item>
           <q-item v-if="user" @click="logout" clickable>
             <q-item-section avatar>
@@ -85,7 +92,7 @@
 
           <q-separator />
 
-          <q-item @click="goToSettings" clickable>
+          <q-item v-if="user" @click="goToSettings" clickable>
             <q-item-section avatar>
               <q-icon name="settings" />
             </q-item-section>
@@ -143,6 +150,9 @@ const toggleTile = () => {
 const isListPage = computed(
   () => router.currentRoute.value.name === RouteNames.NoteList
 );
+const isMyNotePage = computed(
+  () => router.currentRoute.value.name === RouteNames.UserNotes
+);
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
@@ -154,6 +164,14 @@ const openProfile = () => {
 
 const logout = () => authStore.logout();
 const goToSettings = () => router.push({ name: RouteNames.Settings });
+const goToMyNotes = () => {
+  console.log(user.value);
+
+  router.push({
+    name: RouteNames.UserNotes,
+    params: { username: user.value.nickName },
+  });
+};
 </script>
 
 <style lang="scss">

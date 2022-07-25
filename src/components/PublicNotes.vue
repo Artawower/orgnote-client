@@ -20,9 +20,9 @@
 <script setup lang="ts">
 import { computed, defineComponent } from 'vue';
 
-import { Note } from 'second-brain-parser/dist/parser/models';
 import PublicNoteView from './PublicNoteView.vue';
 import { useViewStore } from 'src/stores/view';
+import { Note } from 'src/models';
 
 defineComponent({
   PublicNoteView,

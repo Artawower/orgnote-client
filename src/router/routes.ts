@@ -3,7 +3,7 @@ import { RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
   Home = 'Home',
-  UserNotes = 'AllNoteList',
+  UserNotes = 'UserNotes',
   NoteList = 'NoteList',
   NoteView = 'NoteView',
   AuthPage = 'AuthPage',
@@ -38,7 +38,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       component: () => import('pages/NoteView.vue'),
     },
     {
-      path: ':name?',
+      path: ':username?',
       name: RouteNames.UserNotes,
       component: () => import('pages/IndexPage.vue'),
     },

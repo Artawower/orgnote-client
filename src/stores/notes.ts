@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { Note } from 'second-brain-parser/dist/parser/models';
 import { sdk } from 'src/boot/axios';
+import { Note } from 'src/models';
 
 interface NotesState {
   notes: Note[];
