@@ -16,9 +16,9 @@ export const useNotesStore = defineStore('notes', {
   getters: {},
 
   actions: {
-    async loadNotes() {
+    async loadNotes(userId?: string) {
       try {
-        const rspns = await sdk.getNotes();
+        const rspns = await sdk.getNotes(userId);
         this.notes = rspns.data;
       } catch (e) {
         // TODO: master real error handling

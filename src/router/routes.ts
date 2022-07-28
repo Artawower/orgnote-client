@@ -38,7 +38,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       component: () => import('pages/NoteView.vue'),
     },
     {
-      path: ':username?',
+      path: ':userId?',
       name: RouteNames.UserNotes,
       component: () => import('pages/IndexPage.vue'),
     },

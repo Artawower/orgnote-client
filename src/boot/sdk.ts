@@ -7,7 +7,7 @@ export type OAuthProvider = 'github' | 'google';
 
 // TODO: master add generic for response datatype
 export interface Sdk {
-  getNotes: (/* filters here*/) => Promise<{ data: Note[] }>; // Note type ere
+  getNotes: (userId?: string) => Promise<{ data: Note[] }>; // Note type ere
   getNote: (arg0: string) => Promise<{ data: Note }>;
   login: (arg0: OAuthProvider) => Promise<{ data: { redirectUrl: string } }>;
   logout: (arg0: OAuthProvider) => Promise<void>;
@@ -18,8 +18,10 @@ export interface Sdk {
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
   return {
-    getNotes: async (): Promise<{ data: Note[] }> => {
-      const rspns = await axios.get<{ data: Note[] }>('/notes');
+    getNotes: async (userId?: string): Promise<{ data: Note[] }> => {
+      const rspns = await axios.get<{ data: Note[] }>('/notes', {
+        params: { userId },
+      });
       return rspns.data;
     },
     getNote: async (id: string): Promise<{ data: Note }> => {

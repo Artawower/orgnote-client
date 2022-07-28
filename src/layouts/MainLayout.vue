@@ -21,7 +21,7 @@
         >
 
         <q-icon
-          v-if="isListPage"
+          v-if="isListPage || isMyNotePage"
           @click="toggleTile"
           :name="isTile ? 'format_list_bulleted' : 'grid_view'"
           size="2rem"
@@ -165,11 +165,9 @@ const openProfile = () => {
 const logout = () => authStore.logout();
 const goToSettings = () => router.push({ name: RouteNames.Settings });
 const goToMyNotes = () => {
-  console.log(user.value);
-
   router.push({
     name: RouteNames.UserNotes,
-    params: { username: user.value.nickName },
+    params: { userId: user.value.id },
   });
 };
 </script>

@@ -7,7 +7,20 @@
 <script lang="ts" setup>
 import PublicNotes from 'components/PublicNotes.vue';
 import { useNotesStore } from 'stores/notes';
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const notesState = useNotesStore();
-notesState.loadNotes();
+
+const route = useRoute();
+
+const userId = route.params.userId as string;
+
+watch(
+  () => route.params.userId as string,
+  (userId) => {
+    notesState.loadNotes(userId);
+  }
+);
+notesState.loadNotes(userId);
 </script>
