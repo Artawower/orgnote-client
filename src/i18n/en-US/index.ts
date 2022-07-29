@@ -13,4 +13,6 @@ export default {
   'Create new token': 'Create new token',
   'View settings': 'View settings',
   'Show author profile info': 'Show author profile info',
+  'All articles': 'All articles',
+  'My notes': 'My notes',
 };

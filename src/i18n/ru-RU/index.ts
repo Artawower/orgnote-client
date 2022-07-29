@@ -9,4 +9,6 @@ export default {
   'Create new token': 'Создать новый токен',
   'View settings': 'Визуальные настройки',
   'Show author profile info': 'Показать информацию об авторе',
+  'All articles': 'Все статьи',
+  'My notes': 'Мои заметки',
 };
