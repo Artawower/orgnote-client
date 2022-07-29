@@ -1,6 +1,6 @@
 <template>
   <q-card flat>
-    <div v-if="showUserProfiles" class="q-px-md">
+    <div v-if="showUserProfiles && showAuthor" class="q-px-md">
       <author-info :author="note.author"></author-info>
     </div>
 
@@ -58,6 +58,7 @@ import { useSettingsStore } from 'src/stores/settings';
 
 const props = defineProps<{
   note: Note;
+  showAuthor: boolean;
 }>();
 const { note } = toRefs(props);
 
