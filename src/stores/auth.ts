@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/boot/sdk';
@@ -19,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     chooseAuthProvider(provider: OAuthProvider): void {
-      this.provider = provider;
+      this.proider = provider;
     },
     async authViaGithub() {
       try {

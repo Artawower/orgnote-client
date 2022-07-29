@@ -3,7 +3,7 @@
     <h4 class="text-h4">API {{ $t('keys') }}</h4>
     <q-field
       v-for="token in tokens"
-      :key="token"
+      :key="token?.id"
       color="teal"
       outlined
       :label="$t('key')"
@@ -51,6 +51,8 @@ import { useSettingsStore } from 'src/stores/settings';
 import CopyBtn from 'src/components/CopyBtn.vue';
 import { Token } from 'src/models';
 const settingsStore = useSettingsStore();
+
+settingsStore.getApiTokens();
 
 const { tokens } = toRefs(settingsStore);
 

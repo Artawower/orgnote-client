@@ -36,6 +36,13 @@ export const useSettingsStore = defineStore('settings', {
         this.tokens = [...this.tokens, token];
       }
     },
+    async getApiTokens() {
+      try {
+        this.tokens = (await sdk.getApiTokens()).data;
+      } catch (e) {
+        // TODO: master  real error handling
+      }
+    },
     toggleProfileVisibility() {
       this.showUserProfiles = !this.showUserProfiles;
     },

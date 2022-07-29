@@ -5,6 +5,7 @@ import { Token, User } from 'src/models';
 
 export type OAuthProvider = 'github' | 'google';
 
+// TODO: replace with swagger codegen after swaggo has generic types
 // TODO: master add generic for response datatype
 export interface Sdk {
   getNotes: (userId?: string) => Promise<{ data: Note[] }>; // Note type ere
@@ -14,6 +15,7 @@ export interface Sdk {
   createToken: () => Promise<{ data: Token }>;
   deleteToken: (arg0: string) => Promise<void>;
   verifyUser: () => Promise<{ data: User }>;
+  getApiTokens: () => Promise<{ data: Token[] }>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
@@ -57,6 +59,10 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
     },
     async verifyUser(): Promise<{ data: { data: User } }> {
       const rspns = await axios.get('/auth/verify');
+      return rspns.data;
+    },
+    async getApiTokens(): Promise<{ data: Token[] }> {
+      const rspns = await axios.get<{ data: Token[] }>('/auth/api-tokens');
       return rspns.data;
     },
   };
