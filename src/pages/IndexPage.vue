@@ -16,6 +16,8 @@ const route = useRoute();
 
 const userId = route.params.userId as string;
 
+notesState.setFilters({ searchText: route.query.search as string });
+
 watch(
   () => route.params.userId as string,
   (userId) => {

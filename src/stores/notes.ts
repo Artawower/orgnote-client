@@ -5,12 +5,17 @@ import { Note } from 'src/models';
 interface NotesState {
   notes: Note[];
   selectedNote?: Note;
+  filters?: {
+    searchText?: string;
+    userId?: string;
+  };
 }
 
 export const useNotesStore = defineStore('notes', {
   state: (): NotesState => ({
     notes: [],
     selectedNote: null,
+    filters: {},
   }),
 
   getters: {},
@@ -18,7 +23,7 @@ export const useNotesStore = defineStore('notes', {
   actions: {
     async loadNotes(userId?: string) {
       try {
-        const rspns = await sdk.getNotes(userId);
+        const rspns = await sdk.getNotes(userId, this.filters.searchText);
         this.notes = rspns.data;
       } catch (e) {
         // TODO: master real error handling
@@ -48,6 +53,9 @@ export const useNotesStore = defineStore('notes', {
         // TODO: master  handle todo here
         console.log('🦄: [line 41][notes.ts] [35me: ', e);
       }
+    },
+    setFilters(filter: { searchText?: string }) {
+      this.filters = { ...this.filters, ...filter };
     },
   },
 });

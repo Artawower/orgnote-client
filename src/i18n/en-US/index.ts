@@ -15,4 +15,5 @@ export default {
   'Show author profile info': 'Show author profile info',
   'All articles': 'All articles',
   'My notes': 'My notes',
+  search: 'search',
 };

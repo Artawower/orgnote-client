@@ -17,8 +17,29 @@
       <q-toolbar-title @click="goToMainPage" class="cursor-pointer"
         >Second brain</q-toolbar-title
       >
+      <!-- TODO: master  remove highlighting after focus -->
+      <q-input
+        dense
+        rounded
+        outlined
+        debounce="300"
+        borderless
+        v-model="search"
+        :placeholder="$t('search')"
+        class="q-mr-md"
+      >
+        <template v-slot:prepend>
+          <q-icon name="search" size="1.5rem" class="cursor-pointer search" />
+        </template>
+        <template v-if="search" v-slot:append>
+          <q-icon
+            name="close"
+            @click.stop.prevent="search = null"
+            class="cursor-pointer"
+          />
+        </template>
+      </q-input>
 
-      <q-icon name="search" size="2rem" class="cursor-pointer search" />
       <q-icon
         v-if="isListPage || isMyNotePage"
         @click="toggleTile"
@@ -46,9 +67,10 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
+import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const $q = useQuasar();
 
@@ -82,7 +104,38 @@ const toggleCollapse = () => {
   viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
 };
 
-const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
+const route = useRoute();
+
+const search = ref<string>((route.query.search as string) || '');
+
+const notesStore = useNotesStore();
+
+const goToMainPage = () => {
+  notesStore.setFilters({ searchText: '' });
+  router.push({ path: MAIN_PAGE_ROUTE.path });
+};
+
+const searchNotes = () => {
+  notesStore.setFilters({ searchText: search.value });
+  notesStore.loadNotes();
+};
+
+watch(
+  () => notesStore.filters.searchText,
+  (v) => (search.value = v)
+);
+watch(
+  () => search.value,
+  (q) => {
+    // TODO: master when route is not articles/notes - redirect
+    router.push({
+      query: {
+        search: q,
+      },
+    });
+    searchNotes();
+  }
+);
 </script>
 
 <style lang="scss">
@@ -94,13 +147,17 @@ const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
   margin-right: 1rem;
 }
 
-.fold-btn,
-.search {
+.fold-btn {
   margin-right: 1rem;
 }
 
 .header-content {
   max-width: 1066px;
   margin: auto;
+}
+.q-field--highlighted {
+  .q-field__control {
+    color: inherit;
+  }
 }
 </style>

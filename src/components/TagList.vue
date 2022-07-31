@@ -17,9 +17,8 @@
 </template>
 
 <script lang="ts" setup>
-import { RouteNames } from 'src/router/routes';
+import { useNotesStore } from 'src/stores/notes';
 import { toRefs } from 'vue';
-import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   tags?: string[];
@@ -27,14 +26,9 @@ const props = defineProps<{
 
 const { tags } = toRefs(props);
 
-const router = useRouter();
+const notesStore = useNotesStore();
 const searchByTag = (tag: string) => {
-  router.push({
-    name: RouteNames.NoteList,
-    query: {
-      q: tag,
-    },
-  });
+  notesStore.setFilters({ searchText: tag });
 };
 </script>
 

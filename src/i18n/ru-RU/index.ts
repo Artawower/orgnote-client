@@ -11,4 +11,5 @@ export default {
   'Show author profile info': 'Показать информацию об авторе',
   'All articles': 'Все статьи',
   'My notes': 'Мои заметки',
+  search: 'поиск',
 };
