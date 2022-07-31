@@ -14,15 +14,22 @@ const notesState = useNotesStore();
 
 const route = useRoute();
 
-const userId = route.params.userId as string;
+const setFiltersFromQuery = () => {
+  notesState.setFilters({
+    searchText: route.query.search as string,
+    userId: route.params.userId as string,
+  });
+};
 
-notesState.setFilters({ searchText: route.query.search as string });
+setFiltersFromQuery();
 
 watch(
   () => route.params.userId as string,
-  (userId) => {
-    notesState.loadNotes(userId);
+  () => {
+    setFiltersFromQuery();
+    notesState.loadNotes();
   }
 );
-notesState.loadNotes(userId);
+
+notesState.loadNotes();
 </script>

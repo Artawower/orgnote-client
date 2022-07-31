@@ -21,9 +21,12 @@ export const useNotesStore = defineStore('notes', {
   getters: {},
 
   actions: {
-    async loadNotes(userId?: string) {
+    async loadNotes() {
       try {
-        const rspns = await sdk.getNotes(userId, this.filters.searchText);
+        const rspns = await sdk.getNotes(
+          this.filters.userId,
+          this.filters.searchText
+        );
         this.notes = rspns.data;
       } catch (e) {
         // TODO: master real error handling
@@ -54,7 +57,7 @@ export const useNotesStore = defineStore('notes', {
         console.log('🦄: [line 41][notes.ts] [35me: ', e);
       }
     },
-    setFilters(filter: { searchText?: string }) {
+    setFilters(filter: { searchText?: string; userId?: string }) {
       this.filters = { ...this.filters, ...filter };
     },
   },
