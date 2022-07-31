@@ -18,6 +18,8 @@ const setFiltersFromQuery = () => {
   notesState.setFilters({
     searchText: route.query.search as string,
     userId: route.params.userId as string,
+    limit: +(route.query.limit as string),
+    offset: +(route.query.offset as string),
   });
 };
 

@@ -1,21 +1,21 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { Note } from 'src/models';
+import { Note, NotesFilter } from 'src/models';
 
 interface NotesState {
   notes: Note[];
   selectedNote?: Note;
-  filters?: {
-    searchText?: string;
-    userId?: string;
-  };
+  filters?: NotesFilter;
 }
 
 export const useNotesStore = defineStore('notes', {
   state: (): NotesState => ({
     notes: [],
     selectedNote: null,
-    filters: {},
+    filters: {
+      limit: 10,
+      offset: 0,
+    },
   }),
 
   getters: {},
@@ -23,10 +23,7 @@ export const useNotesStore = defineStore('notes', {
   actions: {
     async loadNotes() {
       try {
-        const rspns = await sdk.getNotes(
-          this.filters.userId,
-          this.filters.searchText
-        );
+        const rspns = await sdk.getNotes(this.filters);
         this.notes = rspns.data;
       } catch (e) {
         // TODO: master real error handling
@@ -50,14 +47,13 @@ export const useNotesStore = defineStore('notes', {
 
       try {
         const rspns = await sdk.getNote(noteId);
-        // console.log('🦄: [line 43][notes.ts] [35mrspns: ', rspns);
         this.selectedNote = rspns.data;
       } catch (e) {
         // TODO: master  handle todo here
         console.log('🦄: [line 41][notes.ts] [35me: ', e);
       }
     },
-    setFilters(filter: { searchText?: string; userId?: string }) {
+    setFilters(filter: NotesFilter) {
       this.filters = { ...this.filters, ...filter };
     },
   },
