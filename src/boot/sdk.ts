@@ -1,14 +1,14 @@
 import { AxiosInstance } from 'axios';
 // TODO: master add type export form second brain parser
 import { Note } from 'second-brain-parser/dist/parser/models';
-import { NotesFilter, Token, User } from 'src/models';
+import { NotesFilter, Paginated, Token, User } from 'src/models';
 
 export type OAuthProvider = 'github' | 'google';
 
 // TODO: replace with swagger codegen after swaggo has generic types
 // TODO: master add generic for response datatype
 export interface Sdk {
-  getNotes: (filters?: NotesFilter) => Promise<{ data: Note[] }>; // Note type ere
+  getNotes: (filters?: NotesFilter) => Promise<Paginated<Note>>; // Note type ere
   getNote: (arg0: string) => Promise<{ data: Note }>;
   login: (arg0: OAuthProvider) => Promise<{ data: { redirectUrl: string } }>;
   logout: (arg0: OAuthProvider) => Promise<void>;
@@ -20,8 +20,8 @@ export interface Sdk {
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
   return {
-    getNotes: async (notesFilter?: NotesFilter): Promise<{ data: Note[] }> => {
-      const rspns = await axios.get<{ data: Note[] }>('/notes', {
+    getNotes: async (notesFilter?: NotesFilter): Promise<Paginated<Note>> => {
+      const rspns = await axios.get<Paginated<Note>>('/notes', {
         params: notesFilter,
       });
       return rspns.data;

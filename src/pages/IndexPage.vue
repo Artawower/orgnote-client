@@ -1,7 +1,5 @@
 <template>
-  <q-page padding>
-    <public-notes :notes="notesState.notes"></public-notes>
-  </q-page>
+  <public-notes :notes="notesState.notes"></public-notes>
 </template>
 
 <script lang="ts" setup>

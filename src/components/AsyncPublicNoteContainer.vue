@@ -1,0 +1,31 @@
+<template>
+  <template v-if="note">
+    <slot :note="note"></slot>
+  </template>
+</template>
+
+<script lang="ts" setup>
+import { useNotesStore } from 'src/stores/notes';
+import { computed } from 'vue';
+
+const props = defineProps<{
+  index: number;
+  offset: number;
+}>();
+
+const notesStore = useNotesStore();
+
+const note = computed(() => {
+  const { index, offset } = props;
+
+  const note = notesStore.notes[index];
+  return note;
+});
+</script>
+
+<style lang="scss">
+.mock {
+  height: 205px;
+  border: 20px solid white;
+}
+</style>

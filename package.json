@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "quasar": "^2.6.0",
+    "quasar": "^2.7.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0",
     "@highlightjs/vue-plugin": "2.1.0",

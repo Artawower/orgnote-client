@@ -5,8 +5,13 @@ import { Note, NotesFilter } from 'src/models';
 interface NotesState {
   notes: Note[];
   selectedNote?: Note;
+  notesCount?: number;
   filters?: NotesFilter;
 }
+
+const notesBufferLimit = 100;
+const defaultLimit = 10;
+const defaultOffset = 0;
 
 export const useNotesStore = defineStore('notes', {
   state: (): NotesState => ({
@@ -25,10 +30,27 @@ export const useNotesStore = defineStore('notes', {
       try {
         const rspns = await sdk.getNotes(this.filters);
         this.notes = rspns.data;
+        this.notesCount = rspns.meta.total;
+        this.setFilters({
+          limit: rspns.meta.limit,
+          offset: rspns.meta.offset,
+        });
       } catch (e) {
         // TODO: master real error handling
         console.log('🦄: [line 24][notes.ts] [35me: ', e);
       }
+    },
+    async fetchNotes(offset: number) {
+      // TODO: need to clear this bucket with respect buffer limit
+      if (this.filters.offset === offset) {
+        return;
+      }
+      this.setFilters({ offset });
+      try {
+        const rspns = await sdk.getNotes(this.filters);
+        this.notes = [...this.notes, ...rspns.data];
+        this.notesCount = rspns.meta.total;
+      } catch (e) {}
     },
     selectNote(note: Note) {
       this.selectedNote = note;
@@ -53,8 +75,11 @@ export const useNotesStore = defineStore('notes', {
         console.log('🦄: [line 41][notes.ts] [35me: ', e);
       }
     },
-    setFilters(filter: NotesFilter) {
-      this.filters = { ...this.filters, ...filter };
+    setFilters(filter: Partial<NotesFilter>) {
+      const updatedFilters = { ...this.filters, ...filter };
+      updatedFilters.limit ||= defaultLimit;
+      updatedFilters.offset ||= defaultOffset;
+      this.filters = updatedFilters;
     },
   },
 });
