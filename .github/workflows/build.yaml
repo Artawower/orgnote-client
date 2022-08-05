@@ -8,10 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: pnpm/action-setup@v2.2.2
-        with:
-          version: 6.0.2
+      - uses: borales/actions-yarn@v3.0.0
       - name: Install dependencies
-        run: pnpm i -g @quasar/cli && pnpm install
+        run: yarn global add @quasar/cli && yarn
       - name: Build
-        run: pnpm run build
+        run: yarn build
