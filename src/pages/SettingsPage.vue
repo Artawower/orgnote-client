@@ -50,6 +50,7 @@ import { toRefs } from 'vue';
 import { useSettingsStore } from 'src/stores/settings';
 import CopyBtn from 'src/components/CopyBtn.vue';
 import { Token } from 'src/models';
+import { copyToClipboard } from 'quasar';
 const settingsStore = useSettingsStore();
 
 settingsStore.getApiTokens();
@@ -57,7 +58,7 @@ settingsStore.getApiTokens();
 const { tokens } = toRefs(settingsStore);
 
 const copyToken = (token: Token) => {
-  navigator.clipboard.writeText(token.token);
+  copyToClipboard(token.token);
 };
 </script>
 

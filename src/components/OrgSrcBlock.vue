@@ -1,6 +1,6 @@
 <template>
   <div class="src-code-wrapper">
-    <copy-btn @copied="copyToClipboard" />
+    <copy-btn @copied="copySrc" />
     <highlightjs :autodetect="true" :code="content.value" />
   </div>
 </template>
@@ -13,6 +13,7 @@ import 'highlight.js/lib/common';
 import 'highlight.js/styles/stackoverflow-light.css';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
 import { OrgSrcBlock } from 'src/types/org';
+import { copyToClipboard } from 'quasar';
 
 const highlightjs = hljsVuePlugin.component;
 
@@ -22,8 +23,8 @@ const props = defineProps<{
 
 const content = toRef(props, 'content');
 
-const copyToClipboard = () => {
-  navigator.clipboard.writeText(content.value.value);
+const copySrc = () => {
+  copyToClipboard(content.value.value);
 };
 </script>
 
