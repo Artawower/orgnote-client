@@ -9,10 +9,10 @@
   <!-- TODO: master  Add attribute reading for handle width setting-->
   <a
     v-else-if="content.linkType === 'file' && !isInternalFileLink"
-    :href="buildMediaPath(content.path)"
+    :href="buildMediaFilePath(content.path)"
     target="_blank"
   >
-    <img class="org-image" :src="buildMediaPath(content.path)" />
+    <img class="org-image" :src="buildMediaFilePath(content.path)" />
   </a>
 </template>
 
@@ -21,7 +21,7 @@ import { Link } from 'uniorg';
 import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
-import { extractFileNameFromPath } from 'src/tools/extract-file';
+import { buildMediaFilePath } from 'src/tools/extract-file';
 
 const fileLinkRegexp = /^file:(.*)$/;
 
@@ -34,9 +34,6 @@ const props = defineProps<{
 }>();
 
 const content = toRef(props, 'content');
-
-const buildMediaPath = (path) =>
-  `http://127.0.0.1:3000/media/${extractFileNameFromPath(path)}`;
 
 const isInternalFileLink = fileLinkRegexp.test(content.value.rawLink);
 </script>

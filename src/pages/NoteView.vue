@@ -6,6 +6,12 @@
     ></author-info>
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
+    <!-- TODO: add condition for render preview img depend on user settings-->
+    <q-img
+      v-if="selectedNote?.meta.previewImg"
+      class="pointer rounded-borders"
+      :src="buildMediaFilePath(selectedNote.meta.previewImg)"
+    />
     <content-renderer :content="selectedNote?.content"></content-renderer>
     <note-footer>
       <tag-list :tags="selectedNote?.meta?.tags" />
@@ -23,6 +29,7 @@ import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import { useViewStore } from 'src/stores/view';
 import AuthorInfo from './AuthorInfo.vue';
+import { buildMediaFilePath } from 'src/tools';
 
 const noteStore = useNotesStore();
 const route = useRoute();

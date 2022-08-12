@@ -8,13 +8,18 @@
       horizontal
       :class="{ 'note-card-content': isTile, column: isTile }"
     >
-      <img v-if="isTile" src="https://cdn.quasar.dev/img/parallax2.jpg" />
-
+      <img
+        v-if="isTile && note?.meta.previewImg"
+        :src="buildMediaFilePath(note.meta.previewImg)"
+      />
       <q-card-section class="flex col-3 flex-start" v-else>
         <q-img
+          v-if="note?.meta.previewImg"
           class="pointer rounded-borders"
-          src="https://cdn.quasar.dev/img/parallax2.jpg"
+          :src="buildMediaFilePath(note.meta.previewImg)"
         />
+        <!-- TODO: add fine markup for notes without preview-->
+        <div v-else class="mock-picture pointer rounded-borders"></div>
       </q-card-section>
       <q-card-section>
         <div class="text-overline">{{ note.meta.category }}</div>
@@ -55,6 +60,7 @@ import TagList from 'components/TagList.vue';
 import AuthorInfo from 'src/pages/AuthorInfo.vue';
 import { Note } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
+import { buildMediaFilePath } from 'src/tools';
 
 const props = defineProps<{
   note: Note;
@@ -67,7 +73,6 @@ const router = useRouter();
 
 const openNoteDetail = (note: Note) => {
   notesStore.selectNote(note);
-  console.log(note);
   router.push({ name: RouteNames.NoteView, params: { id: note.id } });
 };
 
@@ -87,5 +92,11 @@ const { showUserProfiles } = toRefs(settingsStore);
 .note-card-content {
   max-height: 310px;
   min-height: 310px;
+}
+
+.mock-picture {
+  width: 230px;
+  height: 134px;
+  background-color: $blue-grey-2;
 }
 </style>
