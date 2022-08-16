@@ -8,6 +8,11 @@
 
 body.body--light {
   @import 'highlight.js/styles/stackoverflow-light';
+
+  .themed-text {
+    color: $dark;
+  }
+
   .note-view {
     p,
     h1,
@@ -25,6 +30,10 @@ body.body--light {
 body.body--dark {
   @import 'highlight.js/styles/atom-one-dark';
   background: rgb(34, 39, 46);
+  .themed-text {
+    color: $light;
+  }
+
   .note-view {
     a {
       color: $light;

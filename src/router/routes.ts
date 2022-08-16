@@ -8,6 +8,7 @@ export enum RouteNames {
   NoteView = 'NoteView',
   AuthPage = 'AuthPage',
   Settings = 'Settings',
+  NotFound = 'NotFound',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -54,6 +55,7 @@ const routes: RouteRecordRaw[] = [
   MAIN_PAGE_ROUTE,
   {
     path: '/:catchAll(.*)*',
+    name: RouteNames.NotFound,
     component: () => import('pages/ErrorNotFound.vue'),
   },
 ];

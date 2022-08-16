@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { Note, NotesFilter } from 'src/models';
+import { RouteNames } from 'src/router/routes';
 
 interface NotesState {
   notes: Note[];
@@ -70,7 +71,12 @@ export const useNotesStore = defineStore('notes', {
       try {
         const rspns = await sdk.getNote(noteId);
         this.selectedNote = rspns.data;
-      } catch (e) {
+      } catch (e: any) {
+        if (e.response?.status === 404) {
+          // TODO: master https://github.com/quasarframework/quasar/pull/14080
+          (this as any).router.push({ name: RouteNames.NotFound });
+          return;
+        }
         // TODO: master  handle todo here
         console.log('🦄: [line 41][notes.ts] [35me: ', e);
       }
