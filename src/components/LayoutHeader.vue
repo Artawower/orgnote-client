@@ -54,7 +54,7 @@
         class="dark-mode-btn cursor-pointer"
       />
       <q-icon
-        v-if="isViewDetailPage"
+        v-if="isNoteDetailPage"
         @click="toggleCollapse"
         size="2rem"
         :name="isExpanded ? 'unfold_less' : 'unfold_more'"
@@ -67,7 +67,7 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
-import { useNotesStore } from 'src/stores/notes';
+import { useNotesStore, DEFAULT_LIMIT, DEFAULT_OFFSET } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -83,8 +83,8 @@ const toggleDarkMode = () => {
 };
 
 const router = useRouter();
-const isViewDetailPage = computed(
-  () => router.currentRoute.value.name === RouteNames.NoteView
+const isNoteDetailPage = computed(
+  () => router.currentRoute.value.name === RouteNames.NoteDetail
 );
 const isListPage = computed(
   () => router.currentRoute.value.name === RouteNames.NoteList
@@ -111,8 +111,11 @@ const search = ref<string>((route.query.search as string) || '');
 const notesStore = useNotesStore();
 
 const goToMainPage = () => {
-  notesStore.setFilters({ searchText: '' });
-  router.push({ path: MAIN_PAGE_ROUTE.path });
+  notesStore.setFilters({ searchText: undefined });
+  router.push({
+    name: RouteNames.NoteList,
+    query: { limit: DEFAULT_LIMIT, offset: DEFAULT_OFFSET },
+  });
 };
 
 const searchNotes = () => {
@@ -124,11 +127,12 @@ watch(
   () => notesStore.filters.searchText,
   (v) => (search.value = v)
 );
+
 watch(
   () => search.value,
   (q) => {
-    // TODO: master when route is not articles/notes - redirect
     router.push({
+      name: isNoteDetailPage.value ? RouteNames.NoteList : route.name,
       query: {
         search: q,
       },

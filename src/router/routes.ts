@@ -5,7 +5,7 @@ export enum RouteNames {
   Home = 'Home',
   UserNotes = 'UserNotes',
   NoteList = 'NoteList',
-  NoteView = 'NoteView',
+  NoteDetail = 'NoteDetail',
   AuthPage = 'AuthPage',
   Settings = 'Settings',
   NotFound = 'NotFound',
@@ -35,8 +35,8 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     },
     {
       path: 'detail/:id',
-      name: RouteNames.NoteView,
-      component: () => import('pages/NoteView.vue'),
+      name: RouteNames.NoteDetail,
+      component: () => import('pages/NoteDetail.vue'),
     },
     {
       path: ':userId?',
@@ -54,7 +54,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
 const routes: RouteRecordRaw[] = [
   MAIN_PAGE_ROUTE,
   {
-    path: '/:catchAll(.*)*',
+    path: '/:catchAll(.*)+',
     name: RouteNames.NotFound,
     component: () => import('pages/ErrorNotFound.vue'),
   },

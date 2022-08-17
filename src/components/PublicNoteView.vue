@@ -73,7 +73,7 @@ const router = useRouter();
 
 const openNoteDetail = (note: Note) => {
   notesStore.selectNote(note);
-  router.push({ name: RouteNames.NoteView, params: { id: note.id } });
+  router.push({ name: RouteNames.NoteDetail, params: { id: note.id } });
 };
 
 const viewStore = useViewStore();

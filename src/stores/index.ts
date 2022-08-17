@@ -1,6 +1,7 @@
 import { store } from 'quasar/wrappers';
 import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+export * from './notes';
 
 /*
  * If not building with SSR mode, you can

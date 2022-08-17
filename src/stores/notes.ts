@@ -11,8 +11,8 @@ interface NotesState {
 }
 
 const notesBufferLimit = 100;
-const defaultLimit = 10;
-const defaultOffset = 0;
+export const DEFAULT_LIMIT = 10;
+export const DEFAULT_OFFSET = 0;
 
 export const useNotesStore = defineStore('notes', {
   state: (): NotesState => ({
@@ -83,8 +83,9 @@ export const useNotesStore = defineStore('notes', {
     },
     setFilters(filter: Partial<NotesFilter>) {
       const updatedFilters = { ...this.filters, ...filter };
-      updatedFilters.limit ||= defaultLimit;
-      updatedFilters.offset ||= defaultOffset;
+      updatedFilters.searchText = updatedFilters.searchText.trim();
+      updatedFilters.limit ||= DEFAULT_LIMIT;
+      updatedFilters.offset ||= DEFAULT_OFFSET;
       this.filters = updatedFilters;
     },
   },

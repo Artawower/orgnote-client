@@ -54,7 +54,7 @@ const content = toRef(props, 'content');
 const isInternalFileLink = fileLinkRegexp.test(content.value.rawLink);
 
 const idDetailPage = {
-  name: RouteNames.NoteView,
+  name: RouteNames.NoteDetail,
   params: { id: content.value.path },
 };
 </script>
