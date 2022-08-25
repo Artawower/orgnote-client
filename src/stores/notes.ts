@@ -23,9 +23,7 @@ export const useNotesStore = defineStore('notes', {
       offset: 0,
     },
   }),
-
   getters: {},
-
   actions: {
     async loadNotes() {
       try {
@@ -83,7 +81,7 @@ export const useNotesStore = defineStore('notes', {
     },
     setFilters(filter: Partial<NotesFilter>) {
       const updatedFilters = { ...this.filters, ...filter };
-      updatedFilters.searchText = updatedFilters.searchText.trim();
+      updatedFilters.searchText = updatedFilters.searchText?.trim();
       updatedFilters.limit ||= DEFAULT_LIMIT;
       updatedFilters.offset ||= DEFAULT_OFFSET;
       this.filters = updatedFilters;

@@ -4,6 +4,7 @@
 
     <q-drawer v-model="leftDrawerOpen" bordered>
       <q-scroll-area class="fit">
+        <!-- TODO: master  separated sidebar component-->
         <q-list>
           <q-item
             clickable
@@ -34,6 +35,21 @@
             </q-item-section>
 
             <q-item-section>{{ $t('My notes') }}</q-item-section>
+          </q-item>
+
+          <q-item
+            v-if="authStore.user"
+            clickable
+            :to="{
+              name: RouteNames.UserGraph,
+              params: { userId: authStore.user.id },
+            }"
+          >
+            <q-item-section avatar>
+              <q-icon name="hub" />
+            </q-item-section>
+
+            <q-item-section>{{ $t('Graph') }}</q-item-section>
           </q-item>
           <q-item v-if="user" @click="logout" clickable>
             <q-item-section avatar>

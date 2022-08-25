@@ -66,7 +66,7 @@
 
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
-import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
+import { RouteNames } from 'src/router/routes';
 import { useNotesStore, DEFAULT_LIMIT, DEFAULT_OFFSET } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 import { computed, ref, watch } from 'vue';

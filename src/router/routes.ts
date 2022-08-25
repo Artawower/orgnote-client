@@ -9,6 +9,7 @@ export enum RouteNames {
   AuthPage = 'AuthPage',
   Settings = 'Settings',
   NotFound = 'NotFound',
+  UserGraph = 'UserGraph',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -37,6 +38,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'detail/:id',
       name: RouteNames.NoteDetail,
       component: () => import('pages/NoteDetail.vue'),
+    },
+    {
+      path: ':userId/graph',
+      name: RouteNames.UserGraph,
+      component: () => import('pages/UserGraph.vue'),
     },
     {
       path: ':userId?',

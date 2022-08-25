@@ -16,4 +16,5 @@ export default {
   'All articles': 'All articles',
   'My notes': 'My notes',
   search: 'search',
+  Graph: 'Graph',
 };

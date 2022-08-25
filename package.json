@@ -17,21 +17,22 @@
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
-    "quasar": "^2.7.2",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0",
     "@highlightjs/vue-plugin": "2.1.0",
     "@hsorby/vue3-katex": "0.6.0-rc.3",
+    "@quasar/extras": "^1.0.0",
     "axios": "0.27.2",
+    "force-graph": "^1.42.13",
     "highlight.js": "11.6.0",
     "katex": "0.15.3",
     "pinia": "2.0.17",
     "pinia-plugin-persistedstate": "1.6.3",
     "postcss": "8.4.14",
+    "quasar": "^2.7.2",
     "rollup": "2.77.2",
     "second-brain-parser": "0.0.27",
+    "vue": "^3.0.0",
     "vue-i18n": "9.2.0-beta.35",
+    "vue-router": "^4.0.0",
     "vue3-easy-data-table": "1.4.2"
   },
   "devDependencies": {

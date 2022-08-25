@@ -12,4 +12,5 @@ export default {
   'All articles': 'Все статьи',
   'My notes': 'Мои заметки',
   search: 'поиск',
+  Graph: 'Граф',
 };

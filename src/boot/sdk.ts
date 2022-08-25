@@ -1,7 +1,7 @@
 import { AxiosInstance } from 'axios';
 // TODO: master add type export form second brain parser
 import { Note } from 'second-brain-parser/dist/parser/models';
-import { NotesFilter, Paginated, Token, User } from 'src/models';
+import { NoteGraph, NotesFilter, Paginated, Token, User } from 'src/models';
 
 export type OAuthProvider = 'github' | 'google';
 
@@ -16,6 +16,8 @@ export interface Sdk {
   deleteToken: (arg0: string) => Promise<void>;
   verifyUser: () => Promise<{ data: User }>;
   getApiTokens: () => Promise<{ data: Token[] }>;
+  // TODO: add graph type
+  getGraph: () => Promise<{ data: NoteGraph }>;
 }
 
 export const buildSdk = (axios: AxiosInstance): Sdk => {
@@ -63,6 +65,10 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
     },
     async getApiTokens(): Promise<{ data: Token[] }> {
       const rspns = await axios.get<{ data: Token[] }>('/auth/api-tokens');
+      return rspns.data;
+    },
+    async getGraph(): Promise<{ data: NoteGraph }> {
+      const rspns = await axios.get('/notes/graph');
       return rspns.data;
     },
   };
