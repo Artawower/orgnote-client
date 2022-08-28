@@ -31,7 +31,7 @@ const getGrpahHeight = () =>
   );
 
 const buildGraph = () => {
-  if (!graph.value) {
+  if (!graph.value || !graph.value.nodes) {
     return;
   }
   const minCircleSize = 6;

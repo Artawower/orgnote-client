@@ -1,6 +1,7 @@
 @use 'sass:meta';
 @import '../../node_modules/katex/dist/katex.min.css';
 @import 'buttons';
+@import 'reset';
 
 body {
   --top-bar-height: #{$top-bar-height};
@@ -28,6 +29,10 @@ body.body--light {
       color: $dark;
     }
   }
+
+  .main-font-color {
+    color: $grey-9;
+  }
 }
 
 body.body--dark {
@@ -51,6 +56,10 @@ body.body--dark {
     b {
       color: $light;
     }
+  }
+
+  .main-font-color {
+    color: $grey-3;
   }
 }
 

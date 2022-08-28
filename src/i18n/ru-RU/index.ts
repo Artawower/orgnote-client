@@ -13,4 +13,6 @@ export default {
   'My notes': 'Мои заметки',
   search: 'поиск',
   Graph: 'Граф',
+  'If you think this is a mistake, please contact us':
+    'Если вы думаете что это ошибка, свяжитесь с нами.',
 };
