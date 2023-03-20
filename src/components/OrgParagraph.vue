@@ -1,23 +1,23 @@
 <template>
   <p class="org-paragraph">
-    <template v-for="(c, i) in content.children" v-bind:key="i">
+    <template v-for="(n, i) in node.children" v-bind:key="i">
       <!-- TODO: master  -->
       <!-- <template v-if="c.type === 'text'">{{ c.value }} </template> -->
       <!-- TODO: master  Optimize.-->
-      <org-link v-if="c.type === 'link'" :content="c"></org-link>
+      <org-link v-if="n.type === 'link'" :node="n"></org-link>
       <org-src-inline-code
-        v-else-if="c.type === 'verbatim'"
-        :content="c"
+        v-else-if="n.type === 'verbatim'"
+        :node="n"
       ></org-src-inline-code>
       <span v-else>
-        <content-renderer :content="c" :key="i"></content-renderer>
+        <content-renderer :node="n" :key="i"></content-renderer>
       </span>
     </template>
   </p>
 </template>
 
 <script setup lang="ts">
-import { Paragraph } from 'uniorg';
+import { OrgNode } from 'org-mode-ast';
 import { toRef, defineComponent } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
@@ -25,7 +25,7 @@ import OrgLink from './OrgLink.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 
 const props = defineProps<{
-  content: Paragraph;
+  node: OrgNode;
 }>();
 
 defineComponent({
@@ -34,7 +34,7 @@ defineComponent({
   OrgSrcInlineCode,
 });
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 </script>
 
 <style lang="scss" scoped>

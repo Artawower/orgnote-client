@@ -1,22 +1,17 @@
 <template>
   <s>
-    <content-renderer :content="content"></content-renderer>
+    <content-renderer :node="content"></content-renderer>
   </s>
 </template>
 
 <script setup lang="ts">
-import { defineComponent, toRef } from 'vue';
-import { StrikeThrough } from 'uniorg';
+import { OrgNode } from 'org-mode-ast';
+import { toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
-  content: StrikeThrough;
+  content: OrgNode;
 }>();
 
-defineComponent({
-  ContentRenderer,
-});
-
 const content = toRef(props, 'content');
-console.log('qeqweqewq: ', content.value);
 </script>

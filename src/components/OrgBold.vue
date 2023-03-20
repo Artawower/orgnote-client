@@ -1,24 +1,21 @@
 <template>
   <b>
     <content-renderer
-      v-for="(c, i) of content.children"
+      v-for="(c, i) of node.children"
       :key="i"
-      :content="c"
+      :node="c"
     ></content-renderer>
   </b>
 </template>
 
 <script lang="ts" setup>
+import { OrgNode } from 'org-mode-ast';
 import { toRef } from 'vue';
-import { Bold } from 'uniorg';
-
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
-  content: {
-    type: Bold;
-  };
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 </script>

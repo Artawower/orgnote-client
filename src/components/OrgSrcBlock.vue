@@ -1,7 +1,7 @@
 <template>
   <div class="src-code-wrapper">
     <copy-btn @copied="copySrc" />
-    <highlightjs :autodetect="true" :code="content.value" />
+    <highlightjs :autodetect="true" :code="node?.children.get(2)?.rawValue" />
   </div>
 </template>
 
@@ -12,19 +12,19 @@ import { toRef } from 'vue';
 import 'highlight.js/lib/common';
 import 'highlight.js/styles/stackoverflow-light.css';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
-import { OrgSrcBlock } from 'src/types/org';
 import { copyToClipboard } from 'quasar';
+import { OrgNode } from 'org-mode-ast';
 
 const highlightjs = hljsVuePlugin.component;
 
 const props = defineProps<{
-  content: OrgSrcBlock;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 
 const copySrc = () => {
-  copyToClipboard(content.value.value);
+  copyToClipboard(node.value.value);
 };
 </script>
 

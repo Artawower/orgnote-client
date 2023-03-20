@@ -22,6 +22,7 @@
               {{ user.email }}
             </div>
           </q-item>
+
           <q-item v-if="isMyNotePage" @click="goToMainPage" clickable>
             <q-item-section avatar>
               <q-icon name="feed" />
@@ -29,6 +30,7 @@
 
             <q-item-section>{{ $t('All articles') }}</q-item-section>
           </q-item>
+
           <q-item v-else clickable @click="goToMyNotes">
             <q-item-section avatar>
               <q-icon name="account_box" />
@@ -51,6 +53,14 @@
 
             <q-item-section>{{ $t('Graph') }}</q-item-section>
           </q-item>
+
+          <q-item v-if="user" :to="{ name: RouteNames.CreateNote }" clickable>
+            <q-item-section avatar>
+              <q-icon name="add" />
+            </q-item-section>
+            <q-item-section>{{ $t('Create note') }}</q-item-section>
+          </q-item>
+
           <q-item v-if="user" @click="logout" clickable>
             <q-item-section avatar>
               <q-icon name="logout" />

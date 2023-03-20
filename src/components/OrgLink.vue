@@ -1,62 +1,29 @@
 <template>
-  <a
-    v-if="!['file', 'id'].find((i) => i === content.linkType)"
-    :href="content.rawLink"
-    target="_blank"
-  >
-    <content-renderer
-      v-for="(c, i) in content.children"
-      :content="c"
-      :key="i"
-    ></content-renderer>
-  </a>
-  <router-link v-else-if="content.linkType === 'id'" :to="idDetailPage">
-    <q-tooltip class="preview-tooltip" :delay="500">
-      <note-preview :id="content.path"></note-preview>
-    </q-tooltip>
-    <content-renderer
-      v-for="(c, i) in content.children"
-      :content="c"
-      :key="i"
-    ></content-renderer>
-  </router-link>
-  <!-- TODO: master  Add attribute reading for handle width setting-->
-  <a
-    v-else-if="content.linkType === 'file' && !isInternalFileLink"
-    :href="buildMediaFilePath(content.path)"
-    target="_blank"
-  >
-    <img class="org-image" :src="buildMediaFilePath(content.path)" />
+  <a :href="linkAddress" target="_blank">
+    <content-renderer :node="linkNameNode" />
   </a>
 </template>
 
 <script setup lang="ts">
-import { Link } from 'uniorg';
 import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
-import NotePreview from './NotePreview.vue';
-import { buildMediaFilePath } from 'src/tools/extract-file';
-import { RouteNames } from 'src/router/routes';
-
-const fileLinkRegexp = /^file:(.*)$/;
+import { OrgNode } from 'org-mode-ast';
 
 defineComponent({
   ContentRenderer,
 });
 
 const props = defineProps<{
-  content: Link;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 
-const isInternalFileLink = fileLinkRegexp.test(content.value.rawLink);
+const linkAddress = node.value.children.get(1).children.get(2).value;
 
-const idDetailPage = {
-  name: RouteNames.NoteDetail,
-  params: { id: content.value.path },
-};
+const linkNameNode = node.value.children.get(2);
+
 </script>
 
 <style lang="scss">

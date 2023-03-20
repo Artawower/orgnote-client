@@ -18,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     chooseAuthProvider(provider: OAuthProvider): void {
-      this.proider = provider;
+      this.provider = provider;
     },
     async authViaGithub() {
       try {

@@ -1,17 +1,18 @@
 <template>
   <component :is="parentListTag">
-    <li v-for="(c, i) in content.children" v-bind:key="i">
+    <li v-for="(c, i) in node.children" v-bind:key="i">
       <content-renderer
-        v-for="(nc, j) in c.children"
-        v-bind:key="j"
-        :content="nc"
+        :node="c.title"
+      ></content-renderer>
+      <content-renderer
+        :node="c.section"
       ></content-renderer>
     </li>
   </component>
 </template>
 
 <script setup lang="ts">
-import { List } from 'uniorg';
+import { OrgNode } from 'org-mode-ast';
 import { defineComponent, toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
@@ -20,9 +21,10 @@ defineComponent({
 });
 
 const props = defineProps<{
-  content: List;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
-const parentListTag = props.content.listType === 'ordered' ? 'ol' : 'ul';
+const node = toRef(props, 'node');
+// const parentListTag = props.node.listType === 'ordered' ? 'ol' : 'ul';
+const parentListTag = 'ul';
 </script>

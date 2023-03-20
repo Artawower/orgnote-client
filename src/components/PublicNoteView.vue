@@ -38,8 +38,7 @@
     <q-separator />
 
     <q-card-actions>
-      <q-btn flat round icon="event" />
-      <q-btn flat> 7:30PM </q-btn>
+      <q-btn flat round icon="share" />
       <q-btn @click="openNoteDetail(note)" flat color="primary">
         {{ $t('read') }}
       </q-btn>

@@ -1,13 +1,12 @@
-<template>{{ content.value }}</template>
+<template>{{ node.value }}</template>
 
 <script setup lang="ts">
-import { Text } from 'uniorg';
+import { OrgNode } from 'org-mode-ast';
 import { toRef } from 'vue';
 
 const props = defineProps<{
-  content: Text;
-  headlineFolding?: boolean;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 </script>

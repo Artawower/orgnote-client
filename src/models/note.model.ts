@@ -1,8 +1,18 @@
-import { Note as OriginalNote } from 'second-brain-parser/dist/parser/models';
+import { MetaInfo, OrgNode } from 'org-mode-ast';
 import { User } from './user.model';
 
-export interface Note extends OriginalNote {
+export interface BaseNote {
+  id: string;
   author?: User;
+  meta: MetaInfo;
+}
+
+export interface Note extends BaseNote {
+  content: OrgNode;
+}
+
+export interface RawNote extends BaseNote {
+  content: string;
 }
 
 export interface NotesFilter {

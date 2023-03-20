@@ -19,4 +19,5 @@ export default {
   Graph: 'Graph',
   'If you think this is a mistake, please contact us':
     'If you think this is a mistake, please contact us',
+  'Create note': 'Create note',
 };

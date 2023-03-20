@@ -1,14 +1,14 @@
 <template>
-  <div class="latex" v-katex:display="content.value"></div>
+  <div class="latex" v-katex:display="node.value"></div>
 </template>
 
 <script setup lang="ts">
-import { ExportBlock } from 'uniorg';
+import { OrgNode } from 'org-mode-ast';
 import { toRef } from 'vue';
 
 const props = defineProps<{
-  content: ExportBlock;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 </script>

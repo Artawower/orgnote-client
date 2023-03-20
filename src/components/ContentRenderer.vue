@@ -1,34 +1,20 @@
 <template>
-  <template v-if="content?.type === 'text'">
-    <component :is="typedComponents['text']" :content="content"></component>
-  </template>
-  <template v-else-if="content?.type === 'link'">
-    <component :is="typedComponents['link']" :content="content"></component>
+  <template v-if="node.value">
+    <component :is="typedComponents[node.type]" :node="node"> </component>
   </template>
   <template v-else>
-    <!-- TODO: master  revise types -->
-    <template v-for="c of children" :key="c.position">
-      <component :is="typedComponents[c.type]" :content="c"> </component>
+    <template v-for="n of children" :key="n.position">
+      <component :is="typedComponents[n.type]" :node="n"> </component>
     </template>
   </template>
 </template>
 
 <script setup lang="ts">
-import type {
-  ElementType,
-  GreaterElementType,
-  Link,
-  ObjectType,
-  OrgData,
-  OrgNode,
-} from 'uniorg';
-import { computed, defineComponent, toRefs } from 'vue';
+import { defineComponent, toRefs } from 'vue';
 import type { Component } from 'vue';
 
-import ContentRenderer from './ContentRenderer.vue';
 import OrgHeadline from './OrgHeadline.vue';
 import OrgQuote from './OrgQuote.vue';
-import OrgParagraph from './OrgParagraph.vue';
 import OrgText from './OrgText.vue';
 import OrgPlainList from './OrgPlainList.vue';
 import OrgLink from './OrgLink.vue';
@@ -37,57 +23,41 @@ import OrgStrikeThrough from './OrgStrikeThrough.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 import OrgTable from './OrgTable.vue';
-import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
-import OrgKeyword from './OrgKeyword.vue';
 import OrgBold from './OrgBold.vue';
 import OrgExportBlock from './OrgExportBlock.vue';
-import { useViewStore } from 'src/stores/view';
+import { NodeType, OrgNode } from 'org-mode-ast';
 
-const typedComponents: { [key in OrgNode['type']]?: Component } = {
-  section: ContentRenderer,
-  headline: OrgHeadline,
-  'quote-block': OrgQuote,
-  paragraph: OrgParagraph,
-  text: OrgText,
-  'plain-list': OrgPlainList,
-  link: OrgLink,
-  'src-block': OrgSrcBlock,
-  'strike-through': OrgStrikeThrough,
-  'fixed-width': OrgSrcBlockResult,
-  verbatim: OrgSrcInlineCode,
-  table: OrgTable,
-  bold: OrgBold,
-  'export-block': OrgExportBlock,
-  'latex-environment': OrgExportBlock,
+const typedComponents: { [key in NodeType]?: Component } = {
+  [NodeType.Headline]: OrgHeadline,
+  [NodeType.QuoteBlock]: OrgQuote,
+  [NodeType.Text]: OrgText,
+  [NodeType.List]: OrgPlainList,
+  [NodeType.Link]: OrgLink,
+  [NodeType.SrcBlock]: OrgSrcBlock,
+  [NodeType.Crossed]: OrgStrikeThrough,
+  [NodeType.FixedWidth]: OrgSrcBlockResult,
+  [NodeType.Verbatim]: OrgSrcInlineCode,
+  [NodeType.Table]: OrgTable,
+  [NodeType.Bold]: OrgBold,
+  [NodeType.ExportBlock]: OrgExportBlock,
+  [NodeType.LatexEnvironment]: OrgExportBlock,
 };
 
 const props = defineProps<{
-  content: OrgData | GreaterElementType | ElementType | Link | ObjectType;
+  node: OrgNode;
   isPrivate?: boolean;
 }>();
 
 if (props.isPrivate) {
-  typedComponents['property-drawer'] = OrgPropertyDrawer;
-  typedComponents['keyword'] = OrgKeyword;
+  // typedComponents['property-drawer'] = OrgPropertyDrawer;
+  // typedComponents['keyword'] = OrgKeyword;
 }
+
+const { children, value } = toRefs(props.node);
+
+console.log(props.node.toJson());
 
 defineComponent(typedComponents);
 
-const { content } = toRefs(props);
-
-const viewStore = useViewStore();
-
-// TODO: master remove any casting. Proof of concept approach.
-(content.value as unknown as { children: OrgNode[] })?.children?.forEach(
-  (c) => {
-    viewStore.registerNestedNode(c);
-    if (c?.type === 'headline') {
-      viewStore.registerHeadline(c);
-    }
-  }
-);
-
-const children = computed(() =>
-  (content.value as any)?.children?.filter((v) => viewStore.isNodeVisible(v))
-);
+// const { node } = toRefs(props);
 </script>

@@ -1,23 +1,24 @@
 <template>
-  <code class="inline-code" :class="darkMode ? 'dark' : 'light'">{{
-    content.value
-  }}</code>
+  <code class="inline-code" :class="darkMode ? 'dark' : 'light'">
+    <content-renderer v-for="n, i of node.children" :node="n" :key="i" />
+  </code>
 </template>
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { Verbatim } from 'uniorg';
+import ContentRenderer from '@/components/ContentRenderer.vue';
 import { toRef } from 'vue';
+import { OrgNode } from 'org-mode-ast';
 
 const props = defineProps<{
-  content: Verbatim;
+  node: OrgNode;
 }>();
 
 const $q = useQuasar();
 
 const darkMode = toRef($q.dark, 'isActive');
 
-const content = toRef(props, 'content');
+const node = toRef(props, 'node');
 </script>
 
 <style lang="scss">

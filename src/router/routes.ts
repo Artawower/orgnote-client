@@ -10,6 +10,8 @@ export enum RouteNames {
   Settings = 'Settings',
   NotFound = 'NotFound',
   UserGraph = 'UserGraph',
+  CreateNote = 'CreateNote',
+  EditNote = 'EditNote',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -33,6 +35,16 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
         }
         return true;
       },
+    },
+    {
+      path: 'create-note',
+      name: RouteNames.CreateNote,
+      component: () => import('pages/NoteEditor.vue'),
+    },
+    {
+      path: 'edit-note/:id',
+      name: RouteNames.EditNote,
+      component: () => import('pages/NoteEditor.vue'),
     },
     {
       path: 'detail/:id',
