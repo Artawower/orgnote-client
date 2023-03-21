@@ -57,7 +57,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       component: () => import('pages/UserGraph.vue'),
     },
     {
-      path: ':userId?',
+      path: ':userId',
       name: RouteNames.UserNotes,
       component: () => import('pages/IndexPage.vue'),
     },
@@ -67,7 +67,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       component: () => import('pages/IndexPage.vue'),
     },
     {
-      path: '/:catchAll(.*)+',
+      path: '/:catchAll(.*)*',
       name: RouteNames.NotFound,
       component: () => import('pages/ErrorNotFound.vue'),
     },
