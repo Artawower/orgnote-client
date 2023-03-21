@@ -1,16 +1,16 @@
 <template>
-  <template v-if="node.value">
+  <template v-if="node?.value">
     <component :is="typedComponents[node.type]" :node="node"> </component>
   </template>
   <template v-else>
-    <template v-for="n of children" :key="n.position">
+    <template v-for="n of node?.children" :key="n.position">
       <component :is="typedComponents[n.type]" :node="n"> </component>
     </template>
   </template>
 </template>
 
 <script setup lang="ts">
-import { defineComponent, toRefs } from 'vue';
+import { defineComponent, toRef } from 'vue';
 import type { Component } from 'vue';
 
 import OrgHeadline from './OrgHeadline.vue';
@@ -37,6 +37,7 @@ const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.Crossed]: OrgStrikeThrough,
   [NodeType.FixedWidth]: OrgSrcBlockResult,
   [NodeType.Verbatim]: OrgSrcInlineCode,
+  [NodeType.InlineCode]: OrgSrcInlineCode,
   [NodeType.Table]: OrgTable,
   [NodeType.Bold]: OrgBold,
   [NodeType.ExportBlock]: OrgExportBlock,
@@ -53,10 +54,11 @@ if (props.isPrivate) {
   // typedComponents['keyword'] = OrgKeyword;
 }
 
-const { children, value } = toRefs(props.node);
+if (props.node?.is(NodeType.Root)) {
+  console.log(props.node.toJson());
+}
 
-console.log(props.node.toJson());
-
+const node = toRef(props, 'node');
 defineComponent(typedComponents);
 
 // const { node } = toRefs(props);
