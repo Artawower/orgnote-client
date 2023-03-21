@@ -26,7 +26,7 @@
     "force-graph": "^1.42.13",
     "highlight.js": "11.6.0",
     "katex": "0.15.3",
-    "org-mode-ast": "0.0.14",
+    "org-mode-ast": "0.0.18",
     "pinia": "2.0.17",
     "pinia-plugin-persistedstate": "1.6.3",
     "postcss": "8.4.14",
