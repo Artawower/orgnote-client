@@ -21,15 +21,20 @@ const setFiltersFromQuery = () => {
   });
 };
 
-setFiltersFromQuery();
+const reloadNotes = () => {
+  setFiltersFromQuery();
+  notesState.loadNotes();
+};
+
+reloadNotes();
 
 watch(
   () => route.params.userId as string,
   () => {
-    setFiltersFromQuery();
-    notesState.loadNotes();
+    if (notesState.filters?.userId == route.params.userId) {
+      return;
+    }
+    reloadNotes();
   }
 );
-
-notesState.loadNotes();
 </script>

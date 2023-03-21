@@ -43,6 +43,9 @@ if (!selectedNote?.value && route.params.id) {
 watch(
   () => route.params.id,
   (id) => {
+    if (!id) {
+      return;
+    }
     noteStore.selectNoteById(id as string);
   }
 );
