@@ -16,7 +16,7 @@ const props = defineProps<{
 const notesStore = useNotesStore();
 
 const note = computed(() => {
-  const { index, offset } = props;
+  const { index } = props;
 
   const note = notesStore.notes[index];
   return note;

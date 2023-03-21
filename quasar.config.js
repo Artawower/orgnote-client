@@ -115,7 +115,7 @@ module.exports = configure(function (ctx) {
     devServer: {
       // https: true
       host: process.env.HOST || 'localhost',
-      port: '3000',
+      port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 9090,
       open: true, // opens browser window automatically
       proxy: {
         '/v1': {

@@ -6,7 +6,7 @@ interface GraphState {
   // TODO: add correct type for graph
   graph: NoteGraph;
   loading: boolean;
-  error?: any;
+  error?: Error;
 }
 
 export const useGraphStore = defineStore('graph', {

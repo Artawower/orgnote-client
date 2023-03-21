@@ -27,7 +27,7 @@
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
             <public-note-view
-              :note="note"
+              :note="note as any"
               :show-author="!isMyNotePage"
             ></public-note-view>
           </div>
@@ -42,9 +42,7 @@ import {
   computed,
   defineComponent,
   onMounted,
-  onUpdated,
   ref,
-  watch,
 } from 'vue';
 
 import PublicNoteView from './PublicNoteView.vue';
@@ -75,7 +73,7 @@ const getRoundedOffset = (from: number) =>
   Math.ceil(from / notesState.filters.limit) * notesState.filters.limit;
 
 const firstTimeScrollInit = ref(false);
-const getPagexNotes = (from: number, _: number) => {
+const getPagexNotes = (from: number) => {
   firstTimeScrollInit.value = true;
 
   const offset = getRoundedOffset(from);
@@ -91,19 +89,12 @@ const getPagexNotes = (from: number, _: number) => {
 
 const route = useRoute();
 const initialOffset = route.query.offset;
-const scrollByOffset = () => {
-  virtualScrollRef.value.scrollTo(initialOffset);
-};
 
 onMounted(() => {
   if (!initialOffset) {
     return;
   }
-  // FIXME: DIRTY HACK, scrollTo doesn't work after onUpdate hook.
-  // Investigate and fix.
-  setTimeout(() => {
-    scrollByOffset();
-  }, 200);
+  virtualScrollRef.value.scrollTo(initialOffset);
 });
 </script>
 

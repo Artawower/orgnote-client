@@ -78,10 +78,6 @@ const openNoteDetail = (note: Note) => {
 const viewStore = useViewStore();
 const isTile = computed(() => viewStore.tile);
 
-const searchByTag = (tag: string) => {
-  // TODO: implement search here
-};
-
 const settingsStore = useSettingsStore();
 
 const { showUserProfiles } = toRefs(settingsStore);

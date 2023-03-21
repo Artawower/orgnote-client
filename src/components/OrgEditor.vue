@@ -12,13 +12,13 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 <script lang="ts" setup>
 import Quill, { TextChangeHandler } from 'quill';
 import 'src/../node_modules/quill/dist/quill.core.css';
-import { headingSize, prettifyEditorText, textSize } from 'src/tools';
+import { headingSize, textSize } from 'src/tools';
 import { OrgNode, parse } from 'org-mode-ast';
 
 import hljs from 'highlight.js';
 import 'highlight.js/styles/stackoverflow-light.css';
 
-import { onMounted, ref } from 'vue';
+import { onMounted } from 'vue';
 
 const allFontSizes = [...headingSize, ...textSize];
 
@@ -51,7 +51,7 @@ const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
   }
   const text = quill.getText();
   const parsed = parse(text);
-  prettifyEditorText(quill, parsed);
+    // prettifyEditorText(quill, parsed);
   editorValueChanged(parsed);
 };
 

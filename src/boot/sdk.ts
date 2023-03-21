@@ -52,7 +52,7 @@ export const buildSdk = (axios: AxiosInstance): Sdk => {
       return rspns.data;
     },
     logout: async (provider: OAuthProvider) => {
-      await axios.get(`/auth/logout`, {
+      await axios.get('/auth/logout', {
         params: {
           provider,
         },

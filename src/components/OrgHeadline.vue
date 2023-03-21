@@ -23,15 +23,12 @@
 
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';
-import { useViewStore } from 'src/stores/view';
 import { toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
   node: OrgNode;
 }>();
-
-const viewStore = useViewStore();
 
 const node = toRef(props, 'node');
 
