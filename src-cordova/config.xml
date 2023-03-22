@@ -2,11 +2,15 @@
 <widget id="org.cordova.quasar.app" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Second brain</name>
     <description>Second brain client for eponymous service</description>
-    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
-        Apache Cordova Team
-    </author>
+    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">Apache Cordova Team</author>
     <content src="index.html" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
+    <preference name="OverrideUserAgent" value="Mozilla/5.0 Google" />
+    <allow-navigation href="*" />
+    <allow-navigation href="http://*" />
     <allow-navigation href="about:*" />
+    <preference name="hostname" value="localhost" />
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
+    <preference name="CordovaWebViewEngine" value="CDVUIWebViewEngine" />
 </widget>
