@@ -42,7 +42,7 @@
       <q-btn @click="openNoteDetail(note)" flat color="primary">
         {{ $t('read') }}
       </q-btn>
-      <tag-list :tags="note?.meta?.tags" />
+      <tag-list :tags="note?.meta?.fileTags" />
     </q-card-actions>
   </q-card>
 </template>

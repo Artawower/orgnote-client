@@ -64,19 +64,19 @@ export interface HandlersHttpResponseArrayModelsAPITokenAny {
 /**
  * 
  * @export
- * @interface HandlersHttpResponseArrayModelsNoteModelsPagination
+ * @interface HandlersHttpResponseArrayModelsPublicNoteModelsPagination
  */
-export interface HandlersHttpResponseArrayModelsNoteModelsPagination {
+export interface HandlersHttpResponseArrayModelsPublicNoteModelsPagination {
     /**
      * 
-     * @type {Array<ModelsNote>}
-     * @memberof HandlersHttpResponseArrayModelsNoteModelsPagination
+     * @type {Array<ModelsPublicNote>}
+     * @memberof HandlersHttpResponseArrayModelsPublicNoteModelsPagination
      */
-    'data'?: Array<ModelsNote>;
+    'data'?: Array<ModelsPublicNote>;
     /**
      * 
      * @type {ModelsPagination}
-     * @memberof HandlersHttpResponseArrayModelsNoteModelsPagination
+     * @memberof HandlersHttpResponseArrayModelsPublicNoteModelsPagination
      */
     'meta'?: ModelsPagination;
 }
@@ -140,25 +140,6 @@ export interface HandlersHttpResponseModelsAPITokenAny {
 /**
  * 
  * @export
- * @interface HandlersHttpResponseModelsNoteAny
- */
-export interface HandlersHttpResponseModelsNoteAny {
-    /**
-     * 
-     * @type {ModelsNote}
-     * @memberof HandlersHttpResponseModelsNoteAny
-     */
-    'data'?: ModelsNote;
-    /**
-     * 
-     * @type {object}
-     * @memberof HandlersHttpResponseModelsNoteAny
-     */
-    'meta'?: object;
-}
-/**
- * 
- * @export
  * @interface HandlersHttpResponseModelsNoteGraphAny
  */
 export interface HandlersHttpResponseModelsNoteGraphAny {
@@ -172,6 +153,25 @@ export interface HandlersHttpResponseModelsNoteGraphAny {
      * 
      * @type {object}
      * @memberof HandlersHttpResponseModelsNoteGraphAny
+     */
+    'meta'?: object;
+}
+/**
+ * 
+ * @export
+ * @interface HandlersHttpResponseModelsPublicNoteAny
+ */
+export interface HandlersHttpResponseModelsPublicNoteAny {
+    /**
+     * 
+     * @type {ModelsPublicNote}
+     * @memberof HandlersHttpResponseModelsPublicNoteAny
+     */
+    'data'?: ModelsPublicNote;
+    /**
+     * 
+     * @type {object}
+     * @memberof HandlersHttpResponseModelsPublicNoteAny
      */
     'meta'?: object;
 }
@@ -502,6 +502,37 @@ export interface ModelsPagination {
      * @memberof ModelsPagination
      */
     'total'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface ModelsPublicNote
+ */
+export interface ModelsPublicNote {
+    /**
+     * 
+     * @type {ModelsPublicUser}
+     * @memberof ModelsPublicNote
+     */
+    'author'?: ModelsPublicUser;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsPublicNote
+     */
+    'content'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsPublicNote
+     */
+    'id'?: string;
+    /**
+     * 
+     * @type {ModelsNoteMeta}
+     * @memberof ModelsPublicNote
+     */
+    'meta'?: ModelsNoteMeta;
 }
 /**
  * 
@@ -1242,7 +1273,7 @@ export const NotesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseArrayModelsNoteModelsPagination>> {
+        async notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesGet(limit, offset, userId, searchText, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1263,7 +1294,7 @@ export const NotesApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesIdGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsNoteAny>> {
+        async notesIdGet(id: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsPublicNoteAny>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesIdGet(id, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1308,7 +1339,7 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: any): AxiosPromise<HandlersHttpResponseArrayModelsNoteModelsPagination> {
+        notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: any): AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination> {
             return localVarFp.notesGet(limit, offset, userId, searchText, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1327,7 +1358,7 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesIdGet(id: string, options?: any): AxiosPromise<HandlersHttpResponseModelsNoteAny> {
+        notesIdGet(id: string, options?: any): AxiosPromise<HandlersHttpResponseModelsPublicNoteAny> {
             return localVarFp.notesIdGet(id, options).then((request) => request(axios, basePath));
         },
         /**

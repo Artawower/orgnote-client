@@ -1,7 +1,7 @@
 import { OrgNode } from 'org-mode-ast';
-import { ModelsNote } from 'src/generated/api';
+import { ModelsPublicNote } from 'src/generated/api';
 
-export interface Note extends Omit<ModelsNote, 'content'> {
+export interface Note extends Omit<ModelsPublicNote, 'content'> {
   content: OrgNode;
 }
 

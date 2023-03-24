@@ -6,7 +6,6 @@
     ></author-info>
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
-    <!-- TODO: add condition for render preview img depend on user settings-->
     <q-img
       v-if="selectedNote?.meta.previewImg"
       class="pointer rounded-borders"
@@ -14,7 +13,7 @@
     />
     <content-renderer :node="selectedNote?.content"></content-renderer>
     <note-footer>
-      <tag-list :tags="selectedNote?.meta?.tags" />
+      <tag-list :tags="selectedNote?.meta?.fileTags" />
     </note-footer>
   </q-page>
 </template>
