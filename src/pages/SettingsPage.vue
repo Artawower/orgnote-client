@@ -49,15 +49,15 @@
 import { toRefs } from 'vue';
 import { useSettingsStore } from 'src/stores/settings';
 import CopyBtn from 'src/components/CopyBtn.vue';
-import { Token } from 'src/models';
 import { copyToClipboard } from 'quasar';
+import { ModelsAPIToken } from 'src/generated/api';
 const settingsStore = useSettingsStore();
 
 settingsStore.getApiTokens();
 
 const { tokens } = toRefs(settingsStore);
 
-const copyToken = (token: Token) => {
+const copyToken = (token: ModelsAPIToken) => {
   copyToClipboard(token.token);
 };
 </script>

@@ -2,11 +2,11 @@ import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/boot/sdk';
-import { User } from 'src/models';
+import { ModelsPublicUser } from 'src/generated/api';
 import { useSettingsStore } from './settings';
 
 interface AuthState {
-  user?: User;
+  user?: ModelsPublicUser;
   token?: string;
   provider?: OAuthProvider;
 }
@@ -23,13 +23,14 @@ export const useAuthStore = defineStore('auth', {
     },
     async authViaGithub() {
       try {
-        const rspns = await sdk.login(this.provider);
+        const rspns = (await sdk.auth.authGithubLoginGet(this.provider)).data;
+        console.log('✎: [line 27][auth.ts] rspns: ', JSON.stringify(rspns));
         window.location.replace(rspns.data.redirectUrl);
       } catch (e) {
         // TODO: master  add error handler
       }
     },
-    authUser(user: User, token: string) {
+    authUser(user: ModelsPublicUser, token: string) {
       this.user = user;
       this.token = token;
     },
@@ -38,14 +39,16 @@ export const useAuthStore = defineStore('auth', {
       settingsStore.reset();
       this.user = null;
       this.token = null;
-      sdk.logout(this.provider);
+      await sdk.auth.authLogoutGet();
+      // sdk.logout(this.provider);
     },
     async verifyUser() {
       if (!this.token) {
         return;
       }
       try {
-        const { data } = await sdk.verifyUser();
+        const { data } = (await sdk.auth.authVerifyGet()).data;
+        // const { data } = await sdk.verifyUser();
         this.user = data;
       } catch (e: unknown) {
         if ((e as AxiosError).response.status === 400) {

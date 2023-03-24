@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { Note, NotesFilter } from 'src/models';
 import { RouteNames } from 'src/router/routes';
+import { mapRawNoteToNote } from 'src/tools';
 
 interface NotesState {
   notes: Note[];
@@ -27,12 +28,18 @@ export const useNotesStore = defineStore('notes', {
   actions: {
     async loadNotes() {
       try {
-        const rspns = await sdk.getNotes(this.filters);
-        this.notes = rspns.data;
-        this.notesCount = rspns.meta.total;
+        const rspns = await sdk.notes.notesGet(
+          this.filters.limit,
+          this.filters.offset,
+          this.filters.userId,
+          this.filters.searchText
+        );
+        // getNotes(this.filters);
+        this.notes = rspns.data.data.map((n) => mapRawNoteToNote(n));
+        this.notesCount = rspns.data.meta.total;
         this.setFilters({
-          limit: rspns.meta.limit,
-          offset: rspns.meta.offset,
+          limit: rspns.data.meta.limit,
+          offset: rspns.data.meta.offset,
         });
       } catch (e) {
         // TODO: master real error handling
@@ -46,9 +53,17 @@ export const useNotesStore = defineStore('notes', {
       }
       this.setFilters({ offset });
       try {
-        const rspns = await sdk.getNotes(this.filters);
-        this.notes = [...this.notes, ...rspns.data];
-        this.notesCount = rspns.meta.total;
+        const rspns = await sdk.notes.notesGet(
+          this.filters.limit,
+          this.filters.offset,
+          this.filters.userId,
+          this.filters.searchText
+        );
+        this.notes = [
+          ...this.notes,
+          ...rspns.data.data.map((n) => mapRawNoteToNote(n)),
+        ];
+        this.notesCount = rspns.data.meta.total;
       } catch (e) {}
     },
     selectNote(note: Note) {
@@ -67,7 +82,9 @@ export const useNotesStore = defineStore('notes', {
       }
 
       try {
-        this.selectedNote = await sdk.getNote(noteId);
+        this.selectedNote = mapRawNoteToNote(
+          (await sdk.notes.notesIdGet(noteId)).data.data
+        );
       } catch (e: unknown) {
         if ((e as AxiosError).response?.status === 404) {
           this.router.push({ name: RouteNames.NotFound });

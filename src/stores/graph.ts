@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { NoteGraph } from 'src/models';
+import { ModelsNoteGraph } from 'src/generated/api';
 
 interface GraphState {
   // TODO: add correct type for graph
-  graph: NoteGraph;
+  graph: ModelsNoteGraph;
   loading: boolean;
   error?: Error;
 }
@@ -18,7 +18,7 @@ export const useGraphStore = defineStore('graph', {
   actions: {
     async loadGraph() {
       try {
-        this.graph = (await sdk.getGraph()).data;
+        this.graph = (await sdk.notes.notesGraphGet()).data.data;
       } catch (e) {
         // TODO: handle error
         console.warn(e);

@@ -1,7 +1,11 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
-import { buildSdk } from './sdk';
 import { useAuthStore } from 'src/stores/auth';
+import {
+  AuthApiFactory,
+  NotesApiFactory,
+  TagsApiFactory,
+} from 'src/generated/api';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -25,7 +29,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const sdk = buildSdk(api);
+const auth = AuthApiFactory(null, '', api);
+const notes = NotesApiFactory(null, '', api);
+const tags = TagsApiFactory(null, '', api);
+
+const sdk = {
+  auth,
+  notes,
+  tags,
+};
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

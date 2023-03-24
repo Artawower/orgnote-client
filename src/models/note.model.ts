@@ -1,18 +1,8 @@
-import { MetaInfo, OrgNode } from 'org-mode-ast';
-import { User } from './user.model';
+import { OrgNode } from 'org-mode-ast';
+import { ModelsNote } from 'src/generated/api';
 
-export interface BaseNote {
-  id: string;
-  author?: User;
-  meta: MetaInfo;
-}
-
-export interface Note extends BaseNote {
+export interface Note extends Omit<ModelsNote, 'content'> {
   content: OrgNode;
-}
-
-export interface RawNote extends BaseNote {
-  content: string;
 }
 
 export interface NotesFilter {

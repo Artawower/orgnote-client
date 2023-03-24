@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { Token } from 'src/models';
+import { ModelsAPIToken } from 'src/generated/api';
 
 interface SettingsState {
-  tokens?: Token[];
+  tokens?: ModelsAPIToken[];
   showUserProfiles?: boolean;
 }
 
@@ -17,20 +17,20 @@ export const useSettingsStore = defineStore('settings', {
   }),
   getters: {},
   actions: {
-    setTokens(tokens: Token[]) {
+    setTokens(tokens: ModelsAPIToken[]) {
       this.tokens = tokens;
     },
     async createNewToken() {
-      const { data } = await sdk.createToken();
+      const { data } = (await sdk.auth.authTokenPost()).data;
       this.tokens = [...this.tokens, data];
     },
     reset() {
       this.tokens = [];
     },
-    async removeToken(token: Token) {
+    async removeToken(token: ModelsAPIToken) {
       this.tokens = this.tokens.filter((t) => t.id !== token.id);
       try {
-        await sdk.deleteToken(token.id);
+        await sdk.auth.authTokenDelete(token.id);
       } catch (e) {
         // TODO: master  real error handling
         this.tokens = [...this.tokens, token];
@@ -38,7 +38,7 @@ export const useSettingsStore = defineStore('settings', {
     },
     async getApiTokens() {
       try {
-        this.tokens = (await sdk.getApiTokens()).data;
+        this.tokens = (await sdk.auth.authApiTokensGet()).data.data;
       } catch (e) {
         // TODO: master  real error handling
       }
