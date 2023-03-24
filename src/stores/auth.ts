@@ -23,8 +23,7 @@ export const useAuthStore = defineStore('auth', {
     },
     async authViaGithub() {
       try {
-        const rspns = (await sdk.auth.authGithubLoginGet(this.provider)).data;
-        console.log('✎: [line 27][auth.ts] rspns: ', JSON.stringify(rspns));
+        const rspns = (await sdk.auth.authProviderLoginGet(this.provider)).data;
         window.location.replace(rspns.data.redirectUrl);
       } catch (e) {
         // TODO: master  add error handler
@@ -40,7 +39,6 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
       await sdk.auth.authLogoutGet();
-      // sdk.logout(this.provider);
     },
     async verifyUser() {
       if (!this.token) {
@@ -48,7 +46,6 @@ export const useAuthStore = defineStore('auth', {
       }
       try {
         const { data } = (await sdk.auth.authVerifyGet()).data;
-        // const { data } = await sdk.verifyUser();
         this.user = data;
       } catch (e: unknown) {
         if ((e as AxiosError).response.status === 400) {

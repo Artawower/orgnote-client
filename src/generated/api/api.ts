@@ -616,12 +616,46 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @summary Callback for github OAuth
+         * @summary Logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authGithubCallbackGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/github/callback`;
+        authLogoutGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/auth/logout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Callback for OAuth
+         * @param {string} provider provider
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authProviderCallbackGet: async (provider: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'provider' is not null or undefined
+            assertParamExists('authProviderCallbackGet', 'provider', provider)
+            const localVarPath = `/auth/{provider}/callback`
+                .replace(`{${"provider"}}`, encodeURIComponent(String(provider)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -646,49 +680,16 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * Entrypoint for login
-         * @summary Login
+         * @summary OAuth Login
          * @param {string} provider provider
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authGithubLoginGet: async (provider: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authProviderLoginGet: async (provider: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'provider' is not null or undefined
-            assertParamExists('authGithubLoginGet', 'provider', provider)
-            const localVarPath = `/auth/github/login`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (provider !== undefined) {
-                localVarQueryParameter['provider'] = provider;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
-         * @summary Logout
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authLogoutGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/logout`;
+            assertParamExists('authProviderLoginGet', 'provider', provider)
+            const localVarPath = `/auth/{provider}/login`
+                .replace(`{${"provider"}}`, encodeURIComponent(String(provider)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -823,33 +824,34 @@ export const AuthApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Callback for github OAuth
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async authGithubCallbackGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authGithubCallbackGet(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * Entrypoint for login
-         * @summary Login
-         * @param {string} provider provider
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async authGithubLoginGet(provider: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authGithubLoginGet(provider, options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
-         * 
          * @summary Logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         async authLogoutGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.authLogoutGet(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Callback for OAuth
+         * @param {string} provider provider
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authProviderCallbackGet(provider: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authProviderCallbackGet(provider, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Entrypoint for login
+         * @summary OAuth Login
+         * @param {string} provider provider
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authProviderLoginGet(provider: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authProviderLoginGet(provider, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -903,31 +905,32 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @summary Callback for github OAuth
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authGithubCallbackGet(options?: any): AxiosPromise<object> {
-            return localVarFp.authGithubCallbackGet(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Entrypoint for login
-         * @summary Login
-         * @param {string} provider provider
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authGithubLoginGet(provider: string, options?: any): AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny> {
-            return localVarFp.authGithubLoginGet(provider, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
          * @summary Logout
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         authLogoutGet(options?: any): AxiosPromise<object> {
             return localVarFp.authLogoutGet(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Callback for OAuth
+         * @param {string} provider provider
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authProviderCallbackGet(provider: string, options?: any): AxiosPromise<object> {
+            return localVarFp.authProviderCallbackGet(provider, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Entrypoint for login
+         * @summary OAuth Login
+         * @param {string} provider provider
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authProviderLoginGet(provider: string, options?: any): AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny> {
+            return localVarFp.authProviderLoginGet(provider, options).then((request) => request(axios, basePath));
         },
         /**
          * Delete API token
@@ -979,29 +982,6 @@ export class AuthApi extends BaseAPI {
 
     /**
      * 
-     * @summary Callback for github OAuth
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AuthApi
-     */
-    public authGithubCallbackGet(options?: AxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authGithubCallbackGet(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Entrypoint for login
-     * @summary Login
-     * @param {string} provider provider
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AuthApi
-     */
-    public authGithubLoginGet(provider: string, options?: AxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authGithubLoginGet(provider, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
      * @summary Logout
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -1009,6 +989,30 @@ export class AuthApi extends BaseAPI {
      */
     public authLogoutGet(options?: AxiosRequestConfig) {
         return AuthApiFp(this.configuration).authLogoutGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Callback for OAuth
+     * @param {string} provider provider
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public authProviderCallbackGet(provider: string, options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authProviderCallbackGet(provider, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Entrypoint for login
+     * @summary OAuth Login
+     * @param {string} provider provider
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public authProviderLoginGet(provider: string, options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authProviderLoginGet(provider, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
