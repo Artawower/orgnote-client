@@ -5,6 +5,7 @@ import { ModelsAPIToken } from 'src/generated/api';
 interface SettingsState {
   tokens?: ModelsAPIToken[];
   showUserProfiles?: boolean;
+  locale?: string;
 }
 
 // for correct type
@@ -14,9 +15,13 @@ export const useSettingsStore = defineStore('settings', {
   state: (): SettingsState => ({
     tokens: [],
     showUserProfiles: true,
+    locale: 'en-US',
   }),
   getters: {},
   actions: {
+    setLocale(locale: string) {
+      this.locale = locale;
+    },
     setTokens(tokens: ModelsAPIToken[]) {
       this.tokens = tokens;
     },

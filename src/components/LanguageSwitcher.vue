@@ -13,9 +13,20 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue';
+import { useSettingsStore } from 'src/stores/settings';
 import { useI18n } from 'vue-i18n';
 
 const { locale } = useI18n({ useScope: 'global' });
+
+const settingsStore = useSettingsStore();
+
+watch(
+  () => locale.value,
+  (locale) => {
+    settingsStore.setLocale(locale as string);
+  }
+);
 
 const localeOptions = [
   { value: 'en-US', label: 'English' },
