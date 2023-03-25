@@ -14,6 +14,7 @@ export enum RouteNames {
   EditNote = 'EditNote',
   ApiSettings = 'ApiSettings',
   ViewSettings = 'ViewSettings',
+  Extensions = 'Extensions',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -25,6 +26,18 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'auth/login',
       name: RouteNames.AuthPage,
       component: () => import('pages/AuthPage.vue'),
+    },
+    {
+      path: 'extensions',
+      name: RouteNames.Extensions,
+      component: () => import('pages/ExtensionsPage.vue'),
+      beforeEnter: () => {
+        const authStore = useAuthStore();
+        if (!authStore.user) {
+          return { name: RouteNames.NoteList };
+        }
+        return true;
+      },
     },
     {
       path: 'settings',

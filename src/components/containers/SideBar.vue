@@ -70,13 +70,23 @@
         </q-item-section>
       </q-item>
 
-      <q-item @click="goToSettings" clickable>
+      <q-item :to="{ name: RouteNames.Settings }" clickable>
         <q-item-section avatar>
           <q-icon name="settings" />
         </q-item-section>
 
         <q-item-section class="text-capitalize">
           {{ $t('settings') }}
+        </q-item-section>
+      </q-item>
+
+      <q-item :to="{ name: RouteNames.Extensions }" clickable>
+        <q-item-section avatar>
+          <q-icon name="extension" />
+        </q-item-section>
+
+        <q-item-section class="text-capitalize">
+          {{ $t('extensions') }}
         </q-item-section>
       </q-item>
     </template>
@@ -136,7 +146,7 @@ const authStore = useAuthStore();
 const user = toRef(props, 'user');
 
 const logout = () => authStore.logout();
-const goToSettings = () => router.push({ name: RouteNames.Settings });
+
 const goToMyNotes = () => {
   router.push({
     name: RouteNames.UserNotes,
