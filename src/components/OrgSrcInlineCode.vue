@@ -1,6 +1,6 @@
 <template>
   <code class="inline-code" :class="darkMode ? 'dark' : 'light'">
-    <content-renderer v-for="n, i of node.children" :node="n" :key="i" />
+    <content-renderer v-for="(n, i) of node.children" :node="n" :key="i" />
   </code>
 </template>
 
@@ -35,7 +35,7 @@ const node = toRef(props, 'node');
 
   &.light {
     background-color: var(--inline-code-background);
-    color: var(--inline-code-font-color)
+    color: var(--inline-code-font-color);
   }
 }
 </style>

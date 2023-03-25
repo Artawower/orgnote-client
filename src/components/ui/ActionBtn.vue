@@ -15,12 +15,12 @@ const emits = defineEmits<{
   (e: 'click'): void;
 }>();
 
- const props = defineProps<{
-   icon: string;
-   activeIcon?: string;
- }>()
+const props = defineProps<{
+  icon: string;
+  activeIcon?: string;
+}>();
 
- const { icon, activeIcon } = toRefs(props);
+const { icon, activeIcon } = toRefs(props);
 
 let fired: Ref<boolean> = ref(false);
 

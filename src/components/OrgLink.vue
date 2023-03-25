@@ -23,7 +23,6 @@ const node = toRef(props, 'node');
 const linkAddress = node.value.children.get(1).children.get(2).value;
 
 const linkNameNode = node.value.children.get(2);
-
 </script>
 
 <style lang="scss">

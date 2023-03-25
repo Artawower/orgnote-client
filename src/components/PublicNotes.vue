@@ -38,12 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  ref,
-} from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 
 import PublicNoteView from './PublicNoteView.vue';
 import { useViewStore } from 'src/stores/view';

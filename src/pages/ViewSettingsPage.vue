@@ -8,7 +8,6 @@
   </div>
 </template>
 
-
 <script lang="ts" setup>
 import { useSettingsStore } from 'src/stores/settings';
 const settingsStore = useSettingsStore();

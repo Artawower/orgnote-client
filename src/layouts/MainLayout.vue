@@ -20,14 +20,12 @@ import { useAuthStore } from 'src/stores/auth';
 import LayoutHeader from 'src/components/LayoutHeader.vue';
 import SideBar from 'src/components/containers/SideBar.vue';
 
-
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 authStore.verifyUser();
-
 </script>
 
 <style lang="scss">

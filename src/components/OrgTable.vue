@@ -48,7 +48,6 @@ const items: Item[] = props.node.children
       }, {});
     return item;
   });
-
 </script>
 
 <style lang="scss">

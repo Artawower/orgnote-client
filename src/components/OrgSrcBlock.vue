@@ -1,6 +1,6 @@
 <template>
   <div class="src-code-wrapper">
-    <action-btn @click="copySrc" icon="content_copy" active-icon="done"/>
+    <action-btn @click="copySrc" icon="content_copy" active-icon="done" />
     <highlightjs :autodetect="true" :code="node?.children.get(2)?.rawValue" />
   </div>
 </template>

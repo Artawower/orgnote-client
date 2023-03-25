@@ -51,7 +51,7 @@ const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
   }
   const text = quill.getText();
   const parsed = parse(text);
-    // prettifyEditorText(quill, parsed);
+  // prettifyEditorText(quill, parsed);
   editorValueChanged(parsed);
 };
 

@@ -1,12 +1,12 @@
 <template>
   <div class="row">
-        <!-- <public-note-view v-if="previewMode" :note="note"></public-note-view> -->
-        <!-- <org-editor
+    <!-- <public-note-view v-if="previewMode" :note="note"></public-note-view> -->
+    <!-- <org-editor
       v-else
       v-model="orgData"
       @cursorPositionChanged="setCursorPosition"
     ></org-editor> -->
-        <!-- <editor-modeline
+    <!-- <editor-modeline
       @previewModeChanged="changePreviewMode"
       :previewMode="previewMode"
       :cursorPosition="cursorPosition"
@@ -19,11 +19,11 @@
 // import { useRoute } from 'vue-router';
 // import { OrgData } from 'uniorg';
 // import { parse } from 'org-mode-ast'
-// 
+//
 // import OrgEditor from 'src/components/OrgEditor.vue';
 // import EditorModeline from 'src/components/EditorModeline.vue';
 // import PublicNoteView from 'src/components/PublicNoteView.vue';
-// 
+//
 // const route = useRoute();
 // const isEditMode = !!route.params.id;
 // TODO: master load the editable note
@@ -36,7 +36,7 @@
 //   }
 // };
 // const orgData = ref<OrgData>(null);
-// 
+//
 // const cursorPosition = ref<number>(0);
 // const setCursorPosition = (pos: number) => {
 //   cursorPosition.value = pos;

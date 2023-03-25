@@ -22,7 +22,6 @@ const userInfo: User = {
   id: route.query.id as string,
 };
 
-
 authStore.authUser(userInfo, route.query.token as string);
 
 const router = useRouter();
