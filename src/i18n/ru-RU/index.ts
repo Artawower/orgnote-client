@@ -18,4 +18,6 @@ export default {
   'Create note': 'Создать заметку',
   settings: 'настройки',
   'pick language': 'выберите язык',
+  visual: 'визуализация',
+  'API tokens': 'API токены',
 };

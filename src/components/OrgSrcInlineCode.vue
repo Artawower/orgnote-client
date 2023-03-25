@@ -34,8 +34,8 @@ const node = toRef(props, 'node');
   }
 
   &.light {
-    background-color: rgba(175, 184, 193, 0.2);
-    color: rgb(36, 41, 47);
+    background-color: var(--inline-code-background);
+    color: var(--inline-code-font-color)
   }
 }
 </style>

@@ -43,8 +43,8 @@ const searchByTag = (tag: string) => {
   }
 
   &:hover {
-    background-color: $grey-9;
-    color: $grey-3 !important;
+    background-color: var(--tag-hover-background);
+    color: var(--tag-hover-color) !important;
   }
 
   &.dark:hover {

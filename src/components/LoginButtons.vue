@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md q-gutter-sm login-button">
+  <div class="q-pa-md q-gutter-sm login-button flex flex-center">
     <q-btn @click="authGithub" round flat outline>
       <div class="github-btn" :class="{ dark: $q.dark.isActive }"></div>
     </q-btn>
@@ -18,12 +18,13 @@ const authGithub = () => {
 
 <style lang="scss">
 .github-btn {
-  width: 24px;
-  height: 24px;
+  width: var(--social-btn-size);
+  height: var(--social-btn-size);
   mask-image: url('/icons/github.svg');
   mask-size: cover;
-  background: $grey-9;
+  background: var(--social-btn-background);
 
+  /* TODO: master delete dark theme */
   &.dark {
     background: $grey-3;
   }

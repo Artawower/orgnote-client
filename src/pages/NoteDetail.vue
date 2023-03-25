@@ -52,8 +52,8 @@ watch(
 
 <style lang="scss" scoped>
 .note-description {
-  color: $smog;
+  color: var(--description-font-color);
   /* TODO: master  choose font for cursive*/
-  font-style: italic;
+  font-style: var(--description-font-style);
 }
 </style>

@@ -94,7 +94,7 @@ watch(
   svg,
   canvas {
     width: 100%;
-    height: calc(100vh - #{$top-bar-height}) !important;
+    height: calc(100vh - var(--top-bar-height)) !important;
   }
 }
 </style>

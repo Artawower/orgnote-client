@@ -100,6 +100,7 @@ const isTile = computed(() => viewStore.tile);
 const toggleTile = () => {
   viewStore.toggleTile();
 };
+// TODO: master delete
 const toggleCollapse = () => {
   viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
 };
@@ -144,7 +145,7 @@ watch(
 
 <style lang="scss">
 .dark-header {
-  background: $dark-smog !important;
+  background: var(--secondary-background) !important;
 }
 
 .tile-mode-btn {

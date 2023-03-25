@@ -82,7 +82,7 @@
     <template v-else>
       <q-item clickable class="column justify-center">
         <q-avatar size="160px" class="q-mx-auto">
-          <img src="icons/brain.png" />
+          <img src="/icons/brain.png" />
         </q-avatar>
         <div class="text-center q-mt-lg">
           {{ $t('Log in for creating your first note') }}

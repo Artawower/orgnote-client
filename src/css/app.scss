@@ -4,9 +4,6 @@
 @import 'buttons';
 @import 'reset';
 
-body {
-  --top-bar-height: #{$top-bar-height};
-}
 .pointer {
   cursor: pointer;
 }
@@ -15,7 +12,7 @@ body.body--light {
   @import 'highlight.js/styles/stackoverflow-light';
 
   .themed-text {
-    color: $dark;
+    color: var(--main-theme-color);
   }
 
   .note-view {
@@ -27,12 +24,12 @@ body.body--light {
     h5,
     strong,
     b {
-      color: $dark;
+      color: var(--main-theme-color);
     }
   }
 
   .main-font-color {
-    color: $grey-9;
+    color: var(--main-font-color);
   }
 }
 
@@ -65,19 +62,21 @@ body.body--dark {
 }
 
 .rft {
-  font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-family: var(--description-font-family);
   -webkit-font-smoothing: antialiased;
-  font-size: 16px;
+  font-smooth: antialiased;
+  font-size: var(--description-font-size);
 }
 
 .note-view {
   .org-paragraph,
   li,
   ul {
-    font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
-    font-size: 20px;
-    line-height: 32px;
+    font-family: var(--ul-font-family);
+    font-size: var(--ul-font-size);
+    line-height: var(--ul-line-height);
     -webkit-font-smoothing: antialiased;
+    font-smooth: antialiased;
   }
   pre {
     font-size: 16px;
@@ -91,6 +90,6 @@ body.body--dark {
   h4,
   h5,
   h6 {
-    font-weight: 500;
+    font-weight: var(--headline-font-weight);
   }
 }

@@ -22,4 +22,6 @@ export default {
   'Create note': 'Create note',
   settings: 'settings',
   'pick language': 'pick language',
+  visual: 'visual',
+  'API tokens': 'API tokens',
 };

@@ -1,12 +1,12 @@
 <template>
   <div class="src-code-wrapper">
-    <copy-btn @copied="copySrc" />
+    <action-btn @click="copySrc" icon="content_copy" active-icon="done"/>
     <highlightjs :autodetect="true" :code="node?.children.get(2)?.rawValue" />
   </div>
 </template>
 
 <script setup lang="ts">
-import CopyBtn from './CopyBtn.vue';
+import ActionBtn from './ui/ActionBtn.vue';
 import { toRef } from 'vue';
 
 import 'highlight.js/lib/common';
@@ -24,7 +24,7 @@ const props = defineProps<{
 const node = toRef(props, 'node');
 
 const copySrc = () => {
-  copyToClipboard(node.value.value);
+  copyToClipboard(node.value.children.get(2).rawValue);
 };
 </script>
 
@@ -32,7 +32,7 @@ const copySrc = () => {
 .src-code-wrapper {
   position: relative;
 
-  .copy-btn {
+  .action-btn {
     position: absolute;
     right: 10px;
     top: 8px;
@@ -40,7 +40,7 @@ const copySrc = () => {
   }
 
   &:hover {
-    .copy-btn {
+    .action-btn {
       display: flex;
     }
   }

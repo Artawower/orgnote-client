@@ -12,6 +12,8 @@ export enum RouteNames {
   UserGraph = 'UserGraph',
   CreateNote = 'CreateNote',
   EditNote = 'EditNote',
+  ApiSettings = 'ApiSettings',
+  ViewSettings = 'ViewSettings',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -35,6 +37,18 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
         }
         return true;
       },
+      children: [
+        {
+          path: 'api',
+          name: RouteNames.ApiSettings,
+          component: () => import('pages/ApiSettingsPage.vue'),
+        },
+        {
+          path: '',
+          name: RouteNames.ViewSettings,
+          component: () => import('pages/ViewSettingsPage.vue'),
+        },
+      ],
     },
     {
       path: 'create-note',

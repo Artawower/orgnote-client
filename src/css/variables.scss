@@ -1,3 +1,63 @@
+@import 'colors';
+
 :root {
   --content-max-width: 767px;
+
+  // Buttons
+  --flat-btn-size: 34px;
+  --flat-btn-border: 1px solid #{$smog};
+  --flat-btn-border-radius: 6px;
+  --flat-btn-box-shadow: none;
+
+  // Main colors
+  --main-theme-color: #{$dark};
+  --main-font-color: #{$grey-9};
+
+  --main-background: #{$white};
+  --secondary-background: #{$dark-smog};
+
+  --headline-font-weight: 500;
+
+  // Ul
+  --ul-font-size: 20px;
+  --ul-line-height: 32px;
+  --ul-font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  // Description
+  --description-font-family: charter, Georgia, Cambria, 'Times New Roman', Times,
+    serif;
+  --description-font-size: 16px;
+  --description-font-style: italic;
+  --description-font-color: #{$smog};
+
+  // Bars
+  --top-bar-height: 50px;
+
+  // Modeline
+  --modeline-background: #{$white};
+  --modeline-font-color: #{$grey-9};
+
+  // Buttons
+  --action-btn-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --action-btn-border: 1px solid;
+  --action-btn-border-color: #{$smog};
+  --action-btn-padding: 6px;
+  --action-btn-radius: 6px;
+  --action-btn-fire-color: #{$grass};
+  --action-btn-fire-border-color: #{$grass};
+  --action-btn-size: 20px;
+  --action-btn-color: #{$night};
+
+  --social-btn-size: 24px;
+  --social-btn-background: #{$grey-9};
+
+  // Tags
+  --tag-hover-background: #{$grey-9};
+  --tag-hover-color: #{$grey-3};
+
+  // Formatters
+  // Inline code
+  --inline-code-background: rgba(175, 184, 193, 0.2);
+  --inline-code-font-color: rgb(36, 41, 47);
 }
