@@ -75,7 +75,9 @@
           <q-icon name="settings" />
         </q-item-section>
 
-        <q-item-section class="text-capitalize"> {{ $t('settings') }} </q-item-section>
+        <q-item-section class="text-capitalize">
+          {{ $t('settings') }}
+        </q-item-section>
       </q-item>
     </template>
 
@@ -84,12 +86,14 @@
         <q-avatar size="160px" class="q-mx-auto">
           <img src="/icons/brain.png" />
         </q-avatar>
-        <div class="text-center q-mt-lg">
-          {{ $t('Log in for creating your first note') }}
-        </div>
         <br />
         <div class="text-center subtitle text-weight-light text-italic">
           <random-quote />
+        </div>
+      </q-item>
+      <q-item>
+        <div class="text-center q-mt-lg full-width">
+          {{ $t('login to create your first note') }}
         </div>
       </q-item>
       <login-buttons />

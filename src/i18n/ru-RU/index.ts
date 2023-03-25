@@ -20,4 +20,6 @@ export default {
   'pick language': 'выберите язык',
   visual: 'визуализация',
   'API tokens': 'API токены',
+  'login to create your first note':
+    'войдите чтобы создать свою первую заметку',
 };

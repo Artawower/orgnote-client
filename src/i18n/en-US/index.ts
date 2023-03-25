@@ -24,4 +24,5 @@ export default {
   'pick language': 'pick language',
   visual: 'visual',
   'API tokens': 'API tokens',
+  'login to create your first note': 'login to create your first note',
 };
