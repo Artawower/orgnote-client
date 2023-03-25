@@ -43,6 +43,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'settings',
       name: RouteNames.Settings,
       component: () => import('pages/SettingsPage.vue'),
+      redirect: { name: RouteNames.ViewSettings },
       beforeEnter: () => {
         const authStore = useAuthStore();
         if (!authStore.user) {
@@ -52,14 +53,14 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       },
       children: [
         {
-          path: 'api',
-          name: RouteNames.ApiSettings,
-          component: () => import('pages/ApiSettingsPage.vue'),
-        },
-        {
           path: '',
           name: RouteNames.ViewSettings,
           component: () => import('pages/ViewSettingsPage.vue'),
+        },
+        {
+          path: 'api',
+          name: RouteNames.ApiSettings,
+          component: () => import('pages/ApiSettingsPage.vue'),
         },
       ],
     },
