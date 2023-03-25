@@ -12,6 +12,13 @@
           :label="$t('visual')"
         />
         <q-route-tab
+          icon="keyboard"
+          exact
+          :to="{ name: RouteNames.Keybindings }"
+          :label="$t('keybindings')"
+        >
+        </q-route-tab>
+        <q-route-tab
           icon="generating_tokens"
           :to="{ name: RouteNames.ApiSettings }"
           exact

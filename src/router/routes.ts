@@ -15,6 +15,7 @@ export enum RouteNames {
   ApiSettings = 'ApiSettings',
   ViewSettings = 'ViewSettings',
   Extensions = 'Extensions',
+  Keybindings = 'Keybindings',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -61,6 +62,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
           path: 'api',
           name: RouteNames.ApiSettings,
           component: () => import('pages/ApiSettingsPage.vue'),
+        },
+        {
+          path: 'keybindings',
+          name: RouteNames.Keybindings,
+          component: () => import('pages/KeybindingsPage.vue'),
         },
       ],
     },

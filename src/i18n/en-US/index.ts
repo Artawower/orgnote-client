@@ -26,4 +26,5 @@ export default {
   'API tokens': 'API tokens',
   'login to create your first note': 'login to create your first note',
   extensions: 'extensions',
+  keybindings: 'keybindings',
 };

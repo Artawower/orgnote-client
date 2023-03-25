@@ -23,4 +23,5 @@ export default {
   'login to create your first note':
     'войдите чтобы создать свою первую заметку',
   extensions: 'расширения',
+  keybindings: 'горячие клавиши',
 };
