@@ -20,4 +20,6 @@ export default {
   'If you think this is a mistake, please contact us':
     'If you think this is a mistake, please contact us',
   'Create note': 'Create note',
+  settings: 'settings',
+  'pick language': 'pick language',
 };

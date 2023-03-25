@@ -16,4 +16,6 @@ export default {
   'If you think this is a mistake, please contact us':
     'Если вы думаете что это ошибка, свяжитесь с нами.',
   'Create note': 'Создать заметку',
+  settings: 'настройки',
+  'pick language': 'выберите язык',
 };

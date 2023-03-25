@@ -65,7 +65,9 @@
           <q-icon name="logout" />
         </q-item-section>
 
-        <q-item-section> {{ $t('logout') }} </q-item-section>
+        <q-item-section class="text-capitalize">
+          {{ $t('logout') }}
+        </q-item-section>
       </q-item>
 
       <q-item @click="goToSettings" clickable>
@@ -73,7 +75,7 @@
           <q-icon name="settings" />
         </q-item-section>
 
-        <q-item-section> Settings </q-item-section>
+        <q-item-section class="text-capitalize"> {{ $t('settings') }} </q-item-section>
       </q-item>
     </template>
 

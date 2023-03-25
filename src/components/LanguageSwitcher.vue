@@ -3,7 +3,7 @@
     class="language-select"
     v-model="locale"
     :options="localeOptions"
-    label="Pick language"
+    :label="$t('pick language')"
     dense
     borderless
     emit-value
