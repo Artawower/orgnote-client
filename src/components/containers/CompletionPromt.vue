@@ -13,7 +13,7 @@
           v-for="(c, i) in filteredCandidates"
           :key="c.command"
           class="flex row completion-item"
-          :active="i === selectedCandidateIndex"
+          :active="i === selectedIndex"
         >
           <div class="col-4">
             <q-icon v-if="c.icon" :name="c.icon" class="q-px-md"></q-icon>
@@ -34,7 +34,7 @@ import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
 const completionStore = useCompletionStore();
 
-const { filteredCandidates, opened, filter, selectedCandidateIndex } =
+const { filteredCandidates, opened, filter, selectedIndex } =
   storeToRefs(completionStore);
 </script>
 

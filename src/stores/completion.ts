@@ -75,9 +75,11 @@ export const useCompletionStore = defineStore('completion', () => {
     });
   });
 
+  const selectedIndex = computed(() => selectedCandidateIndex.value ?? 0);
+
   const selectedCandidate = computed(() => {
     if (selectedCandidateIndex.value === null) {
-      return null;
+      return filteredCandidates.value?.[0];
     }
     return filteredCandidates.value[selectedCandidateIndex.value];
   });
@@ -97,5 +99,6 @@ export const useCompletionStore = defineStore('completion', () => {
     nextCandidate,
     previousCandidate,
     selectedCandidate,
+    selectedIndex,
   };
 });
