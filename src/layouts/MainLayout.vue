@@ -11,6 +11,8 @@
     <q-page-container class="content">
       <router-view />
     </q-page-container>
+    <mini-buffer />
+    <completion-prompt />
   </q-layout>
 </template>
 
@@ -19,7 +21,9 @@ import { computed, ref } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
 import LayoutHeader from 'src/components/LayoutHeader.vue';
 import SideBar from 'src/components/containers/SideBar.vue';
-import { useKeybindings } from 'src/hooks';
+import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
+import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
+import { useCommandExecutor, useKeybindings } from 'src/hooks';
 
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
@@ -28,15 +32,13 @@ const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 authStore.verifyUser();
 
-const { registerKeybindingCommandHandlers, registerKeybindings } =
-  useKeybindings();
+const { registerKeybindingCommands } = useKeybindings();
 
-registerKeybindingCommandHandlers({
-  toggleLeftBar: () => toggleLeftDrawer(),
-});
+useCommandExecutor().register();
 
-registerKeybindings([
+registerKeybindingCommands([
   {
+    handler: () => toggleLeftDrawer(),
     command: 'toggleLeftBar',
     keySequence: 'o p',
     description: 'Toggle left sidebar',

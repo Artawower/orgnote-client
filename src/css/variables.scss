@@ -33,9 +33,13 @@
   // Bars
   --top-bar-height: 50px;
 
-  // Modeline
-  --modeline-background: #{$white};
-  --modeline-font-color: #{$grey-9};
+  // MiniBuffer
+  --mini-buffer-background: #{$white};
+  --mini-buffer-font-color: #{$grey-9};
+  --mini-buffer-border-top: 1px solid #{$grey-9};
+
+  --completion-item-min-height: 24px;
+  --completion-item-padding: 4px 16px;
 
   // Buttons
   --action-btn-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),

@@ -8,16 +8,13 @@ type GroupedKeybindings = { [key: string]: Keybinding[] };
 
 interface KeybindingsState {
   keybindings: { [key: string]: Keybinding };
-  keybindingRegistered: Keybinding;
-  keybindingCommand: string;
-  keybindingRemoved: string;
+  commands: { [key: string]: Keybinding };
 }
 
 export const useKeybindingStore = defineStore('keybindings', {
   state: (): KeybindingsState => ({
     keybindings: {},
-    keybindingRegistered: null,
-    keybindingCommand: null,
+    commands: {},
   }),
   getters: {
     groupedKeybindings(): GroupedKeybindings {
@@ -30,6 +27,9 @@ export const useKeybindingStore = defineStore('keybindings', {
         },
         {}
       );
+    },
+    keybindingList(): Keybinding[] {
+      return Object.values(this.keybindings);
     },
   },
   actions: {
@@ -46,17 +46,17 @@ export const useKeybindingStore = defineStore('keybindings', {
         keybinding.group = DEFAULT_KEYBINDING_GROUP;
       }
       this.deleteKeybinding(keybinding.command);
-      this.keybindings[keybinding.command] = keybinding;
-      this.keybindingRegistered = keybinding;
+      this.keybindings = {
+        ...this.keybindings,
+        [keybinding.command]: keybinding,
+      };
     },
     deleteKeybinding(command: string) {
-      if (this.keybindings[command]) {
-        delete this.keybindings[command];
-        this.keybindingRemoved = command;
+      const clonedBindings = { ...this.keybindings };
+      if (clonedBindings[command]) {
+        delete clonedBindings[command];
       }
-    },
-    emitKeybindingCommand(command: string) {
-      this.keybindingCommand = command;
+      this.keybindings = clonedBindings;
     },
   },
   persist: true,

@@ -5,4 +5,10 @@ export interface Keybinding {
   description?: string;
   command?: string;
   group?: string;
+  allowOnInput?: boolean;
+  ignorePrompt?: boolean;
+}
+
+export interface KeybindingCommand extends Keybinding {
+  handler: () => void;
 }
