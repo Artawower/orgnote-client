@@ -10,8 +10,8 @@ import { toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
-  content: OrgNode;
+  node: OrgNode;
 }>();
 
-const content = toRef(props, 'content');
+const content = toRef(props, 'node');
 </script>
