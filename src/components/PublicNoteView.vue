@@ -10,13 +10,13 @@
     >
       <img
         v-if="isTile && note?.meta.previewImg"
-        :src="buildMediaFilePath(note.meta.previewImg)"
+        :src="buildMediaFilePath(previewImage)"
       />
       <q-card-section class="flex col-3 flex-start" v-else>
         <q-img
-          v-if="note?.meta.previewImg"
+          v-if="previewImage"
           class="pointer rounded-borders"
-          :src="buildMediaFilePath(note.meta.previewImg)"
+          :src="buildMediaFilePath(previewImage)"
         />
         <!-- TODO: add fine markup for notes without preview-->
         <div v-else class="mock-picture pointer rounded-borders"></div>
@@ -81,6 +81,8 @@ const isTile = computed(() => viewStore.tile);
 const settingsStore = useSettingsStore();
 
 const { showUserProfiles } = toRefs(settingsStore);
+
+const previewImage = note.value.meta.images?.[0];
 </script>
 
 <style lang="scss">

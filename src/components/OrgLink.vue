@@ -1,14 +1,26 @@
 <template>
   <a :href="linkAddress" target="_blank">
-    <content-renderer :node="linkNameNode" />
+    <img
+      class="image-preview"
+      v-if="linkType === 'image'"
+      :src="buildMediaFilePath(linkAddress)"
+    />
+    <template v-else>
+      <content-renderer v-if="linkNameNode" :node="linkNameNode" />
+      <template v-else>
+        {{ linkAddress }}
+      </template>
+    </template>
   </a>
 </template>
 
 <script setup lang="ts">
 import { defineComponent, toRef } from 'vue';
 
-import ContentRenderer from './ContentRenderer.vue';
 import { OrgNode } from 'org-mode-ast';
+
+import ContentRenderer from './ContentRenderer.vue';
+import { buildMediaFilePath } from 'src/tools';
 
 defineComponent({
   ContentRenderer,
@@ -20,9 +32,11 @@ const props = defineProps<{
 
 const node = toRef(props, 'node');
 
-const linkAddress = node.value.children.get(1).children.get(2).value;
+const linkAddress = node.value.children.get(1).children.get(1).value;
+const linkNameNode =
+  node.value.children.length === 4 ? node.value.children.get(2) : null;
 
-const linkNameNode = node.value.children.get(2);
+const linkType = node.value.meta?.linkType;
 </script>
 
 <style lang="scss">
@@ -34,5 +48,9 @@ const linkNameNode = node.value.children.get(2);
 
 .preview-tooltip {
   padding: 0;
+}
+
+.image-preview {
+  max-width: 100%;
 }
 </style>
