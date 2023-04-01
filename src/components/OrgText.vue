@@ -1,4 +1,8 @@
-<template>{{ node.value }}</template>
+<template>
+  <p>
+    {{ node.value }}
+  </p>
+</template>
 
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';

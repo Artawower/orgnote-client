@@ -3,9 +3,14 @@
     <component
       :is="'h' + (+node.level + 1)"
       class="headline"
+      :class="{ folded }"
       @click="toggleContent"
     >
-      <content-renderer :node="node.title"></content-renderer>
+      <q-icon
+        v-if="node.section?.children?.length"
+        :name="folded ? 'arrow_right' : 'arrow_drop_down'"
+      ></q-icon>
+      <content-renderer :node="node.title"> </content-renderer>
       <div v-if="node.meta?.tags?.length" class="tag-footer">
         <q-badge
           v-for="tag in node.meta.tags"
@@ -17,13 +22,15 @@
         />
       </div>
     </component>
-    <content-renderer :node="node.section"></content-renderer>
+    <div class="section-content">
+      <content-renderer v-if="!folded" :node="node.section"></content-renderer>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';
-import { toRef } from 'vue';
+import { ref, toRef } from 'vue';
 import ContentRenderer from './ContentRenderer.vue';
 
 const props = defineProps<{
@@ -32,8 +39,10 @@ const props = defineProps<{
 
 const node = toRef(props, 'node');
 
+const folded = ref(false);
+
 const toggleContent = () => {
-  console.log('toggle here');
+  folded.value = !folded.value;
 };
 </script>
 
@@ -49,6 +58,8 @@ const toggleContent = () => {
   }
 }
 .headline {
+  @include flexify(row, start, start);
+
   cursor: pointer;
 }
 </style>
