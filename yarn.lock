@@ -4393,10 +4393,10 @@ ora@^5.4.1:
     strip-ansi "^6.0.0"
     wcwidth "^1.0.1"
 
-org-mode-ast@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.1.0.tgz#2df5a438f5537934785268e8b031484c53cfc411"
-  integrity sha512-b0KzgYAWh8+jnQMrzUTrktvzuuf5yoefarlsfx8nyHKgygoPeGFmBVEXdx/LNw11k0uXNCUCMDyMfBCeMboQxA==
+org-mode-ast@0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.1.2.tgz#faecc5b78e02d59368bfaefdcc3614bf95170077"
+  integrity sha512-6ZSZRu7eQxccaavhhJOWQ0qsqT7CHygvOuiVJX3VOM0Xgku06zq+BiU62c2pCR0Qax5WLYlLFbbJV7RBcRxdiA==
 
 os-tmpdir@~1.0.2:
   version "1.0.2"
