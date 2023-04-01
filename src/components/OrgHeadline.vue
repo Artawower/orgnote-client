@@ -61,5 +61,9 @@ const toggleContent = () => {
   @include flexify(row, start, start);
 
   cursor: pointer;
+
+  p {
+    margin: 0;
+  }
 }
 </style>
