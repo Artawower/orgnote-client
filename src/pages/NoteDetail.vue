@@ -11,7 +11,9 @@
       class="pointer rounded-borders"
       :src="buildMediaFilePath((selectedNote.meta as any).previewImg)"
     />
-    <content-renderer :node="selectedNote?.content"></content-renderer>
+    <div class="note-content">
+      <content-renderer :node="selectedNote?.content"></content-renderer>
+    </div>
     <note-footer>
       <tag-list :tags="selectedNote?.meta?.fileTags" />
     </note-footer>
