@@ -8,6 +8,7 @@
     >
       <q-icon
         v-if="node.section?.children?.length"
+        size="sm"
         :name="folded ? 'arrow_right' : 'arrow_drop_down'"
       ></q-icon>
       <content-renderer :node="node.title"> </content-renderer>
@@ -22,8 +23,8 @@
         />
       </div>
     </component>
-    <div class="section-content">
-      <content-renderer v-if="!folded" :node="node.section"></content-renderer>
+    <div v-show="!folded"  class="section-content">
+      <content-renderer :node="node.section"></content-renderer>
     </div>
   </div>
 </template>
@@ -58,12 +59,16 @@ const toggleContent = () => {
   }
 }
 .headline {
-  @include flexify(row, start, start);
+  @include flexify(row, start, center);
 
   cursor: pointer;
 
   p {
     margin: 0;
   }
+}
+
+.section-content {
+  margin-left: 20px;
 }
 </style>
