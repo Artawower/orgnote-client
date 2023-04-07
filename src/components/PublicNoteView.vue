@@ -9,7 +9,7 @@
       :class="{ 'note-card-content': isTile, column: isTile }"
     >
       <img
-        v-if="isTile && note?.meta.previewImg"
+        v-if="isTile && previewImage"
         :src="buildMediaFilePath(previewImage)"
       />
       <q-card-section class="flex col-3 flex-start" v-else>
