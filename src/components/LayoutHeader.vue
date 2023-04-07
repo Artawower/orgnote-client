@@ -47,19 +47,13 @@
         size="2rem"
         class="tile-mode-btn cursor-pointer"
       />
-      <q-icon
-        @click="toggleDarkMode"
-        name="brightness_4"
-        size="2rem"
-        class="dark-mode-btn cursor-pointer"
-      />
-      <q-icon
+      <!-- <q-icon
         v-if="isNoteDetailPage"
         @click="toggleCollapse"
         size="2rem"
         :name="isExpanded ? 'unfold_less' : 'unfold_more'"
         class="cursor-pointer fold-btn"
-      ></q-icon>
+      ></q-icon> -->
     </q-toolbar>
   </q-header>
 </template>
@@ -78,10 +72,6 @@ const emits = defineEmits<{
   (e: 'leftPanelToggled'): void;
 }>();
 
-const toggleDarkMode = () => {
-  $q.dark.set(!$q.dark.isActive);
-};
-
 const router = useRouter();
 const isNoteDetailPage = computed(
   () => router.currentRoute.value.name === RouteNames.NoteDetail
@@ -94,17 +84,17 @@ const isMyNotePage = computed(
 );
 
 const viewStore = useViewStore();
-const isExpanded = computed(() => viewStore.someNodeVisible);
+// const isExpanded = computed(() => viewStore.someNodeVisible);
 const isTile = computed(() => viewStore.tile);
 
 const toggleTile = () => {
   viewStore.toggleTile();
 };
-// TODO: master delete
-const toggleCollapse = () => {
-  viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
-};
-
+// TODO: master change
+// const toggleCollapse = () => {
+//   viewStore.setCollapseStatusForAllNodes(!isExpanded.value);
+// };
+//
 const route = useRoute();
 
 const search = ref<string>((route.query.search as string) || '');

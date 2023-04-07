@@ -1,56 +1,78 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { ModelsAPIToken } from 'src/generated/api';
+import { ref } from 'vue';
+import { Dark } from 'quasar';
+import {} from 'pinia-plugin-persistedstate';
 
-interface SettingsState {
-  tokens?: ModelsAPIToken[];
-  showUserProfiles?: boolean;
-  locale?: string;
-}
+export const useSettingsStore = defineStore(
+  'settings',
+  () => {
+    const tokens = ref<ModelsAPIToken[]>([]);
 
-// for correct type
-const p = { persist: true };
+    const showUserProfiles = ref<boolean>(true);
+    const locale = ref<string>('en-US');
+    const darkMode = ref<boolean | 'auto'>('auto');
 
-export const useSettingsStore = defineStore('settings', {
-  state: (): SettingsState => ({
-    tokens: [],
-    showUserProfiles: true,
-    locale: 'en-US',
-  }),
-  getters: {},
-  actions: {
-    setLocale(locale: string) {
-      this.locale = locale;
-    },
-    setTokens(tokens: ModelsAPIToken[]) {
-      this.tokens = tokens;
-    },
-    async createNewToken() {
+    const setLocale = (lc: string) => {
+      locale.value = lc;
+    };
+    const setTokens = (newTokens: ModelsAPIToken[]) => {
+      tokens.value = newTokens;
+    };
+
+    const createNewToken = async () => {
       const { data } = (await sdk.auth.authTokenPost()).data;
-      this.tokens = [...this.tokens, data];
-    },
-    reset() {
-      this.tokens = [];
-    },
-    async removeToken(token: ModelsAPIToken) {
-      this.tokens = this.tokens.filter((t) => t.id !== token.id);
+      tokens.value = [...tokens.value, data];
+    };
+
+    const reset = () => {
+      tokens.value = [];
+    };
+
+    const removeToken = async (token: ModelsAPIToken) => {
+      tokens.value = tokens.value.filter((t) => t.id !== token.id);
       try {
         await sdk.auth.authTokenDelete(token.id);
       } catch (e) {
-        // TODO: master  real error handling
-        this.tokens = [...this.tokens, token];
+        tokens.value = [...tokens.value, token];
       }
-    },
-    async getApiTokens() {
+    };
+    const getApiTokens = async () => {
       try {
-        this.tokens = (await sdk.auth.authApiTokensGet()).data.data;
+        tokens.value = (await sdk.auth.authApiTokensGet()).data.data;
       } catch (e) {
         // TODO: master  real error handling
       }
-    },
-    toggleProfileVisibility() {
-      this.showUserProfiles = !this.showUserProfiles;
-    },
+    };
+    const toggleProfileVisibility = () => {
+      showUserProfiles.value = !showUserProfiles.value;
+    };
+
+    const setDarkMode = (mode: boolean | 'auto') => {
+      darkMode.value = mode;
+      updateDarkMode();
+    };
+
+    const updateDarkMode = () => {
+      Dark.set(darkMode.value);
+    };
+
+    return {
+      tokens,
+      showUserProfiles,
+      locale,
+      darkMode,
+      setLocale,
+      setTokens,
+      createNewToken,
+      reset,
+      removeToken,
+      getApiTokens,
+      toggleProfileVisibility,
+      setDarkMode,
+      updateDarkMode,
+    };
   },
-  ...p,
-});
+  { persist: { afterRestore: ({ store }) => store.updateDarkMode() } }
+);
