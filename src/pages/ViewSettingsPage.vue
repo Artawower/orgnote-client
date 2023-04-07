@@ -12,7 +12,15 @@
       v-model="settings.darkMode"
       :options="darkModeOptions"
       label="Dark mode"
-    />
+      emit-value
+      map-options
+    >
+      <template v-slot:selected>
+        <span v-if="(settings.darkMode as any) === 'auto'">System</span>
+        <span v-else-if="settings.darkMode">Dark mode</span>
+        <span v-else>Light mode</span>
+      </template>
+    </q-select>
   </div>
 </template>
 
@@ -29,7 +37,7 @@ const darkModeOptions = [
   { label: 'System', value: 'auto' },
 ];
 
-const setDarkMode = ({ value }: { value: boolean | 'auto' }) => {
+const setDarkMode = (value: boolean | 'auto') => {
   settingsStore.setDarkMode(value);
 };
 </script>
