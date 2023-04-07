@@ -61,6 +61,7 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
+import { useAuthStore } from 'src/stores/auth';
 import { useNotesStore, DEFAULT_LIMIT, DEFAULT_OFFSET } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 import { computed, ref, watch } from 'vue';
@@ -100,12 +101,12 @@ const route = useRoute();
 const search = ref<string>((route.query.search as string) || '');
 
 const notesStore = useNotesStore();
+const authStore = useAuthStore();
 
 const goToMainPage = () => {
-  notesStore.setFilters({ searchText: undefined });
   router.push({
-    name: RouteNames.NoteList,
-    query: { limit: DEFAULT_LIMIT, offset: DEFAULT_OFFSET },
+    name: RouteNames.UserNotes,
+    params: { userId: authStore.user.id },
   });
 };
 

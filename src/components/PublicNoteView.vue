@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs } from 'vue';
+import { computed, ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { RouteNames } from 'src/router/routes';
@@ -82,7 +82,10 @@ const settingsStore = useSettingsStore();
 
 const { showUserProfiles } = toRefs(settingsStore);
 
-const previewImage = note.value.meta.images?.[0];
+const previewImage = ref(note.value.meta.images?.[0]);
+watch(() => note.value.meta.images, (images) => {
+  previewImage.value = images?.[0];
+});
 </script>
 
 <style lang="scss">
