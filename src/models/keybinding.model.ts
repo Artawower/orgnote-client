@@ -7,8 +7,5 @@ export interface Keybinding {
   group?: string;
   allowOnInput?: boolean;
   ignorePrompt?: boolean;
-}
-
-export interface KeybindingCommand extends Keybinding {
   handler: () => void;
 }

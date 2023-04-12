@@ -16,7 +16,7 @@ export default function hotkeys(
   target: Window | HTMLElement,
   bindings: { [key: string]: (arg?: unknown) => unknown },
   disableOnInputs = true
-) {
+): () => void {
   const wrappedBindings = disableOnInputs
     ? Object.fromEntries(
         Object.entries(bindings).map(([key, handler]) => [
@@ -29,5 +29,5 @@ export default function hotkeys(
         ])
       )
     : bindings;
-  tinykeys(target, wrappedBindings);
+  return tinykeys(target, wrappedBindings);
 }

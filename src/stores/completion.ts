@@ -40,6 +40,9 @@ export const useCompletionStore = defineStore('completion', () => {
   };
 
   const nextCandidate = () => {
+    if (!opened.value) {
+      return;
+    }
     if (selectedCandidateIndex.value === null) {
       selectedCandidateIndex.value = 0;
       return;
@@ -50,6 +53,9 @@ export const useCompletionStore = defineStore('completion', () => {
   };
 
   const previousCandidate = () => {
+    if (!opened.value) {
+      return;
+    }
     if (selectedCandidateIndex.value === null) {
       selectedCandidateIndex.value = filteredCandidates.value.length - 1;
       return;

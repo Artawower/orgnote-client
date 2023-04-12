@@ -23,7 +23,8 @@ import LayoutHeader from 'src/components/LayoutHeader.vue';
 import SideBar from 'src/components/containers/SideBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
-import { useCommandExecutor, useKeybindings } from 'src/hooks';
+import { useCommandExecutor } from 'src/hooks';
+import { useKeybindingStore } from 'src/stores/keybindings';
 
 const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
@@ -32,11 +33,11 @@ const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 authStore.verifyUser();
 
-const { registerKeybindingCommands } = useKeybindings();
+const { registerKeybindings } = useKeybindingStore();
 
 useCommandExecutor().register();
 
-registerKeybindingCommands([
+registerKeybindings([
   {
     handler: () => toggleLeftDrawer(),
     command: 'toggleLeftBar',

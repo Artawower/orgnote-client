@@ -1,29 +1,14 @@
-import { useKeybindings } from './keybindings';
-import { useCommandsStore, useCompletionStore } from 'src/stores';
+import { Keybinding } from 'src/models';
+import { useCompletionStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { KeybindingCommand } from 'src/models';
 
 export function useCommandExecutor() {
-  const { registerKeybindingCommands } = useKeybindings();
+  const { registerKeybindings, executeCommand, uregisterKeybindings } =
+    useKeybindingStore();
 
   const completionStore = useCompletionStore();
-  const keybindingsStore = useKeybindingStore();
-  const commandsStore = useCommandsStore();
 
-  const setCompletionCandidates = () => {
-    completionStore.setCandidates(
-      keybindingsStore.keybindingList
-        .filter((k) => !k.ignorePrompt)
-        .map((k) => ({
-          command: k.command,
-          description: k.description,
-          group: k.group,
-          icon: 'settings',
-        }))
-    );
-  };
-
-  const keybindingCommands: KeybindingCommand[] = [
+  const keybindingCommands: Keybinding[] = [
     {
       command: 'toggleExecuteCommand',
       keySequence: 'Alt+KeyX',
@@ -31,12 +16,13 @@ export function useCommandExecutor() {
       group: 'Completion',
       allowOnInput: true,
       handler: () => {
-        console.log('HEY?');
-        setCompletionCandidates();
         completionStore.toggleCompletion();
         setTimeout(() => completionStore.setFilter(''));
       },
     },
+  ];
+
+  const dynamicKeybindings: Keybinding[] = [
     {
       handler: () => {
         completionStore.closeCompletion();
@@ -75,16 +61,29 @@ export function useCommandExecutor() {
       allowOnInput: true,
       ignorePrompt: true,
       handler: () => {
-        commandsStore.executeCommand(completionStore.selectedCandidate.command);
+        if (!completionStore.opened) {
+          return;
+        }
+        executeCommand(completionStore.selectedCandidate.command);
       },
     },
   ];
 
   const register = () => {
-    registerKeybindingCommands(keybindingCommands);
+    registerKeybindings(keybindingCommands);
+  };
+
+  const registerDynamicCommands = () => {
+    registerKeybindings(dynamicKeybindings);
+  };
+
+  const unregisterDynamicCommands = () => {
+    uregisterKeybindings(dynamicKeybindings);
   };
 
   return {
     register,
+    registerDynamicCommands,
+    unregisterDynamicCommands,
   };
 }

@@ -32,10 +32,26 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
+import { watch } from 'vue';
+import { useCommandExecutor } from 'src/hooks';
+
 const completionStore = useCompletionStore();
 
 const { filteredCandidates, opened, filter, selectedIndex } =
   storeToRefs(completionStore);
+
+const commandExecutor = useCommandExecutor();
+
+watch(
+  () => completionStore.opened,
+  (opened) => {
+    if (opened) {
+      commandExecutor.registerDynamicCommands();
+      return;
+    }
+    commandExecutor.unregisterDynamicCommands();
+  }
+);
 </script>
 
 <style lang="scss">
