@@ -1,11 +1,7 @@
 <template>
-  <div class="row">
+  <div class="q-page q-pa-md">
     <!-- <public-note-view v-if="previewMode" :note="note"></public-note-view> -->
-    <!-- <org-editor
-      v-else
-      v-model="orgData"
-      @cursorPositionChanged="setCursorPosition"
-    ></org-editor> -->
+    <org-editor v-model="orgData"></org-editor>
     <!-- <editor-modeline
       @previewModeChanged="changePreviewMode"
       :previewMode="previewMode"
@@ -15,30 +11,16 @@
 </template>
 
 <script lang="ts" setup>
-// import { ref } from 'vue';
-// import { useRoute } from 'vue-router';
-// import { OrgData } from 'uniorg';
-// import { parse } from 'org-mode-ast'
-//
-// import OrgEditor from 'src/components/OrgEditor.vue';
-// import EditorModeline from 'src/components/EditorModeline.vue';
-// import PublicNoteView from 'src/components/PublicNoteView.vue';
-//
-// const route = useRoute();
-// const isEditMode = !!route.params.id;
-// TODO: master load the editable note
+import { ref } from 'vue';
 
-// const previewMode = ref(false);
-// const changePreviewMode = (mode: boolean) => {
-//   previewMode.value = mode;
-//   if (previewMode.value) {
-//     note = collectNote(orgData);
-//   }
-// };
-// const orgData = ref<OrgData>(null);
-//
-// const cursorPosition = ref<number>(0);
-// const setCursorPosition = (pos: number) => {
-//   cursorPosition.value = pos;
-// };
+import OrgEditor from '@/components/OrgEditor.vue';
+import EditorModeline from '@/components/EditorModeline.vue';
+
+const orgData = ref<string>('');
 </script>
+
+<style lang="scss">
+.q-page {
+  box-sizing: border-box;
+}
+</style>

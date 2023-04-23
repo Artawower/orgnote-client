@@ -1,94 +1,48 @@
 <template>
-  <div class="editor-wrapper">
-    <div id="editor"></div>
+  <div class="note-view">
+    <div id="editor" ref="editorRef" @input="changeData"></div>
   </div>
 </template>
 
-<script lang="ts">
-export default { name: 'OrgWYSWYGEditorComponent' };
-</script>
-
-<!-- WYSWYG editor adaptet to org mode format -->
 <script lang="ts" setup>
-import Quill, { TextChangeHandler } from 'quill';
-import 'src/../node_modules/quill/dist/quill.core.css';
-import { headingSize, textSize } from 'src/tools';
-import { OrgNode, parse } from 'org-mode-ast';
+import { onMounted, ref } from 'vue';
 
-import hljs from 'highlight.js';
-import 'highlight.js/styles/stackoverflow-light.css';
+import EditorJS from '@editorjs/editorjs';
+import Header from '@editorjs/header';
+import NestedList from '@editorjs/nested-list';
 
-import { onMounted } from 'vue';
+const editorRef = ref<HTMLElement>(null);
+let editor: EditorJS;
 
-const allFontSizes = [...headingSize, ...textSize];
-
-let quill: Quill;
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', arg1: OrgNode): void;
-  (e: 'cursorPositionChanged', pos: number): void;
-}>();
-let timeout: ReturnType<typeof setTimeout>;
-
-const typingDelay = 600;
-const editorValueChanged = (newOrgNode: OrgNode) => {
-  if (timeout) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(() => {
-    emit('update:modelValue', newOrgNode);
-  }, typingDelay);
-};
-
-const props = defineProps<{
-  modelValue: OrgNode;
-}>();
-
-const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
-  emit('cursorPositionChanged', quill.getSelection()?.index || 0);
-  if (src === 'api') {
+const changeData = async () => {
+  if (!editor) {
     return;
   }
-  const text = quill.getText();
-  const parsed = parse(text);
-  // prettifyEditorText(quill, parsed);
-  editorValueChanged(parsed);
+  const data = await editor.save();
+  console.log('✎: [line 21][OrgEditor.vue<2>] data: ', data);
 };
 
-const initEditor = () => {
-  quill = new Quill('#editor', {
-    theme: 'snow',
-    formats: ['size', 'bold', 'color', 'code', 'code-block'],
-    modules: {
-      toolbar: false,
-      syntax: {
-        highlight: (text: string) => hljs.highlightAuto(text).value,
+onMounted(async () => {
+  editor = new EditorJS({
+    holder: editorRef.value,
+    tools: {
+      header: Header,
+      list: {
+        class: NestedList,
+        inlineToolbar: true,
+        config: {
+          defaultStyle: 'unordered',
+        },
       },
     },
-    // formats: [],
   });
-  const fontSizeStyle = Quill.import('attributors/style/size');
-  fontSizeStyle.whitelist = allFontSizes;
-  Quill.register(fontSizeStyle, true);
-
-  quill.on('text-change', textChangeHandler);
-  quill.on('selection-change', (r) => emit('cursorPositionChanged', r.index));
-  quill.setText(stringify(props.modelValue || ''));
-};
-
-onMounted(() => {
-  initEditor();
+  await editor.isReady;
 });
 </script>
 
 <style lang="scss">
-.editor-wrapper {
-  width: 100%;
-  max-width: var(--content-max-width);
-  margin: auto;
-}
-
 #editor {
   font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  height: calc(100vh - 88px);
 }
 </style>

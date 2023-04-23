@@ -9,6 +9,8 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers');
+// TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
+// const { SlatePlugin } = require('slate-vue');
 const path = require('path');
 
 module.exports = configure(function (ctx) {
@@ -146,7 +148,9 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: [],
+        plugins: [
+            // SlatePlugin,
+      ],
     },
 
     // animations: 'all', // --- includes all animations

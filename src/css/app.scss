@@ -3,6 +3,7 @@
 @import 'variables';
 @import 'buttons';
 @import 'reset';
+@import 'editor';
 
 .pointer {
   cursor: pointer;
@@ -96,6 +97,6 @@ body.body--dark {
 }
 
 .note-content {
-    font-size: var(--paragraph-font-size);
-    font-family: var(--paragraph-font-family);
+  font-size: var(--paragraph-font-size);
+  font-family: var(--paragraph-font-family);
 }
