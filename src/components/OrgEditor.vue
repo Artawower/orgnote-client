@@ -9,7 +9,11 @@ import { onMounted, ref } from 'vue';
 
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
+import InlineCode from '@editorjs/inline-code';
 import NestedList from '@editorjs/nested-list';
+import Underline from '@editorjs/underline';
+import Strikethrough from '@sotaproject/strikethrough';
+import Undo from 'editorjs-undo';
 
 const editorRef = ref<HTMLElement>(null);
 let editor: EditorJS;
@@ -27,6 +31,9 @@ onMounted(async () => {
     holder: editorRef.value,
     tools: {
       header: Header,
+      inlineCode: InlineCode,
+      underline: Underline,
+      strikethrough: Strikethrough,
       list: {
         class: NestedList,
         inlineToolbar: true,
@@ -37,6 +44,7 @@ onMounted(async () => {
     },
   });
   await editor.isReady;
+  new Undo({ editor });
 });
 </script>
 
