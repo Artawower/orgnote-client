@@ -16,6 +16,10 @@ export enum RouteNames {
   ViewSettings = 'ViewSettings',
   Extensions = 'Extensions',
   Keybindings = 'Keybindings',
+
+  RawEditor = 'Raw editor',
+  WysiwygEditor = 'WYSIWYG editor',
+  PreviewEditor = 'Preview editor',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -71,9 +75,26 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       ],
     },
     {
-      path: 'create-note',
+      path: 'note-editor',
       name: RouteNames.CreateNote,
       component: () => import('pages/NoteEditor.vue'),
+      children: [
+        {
+          path: 'raw',
+          name: RouteNames.RawEditor,
+          component: () => import('pages/NoteRawEditor.vue'),
+        },
+        {
+          name: RouteNames.WysiwygEditor,
+          path: 'wysiwyg',
+          component: () => import('pages/NoteWysiwygEditor.vue'),
+        },
+        {
+          name: RouteNames.PreviewEditor,
+          path: 'preview',
+          component: () => import('pages/NotePreviewEditor.vue'),
+        },
+      ],
     },
     {
       path: 'edit-note/:id',

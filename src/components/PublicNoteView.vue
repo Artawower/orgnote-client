@@ -83,9 +83,12 @@ const settingsStore = useSettingsStore();
 const { showUserProfiles } = toRefs(settingsStore);
 
 const previewImage = ref(note.value.meta.images?.[0]);
-watch(() => note.value.meta.images, (images) => {
-  previewImage.value = images?.[0];
-});
+watch(
+  () => note.value.meta.images,
+  (images) => {
+    previewImage.value = images?.[0];
+  }
+);
 </script>
 
 <style lang="scss">

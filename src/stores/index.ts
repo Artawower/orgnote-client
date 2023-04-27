@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 export * from './notes';
 export * from './completion';
+export * from './note-editor';
 
 /*
  * If not building with SSR mode, you can

@@ -45,7 +45,7 @@ const typedComponents: { [key in NodeType]?: Component } = {
 };
 
 const props = defineProps<{
-  node: OrgNode;
+  node: Partial<OrgNode>;
   isPrivate?: boolean;
 }>();
 

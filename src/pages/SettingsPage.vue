@@ -4,27 +4,25 @@
       <router-view />
     </div>
     <mode-line>
-      <q-tabs inline-label indicator-color="red">
-        <q-route-tab
-          icon="tune"
-          :to="{ name: RouteNames.ViewSettings }"
-          exact
-          :label="$t('visual')"
-        />
-        <q-route-tab
-          icon="keyboard"
-          exact
-          :to="{ name: RouteNames.Keybindings }"
-          :label="$t('keybindings')"
-        >
-        </q-route-tab>
-        <q-route-tab
-          icon="generating_tokens"
-          :to="{ name: RouteNames.ApiSettings }"
-          exact
-          :label="$t('API tokens')"
-        />
-      </q-tabs>
+      <q-route-tab
+        icon="tune"
+        :to="{ name: RouteNames.ViewSettings }"
+        exact
+        :label="$t('visual')"
+      />
+      <q-route-tab
+        icon="keyboard"
+        exact
+        :to="{ name: RouteNames.Keybindings }"
+        :label="$t('keybindings')"
+      >
+      </q-route-tab>
+      <q-route-tab
+        icon="generating_tokens"
+        :to="{ name: RouteNames.ApiSettings }"
+        exact
+        :label="$t('API tokens')"
+      />
     </mode-line>
   </q-page>
 </template>

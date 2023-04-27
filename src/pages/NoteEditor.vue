@@ -1,22 +1,32 @@
 <template>
   <div class="q-page q-pa-md">
-    <!-- <public-note-view v-if="previewMode" :note="note"></public-note-view> -->
-    <org-editor v-model="orgData"></org-editor>
-    <!-- <editor-modeline
-      @previewModeChanged="changePreviewMode"
-      :previewMode="previewMode"
-      :cursorPosition="cursorPosition"
-    ></editor-modeline> -->
+    <router-view />
+    <mode-line>
+      <q-route-tab
+        :to="{ name: RouteNames.RawEditor }"
+        :exact="true"
+        icon="draw"
+        label="raw"
+      ></q-route-tab>
+      <q-route-tab
+        :to="{ name: RouteNames.WysiwygEditor }"
+        :exact="true"
+        icon="wysiwyg"
+        label="wysiwyg"
+      ></q-route-tab>
+      <q-route-tab
+        :to="{ name: RouteNames.PreviewEditor }"
+        :exact="true"
+        icon="preview"
+        :label="$t('preview')"
+      ></q-route-tab>
+    </mode-line>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-
-import OrgEditor from '@/components/OrgEditor.vue';
-import EditorModeline from '@/components/EditorModeline.vue';
-
-const orgData = ref<string>('');
+import ModeLine from 'src/components/ui/ModeLine.vue';
+import { RouteNames } from 'src/router/routes';
 </script>
 
 <style lang="scss">

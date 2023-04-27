@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
 
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
@@ -15,6 +15,14 @@ import Underline from '@editorjs/underline';
 import Strikethrough from '@sotaproject/strikethrough';
 import Undo from 'editorjs-undo';
 
+const props = defineProps<{
+  modelValue: string;
+}>();
+
+const emits = defineEmits<{
+  'update:modelValue': (value: string) => void;
+}>();
+
 const editorRef = ref<HTMLElement>(null);
 let editor: EditorJS;
 
@@ -23,7 +31,6 @@ const changeData = async () => {
     return;
   }
   const data = await editor.save();
-  console.log('✎: [line 21][OrgEditor.vue<2>] data: ', data);
 };
 
 onMounted(async () => {
@@ -46,6 +53,8 @@ onMounted(async () => {
   await editor.isReady;
   new Undo({ editor });
 });
+
+// onUnmounted(() => {});
 </script>
 
 <style lang="scss">

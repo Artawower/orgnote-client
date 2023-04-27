@@ -23,7 +23,7 @@
         />
       </div>
     </component>
-    <div v-show="!folded"  class="section-content">
+    <div v-show="!folded" class="section-content">
       <content-renderer :node="node.section"></content-renderer>
     </div>
   </div>
