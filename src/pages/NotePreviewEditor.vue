@@ -2,8 +2,8 @@
   <div class="note-view">
     <div class="note-content">
       <content-renderer
-        v-if="editedOrgData"
-        :node="editedOrgData"
+        v-if="noteOrgData"
+        :node="noteOrgData"
       ></content-renderer>
     </div>
   </div>
@@ -16,5 +16,5 @@ import { useNoteEditorStore } from 'src/stores/note-editor';
 
 const noteEditorStore = useNoteEditorStore();
 
-const { editedOrgData } = storeToRefs(noteEditorStore);
+const { noteOrgData } = storeToRefs(noteEditorStore);
 </script>

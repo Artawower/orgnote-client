@@ -78,6 +78,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'note-editor',
       name: RouteNames.CreateNote,
       component: () => import('pages/NoteEditor.vue'),
+      redirect: { name: RouteNames.RawEditor },
       children: [
         {
           path: 'raw',

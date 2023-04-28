@@ -3,20 +3,21 @@ import { ref } from 'vue';
 import { OrgNode, parse } from 'org-mode-ast';
 
 export const useNoteEditorStore = defineStore('note-editor', () => {
-  const editedOrgData = ref<OrgNode | null>(null);
+  const noteOrgData = ref<OrgNode>();
   const noteText = ref<string>('');
 
   const setNoteOrgData = (orgData: OrgNode) => {
-    editedOrgData.value = orgData;
-    noteText.value = editedOrgData.value.rawValue;
+    noteOrgData.value = orgData;
+    noteText.value = noteOrgData.value.rawValue;
   };
 
   const setNoteText = (text: string) => {
-    editedOrgData.value = parse(text);
+    noteText.value = text;
+    noteOrgData.value = parse(text);
   };
 
   return {
-    editedOrgData,
+    noteOrgData,
     noteText,
 
     setNoteOrgData,
