@@ -1,6 +1,7 @@
 <template>
   <div class="note-view">
     <div id="editor" ref="editorRef" @input="changeData"></div>
+    <work-in-progress></work-in-progress>
   </div>
 </template>
 
@@ -14,6 +15,7 @@ import NestedList from '@editorjs/nested-list';
 import Underline from '@editorjs/underline';
 import Strikethrough from '@sotaproject/strikethrough';
 import Undo from 'editorjs-undo';
+import WorkInProgress from 'src/components/ui/WorkInProgress.vue';
 
 const props = defineProps<{
   modelValue: string;
