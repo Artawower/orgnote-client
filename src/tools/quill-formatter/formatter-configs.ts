@@ -1,12 +1,11 @@
 import { NodeType, OrgNode } from 'org-mode-ast';
 
-export const titleSize = '48px';
+interface FormatConfigParams {
+  orgNode: OrgNode;
+  specialSymbolsHidden?: boolean;
+}
 
-const formatKeyword = (orgNode: OrgNode) => {
-  // if ((content as Keyword).key === 'TITLE') {
-  //   return { size: titleSize };
-  // }
-};
+export const titleSize = '48px';
 
 export const textSize = ['14px', '12px'];
 
@@ -22,14 +21,20 @@ export const headingSize = [
   '18px',
 ];
 
-export const formatHeadline = (orgNode: OrgNode) => {
+const formatKeyword = ({ orgNode }: FormatConfigParams) => {
+  // if ((content as Keyword).key === 'TITLE') {
+  //   return { size: titleSize };
+  // }
+};
+
+export const formatHeadline = ({ orgNode }: FormatConfigParams) => {
   return {
     size: headingSize[orgNode?.level || headingSize.length - 1],
   };
 };
 
 export const formatConfigs: {
-  [key in NodeType]?: (arg0?: OrgNode) => unknown;
+  [key in NodeType]?: (params: FormatConfigParams) => unknown;
 } = {
   headline: formatHeadline,
   keyword: formatKeyword,
@@ -44,8 +49,16 @@ export const formatConfigs: {
   verbatim: () => {
     return { code: true };
   },
+  operator: ({ specialSymbolsHidden }) => {
+    if (specialSymbolsHidden) {
+      return { invisible: true };
+    }
+  },
 };
 
-export function getFormatConfig(orgNode: OrgNode): any {
-  return formatConfigs[orgNode.type]?.(orgNode);
+export function getFormatConfig(
+  orgNode: OrgNode,
+  specialSymbolsHidden: boolean
+): any {
+  return formatConfigs[orgNode.type]?.({ orgNode, specialSymbolsHidden });
 }

@@ -5,6 +5,7 @@ import { OrgNode, parse } from 'org-mode-ast';
 export const useNoteEditorStore = defineStore('note-editor', () => {
   const noteOrgData = ref<OrgNode>();
   const noteText = ref<string>('');
+  const specialSymbolsHidden = ref<boolean>(true);
 
   const setNoteOrgData = (orgData: OrgNode) => {
     noteOrgData.value = orgData;
@@ -22,5 +23,6 @@ export const useNoteEditorStore = defineStore('note-editor', () => {
 
     setNoteOrgData,
     setNoteText,
+    specialSymbolsHidden,
   };
 });

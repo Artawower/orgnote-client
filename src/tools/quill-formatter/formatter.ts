@@ -7,13 +7,17 @@ export const clearQuillFormat = (quill: Quill): void => {
   quill.removeFormat(0, quill.getLength() - 1, 'api');
 };
 
-export const prettifyEditorText = (quill: Quill, orgNode?: OrgNode): void => {
+export const prettifyEditorText = (
+  quill: Quill,
+  orgNode?: OrgNode,
+  specialSymbolsHidden = false
+): void => {
   if (!orgNode) {
     return;
   }
   clearQuillFormat(quill);
   walkTree(orgNode, (n: OrgNode) => {
-    const formatConfig = getFormatConfig(n);
+    const formatConfig = getFormatConfig(n, specialSymbolsHidden);
     const range = getFormatRange(n);
     const [start, end] = range;
     if (formatConfig) {

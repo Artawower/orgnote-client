@@ -15,20 +15,25 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/stackoverflow-light.css';
 
 import { useNoteEditorStore } from 'src/stores/note-editor';
-import { headingSize, prettifyEditorText, textSize } from 'src/tools';
+import {
+  headingSize,
+  InvisibleBlot,
+  prettifyEditorText,
+  textSize,
+} from 'src/tools';
 import { onMounted, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { OrgNode } from 'org-mode-ast';
 
 const noteEditorStore = useNoteEditorStore();
-const { noteOrgData } = storeToRefs(noteEditorStore);
+const { noteOrgData, specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
 const allFontSizes = [...headingSize, ...textSize];
 
 let quill: Quill;
+Quill.register(InvisibleBlot);
 
 const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
-  // emit('cursorPositionChanged', quill.getSelection()?.index || 0);
   if (src === 'api') {
     return;
   }
@@ -48,6 +53,7 @@ const initEditor = () => {
       'italic',
       'link',
       'strike',
+      InvisibleBlot.blotName,
     ],
     modules: {
       toolbar: false,
@@ -59,22 +65,29 @@ const initEditor = () => {
   const fontSizeStyle = Quill.import('attributors/style/size');
   fontSizeStyle.whitelist = allFontSizes;
   Quill.register(fontSizeStyle, true);
-
   quill.on('text-change', textChangeHandler);
   // quill.on('selection-change', (r) => emit('cursorPositionChanged', r.index));
   quill.setText(noteEditorStore.noteText);
-  prettifyEditorText(quill, noteOrgData.value as OrgNode);
+  prettifyEditorText(
+    quill,
+    noteOrgData.value as OrgNode,
+    specialSymbolsHidden.value
+  );
   quill.focus();
 };
 
 watch(
-  () => noteOrgData.value,
+  () => [noteOrgData.value, specialSymbolsHidden.value],
   () => {
     if (!quill) {
       return;
     }
     // TODO: master research problem of type casting. Why did ref<OrgNode> lost private methods?
-    prettifyEditorText(quill, noteOrgData.value as OrgNode);
+    prettifyEditorText(
+      quill,
+      noteOrgData.value as OrgNode,
+      specialSymbolsHidden.value
+    );
   }
 );
 
