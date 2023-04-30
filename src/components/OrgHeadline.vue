@@ -1,7 +1,7 @@
 <template>
   <div class="section">
     <component
-      :is="'h' + (+node.level + 1)"
+      :is="'h' + node.level"
       class="headline"
       :class="{ folded }"
       @click="toggleContent"

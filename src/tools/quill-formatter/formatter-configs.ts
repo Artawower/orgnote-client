@@ -29,7 +29,9 @@ const formatKeyword = ({ orgNode }: FormatConfigParams) => {
 
 export const formatHeadline = ({ orgNode }: FormatConfigParams) => {
   return {
-    size: headingSize[orgNode?.level || headingSize.length - 1],
+    headline: {
+      level: orgNode.level,
+    },
   };
 };
 

@@ -17,6 +17,7 @@ import 'highlight.js/styles/stackoverflow-light.css';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import {
   headingSize,
+  HeadlineBlot,
   InvisibleBlot,
   prettifyEditorText,
   textSize,
@@ -31,7 +32,8 @@ const { noteOrgData, specialSymbolsHidden } = storeToRefs(noteEditorStore);
 const allFontSizes = [...headingSize, ...textSize];
 
 let quill: Quill;
-Quill.register(InvisibleBlot);
+Quill.register(InvisibleBlot, true);
+Quill.register(HeadlineBlot, true);
 
 const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
   if (src === 'api') {
@@ -54,6 +56,7 @@ const initEditor = () => {
       'link',
       'strike',
       InvisibleBlot.blotName,
+      HeadlineBlot.blotName,
     ],
     modules: {
       toolbar: false,
@@ -118,5 +121,9 @@ onMounted(() => {
 /* TODO: master wtf */
 .ql-clipboard {
   display: none;
+}
+
+.headline {
+  display: inline-block;
 }
 </style>

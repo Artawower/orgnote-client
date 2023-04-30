@@ -17,6 +17,9 @@ body.body--light {
   }
 
   .note-view {
+    max-width: var(--content-max-width);
+    margin: auto;
+
     p,
     h1,
     h2,

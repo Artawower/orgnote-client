@@ -1,4 +1,4 @@
-import { OrgNode, walkTree } from 'org-mode-ast';
+import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 import Quill from 'quill';
 import { getFormatConfig } from './formatter-configs';
 import { getFormatRange } from './formatter-ranges';
@@ -17,6 +17,9 @@ export const prettifyEditorText = (
   }
   clearQuillFormat(quill);
   walkTree(orgNode, (n: OrgNode) => {
+    if (!n || n.is(NodeType.NewLine)) {
+      return;
+    }
     const formatConfig = getFormatConfig(n, specialSymbolsHidden);
     const range = getFormatRange(n);
     const [start, end] = range;
