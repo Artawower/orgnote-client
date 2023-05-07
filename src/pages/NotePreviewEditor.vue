@@ -1,11 +1,6 @@
 <template>
   <div class="note-view">
-    <div class="note-content">
-      <content-renderer
-        v-if="noteOrgData"
-        :node="noteOrgData"
-      ></content-renderer>
-    </div>
+    <content-renderer v-if="noteOrgData" :node="noteOrgData"></content-renderer>
   </div>
 </template>
 
@@ -18,3 +13,10 @@ const noteEditorStore = useNoteEditorStore();
 
 const { noteOrgData } = storeToRefs(noteEditorStore);
 </script>
+
+<style lang="scss">
+.note-view {
+  max-width: var(--content-max-width, 100%);
+  margin: auto;
+}
+</style>

@@ -7,7 +7,7 @@ interface FormatConfigParams {
 
 export const titleSize = '48px';
 
-export const textSize = ['14px', '12px'];
+export const textSize = ['20px', '14px', '12px'];
 
 export const headingSize = [
   titleSize,

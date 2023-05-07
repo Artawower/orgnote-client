@@ -116,6 +116,10 @@ onMounted(() => {
   &:focus {
     outline: none;
   }
+
+  p {
+    margin: 0;
+  }
 }
 
 /* TODO: master wtf */

@@ -17,6 +17,7 @@ export class HeadlineBlot extends Inline {
 
     const headlineLevelClass = `text-h${headlineTagLevel}`;
     node.classList.add(headlineLevelClass);
+    node.classList.add('headline');
 
     return node;
   }
