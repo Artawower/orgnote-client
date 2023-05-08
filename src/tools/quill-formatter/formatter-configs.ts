@@ -22,9 +22,12 @@ export const headingSize = [
 ];
 
 const formatKeyword = ({ orgNode }: FormatConfigParams) => {
-  // if ((content as Keyword).key === 'TITLE') {
-  //   return { size: titleSize };
-  // }
+  if (orgNode.children.get(0).value?.toLowerCase() === '#+title:')
+    return {
+      headline: {
+        level: 1,
+      },
+    };
 };
 
 export const formatHeadline = ({ orgNode }: FormatConfigParams) => {
@@ -42,9 +45,14 @@ export const formatConfigs: {
   keyword: formatKeyword,
   bold: () => ({ bold: true }),
   crossed: () => ({ strike: true }),
-  text: () => ({ size: textSize[0] }),
   italic: () => ({ italic: true }),
-  link: () => ({ link: true }),
+  linkName: ({ orgNode }) => ({ link: { orgNode } }),
+  linkUrl: ({ specialSymbolsHidden, orgNode }) => {
+    if (orgNode.parent.children.length === 3) {
+      return { link: { orgNode } };
+    }
+    return specialSymbolsHidden && { invisible: true };
+  },
   inlineCode: () => {
     return { code: true };
   },
