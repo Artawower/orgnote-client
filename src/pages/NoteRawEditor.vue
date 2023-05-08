@@ -19,6 +19,7 @@ import {
   headingSize,
   HeadlineBlot,
   InvisibleBlot,
+  LinkBlot,
   prettifyEditorText,
   textSize,
 } from 'src/tools';
@@ -34,6 +35,7 @@ const allFontSizes = [...headingSize, ...textSize];
 let quill: Quill;
 Quill.register(InvisibleBlot, true);
 Quill.register(HeadlineBlot, true);
+Quill.register(LinkBlot, true);
 
 const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
   if (src === 'api') {
@@ -53,10 +55,10 @@ const initEditor = () => {
       'code',
       'code-block',
       'italic',
-      'link',
       'strike',
       InvisibleBlot.blotName,
       HeadlineBlot.blotName,
+      LinkBlot.blotName,
     ],
     modules: {
       toolbar: false,

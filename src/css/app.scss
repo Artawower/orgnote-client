@@ -86,9 +86,6 @@ body.body--dark {
   pre {
     font-size: 16px;
   }
-  a {
-    color: $dark;
-  }
   h1,
   h2,
   h3,
@@ -115,4 +112,17 @@ h6 {
 .note-content {
   font-size: var(--paragraph-font-size);
   font-family: var(--paragraph-font-family);
+}
+
+p {
+  font-size: var(--paragraph-font-size);
+  font-family: var(--ul-font-family);
+}
+
+a {
+  color: $dark;
+}
+
+.link {
+  cursor: pointer;
 }
