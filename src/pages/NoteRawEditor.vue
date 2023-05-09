@@ -16,6 +16,7 @@ import 'highlight.js/styles/stackoverflow-light.css';
 
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import {
+  clearQuillFormat,
   headingSize,
   HeadlineBlot,
   InvisibleBlot,
@@ -83,9 +84,16 @@ const initEditor = () => {
 
 watch(
   () => [noteOrgData.value, specialSymbolsHidden.value],
-  () => {
+  (
+    [_orgData, newSpecialSymbolsHidden],
+    [_oldOrgData, oldSpecialSymbolsHidden]
+  ) => {
     if (!quill) {
       return;
+    }
+
+    if (newSpecialSymbolsHidden !== oldSpecialSymbolsHidden) {
+      clearQuillFormat(quill);
     }
     // TODO: master research problem of type casting. Why did ref<OrgNode> lost private methods?
     prettifyEditorText(
@@ -127,9 +135,5 @@ onMounted(() => {
 /* TODO: master wtf */
 .ql-clipboard {
   display: none;
-}
-
-.headline {
-  display: inline-block;
 }
 </style>

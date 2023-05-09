@@ -46,7 +46,13 @@ export const formatConfigs: {
   bold: () => ({ bold: true }),
   crossed: () => ({ strike: true }),
   italic: () => ({ italic: true }),
+  // text: () => ({ size: textSize[0], italic: false, bold: false }),
   linkName: ({ orgNode }) => ({ link: { orgNode } }),
+  blockBody: ({ orgNode }) => {
+    if (orgNode.parent.is(NodeType.SrcBlock)) {
+      return { 'code-block': true };
+    }
+  },
   linkUrl: ({ specialSymbolsHidden, orgNode }) => {
     if (orgNode.parent.children.length === 3) {
       return { link: { orgNode } };

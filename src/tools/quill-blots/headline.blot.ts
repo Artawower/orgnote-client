@@ -2,7 +2,7 @@ import Quill from 'quill';
 
 const Inline = Quill.import('blots/inline');
 
-const headlineClass = 'headline';
+const headlineClass = 'editor-headline';
 
 export class HeadlineBlot extends Inline {
   static create({ level }: { level: number }) {
@@ -17,7 +17,6 @@ export class HeadlineBlot extends Inline {
 
     const headlineLevelClass = `text-h${headlineTagLevel}`;
     node.classList.add(headlineLevelClass);
-    node.classList.add('headline');
 
     return node;
   }

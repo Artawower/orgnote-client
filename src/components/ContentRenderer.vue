@@ -1,6 +1,11 @@
 <template>
   <template v-if="node?.value">
-    <component :is="typedComponents[node.type]" :node="node"> </component>
+    <component
+      v-if="node.isNot(NodeType.NewLine)"
+      :is="typedComponents[node.type]"
+      :node="node"
+    >
+    </component>
   </template>
   <template v-else>
     <template v-for="n of node?.children" :key="n.position">
@@ -25,11 +30,13 @@ import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 import OrgTable from './OrgTable.vue';
 import OrgBold from './OrgBold.vue';
 import OrgExportBlock from './OrgExportBlock.vue';
+import OrgItalic from './OrgItalic.vue';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
 const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.Headline]: OrgHeadline,
   [NodeType.QuoteBlock]: OrgQuote,
+  [NodeType.Italic]: OrgItalic,
   [NodeType.Text]: OrgText,
   [NodeType.List]: OrgPlainList,
   [NodeType.Link]: OrgLink,

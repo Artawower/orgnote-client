@@ -1,16 +1,34 @@
 <template>
-  <p>
+  <component :is="tag" class="org-text">
     {{ node.value }}
-  </p>
+  </component>
 </template>
 
 <script setup lang="ts">
-import { OrgNode } from 'org-mode-ast';
-import { toRef } from 'vue';
+import { NodeType, OrgNode } from 'org-mode-ast';
+import { ref, toRef } from 'vue';
 
 const props = defineProps<{
   node: OrgNode;
 }>();
 
 const node = toRef(props, 'node');
+
+const tag = node.value.parent.is(
+  NodeType.Root,
+  NodeType.ListItem,
+  NodeType.Section,
+  NodeType.Headline
+)
+  ? 'p'
+  : 'span';
+
+// const isParagraph = ref(
+// );
 </script>
+
+<style lang="scss">
+.org-text {
+  white-space: pre;
+}
+</style>
