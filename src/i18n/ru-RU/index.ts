@@ -25,4 +25,6 @@ export default {
   extensions: 'расширения',
   keybindings: 'горячие клавиши',
   preview: 'предпросмотр',
+  'toggle sidebar': 'переключить панель',
+  'note view': 'вид заметок',
 };

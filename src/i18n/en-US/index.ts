@@ -28,4 +28,6 @@ export default {
   extensions: 'extensions',
   keybindings: 'keybindings',
   preview: 'preview',
+  'toggle sidebar': 'toggle sidebar',
+  'note view': 'note view',
 };

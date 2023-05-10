@@ -1,12 +1,9 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <layout-header @left-panel-toggled="toggleLeftDrawer" />
-
-    <q-drawer v-model="leftDrawerOpen" bordered>
-      <q-scroll-area class="fit">
-        <side-bar :user="user" />
-      </q-scroll-area>
-    </q-drawer>
+    <!-- TODO: master delete it -->
+    <!-- <layout-header @left-panel-toggled="toggleLeftDrawer" />
+ -->
+    <side-bar :user="user" :opened="leftDrawerOpen" />
 
     <q-page-container class="content">
       <router-view />

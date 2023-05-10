@@ -59,6 +59,7 @@
 </template>
 
 <script lang="ts" setup>
+// TODO: master DELETE THIS COMPONENT!
 import { useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
 import { useAuthStore } from 'src/stores/auth';
