@@ -124,12 +124,12 @@
               <random-quote />
             </div>
           </q-item>
-          <q-item>
+          <q-item v-if="!miniState">
             <div class="text-center q-mt-lg full-width">
               {{ $t('login to create your first note') }}
             </div>
           </q-item>
-          <login-buttons />
+          <login-buttons :vertical="miniState" />
         </template>
 
         <q-item v-if="!miniState">
@@ -137,9 +137,9 @@
         </q-item>
       </q-list>
 
-      <q-list v-if="user">
+      <q-list>
         <q-separator />
-        <q-item :to="{ name: RouteNames.Settings }" clickable>
+        <q-item v-if="user" :to="{ name: RouteNames.Settings }" clickable>
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
@@ -172,7 +172,7 @@ import RandomQuote from 'components/containers/RandomQuote.vue';
 import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
 import { ModelsPublicUser } from 'src/generated/api';
 import { useRouter } from 'vue-router';
-import { computed, ref, toRef } from 'vue';
+import { computed, ref, toRef, watch } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
 import { useViewStore } from 'src/stores/view';
 
@@ -209,10 +209,17 @@ const search = () => {
   console.log('Search will be here');
 };
 
-const miniState = ref(true);
+const miniState = ref(props.opened);
 const toggleMiniState = () => {
   miniState.value = !miniState.value;
 };
+
+watch(
+  () => props.opened,
+  (opened) => {
+    miniState.value = opened;
+  }
+);
 
 const isListPage = computed(
   () => router.currentRoute.value.name === RouteNames.NoteList
