@@ -6,7 +6,7 @@ import {
   Keybinding,
   DEFAULT_KEYBINDING_GROUP,
 } from 'src/models/keybinding.model';
-import { useCompletionStore } from './completion';
+import { CompletionCandidate, useCompletionStore } from './completion';
 
 type GroupedKeybindings = { [key: string]: Keybinding[] };
 
@@ -51,16 +51,21 @@ export const useKeybindingStore = defineStore('keybindings', () => {
 
   const completionStore = useCompletionStore();
 
-  const setCompletionCandidates = () => {
-    completionStore.setCandidates(
-      keybindingList.value
-        .filter((k) => !k.ignorePrompt)
-        .map((k) => ({
-          command: k.command,
-          description: k.description,
-          group: k.group,
-          icon: 'settings',
-        }))
+  const initCompletionCandidatesGetter = () => {
+    const candidates = keybindingList.value
+      .filter((k) => !k.ignorePrompt)
+      .map(
+        (k) =>
+          ({
+            command: k.command,
+            description: k.description,
+            group: k.group,
+            icon: 'settings',
+          } as CompletionCandidate)
+      );
+
+    completionStore.setCandidateGetter((filter) =>
+      candidates.filter((c) => c.command.includes(filter))
     );
   };
 
@@ -79,7 +84,6 @@ export const useKeybindingStore = defineStore('keybindings', () => {
       ...registerKeybindings,
     };
     attachHotkeys();
-    setCompletionCandidates();
   };
 
   const uregisterKeybindings = (kb: Keybinding[]) => {
@@ -88,11 +92,20 @@ export const useKeybindingStore = defineStore('keybindings', () => {
       delete keybindings.value[k.command];
     });
     attachHotkeys();
-    setCompletionCandidates();
   };
 
-  const executeCommand = (commandName: string) => {
-    keybindings.value[commandName]?.handler?.();
+  const executeCommand = ({
+    command,
+    commandHandler,
+  }: {
+    command: string;
+    commandHandler?: () => void;
+  }) => {
+    if (commandHandler) {
+      commandHandler();
+      return;
+    }
+    keybindings.value[command]?.handler?.();
   };
 
   return {
@@ -102,5 +115,6 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     deleteKeybinding,
     groupedKeybindings,
     uregisterKeybindings,
+    initCompletionCandidatesGetter,
   };
 });

@@ -14,6 +14,8 @@
           :key="c.command"
           class="flex row completion-item"
           :active="i === selectedIndex"
+          :clickable="true"
+          @click="executeCommand(c as any)"
         >
           <div class="col-4">
             <q-icon v-if="c.icon" :name="c.icon" class="q-px-md"></q-icon>
@@ -34,6 +36,7 @@ import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
 import { watch } from 'vue';
 import { useCommandExecutor } from 'src/hooks';
+import { useKeybindingStore } from 'src/stores/keybindings';
 
 const completionStore = useCompletionStore();
 
@@ -41,6 +44,7 @@ const { filteredCandidates, opened, filter, selectedIndex } =
   storeToRefs(completionStore);
 
 const commandExecutor = useCommandExecutor();
+const { executeCommand } = useKeybindingStore();
 
 watch(
   () => completionStore.opened,
@@ -58,5 +62,11 @@ watch(
 .completion-item {
   min-height: var(--completion-item-min-height);
   padding: var(--completion-item-padding);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--completion-item-hover-background);
+    color: var(--completion-item-hover-color);
+  }
 }
 </style>

@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 export * from './notes';
 export * from './completion';
 export * from './note-editor';
+export * from './search';
 
 /*
  * If not building with SSR mode, you can

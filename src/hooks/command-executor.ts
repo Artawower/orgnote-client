@@ -1,5 +1,5 @@
 import { Keybinding } from 'src/models';
-import { useCompletionStore } from 'src/stores';
+import { useCompletionStore, useSearchStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
 
 export function useCommandExecutor() {
@@ -7,6 +7,8 @@ export function useCommandExecutor() {
     useKeybindingStore();
 
   const completionStore = useCompletionStore();
+  const keybindingStore = useKeybindingStore();
+  const searchStore = useSearchStore();
 
   const keybindingCommands: Keybinding[] = [
     {
@@ -17,6 +19,18 @@ export function useCommandExecutor() {
       allowOnInput: true,
       handler: () => {
         completionStore.toggleCompletion();
+        keybindingStore.initCompletionCandidatesGetter();
+        setTimeout(() => completionStore.setFilter(''));
+      },
+    },
+    {
+      command: 'openSearch',
+      keySequence: '/',
+      description: 'search notes',
+      group: 'Search',
+      handler: () => {
+        completionStore.openCompletion();
+        searchStore.initCompletionCandidatesGetter();
         setTimeout(() => completionStore.setFilter(''));
       },
     },
@@ -64,7 +78,7 @@ export function useCommandExecutor() {
         if (!completionStore.opened) {
           return;
         }
-        executeCommand(completionStore.selectedCandidate.command);
+        executeCommand(completionStore.selectedCandidate);
       },
     },
   ];

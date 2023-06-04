@@ -16,7 +16,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
-import LayoutHeader from 'src/components/LayoutHeader.vue';
 import SideBar from 'src/components/containers/SideBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';

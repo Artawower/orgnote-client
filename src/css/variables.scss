@@ -46,6 +46,8 @@
 
   --completion-item-min-height: 24px;
   --completion-item-padding: 4px 16px;
+  --completion-item-hover-background: #{$grey-6};
+  --completion-item-hover-color: #{$light};
 
   // Buttons
   --action-btn-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
