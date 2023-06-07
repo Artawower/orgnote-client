@@ -1,0 +1,25 @@
+FROM alvrme/alpine-android:android-30-jdk11-v2023.05.15
+USER root
+
+RUN apk add --update --no-cache \ 
+    npm \
+    nodejs \
+    yarn \
+    gradle
+
+
+RUN npm install -g @quasar/cli && \
+    npm install -g @vue/cli && \
+    npm install -g @vue/cli-init && \
+    npm install -g cordova
+
+WORKDIR /app
+
+RUN curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/download/1.15.1/bundletool-all-1.15.1.jar 
+
+COPY yarn.lock package.json ./
+RUN yarn install --frozen-lockfile
+
+COPY . .
+
+ENTRYPOINT ["sh", "build.sh"]

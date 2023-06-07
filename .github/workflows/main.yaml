@@ -46,12 +46,13 @@ jobs:
             ls
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/sb-client
-            cd second-brain-client
+            cd ~/second-brain/second-brain-client
+            git checkout master
             git fetch --all
             git reset --hard origin/master
-            cd ..
-            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml down
+            # docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml down
             docker system prune -f
-            docker-compose -f docker-compose.prebuild.yaml up --build
-            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
-          args: "-tt -vvv"
+            docker-compose up --build
+            # docker-compose -f docker-compose.prebuild.yaml up --build
+            # docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d
+          args: '-tt -vvv'

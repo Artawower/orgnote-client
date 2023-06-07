@@ -44,12 +44,10 @@ import quasarUserOptions from './quasar-user-options.js'
 
 
 
-console.info('[Quasar] Running SPA.')
 
 
 
-
-const publicPath = `/`
+const publicPath = ``
 
 async function start ({
   app,
@@ -123,7 +121,10 @@ async function start ({
     
 
     
-      app.mount('#q-app')
+      document.addEventListener('deviceready', () => {
+        app.config.globalProperties.$q.cordova = window.cordova
+        app.mount('#q-app')
+      }, false) // on deviceready
     
 
     
