@@ -25,6 +25,8 @@ It's a proof of concept solution, in the future I have plan to migrate this repo
 
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain][Main repo]]
+- [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
+- [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
 - [[https://quasar.dev/][Quasar]]  
 
 * ⚙️ Install

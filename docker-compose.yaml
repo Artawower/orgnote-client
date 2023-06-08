@@ -4,5 +4,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
+
     volumes:
       - ~/frontend-build:/app/dist
+
+    environment:
+      - API_URL=${API_URL}
