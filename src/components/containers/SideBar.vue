@@ -132,6 +132,10 @@
           <login-buttons :vertical="miniState" />
         </template>
 
+        <q-item>
+          <download-links></download-links>
+        </q-item>
+
         <q-item v-if="!miniState">
           <language-switcher></language-switcher>
         </q-item>
@@ -169,6 +173,7 @@
 import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
+import DownloadLinks from 'components/DownloadLinks.vue';
 import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
 import { ModelsPublicUser } from 'src/generated/api';
 import { useRouter } from 'vue-router';

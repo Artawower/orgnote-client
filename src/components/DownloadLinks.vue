@@ -1,0 +1,17 @@
+<template>
+  <div class="download-links">
+    <a href="/public/builds/second-brain.apks" target="_blank">
+      <img src="~assets/google-play.svg" height="80" />
+    </a>
+  </div>
+</template>
+
+<script lang="ts" setup></script>
+
+<style lang="scss">
+.download-links {
+  @include flexify(row, center, center);
+
+  width: 100%;
+}
+</style>
