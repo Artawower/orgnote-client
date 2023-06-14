@@ -14,6 +14,7 @@ export enum RouteNames {
   EditNote = 'EditNote',
   ApiSettings = 'ApiSettings',
   ViewSettings = 'ViewSettings',
+  CommonSettings = 'CommonSettings',
   Extensions = 'Extensions',
   Keybindings = 'Keybindings',
 
@@ -61,6 +62,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
           path: '',
           name: RouteNames.ViewSettings,
           component: () => import('pages/ViewSettingsPage.vue'),
+        },
+        {
+          path: 'common',
+          name: RouteNames.CommonSettings,
+          component: () => import('pages/CommonSettingsPage.vue'),
         },
         {
           path: 'api',

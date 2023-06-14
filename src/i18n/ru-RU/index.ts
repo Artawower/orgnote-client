@@ -27,4 +27,5 @@ export default {
   preview: 'предпросмотр',
   'toggle sidebar': 'переключить панель',
   'note view': 'вид заметок',
+  common: 'общие',
 };

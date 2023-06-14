@@ -20,8 +20,8 @@
 
 
 * 🌱 Introduction
-This project is part of [[https://github.com/Artawower/second-brain][second brain project]]. This is client side based on the [[https://quasar.dev/][Quasar]] framework. It's include iod/android/pwa and desktop build.
-It's a proof of concept solution, in the future I have plan to migrate this repo into native app or Flatter.
+This project is part of [[https://github.com/Artawower/second-brain][second brain project]]. This is client side based on the [[https://quasar.dev/][Quasar]] framework. It's include ios/android/pwa and desktop build.
+It's a proof of concept solution, in the future I have plan to migrate this repo into native app or Flutter.
 
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain][Main repo]]

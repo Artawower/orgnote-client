@@ -11,6 +11,13 @@
         :label="$t('visual')"
       />
       <q-route-tab
+        icon="settings"
+        exact
+        :to="{ name: RouteNames.CommonSettings }"
+        :label="$t('common')"
+      >
+      </q-route-tab>
+      <q-route-tab
         icon="keyboard"
         exact
         :to="{ name: RouteNames.Keybindings }"

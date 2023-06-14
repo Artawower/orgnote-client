@@ -30,4 +30,5 @@ export default {
   preview: 'preview',
   'toggle sidebar': 'toggle sidebar',
   'note view': 'note view',
+  common: 'common',
 };

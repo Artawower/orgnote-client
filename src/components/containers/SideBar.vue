@@ -136,9 +136,7 @@
           <download-links></download-links>
         </q-item>
 
-        <q-item v-if="!miniState">
-          <language-switcher></language-switcher>
-        </q-item>
+        <q-item v-if="!miniState"> </q-item>
       </q-list>
 
       <q-list>
@@ -170,7 +168,6 @@
 </template>
 
 <script lang="ts" setup>
-import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
 import DownloadLinks from 'components/DownloadLinks.vue';
