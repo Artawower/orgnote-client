@@ -180,6 +180,8 @@ import { useRouter } from 'vue-router';
 import { computed, ref, toRef, watch } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
 import { useViewStore } from 'src/stores/view';
+import { useKeybindingStore } from 'src/stores/keybindings';
+import { COMMAND } from 'src/hooks';
 
 const props = defineProps<{
   user: ModelsPublicUser;
@@ -210,7 +212,10 @@ const goToMyNotes = () => {
   });
 };
 
+const { executeCommand } = useKeybindingStore();
+
 const search = () => {
+  executeCommand({ command: COMMAND.openSearch });
   console.log('Search will be here');
 };
 

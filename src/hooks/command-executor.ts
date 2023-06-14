@@ -2,6 +2,9 @@ import { Keybinding } from 'src/models';
 import { useCompletionStore, useSearchStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
 
+export enum COMMAND {
+  openSearch = 'openSearch',
+}
 export function useCommandExecutor() {
   const { registerKeybindings, executeCommand, uregisterKeybindings } =
     useKeybindingStore();
@@ -24,7 +27,7 @@ export function useCommandExecutor() {
       },
     },
     {
-      command: 'openSearch',
+      command: COMMAND.openSearch,
       keySequence: '/',
       description: 'search notes',
       group: 'Search',
