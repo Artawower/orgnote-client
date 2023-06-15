@@ -132,11 +132,9 @@
           <login-buttons :vertical="miniState" />
         </template>
 
-        <q-item>
+        <q-item v-if="!miniState">
           <download-links></download-links>
         </q-item>
-
-        <q-item v-if="!miniState"> </q-item>
       </q-list>
 
       <q-list>
