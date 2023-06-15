@@ -7,6 +7,7 @@ services:
 
     volumes:
       - ~/frontend-build:/app/dist
+      - ~/frontend-build/builds:/app/dist/builds/
 
     environment:
       - API_URL=${API_URL}
