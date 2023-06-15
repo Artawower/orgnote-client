@@ -14,16 +14,15 @@ export const useKeybindingStore = defineStore('keybindings', () => {
   const keybindings = ref<{ [command: string]: Keybinding }>({});
 
   const groupedKeybindings = computed<GroupedKeybindings>(() =>
-    Object.values(keybindings).reduce<GroupedKeybindings>((acc, keybinding) => {
-      // TODO: master fix grouped keybindings
-      if (!keybinding) {
+    Object.values(keybindings.value).reduce<GroupedKeybindings>(
+      (acc, keybinding) => {
+        const key = keybinding.group;
+        acc[key] ??= [];
+        acc[key].push(keybinding);
         return acc;
-      }
-      const key = keybinding.group;
-      acc[key] ??= [];
-      acc[key].push(keybinding);
-      return acc;
-    }, {})
+      },
+      {}
+    )
   );
 
   const keybindingList = computed<Keybinding[]>(() =>
