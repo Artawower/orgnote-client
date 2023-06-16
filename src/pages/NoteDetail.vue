@@ -3,7 +3,10 @@
     <author-info
       v-if="selectedNote"
       :author="selectedNote?.author"
-    ></author-info>
+      class="q-pb-lg"
+    >
+      ></author-info
+    >
     <h1>{{ selectedNote?.meta.title }}</h1>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
     <q-img
@@ -57,5 +60,6 @@ watch(
   color: var(--description-font-color);
   /* TODO: master  choose font for cursive*/
   font-style: var(--description-font-style);
+  padding: var(--description-padding, 16px 0px);
 }
 </style>
