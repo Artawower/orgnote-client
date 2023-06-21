@@ -63,6 +63,9 @@ body.body--dark {
   .main-font-color {
     color: $grey-3;
   }
+
+  --mini-buffer-background: #{$grey-10};
+  --mini-buffer-font-color: #{$light};
 }
 
 .rft {
