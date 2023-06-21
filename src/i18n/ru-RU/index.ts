@@ -7,7 +7,7 @@ export default {
   logout: 'выйти',
   key: 'ключ',
   'Create new token': 'Создать новый токен',
-  'View settings': 'Визуальные настройки',
+  'view settings': 'визуальные настройки',
   'Show author profile info': 'Показать информацию об авторе',
   'All articles': 'Все статьи',
   'My notes': 'Мои заметки',
@@ -28,4 +28,7 @@ export default {
   'toggle sidebar': 'переключить панель',
   'note view': 'вид заметок',
   common: 'общие',
+  'common settings': 'общие настройки',
+  keybindings: 'сочитания клавиш',
+  keys: 'ключи',
 };

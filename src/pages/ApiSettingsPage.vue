@@ -1,42 +1,46 @@
 <template>
-  <h4 class="text-h4">API {{ $t('keys') }}</h4>
-  <q-field
-    v-for="token in tokens"
-    :key="token?.id"
-    color="teal"
-    outlined
-    :label="$t('key')"
-    stack-label
-    class="token-field"
-  >
-    <template v-slot:append>
-      <div class="token-actions row">
-        <q-btn
-          @click="settingsStore.removeToken(token)"
-          icon="delete"
-          class="flat-btn delete-btn q-mr-xs"
-        >
-        </q-btn>
-        <action-btn
-          icon="content_copy"
-          active-icon="done"
-          @click="copyToken(token)"
-        ></action-btn>
-      </div>
-    </template>
-    <template v-slot:control>
-      <div class="self-center full-width no-outline" tabindex="0">
-        {{ token.token }}
-      </div>
-    </template>
-  </q-field>
-  <q-btn
-    @click="settingsStore.createNewToken"
-    flat
-    color="black"
-    class="full-width"
-    :label="$t('Create new token')"
-  />
+  <q-page>
+    <div class="col-12">
+      <h4 class="text-h4 q-py-lg">API {{ $t('keys') }}</h4>
+      <q-field
+        v-for="token in tokens"
+        :key="token?.id"
+        color="teal"
+        outlined
+        :label="$t('key')"
+        stack-label
+        class="token-field"
+      >
+        <template v-slot:append>
+          <div class="token-actions row">
+            <q-btn
+              @click="settingsStore.removeToken(token)"
+              icon="delete"
+              class="flat-btn delete-btn q-mr-xs"
+            >
+            </q-btn>
+            <action-btn
+              icon="content_copy"
+              active-icon="done"
+              @click="copyToken(token)"
+            ></action-btn>
+          </div>
+        </template>
+        <template v-slot:control>
+          <div class="self-center full-width no-outline" tabindex="0">
+            {{ token.token }}
+          </div>
+        </template>
+      </q-field>
+      <q-btn
+        @click="settingsStore.createNewToken"
+        flat
+        color="black"
+        class="full-width"
+        :label="$t('Create new token')"
+      />
+    </div>
+  </q-page>
 </template>
 
 <script lang="ts" setup>

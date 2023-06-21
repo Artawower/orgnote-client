@@ -11,7 +11,7 @@ export default {
   logout: 'logout',
   key: 'key',
   'Create new token': 'Create new token',
-  'View settings': 'View settings',
+  'view settings': 'view settings',
   'Show author profile info': 'Show author profile info',
   'All articles': 'All articles',
   'My notes': 'My notes',
@@ -31,4 +31,7 @@ export default {
   'toggle sidebar': 'toggle sidebar',
   'note view': 'note view',
   common: 'common',
+  'common settings': 'common settings',
+  keybindings: 'keybindings',
+  keys: 'keys',
 };
