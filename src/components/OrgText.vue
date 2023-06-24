@@ -15,8 +15,4 @@ const props = defineProps<{
 const node = toRef(props, 'node');
 </script>
 
-<style lang="scss">
-.org-text {
-  white-space: pre;
-}
-</style>
+<style lang="scss"></style>
