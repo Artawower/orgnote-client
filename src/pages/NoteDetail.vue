@@ -15,7 +15,10 @@
       :src="buildMediaFilePath((selectedNote.meta as any).previewImg)"
     />
     <div class="note-content">
-      <content-renderer :node="selectedNote?.content"></content-renderer>
+      <content-renderer
+        v-if="selectedNote?.content"
+        :node="selectedNote?.content"
+      ></content-renderer>
     </div>
     <note-footer>
       <tag-list :tags="selectedNote?.meta?.fileTags" />

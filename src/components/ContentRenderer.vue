@@ -1,7 +1,7 @@
 <template>
   <template v-if="node?.value">
     <component
-      v-if="node.isNot(NodeType.NewLine)"
+      v-if="node.isNot(NodeType.NewLine) && node"
       :is="typedComponents[node.type]"
       :node="node"
     >
