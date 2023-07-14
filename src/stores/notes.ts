@@ -15,6 +15,7 @@ interface NotesState {
 export const DEFAULT_LIMIT = 10;
 export const DEFAULT_OFFSET = 0;
 
+// TODO: master rewrite to composition api [medium]
 export const useNotesStore = defineStore('notes', {
   state: (): NotesState => ({
     notes: [],
@@ -44,6 +45,15 @@ export const useNotesStore = defineStore('notes', {
       } catch (e) {
         // TODO: master real error handling
         console.log('🦄: [line 24][notes.ts] [35me: ', e);
+      }
+    },
+    async deleteNotes(noteIds: string[]) {
+      const previousNotes = [...this.notes];
+      try {
+        await sdk.notes.notesDelete(noteIds);
+        this.notes = this.notes.filter((n) => !noteIds.includes(n.id));
+      } catch (e) {
+        this.notes = previousNotes;
       }
     },
     async fetchNotes(offset: number) {

@@ -45,6 +45,25 @@ export interface HandlersHttpErrorAny {
 /**
  * 
  * @export
+ * @interface HandlersHttpResponseAnyAny
+ */
+export interface HandlersHttpResponseAnyAny {
+    /**
+     * 
+     * @type {object}
+     * @memberof HandlersHttpResponseAnyAny
+     */
+    'data'?: object;
+    /**
+     * 
+     * @type {object}
+     * @memberof HandlersHttpResponseAnyAny
+     */
+    'meta'?: object;
+}
+/**
+ * 
+ * @export
  * @interface HandlersHttpResponseArrayModelsAPITokenAny
  */
 export interface HandlersHttpResponseArrayModelsAPITokenAny {
@@ -315,6 +334,12 @@ export interface ModelsNote {
      * @memberof ModelsNote
      */
     'createdAt'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsNote
+     */
+    'deletedTime'?: string;
     /**
      * 
      * @type {string}
@@ -1093,6 +1118,42 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
+         * Mark notes as deleted by provided list of ids
+         * @summary Delete notes
+         * @param {Array<string>} ids List of ids of deleted notes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notesDelete: async (ids: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'ids' is not null or undefined
+            assertParamExists('notesDelete', 'ids', ids)
+            const localVarPath = `/notes`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(ids, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Get all notes with optional filter
          * @summary Get notes
          * @param {number} limit Limit for pagination
@@ -1268,6 +1329,17 @@ export const NotesApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Mark notes as deleted by provided list of ids
+         * @summary Delete notes
+         * @param {Array<string>} ids List of ids of deleted notes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notesDelete(ids: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseAnyAny>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notesDelete(ids, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Get all notes with optional filter
          * @summary Get notes
          * @param {number} limit Limit for pagination
@@ -1334,6 +1406,16 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
             return localVarFp.notesBulkUpsertPut(notes, options).then((request) => request(axios, basePath));
         },
         /**
+         * Mark notes as deleted by provided list of ids
+         * @summary Delete notes
+         * @param {Array<string>} ids List of ids of deleted notes
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notesDelete(ids: Array<string>, options?: any): AxiosPromise<HandlersHttpResponseAnyAny> {
+            return localVarFp.notesDelete(ids, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Get all notes with optional filter
          * @summary Get notes
          * @param {number} limit Limit for pagination
@@ -1395,6 +1477,18 @@ export class NotesApi extends BaseAPI {
      */
     public notesBulkUpsertPut(notes: Array<ModelsNote>, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Mark notes as deleted by provided list of ids
+     * @summary Delete notes
+     * @param {Array<string>} ids List of ids of deleted notes
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotesApi
+     */
+    public notesDelete(ids: Array<string>, options?: AxiosRequestConfig) {
+        return NotesApiFp(this.configuration).notesDelete(ids, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -38,6 +38,11 @@
     <q-separator />
 
     <q-card-actions>
+      <q-checkbox
+        v-if="selectable"
+        :model-value="selectedNotesStore.isNoteSelected(note.id)"
+        @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
+      ></q-checkbox>
       <q-btn flat round icon="share" />
       <q-btn @click="openNoteDetail(note)" flat color="primary">
         {{ $t('read') }}
@@ -60,12 +65,14 @@ import AuthorInfo from 'src/pages/AuthorInfo.vue';
 import { Note } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
 import { buildMediaFilePath } from 'src/tools';
+import { useSelectedNotesStore } from 'src/stores';
 
 const props = defineProps<{
   note: Note;
   showAuthor: boolean;
+  selectable?: boolean;
 }>();
-const { note } = toRefs(props);
+const { note, selectable } = toRefs(props);
 
 const notesStore = useNotesStore();
 const router = useRouter();
@@ -89,6 +96,8 @@ watch(
     previewImage.value = images?.[0];
   }
 );
+
+const selectedNotesStore = useSelectedNotesStore();
 </script>
 
 <style lang="scss">

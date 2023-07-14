@@ -32,6 +32,4 @@ export default {
   'note view': 'note view',
   common: 'common',
   'common settings': 'common settings',
-  keybindings: 'keybindings',
-  keys: 'keys',
 };

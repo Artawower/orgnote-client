@@ -29,6 +29,4 @@ export default {
   'note view': 'вид заметок',
   common: 'общие',
   'common settings': 'общие настройки',
-  keybindings: 'сочитания клавиш',
-  keys: 'ключи',
 };

@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 
-export interface CompletionCandidate<T = any> {
+export interface CompletionCandidate<T = unknown> {
   icon?: string;
   group?: string;
   description?: string;

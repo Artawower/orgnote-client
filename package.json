@@ -16,7 +16,6 @@
     "build:pwa": "quasar build -m pwa",
     "build:android": "quasar build -m android",
     "build:ios": "quasar build -m ios",
-    "codegen": "node swagger-codegen.js",
     "codegen:api": "openapi-generator-cli generate",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .prettierignore",

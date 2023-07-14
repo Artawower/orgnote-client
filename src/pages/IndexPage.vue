@@ -1,10 +1,28 @@
 <template>
-  <public-notes :notes="notesState.notes"></public-notes>
+  <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
+  <mode-line :tabMode="false">
+    <template v-slot:left>
+      <q-checkbox
+        :modelValue="selectedNotesStore.isAllNotesSelected"
+        @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
+      ></q-checkbox>
+      <q-btn
+        v-if="selectedNotesStore.isSomeNotesSelected"
+        square
+        class="themed-button"
+        icon="delete"
+        flat
+        @click="deleteSelectedNotes"
+      />
+    </template>
+  </mode-line>
 </template>
 
 <script lang="ts" setup>
 import PublicNotes from 'components/PublicNotes.vue';
+import ModeLine from 'components/ui/ModeLine.vue';
 import { useNotesStore } from 'stores/notes';
+import { useSelectedNotesStore } from 'stores/selected-notes';
 import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -37,4 +55,11 @@ watch(
     reloadNotes();
   }
 );
+
+const selectedNotesStore = useSelectedNotesStore();
+
+const deleteSelectedNotes = () => {
+  notesState.deleteNotes(selectedNotesStore.selectedNotesIds);
+  selectedNotesStore.clearSelectedNotes();
+};
 </script>

@@ -27,8 +27,10 @@
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
             <public-note-view
-              :note="note as any"
+              :note="note as Note"
               :show-author="!isMyNotePage"
+              :selectable="isMyNotePage"
+              @selected="(selected) => selectNote(note as Note, selected)"
             ></public-note-view>
           </div>
         </template>
@@ -46,6 +48,7 @@ import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
+import { Note } from 'src/models';
 
 defineComponent({
   PublicNoteView,
@@ -91,6 +94,20 @@ onMounted(() => {
   }
   virtualScrollRef.value.scrollTo(initialOffset);
 });
+
+const selectedNotes = ref<Note[]>([]);
+
+const selectNote = (note: Note, selected: boolean) => {
+  console.log('✎: [line 101][PublicNotes.vue] note: ', note);
+  if (!isMyNotePage.value) {
+    return;
+  }
+  if (selected) {
+    selectedNotes.value = [...selectedNotes.value, note];
+    return;
+  }
+  selectedNotes.value = selectedNotes.value.filter((n) => n.id !== note.id);
+};
 </script>
 
 <style scoped lang="scss">

@@ -75,6 +75,6 @@ export const formatConfigs: {
 export function getFormatConfig(
   orgNode: OrgNode,
   specialSymbolsHidden: boolean
-): any {
+): unknown {
   return formatConfigs[orgNode.type]?.({ orgNode, specialSymbolsHidden });
 }
