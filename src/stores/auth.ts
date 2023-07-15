@@ -3,57 +3,67 @@ import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/boot/sdk';
 import { ModelsPublicUser } from 'src/generated/api';
+import { ref } from 'vue';
 import { useSettingsStore } from './settings';
 
-interface AuthState {
-  user?: ModelsPublicUser;
-  token?: string;
-  provider?: OAuthProvider;
-}
+export const useAuthStore = defineStore(
+  'auth',
+  () => {
+    const token = ref<string>();
+    const user = ref<ModelsPublicUser>();
+    const provider = ref<OAuthProvider>();
 
-export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    token: null,
-    user: null,
-    provider: 'github',
-  }),
-  actions: {
-    chooseAuthProvider(provider: OAuthProvider): void {
-      this.provider = provider;
-    },
-    async authViaGithub() {
+    const authViaGithub = async () => {
       try {
-        const rspns = (await sdk.auth.authProviderLoginGet(this.provider)).data;
+        const rspns = (await sdk.auth.authProviderLoginGet(provider.value))
+          .data;
         window.location.replace(rspns.data.redirectUrl);
       } catch (e) {
-        // TODO: master  add error handler
+        // TODO: master  add error handler, notification service
       }
-    },
-    authUser(user: ModelsPublicUser, token: string) {
-      this.user = user;
-      this.token = token;
-    },
-    async logout() {
+    };
+
+    const resetAuthInfo = () => {
+      user.value = null;
+      token.value = null;
+    };
+
+    const logout = async () => {
       const settingsStore = useSettingsStore();
       settingsStore.reset();
-      this.user = null;
-      this.token = null;
+      resetAuthInfo();
       await sdk.auth.authLogoutGet();
-    },
-    async verifyUser() {
-      if (!this.token) {
+    };
+
+    const verifyUser = async () => {
+      if (!token.value) {
         return;
       }
       try {
         const { data } = (await sdk.auth.authVerifyGet()).data;
-        this.user = data;
+        user.value = data;
       } catch (e: unknown) {
         if ((e as AxiosError).response.status === 400) {
-          this.user = null;
-          this.token = null;
+          resetAuthInfo();
         }
       }
-    },
+    };
+
+    const authUser = (u: ModelsPublicUser, t: string) => {
+      user.value = u;
+      token.value = t;
+    };
+
+    return {
+      token,
+      user,
+      provider,
+
+      authViaGithub,
+      logout,
+      verifyUser,
+      authUser,
+    };
   },
-  persist: true,
-});
+  { persist: true }
+);
