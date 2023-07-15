@@ -5,7 +5,7 @@
  -->
     <side-bar :user="user" :opened="leftDrawerOpen" />
 
-    <q-page-container class="content">
+    <q-page-container>
       <router-view />
     </q-page-container>
     <mini-buffer />
@@ -45,7 +45,7 @@ registerKeybindings([
 
 <style lang="scss">
 .content {
-  max-width: 1080px;
+  max-width: var(--content-max-width);
   margin: auto;
 }
 </style>

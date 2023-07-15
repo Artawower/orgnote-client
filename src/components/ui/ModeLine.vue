@@ -3,7 +3,7 @@
     <q-tabs v-if="tabMode" inline-label indicator-color="red">
       <slot></slot>
     </q-tabs>
-    <div v-else class="footer-content">
+    <div v-else class="footer-content q-px-lg">
       <slot name="left"></slot>
       <slot name="middle"></slot>
       <slot name="right"></slot>
@@ -35,7 +35,8 @@ const tabMode = toRef(props, 'tabMode');
 .footer-content {
   @include flexify(row, flex-start);
 
-  padding: var(--modeline-padding);
   height: var(--modeline-height);
+  max-width: var(--content-max-width);
+  margin: auto;
 }
 </style>

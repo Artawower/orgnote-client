@@ -1,8 +1,6 @@
 @import 'colors';
 
 :root {
-  --content-max-width: 767px;
-
   // Buttons
   --flat-btn-size: 34px;
   --flat-btn-border: 1px solid #{$smog};
@@ -42,7 +40,7 @@
 
   // Modeline
   --modeline-height: 48px;
-  --modeline-padding: 0 24px;
+  --modeline-padding: 0 32px;
   --modeline-background: #{$light};
 
   // MiniBuffer
@@ -78,6 +76,9 @@
   // Inline code
   --inline-code-background: rgba(175, 184, 193, 0.2);
   --inline-code-font-color: rgb(36, 41, 47);
+
+  // Markup
+  --content-max-width: 1080px;
 }
 
 body.body--light {

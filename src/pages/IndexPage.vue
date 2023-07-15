@@ -1,21 +1,23 @@
 <template>
-  <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
-  <mode-line :tabMode="false">
-    <template v-slot:left>
-      <q-checkbox
-        :modelValue="selectedNotesStore.isAllNotesSelected"
-        @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
-      ></q-checkbox>
-      <q-btn
-        v-if="selectedNotesStore.isSomeNotesSelected"
-        square
-        class="themed-button"
-        icon="delete"
-        flat
-        @click="deleteSelectedNotes"
-      />
-    </template>
-  </mode-line>
+  <div class="container content">
+    <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
+    <mode-line :tabMode="false">
+      <template v-slot:left>
+        <q-checkbox
+          :modelValue="selectedNotesStore.isAllNotesSelected"
+          @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
+        ></q-checkbox>
+        <q-btn
+          v-if="selectedNotesStore.isSomeNotesSelected"
+          square
+          class="themed-button"
+          icon="delete"
+          flat
+          @click="deleteSelectedNotes"
+        />
+      </template>
+    </mode-line>
+  </div>
 </template>
 
 <script lang="ts" setup>
