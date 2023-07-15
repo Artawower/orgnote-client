@@ -17,7 +17,7 @@ export const useSearchStore = defineStore('search', () => {
   const offset = ref<number>(0);
 
   // TODO [completion]: need to allow pagination for scroll event.
-  const initCompletionCandidatesGetter = async (): void => {
+  const initCompletionCandidatesGetter = async (): Promise<void> => {
     const completionCandidateGetter = (filter: string) =>
       new Promise<CompletionCandidate[]>(async (resolve, reject) => {
         const userId = authStore.user.id;
