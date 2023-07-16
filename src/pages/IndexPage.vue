@@ -1,7 +1,7 @@
 <template>
   <div class="container content">
     <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
-    <mode-line :tabMode="false">
+    <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-slot:left>
         <q-checkbox
           :modelValue="selectedNotesStore.isAllNotesSelected"
@@ -25,7 +25,7 @@ import PublicNotes from 'components/PublicNotes.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const notesState = useNotesStore();
@@ -64,4 +64,6 @@ const deleteSelectedNotes = () => {
   notesState.deleteNotes(selectedNotesStore.selectedNotesIds);
   selectedNotesStore.clearSelectedNotes();
 };
+
+const isModeLineVisible = computed(() => notesState.notes.length);
 </script>
