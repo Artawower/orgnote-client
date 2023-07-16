@@ -8,6 +8,12 @@
       ></author-info
     >
     <h1>{{ selectedNote?.meta.title }}</h1>
+    <div class="q-pt-md">
+      <file-path
+        v-if="selectedNote"
+        :file-path="selectedNote.filePath"
+      ></file-path>
+    </div>
     <h4 class="note-description">{{ selectedNote?.meta.description }}</h4>
     <q-img
       v-if="selectedNote?.meta.previewImg"
@@ -29,13 +35,16 @@
 <script setup lang="ts">
 import { watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { useNotesStore } from 'stores/notes';
 import { storeToRefs } from 'pinia';
+
+import { useNotesStore } from 'stores/notes';
+import { buildMediaFilePath } from 'src/tools';
+
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import AuthorInfo from './AuthorInfo.vue';
-import { buildMediaFilePath } from 'src/tools';
+import FilePath from 'components/containers/FilePath.vue';
 
 const noteStore = useNotesStore();
 const route = useRoute();

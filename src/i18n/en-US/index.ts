@@ -32,4 +32,5 @@ export default {
   'note view': 'note view',
   common: 'common',
   'common settings': 'common settings',
+  close: 'close',
 };

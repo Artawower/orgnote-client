@@ -29,4 +29,5 @@ export default {
   'note view': 'вид заметок',
   common: 'общие',
   'common settings': 'общие настройки',
+  close: 'закрыть',
 };

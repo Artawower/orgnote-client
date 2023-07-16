@@ -29,6 +29,7 @@
         >
           {{ note.meta.title }}
         </div>
+        <file-path v-if="note.filePath" :filePath="note.filePath"></file-path>
         <div class="text-caption text-grey rft">
           {{ note.meta.description }}
         </div>
@@ -62,6 +63,7 @@ import { useViewStore } from 'src/stores/view';
 
 import TagList from 'components/TagList.vue';
 import AuthorInfo from 'src/pages/AuthorInfo.vue';
+import FilePath from 'src/components/containers/FilePath.vue';
 import { Note } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
 import { buildMediaFilePath } from 'src/tools';

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="q-pa-md items-start q-col-gutter-md"
+    class="q-pa-md items-start q-col-gutter-md public-notes"
     :class="{
       row: tileView,
       column: !tileView,
@@ -111,10 +111,7 @@ const selectNote = (note: Note, selected: boolean) => {
 </script>
 
 <style scoped lang="scss">
-.notes-wrapper {
-  position: relative;
-  max-height: calc(100vh - 66px);
-  height: calc(100vh - 66px);
-  overflow-y: auto;
+.public-notes {
+  padding-bottom: var(--modeline-height);
 }
 </style>

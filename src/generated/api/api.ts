@@ -342,6 +342,12 @@ export interface ModelsNote {
     'deletedTime'?: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelsNote
+     */
+    'filePath'?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof ModelsNote
      */
@@ -546,6 +552,12 @@ export interface ModelsPublicNote {
      * @memberof ModelsPublicNote
      */
     'content'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelsPublicNote
+     */
+    'filePath'?: Array<string>;
     /**
      * 
      * @type {string}
