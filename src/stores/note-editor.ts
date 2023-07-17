@@ -15,15 +15,10 @@ export const useNoteEditorStore = defineStore(
     const lastSavedText = ref<string>('');
     const specialSymbolsHidden = ref<boolean>(false);
 
-    const setNoteOrgData = (orgData: OrgNode) => {
-      noteOrgData.value = orgData;
-      noteText.value = noteOrgData.value.rawValue;
-    };
-
     // TODO: master persistent value should be done via indexed db.
-    const setNoteText = (text: string) => {
+    const setNoteData = (text: string, orgNode: OrgNode) => {
       noteText.value = text;
-      noteOrgData.value = parse(text);
+      noteOrgData.value = orgNode;
     };
 
     const notifications = useNotifications();
@@ -58,8 +53,7 @@ export const useNoteEditorStore = defineStore(
       noteOrgData,
       noteText,
 
-      setNoteOrgData,
-      setNoteText,
+      setNoteData,
       specialSymbolsHidden,
       save,
       saved,

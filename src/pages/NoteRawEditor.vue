@@ -1,7 +1,8 @@
 <template>
-  <div class="editor-wrapper">
-    <div id="editor"></div>
-  </div>
+  <raw-editor
+    v-model="orgData"
+    :hideSpecialSymbols="specialSymbolsHidden"
+  ></raw-editor>
 </template>
 
 <script lang="ts">
@@ -9,136 +10,20 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 </script>
 
 <script lang="ts" setup>
-// TODO: master move this component components
-import Quill, { TextChangeHandler } from 'quill';
-import hljs from 'highlight.js';
+import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { getInitialNoteTemplate } from 'src/constants';
-import 'highlight.js/styles/stackoverflow-light.css';
-
-import { useNoteEditorStore } from 'src/stores/note-editor';
-import {
-  clearQuillFormat,
-  headingSize,
-  HeadlineBlot,
-  InvisibleBlot,
-  LinkBlot,
-  prettifyEditorText,
-  textSize,
-} from 'src/tools';
-import { onMounted, watch } from 'vue';
-import { storeToRefs } from 'pinia';
+import { ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
+import { useNoteEditorStore } from 'src/stores';
+import { storeToRefs } from 'pinia';
 
 const noteEditorStore = useNoteEditorStore();
-const { noteOrgData, specialSymbolsHidden } = storeToRefs(noteEditorStore);
+const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
-const allFontSizes = [...headingSize, ...textSize];
-
-let quill: Quill;
-Quill.register(InvisibleBlot, true);
-Quill.register(HeadlineBlot, true);
-Quill.register(LinkBlot, true);
-
-const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
-  if (src === 'api') {
-    return;
-  }
-  const text = quill.getText();
-  noteEditorStore.setNoteText(text);
-};
-
-const initEditor = () => {
-  quill = new Quill('#editor', {
-    theme: 'snow',
-    formats: [
-      'size',
-      'bold',
-      'color',
-      'code',
-      'code-block',
-      'italic',
-      'strike',
-      InvisibleBlot.blotName,
-      HeadlineBlot.blotName,
-      LinkBlot.blotName,
-    ],
-    modules: {
-      toolbar: false,
-      syntax: {
-        highlight: (text: string) => hljs.highlightAuto(text).value,
-      },
-    },
-  });
-  const initialText = noteEditorStore.noteText || getInitialNoteTemplate();
-  const fontSizeStyle = Quill.import('attributors/style/size');
-  fontSizeStyle.whitelist = allFontSizes;
-  Quill.register(fontSizeStyle, true);
-  quill.on('text-change', textChangeHandler);
-  // quill.on('selection-change', (r) => emit('cursorPositionChanged', r.index));
-  quill.setText(noteEditorStore.noteText);
-  noteEditorStore.setNoteText(initialText);
-  prettifyEditorText(
-    quill,
-    noteOrgData.value as OrgNode,
-    specialSymbolsHidden.value
-  );
-  quill.focus();
-  quill.setText(initialText);
-  quill.setSelection(quill.getLength(), 0);
-};
+const orgData = ref<[string, OrgNode]>([getInitialNoteTemplate(), null]);
 
 watch(
-  () => [noteOrgData.value, specialSymbolsHidden.value],
-  (
-    [_orgData, newSpecialSymbolsHidden],
-    [_oldOrgData, oldSpecialSymbolsHidden]
-  ) => {
-    if (!quill) {
-      return;
-    }
-
-    if (newSpecialSymbolsHidden !== oldSpecialSymbolsHidden) {
-      clearQuillFormat(quill);
-    }
-    // TODO: master research problem of type casting. Why did ref<OrgNode> lost private methods?
-    prettifyEditorText(
-      quill,
-      noteOrgData.value as OrgNode,
-      specialSymbolsHidden.value
-    );
-  }
+  () => orgData.value,
+  (val) => noteEditorStore.setNoteData(val[0], val[1] as OrgNode)
 );
-
-onMounted(() => {
-  initEditor();
-});
 </script>
-
-<style lang="scss">
-.editor-wrapper {
-  width: 100%;
-  max-width: var(--content-max-width);
-  margin: auto;
-}
-
-#editor {
-  font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
-}
-
-.ql-editor {
-  height: calc(100vh - 114px);
-
-  &:focus {
-    outline: none;
-  }
-
-  p {
-    margin: 0;
-  }
-}
-
-/* TODO: master wtf */
-.ql-clipboard {
-  display: none;
-}
-</style>
