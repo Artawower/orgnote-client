@@ -26,6 +26,37 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError } from './base';
 /**
  * 
  * @export
+ * @interface HandlersCreatedNote
+ */
+export interface HandlersCreatedNote {
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersCreatedNote
+     */
+    'content'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof HandlersCreatedNote
+     */
+    'filePath'?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersCreatedNote
+     */
+    'id'?: string;
+    /**
+     * 
+     * @type {ModelsNoteMeta}
+     * @memberof HandlersCreatedNote
+     */
+    'meta'?: ModelsNoteMeta;
+}
+/**
+ * 
+ * @export
  * @interface HandlersHttpErrorAny
  */
 export interface HandlersHttpErrorAny {
@@ -309,73 +340,6 @@ export interface ModelsGraphNoteNode {
      * @memberof ModelsGraphNoteNode
      */
     'weight'?: number;
-}
-/**
- * 
- * @export
- * @interface ModelsNote
- */
-export interface ModelsNote {
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'authorId'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'content'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'createdAt'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'deletedTime'?: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof ModelsNote
-     */
-    'filePath'?: Array<string>;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'id'?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelsNote
-     */
-    'likes'?: number;
-    /**
-     * 
-     * @type {ModelsNoteMeta}
-     * @memberof ModelsNote
-     */
-    'meta'?: ModelsNoteMeta;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsNote
-     */
-    'updatedAt'?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelsNote
-     */
-    'views'?: number;
 }
 /**
  * 
@@ -1096,11 +1060,11 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<ModelsNote>} notes Notes list
+         * @param {Array<HandlersCreatedNote>} notes Notes list
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut: async (notes: Array<ModelsNote>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        notesBulkUpsertPut: async (notes: Array<HandlersCreatedNote>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'notes' is not null or undefined
             assertParamExists('notesBulkUpsertPut', 'notes', notes)
             const localVarPath = `/notes/bulk-upsert`;
@@ -1286,11 +1250,11 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Create note
          * @summary Create note
-         * @param {ModelsNote} note Note model
+         * @param {HandlersCreatedNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesPost: async (note: ModelsNote, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        notesPost: async (note: HandlersCreatedNote, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'note' is not null or undefined
             assertParamExists('notesPost', 'note', note)
             const localVarPath = `/notes/`;
@@ -1332,11 +1296,11 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<ModelsNote>} notes Notes list
+         * @param {Array<HandlersCreatedNote>} notes Notes list
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesBulkUpsertPut(notes: Array<ModelsNote>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesBulkUpsertPut(notes, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1389,11 +1353,11 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Create note
          * @summary Create note
-         * @param {ModelsNote} note Note model
+         * @param {HandlersCreatedNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesPost(note: ModelsNote, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async notesPost(note: HandlersCreatedNote, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesPost(note, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1410,11 +1374,11 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<ModelsNote>} notes Notes list
+         * @param {Array<HandlersCreatedNote>} notes Notes list
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut(notes: Array<ModelsNote>, options?: any): AxiosPromise<object> {
+        notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: any): AxiosPromise<object> {
             return localVarFp.notesBulkUpsertPut(notes, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1462,11 +1426,11 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Create note
          * @summary Create note
-         * @param {ModelsNote} note Note model
+         * @param {HandlersCreatedNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesPost(note: ModelsNote, options?: any): AxiosPromise<object> {
+        notesPost(note: HandlersCreatedNote, options?: any): AxiosPromise<object> {
             return localVarFp.notesPost(note, options).then((request) => request(axios, basePath));
         },
     };
@@ -1482,12 +1446,12 @@ export class NotesApi extends BaseAPI {
     /**
      * Bulk update or insert notes
      * @summary Upsert notes
-     * @param {Array<ModelsNote>} notes Notes list
+     * @param {Array<HandlersCreatedNote>} notes Notes list
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesBulkUpsertPut(notes: Array<ModelsNote>, options?: AxiosRequestConfig) {
+    public notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -1544,12 +1508,12 @@ export class NotesApi extends BaseAPI {
     /**
      * Create note
      * @summary Create note
-     * @param {ModelsNote} note Note model
+     * @param {HandlersCreatedNote} note Note model
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesPost(note: ModelsNote, options?: AxiosRequestConfig) {
+    public notesPost(note: HandlersCreatedNote, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesPost(note, options).then((request) => request(this.axios, this.basePath));
     }
 }

@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
+import { HandlersCreatedNote } from 'src/generated/api';
 import { Note, NotesFilter } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { mapRawNoteToNote } from 'src/tools';
@@ -110,6 +111,13 @@ export const useNotesStore = defineStore('notes', () => {
     }
   };
 
+  const createNote = async (note: HandlersCreatedNote) => {
+    try {
+      await sdk.notes.notesPost(note);
+      loadNotes();
+    } catch (e) {}
+  };
+
   return {
     notes,
     selectedNote,
@@ -122,5 +130,6 @@ export const useNotesStore = defineStore('notes', () => {
     selectNote,
     selectNoteById,
     setFilters,
+    createNote,
   };
 });

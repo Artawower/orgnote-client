@@ -12,6 +12,7 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 // TODO: master move this component components
 import Quill, { TextChangeHandler } from 'quill';
 import hljs from 'highlight.js';
+import { getInitialNoteTemplate } from 'src/constants';
 import 'highlight.js/styles/stackoverflow-light.css';
 
 import { useNoteEditorStore } from 'src/stores/note-editor';
@@ -68,18 +69,22 @@ const initEditor = () => {
       },
     },
   });
+  const initialText = noteEditorStore.noteText || getInitialNoteTemplate();
   const fontSizeStyle = Quill.import('attributors/style/size');
   fontSizeStyle.whitelist = allFontSizes;
   Quill.register(fontSizeStyle, true);
   quill.on('text-change', textChangeHandler);
   // quill.on('selection-change', (r) => emit('cursorPositionChanged', r.index));
   quill.setText(noteEditorStore.noteText);
+  noteEditorStore.setNoteText(initialText);
   prettifyEditorText(
     quill,
     noteOrgData.value as OrgNode,
     specialSymbolsHidden.value
   );
   quill.focus();
+  quill.setText(initialText);
+  quill.setSelection(quill.getLength(), 0);
 };
 
 watch(

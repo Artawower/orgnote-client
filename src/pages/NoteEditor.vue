@@ -20,6 +20,7 @@
         icon="preview"
         :label="$t('preview')"
       ></q-route-tab>
+      <q-btn @click="noteEditorStore.save" icon="save" flat></q-btn>
       <q-btn
         :icon="specialSymbolsHidden ? 'visibility_off' : 'visibility'"
         flat

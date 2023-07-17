@@ -8,13 +8,8 @@
   --flat-btn-box-shadow: none;
 
   // Main colors
-  --main-theme-color: #{$dark};
-  --main-font-color: #{$grey-9};
-
-  --main-background: #{$white};
-  --secondary-background: #{$dark-smog};
-
   --headline-font-weight: 500;
+  --font-color-action: #{$blue-12};
 
   // Fonts
   --headline-margin: 18px 0;
@@ -84,9 +79,24 @@
 body.body--light {
   // Modeline
   --modeline-background: #{$light};
+
+  // Colors
+  --main-theme-color: #{$dark};
+  --font-color-ьфшт: #{$grey-9};
+  --font-color-secondary: #{$grey-6};
+
+  --main-background: #{$white};
+  --secondary-background: #{$dark-smog};
 }
 
 body.body--dark {
   // Modeline
   --modeline-background: #{$dark};
+
+  // Colors
+  --theme-color-main: #{$white};
+  --font-color-main: #{$grey-3};
+  --font-color-secondary: #{$grey-6};
+  --main-background: #{$white};
+  --secondary-background: #{$dark-smog};
 }
