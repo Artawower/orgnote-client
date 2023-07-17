@@ -11,7 +11,7 @@ export const useAuthStore = defineStore(
   () => {
     const token = ref<string>();
     const user = ref<ModelsPublicUser>();
-    const provider = ref<OAuthProvider>();
+    const provider = ref<OAuthProvider>('github');
 
     const authViaGithub = async () => {
       try {
@@ -19,6 +19,7 @@ export const useAuthStore = defineStore(
           .data;
         window.location.replace(rspns.data.redirectUrl);
       } catch (e) {
+        console.log('✎: [line 22][auth.ts] e: ', e);
         // TODO: master  add error handler, notification service
       }
     };
