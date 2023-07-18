@@ -7,9 +7,9 @@ import tinykeys from 'tinykeys';
 
 function isEventTargetInputOrTextArea(target: Window | HTMLElement) {
   if (target === null) return false;
-
   const targetElementName = (target as HTMLElement).tagName.toLowerCase();
-  return ['input', 'textarea'].includes(targetElementName);
+  const isContentEditable = (target as HTMLElement).isContentEditable;
+  return isContentEditable || ['input', 'textarea'].includes(targetElementName);
 }
 
 export default function hotkeys(
