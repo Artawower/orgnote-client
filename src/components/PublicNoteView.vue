@@ -80,6 +80,7 @@ const notesStore = useNotesStore();
 const router = useRouter();
 
 const openNoteDetail = (note: Note) => {
+  console.log('✎: [line 83][PublicNoteView.vue] note: ', note);
   notesStore.selectNote(note);
   router.push({ name: RouteNames.NoteDetail, params: { id: note.id } });
 };

@@ -79,7 +79,11 @@
             <q-item-section>{{ $t('Create note') }}</q-item-section>
           </q-item>
 
-          <q-item :to="{ name: RouteNames.Extensions }" clickable>
+          <q-item
+            class="hidden"
+            :to="{ name: RouteNames.Extensions }"
+            clickable
+          >
             <q-item-section avatar>
               <q-icon name="extension" />
             </q-item-section>

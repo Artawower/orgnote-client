@@ -98,7 +98,6 @@ onMounted(() => {
 const selectedNotes = ref<Note[]>([]);
 
 const selectNote = (note: Note, selected: boolean) => {
-  console.log('✎: [line 101][PublicNotes.vue] note: ', note);
   if (!isMyNotePage.value) {
     return;
   }

@@ -29,6 +29,9 @@
     <note-footer>
       <tag-list :tags="selectedNote?.meta?.fileTags" />
     </note-footer>
+    <mode-line v-if="selectedNote?.isMyNote">
+      <q-btn @click="edit" icon="edit" flat></q-btn>
+    </mode-line>
   </q-page>
 </template>
 
@@ -45,12 +48,12 @@ import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import AuthorInfo from './AuthorInfo.vue';
 import FilePath from 'components/containers/FilePath.vue';
+import ModeLine from 'src/components/ui/ModeLine.vue';
 
 const noteStore = useNotesStore();
 const route = useRoute();
 
 const { selectedNote } = storeToRefs(noteStore);
-console.log(selectedNote.value);
 
 if (!selectedNote?.value && route.params.id) {
   noteStore.selectNoteById(route.params.id as string);
@@ -65,6 +68,10 @@ watch(
     noteStore.selectNoteById(id as string);
   }
 );
+
+const edit = () => {
+  console.log(`✎: [NoteDetail.vue][${new Date().toString()}] edit`);
+};
 </script>
 
 <style lang="scss" scoped>

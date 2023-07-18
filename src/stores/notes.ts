@@ -7,6 +7,7 @@ import { RouteNames } from 'src/router/routes';
 import { mapRawNoteToNote } from 'src/tools';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from './auth';
 
 export const DEFAULT_LIMIT = 10;
 export const DEFAULT_OFFSET = 0;
@@ -16,6 +17,7 @@ export const useNotesStore = defineStore('notes', () => {
   const filters = ref<NotesFilter>({ limit: 10, offset: 0 });
   const notesCount = ref<number>();
   const selectedNote = ref<Note>();
+  const authStore = useAuthStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -34,7 +36,9 @@ export const useNotesStore = defineStore('notes', () => {
         filters.value.searchText
       );
       // getNotes(this.filters);
-      notes.value = rspns.data.data.map((n) => mapRawNoteToNote(n));
+      notes.value = rspns.data.data.map((n) =>
+        mapRawNoteToNote(n, authStore.user)
+      );
       notesCount.value = rspns.data.meta.total;
       setFilters({
         limit: rspns.data.meta.limit,
@@ -46,7 +50,7 @@ export const useNotesStore = defineStore('notes', () => {
     }
   };
 
-  const deleteNotes = async (noteIds) => {
+  const deleteNotes = async (noteIds: string[]) => {
     const previousNotes = [...notes.value];
     try {
       await sdk.notes.notesDelete(noteIds);
@@ -72,7 +76,7 @@ export const useNotesStore = defineStore('notes', () => {
       );
       notes.value = [
         ...notes.value,
-        ...rspns.data.data.map((n) => mapRawNoteToNote(n)),
+        ...rspns.data.data.map((n) => mapRawNoteToNote(n, authStore.user)),
       ];
       notesCount.value = rspns.data.meta.total;
     } catch (e) {
@@ -99,7 +103,8 @@ export const useNotesStore = defineStore('notes', () => {
 
     try {
       selectedNote.value = mapRawNoteToNote(
-        (await sdk.notes.notesIdGet(noteId)).data.data
+        (await sdk.notes.notesIdGet(noteId)).data.data,
+        authStore.user
       );
     } catch (e: unknown) {
       if ((e as AxiosError).response?.status === 404) {

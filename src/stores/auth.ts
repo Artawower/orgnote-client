@@ -43,10 +43,13 @@ export const useAuthStore = defineStore(
       try {
         const { data } = (await sdk.auth.authVerifyGet()).data;
         user.value = data;
+        console.log(`✎: [auth.ts][${new Date().toString()}] set user`);
       } catch (e: unknown) {
         if ((e as AxiosError).response.status === 400) {
           resetAuthInfo();
         }
+      } finally {
+        console.log(`✎: [auth.ts][${new Date().toString()}] auth completed`);
       }
     };
 

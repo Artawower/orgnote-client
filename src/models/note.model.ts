@@ -3,6 +3,7 @@ import { ModelsPublicNote } from 'src/generated/api';
 
 export interface Note extends Omit<Partial<ModelsPublicNote>, 'content'> {
   content: OrgNode;
+  isMyNote: boolean;
 }
 
 export interface NotesFilter {

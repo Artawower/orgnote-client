@@ -6,6 +6,7 @@ export * from './completion';
 export * from './note-editor';
 export * from './search';
 export * from './selected-notes';
+export * from './auth';
 
 /*
  * If not building with SSR mode, you can

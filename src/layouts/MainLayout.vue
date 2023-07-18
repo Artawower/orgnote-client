@@ -1,10 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <!-- TODO: master delete it -->
-    <!-- <layout-header @left-panel-toggled="toggleLeftDrawer" />
- -->
     <side-bar :user="user" :opened="leftDrawerOpen" />
-
     <q-page-container>
       <router-view />
     </q-page-container>

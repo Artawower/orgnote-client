@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, onUnmounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
@@ -17,14 +17,14 @@ import Strikethrough from '@sotaproject/strikethrough';
 import Undo from 'editorjs-undo';
 import WorkInProgress from 'src/components/ui/WorkInProgress.vue';
 
-const props = defineProps<{
-  modelValue: string;
-}>();
-
-const emits = defineEmits<{
-  'update:modelValue': (value: string) => void;
-}>();
-
+// const props = defineProps<{
+//   modelValue: string;
+// }>();
+//
+// const emits = defineEmits<{
+//   'update:modelValue': (value: string) => void;
+// }>();
+//
 const editorRef = ref<HTMLElement>(null);
 let editor: EditorJS;
 
@@ -32,7 +32,7 @@ const changeData = async () => {
   if (!editor) {
     return;
   }
-  const data = await editor.save();
+  // const data = await editor.save();
 };
 
 onMounted(async () => {

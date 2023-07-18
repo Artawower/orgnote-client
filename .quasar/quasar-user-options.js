@@ -13,9 +13,9 @@
 
 
 
-import {Notify} from 'quasar'
+import {Notify,Loading} from 'quasar'
 
 
 
-export default { config: {},plugins: {Notify} }
+export default { config: {},plugins: {Notify,Loading} }
 
