@@ -66,19 +66,13 @@ if (!selectedNote?.value && route.params.id) {
 
 watch(
   () => route.params.id,
-  (id) => {
-    if (!id) {
-      return;
-    }
-    noteStore.selectNoteById(id as string);
-  }
+  (id) => id && noteStore.selectNoteById(id as string)
 );
 </script>
 
 <style lang="scss" scoped>
 .note-description {
   color: var(--description-font-color);
-  /* TODO: master  choose font for cursive*/
   font-style: var(--description-font-style);
   padding: var(--description-padding, 16px 0px);
 }
