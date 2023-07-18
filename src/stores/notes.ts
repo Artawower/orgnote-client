@@ -123,6 +123,14 @@ export const useNotesStore = defineStore('notes', () => {
     } catch (e) {}
   };
 
+  const upsertNote = async (note: HandlersCreatedNote) => {
+    try {
+      const stringifiedNote = JSON.stringify(note);
+      await sdk.notes.notesBulkUpsertPut([stringifiedNote], []);
+      loadNotes();
+    } catch (e) {}
+  };
+
   return {
     notes,
     selectedNote,
@@ -136,5 +144,6 @@ export const useNotesStore = defineStore('notes', () => {
     selectNoteById,
     setFilters,
     createNote,
+    upsertNote,
   };
 });

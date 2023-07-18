@@ -10,7 +10,6 @@ export enum RouteNames {
   Settings = 'Settings',
   NotFound = 'NotFound',
   UserGraph = 'UserGraph',
-  CreateNote = 'CreateNote',
   EditNote = 'EditNote',
   ApiSettings = 'ApiSettings',
   ViewSettings = 'ViewSettings',
@@ -81,8 +80,8 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       ],
     },
     {
-      path: 'note-editor',
-      name: RouteNames.CreateNote,
+      path: 'note-editor/:id?',
+      name: RouteNames.EditNote,
       component: () => import('pages/NoteEditor.vue'),
       redirect: { name: RouteNames.RawEditor },
       children: [
@@ -102,11 +101,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
           component: () => import('pages/NotePreviewEditor.vue'),
         },
       ],
-    },
-    {
-      path: 'edit-note/:id',
-      name: RouteNames.EditNote,
-      component: () => import('pages/NoteEditor.vue'),
     },
     {
       path: 'detail/:id',

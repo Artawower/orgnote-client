@@ -11,7 +11,6 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 
 <script lang="ts" setup>
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
-import { getInitialNoteTemplate } from 'src/constants';
 import { ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore } from 'src/stores';
@@ -20,7 +19,9 @@ import { storeToRefs } from 'pinia';
 const noteEditorStore = useNoteEditorStore();
 const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
-const orgData = ref<[string, OrgNode]>([getInitialNoteTemplate(), null]);
+const initialNote = noteEditorStore.noteText;
+
+const orgData = ref<[string, OrgNode]>([initialNote, null]);
 
 watch(
   () => orgData.value,

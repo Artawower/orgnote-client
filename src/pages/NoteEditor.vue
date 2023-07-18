@@ -1,21 +1,23 @@
 <template>
   <div class="q-page q-pa-md">
-    <router-view />
+    <template v-if="noteLoaded">
+      <router-view />
+    </template>
     <mode-line>
       <q-route-tab
-        :to="{ name: RouteNames.RawEditor }"
+        :to="{ name: RouteNames.RawEditor, params: { id: noteId } }"
         :exact="true"
         icon="draw"
         label="raw"
       ></q-route-tab>
       <q-route-tab
-        :to="{ name: RouteNames.WysiwygEditor }"
+        :to="{ name: RouteNames.WysiwygEditor, params: { id: noteId } }"
         :exact="true"
         icon="wysiwyg"
         label="wysiwyg"
       ></q-route-tab>
       <q-route-tab
-        :to="{ name: RouteNames.PreviewEditor }"
+        :to="{ name: RouteNames.PreviewEditor, params: { id: noteId } }"
         :exact="true"
         icon="preview"
         :label="$t('preview')"
@@ -32,14 +34,61 @@
 </template>
 
 <script lang="ts" setup>
+import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
+import { useQuasar } from 'quasar';
 import ModeLine from 'src/components/ui/ModeLine.vue';
+import { getInitialNoteTemplate } from 'src/constants';
 import { RouteNames } from 'src/router/routes';
+import { useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const noteId = route.params.id as string;
 
 const noteEditorStore = useNoteEditorStore();
 
 const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
+const notesStore = useNotesStore();
+
+const { selectedNote } = storeToRefs(notesStore);
+
+if (noteId) {
+  const setupEditorStore = () =>
+    selectedNote.value &&
+    noteEditorStore.setNoteContent(selectedNote.value.content as OrgNode);
+
+  setupEditorStore();
+
+  watch(
+    () => selectedNote.value,
+    () => setupEditorStore()
+  );
+} else {
+  noteEditorStore.setNoteText(getInitialNoteTemplate());
+}
+
+if (noteId) {
+  notesStore.selectNoteById(noteId);
+}
+
+const noteLoaded = computed(() => !noteId || selectedNote.value?.id === noteId);
+
+const $q = useQuasar();
+const initLoaderStatus = () => {
+  const loadingFn = noteLoaded.value ? $q.loading.hide : $q.loading.show;
+  loadingFn();
+};
+
+initLoaderStatus();
+
+watch(
+  () => noteLoaded.value,
+  () => initLoaderStatus()
+);
 </script>
 
 <style lang="scss">

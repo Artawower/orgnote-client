@@ -1060,13 +1060,16 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatedNote>} notes Notes list
+         * @param {Array<string>} notes Notes payload. See CreatedNote model
+         * @param {Array<string>} files Form data files.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut: async (notes: Array<HandlersCreatedNote>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        notesBulkUpsertPut: async (notes: Array<string>, files: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'notes' is not null or undefined
             assertParamExists('notesBulkUpsertPut', 'notes', notes)
+            // verify required parameter 'files' is not null or undefined
+            assertParamExists('notesBulkUpsertPut', 'files', files)
             const localVarPath = `/notes/bulk-upsert`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1078,15 +1081,24 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
             const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
+            if (notes) {
+                localVarFormParams.append('notes', notes.join(COLLECTION_FORMATS.csv));
+            }
+
+                if (files) {
+                localVarFormParams.append('files', files.join(COLLECTION_FORMATS.csv));
+            }
 
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(notes, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1296,12 +1308,13 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatedNote>} notes Notes list
+         * @param {Array<string>} notes Notes payload. See CreatedNote model
+         * @param {Array<string>} files Form data files.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notesBulkUpsertPut(notes, options);
+        async notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notesBulkUpsertPut(notes, files, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -1374,12 +1387,13 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatedNote>} notes Notes list
+         * @param {Array<string>} notes Notes payload. See CreatedNote model
+         * @param {Array<string>} files Form data files.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: any): AxiosPromise<object> {
-            return localVarFp.notesBulkUpsertPut(notes, options).then((request) => request(axios, basePath));
+        notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: any): AxiosPromise<object> {
+            return localVarFp.notesBulkUpsertPut(notes, files, options).then((request) => request(axios, basePath));
         },
         /**
          * Mark notes as deleted by provided list of ids
@@ -1446,13 +1460,14 @@ export class NotesApi extends BaseAPI {
     /**
      * Bulk update or insert notes
      * @summary Upsert notes
-     * @param {Array<HandlersCreatedNote>} notes Notes list
+     * @param {Array<string>} notes Notes payload. See CreatedNote model
+     * @param {Array<string>} files Form data files.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesBulkUpsertPut(notes: Array<HandlersCreatedNote>, options?: AxiosRequestConfig) {
-        return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, options).then((request) => request(this.axios, this.basePath));
+    public notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: AxiosRequestConfig) {
+        return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, files, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

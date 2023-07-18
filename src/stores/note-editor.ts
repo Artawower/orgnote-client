@@ -21,11 +21,20 @@ export const useNoteEditorStore = defineStore(
       noteOrgData.value = orgNode;
     };
 
+    const setNoteContent = (orgNode: OrgNode) => {
+      setNoteData(orgNode.rawValue, orgNode);
+    };
+
+    const setNoteText = (text: string) => {
+      noteText.value = text;
+      noteOrgData.value = withMetaInfo(parse(text));
+    };
+
     const notifications = useNotifications();
     const notesStore = useNotesStore();
 
     const createNote = (orgTree: OrgNode) => {
-      notesStore.createNote({
+      notesStore.upsertNote({
         content: noteText.value,
         id: orgTree.meta.id,
         filePath: [generateFileName(orgTree.meta.title)],
@@ -57,6 +66,8 @@ export const useNoteEditorStore = defineStore(
       specialSymbolsHidden,
       save,
       saved,
+      setNoteContent,
+      setNoteText,
     };
   },
   { persist: true }

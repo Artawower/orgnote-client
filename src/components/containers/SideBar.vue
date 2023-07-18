@@ -72,7 +72,7 @@
             <q-item-section>{{ $t('Graph') }}</q-item-section>
           </q-item>
 
-          <q-item v-if="user" :to="{ name: RouteNames.CreateNote }" clickable>
+          <q-item v-if="user" :to="{ name: RouteNames.EditNote }" clickable>
             <q-item-section avatar>
               <q-icon name="add" />
             </q-item-section>
