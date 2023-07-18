@@ -90,6 +90,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   const router = useRouter();
 
+  // TODO: master simplify this method
   const selectNoteById = async (noteId: string): Promise<void> => {
     const alreadySelected = selectedNote.value?.id === noteId;
     if (alreadySelected) {

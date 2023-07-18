@@ -1,10 +1,6 @@
 <template>
   <template v-if="node?.value">
-    <component
-      v-if="node.isNot(NodeType.NewLine) && node"
-      :is="typedComponents[node.type]"
-      :node="node"
-    >
+    <component v-if="node" :is="typedComponents[node.type]" :node="node">
     </component>
   </template>
   <template v-else>
@@ -31,6 +27,7 @@ import OrgTable from './OrgTable.vue';
 import OrgBold from './OrgBold.vue';
 import OrgExportBlock from './OrgExportBlock.vue';
 import OrgItalic from './OrgItalic.vue';
+import NewLine from './OrgNewLine.vue';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
 const typedComponents: { [key in NodeType]?: Component } = {
@@ -49,21 +46,13 @@ const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.Bold]: OrgBold,
   [NodeType.ExportBlock]: OrgExportBlock,
   [NodeType.LatexEnvironment]: OrgExportBlock,
+  [NodeType.NewLine]: NewLine,
 };
 
 const props = defineProps<{
   node: Partial<OrgNode>;
   isPrivate?: boolean;
 }>();
-
-if (props.isPrivate) {
-  // typedComponents['property-drawer'] = OrgPropertyDrawer;
-  // typedComponents['keyword'] = OrgKeyword;
-}
-
-if (props.node?.is(NodeType.Root)) {
-  console.log(props.node.toJson());
-}
 
 const node = toRef(props, 'node');
 defineComponent(typedComponents);
