@@ -6,8 +6,6 @@ export function mapRawNoteToNote(
   node: ModelsPublicNote,
   user: ModelsPublicUser
 ): Note {
-  console.log('✎: [line 9][note-mapper.ts] node: ', node);
-  console.log('✎: [line 9][note-mapper.ts] user: ', user);
   return {
     ...node,
     content: withMetaInfo(parse(node.content)),
