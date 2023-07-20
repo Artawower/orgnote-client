@@ -1,4 +1,5 @@
 import { NodeType, OrgNode } from 'org-mode-ast';
+import { StringMap } from 'quill';
 
 interface FormatConfigParams {
   orgNode: OrgNode;
@@ -75,6 +76,6 @@ export const formatConfigs: {
 export function getFormatConfig(
   orgNode: OrgNode,
   specialSymbolsHidden: boolean
-): unknown {
+): StringMap {
   return formatConfigs[orgNode.type]?.({ orgNode, specialSymbolsHidden });
 }

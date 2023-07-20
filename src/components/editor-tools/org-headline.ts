@@ -10,7 +10,7 @@ interface HeadlineData {
 // NOTE: render as vuejs
 export class OrgHeadline implements BaseTool {
   public data: HeadlineData;
-  public app: App<any>;
+  public app: App<unknown>;
   static get toolbox() {
     return {
       title: 'Headline',
