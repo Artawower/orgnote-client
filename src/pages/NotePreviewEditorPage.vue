@@ -1,17 +1,19 @@
 <template>
   <div class="note-view">
-    <content-renderer v-if="noteOrgData" :node="noteOrgData"></content-renderer>
+    <note-detail :note="note as Note"></note-detail>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import ContentRenderer from 'src/components/ContentRenderer.vue';
+
 import { useNoteEditorStore } from 'src/stores/note-editor';
+import NoteDetail from 'src/components/containers/NoteDetail.vue';
+import { Note } from 'src/models';
 
 const noteEditorStore = useNoteEditorStore();
 
-const { noteOrgData } = storeToRefs(noteEditorStore);
+const { note } = storeToRefs(noteEditorStore);
 </script>
 
 <style lang="scss">

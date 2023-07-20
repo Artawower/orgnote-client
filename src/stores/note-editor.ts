@@ -33,12 +33,23 @@ export const useNoteEditorStore = defineStore(
     const notifications = useNotifications();
     const notesStore = useNotesStore();
 
-    const createNote = (orgTree: OrgNode) => {
+    const orgTree = computed(() => withMetaInfo(noteOrgData.value));
+
+    const note = computed(() => {
+      return {
+        content: noteOrgData.value,
+        id: orgTree.value.meta.id,
+        filePath: [generateFileName(orgTree.value.meta.title)],
+        meta: orgTree.value.meta as ModelsNoteMeta,
+      };
+    });
+
+    const createNote = () => {
       notesStore.upsertNote({
         content: noteText.value,
-        id: orgTree.meta.id,
-        filePath: [generateFileName(orgTree.meta.title)],
-        meta: orgTree.meta as ModelsNoteMeta,
+        id: orgTree.value.meta.id,
+        filePath: [generateFileName(orgTree.value.meta.title)],
+        meta: orgTree.value.meta as ModelsNoteMeta,
       });
     };
 
@@ -46,14 +57,13 @@ export const useNoteEditorStore = defineStore(
       if (!noteOrgData.value) {
         return;
       }
-      const orgTree = withMetaInfo(noteOrgData.value);
-      const validationErrors = getOrgNodeValidationErrors(orgTree);
+      const validationErrors = getOrgNodeValidationErrors(orgTree.value);
       if (validationErrors) {
         notifications.notify(validationErrors.join('\n'), false, 'error');
         return;
       }
       lastSavedText.value = noteText.value;
-      createNote(orgTree);
+      createNote();
     };
 
     const saved = computed(() => lastSavedText.value === noteText.value);
@@ -61,6 +71,7 @@ export const useNoteEditorStore = defineStore(
     return {
       noteOrgData,
       noteText,
+      note,
 
       setNoteData,
       specialSymbolsHidden,
