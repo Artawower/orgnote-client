@@ -1,7 +1,7 @@
 <template>
   <q-icon
     @click="clicked"
-    :name="fired ? icon : activeIcon"
+    :name="fired ? activeIcon : icon"
     size="1rem"
     class="action-btn"
     :class="{ fired, dark: $q.dark.isActive }"
