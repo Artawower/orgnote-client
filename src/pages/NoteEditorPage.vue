@@ -1,5 +1,5 @@
 <template>
-  <div class="q-page q-pa-md">
+  <q-page class="q-pa-md height-auto with-modeline">
     <template v-if="noteLoaded">
       <router-view />
     </template>
@@ -30,7 +30,7 @@
       >
       </q-btn>
     </mode-line>
-  </div>
+  </q-page>
 </template>
 
 <script lang="ts" setup>

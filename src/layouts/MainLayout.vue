@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <side-bar :user="user" :opened="leftDrawerOpen" />
-    <q-page-container>
+    <q-page-container class="height-max-dynamic">
       <router-view />
     </q-page-container>
     <mini-buffer />

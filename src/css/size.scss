@@ -1,0 +1,11 @@
+.height-max-dynamic {
+  height: 100dvh;
+}
+
+.height-auto {
+  height: auto;
+}
+
+.with-modeline {
+  padding-bottom: calc(var(--modeline-height) + 16px);
+}
