@@ -82,35 +82,35 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: 'note-editor/:id?',
       name: RouteNames.EditNote,
-      component: () => import('pages/NoteEditor.vue'),
+      component: () => import('pages/NoteEditorPage.vue'),
       redirect: { name: RouteNames.RawEditor },
       children: [
         {
           path: 'raw',
           name: RouteNames.RawEditor,
-          component: () => import('pages/NoteRawEditor.vue'),
+          component: () => import('pages/NoteRawEditorPage.vue'),
         },
         {
           name: RouteNames.WysiwygEditor,
           path: 'wysiwyg',
-          component: () => import('pages/NoteWysiwygEditor.vue'),
+          component: () => import('pages/NoteWysiwygEditorPage.vue'),
         },
         {
           name: RouteNames.PreviewEditor,
           path: 'preview',
-          component: () => import('pages/NotePreviewEditor.vue'),
+          component: () => import('pages/NotePreviewEditorPage.vue'),
         },
       ],
     },
     {
       path: 'detail/:id',
       name: RouteNames.NoteDetail,
-      component: () => import('pages/NoteDetail.vue'),
+      component: () => import('pages/NoteDetailPage.vue'),
     },
     {
       path: ':userId/graph',
       name: RouteNames.UserGraph,
-      component: () => import('pages/UserGraph.vue'),
+      component: () => import('pages/UserGraphPage.vue'),
     },
     {
       path: ':userId',
@@ -125,7 +125,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: '/:catchAll(.*)*',
       name: RouteNames.NotFound,
-      component: () => import('pages/ErrorNotFound.vue'),
+      component: () => import('pages/ErrorNotFoundPage.vue'),
     },
   ],
 };

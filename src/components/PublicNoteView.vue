@@ -62,7 +62,7 @@ import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 
 import TagList from 'components/TagList.vue';
-import AuthorInfo from 'src/pages/AuthorInfo.vue';
+import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import { Note } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';

@@ -50,7 +50,7 @@ import { buildMediaFilePath } from 'src/tools';
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
-import AuthorInfo from './AuthorInfo.vue';
+import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import FilePath from 'components/containers/FilePath.vue';
 import ModeLine from 'src/components/ui/ModeLine.vue';
 import { RouteNames } from 'src/router/routes';
