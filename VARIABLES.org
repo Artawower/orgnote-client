@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: css-variables
+:END:
+
+#+TITLE: List of CSS Variables
+#+ID: css-variables
+
+* Undistributed Group
+- --mini-buffer-background: #{$grey-10};
+- --mini-buffer-font-color: #{$light};
+* Buttons
+- --btn-flat-size: 34px;
+- --btn-flat-border: 1px solid #{$smog};
+- --btn-flat-border-radius: 6px;
+- --btn-flat-box-shadow: none;
+- --btn-main-color: #{$grey-9};
+- --action-btn-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
+- --action-btn-border: 1px solid;
+- --action-btn-border-color: #{$smog};
+- --action-btn-padding: 6px;
+- --action-btn-radius: 6px;
+- --action-btn-fire-color: #{$grass};
+- --action-btn-fire-border-color: #{$grass};
+- --action-btn-size: 20px;
+- --action-btn-color: #{$night};
+- --social-btn-size: 24px;
+- --social-btn-background: #{$grey-9};
+* Main colors
+- --headline-font-weight: 500;
+- --font-color-action: #{$blue-12};
+* Fonts
+- --headline-margin: 18px 0;
+- --paragraph-font-size: 20px;
+- --paragraph-font-family: charter, Georgia, Cambria, 'Times New Roman', Times,
+* Ul
+- --ul-font-size: 20px;
+- --ul-line-height: 32px;
+- --ul-font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+* Description
+- --description-font-family: charter, Georgia, Cambria, 'Times New Roman', Times,
+- --description-font-size: 16px;
+- --description-font-style: italic;
+- --description-font-color: #{$smog};
+- --description-padding: 18px 0px;
+* Bars
+- --top-bar-height: 50px;
+* Modeline
+- --modeline-height: 48px;
+- --modeline-padding: 0 32px;
+- --modeline-background: #{$light};
+- --modeline-background: #{$light};
+- --modeline-background: #{$dark};
+* MiniBuffer
+- --mini-buffer-background: #{$white};
+- --mini-buffer-font-color: #{$grey-9};
+- --mini-buffer-border-top: 1px solid #{$grey-9};
+- --completion-item-min-height: 24px;
+- --completion-item-padding: 4px 16px;
+- --completion-item-hover-background: #{$grey-6};
+- --completion-item-hover-color: #{$light};
+* Tags
+- --tag-hover-background: #{$grey-9};
+- --tag-hover-color: #{$grey-3};
+* Inline code
+- --inline-code-background: rgba(175, 184, 193, 0.2);
+- --inline-code-font-color: rgb(36, 41, 47);
+* Markup
+- --content-max-width: 1080px;
+* Colors
+- --main-theme-color: #{$dark};
+- --font-color-main: #{$grey-9};
+- --font-color-secondary: #{$grey-6};
+- --main-background: #{$white};
+- --secondary-background: #{$dark-smog};
+- --theme-color-main: #{$white};
+- --font-color-main: #{$grey-3};
+- --font-color-secondary: #{$grey-6};
+- --main-background: #{$white};
+- --secondary-background: #{$dark-smog};
+- --font-color-main: #{$grey-3};
+- --btn-main-color: #{$grey-3};
