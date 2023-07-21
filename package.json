@@ -6,6 +6,7 @@
   "author": "artawower <artawower@protonmail.com>",
   "private": true,
   "scripts": {
+    "collect:css": "node collect-css-variables.js",
     "serve:ssr": "node dist/ssr/index.js",
     "serve:android": "quasar dev -m cordova -T android",
     "serve:ios": "quasar dev -m cordova -T ios",
@@ -19,7 +20,8 @@
     "codegen:api": "openapi-generator-cli generate",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .prettierignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@editorjs/editorjs": "2.26.5",
@@ -70,6 +72,7 @@
     "eslint": "8.20.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-vue": "9.3.0",
+    "husky": "8.0.3",
     "openapi-client-axios-typegen": "7.2.0",
     "prettier": "2.7.1",
     "sass": "1.32.12",

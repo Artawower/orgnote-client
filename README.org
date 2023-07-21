@@ -28,6 +28,7 @@ It's a proof of concept solution, in the future I have plan to migrate this repo
 - [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
 - [[https://quasar.dev/][Quasar]]  
+- [[./VARIABLES.org][List of all css variables for theme tooling]] 
 
 * ⚙️ Install
 ** Local development
