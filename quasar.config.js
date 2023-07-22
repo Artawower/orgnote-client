@@ -122,10 +122,12 @@ module.exports = configure(function (ctx) {
         // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
         devServer: {
             // https: true
-            host: process.env.HOST || 'localhost',
-            port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 9090,
-            open: true, // opens browser window automatically
-            proxy: {
+          host: process.env.HOST || 'localhost',
+          port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 9090,
+          open: {
+            app: { name: 'google chrome' }
+          },
+          proxy: {
                 '/v1': {
                     target: process.env.API_URL || 'http://localhost:8000',
                     changeOrigin: true,
