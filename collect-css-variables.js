@@ -86,8 +86,9 @@ function createOrgModeDocument(fileVariableGroups) {
     orgContent += `* ${fv.fileName}\n`;
     fv.variableGroups.forEach((vg) => {
       orgContent += `** ${vg.groupName}\n`;
-      vg.variables.forEach((variable) => {
-        orgContent += `- ${variable}\n`;
+      vg.variables.forEach((line) => {
+        const [name, value] = line.split(':');
+        orgContent += `- =${name}=: ${value}\n`;
       });
     });
   });
