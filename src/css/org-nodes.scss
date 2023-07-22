@@ -1,13 +1,4 @@
-@import 'mixins';
-
-@include dark-mode {
-  // Inline code
-  --inline-code-background: rgba(99, 110, 123, 0.4);
-  --inline-code-font-color: rgb(173, 186, 199);
-}
-
-@include light-mode {
-  // Inline code
-  --inline-code-background: rgba(175, 184, 193, 0.2);
-  --inline-code-font-color: rgb(36, 41, 47);
+body {
+  --inline-code-background: var(--base7);
+  --inline-code-font-color: var(--base1);
 }

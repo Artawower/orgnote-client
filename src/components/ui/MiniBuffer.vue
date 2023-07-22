@@ -7,14 +7,14 @@
 <script lang="ts" setup></script>
 
 <style lang="scss">
-:root {
-  --mini-buffer-background: #{$grey-11};
-  --mini-buffer-font-color: #{$grey-9};
-  --mini-buffer-border-top: 1px solid #{$grey-9};
+.mini-buffer {
+  --mini-buffer-background: var(--base1);
+  --mini-buffer-font-color: var(--base3);
+  --mini-buffer-border-top: 1px solid var(--base4);
 }
 
 .mini-buffer {
-  background: var(--mini-buffer-background);
+  background: var(--mini-buffer-background) !important;
   color: var(--mini-buffer-font-color);
 }
 

@@ -30,13 +30,9 @@ const searchByTag = (tag: string) => notesStore.setFilters({ searchText: tag });
 </script>
 
 <style lang="scss">
-@include light-mode {
-  --tag-hover-background: #{$grey-9};
-  --tag-hover-color: #{$grey-3};
-}
-@include dark-mode {
-  --tag-hover-background: #{$grey-3};
-  --tag-hover-color: #{$grey-9};
+.tags-wrapper {
+  --tag-hover-background: var(--base0);
+  --tag-hover-color: var(--base1);
 }
 .tags-wrapper {
   padding: 0 0.5rem;

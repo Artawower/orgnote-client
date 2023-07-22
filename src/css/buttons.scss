@@ -1,30 +1,18 @@
 @import 'mixins';
 
-:root {
+body {
   // Flat button
   --btn-flat-size: 34px;
-  --btn-flat-border: 1px solid #{$grey-5};
+  --btn-flat-border: 1px solid var(--base5);
   --btn-flat-border-radius: 6px;
   --btn-flat-box-shadow: none;
 
   // Colors
-  --btn-main-color: #{$grey-9};
-
-  // Action button
-  --btn-action-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --btn-action-border: 1px solid;
-  --btn-action-border-color: #{$grey-5};
-  --btn-action-padding: 6px;
-  --btn-action-radius: 6px;
-  --btn-action-fire-color: #{$green-5};
-  --btn-action-fire-border-color: #{$green-5};
-  --btn-action-size: 20px;
-  --btn-action-color: #{$blue-grey-8};
+  --btn-main-color: var(--base0);
 
   // Social networking button
   --btn-social-size: 24px;
-  --btn-social-background: #{$grey-9};
+  --btn-social-background: var(--base4);
 }
 
 .btn-flat {

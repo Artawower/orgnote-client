@@ -13,10 +13,10 @@
       :src="buildMediaFilePath(note.meta.previewImg)"
     />
     <q-card-section>
-      <div class="text-h6 themed-text">{{ note.meta.title }}</div>
+      <div class="text-h6">{{ note.meta.title }}</div>
     </q-card-section>
     <q-card-section class="q-pt-none">
-      <div class="text-body2 themed-text">{{ note.meta.description }}</div>
+      <div class="text-body2">{{ note.meta.description }}</div>
     </q-card-section>
   </q-card>
   <h1 v-else>Note found ;(</h1>

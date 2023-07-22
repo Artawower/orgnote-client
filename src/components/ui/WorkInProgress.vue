@@ -6,7 +6,7 @@
 .wip {
   @include flexify(row, center, center);
 
-  background-color: yellow;
+  background-color: var(--yellow);
   color: black;
   position: fixed;
   width: 1200px;

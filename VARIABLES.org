@@ -12,64 +12,83 @@
 - =--dur=:  1s;
 * TagList.vue
 ** Undistributed Group
-- =--tag-hover-background=:  #{$grey-9};
-- =--tag-hover-color=:  #{$grey-3};
-- =--tag-hover-background=:  #{$grey-3};
-- =--tag-hover-color=:  #{$grey-9};
+- =--tag-hover-background=:  var(--base0);
+- =--tag-hover-color=:  var(--base1);
 * CompletionPromt.vue
 ** Undistributed Group
 - =--completion-item-min-height=:  24px;
 - =--completion-item-padding=:  4px 16px;
-- =--completion-item-hover-background=:  #{$grey-6};
-- =--completion-item-hover-color=:  #{$light};
+- =--completion-item-hover-background=:  var(--base5);
+- =--completion-item-hover-color=:  var(--base0);
+* ActionBtn.vue
+** Undistributed Group
+- =--btn-action-shadow=:  0 1px 0 rgba(27, 31, 36, 0.04),
+- =--btn-action-border=:  1px solid;
+- =--btn-action-border-color=:  var(--base5);
+- =--btn-action-padding=:  6px;
+- =--btn-action-radius=:  6px;
+- =--btn-action-fire-color=:  var(--base5);
+- =--btn-action-fire-border-color=:  var(--green);
+- =--btn-action-size=:  20px;
+- =--btn-action-color=:  var(--base5);
 * MiniBuffer.vue
 ** Undistributed Group
-- =--mini-buffer-background=:  #{$grey-11};
-- =--mini-buffer-font-color=:  #{$grey-9};
-- =--mini-buffer-border-top=:  1px solid #{$grey-9};
+- =--mini-buffer-background=:  var(--base1);
+- =--mini-buffer-font-color=:  var(--base3);
+- =--mini-buffer-border-top=:  1px solid var(--base4);
 * ModeLine.vue
 ** Undistributed Group
-- =--modeline-height=:  48px;
 - =--modeline-padding=:  0 32px;
-- =--modeline-background=:  #{$light};
-* app.scss
-** Undistributed Group
-- =--mini-buffer-background=:  #{$grey-10};
-- =--mini-buffer-font-color=:  #{$light};
+- =--modeline-background=:  var(--base1);
 * buttons.scss
 ** Flat button
 - =--btn-flat-size=:  34px;
-- =--btn-flat-border=:  1px solid #{$grey-5};
+- =--btn-flat-border=:  1px solid var(--base5);
 - =--btn-flat-border-radius=:  6px;
 - =--btn-flat-box-shadow=:  none;
 ** Colors
-- =--btn-main-color=:  #{$grey-9};
-** Action button
-- =--btn-action-shadow=:  0 1px 0 rgba(27, 31, 36, 0.04),
-- =--btn-action-border=:  1px solid;
-- =--btn-action-border-color=:  #{$grey-5};
-- =--btn-action-padding=:  6px;
-- =--btn-action-radius=:  6px;
-- =--btn-action-fire-color=:  #{$green-5};
-- =--btn-action-fire-border-color=:  #{$green-5};
-- =--btn-action-size=:  20px;
-- =--btn-action-color=:  #{$blue-grey-8};
+- =--btn-main-color=:  var(--base0);
 ** Social networking button
 - =--btn-social-size=:  24px;
-- =--btn-social-background=:  #{$grey-9};
+- =--btn-social-background=:  var(--base4);
+* colors.scss
+** Undistributed Group
+- =--red=:  #f65866;
+- =--orange=:  #dd9046;
+- =--green=:  #8bcd5b;
+- =--teal=:  #4db5bd;
+- =--yellow=:  #ecbe7b;
+- =--blue=:  #41a7fc;
+- =--dark-blue=:  #1c4a6e;
+- =--magenta=:  #c75ae8;
+- =--violet=:  #c75ae8;
+- =--cyan=:  #34bfd0;
+- =--dark-cyan=:  #5699af;
+- =--base0=:  #{$grey-3};
+- =--base1=:  #{$grey-10};
+- =--base2=:  #1d1d1d;
+- =--base3=:  #22272e;
+- =--base4=:  #{$grey-9};
+- =--base5=:  #{$grey-6};
+- =--base7=:  rgba(99, 110, 123, 0.4);
+- =--base0=:  #{$grey-9};
+- =--base1=:  #{$grey-1};
+- =--base2=:  #{$blue-grey-4};
+- =--base3=:  #22272e;
+- =--base4=:  #{$grey-9};
+- =--base5=:  #{$grey-6};
+- =--base7=:  rgba(175, 184, 193, 0.2);
 * editor.scss
 ** Fonts
 - =--editor-font-family=:  var(--main-font-family);
 * org-nodes.scss
-** Inline code
-- =--inline-code-background=:  rgba(99, 110, 123, 0.4);
-- =--inline-code-font-color=:  rgb(173, 186, 199);
-- =--inline-code-background=:  rgba(175, 184, 193, 0.2);
-- =--inline-code-font-color=:  rgb(36, 41, 47);
+** Undistributed Group
+- =--inline-code-background=:  var(--base7);
+- =--inline-code-font-color=:  var(--base1);
 * scroll.scss
 ** Undistributed Group
 - =--scroll-bar-width=:  4px;
-- =--scroll-bar-color=:  #{$grey-9};
+- =--scroll-bar-color=:  var(--base4);
 * typography.scss
 ** Fonts
 - =--headline-margin=:  18px 0;
@@ -77,17 +96,20 @@
 - =--main-font-family=:  charter, Georgia, Cambria, 'Times New Roman', Times, serif;
 - =--editor-font-family-main=:  var(
 - =--main-font-family,=: undefined
-- =--paragraph-font-family=:  --main-font-family;
+- =--paragraph-font-family=:  var(--main-font-family);
 ** Note description
-- =--description-font-family=:  --main-font-family;
+- =--description-font-family=:  var(--main-font-family);
 - =--description-font-size=:  16px;
 - =--description-font-style=:  italic;
-- =--description-font-color=:  #{$grey-3};
+- =--description-font-color=:  var(--base-5);
 - =--description-padding=:  18px 0px;
+** Font colors
+- =--font-color-secondary=:  var(--base5);
+- =--font-color-main=:  var(--base0);
 * variables.scss
 ** Main colors
 - =--headline-font-weight=:  500;
-- =--font-color-action=:  #{$blue-12};
+- =--font-color-action=:  var(--blue);
 ** Ul
 - =--ul-font-size=:  20px;
 - =--ul-line-height=:  32px;
@@ -96,19 +118,9 @@
 - =--top-bar-height=:  50px;
 ** Markup
 - =--content-max-width=:  1080px;
-** Modeline
-- =--modeline-background=:  #{$light};
-- =--modeline-background=:  #{$dark};
 ** Colors
-- =--main-theme-color=:  #{$dark};
-- =--font-color-main=:  #{$grey-9};
-- =--font-color-secondary=:  #{$grey-6};
-- =--main-background=:  #{$grey-11};
-- =--secondary-background=:  #{$dark-smog};
-- =--theme-color-main=:  #{$grey-11};
-- =--font-color-main=:  #{$grey-3};
-- =--font-color-secondary=:  #{$grey-6};
-- =--main-background=:  #{$grey-11};
-- =--secondary-background=:  #{$dark-smog};
-- =--font-color-main=:  #{$grey-3};
-- =--btn-main-color=:  #{$grey-3};
+- =--main-background=:  var(--base1);
+- =--main-theme-color=:  var(--base0);
+- =--secondary-background=:  var(--base3);
+** Global modeline config
+- =--modeline-height=:  48px;

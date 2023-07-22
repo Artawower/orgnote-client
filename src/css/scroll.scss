@@ -1,6 +1,6 @@
-:root {
+body {
   --scroll-bar-width: 4px;
-  --scroll-bar-color: #{$grey-9};
+  --scroll-bar-color: var(--base4);
 }
 
 * {

@@ -26,7 +26,7 @@
 <script lang="ts" setup></script>
 
 <style lang="scss">
-:root {
+.wheel-and-hamster {
   --bg: hsl(90, 90%, 20%);
   --fg: hsl(223, 10%, 10%);
   font-size: calc(16px + (24 - 16) * (100vw - 320px) / (1280 - 320));

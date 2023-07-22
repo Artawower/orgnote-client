@@ -1,4 +1,4 @@
-:root {
+body {
   // Fonts
   --headline-margin: 18px 0;
   --paragraph-font-size: 20px;
@@ -12,14 +12,18 @@
     Times,
     serif
   );
-  --paragraph-font-family: --main-font-family;
+  --paragraph-font-family: var(--main-font-family);
 
   // Note description
-  --description-font-family: --main-font-family;
+  --description-font-family: var(--main-font-family);
   --description-font-size: 16px;
   --description-font-style: italic;
-  --description-font-color: #{$grey-3};
+  --description-font-color: var(--base-5);
   --description-padding: 18px 0px;
+
+  // Font colors
+  --font-color-secondary: var(--base5);
+  --font-color-main: var(--base0);
 }
 
 .color-main {

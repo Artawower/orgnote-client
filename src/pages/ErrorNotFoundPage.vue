@@ -2,9 +2,9 @@
   <div class="not-found-wrapper text-center q-pa-md flex flex-center">
     <div id="main">
       <div class="fof">
-        <h1 class="text-h1 main-font-color">{{ $t('Error') }} 404</h1>
+        <h1 class="text-h1 color-main">{{ $t('Error') }} 404</h1>
         <h5
-          class="text-h5 cursor-pointer main-font-color"
+          class="text-h5 cursor-pointer color-main"
           role="link"
           @click="goBack"
         >
@@ -13,7 +13,7 @@
         <a
           href="mailto:artawower33@gmail.com"
           target="_blank"
-          class="text-h6 main-font-color reset"
+          class="text-h6 color-main reset"
           >{{ $t('If you think this is a mistake, please contact us') }}</a
         >
       </div>

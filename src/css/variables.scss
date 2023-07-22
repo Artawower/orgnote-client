@@ -1,7 +1,7 @@
 :root {
   // Main colors
   --headline-font-weight: 500;
-  --font-color-action: #{$blue-12};
+  --font-color-action: var(--blue);
 
   // Ul
   --ul-font-size: 20px;
@@ -13,32 +13,12 @@
 
   // Markup
   --content-max-width: 1080px;
-}
-
-@include light-mode {
-  // Modeline
-  --modeline-background: #{$light};
 
   // Colors
-  --main-theme-color: #{$dark};
-  --font-color-main: #{$grey-9};
-  --font-color-secondary: #{$grey-6};
+  --main-background: var(--base1);
+  --main-theme-color: var(--base0);
+  --secondary-background: var(--base3);
 
-  --main-background: #{$grey-11};
-  --secondary-background: #{$dark-smog};
-}
-
-@include dark-mode {
-  // Modeline
-  --modeline-background: #{$dark};
-
-  // Colors
-  --theme-color-main: #{$grey-11};
-  --font-color-main: #{$grey-3};
-  --font-color-secondary: #{$grey-6};
-  --main-background: #{$grey-11};
-  --secondary-background: #{$dark-smog};
-
-  --font-color-main: #{$grey-3};
-  --btn-main-color: #{$grey-3};
+  // Global modeline config
+  --modeline-height: 48px;
 }
