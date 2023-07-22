@@ -1,12 +1,39 @@
-@import 'colors';
+@import 'mixins';
 
-.flat-btn {
-  width: var(--flat-btn-size);
-  height: var(--flat-btn-size);
+:root {
+  // Flat button
+  --btn-flat-size: 34px;
+  --btn-flat-border: 1px solid #{$grey-5};
+  --btn-flat-border-radius: 6px;
+  --btn-flat-box-shadow: none;
+
+  // Colors
+  --btn-main-color: #{$grey-9};
+
+  // Action button
+  --btn-action-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --btn-action-border: 1px solid;
+  --btn-action-border-color: #{$grey-5};
+  --btn-action-padding: 6px;
+  --btn-action-radius: 6px;
+  --btn-action-fire-color: #{$green-5};
+  --btn-action-fire-border-color: #{$green-5};
+  --btn-action-size: 20px;
+  --btn-action-color: #{$blue-grey-8};
+
+  // Social networking button
+  --btn-social-size: 24px;
+  --btn-social-background: #{$grey-9};
+}
+
+.btn-flat {
+  width: var(--btn-flat-size);
+  height: var(--btn-flat-size);
   min-height: 0 !important;
-  box-shadow: var(--flat-btn-box-shadow);
-  border: var(--flat-btn-border);
-  border-radius: var(--flat-btn-border-radius);
+  box-shadow: var(--btn-flat-box-shadow);
+  border: var(--btn-flat-border);
+  border-radius: var(--btn-flat-border-radius);
 
   &::before {
     box-shadow: none;
@@ -18,4 +45,8 @@
     height: 100%;
     border-radius: 0;
   }
+}
+
+.btn-iconed {
+  background: var(--btn-main-color);
 }

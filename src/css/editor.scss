@@ -1,3 +1,8 @@
+:root {
+  // Fonts
+  --editor-font-family: var(--main-font-family);
+}
+
 .editor-input {
   all: unset;
   width: 100%;

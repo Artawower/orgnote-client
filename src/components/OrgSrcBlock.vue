@@ -44,9 +44,5 @@ const copySrc = () => {
       display: flex;
     }
   }
-
-  .copy-btn.copied {
-    display: flex;
-  }
 }
 </style>

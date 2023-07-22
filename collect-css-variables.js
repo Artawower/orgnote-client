@@ -19,7 +19,7 @@ function findSCSSFiles(rootDir) {
 
       if (stat.isDirectory()) {
         traverseDirectory(filePath);
-      } else if (file.endsWith('.scss')) {
+      } else if (file.endsWith('.scss') || file.endsWith('.vue')) {
         scssFiles.push(filePath);
       }
     }
@@ -31,11 +31,13 @@ function findSCSSFiles(rootDir) {
 }
 
 function collectCSSVariables(filePathArray) {
-  const variableGroups = [];
-  let tmpGroup = 'Undistributed Group';
+  const fileVariables = [];
 
   for (const filePath of filePathArray) {
     const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
+    const variableGroups = [];
+    const fileName = path.basename(filePath);
+    let tmpGroup = 'Undistributed Group';
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -60,12 +62,14 @@ function collectCSSVariables(filePathArray) {
         }
       }
     }
+
+    fileVariables.push({ fileName, variableGroups });
   }
 
-  return variableGroups;
+  return fileVariables;
 }
 
-function createOrgModeDocument(variableGroups) {
+function createOrgModeDocument(fileVariableGroups) {
   let orgContent = `:PROPERTIES:
 :ID: css-variables
 :END:
@@ -75,17 +79,23 @@ function createOrgModeDocument(variableGroups) {
 
 `;
 
-  variableGroups.forEach((group) => {
-    orgContent += `* ${group.groupName}\n`;
-    group.variables.forEach((variable) => {
-      orgContent += `- ${variable}\n`;
+  fileVariableGroups.forEach((fv) => {
+    if (!fv.variableGroups?.length) {
+      return;
+    }
+    orgContent += `* ${fv.fileName}\n`;
+    fv.variableGroups.forEach((vg) => {
+      orgContent += `** ${vg.groupName}\n`;
+      vg.variables.forEach((variable) => {
+        orgContent += `- ${variable}\n`;
+      });
     });
   });
 
   return orgContent;
 }
 
-const rootDir = './src/css';
+const rootDir = './src';
 const scssFiles = findSCSSFiles(rootDir);
 const variableGroups = collectCSSVariables(scssFiles);
 

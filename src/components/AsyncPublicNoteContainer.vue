@@ -22,10 +22,3 @@ const note = computed(() => {
   return note;
 });
 </script>
-
-<style lang="scss">
-.mock {
-  height: 205px;
-  border: 20px solid white;
-}
-</style>

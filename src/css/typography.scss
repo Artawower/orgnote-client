@@ -1,3 +1,27 @@
+:root {
+  // Fonts
+  --headline-margin: 18px 0;
+  --paragraph-font-size: 20px;
+  --main-font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --editor-font-family-main: var(
+    --main-font-family,
+    charter,
+    Georgia,
+    Cambria,
+    'Times New Roman',
+    Times,
+    serif
+  );
+  --paragraph-font-family: --main-font-family;
+
+  // Note description
+  --description-font-family: --main-font-family;
+  --description-font-size: 16px;
+  --description-font-style: italic;
+  --description-font-color: #{$grey-3};
+  --description-padding: 18px 0px;
+}
+
 .color-main {
   color: var(--font-color-main);
 }

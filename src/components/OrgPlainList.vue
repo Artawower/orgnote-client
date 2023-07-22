@@ -21,6 +21,7 @@ const props = defineProps<{
 }>();
 
 const node = toRef(props, 'node');
+// TODO: master determine list type
 // const parentListTag = props.node.listType === 'ordered' ? 'ol' : 'ul';
 const parentListTag = 'ul';
 </script>

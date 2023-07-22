@@ -97,7 +97,7 @@ onMounted(() => {
 }
 
 #editor {
-  font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-family: var(--editor-font-family-main);
 }
 
 .ql-editor {

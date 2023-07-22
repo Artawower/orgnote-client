@@ -11,7 +11,6 @@
 <style lang="scss">
 .download-links {
   @include flexify(row, center, center);
-
   width: 100%;
 }
 </style>

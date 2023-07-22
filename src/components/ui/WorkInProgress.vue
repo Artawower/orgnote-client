@@ -4,6 +4,8 @@
 
 <style lang="scss">
 .wip {
+  @include flexify(row, center, center);
+
   background-color: yellow;
   color: black;
   position: fixed;
@@ -13,7 +15,6 @@
   text-align: center;
   rotate: -45deg;
   left: calc(100% - 600px);
-  @include flexify(row, center, center);
   padding-right: 200px;
   border: 4px dotted black;
 }

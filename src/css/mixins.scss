@@ -4,3 +4,15 @@
   justify-content: $justify;
   align-items: $align;
 }
+
+@mixin dark-mode {
+  body.body--dark {
+    @content;
+  }
+}
+
+@mixin light-mode {
+  body.body--light {
+    @content;
+  }
+}

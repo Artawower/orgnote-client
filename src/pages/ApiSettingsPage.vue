@@ -16,7 +16,7 @@
             <q-btn
               @click="settingsStore.removeToken(token)"
               icon="delete"
-              class="flat-btn delete-btn q-mr-xs"
+              class="btn-flat delete-btn q-mr-xs"
             >
             </q-btn>
             <action-btn

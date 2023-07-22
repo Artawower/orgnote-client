@@ -59,6 +59,13 @@ watch(
 </script>
 
 <style lang="scss">
+:root {
+  --completion-item-min-height: 24px;
+  --completion-item-padding: 4px 16px;
+  --completion-item-hover-background: #{$grey-6};
+  --completion-item-hover-color: #{$light};
+}
+
 .completion-item {
   min-height: var(--completion-item-min-height);
   padding: var(--completion-item-padding);

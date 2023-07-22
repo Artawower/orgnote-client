@@ -39,14 +39,14 @@ const clicked = () => {
 
 <style lang="scss">
 .action-btn {
-  width: var(--action-btn-size);
-  height: var(--action-btn-size);
-  color: var(--action-btn-color);
-  box-shadow: var(--action-btn-shadow);
-  border: var(--action-btn-border);
-  border-color: var(--action-btn-border-color);
-  border-radius: var(--action-btn-radius);
-  padding: var(--action-btn-padding);
+  width: var(--btn-action-size);
+  height: var(--btn-action-size);
+  color: var(--btn-action-color);
+  box-shadow: var(--btn-action-shadow);
+  border: var(--btn-action-border);
+  border-color: var(--btn-action-border-color);
+  border-radius: var(--btn-action-radius);
+  padding: var(--btn-action-padding);
 
   cursor: pointer;
 
@@ -55,8 +55,8 @@ const clicked = () => {
   }
 
   &.fired {
-    color: var(--action-btn-fire-color);
-    border-color: var(--action-btn-fire-border-color);
+    color: var(--btn-action-fire-color);
+    border-color: var(--btn-action-fire-border-color);
   }
 }
 </style>

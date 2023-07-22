@@ -27,6 +27,11 @@ const tabMode = toRef(props, 'tabMode');
 </script>
 
 <style lang="scss">
+:root {
+  --modeline-height: 48px;
+  --modeline-padding: 0 32px;
+  --modeline-background: #{$light};
+}
 .modeline {
   background: var(--modeline-background);
   color: var(--modeline-font-color);

@@ -3,7 +3,6 @@
     <q-badge
       v-for="tag in tags"
       class="tag q-px-sm q-py-xs"
-      :class="{ dark: $q.dark.isActive }"
       :key="tag"
       @click="searchByTag(tag)"
       rounded
@@ -27,12 +26,18 @@ const props = defineProps<{
 const { tags } = toRefs(props);
 
 const notesStore = useNotesStore();
-const searchByTag = (tag: string) => {
-  notesStore.setFilters({ searchText: tag });
-};
+const searchByTag = (tag: string) => notesStore.setFilters({ searchText: tag });
 </script>
 
 <style lang="scss">
+@include light-mode {
+  --tag-hover-background: #{$grey-9};
+  --tag-hover-color: #{$grey-3};
+}
+@include dark-mode {
+  --tag-hover-background: #{$grey-3};
+  --tag-hover-color: #{$grey-9};
+}
 .tags-wrapper {
   padding: 0 0.5rem;
 }
@@ -43,13 +48,8 @@ const searchByTag = (tag: string) => {
   }
 
   &:hover {
-    background-color: var(--tag-hover-background);
+    background-color: var(--tag-hover-background) !important;
     color: var(--tag-hover-color) !important;
-  }
-
-  &.dark:hover {
-    background-color: $grey-3;
-    color: $grey-9 !important;
   }
 }
 </style>

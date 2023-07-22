@@ -56,6 +56,4 @@ const props = defineProps<{
 
 const node = toRef(props, 'node');
 defineComponent(typedComponents);
-
-// const { node } = toRefs(props);
 </script>

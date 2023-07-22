@@ -17,14 +17,6 @@ import Strikethrough from '@sotaproject/strikethrough';
 import Undo from 'editorjs-undo';
 import WorkInProgress from 'src/components/ui/WorkInProgress.vue';
 
-// const props = defineProps<{
-//   modelValue: string;
-// }>();
-//
-// const emits = defineEmits<{
-//   'update:modelValue': (value: string) => void;
-// }>();
-//
 const editorRef = ref<HTMLElement>(null);
 let editor: EditorJS;
 
@@ -32,7 +24,6 @@ const changeData = async () => {
   if (!editor) {
     return;
   }
-  // const data = await editor.save();
 };
 
 onMounted(async () => {
@@ -55,13 +46,11 @@ onMounted(async () => {
   await editor.isReady;
   new Undo({ editor });
 });
-
-// onUnmounted(() => {});
 </script>
 
 <style lang="scss">
 #editor {
-  font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-family: var(--editor-font-family);
   height: calc(100vh - 88px);
 }
 </style>
