@@ -66,6 +66,10 @@
 - --inline-code-font-color: rgb(173, 186, 199);
 - --inline-code-background: rgba(175, 184, 193, 0.2);
 - --inline-code-font-color: rgb(36, 41, 47);
+* scroll.scss
+** Undistributed Group
+- --scroll-bar-width: 4px;
+- --scroll-bar-color: #{$grey-9};
 * typography.scss
 ** Fonts
 - --headline-margin: 18px 0;
