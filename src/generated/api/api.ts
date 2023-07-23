@@ -714,36 +714,6 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
-         * Delete API token
-         * @summary Delete API token
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authTokenDelete: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/auth/token`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Create API token
          * @summary Create API token
          * @param {*} [options] Override http request option.
@@ -759,6 +729,40 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             }
 
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Delete API token
+         * @summary Delete API token
+         * @param {string} tokenId token id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authTokenTokenIdDelete: async (tokenId: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'tokenId' is not null or undefined
+            assertParamExists('authTokenTokenIdDelete', 'tokenId', tokenId)
+            const localVarPath = `/auth/token/{tokenId}`
+                .replace(`{${"tokenId"}}`, encodeURIComponent(String(tokenId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -856,16 +860,6 @@ export const AuthApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Delete API token
-         * @summary Delete API token
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async authTokenDelete(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authTokenDelete(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * Create API token
          * @summary Create API token
          * @param {*} [options] Override http request option.
@@ -873,6 +867,17 @@ export const AuthApiFp = function(configuration?: Configuration) {
          */
         async authTokenPost(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsAPITokenAny>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.authTokenPost(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * Delete API token
+         * @summary Delete API token
+         * @param {string} tokenId token id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authTokenTokenIdDelete(tokenId: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authTokenTokenIdDelete(tokenId, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -934,15 +939,6 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
             return localVarFp.authProviderLoginGet(provider, options).then((request) => request(axios, basePath));
         },
         /**
-         * Delete API token
-         * @summary Delete API token
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        authTokenDelete(options?: any): AxiosPromise<object> {
-            return localVarFp.authTokenDelete(options).then((request) => request(axios, basePath));
-        },
-        /**
          * Create API token
          * @summary Create API token
          * @param {*} [options] Override http request option.
@@ -950,6 +946,16 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          */
         authTokenPost(options?: any): AxiosPromise<HandlersHttpResponseModelsAPITokenAny> {
             return localVarFp.authTokenPost(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Delete API token
+         * @summary Delete API token
+         * @param {string} tokenId token id
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authTokenTokenIdDelete(tokenId: string, options?: any): AxiosPromise<object> {
+            return localVarFp.authTokenTokenIdDelete(tokenId, options).then((request) => request(axios, basePath));
         },
         /**
          * Return found user by provided token
@@ -1017,17 +1023,6 @@ export class AuthApi extends BaseAPI {
     }
 
     /**
-     * Delete API token
-     * @summary Delete API token
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof AuthApi
-     */
-    public authTokenDelete(options?: AxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authTokenDelete(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
      * Create API token
      * @summary Create API token
      * @param {*} [options] Override http request option.
@@ -1036,6 +1031,18 @@ export class AuthApi extends BaseAPI {
      */
     public authTokenPost(options?: AxiosRequestConfig) {
         return AuthApiFp(this.configuration).authTokenPost(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Delete API token
+     * @summary Delete API token
+     * @param {string} tokenId token id
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public authTokenTokenIdDelete(tokenId: string, options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authTokenTokenIdDelete(tokenId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

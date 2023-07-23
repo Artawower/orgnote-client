@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore(
     const removeToken = async (token: ModelsAPIToken) => {
       tokens.value = tokens.value.filter((t) => t.id !== token.id);
       try {
-        await sdk.auth.authTokenDelete(token.id);
+        await sdk.auth.authTokenTokenIdDelete(token.id);
       } catch (e) {
         tokens.value = [...tokens.value, token];
       }
