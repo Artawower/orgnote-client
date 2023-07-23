@@ -37,7 +37,7 @@ function collectCSSVariables(filePathArray) {
     const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
     const variableGroups = [];
     const fileName = path.basename(filePath);
-    let tmpGroup = 'Undistributed Group';
+    let tmpGroup = 'Common';
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
