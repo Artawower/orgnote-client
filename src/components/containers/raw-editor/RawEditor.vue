@@ -101,8 +101,6 @@ onMounted(() => {
 }
 
 .ql-editor {
-  height: calc(100vh - 114px);
-
   &:focus {
     outline: none;
   }
