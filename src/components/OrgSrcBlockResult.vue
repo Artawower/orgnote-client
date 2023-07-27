@@ -1,7 +1,7 @@
 <template>
   <div class="src-code-wrapper">
     {{ $t('output') }}
-    <highlightjs language="bash" :code="content.value" />
+    <highlightjs v-if="content?.value" language="bash" :code="content.value" />
   </div>
 </template>
 
@@ -15,7 +15,7 @@ import hljsVuePlugin from '@highlightjs/vue-plugin';
 const highlightjs = hljsVuePlugin.component;
 
 const props = defineProps<{
-  content: OrgNode;
+  content?: OrgNode;
 }>();
 
 const content = toRef(props, 'content');

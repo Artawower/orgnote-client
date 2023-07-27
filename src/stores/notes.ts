@@ -126,8 +126,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   const upsertNote = async (note: HandlersCreatedNote) => {
     try {
-      const stringifiedNote = JSON.stringify(note);
-      await sdk.notes.notesBulkUpsertPut([stringifiedNote], []);
+      await sdk.notes.notesBulkUpsertPut([note]);
       loadNotes();
     } catch (e) {}
   };

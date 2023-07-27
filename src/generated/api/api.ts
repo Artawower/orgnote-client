@@ -26,31 +26,44 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError } from './base';
 /**
  * 
  * @export
- * @interface HandlersCreatedNote
+ * @interface FilesUploadPostRequest
  */
-export interface HandlersCreatedNote {
+export interface FilesUploadPostRequest {
+    /**
+     * files
+     * @type {Array<string>}
+     * @memberof FilesUploadPostRequest
+     */
+    'files': Array<string>;
+}
+/**
+ * 
+ * @export
+ * @interface HandlersCreatingNote
+ */
+export interface HandlersCreatingNote {
     /**
      * 
      * @type {string}
-     * @memberof HandlersCreatedNote
+     * @memberof HandlersCreatingNote
      */
     'content'?: string;
     /**
      * 
      * @type {Array<string>}
-     * @memberof HandlersCreatedNote
+     * @memberof HandlersCreatingNote
      */
     'filePath'?: Array<string>;
     /**
      * 
      * @type {string}
-     * @memberof HandlersCreatedNote
+     * @memberof HandlersCreatingNote
      */
     'id'?: string;
     /**
      * 
      * @type {ModelsNoteMeta}
-     * @memberof HandlersCreatedNote
+     * @memberof HandlersCreatingNote
      */
     'meta'?: ModelsNoteMeta;
 }
@@ -1059,6 +1072,113 @@ export class AuthApi extends BaseAPI {
 
 
 /**
+ * FilesApi - axios parameter creator
+ * @export
+ */
+export const FilesApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Upload files.
+         * @summary Upload files
+         * @param {FilesUploadPostRequest} filesUploadPostRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        filesUploadPost: async (filesUploadPostRequest: FilesUploadPostRequest, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'filesUploadPostRequest' is not null or undefined
+            assertParamExists('filesUploadPost', 'filesUploadPostRequest', filesUploadPostRequest)
+            const localVarPath = `/files/upload`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(filesUploadPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * FilesApi - functional programming interface
+ * @export
+ */
+export const FilesApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = FilesApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * Upload files.
+         * @summary Upload files
+         * @param {FilesUploadPostRequest} filesUploadPostRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async filesUploadPost(filesUploadPostRequest: FilesUploadPostRequest, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.filesUploadPost(filesUploadPostRequest, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+    }
+};
+
+/**
+ * FilesApi - factory interface
+ * @export
+ */
+export const FilesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = FilesApiFp(configuration)
+    return {
+        /**
+         * Upload files.
+         * @summary Upload files
+         * @param {FilesUploadPostRequest} filesUploadPostRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        filesUploadPost(filesUploadPostRequest: FilesUploadPostRequest, options?: any): AxiosPromise<object> {
+            return localVarFp.filesUploadPost(filesUploadPostRequest, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * FilesApi - object-oriented interface
+ * @export
+ * @class FilesApi
+ * @extends {BaseAPI}
+ */
+export class FilesApi extends BaseAPI {
+    /**
+     * Upload files.
+     * @summary Upload files
+     * @param {FilesUploadPostRequest} filesUploadPostRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof FilesApi
+     */
+    public filesUploadPost(filesUploadPostRequest: FilesUploadPostRequest, options?: AxiosRequestConfig) {
+        return FilesApiFp(this.configuration).filesUploadPost(filesUploadPostRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+/**
  * NotesApi - axios parameter creator
  * @export
  */
@@ -1067,16 +1187,13 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<string>} notes Notes payload. See CreatedNote model
-         * @param {Array<string>} files Form data files.
+         * @param {Array<HandlersCreatingNote>} notes List of created notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut: async (notes: Array<string>, files: Array<string>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        notesBulkUpsertPut: async (notes: Array<HandlersCreatingNote>, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'notes' is not null or undefined
             assertParamExists('notesBulkUpsertPut', 'notes', notes)
-            // verify required parameter 'files' is not null or undefined
-            assertParamExists('notesBulkUpsertPut', 'files', files)
             const localVarPath = `/notes/bulk-upsert`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1088,24 +1205,15 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
             const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
-            if (notes) {
-                localVarFormParams.append('notes', notes.join(COLLECTION_FORMATS.csv));
-            }
-
-                if (files) {
-                localVarFormParams.append('files', files.join(COLLECTION_FORMATS.csv));
-            }
 
     
-    
-            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
-    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = localVarFormParams;
+            localVarRequestOptions.data = serializeDataIfNeeded(notes, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1269,11 +1377,11 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Create note
          * @summary Create note
-         * @param {HandlersCreatedNote} note Note model
+         * @param {HandlersCreatingNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesPost: async (note: HandlersCreatedNote, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        notesPost: async (note: HandlersCreatingNote, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'note' is not null or undefined
             assertParamExists('notesPost', 'note', note)
             const localVarPath = `/notes/`;
@@ -1315,13 +1423,12 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<string>} notes Notes payload. See CreatedNote model
-         * @param {Array<string>} files Form data files.
+         * @param {Array<HandlersCreatingNote>} notes List of created notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notesBulkUpsertPut(notes, files, options);
+        async notesBulkUpsertPut(notes: Array<HandlersCreatingNote>, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notesBulkUpsertPut(notes, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -1373,11 +1480,11 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Create note
          * @summary Create note
-         * @param {HandlersCreatedNote} note Note model
+         * @param {HandlersCreatingNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesPost(note: HandlersCreatedNote, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async notesPost(note: HandlersCreatingNote, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesPost(note, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1394,13 +1501,12 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<string>} notes Notes payload. See CreatedNote model
-         * @param {Array<string>} files Form data files.
+         * @param {Array<HandlersCreatingNote>} notes List of created notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: any): AxiosPromise<object> {
-            return localVarFp.notesBulkUpsertPut(notes, files, options).then((request) => request(axios, basePath));
+        notesBulkUpsertPut(notes: Array<HandlersCreatingNote>, options?: any): AxiosPromise<object> {
+            return localVarFp.notesBulkUpsertPut(notes, options).then((request) => request(axios, basePath));
         },
         /**
          * Mark notes as deleted by provided list of ids
@@ -1447,11 +1553,11 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Create note
          * @summary Create note
-         * @param {HandlersCreatedNote} note Note model
+         * @param {HandlersCreatingNote} note Note model
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesPost(note: HandlersCreatedNote, options?: any): AxiosPromise<object> {
+        notesPost(note: HandlersCreatingNote, options?: any): AxiosPromise<object> {
             return localVarFp.notesPost(note, options).then((request) => request(axios, basePath));
         },
     };
@@ -1467,14 +1573,13 @@ export class NotesApi extends BaseAPI {
     /**
      * Bulk update or insert notes
      * @summary Upsert notes
-     * @param {Array<string>} notes Notes payload. See CreatedNote model
-     * @param {Array<string>} files Form data files.
+     * @param {Array<HandlersCreatingNote>} notes List of created notes
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesBulkUpsertPut(notes: Array<string>, files: Array<string>, options?: AxiosRequestConfig) {
-        return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, files, options).then((request) => request(this.axios, this.basePath));
+    public notesBulkUpsertPut(notes: Array<HandlersCreatingNote>, options?: AxiosRequestConfig) {
+        return NotesApiFp(this.configuration).notesBulkUpsertPut(notes, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1530,12 +1635,12 @@ export class NotesApi extends BaseAPI {
     /**
      * Create note
      * @summary Create note
-     * @param {HandlersCreatedNote} note Note model
+     * @param {HandlersCreatingNote} note Note model
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesPost(note: HandlersCreatedNote, options?: AxiosRequestConfig) {
+    public notesPost(note: HandlersCreatingNote, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesPost(note, options).then((request) => request(this.axios, this.basePath));
     }
 }
