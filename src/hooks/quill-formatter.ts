@@ -73,6 +73,8 @@ export function useQuillFormatter() {
     specialSymbols: boolean,
     insertPosition?: number
   ): void => {
+    // TODO: master this method too slow. Cause it reformat multiple times with real dom.
+    // Consider to use smth like transaction https://github.com/quilljs/quill/issues/1021
     clearLastFormatter(orgNode, insertPosition);
     const newFormatters = getFormatters(orgNode, specialSymbols);
     const deletedFormatters = getDeletedFormatters(newFormatters);
