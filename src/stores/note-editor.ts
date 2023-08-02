@@ -14,6 +14,7 @@ export const useNoteEditorStore = defineStore(
     const noteText = ref<string>('');
     const lastSavedText = ref<string>('');
     const specialSymbolsHidden = ref<boolean>(false);
+    const filePath = ref<string[]>([]);
 
     // TODO: master persistent value should be done via indexed db.
     const setNoteData = (text: string, orgNode: OrgNode) => {
@@ -23,6 +24,10 @@ export const useNoteEditorStore = defineStore(
 
     const setNoteContent = (orgNode: OrgNode) => {
       setNoteData(orgNode.rawValue, orgNode);
+    };
+
+    const setFilePath = (path: string[]) => {
+      filePath.value = path;
     };
 
     const setNoteText = (text: string) => {
@@ -39,16 +44,20 @@ export const useNoteEditorStore = defineStore(
       return {
         content: noteOrgData.value,
         id: orgTree.value.meta.id,
-        filePath: [generateFileName(orgTree.value.meta.title)],
+        filePath: [
+          filePath.value ?? generateFileName(orgTree.value.meta.title),
+        ],
         meta: orgTree.value.meta as ModelsNoteMeta,
       };
     });
 
-    const createNote = () => {
+    const upsertNote = () => {
       notesStore.upsertNote({
         content: noteText.value,
         id: orgTree.value.meta.id,
-        filePath: [generateFileName(orgTree.value.meta.title)],
+        filePath: filePath.value?.length
+          ? filePath.value
+          : [generateFileName(orgTree.value.meta.title)],
         meta: orgTree.value.meta as ModelsNoteMeta,
       });
     };
@@ -63,7 +72,7 @@ export const useNoteEditorStore = defineStore(
         return;
       }
       lastSavedText.value = noteText.value;
-      createNote();
+      upsertNote();
     };
 
     const saved = computed(() => lastSavedText.value === noteText.value);
@@ -79,6 +88,7 @@ export const useNoteEditorStore = defineStore(
       saved,
       setNoteContent,
       setNoteText,
+      setFilePath,
     };
   },
   { persist: true }

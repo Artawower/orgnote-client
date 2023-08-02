@@ -56,13 +56,16 @@ const notesStore = useNotesStore();
 
 const { selectedNote } = storeToRefs(notesStore);
 
+const setupEditorStore = () => {
+  if (!selectedNote.value) {
+    return;
+  }
+  noteEditorStore.setNoteContent(selectedNote.value.content as OrgNode);
+  noteEditorStore.setFilePath(selectedNote.value.filePath);
+};
+
 if (noteId) {
-  const setupEditorStore = () =>
-    selectedNote.value &&
-    noteEditorStore.setNoteContent(selectedNote.value.content as OrgNode);
-
   setupEditorStore();
-
   watch(
     () => selectedNote.value,
     () => setupEditorStore()

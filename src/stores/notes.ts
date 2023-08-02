@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { HandlersCreatedNote } from 'src/generated/api';
+import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotesFilter } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { mapRawNoteToNote } from 'src/tools';
@@ -9,12 +9,15 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './auth';
 
-export const DEFAULT_LIMIT = 10;
+export const DEFAULT_LIMIT = 1000;
 export const DEFAULT_OFFSET = 0;
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([]);
-  const filters = ref<NotesFilter>({ limit: 10, offset: 0 });
+  const filters = ref<NotesFilter>({
+    limit: DEFAULT_LIMIT,
+    offset: DEFAULT_OFFSET,
+  });
   const notesCount = ref<number>();
   const selectedNote = ref<Note>();
   const authStore = useAuthStore();
@@ -117,14 +120,14 @@ export const useNotesStore = defineStore('notes', () => {
     }
   };
 
-  const createNote = async (note: HandlersCreatedNote) => {
+  const createNote = async (note: HandlersCreatingNote) => {
     try {
       await sdk.notes.notesPost(note);
       loadNotes();
     } catch (e) {}
   };
 
-  const upsertNote = async (note: HandlersCreatedNote) => {
+  const upsertNote = async (note: HandlersCreatingNote) => {
     try {
       await sdk.notes.notesBulkUpsertPut([note]);
       loadNotes();
