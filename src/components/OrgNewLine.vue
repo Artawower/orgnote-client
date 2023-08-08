@@ -10,11 +10,11 @@ const props = defineProps<{
 }>();
 
 const showNewLine =
-  props.node.prev.isNot(
+  props.node.prev?.isNot(
     NodeType.NewLine,
     NodeType.Keyword,
     NodeType.Property
-  ) && props.node.parent.isNot(NodeType.PropertyDrawer, NodeType.QuoteBlock);
+  ) && props.node.parent?.isNot(NodeType.PropertyDrawer, NodeType.QuoteBlock);
 </script>
 
 <style lang="scss"></style>

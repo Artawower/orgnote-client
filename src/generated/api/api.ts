@@ -50,6 +50,12 @@ export interface HandlersCreatingNote {
     'content'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof HandlersCreatingNote
+     */
+    'createdAt'?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof HandlersCreatingNote
      */
@@ -66,6 +72,31 @@ export interface HandlersCreatingNote {
      * @memberof HandlersCreatingNote
      */
     'meta'?: ModelsNoteMeta;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersCreatingNote
+     */
+    'updatedAt'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface HandlersDeletedNote
+ */
+export interface HandlersDeletedNote {
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersDeletedNote
+     */
+    'externalId'?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof HandlersDeletedNote
+     */
+    'filePath'?: Array<string>;
 }
 /**
  * 
@@ -184,6 +215,25 @@ export interface HandlersHttpResponseHandlersOAuthRedirectDataAny {
 /**
  * 
  * @export
+ * @interface HandlersHttpResponseHandlersSyncNotesResponseAny
+ */
+export interface HandlersHttpResponseHandlersSyncNotesResponseAny {
+    /**
+     * 
+     * @type {HandlersSyncNotesResponse}
+     * @memberof HandlersHttpResponseHandlersSyncNotesResponseAny
+     */
+    'data'?: HandlersSyncNotesResponse;
+    /**
+     * 
+     * @type {object}
+     * @memberof HandlersHttpResponseHandlersSyncNotesResponseAny
+     */
+    'meta'?: object;
+}
+/**
+ * 
+ * @export
  * @interface HandlersHttpResponseModelsAPITokenAny
  */
 export interface HandlersHttpResponseModelsAPITokenAny {
@@ -273,6 +323,50 @@ export interface HandlersOAuthRedirectData {
 /**
  * 
  * @export
+ * @interface HandlersSyncNotesRequest
+ */
+export interface HandlersSyncNotesRequest {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof HandlersSyncNotesRequest
+     */
+    'deletedNotesIds'?: Array<string>;
+    /**
+     * 
+     * @type {Array<HandlersCreatingNote>}
+     * @memberof HandlersSyncNotesRequest
+     */
+    'notes'?: Array<HandlersCreatingNote>;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersSyncNotesRequest
+     */
+    'timestamp'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface HandlersSyncNotesResponse
+ */
+export interface HandlersSyncNotesResponse {
+    /**
+     * 
+     * @type {Array<HandlersDeletedNote>}
+     * @memberof HandlersSyncNotesResponse
+     */
+    'deletedNotes'?: Array<HandlersDeletedNote>;
+    /**
+     * 
+     * @type {Array<ModelsPublicNote>}
+     * @memberof HandlersSyncNotesResponse
+     */
+    'notes'?: Array<ModelsPublicNote>;
+}
+/**
+ * 
+ * @export
  * @interface ModelsAPIToken
  */
 export interface ModelsAPIToken {
@@ -340,7 +434,7 @@ export interface ModelsGraphNoteNode {
      * @type {string}
      * @memberof ModelsGraphNoteNode
      */
-    'id'?: string;
+    'externalId'?: string;
     /**
      * 
      * @type {string}
@@ -536,7 +630,7 @@ export interface ModelsPublicNote {
      */
     'filePath'?: Array<string>;
     /**
-     * 
+     * It\'s externalID from original note
      * @type {string}
      * @memberof ModelsPublicNote
      */
@@ -547,6 +641,12 @@ export interface ModelsPublicNote {
      * @memberof ModelsPublicNote
      */
     'meta'?: ModelsNoteMeta;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsPublicNote
+     */
+    'updatedAt'?: string;
 }
 /**
  * 
@@ -1187,7 +1287,7 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatingNote>} notes List of created notes
+         * @param {Array<HandlersCreatingNote>} notes List of crated notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1259,18 +1359,17 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Get all notes with optional filter
          * @summary Get notes
-         * @param {number} limit Limit for pagination
-         * @param {number} offset Offset for pagination
-         * @param {string} [userId] User ID
-         * @param {string} [searchText] Search text
+         * @param {number} [limit] 
+         * @param {number} [offset] 
+         * @param {string} [userId] User id of which notes to load
+         * @param {string} [searchText] 
+         * @param {boolean} [my] Load all my own notes (user will be used from provided token)
+         * @param {string} [from] 
+         * @param {boolean} [includeDeleted] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesGet: async (limit: number, offset: number, userId?: string, searchText?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'limit' is not null or undefined
-            assertParamExists('notesGet', 'limit', limit)
-            // verify required parameter 'offset' is not null or undefined
-            assertParamExists('notesGet', 'offset', offset)
+        notesGet: async (limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/notes/`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1283,6 +1382,14 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (offset !== undefined) {
+                localVarQueryParameter['offset'] = offset;
+            }
+
             if (userId !== undefined) {
                 localVarQueryParameter['userId'] = userId;
             }
@@ -1291,12 +1398,16 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
                 localVarQueryParameter['searchText'] = searchText;
             }
 
-            if (limit !== undefined) {
-                localVarQueryParameter['limit'] = limit;
+            if (my !== undefined) {
+                localVarQueryParameter['my'] = my;
             }
 
-            if (offset !== undefined) {
-                localVarQueryParameter['offset'] = offset;
+            if (from !== undefined) {
+                localVarQueryParameter['from'] = from;
+            }
+
+            if (includeDeleted !== undefined) {
+                localVarQueryParameter['includeDeleted'] = includeDeleted;
             }
 
 
@@ -1410,6 +1521,42 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Synchronize notes with specific timestamp
+         * @summary Synchronize notes
+         * @param {HandlersSyncNotesRequest} data Sync notes request
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notesSyncPost: async (data: HandlersSyncNotesRequest, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'data' is not null or undefined
+            assertParamExists('notesSyncPost', 'data', data)
+            const localVarPath = `/notes/sync`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(data, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -1423,7 +1570,7 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatingNote>} notes List of created notes
+         * @param {Array<HandlersCreatingNote>} notes List of crated notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1445,15 +1592,18 @@ export const NotesApiFp = function(configuration?: Configuration) {
         /**
          * Get all notes with optional filter
          * @summary Get notes
-         * @param {number} limit Limit for pagination
-         * @param {number} offset Offset for pagination
-         * @param {string} [userId] User ID
-         * @param {string} [searchText] Search text
+         * @param {number} [limit] 
+         * @param {number} [offset] 
+         * @param {string} [userId] User id of which notes to load
+         * @param {string} [searchText] 
+         * @param {boolean} [my] Load all my own notes (user will be used from provided token)
+         * @param {string} [from] 
+         * @param {boolean} [includeDeleted] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notesGet(limit, offset, userId, searchText, options);
+        async notesGet(limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notesGet(limit, offset, userId, searchText, my, from, includeDeleted, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -1488,6 +1638,17 @@ export const NotesApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.notesPost(note, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * Synchronize notes with specific timestamp
+         * @summary Synchronize notes
+         * @param {HandlersSyncNotesRequest} data Sync notes request
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async notesSyncPost(data: HandlersSyncNotesRequest, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseHandlersSyncNotesResponseAny>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.notesSyncPost(data, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -1501,7 +1662,7 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Bulk update or insert notes
          * @summary Upsert notes
-         * @param {Array<HandlersCreatingNote>} notes List of created notes
+         * @param {Array<HandlersCreatingNote>} notes List of crated notes
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1521,15 +1682,18 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         /**
          * Get all notes with optional filter
          * @summary Get notes
-         * @param {number} limit Limit for pagination
-         * @param {number} offset Offset for pagination
-         * @param {string} [userId] User ID
-         * @param {string} [searchText] Search text
+         * @param {number} [limit] 
+         * @param {number} [offset] 
+         * @param {string} [userId] User id of which notes to load
+         * @param {string} [searchText] 
+         * @param {boolean} [my] Load all my own notes (user will be used from provided token)
+         * @param {string} [from] 
+         * @param {boolean} [includeDeleted] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: any): AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination> {
-            return localVarFp.notesGet(limit, offset, userId, searchText, options).then((request) => request(axios, basePath));
+        notesGet(limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options?: any): AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination> {
+            return localVarFp.notesGet(limit, offset, userId, searchText, my, from, includeDeleted, options).then((request) => request(axios, basePath));
         },
         /**
          * Return graph model with links between connected notes
@@ -1560,6 +1724,16 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
         notesPost(note: HandlersCreatingNote, options?: any): AxiosPromise<object> {
             return localVarFp.notesPost(note, options).then((request) => request(axios, basePath));
         },
+        /**
+         * Synchronize notes with specific timestamp
+         * @summary Synchronize notes
+         * @param {HandlersSyncNotesRequest} data Sync notes request
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        notesSyncPost(data: HandlersSyncNotesRequest, options?: any): AxiosPromise<HandlersHttpResponseHandlersSyncNotesResponseAny> {
+            return localVarFp.notesSyncPost(data, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -1573,7 +1747,7 @@ export class NotesApi extends BaseAPI {
     /**
      * Bulk update or insert notes
      * @summary Upsert notes
-     * @param {Array<HandlersCreatingNote>} notes List of created notes
+     * @param {Array<HandlersCreatingNote>} notes List of crated notes
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
@@ -1597,16 +1771,19 @@ export class NotesApi extends BaseAPI {
     /**
      * Get all notes with optional filter
      * @summary Get notes
-     * @param {number} limit Limit for pagination
-     * @param {number} offset Offset for pagination
-     * @param {string} [userId] User ID
-     * @param {string} [searchText] Search text
+     * @param {number} [limit] 
+     * @param {number} [offset] 
+     * @param {string} [userId] User id of which notes to load
+     * @param {string} [searchText] 
+     * @param {boolean} [my] Load all my own notes (user will be used from provided token)
+     * @param {string} [from] 
+     * @param {boolean} [includeDeleted] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof NotesApi
      */
-    public notesGet(limit: number, offset: number, userId?: string, searchText?: string, options?: AxiosRequestConfig) {
-        return NotesApiFp(this.configuration).notesGet(limit, offset, userId, searchText, options).then((request) => request(this.axios, this.basePath));
+    public notesGet(limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options?: AxiosRequestConfig) {
+        return NotesApiFp(this.configuration).notesGet(limit, offset, userId, searchText, my, from, includeDeleted, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1642,6 +1819,18 @@ export class NotesApi extends BaseAPI {
      */
     public notesPost(note: HandlersCreatingNote, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesPost(note, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Synchronize notes with specific timestamp
+     * @summary Synchronize notes
+     * @param {HandlersSyncNotesRequest} data Sync notes request
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof NotesApi
+     */
+    public notesSyncPost(data: HandlersSyncNotesRequest, options?: AxiosRequestConfig) {
+        return NotesApiFp(this.configuration).notesSyncPost(data, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
