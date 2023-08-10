@@ -1,7 +1,7 @@
 <template>
   <q-page padding class="note-view height-auto with-modeline">
     <author-info
-      v-if="selectedNote"
+      v-if="selectedNote && !selectedNote?.isMyNote"
       :author="selectedNote?.author"
       class="q-pb-lg"
     >
