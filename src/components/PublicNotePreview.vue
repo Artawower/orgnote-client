@@ -45,7 +45,7 @@
         </q-card-section>
       </q-card-section>
 
-      <q-card-actions class="q-px-none justify-between q-my-md">
+      <q-card-actions class="q-px-none justify-between q-my-md actions">
         <note-footer
           class="q-px-sm"
           :note="note"

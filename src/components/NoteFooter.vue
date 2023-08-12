@@ -10,13 +10,14 @@
           @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
         ></q-checkbox>
       </div>
-      <div class="right row gap-md">
+      <div class="right row gap-sm action-btns">
         <q-btn size="sm" flat round icon="far fa-bookmark" class="q-pa-none" />
         <q-btn size="sm" flat round icon="far fa-paper-plane" class="q-pa-none">
           <q-menu class="flex row no-wrap q-pa-sm">
             <q-btn
               flat
               rounded
+              size="md"
               icon="fa-brands fa-square-twitter"
               class="q-pa-sm"
               @click="showNotImplemented('Twitter share')"
@@ -24,6 +25,7 @@
             <q-btn
               flat
               rounded
+              size="md"
               icon="fa-brands fa-telegram"
               class="q-pa-sm"
               @click="showNotImplemented('Telegram share')"
@@ -31,6 +33,7 @@
             <q-btn
               flat
               rounded
+              size="md"
               icon="far fa-copy"
               class="q-pa-sm"
               @click="showNotImplemented('Copy link')"
@@ -101,4 +104,12 @@ const showNotImplemented = (feature: string) => {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.action-btns {
+  height: 33.15px;
+
+  .q-btn {
+    width: 33.15px;
+  }
+}
+</style>
