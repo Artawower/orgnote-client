@@ -26,7 +26,7 @@
             :filePath="note.filePath"
             class="q-py-xs q-px-sm"
           ></file-path>
-          <div class="text-caption rft q-px-sm">
+          <div class="text-caption rft q-px-sm description">
             {{ note.meta.description }}
           </div>
           <tag-list class="q-mt-md q-pa-sm" :tags="note?.meta?.fileTags" />
@@ -124,5 +124,12 @@ article {
   width: var(--public-preview-image-width);
   height: var(--public-preview-image-height);
   background-color: $blue-grey-2;
+}
+
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>
