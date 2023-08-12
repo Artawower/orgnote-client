@@ -8,7 +8,7 @@
       v-for="(q, i) in filePath"
       :label="i === filePath.length - 1 ? removeFileExtension(q) : q"
       v-bind:key="q"
-      @click="searchInFolder(q)"
+      @click.stop.prevent="searchInFolder(q)"
     ></q-breadcrumbs-el>
   </q-breadcrumbs>
 </template>

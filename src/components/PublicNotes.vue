@@ -1,6 +1,6 @@
 <template>
   <div
-    class="q-pa-md items-start q-col-gutter-md public-notes"
+    class="q-pa-lg items-start public-notes"
     :class="{
       row: tileView,
       column: !tileView,

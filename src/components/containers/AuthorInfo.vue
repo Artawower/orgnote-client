@@ -1,13 +1,14 @@
 <template>
-  <div @click="openProfile" class="row cursor-pointer">
+  <div @click="openProfile" class="row cursor-pointer flex-center">
     <div class="q-mr-md">
-      <q-avatar size="40px" class="q-mx-auto">
+      <q-avatar size="24px" class="q-mx-auto">
         <img :src="author.avatarUrl" />
       </q-avatar>
     </div>
     <div class="col">
-      <div class="text-bold">{{ author.nickName }}</div>
-      <div class="text-italic">{{ author.email }}</div>
+      <span v-if="author.nickName">{{ author.nickName }}</span
+      >&nbsp;
+      <span v-if="author.email" class="text-italic">{{ author.email }}</span>
     </div>
   </div>
 </template>

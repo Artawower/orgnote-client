@@ -1,56 +1,61 @@
 <template>
-  <q-card flat>
-    <div v-if="showUserProfiles && showAuthor" class="q-px-md">
-      <author-info :author="note.author"></author-info>
-    </div>
+  <article>
+    <q-card flat class="q-mt-lg">
+      <div class="q-px-sm" v-if="showUserProfiles && showAuthor">
+        <author-info :author="note.author"></author-info>
+      </div>
 
-    <q-card-section
-      horizontal
-      :class="{ 'note-card-content': isTile, column: isTile }"
-    >
-      <img
-        v-if="isTile && previewImage"
-        :src="buildMediaFilePath(previewImage)"
-      />
-      <q-card-section class="flex col-3 flex-start" v-else>
-        <q-img
-          v-if="previewImage"
-          class="pointer rounded-borders"
+      <q-card-section
+        horizontal
+        :class="{ 'note-card-content': isTile, column: isTile }"
+        class="note-card-content pointer"
+        @click="openNoteDetail(note)"
+      >
+        <img
+          v-if="isTile && previewImage"
+          class="preview-image rounded-borders"
           :src="buildMediaFilePath(previewImage)"
         />
-        <!-- TODO: add fine markup for notes without preview-->
-        <div v-else class="mock-picture pointer rounded-borders"></div>
-      </q-card-section>
-      <q-card-section>
-        <div class="text-overline">{{ note.meta.category }}</div>
-        <div
-          class="text-h5 q-mt-sm q-mb-xs pointer"
-          @click="openNoteDetail(note)"
+        <q-card-section class="fit q-pa-none q-pt-sm">
+          <div class="text-overline q-px-sm">{{ note.meta.category }}</div>
+          <div class="text-h4 text-weight-bold pointer q-px-sm">
+            {{ note.meta.title }}
+          </div>
+          <file-path
+            v-if="note.filePath"
+            :filePath="note.filePath"
+            class="q-py-xs q-px-sm"
+          ></file-path>
+          <div class="text-caption rft q-px-sm">
+            {{ note.meta.description }}
+          </div>
+          <tag-list class="q-mt-md q-pa-sm" :tags="note?.meta?.fileTags" />
+        </q-card-section>
+        <q-card-section
+          v-if="!isTile && previewImage"
+          class="flex col-3 flex-start q-pa-none q-pt-sm"
         >
-          {{ note.meta.title }}
-        </div>
-        <file-path v-if="note.filePath" :filePath="note.filePath"></file-path>
-        <div class="text-caption text-grey rft">
-          {{ note.meta.description }}
-        </div>
+          <q-img
+            v-if="previewImage"
+            class="pointer rounded-borders image-preview"
+            :src="buildMediaFilePath(previewImage)"
+          />
+          <!-- TODO: add fine markup for notes without preview-->
+          <div v-else class="mock-picture pointer rounded-borders"></div>
+        </q-card-section>
       </q-card-section>
-    </q-card-section>
 
-    <q-separator />
-
-    <q-card-actions>
-      <q-checkbox
-        v-if="selectable"
-        :model-value="selectedNotesStore.isNoteSelected(note.id)"
-        @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
-      ></q-checkbox>
-      <q-btn flat round icon="share" />
-      <q-btn @click="openNoteDetail(note)" flat color="primary">
-        {{ $t('read') }}
-      </q-btn>
-      <tag-list :tags="note?.meta?.fileTags" />
-    </q-card-actions>
-  </q-card>
+      <q-card-actions class="q-px-none">
+        <q-checkbox
+          v-if="selectable"
+          :model-value="selectedNotesStore.isNoteSelected(note.id)"
+          @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
+        ></q-checkbox>
+        <q-btn flat round icon="share" />
+      </q-card-actions>
+      <q-separator />
+    </q-card>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -104,14 +109,24 @@ const selectedNotesStore = useSelectedNotesStore();
 </script>
 
 <style lang="scss">
+article {
+  --public-preview-image-width: 112px;
+  --public-preview-image-height: 112px;
+  --public-preview-max-height: 168px;
+}
+
 .note-card-content {
-  max-height: 310px;
-  min-height: 310px;
+  max-height: var(--public-preview-max-height);
+}
+
+.image-preview {
+  height: var(--public-preview-image-height);
+  max-width: var(--public-preview-image-width);
 }
 
 .mock-picture {
-  width: 230px;
-  height: 134px;
+  width: var(--public-preview-image-width);
+  height: var(--public-preview-image-height);
   background-color: $blue-grey-2;
 }
 </style>
