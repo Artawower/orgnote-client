@@ -10,7 +10,7 @@
 - =--bg=:  hsl(90, 90%, 20%);
 - =--fg=:  hsl(223, 10%, 10%);
 - =--dur=:  1s;
-* PublicNoteView.vue
+* PublicNotePreview.vue
 ** Common
 - =--public-preview-image-width=:  112px;
 - =--public-preview-image-height=:  112px;
@@ -23,7 +23,7 @@
 ** Common
 - =--completion-item-min-height=:  24px;
 - =--completion-item-padding=:  4px 16px;
-- =--completion-item-hover-background=:  var(--base5);
+- =--completion-item-hover-background=:  var(--base1);
 - =--completion-item-hover-color=:  var(--base0);
 * ActionBtn.vue
 ** Common
@@ -38,8 +38,8 @@
 - =--btn-action-color=:  var(--base5);
 * MiniBuffer.vue
 ** Common
-- =--mini-buffer-background=:  var(--base1);
-- =--mini-buffer-font-color=:  var(--base3);
+- =--mini-buffer-background=:  var(--bg-alt);
+- =--mini-buffer-font-color=:  var(--fg);
 - =--mini-buffer-border-top=:  1px solid var(--base4);
 * ModeLine.vue
 ** Common
@@ -56,6 +56,9 @@
 ** Social networking button
 - =--btn-social-size=:  24px;
 - =--btn-social-background=:  var(--base4);
+* checkbox.scss
+** Common
+- =--checkbox-color=:  var(--base3);
 * colors.scss
 ** Common
 - =--red=:  #f65866;
@@ -70,6 +73,9 @@
 - =--cyan=:  #34bfd0;
 - =--dark-cyan=:  #5699af;
 - =--bg=:  #22272e;
+- =--bg-alt=:  var(--q-dark);
+- =--fg=:  #{$grey-3};
+- =--fg-alt=:  #{$grey-6};
 - =--base0=:  #{$grey-3};
 - =--base1=:  #{$grey-10};
 - =--base2=:  #1d1d1d;
@@ -78,6 +84,9 @@
 - =--base5=:  #{$grey-6};
 - =--base7=:  rgba(99, 110, 123, 0.4);
 - =--bg=:  #fff;
+- =--bg-alt=:  #fff;
+- =--fg=:  #{$grey-9};
+- =--fg-alt=:  #{$grey-6};
 - =--base0=:  #{$grey-9};
 - =--base1=:  #{$grey-1};
 - =--base2=:  #{$blue-grey-4};
@@ -88,6 +97,10 @@
 * editor.scss
 ** Fonts
 - =--editor-font-family=:  var(--main-font-family);
+* flex.scss
+** Common
+- =--flex-gap-md=:  16px;
+- =--flex-gap-sm=:  8;
 * org-nodes.scss
 ** Common
 - =--inline-code-background=:  var(--base7);
@@ -110,9 +123,6 @@
 - =--description-font-style=:  italic;
 - =--description-font-color=:  var(--base-5);
 - =--description-padding=:  18px 0px;
-** Font colors
-- =--font-color-secondary=:  var(--base5);
-- =--font-color-main=:  var(--base0);
 * variables.scss
 ** Main colors
 - =--headline-font-weight=:  500;
@@ -125,9 +135,7 @@
 - =--top-bar-height=:  50px;
 ** Markup
 - =--content-max-width=:  768px;
-** Colors
-- =--main-background=:  var(--base1);
-- =--main-theme-color=:  var(--base0);
-- =--secondary-background=:  var(--base3);
 ** Global modeline config
 - =--modeline-height=:  48px;
+** Card
+- =--card-background-color=:  var(--bg);

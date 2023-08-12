@@ -1,5 +1,5 @@
 <template>
-  <a :href="linkAddress" target="_blank">
+  <a :href="buildMediaFilePath(linkAddress)" target="_blank">
     <img
       class="image-preview"
       v-if="linkType === 'image'"
@@ -51,6 +51,6 @@ const linkType = node.value.meta?.linkType;
 }
 
 .image-preview {
-  max-width: 100%;
+  max-width: 100% !important;
 }
 </style>
