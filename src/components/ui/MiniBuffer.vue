@@ -8,8 +8,8 @@
 
 <style lang="scss">
 .mini-buffer {
-  --mini-buffer-background: var(--base1);
-  --mini-buffer-font-color: var(--base3);
+  --mini-buffer-background: var(--bg-alt);
+  --mini-buffer-font-color: var(--fg);
   --mini-buffer-border-top: 1px solid var(--base4);
 }
 

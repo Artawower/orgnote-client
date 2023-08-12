@@ -4,7 +4,9 @@
     <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-if="isMyNotesPage" v-slot:left>
         <q-checkbox
+          class="q-pl-sm"
           :modelValue="selectedNotesStore.isAllNotesSelected"
+          size="sm"
           @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
         ></q-checkbox>
         <q-btn

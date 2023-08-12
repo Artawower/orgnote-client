@@ -1,0 +1,13 @@
+:root {
+  --flex-gap-md: 16px;
+  --flex-gap-sm: 8;
+}
+
+// Flex gaps
+.gap-md {
+  gap: var(--flex-md-gap);
+}
+
+.gap-sm {
+  gap: var(--flex-sm-gap);
+}

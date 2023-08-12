@@ -62,7 +62,7 @@ watch(
 .completion-item {
   --completion-item-min-height: 24px;
   --completion-item-padding: 4px 16px;
-  --completion-item-hover-background: var(--base5);
+  --completion-item-hover-background: var(--base1);
   --completion-item-hover-color: var(--base0);
 }
 

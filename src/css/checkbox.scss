@@ -1,0 +1,8 @@
+body {
+  --checkbox-color: var(--base3);
+}
+
+.q-checkbox--dark .q-checkbox__inner--truthy,
+.q-checkbox__inner--truthy {
+  color: var(--checkbox-color);
+}

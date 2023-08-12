@@ -33,7 +33,7 @@
         </q-card-section>
         <q-card-section
           v-if="!isTile && previewImage"
-          class="flex col-3 flex-start q-pa-none q-pt-sm"
+          class="flex col-3 flex-start q-pa-none q-pt-sm justify-end"
         >
           <q-img
             v-if="previewImage"
@@ -45,13 +45,12 @@
         </q-card-section>
       </q-card-section>
 
-      <q-card-actions class="q-px-none">
-        <q-checkbox
-          v-if="selectable"
-          :model-value="selectedNotesStore.isNoteSelected(note.id)"
-          @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
-        ></q-checkbox>
-        <q-btn flat round icon="share" />
+      <q-card-actions class="q-px-none justify-between q-my-md">
+        <note-footer
+          class="q-px-sm"
+          :note="note"
+          :selectable="selectable"
+        ></note-footer>
       </q-card-actions>
       <q-separator />
     </q-card>
@@ -66,13 +65,13 @@ import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 
-import TagList from 'components/TagList.vue';
-import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
-import FilePath from 'src/components/containers/FilePath.vue';
 import { Note } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
 import { buildMediaFilePath } from 'src/tools';
-import { useSelectedNotesStore } from 'src/stores';
+import TagList from 'components/TagList.vue';
+import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
+import FilePath from 'src/components/containers/FilePath.vue';
+import NoteFooter from 'src/components/NoteFooter.vue';
 
 const props = defineProps<{
   note: Note;
@@ -85,7 +84,6 @@ const notesStore = useNotesStore();
 const router = useRouter();
 
 const openNoteDetail = (note: Note) => {
-  console.log('✎: [line 83][PublicNoteView.vue] note: ', note);
   notesStore.selectNote(note);
   router.push({ name: RouteNames.NoteDetail, params: { id: note.id } });
 };
@@ -104,8 +102,6 @@ watch(
     previewImage.value = images?.[0];
   }
 );
-
-const selectedNotesStore = useSelectedNotesStore();
 </script>
 
 <style lang="scss">

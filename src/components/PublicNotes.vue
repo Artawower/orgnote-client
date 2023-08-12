@@ -26,12 +26,12 @@
       >
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
-            <public-note-view
+            <public-note-preview
               :note="note as Note"
               :show-author="!isMyNotePage"
               :selectable="isMyNotePage"
               @selected="(selected) => selectNote(note as Note, selected)"
-            ></public-note-view>
+            ></public-note-preview>
           </div>
         </template>
       </async-public-note-container>
@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue';
 
-import PublicNoteView from './PublicNoteView.vue';
+import PublicNotePreview from './PublicNotePreview.vue';
 import { useViewStore } from 'src/stores/view';
 import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -51,7 +51,7 @@ import { useNotesStore } from 'src/stores/notes';
 import { Note } from 'src/models';
 
 defineComponent({
-  PublicNoteView,
+  PublicNotePreview,
 });
 
 const viewStore = useViewStore();

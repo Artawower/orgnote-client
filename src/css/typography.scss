@@ -20,18 +20,14 @@ body {
   --description-font-style: italic;
   --description-font-color: var(--base-5);
   --description-padding: 18px 0px;
-
-  // Font colors
-  --font-color-secondary: var(--base5);
-  --font-color-main: var(--base0);
 }
 
 .color-main {
-  color: var(--font-color-main);
+  color: var(--fg);
 }
 
 .color-secondary {
-  color: var(--font-color-secondary);
+  color: var(--fg-alt);
 }
 
 .color-action {
