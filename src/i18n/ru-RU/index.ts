@@ -30,4 +30,7 @@ export default {
   common: 'общие',
   'common settings': 'общие настройки',
   close: 'закрыть',
+  delete: 'удалить',
+  save: 'сохранить',
+  report: 'жалоба',
 };

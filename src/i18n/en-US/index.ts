@@ -33,4 +33,7 @@ export default {
   common: 'common',
   'common settings': 'common settings',
   close: 'close',
+  delete: 'delete',
+  save: 'save',
+  report: 'report',
 };

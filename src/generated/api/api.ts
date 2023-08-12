@@ -87,16 +87,16 @@ export interface HandlersCreatingNote {
 export interface HandlersDeletedNote {
     /**
      * 
-     * @type {string}
-     * @memberof HandlersDeletedNote
-     */
-    'externalId'?: string;
-    /**
-     * 
      * @type {Array<string>}
      * @memberof HandlersDeletedNote
      */
     'filePath'?: Array<string>;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersDeletedNote
+     */
+    'id'?: string;
 }
 /**
  * 
@@ -635,6 +635,12 @@ export interface ModelsPublicNote {
      * @memberof ModelsPublicNote
      */
     'id'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelsPublicNote
+     */
+    'isMy'?: boolean;
     /**
      * 
      * @type {ModelsNoteMeta}

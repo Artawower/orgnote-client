@@ -12,20 +12,74 @@
       </div>
       <div class="right row gap-md">
         <q-btn size="sm" flat round icon="far fa-bookmark" class="q-pa-none" />
-        <q-btn
-          size="sm"
-          flat
-          round
-          icon="far fa-paper-plane"
-          class="q-pa-none"
-        />
-        <q-btn size="sm" flat round icon="fas fa-ellipsis" class="q-pa-none" />
+        <q-btn size="sm" flat round icon="far fa-paper-plane" class="q-pa-none">
+          <q-menu class="flex row no-wrap q-pa-sm">
+            <q-btn
+              flat
+              rounded
+              icon="fa-brands fa-square-twitter"
+              class="q-pa-sm"
+              @click="showNotImplemented('Twitter share')"
+            ></q-btn>
+            <q-btn
+              flat
+              rounded
+              icon="fa-brands fa-telegram"
+              class="q-pa-sm"
+              @click="showNotImplemented('Telegram share')"
+            ></q-btn>
+            <q-btn
+              flat
+              rounded
+              icon="far fa-copy"
+              class="q-pa-sm"
+              @click="showNotImplemented('Copy link')"
+            ></q-btn>
+          </q-menu>
+        </q-btn>
+        <q-btn size="sm" flat round icon="fas fa-ellipsis" class="q-pa-none">
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <q-item
+                v-if="note.isMy"
+                clickable
+                v-close-popup
+                @click="showNotImplemented($t('delete'))"
+              >
+                <q-item-section class="text-capitalize">{{
+                  $t('delete')
+                }}</q-item-section>
+              </q-item>
+              <q-item
+                v-if="!note.isMy"
+                clickable
+                v-close-popup
+                @click="showNotImplemented($t('report'))"
+              >
+                <q-item-section class="text-capitalize">{{
+                  $t('report')
+                }}</q-item-section>
+              </q-item>
+              <q-item
+                v-if="!note.isMy"
+                clickable
+                v-close-popup
+                @click="showNotImplemented($t('save'))"
+              >
+                <q-item-section class="text-capitalize">{{
+                  $t('save')
+                }}</q-item-section>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </q-btn>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useNotifications } from 'src/hooks';
 import { Note } from 'src/models';
 import { useSelectedNotesStore } from 'src/stores';
 import { toRef } from 'vue';
@@ -36,8 +90,15 @@ const props = defineProps<{
 }>();
 
 const selectable = toRef(props, 'selectable');
+const note = toRef(props, 'note');
 
 const selectedNotesStore = useSelectedNotesStore();
+
+const notifications = useNotifications();
+
+const showNotImplemented = (feature: string) => {
+  notifications.notify(`Feature ${feature} is not implemented yet!`);
+};
 </script>
 
 <style lang="scss"></style>
