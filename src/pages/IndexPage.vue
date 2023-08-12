@@ -2,7 +2,7 @@
   <div class="container content">
     <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
     <mode-line v-if="isModeLineVisible" :tabMode="false">
-      <template v-slot:left>
+      <template v-if="isMyNotesPage" v-slot:left>
         <q-checkbox
           :modelValue="selectedNotesStore.isAllNotesSelected"
           @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
@@ -23,10 +23,11 @@
 <script lang="ts" setup>
 import PublicNotes from 'components/PublicNotes.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
+import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
 import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const notesState = useNotesStore();
 
@@ -66,4 +67,9 @@ const deleteSelectedNotes = () => {
 };
 
 const isModeLineVisible = computed(() => notesState.notes.length);
+
+const router = useRouter();
+const isMyNotesPage = computed(
+  () => router.currentRoute.value.name === RouteNames.UserNotes
+);
 </script>
