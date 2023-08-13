@@ -28,6 +28,7 @@ import OrgBold from './OrgBold.vue';
 import OrgExportBlock from './OrgExportBlock.vue';
 import OrgItalic from './OrgItalic.vue';
 import NewLine from './OrgNewLine.vue';
+import RawLink from './OrgRawLink.vue';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
 const typedComponents: { [key in NodeType]?: Component } = {
@@ -47,6 +48,7 @@ const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.ExportBlock]: OrgExportBlock,
   [NodeType.LatexEnvironment]: OrgExportBlock,
   [NodeType.NewLine]: NewLine,
+  [NodeType.RawLink]: RawLink,
 };
 
 const props = defineProps<{

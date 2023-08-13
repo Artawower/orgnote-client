@@ -15,7 +15,7 @@
       :node="note?.content"
     ></content-renderer>
   </div>
-  <note-footer class="q-pt-md">
+  <note-footer :note="note" class="q-pt-md">
     <tag-list :tags="note?.meta?.fileTags" class="q-pa-sm q-ma-sm" />
   </note-footer>
 </template>
