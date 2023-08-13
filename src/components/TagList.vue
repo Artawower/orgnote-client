@@ -22,7 +22,7 @@
     <template v-else>
       <span
         v-for="tag in tags"
-        class="text-tag text-italic text-weight-bold"
+        class="text-tag text-italic text-weight-medium"
         :key="tag"
         @click.stop.prevent="searchByTag(tag)"
       >
