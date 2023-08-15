@@ -4624,10 +4624,10 @@ orderedmap@^2.0.0:
   resolved "https://registry.yarnpkg.com/orderedmap/-/orderedmap-2.1.0.tgz#819457082fa3a06abd316d83a281a1ca467437cd"
   integrity sha512-/pIFexOm6S70EPdznemIz3BQZoJ4VTFrhqzu0ACBqBgeLsLxq8e6Jim63ImIfwW/zAD1AlXpRMlOv3aghmo4dA==
 
-org-mode-ast@v0.7.17:
-  version "0.7.17"
-  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.7.17.tgz#557c7eac521d743cd41d3419f6c834d1180a4fe7"
-  integrity sha512-WHSc3ZVsSdo4ANabjTDO/08FUhk3uZGscRDXKJr0ZmB9c6fjBNGn0qKPQI35prIb/Ae59QN9hmFJY0rRVdrRug==
+org-mode-ast@0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.8.2.tgz#6add9c89874c23801ba2a49a6468f1b66183abbc"
+  integrity sha512-KGc42MfhmsLa3PG3DZL/tsfiWs+eGRQOThOHHay99Ylv24E+nMi/0w4dm7M7IqrR5X6NV+lLb9J6EGnVraZqjg==
 
 os-tmpdir@~1.0.2:
   version "1.0.2"

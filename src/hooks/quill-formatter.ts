@@ -7,7 +7,7 @@ type Formatters = { [key: string]: StringMap };
 
 export function useQuillFormatter() {
   let quill: Quill;
-  let lastFormatters: Formatters = {};
+  // let lastFormatters: Formatters = {};
 
   const initQuill = (q: Quill) => {
     quill = q;
@@ -36,23 +36,6 @@ export function useQuillFormatter() {
     return formatters;
   };
 
-  const removeFormatters = (formatters: Formatters): void => {
-    Object.keys(formatters).forEach((key) => {
-      const [start, end] = key.split('-').map((n) => +n);
-      quill.removeFormat(start, end - start, 'api');
-    });
-  };
-
-  const getDeletedFormatters = (newFormatters: Formatters): Formatters => {
-    const deletedFormatters: Formatters = {};
-    Object.keys(lastFormatters).forEach((key) => {
-      if (!newFormatters[key]) {
-        deletedFormatters[key] = lastFormatters[key];
-      }
-    });
-    return deletedFormatters;
-  };
-
   const applyFormatters = (formatters: Formatters): void => {
     Object.keys(formatters).forEach((key) => {
       const formatter = formatters[key];
@@ -61,7 +44,7 @@ export function useQuillFormatter() {
     });
   };
 
-  const clearLastFormatter = (orgNode: OrgNode, insertPositoin?: number) => {
+  const clearLastFormatter = (insertPositoin?: number) => {
     if (!insertPositoin) {
       return;
     }
@@ -69,18 +52,16 @@ export function useQuillFormatter() {
   };
 
   const prettifyText = (
-    orgNode: OrgNode,
     specialSymbols: boolean,
-    insertPosition?: number
+    insertPosition?: number,
+    ...orgNodes: OrgNode[]
   ): void => {
-    // TODO: master this method too slow. Cause it reformat multiple times with real dom.
-    // Consider to use smth like transaction https://github.com/quilljs/quill/issues/1021
-    clearLastFormatter(orgNode, insertPosition);
-    const newFormatters = getFormatters(orgNode, specialSymbols);
-    const deletedFormatters = getDeletedFormatters(newFormatters);
-    removeFormatters(deletedFormatters);
-    applyFormatters(newFormatters);
-    lastFormatters = newFormatters;
+    clearLastFormatter(insertPosition);
+
+    orgNodes.forEach((n) => {
+      const formatters = getFormatters(n, specialSymbols);
+      applyFormatters(formatters);
+    });
   };
 
   return {

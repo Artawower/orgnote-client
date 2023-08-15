@@ -10,7 +10,7 @@ import 'highlight.js/styles/stackoverflow-light.css';
 import { clearQuillFormat, debounce } from 'src/tools';
 import { mountRawEditor } from './editor-initializer';
 import { onMounted, ref, toRef, watch } from 'vue';
-import { OrgNode, parse } from 'org-mode-ast';
+import { OrgNode, parse, getDiff } from 'org-mode-ast';
 import { useQuillFormatter } from 'src/hooks/quill-formatter';
 
 let quill: Quill;
@@ -45,15 +45,15 @@ watch(
     if (newSpecialSymbolsHidden !== oldSpecialSymbolsHidden) {
       clearQuillFormat(quill);
     }
-    prettifyText();
+    prettifyText(orgNode.value as OrgNode);
   }
 );
 
-const prettifyText = (insertPosition?: number) => {
+const prettifyText = (insertPosition?: number, ...orgNodes: OrgNode[]) => {
   debouncePrettifyEditorText(
-    orgNode.value as OrgNode,
     hideSpecialSymbols.value,
-    insertPosition
+    insertPosition,
+    ...orgNodes
   );
 };
 
@@ -61,14 +61,17 @@ const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
   if (src === 'api') {
     return;
   }
-  setText(quill.getText());
+  const newText = quill.getText();
+  const diff = getDiff(newText, text.value);
+  setText(newText);
+
   emits('update:modelValue', [text.value, orgNode.value as OrgNode]);
 
   const [pos, op] = delta.ops;
 
   const insertPosition = op?.insert ? pos?.retain : undefined;
 
-  prettifyText(insertPosition);
+  prettifyText(insertPosition, ...diff);
 };
 
 const initEditor = () => {
@@ -77,8 +80,9 @@ const initEditor = () => {
   quill.on('text-change', textChangeHandler);
   quill.setText(text.value);
   quillFormatter.prettifyText(
-    orgNode.value as OrgNode,
-    hideSpecialSymbols.value
+    hideSpecialSymbols.value,
+    null,
+    orgNode.value as OrgNode
   );
   quill.focus();
   quill.setSelection(quill.getLength(), 0);
