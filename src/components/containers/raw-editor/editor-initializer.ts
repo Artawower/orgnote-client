@@ -35,6 +35,7 @@ export function mountRawEditor(): Quill {
       HeadlineBlot.blotName,
       LinkBlot.blotName,
     ],
+    scrollingContainer: 'main',
     modules: {
       toolbar: false,
       syntax: {

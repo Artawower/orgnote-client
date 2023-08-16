@@ -139,3 +139,7 @@
 - =--modeline-height=:  48px;
 ** Card
 - =--card-background-color=:  var(--bg);
+** Shadow
+- =--shadow-main=:  none;
+** Border
+- =--border-main=:  1px solid var(--fg-alt);
