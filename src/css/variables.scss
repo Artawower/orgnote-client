@@ -19,4 +19,12 @@
 
   // Card
   --card-background-color: var(--bg);
+
+  // Shadow
+  --shadow-main: none;
+}
+
+body {
+  // Border
+  --border-main: 1px solid var(--fg-alt);
 }

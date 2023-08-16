@@ -9,3 +9,8 @@ body {
 .q-card {
   background: var(--card-background-color);
 }
+
+.q-menu {
+  box-shadow: var(--shadow-main);
+  border: var(--border-main);
+}
