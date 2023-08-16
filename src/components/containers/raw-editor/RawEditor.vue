@@ -45,7 +45,7 @@ watch(
     if (newSpecialSymbolsHidden !== oldSpecialSymbolsHidden) {
       clearQuillFormat(quill);
     }
-    prettifyText(orgNode.value as OrgNode);
+    prettifyText(null, orgNode.value as OrgNode);
   }
 );
 
