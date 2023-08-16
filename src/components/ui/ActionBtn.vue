@@ -45,7 +45,7 @@ const clicked = () => {
   --btn-action-border-color: var(--base5);
   --btn-action-padding: 6px;
   --btn-action-radius: 6px;
-  --btn-action-fire-color: var(--base5);
+  --btn-action-fire-color: var(--green);
   --btn-action-fire-border-color: var(--green);
   --btn-action-size: 20px;
   --btn-action-color: var(--base5);
