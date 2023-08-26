@@ -1,5 +1,8 @@
 <template>
-  <a :href="buildMediaFilePath(linkAddress)" target="_blank">
+  <a
+    :href="linkType === 'image' ? buildMediaFilePath(linkAddress) : linkAddress"
+    target="_blank"
+  >
     <img
       class="image-preview"
       v-if="linkType === 'image'"
