@@ -136,9 +136,12 @@
           <login-buttons :vertical="miniState" />
         </template>
 
-        <q-item v-if="!miniState">
-          <download-links></download-links>
-        </q-item>
+        <template v-if="!miniState">
+          <q-item class="text-italic flex-center">{{ version }}</q-item>
+          <q-item>
+            <download-links></download-links>
+          </q-item>
+        </template>
       </q-list>
 
       <q-list>
@@ -181,6 +184,7 @@ import { useAuthStore } from 'src/stores/auth';
 import { useViewStore } from 'src/stores/view';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { COMMAND } from 'src/hooks';
+import { version } from '../../../package.json';
 
 const props = defineProps<{
   user: ModelsPublicUser;
