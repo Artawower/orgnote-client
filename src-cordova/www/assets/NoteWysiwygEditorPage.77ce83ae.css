@@ -1,0 +1,1 @@
+.wip{display:flex!important;flex-direction:row;justify-content:center;align-items:center;background-color:var(--yellow);color:#000;position:fixed;width:1200px;height:100px;bottom:100px;text-align:center;rotate:-45deg;left:calc(100% - 600px);padding-right:200px;border:4px dotted black}#editor{font-family:var(--editor-font-family);height:calc(100vh - 88px)}

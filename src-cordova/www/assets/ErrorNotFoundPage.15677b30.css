@@ -1,0 +1,1 @@
+.not-found-wrapper{height:calc(100vh - var(--top-bar-height))}*{transition:all .6s}#main{display:table;width:100%;text-align:center}.fof{display:table-cell;vertical-align:middle}.fof h1{display:inline-block;padding-right:12px;animation:type .5s alternate infinite}@keyframes type{0%{box-shadow:inset -3px 0 #888}to{box-shadow:inset -3px 0 0 transparent}}

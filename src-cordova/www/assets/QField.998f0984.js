@@ -1,0 +1,1 @@
+import{u as e,a as s,d as t,c as r}from"./use-field.b9562a6a.js";import{q as a}from"./index.e984fdbd.js";var m=a({name:"QField",inheritAttrs:!1,props:e,emits:s,setup(){return t(r())}});export{m as Q};

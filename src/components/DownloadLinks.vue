@@ -1,6 +1,6 @@
 <template>
   <div class="download-links">
-    <a href="/builds/second-brain.apks" target="_blank">
+    <a href="/builds/second-brain.apk" target="_blank">
       <img src="~assets/google-play.svg" height="26" />
     </a>
   </div>
