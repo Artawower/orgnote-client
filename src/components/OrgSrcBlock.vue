@@ -1,7 +1,7 @@
 <template>
   <div class="src-code-wrapper">
     <action-btn @click="copySrc" icon="content_copy" active-icon="done" />
-    <highlightjs :autodetect="true" :code="node?.children.get(2)?.rawValue" />
+    <highlightjs autodetect :code="node?.children.get(2)?.rawValue" />
   </div>
 </template>
 
@@ -9,13 +9,8 @@
 import ActionBtn from './ui/ActionBtn.vue';
 import { toRef } from 'vue';
 
-import 'highlight.js/lib/common';
-import 'highlight.js/styles/stackoverflow-light.css';
-import hljsVuePlugin from '@highlightjs/vue-plugin';
 import { copyToClipboard } from 'quasar';
 import { OrgNode } from 'org-mode-ast';
-
-const highlightjs = hljsVuePlugin.component;
 
 const props = defineProps<{
   node: OrgNode;

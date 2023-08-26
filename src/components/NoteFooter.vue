@@ -89,7 +89,7 @@ import { toRef } from 'vue';
 
 const props = defineProps<{
   selectable?: boolean;
-  note: Note;
+  note?: Note;
 }>();
 
 const selectable = toRef(props, 'selectable');

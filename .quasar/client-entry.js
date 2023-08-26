@@ -143,7 +143,9 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/axios'),
       
-      import('boot/katex')
+      import('boot/katex'),
+      
+      import('boot/highlightjs')
       
     ]).then(bootFiles => {
       const boot = bootFiles

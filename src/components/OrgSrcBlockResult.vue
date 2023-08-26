@@ -9,11 +9,6 @@
 import { OrgNode } from 'org-mode-ast';
 import { toRef } from 'vue';
 
-import 'highlight.js/lib/common';
-import hljsVuePlugin from '@highlightjs/vue-plugin';
-
-const highlightjs = hljsVuePlugin.component;
-
 const props = defineProps<{
   content?: OrgNode;
 }>();
