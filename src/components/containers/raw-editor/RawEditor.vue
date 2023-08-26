@@ -57,7 +57,7 @@ const prettifyText = (insertPosition?: number, ...orgNodes: OrgNode[]) => {
   );
 };
 
-const textChangeHandler: TextChangeHandler = (delta, oldDelta, src) => {
+const textChangeHandler: TextChangeHandler = (delta, _oldDelta, src) => {
   if (src === 'api') {
     return;
   }
