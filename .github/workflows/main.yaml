@@ -53,6 +53,7 @@ jobs:
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/sb-client
             cd ~/second-brain/second-brain-client
+            echo $KEYSTORE | base64 -d > sb-release.keystore
 
             cat <<EOT > .env
             DEUBG=true

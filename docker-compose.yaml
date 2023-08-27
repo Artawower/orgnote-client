@@ -10,3 +10,5 @@ services:
 
     environment:
       - API_URL=${API_URL}
+      - KEYPASS=${KEYPASS}
+      - STOREPASS=${STOREPASS}
