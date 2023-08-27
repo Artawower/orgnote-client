@@ -48,20 +48,26 @@ jobs:
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command: |
+            bash
             cd ${{ secrets.SSH_TARGET }}
             ls
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/sb-client
             cd ~/second-brain/second-brain-client
-            echo $KEYSTORE | base64 -d > sb-release.keystore
+            echo ${{ secrets.KEYSTORE }} | base64 -d > sb-release.keystore
+            echo ${{ secrets.KEYPASS }} > keypass.txt
+            echo ${{ secrets.STOREPASS }} > storepass.txt
 
             cat <<EOT > .env
             DEUBG=true
-            API_URL=${{ env.API_URL }}
+            API_URL=${{ secrets.API_URL }}
+            KEYPASS=${{ secrets.KEYPASS }}
+            STOREPASS=${{ secrets.STOREPASS }}
             EOT
             git checkout master
             git fetch --all
             git reset --hard origin/master
             docker system prune -f
             docker-compose up --build
+            exit
           args: '-tt -vvv'
