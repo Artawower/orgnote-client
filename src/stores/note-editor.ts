@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, toRaw } from 'vue';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { useNotesStore } from '.';
 import { generateFileName } from 'src/tools';
-import { ModelsNoteMeta } from 'src/generated/api';
+import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
@@ -40,16 +40,16 @@ export const useNoteEditorStore = defineStore(
 
     const orgTree = computed(() => withMetaInfo(noteOrgData.value));
 
-    const note = computed(() => {
-      return {
-        content: noteOrgData.value,
+    const note = computed(
+      (): ModelsPublicNote => ({
+        content: noteText.value,
         id: orgTree.value.meta.id,
-        filePath: [
-          filePath.value ?? generateFileName(orgTree.value.meta.title),
+        filePath: filePath.value ?? [
+          generateFileName(orgTree.value.meta.title),
         ],
         meta: orgTree.value.meta as ModelsNoteMeta,
-      };
-    });
+      })
+    );
 
     const upsertNote = () => {
       notesStore.upsertNote({
@@ -58,7 +58,7 @@ export const useNoteEditorStore = defineStore(
         filePath: filePath.value?.length
           ? filePath.value
           : [generateFileName(orgTree.value.meta.title)],
-        meta: orgTree.value.meta as ModelsNoteMeta,
+        meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
       });
     };
 

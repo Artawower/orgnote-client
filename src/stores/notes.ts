@@ -8,6 +8,7 @@ import { mapRawNoteToNote } from 'src/tools';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './auth';
+import { repositories } from 'src/boot/repositories';
 
 export const DEFAULT_LIMIT = 1000;
 export const DEFAULT_OFFSET = 0;
@@ -43,6 +44,7 @@ export const useNotesStore = defineStore('notes', () => {
         mapRawNoteToNote(n, authStore.user)
       );
       notesCount.value = rspns.data.meta.total;
+      repositories.notes.saveNotes(notes.value);
       setFilters({
         limit: rspns.data.meta.limit,
         offset: rspns.data.meta.offset,
@@ -129,9 +131,13 @@ export const useNotesStore = defineStore('notes', () => {
 
   const upsertNote = async (note: HandlersCreatingNote) => {
     try {
+      console.log('✎: [line 135][indexeddb] note: ', note);
+      await repositories.notes.putNote(note);
       await sdk.notes.notesBulkUpsertPut([note]);
       loadNotes();
-    } catch (e) {}
+    } catch (e) {
+      console.log('✎: [line 138][indexeddb] e: ', e);
+    }
   };
 
   return {

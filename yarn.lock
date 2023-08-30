@@ -2712,6 +2712,11 @@ destroy@~1.0.4:
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
   integrity sha1-l4hXRCxEdJ5CBmE+N5RiBYJqvYA=
 
+dexie@3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.2.4.tgz#b22a9729be1102acb2eee16102ea6e2bc76454cf"
+  integrity sha512-VKoTQRSv7+RnffpOJ3Dh6ozknBqzWw/F3iqMdsZg958R0AS8AnY9x9d1lbwENr0gzeGJHXKcGhAMRaqys6SxqA==
+
 dir-glob@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/dir-glob/-/dir-glob-3.0.1.tgz#56dbf73d992a4a93ba1584f4534063fd2e41717f"
@@ -4624,10 +4629,10 @@ orderedmap@^2.0.0:
   resolved "https://registry.yarnpkg.com/orderedmap/-/orderedmap-2.1.0.tgz#819457082fa3a06abd316d83a281a1ca467437cd"
   integrity sha512-/pIFexOm6S70EPdznemIz3BQZoJ4VTFrhqzu0ACBqBgeLsLxq8e6Jim63ImIfwW/zAD1AlXpRMlOv3aghmo4dA==
 
-org-mode-ast@0.8.11:
-  version "0.8.11"
-  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.8.11.tgz#b27688270fbde054eb0f0194094d4e139946d85f"
-  integrity sha512-d+tkmT100NQ7HC7l+f9LTEGGuwZvmHMWpzEfevT3UPmqC1B0Rj59frdMpKj3OGrVbap6NmV4GGIrtVcP0OiUxQ==
+org-mode-ast@0.8.12:
+  version "0.8.12"
+  resolved "https://registry.yarnpkg.com/org-mode-ast/-/org-mode-ast-0.8.12.tgz#6c333c2a9783a46401425011fb917f4f33cffbc5"
+  integrity sha512-24Z7Ql63pfpSwdeGs/1467mX6I4oebkDa9aniprqBka406zxsRS++BtYaCALC+71/1HRvmiYRJxuHM6Soo8n7Q==
 
 os-tmpdir@~1.0.2:
   version "1.0.2"
