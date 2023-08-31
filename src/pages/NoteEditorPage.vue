@@ -40,7 +40,7 @@ import { useQuasar } from 'quasar';
 import ModeLine from 'src/components/ui/ModeLine.vue';
 import { getInitialNoteTemplate } from 'src/constants';
 import { RouteNames } from 'src/router/routes';
-import { useNotesStore } from 'src/stores';
+import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -52,22 +52,23 @@ const noteId = route.params.id as string;
 const noteEditorStore = useNoteEditorStore();
 
 const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
-const notesStore = useNotesStore();
 
-const { selectedNote } = storeToRefs(notesStore);
+const currentNoteStore = useCurrentNoteStore();
+const { currentNote } = storeToRefs(currentNoteStore);
 
 const setupEditorStore = () => {
-  if (!selectedNote.value) {
+  if (!currentNote.value) {
     return;
   }
-  noteEditorStore.setNoteContent(selectedNote.value.content as OrgNode);
-  noteEditorStore.setFilePath(selectedNote.value.filePath);
+  noteEditorStore.setNoteContent(currentNote.value.content as OrgNode);
+  noteEditorStore.setFilePath(currentNote.value.filePath);
+  noteEditorStore.setCreatedTime(currentNote.value.createdAt);
 };
 
 if (noteId) {
   setupEditorStore();
   watch(
-    () => selectedNote.value,
+    () => currentNote.value,
     () => setupEditorStore()
   );
 } else {
@@ -75,10 +76,10 @@ if (noteId) {
 }
 
 if (noteId) {
-  notesStore.selectNoteById(noteId);
+  currentNoteStore.selectNoteById(noteId);
 }
 
-const noteLoaded = computed(() => !noteId || selectedNote.value?.id === noteId);
+const noteLoaded = computed(() => !noteId || currentNote.value?.id === noteId);
 
 const $q = useQuasar();
 const initLoaderStatus = () => {

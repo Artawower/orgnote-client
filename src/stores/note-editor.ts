@@ -6,6 +6,7 @@ import { generateFileName } from 'src/tools';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
+import { Note } from 'src/models';
 
 export const useNoteEditorStore = defineStore(
   'note-editor',
@@ -15,6 +16,7 @@ export const useNoteEditorStore = defineStore(
     const lastSavedText = ref<string>('');
     const specialSymbolsHidden = ref<boolean>(false);
     const filePath = ref<string[]>([]);
+    const createdTime = ref<string>();
 
     // TODO: master persistent value should be done via indexed db.
     const setNoteData = (text: string, orgNode: OrgNode) => {
@@ -30,6 +32,10 @@ export const useNoteEditorStore = defineStore(
       filePath.value = path;
     };
 
+    const setCreatedTime = (time: string) => {
+      createdTime.value = time;
+    };
+
     const setNoteText = (text: string) => {
       noteText.value = text;
       noteOrgData.value = withMetaInfo(parse(text));
@@ -40,7 +46,7 @@ export const useNoteEditorStore = defineStore(
 
     const orgTree = computed(() => withMetaInfo(noteOrgData.value));
 
-    const note = computed(
+    const rawNote = computed(
       (): ModelsPublicNote => ({
         content: noteText.value,
         id: orgTree.value.meta.id,
@@ -51,12 +57,26 @@ export const useNoteEditorStore = defineStore(
       })
     );
 
+    const note = computed(
+      (): Note => ({
+        content: orgTree.value,
+        id: orgTree.value.meta.id,
+        filePath: filePath.value ?? [
+          generateFileName(orgTree.value.meta.title),
+        ],
+        meta: orgTree.value.meta as ModelsNoteMeta,
+      })
+    );
+
     const upsertNote = () => {
+      const now = new Date().toISOString();
       notesStore.upsertNote({
         content: noteText.value,
         id: orgTree.value.meta.id,
+        createdAt: createdTime.value ?? now,
+        updatedAt: now,
         filePath: filePath.value?.length
-          ? filePath.value
+          ? toRaw(filePath.value)
           : [generateFileName(orgTree.value.meta.title)],
         meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
       });
@@ -80,6 +100,7 @@ export const useNoteEditorStore = defineStore(
     return {
       noteOrgData,
       noteText,
+      rawNote,
       note,
 
       setNoteData,
@@ -89,6 +110,7 @@ export const useNoteEditorStore = defineStore(
       setNoteContent,
       setNoteText,
       setFilePath,
+      setCreatedTime,
     };
   },
   { persist: true }

@@ -625,6 +625,12 @@ export interface ModelsPublicNote {
     'content'?: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelsPublicNote
+     */
+    'createdAt'?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelsPublicNote
      */
