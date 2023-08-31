@@ -36,7 +36,7 @@ const currentNoteStore = useCurrentNoteStore();
 
 const { currentNote } = storeToRefs(currentNoteStore);
 
-if (!currentNote?.value && route.params.id) {
+if (route.params.id) {
   currentNoteStore.selectNoteById(route.params.id as string);
 }
 

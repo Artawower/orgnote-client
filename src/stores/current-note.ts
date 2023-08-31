@@ -58,7 +58,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     noteCache.value = [note, ...noteCache.value].slice(0, cacheSize);
   };
 
-  // TODO: master simplify this method
   const selectNoteById = async (noteId: string): Promise<void> => {
     const alreadySelected = currentNote.value?.id === noteId;
 
