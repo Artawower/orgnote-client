@@ -1,6 +1,6 @@
 <template>
   <div class="container content">
-    <public-notes ref="publicNotesRef"></public-notes>
+    <note-list ref="publicNotesRef"></note-list>
     <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-if="isMyNotesPage" v-slot:left>
         <q-checkbox
@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import PublicNotes from 'components/PublicNotes.vue';
+import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'stores/notes';
