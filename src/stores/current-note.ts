@@ -44,6 +44,11 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     const myNote = (await repositories.notes.getById(
       noteId
     )) as ModelsPublicNote;
+
+    if (!myNote) {
+      return;
+    }
+
     myNote.author = authStore.user;
     myNote.isMy = true;
     return myNote;

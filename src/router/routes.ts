@@ -115,12 +115,12 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: ':userId',
       name: RouteNames.UserNotes,
-      component: () => import('pages/IndexPage.vue'),
+      component: () => import('pages/PrivateNotesPage.vue'),
     },
     {
       path: '',
       name: RouteNames.NoteList,
-      component: () => import('pages/IndexPage.vue'),
+      component: () => import('pages/PublicNotesPage.vue'),
     },
     {
       path: '/:catchAll(.*)*',

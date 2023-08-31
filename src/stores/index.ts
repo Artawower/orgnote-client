@@ -9,6 +9,7 @@ export * from './selected-notes';
 export * from './auth';
 export * from './sync';
 export * from './current-note';
+export * from './public-notes';
 
 /*
  * If not building with SSR mode, you can

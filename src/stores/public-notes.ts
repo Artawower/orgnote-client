@@ -1,33 +1,32 @@
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotesFilter } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { mapRawNoteToNote } from 'src/tools';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './auth';
-import { repositories } from 'src/boot/repositories';
 
-export const DEFAULT_LIMIT = 1000;
-export const DEFAULT_OFFSET = 0;
+// TODO: master common pagination
+export const PUBLIC_DEFAULT_LIMIT = 1000;
+export const PUBLIC_DEFAULT_OFFSET = 0;
 
-export const usePublicNotes = defineStore('publicNotes', () => {
+export const usePublicNotesStore = defineStore('publicNotes', () => {
   const notes = ref<Note[]>([]);
   const filters = ref<NotesFilter>({
-    limit: DEFAULT_LIMIT,
-    offset: DEFAULT_OFFSET,
+    limit: PUBLIC_DEFAULT_LIMIT,
+    offset: PUBLIC_DEFAULT_OFFSET,
   });
-  const notesCount = ref<number>();
+  const total = ref<number>(0);
   const selectedNote = ref<Note>();
   const authStore = useAuthStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
     updatedFilters.searchText = updatedFilters.searchText?.trim();
-    updatedFilters.limit ||= DEFAULT_LIMIT;
-    updatedFilters.offset ||= DEFAULT_OFFSET;
+    updatedFilters.limit ||= PUBLIC_DEFAULT_LIMIT;
+    updatedFilters.offset ||= PUBLIC_DEFAULT_OFFSET;
     filters.value = updatedFilters;
   };
 
@@ -43,8 +42,7 @@ export const usePublicNotes = defineStore('publicNotes', () => {
       notes.value = rspns.data.data.map((n) =>
         mapRawNoteToNote({ node: n, user: authStore.user })
       );
-      notesCount.value = rspns.data.meta.total;
-      repositories.notes.saveNotes(notes.value);
+      total.value = rspns.data.meta.total;
       setFilters({
         limit: rspns.data.meta.limit,
         offset: rspns.data.meta.offset,
@@ -52,17 +50,6 @@ export const usePublicNotes = defineStore('publicNotes', () => {
     } catch (e) {
       // TODO: master real error handling
       console.log('🦄: [line 24][notes.ts] [35me: ', e);
-    }
-  };
-
-  const deleteNotes = async (noteIds: string[]) => {
-    const previousNotes = [...notes.value];
-    try {
-      await sdk.notes.notesDelete(noteIds);
-      notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
-    } catch (e) {
-      // TODO: master real error handling [low]
-      notes.value = previousNotes;
     }
   };
 
@@ -85,7 +72,7 @@ export const usePublicNotes = defineStore('publicNotes', () => {
           mapRawNoteToNote({ node: n, user: authStore.user })
         ),
       ];
-      notesCount.value = rspns.data.meta.total;
+      total.value = rspns.data.meta.total;
     } catch (e) {
       // TODO: master real error handling [low]
     }
@@ -97,6 +84,7 @@ export const usePublicNotes = defineStore('publicNotes', () => {
 
   const router = useRouter();
 
+  // TODO: master delete
   // TODO: master simplify this method
   const selectNoteById = async (noteId: string): Promise<void> => {
     const alreadySelected = selectedNote.value?.id === noteId;
@@ -124,37 +112,16 @@ export const usePublicNotes = defineStore('publicNotes', () => {
     }
   };
 
-  const createNote = async (note: HandlersCreatingNote) => {
-    try {
-      await sdk.notes.notesPost(note);
-      loadNotes();
-    } catch (e) {}
-  };
-
-  const upsertNote = async (note: HandlersCreatingNote) => {
-    try {
-      await repositories.notes.putNote(note);
-      await sdk.notes.notesBulkUpsertPut([note]);
-      loadNotes();
-    } catch (e) {
-      // TODO: master handle error
-      console.log('✎: [line 138][indexeddb] e: ', e);
-    }
-  };
-
   return {
     notes,
     selectedNote,
-    notesCount,
+    total,
     filters,
 
     loadNotes,
-    deleteNotes,
     fetchNotes,
     selectNote,
     selectNoteById,
     setFilters,
-    createNote,
-    upsertNote,
   };
 });

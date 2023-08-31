@@ -1,8 +1,16 @@
 <template>
   <div class="container content">
-    <note-list ref="publicNotesRef"></note-list>
+    <note-list
+      :selectable="true"
+      :limit="limit"
+      :offset="offset"
+      :total="notesStore.total"
+      :fetch-notes="notesStore.fetchNotes"
+      :notes="notesStore.notes"
+      ref="publicNotesRef"
+    ></note-list>
     <mode-line v-if="isModeLineVisible" :tabMode="false">
-      <template v-if="isMyNotesPage" v-slot:left>
+      <template v-slot:left>
         <q-checkbox
           class="q-pl-sm"
           :modelValue="selectedNotesStore.isAllNotesSelected"
@@ -25,18 +33,17 @@
 <script lang="ts" setup>
 import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
-import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
 import { computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
-const notesState = useNotesStore();
+const notesStore = useNotesStore();
 
 const route = useRoute();
 
 const setFiltersFromQuery = () => {
-  notesState.setFilters({
+  notesStore.setFilters({
     searchText: route.query.search as string,
     userId: route.params.userId as string,
     limit: +(route.query.limit as string),
@@ -44,9 +51,12 @@ const setFiltersFromQuery = () => {
   });
 };
 
+const limit = computed(() => notesStore.filters.limit);
+const offset = computed(() => notesStore.filters.offset);
+
 const reloadNotes = () => {
   setFiltersFromQuery();
-  notesState.loadNotes();
+  notesStore.loadNotes();
 };
 
 reloadNotes();
@@ -54,7 +64,7 @@ reloadNotes();
 watch(
   () => route.params.userId as string,
   () => {
-    if (notesState.filters?.userId == route.params.userId) {
+    if (notesStore.filters?.userId == route.params.userId) {
       return;
     }
     reloadNotes();
@@ -64,14 +74,9 @@ watch(
 const selectedNotesStore = useSelectedNotesStore();
 
 const deleteSelectedNotes = () => {
-  notesState.deleteNotes(selectedNotesStore.selectedNotesIds);
+  notesStore.deleteNotes(selectedNotesStore.selectedNotesIds);
   selectedNotesStore.clearSelectedNotes();
 };
 
-const isModeLineVisible = computed(() => notesState.notesPreviews.length);
-
-const router = useRouter();
-const isMyNotesPage = computed(
-  () => router.currentRoute.value.name === RouteNames.UserNotes
-);
+const isModeLineVisible = computed(() => notesStore.notes.length);
 </script>

@@ -9,14 +9,13 @@ export const DEFAULT_LIMIT = 10;
 export const DEFAULT_OFFSET = 0;
 
 export const useNotesStore = defineStore('notes', () => {
-  const notesPreviews = ref<NotePreview[]>([]);
+  const notes = ref<NotePreview[]>([]);
   const filters = ref<NotesFilter>({
     limit: DEFAULT_LIMIT,
     offset: DEFAULT_OFFSET,
   });
-  const notesCount = ref<number>();
+  const total = ref<number>(0);
   const selectedNote = ref<Note>();
-  // const authStore = useAuthStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -27,15 +26,13 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const deleteNotes = async (noteIds: string[]) => {
-    const previousNotes = [...notesPreviews.value];
+    const previousNotes = [...notes.value];
     try {
       await sdk.notes.notesDelete(noteIds);
-      notesPreviews.value = notesPreviews.value.filter(
-        (n) => !noteIds.includes(n.id)
-      );
+      notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
     } catch (e) {
       // TODO: master real error handling [low]
-      notesPreviews.value = previousNotes;
+      notes.value = previousNotes;
     }
   };
 
@@ -51,31 +48,8 @@ export const useNotesStore = defineStore('notes', () => {
       filters.value.offset,
       filters.value.searchText
     );
-    notesPreviews.value = [...notesPreviews.value, ...data];
-    //   try {
-    //     const rspns = await sdk.notes.notesGet(
-    //       filters.value.limit,
-    //       filters.value.offset,
-    //       filters.value.userId,
-    //       filters.value.searchText
-    //     );
-    //     notesPreview.value = [
-    //       ...notesPreview.value,
-    //       ...rspns.data.data.map((n) => mapRawNoteToNote(n, authStore.user)),
-    //     ];
-    //     notesCount.value = rspns.data.meta.total;
-    //   } catch (e) {
-    //     // TODO: master real error handling [low]
-    //   }
+    notes.value = [...notes.value, ...data];
   };
-
-  const selectNote = (note: NotePreview): void => {
-    // selectedNote.value = note;
-  };
-
-  // const router = useRouter();
-
-  // TODO: master move to separated state
 
   const createNote = async (note: HandlersCreatingNote) => {
     try {
@@ -96,28 +70,22 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const loadNotes = async () => {
-    notesPreviews.value = await repositories.notes.getNotePreviews(
+    notes.value = await repositories.notes.getNotePreviews(
       filters.value.limit,
       filters.value.offset
     );
-    console.log(
-      '✎: [line 128][indexeddb] notesPreviews.value: ',
-      notesPreviews.value
-    );
-    notesCount.value = await repositories.notes.count();
-    console.log('✎: [line 27][indexeddb] notePreviews: ', notesCount.value);
+    total.value = await repositories.notes.count();
   };
 
   return {
-    notesPreviews,
+    notes,
     selectedNote,
-    notesCount,
+    total,
     filters,
 
     loadNotes,
     deleteNotes,
     fetchNotes,
-    selectNote,
     setFilters,
     createNote,
     upsertNote,
