@@ -7,6 +7,8 @@ export * from './note-editor';
 export * from './search';
 export * from './selected-notes';
 export * from './auth';
+export * from './sync';
+export * from './current-note';
 
 /*
  * If not building with SSR mode, you can

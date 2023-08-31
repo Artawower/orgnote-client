@@ -12,7 +12,6 @@ export class Database<T extends typeof BaseRepository[]> extends Dexie {
 
   private initSchema(repositories: T): void {
     const storesSchema = this.getCombinedStoresSchema(repositories);
-    console.log('✎: [line 15][indexeddb] storesSchema: ', storesSchema);
     this.version(this.currentVersion).stores(storesSchema);
   }
 

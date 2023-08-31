@@ -6,7 +6,6 @@
       column: !tileView,
     }"
   >
-    <!-- TODO: add virtual scroll support for tile view mode-->
     <q-virtual-scroll
       ref="virtualScrollRef"
       :items-size="notesState.notesCount"
@@ -27,7 +26,7 @@
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
             <public-note-preview
-              :note="note as Note"
+              :note-preview="note as NotePreview"
               :show-author="!isMyNotePage"
               :selectable="isMyNotePage"
               @selected="(selected) => selectNote(note as Note, selected)"
@@ -48,7 +47,7 @@ import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore } from 'src/stores/notes';
-import { Note } from 'src/models';
+import { Note, NotePreview } from 'src/models';
 
 defineComponent({
   PublicNotePreview,
@@ -89,7 +88,7 @@ const route = useRoute();
 const initialOffset = route.query.offset;
 
 onMounted(() => {
-  if (!initialOffset) {
+  if (!initialOffset || !virtualScrollRef.value) {
     return;
   }
   virtualScrollRef.value.scrollTo(initialOffset);

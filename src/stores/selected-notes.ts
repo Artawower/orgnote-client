@@ -8,7 +8,7 @@ export const useSelectedNotesStore = defineStore('selected-notes', () => {
   const notesStore = useNotesStore();
 
   const allNotesSelected = computed(
-    () => selectedNotesIds.value.size === notesStore.notes.length
+    () => selectedNotesIds.value.size === notesStore.notesPreviews.length
   );
 
   const toggleBulkNotesSelection = () => {
@@ -16,7 +16,7 @@ export const useSelectedNotesStore = defineStore('selected-notes', () => {
       selectedNotesIds.value.clear();
       return;
     }
-    selectedNotesIds.value = new Set(notesStore.notes.map((n) => n.id));
+    selectedNotesIds.value = new Set(notesStore.notesPreviews.map((n) => n.id));
   };
 
   const toggleNoteSelection = (noteId: string) => {
@@ -30,7 +30,7 @@ export const useSelectedNotesStore = defineStore('selected-notes', () => {
   const isNoteSelected = (noteId: string) => selectedNotesIds.value.has(noteId);
 
   const isAllNotesSelected = computed(() => {
-    return notesStore.notes.length === selectedNotesIds.value.size;
+    return notesStore.notesPreviews.length === selectedNotesIds.value.size;
   });
 
   const isSomeNotesSelected = computed(() => selectedNotesIds.value.size > 0);

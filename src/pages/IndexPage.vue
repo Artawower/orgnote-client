@@ -1,6 +1,6 @@
 <template>
   <div class="container content">
-    <public-notes ref="publicNotesRef" :notes="notesState.notes"></public-notes>
+    <public-notes ref="publicNotesRef"></public-notes>
     <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-if="isMyNotesPage" v-slot:left>
         <q-checkbox
@@ -68,7 +68,7 @@ const deleteSelectedNotes = () => {
   selectedNotesStore.clearSelectedNotes();
 };
 
-const isModeLineVisible = computed(() => notesState.notes.length);
+const isModeLineVisible = computed(() => notesState.notesPreviews.length);
 
 const router = useRouter();
 const isMyNotesPage = computed(

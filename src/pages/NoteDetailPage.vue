@@ -1,16 +1,16 @@
 <template>
   <q-page padding class="note-view height-auto with-modeline">
     <author-info
-      v-if="selectedNote && !selectedNote?.isMyNote"
-      :author="selectedNote?.author"
+      v-if="currentNote && !currentNote?.isMyNote"
+      :author="currentNote?.author"
       class="q-pb-lg"
     >
       ></author-info
     >
-    <note-detail :note="selectedNote as Note"></note-detail>
-    <mode-line v-if="selectedNote?.isMyNote">
+    <note-detail :note="currentNote as Note"></note-detail>
+    <mode-line v-if="currentNote?.isMyNote">
       <q-route-tab
-        :to="{ name: RouteNames.EditNote, params: { id: selectedNote?.id } }"
+        :to="{ name: RouteNames.EditNote, params: { id: currentNote?.id } }"
         icon="edit"
       >
       </q-route-tab>
@@ -23,24 +23,25 @@ import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
-import { useNotesStore } from 'stores/notes';
 import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import ModeLine from 'src/components/ui/ModeLine.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
 import { RouteNames } from 'src/router/routes';
 import { Note } from 'src/models';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 
-const noteStore = useNotesStore();
 const route = useRoute();
 
-const { selectedNote } = storeToRefs(noteStore);
+const currentNoteStore = useCurrentNoteStore();
 
-if (!selectedNote?.value && route.params.id) {
-  noteStore.selectNoteById(route.params.id as string);
+const { currentNote } = storeToRefs(currentNoteStore);
+
+if (!currentNote?.value && route.params.id) {
+  currentNoteStore.selectNoteById(route.params.id as string);
 }
 
 watch(
   () => route.params.id,
-  (id) => id && noteStore.selectNoteById(id as string)
+  (id) => id && currentNoteStore.selectNoteById(route.params.id as string)
 );
 </script>

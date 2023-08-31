@@ -12,3 +12,10 @@ export interface NotesFilter {
   limit?: number;
   offset?: number;
 }
+
+export interface NotePreview {
+  id: ModelsPublicNote['id'];
+  meta: ModelsPublicNote['meta'];
+  filePath: ModelsPublicNote['filePath'];
+  isMy: ModelsPublicNote['isMy'];
+}

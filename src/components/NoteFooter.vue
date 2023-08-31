@@ -83,13 +83,13 @@
 
 <script lang="ts" setup>
 import { useNotifications } from 'src/hooks';
-import { Note } from 'src/models';
+import { Note, NotePreview } from 'src/models';
 import { useSelectedNotesStore } from 'src/stores';
 import { toRef } from 'vue';
 
 const props = defineProps<{
   selectable?: boolean;
-  note?: Note;
+  note?: Note | NotePreview;
 }>();
 
 const selectable = toRef(props, 'selectable');

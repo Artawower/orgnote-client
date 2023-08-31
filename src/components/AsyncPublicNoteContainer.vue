@@ -18,7 +18,7 @@ const notesStore = useNotesStore();
 const note = computed(() => {
   const { index } = props;
 
-  const note = notesStore.notes[index];
+  const note = notesStore.notesPreviews[index];
   return note;
 });
 </script>

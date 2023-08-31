@@ -1,15 +1,17 @@
 <template>
   <article>
     <q-card flat class="q-mt-lg">
-      <div class="q-px-sm" v-if="showUserProfiles && showAuthor">
-        <author-info :author="note.author"></author-info>
+      <div
+        class="q-px-sm"
+        v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
+      >
+        <author-info :author="(notePreview as Note).author"></author-info>
       </div>
-
       <q-card-section
         horizontal
         :class="{ 'note-card-content': isTile, column: isTile }"
         class="note-card-content pointer"
-        @click="openNoteDetail(note)"
+        @click="openNoteDetail(notePreview)"
       >
         <img
           v-if="isTile && previewImage"
@@ -17,19 +19,24 @@
           :src="buildMediaFilePath(previewImage)"
         />
         <q-card-section class="fit q-pa-none q-pt-sm">
-          <div class="text-overline q-px-sm">{{ note.meta.category }}</div>
+          <div class="text-overline q-px-sm">
+            {{ notePreview.meta.category }}
+          </div>
           <div class="text-h4 text-weight-bold pointer q-px-sm">
-            {{ note.meta.title }}
+            {{ notePreview.meta.title }}
           </div>
           <file-path
-            v-if="note.filePath"
-            :filePath="note.filePath"
+            v-if="notePreview.filePath"
+            :filePath="notePreview.filePath"
             class="q-py-xs q-px-sm"
           ></file-path>
           <div class="text-caption rft q-px-sm description">
-            {{ note.meta.description }}
+            {{ notePreview.meta.description }}
           </div>
-          <tag-list class="q-mt-md q-pa-sm" :tags="note?.meta?.fileTags" />
+          <tag-list
+            class="q-mt-md q-pa-sm"
+            :tags="notePreview?.meta?.fileTags"
+          />
         </q-card-section>
         <q-card-section
           v-if="!isTile && previewImage"
@@ -48,7 +55,7 @@
       <q-card-actions class="q-px-none justify-between q-my-md actions">
         <note-footer
           class="q-px-sm"
-          :note="note"
+          :note="notePreview"
           :selectable="selectable"
         ></note-footer>
       </q-card-actions>
@@ -62,10 +69,9 @@ import { computed, ref, toRefs, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { RouteNames } from 'src/router/routes';
-import { useNotesStore } from 'src/stores/notes';
 import { useViewStore } from 'src/stores/view';
 
-import { Note } from 'src/models';
+import { Note, NotePreview } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
 import { buildMediaFilePath } from 'src/tools';
 import TagList from 'components/TagList.vue';
@@ -74,17 +80,15 @@ import FilePath from 'src/components/containers/FilePath.vue';
 import NoteFooter from 'src/components/NoteFooter.vue';
 
 const props = defineProps<{
-  note: Note;
+  notePreview: Note | NotePreview;
   showAuthor: boolean;
   selectable?: boolean;
 }>();
-const { note, selectable } = toRefs(props);
+const { notePreview, selectable } = toRefs(props);
 
-const notesStore = useNotesStore();
 const router = useRouter();
 
-const openNoteDetail = (note: Note) => {
-  notesStore.selectNote(note);
+const openNoteDetail = (note: Note | NotePreview) => {
   router.push({ name: RouteNames.NoteDetail, params: { id: note.id } });
 };
 
@@ -95,9 +99,9 @@ const settingsStore = useSettingsStore();
 
 const { showUserProfiles } = toRefs(settingsStore);
 
-const previewImage = ref(note.value.meta.images?.[0]);
+const previewImage = ref(notePreview.value.meta.images?.[0]);
 watch(
-  () => note.value.meta.images,
+  () => notePreview.value.meta.images,
   (images) => {
     previewImage.value = images?.[0];
   }
