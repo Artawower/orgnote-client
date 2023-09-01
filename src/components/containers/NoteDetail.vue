@@ -10,10 +10,7 @@
     :src="buildMediaFilePath((note.meta as any).previewImg)"
   />
   <div class="note-content">
-    <content-renderer
-      v-if="note?.content"
-      :node="note?.content"
-    ></content-renderer>
+    <content-renderer v-if="orgTree" :node="orgTree"></content-renderer>
   </div>
   <note-footer :note="note" class="q-pt-md">
     <tag-list :tags="note?.meta?.fileTags" class="q-pa-sm q-ma-sm" />
@@ -29,9 +26,11 @@ import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import FilePath from 'components/containers/FilePath.vue';
+import { OrgNode } from 'org-mode-ast';
 
 const props = defineProps<{
   note?: Note;
+  orgTree?: OrgNode;
 }>();
 
 const note = toRef(props, 'note');

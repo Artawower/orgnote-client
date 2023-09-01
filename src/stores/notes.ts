@@ -10,6 +10,7 @@ export const DEFAULT_OFFSET = 0;
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<NotePreview[]>([]);
+
   const filters = ref<NotesFilter>({
     limit: DEFAULT_LIMIT,
     offset: DEFAULT_OFFSET,

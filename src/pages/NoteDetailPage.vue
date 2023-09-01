@@ -1,14 +1,14 @@
 <template>
   <q-page padding class="note-view height-auto with-modeline">
     <author-info
-      v-if="currentNote && !currentNote?.isMyNote"
+      v-if="currentNote && !currentNote?.isMy"
       :author="currentNote?.author"
       class="q-pb-lg"
     >
       ></author-info
     >
     <note-detail :note="currentNote as Note"></note-detail>
-    <mode-line v-if="currentNote?.isMyNote">
+    <mode-line v-if="currentNote?.isMy">
       <q-route-tab
         :to="{ name: RouteNames.EditNote, params: { id: currentNote?.id } }"
         icon="edit"

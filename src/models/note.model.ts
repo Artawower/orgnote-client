@@ -1,10 +1,4 @@
-import { OrgNode } from 'org-mode-ast';
 import { ModelsPublicNote } from 'src/generated/api';
-
-export interface Note extends Omit<Partial<ModelsPublicNote>, 'content'> {
-  content: OrgNode;
-  isMyNote: boolean;
-}
 
 export interface NotesFilter {
   searchText?: string;
@@ -18,4 +12,8 @@ export interface NotePreview {
   meta: ModelsPublicNote['meta'];
   filePath: ModelsPublicNote['filePath'];
   isMy: ModelsPublicNote['isMy'];
+}
+
+export interface Note extends ModelsPublicNote {
+  deleted?: boolean;
 }

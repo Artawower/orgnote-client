@@ -3,9 +3,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
+export default {
   name: 'App',
-});
+};
+</script>
+
+<script lang="ts" setup>
+import { useSyncStore } from './stores';
+
+const syncStore = useSyncStore();
+
+syncStore.syncNotes();
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div class="note-view">
-    <note-detail :note="note as Note"></note-detail>
+    <note-detail :note="note"></note-detail>
   </div>
 </template>
 
@@ -9,7 +9,6 @@ import { storeToRefs } from 'pinia';
 
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
-import { Note } from 'src/models';
 
 const noteEditorStore = useNoteEditorStore();
 

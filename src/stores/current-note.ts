@@ -4,25 +4,28 @@ import { repositories } from 'src/boot/repositories';
 import { ModelsPublicNote } from 'src/generated/api';
 import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { mapRawNoteToNote } from 'src/tools';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from './auth';
 import { defineStore } from 'pinia';
+import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
+
+type ParsedNote = { note: Note; orgTree: OrgNode };
 
 export const useCurrentNoteStore = defineStore('current-note', () => {
   const currentNote = ref<Note | null>(null);
-  const noteCache = ref<Note[]>([]);
+  const noteCache = ref<ParsedNote[]>([]);
+  const currentOrgTree = ref<OrgNode | null>(null);
 
-  // TODO: master add to configurtion file.
+  // TODO: master add to configuration file.
   const cacheSize = 10;
 
   const router = useRouter();
   const authStore = useAuthStore();
 
-  const selectNoteFromCache = async (noteId: string): Promise<Note> => {
-    const foundCachedNote = noteCache.value.find((n) => n.id === noteId);
-    return foundCachedNote as Note;
+  const selectNoteFromCache = async (noteId: string): Promise<ParsedNote> => {
+    const foundParsedNote = noteCache.value.find((pn) => pn.note.id === noteId);
+    return foundParsedNote as ParsedNote;
   };
 
   const selectPublicNote = async (
@@ -54,8 +57,8 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     return myNote;
   };
 
-  const cacheNote = (note: Note) => {
-    noteCache.value = [note, ...noteCache.value].slice(0, cacheSize);
+  const cacheNote = (parsedNote: ParsedNote) => {
+    noteCache.value = [parsedNote, ...noteCache.value].slice(0, cacheSize);
   };
 
   const selectNoteById = async (noteId: string): Promise<void> => {
@@ -67,21 +70,23 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
     const cachedValue = await selectNoteFromCache(noteId);
     if (cachedValue) {
-      currentNote.value = cachedValue;
+      currentNote.value = cachedValue.note;
+      currentOrgTree.value = cachedValue.orgTree;
       return;
     }
 
     currentNote.value = null;
     const publicNote =
       (await selectMyNote(noteId)) ?? (await selectPublicNote(noteId));
-    const mappedNote = mapRawNoteToNote({
-      node: publicNote,
-      user: authStore.user,
-    });
 
-    cacheNote(mappedNote);
+    const orgTree = withMetaInfo(parse(publicNote.content));
 
-    currentNote.value = mappedNote;
+    const parsedNote: ParsedNote = { note: publicNote, orgTree };
+
+    cacheNote(parsedNote);
+
+    currentNote.value = publicNote;
+    currentOrgTree.value = orgTree;
   };
 
   return {

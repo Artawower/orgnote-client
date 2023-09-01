@@ -1,12 +1,7 @@
-import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { Note, NotesFilter } from 'src/models';
-import { RouteNames } from 'src/router/routes';
-import { mapRawNoteToNote } from 'src/tools';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from './auth';
 
 // TODO: master common pagination
 export const PUBLIC_DEFAULT_LIMIT = 1000;
@@ -20,7 +15,6 @@ export const usePublicNotesStore = defineStore('publicNotes', () => {
   });
   const total = ref<number>(0);
   const selectedNote = ref<Note>();
-  const authStore = useAuthStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -38,10 +32,7 @@ export const usePublicNotesStore = defineStore('publicNotes', () => {
         filters.value.userId,
         filters.value.searchText
       );
-      // getNotes(this.filters);
-      notes.value = rspns.data.data.map((n) =>
-        mapRawNoteToNote({ node: n, user: authStore.user })
-      );
+      notes.value = rspns.data.data;
       total.value = rspns.data.meta.total;
       setFilters({
         limit: rspns.data.meta.limit,
@@ -66,12 +57,7 @@ export const usePublicNotesStore = defineStore('publicNotes', () => {
         filters.value.userId,
         filters.value.searchText
       );
-      notes.value = [
-        ...notes.value,
-        ...rspns.data.data.map((n) =>
-          mapRawNoteToNote({ node: n, user: authStore.user })
-        ),
-      ];
+      notes.value = [...notes.value, ...rspns.data.data];
       total.value = rspns.data.meta.total;
     } catch (e) {
       // TODO: master real error handling [low]
@@ -80,36 +66,6 @@ export const usePublicNotesStore = defineStore('publicNotes', () => {
 
   const selectNote = (note: Note): void => {
     selectedNote.value = note;
-  };
-
-  const router = useRouter();
-
-  // TODO: master delete
-  // TODO: master simplify this method
-  const selectNoteById = async (noteId: string): Promise<void> => {
-    const alreadySelected = selectedNote.value?.id === noteId;
-    if (alreadySelected) {
-      return;
-    }
-    const foundNote = notes.value.find((note) => note.id === noteId);
-    if (foundNote) {
-      selectedNote.value = foundNote as Note;
-      return;
-    }
-
-    try {
-      selectedNote.value = mapRawNoteToNote({
-        node: (await sdk.notes.notesIdGet(noteId)).data.data,
-        user: authStore.user,
-      });
-    } catch (e: unknown) {
-      if ((e as AxiosError).response?.status === 404) {
-        router.push({ name: RouteNames.NotFound });
-        return;
-      }
-      // TODO: master handle error here [low]
-      console.log('🦄: [line 41][notes.ts] [35me: ', e);
-    }
   };
 
   return {
@@ -121,7 +77,6 @@ export const usePublicNotesStore = defineStore('publicNotes', () => {
     loadNotes,
     fetchNotes,
     selectNote,
-    selectNoteById,
     setFilters,
   };
 });
