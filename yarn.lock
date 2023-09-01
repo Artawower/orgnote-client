@@ -2712,10 +2712,10 @@ destroy@~1.0.4:
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
   integrity sha1-l4hXRCxEdJ5CBmE+N5RiBYJqvYA=
 
-dexie@3.2.4:
-  version "3.2.4"
-  resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.2.4.tgz#b22a9729be1102acb2eee16102ea6e2bc76454cf"
-  integrity sha512-VKoTQRSv7+RnffpOJ3Dh6ozknBqzWw/F3iqMdsZg958R0AS8AnY9x9d1lbwENr0gzeGJHXKcGhAMRaqys6SxqA==
+dexie@4.0.1-alpha.25:
+  version "4.0.1-alpha.25"
+  resolved "https://registry.yarnpkg.com/dexie/-/dexie-4.0.1-alpha.25.tgz#e3bb44db249382c3d546b6f04f6fe1005836e672"
+  integrity sha512-udAExYYfJaC6IzVC+ygHdlWYoYxhwYHtiITkthGgSH7dh2FBk3qqDGkJ/Mn2lfxsmATcq9qJDUjyO7yWOo/ZPA==
 
 dir-glob@^3.0.1:
   version "3.0.1"

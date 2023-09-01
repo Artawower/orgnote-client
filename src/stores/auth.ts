@@ -5,6 +5,7 @@ import { OAuthProvider } from 'src/boot/sdk';
 import { ModelsPublicUser } from 'src/generated/api';
 import { ref } from 'vue';
 import { useSettingsStore } from './settings';
+import { useSyncStore } from './sync';
 
 export const useAuthStore = defineStore(
   'auth',
@@ -50,9 +51,11 @@ export const useAuthStore = defineStore(
       }
     };
 
+    const syncStore = useSyncStore();
     const authUser = (u: ModelsPublicUser, t: string) => {
       user.value = u;
       token.value = t;
+      syncStore.syncNotes();
     };
 
     return {

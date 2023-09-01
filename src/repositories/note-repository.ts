@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
-import { Note } from 'src/models/note';
-import { NotePreview } from 'src/models';
+import { Note, NotePreview } from 'src/models';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 
@@ -10,15 +9,33 @@ export class NoteRepository extends BaseRepository {
   public static readonly indexes =
     '++id, meta.title, meta.description, createdAt, *meta.fileTags';
 
-  get store(): Dexie.Table<Note, number> {
+  get store(): Dexie.Table<Note, string> {
     return this.db.table(NoteRepository.storeName);
   }
 
-  async getNotesAfterUpdateTime(updatedTime?: Date): Promise<Note[]> {
+  async getNotesAfterUpdateTime(updatedTime?: string): Promise<Note[]> {
+    const notes: Note[] = [];
     if (!updatedTime) {
-      return this.store.toArray();
+      return this.store
+        .each((n) => !n.deleted && notes.push(n))
+        .then(() => notes);
     }
-    return this.store.where('createdAt').above(updatedTime).toArray();
+    return this.store
+      .where('createdAt')
+      .above(updatedTime)
+      .each((n) => !n.deleted && notes.push(n))
+      .then(() => notes);
+  }
+
+  async getDeletedNotes(): Promise<Note[]> {
+    const deletedNotes: Note[] = [];
+    return await this.store
+      .each((n) => {
+        if (n.deleted) {
+          deletedNotes.push(n);
+        }
+      })
+      .then(() => deletedNotes);
   }
 
   async saveNotes(notes: Note[]): Promise<void> {
@@ -48,6 +65,19 @@ export class NoteRepository extends BaseRepository {
       .offset(offset)
       .each((n) => result.push(convertNoteToNotePreview(n)))
       .then(() => result);
+  }
+
+  async deleteNotes(noteIds: string[]): Promise<void> {
+    await this.store.bulkDelete(noteIds);
+  }
+
+  async markNotesAsDeleted(noteIds: string[]): Promise<void> {
+    await this.store.bulkUpdate(
+      noteIds.map((id) => ({
+        key: id,
+        changes: { deleted: true },
+      }))
+    );
   }
 
   async count(): Promise<number> {

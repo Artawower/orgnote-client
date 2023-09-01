@@ -57,6 +57,7 @@ export const useNoteEditorStore = defineStore(
       })
     );
 
+    // TODO: master fix type
     const note = computed(
       (): Note => ({
         content: orgTree.value,

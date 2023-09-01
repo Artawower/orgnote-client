@@ -27,14 +27,13 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const deleteNotes = async (noteIds: string[]) => {
-    const previousNotes = [...notes.value];
-    try {
-      await sdk.notes.notesDelete(noteIds);
-      notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
-    } catch (e) {
-      // TODO: master real error handling [low]
-      notes.value = previousNotes;
-    }
+    await repositories.notes.deleteNotes(noteIds);
+    notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
+  };
+
+  const upsertNotes = async (notes: Note[]) => {
+    await repositories.notes.saveNotes(notes);
+    loadNotes();
   };
 
   // TODO: master check what is it
@@ -59,17 +58,6 @@ export const useNotesStore = defineStore('notes', () => {
     } catch (e) {}
   };
 
-  const upsertNote = async (note: HandlersCreatingNote) => {
-    try {
-      await repositories.notes.putNote(note);
-      await sdk.notes.notesBulkUpsertPut([note]);
-      loadNotes();
-    } catch (e) {
-      // TODO: master handle error
-      console.log('✎: [line 138][indexeddb] e: ', e);
-    }
-  };
-
   const loadNotes = async () => {
     notes.value = await repositories.notes.getNotePreviews(
       filters.value.limit,
@@ -89,6 +77,6 @@ export const useNotesStore = defineStore('notes', () => {
     fetchNotes,
     setFilters,
     createNote,
-    upsertNote,
+    upsertNotes,
   };
 });
