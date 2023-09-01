@@ -42,13 +42,20 @@ import createQuasarApp from './app.js'
 import quasarUserOptions from './quasar-user-options.js'
 
 
+import 'app/src-pwa/register-service-worker'
 
 
 
 
-console.info('[Quasar] Running SPA.')
+
+console.info('[Quasar] Running PWA.')
 
 
+
+// Needed only for iOS PWAs
+if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream && window.navigator.standalone) {
+  import('@quasar/fastclick')
+}
 
 
 const publicPath = `/`
