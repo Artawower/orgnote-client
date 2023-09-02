@@ -3,7 +3,7 @@
     ref="tagsWrapperRef"
     v-if="tags?.length"
     class="tags-wrapper"
-    :class="ellipsisExists && 'long'"
+    :class="[ellipsisExists && 'long', { inline: props.inline }]"
   >
     <template v-if="type === 'badges'">
       <q-badge
@@ -40,9 +40,11 @@ const props = withDefaults(
   defineProps<{
     tags?: string[];
     type?: 'text' | 'badges';
+    inline?: boolean;
   }>(),
   {
     type: 'text',
+    inline: true,
   }
 );
 
@@ -70,19 +72,24 @@ onMounted(() => {
   --tag-hover-background: var(--base0);
   --tag-hover-color: var(--base1);
   text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
   position: relative;
   background: var(--bg);
   z-index: 2;
   border: 1px solid transparent;
   box-sizing: border-box;
+  width: 100%;
+
+  &.inline {
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
   &:hover {
     white-space: normal;
+    overflow: visible;
 
     &.long {
-      border: 1px solid var(--base3);
+      border: 1px solid var(--fg);
       border-radius: 1rem;
     }
   }
