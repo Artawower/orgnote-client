@@ -61,8 +61,8 @@ export class NoteRepository extends BaseRepository {
       : this.store;
 
     return initialStore
-      .limit(limit)
       .offset(offset)
+      .limit(limit)
       .each((n) => result.push(convertNoteToNotePreview(n)))
       .then(() => result);
   }
