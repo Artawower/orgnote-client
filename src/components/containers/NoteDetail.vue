@@ -34,6 +34,7 @@ const props = defineProps<{
 }>();
 
 const note = toRef(props, 'note');
+const orgTree = toRef(props, 'orgTree');
 </script>
 
 <style lang="scss" scoped>

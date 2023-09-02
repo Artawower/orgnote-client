@@ -103,6 +103,7 @@ export const useNoteEditorStore = defineStore(
       noteText,
       rawNote,
       note,
+      orgTree,
 
       setNoteData,
       specialSymbolsHidden,

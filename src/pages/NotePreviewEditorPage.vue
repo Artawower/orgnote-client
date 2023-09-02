@@ -1,6 +1,6 @@
 <template>
   <div class="note-view">
-    <note-detail :note="note"></note-detail>
+    <note-detail :note="note" :org-tree="orgTree"></note-detail>
   </div>
 </template>
 
@@ -12,7 +12,7 @@ import NoteDetail from 'src/components/containers/NoteDetail.vue';
 
 const noteEditorStore = useNoteEditorStore();
 
-const { note } = storeToRefs(noteEditorStore);
+const { note, orgTree } = storeToRefs(noteEditorStore);
 </script>
 
 <style lang="scss">

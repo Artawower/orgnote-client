@@ -91,6 +91,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
   return {
     currentNote,
+    currentOrgTree,
     selectNoteById,
   };
 });

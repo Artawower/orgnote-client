@@ -7,7 +7,10 @@
     >
       ></author-info
     >
-    <note-detail :note="currentNote as Note"></note-detail>
+    <note-detail
+      :note="currentNote"
+      :org-tree="currentOrgTree as OrgNode"
+    ></note-detail>
     <mode-line v-if="currentNote?.isMy">
       <q-route-tab
         :to="{ name: RouteNames.EditNote, params: { id: currentNote?.id } }"
@@ -27,14 +30,14 @@ import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import ModeLine from 'src/components/ui/ModeLine.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
 import { RouteNames } from 'src/router/routes';
-import { Note } from 'src/models';
 import { useCurrentNoteStore } from 'src/stores/current-note';
+import { OrgNode } from 'org-mode-ast';
 
 const route = useRoute();
 
 const currentNoteStore = useCurrentNoteStore();
 
-const { currentNote } = storeToRefs(currentNoteStore);
+const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
 
 if (route.params.id) {
   currentNoteStore.selectNoteById(route.params.id as string);
