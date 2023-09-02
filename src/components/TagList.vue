@@ -34,7 +34,7 @@
 
 <script lang="ts" setup>
 import { useNotesStore } from 'src/stores/notes';
-import { onMounted, ref, toRefs } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -46,7 +46,7 @@ const props = withDefaults(
   }
 );
 
-const { tags } = toRefs(props);
+const tags = computed(() => new Set(props.tags));
 
 const notesStore = useNotesStore();
 const searchByTag = (tag: string) => notesStore.setFilters({ searchText: tag });
