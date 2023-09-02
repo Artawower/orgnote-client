@@ -10,7 +10,7 @@
       ref="virtualScrollRef"
       :items-size="total"
       :virtual-scroll-slice-size="limit || 10"
-      :virtual-scroll-item-size="205"
+      :virtual-scroll-item-size="230"
       :virtual-scroll-slice-ratio-before="1"
       :virtual-scroll-slice-ratio-after="1"
       :items-fn="getPagedNotes"
@@ -30,6 +30,7 @@
               :note-preview="note as NotePreview"
               :show-author="!selectable"
               :selectable="selectable"
+              :height="230"
               @selected="(selected) => selectNote(note as Note, selected)"
             ></public-note-preview>
           </div>
@@ -40,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, onMounted, ref, toRef } from 'vue';
+import { computed, defineComponent, onMounted, ref, toRef, watch } from 'vue';
 
 import PublicNotePreview from './PublicNotePreview.vue';
 import { useViewStore } from 'src/stores/view';
@@ -83,6 +84,8 @@ const getPagedNotes = (from: number) => {
   firstTimeScrollInit.value = true;
 
   const offset = getRoundedOffset(from);
+  console.log(`✎: [scroll][${new Date().toString()}] FETCH NOTES`);
+
   props.fetchNotes(offset);
   router.push({
     query: {
@@ -90,18 +93,49 @@ const getPagedNotes = (from: number) => {
       offset,
     },
   });
+  // console.log(`✎: [scroll][${new Date().toString()}] limit.value`, limit.value);
   return Object.freeze(new Array(limit.value).fill(null));
 };
 
 const route = useRoute();
-const initialOffset = route.query.offset;
+const initialOffset = +route.query.offset;
+console.log('✎: [line 100][scroll] initialOffset: ', initialOffset);
 
-onMounted(() => {
-  if (!initialOffset || !virtualScrollRef.value) {
+let alreadyScrolled = false;
+
+const scrollAfterInit = () => {
+  console.log('✎: [line 108][scroll] initialOffset: ', initialOffset);
+  if (
+    alreadyScrolled ||
+    !initialOffset ||
+    !virtualScrollRef.value ||
+    !notes.value.length
+  ) {
     return;
   }
-  virtualScrollRef.value.scrollTo(initialOffset);
+  console.log(
+    '✎: [line 110][scroll] virtualScrollRef.value: ',
+    virtualScrollRef.value
+  );
+  props.fetchNotes(initialOffset - limit.value);
+  setTimeout(() => {
+    console.log(
+      `✎: [scroll][${new Date().toString()}] SCROLL TO`,
+      initialOffset - limit.value
+    );
+    virtualScrollRef.value.scrollTo(initialOffset - limit.value);
+  }, 2500);
+  alreadyScrolled = true;
+};
+
+onMounted(() => {
+  scrollAfterInit();
 });
+
+watch(
+  () => notes.value,
+  () => scrollAfterInit()
+);
 
 const selectedNotes = ref<Note[]>([]);
 

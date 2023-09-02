@@ -1,6 +1,6 @@
 <template>
-  <article>
-    <q-card flat class="q-mt-lg">
+  <article :style="{ height }">
+    <q-card flat class="q-pt-lg">
       <div
         class="q-px-sm"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
@@ -18,26 +18,27 @@
           class="preview-image rounded-borders"
           :src="buildMediaFilePath(previewImage)"
         />
-        <q-card-section class="fit q-pa-none q-pt-sm">
-          <div class="text-overline q-px-sm">
-            {{ notePreview.meta.category }}
+
+        <q-card-section class="fit q-pa-none q-pt-sm note-text-content">
+          <div class="note-info">
+            <div class="text-overline q-px-sm">
+              {{ notePreview.meta.category }}
+            </div>
+            <div class="text-h4 text-weight-bold pointer q-px-sm">
+              {{ notePreview.meta.title }}
+            </div>
+            <file-path
+              v-if="notePreview.filePath"
+              :filePath="notePreview.filePath"
+              class="q-py-xs q-px-sm"
+            ></file-path>
+            <div class="text-caption rft q-px-sm description">
+              {{ notePreview.meta.description }}
+            </div>
           </div>
-          <div class="text-h4 text-weight-bold pointer q-px-sm">
-            {{ notePreview.meta.title }}
-          </div>
-          <file-path
-            v-if="notePreview.filePath"
-            :filePath="notePreview.filePath"
-            class="q-py-xs q-px-sm"
-          ></file-path>
-          <div class="text-caption rft q-px-sm description">
-            {{ notePreview.meta.description }}
-          </div>
-          <tag-list
-            class="q-mt-md q-pa-sm"
-            :tags="notePreview?.meta?.fileTags"
-          />
+          <tag-list class="q-pa-sm" :tags="notePreview?.meta?.fileTags" />
         </q-card-section>
+
         <q-card-section
           v-if="!isTile && previewImage"
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end"
@@ -52,7 +53,7 @@
         </q-card-section>
       </q-card-section>
 
-      <q-card-actions class="q-px-none justify-between q-my-md actions">
+      <q-card-actions class="q-px-none justify-between q-my-sm actions">
         <note-footer
           class="q-px-sm"
           :note="notePreview"
@@ -83,8 +84,10 @@ const props = defineProps<{
   notePreview: Note | NotePreview;
   showAuthor: boolean;
   selectable?: boolean;
+  height: number;
 }>();
 const { notePreview, selectable } = toRefs(props);
+const height = computed(() => `${props.height}px`);
 
 const router = useRouter();
 
@@ -112,11 +115,12 @@ watch(
 article {
   --public-preview-image-width: 112px;
   --public-preview-image-height: 112px;
-  --public-preview-max-height: 168px;
+  --public-preview-max-height: 156px;
 }
 
 .note-card-content {
   max-height: var(--public-preview-max-height);
+  height: var(--public-preview-max-height);
 }
 
 .image-preview {
@@ -135,5 +139,9 @@ article {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.note-text-content {
+  @include flexify(column, space-between, flex-start);
 }
 </style>
