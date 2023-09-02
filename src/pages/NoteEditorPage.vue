@@ -54,13 +54,13 @@ const noteEditorStore = useNoteEditorStore();
 const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
 const currentNoteStore = useCurrentNoteStore();
-const { currentNote } = storeToRefs(currentNoteStore);
+const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
 
 const setupEditorStore = () => {
   if (!currentNote.value) {
     return;
   }
-  noteEditorStore.setNoteContent(currentNote.value.content as OrgNode);
+  noteEditorStore.setNoteContent(currentOrgTree.value as OrgNode);
   noteEditorStore.setFilePath(currentNote.value.filePath);
   noteEditorStore.setCreatedTime(currentNote.value.createdAt);
 };

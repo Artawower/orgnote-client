@@ -14,7 +14,7 @@
 ** Common
 - =--public-preview-image-width=:  112px;
 - =--public-preview-image-height=:  112px;
-- =--public-preview-max-height=:  168px;
+- =--public-preview-max-height=:  136px;
 * TagList.vue
 ** Common
 - =--tag-hover-background=:  var(--base0);

@@ -78,6 +78,7 @@ const initEditor = () => {
   quill = mountRawEditor();
   quillFormatter.initQuill(quill);
   quill.on('text-change', textChangeHandler);
+  console.log('✎: [line 82][quill] text.value: ', text.value);
   quill.setText(text.value);
   quillFormatter.prettifyText(
     hideSpecialSymbols.value,
