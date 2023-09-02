@@ -46,7 +46,7 @@ const props = withDefaults(
   }
 );
 
-const tags = computed(() => new Set(props.tags));
+const tags = computed(() => Array.from(new Set(props.tags)));
 
 const notesStore = useNotesStore();
 const searchByTag = (tag: string) => notesStore.setFilters({ searchText: tag });
