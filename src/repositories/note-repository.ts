@@ -56,17 +56,18 @@ export class NoteRepository extends BaseRepository {
     searchText?: string
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
+    const searchCollection = this.store.orderBy('createdAt');
     const initialStore = searchText
-      ? this.store.where('meta.title').startsWithIgnoreCase(searchText)
-      : this.store;
+      ? searchCollection.filter((n) =>
+          n.meta.title.toLowerCase().includes(searchText.toLowerCase())
+        )
+      : searchCollection;
 
     return initialStore
       .offset(offset)
       .limit(limit)
       .each((n) => result.push(convertNoteToNotePreview(n)))
-      .then(() =>
-        result.sort((a, b) => b.createdAt.localeCompare(a.updatedAt))
-      );
+      .then(() => result);
   }
 
   async deleteNotes(noteIds: string[]): Promise<void> {

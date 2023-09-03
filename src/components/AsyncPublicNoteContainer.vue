@@ -1,5 +1,5 @@
 <template>
-  <div :height="height + 'px'">
+  <div :style="{ height: height + 'px' }">
     <template v-if="note">
       <slot :note="note"></slot>
     </template>

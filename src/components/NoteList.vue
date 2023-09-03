@@ -90,7 +90,7 @@ watch(
 const initialFrom = +route.query.from || 0;
 
 const getPagedNotes = (from: number, size: number) => {
-  const fakeRows = Object.freeze(new Array(size).fill({}));
+  const fakeRows = Object.freeze(new Array(size).fill(null));
   fetchNotesWithDebounce(from, size);
   return fakeRows;
 };
@@ -114,7 +114,13 @@ const scrollAfterInit = () => {
   alreadyScrolled = true;
 };
 
-const onVirtualScroll = (details: { index: number }) => {
+const onVirtualScroll = (details: {
+  index: number;
+  from: number;
+  to: number;
+  direction: 'increase' | 'decrease';
+  ref: QVirtualScroll;
+}) => {
   lastFrom.value = details.index;
 };
 

@@ -36,7 +36,6 @@ export const useNotesStore = defineStore('notes', () => {
     loadNotes();
   };
 
-  // TODO: master check what is it
   const fetchNotes = async (offset: number, limit: number) => {
     if (filters.value.offset === offset) {
       return;
