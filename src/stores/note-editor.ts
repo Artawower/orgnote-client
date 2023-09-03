@@ -71,16 +71,18 @@ export const useNoteEditorStore = defineStore(
 
     const upsertNote = () => {
       const now = new Date().toISOString();
-      notesStore.upsertNote({
-        content: noteText.value,
-        id: orgTree.value.meta.id,
-        createdAt: createdTime.value ?? now,
-        updatedAt: now,
-        filePath: filePath.value?.length
-          ? toRaw(filePath.value)
-          : [generateFileName(orgTree.value.meta.title)],
-        meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
-      });
+      notesStore.upsertNotes([
+        {
+          content: noteText.value,
+          id: orgTree.value.meta.id,
+          createdAt: createdTime.value ?? now,
+          updatedAt: now,
+          filePath: filePath.value?.length
+            ? toRaw(filePath.value)
+            : [generateFileName(orgTree.value.meta.title)],
+          meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
+        },
+      ]);
     };
 
     const save = () => {

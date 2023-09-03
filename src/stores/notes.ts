@@ -5,7 +5,7 @@ import { Note, NotePreview, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 
-export const DEFAULT_LIMIT = 10;
+export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
 
 export const useNotesStore = defineStore('notes', () => {
@@ -37,18 +37,22 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   // TODO: master check what is it
-  const fetchNotes = async (offset: number) => {
-    //   // TODO: need to clear this bucket with respect buffer limit
+  const fetchNotes = async (offset: number, limit: number) => {
     if (filters.value.offset === offset) {
       return;
     }
+
     setFilters({ offset });
     const data = await repositories.notes.getNotePreviews(
-      filters.value.limit,
-      filters.value.offset,
+      limit,
+      offset,
       filters.value.searchText
     );
-    notes.value = [...notes.value, ...data];
+    const indexedNotes = [...notes.value];
+    data.forEach((v, i) => {
+      indexedNotes[i + offset] = v;
+    });
+    notes.value = indexedNotes;
   };
 
   const createNote = async (note: HandlersCreatingNote) => {

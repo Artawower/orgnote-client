@@ -1,13 +1,14 @@
 <template>
-  <div class="container content">
+  <div ref="scrollTarget" class="container content scroll-container">
     <note-list
+      ref="publicNotesRef"
       :selectable="true"
       :limit="limit"
       :offset="offset"
       :total="notesStore.total"
       :fetch-notes="notesStore.fetchNotes"
       :notes="notesStore.notes"
-      ref="publicNotesRef"
+      :scroll-target="scrollTarget"
     ></note-list>
     <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-slot:left>
@@ -17,6 +18,7 @@
           size="sm"
           @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
         ></q-checkbox>
+        {{ notesStore.notes.length }}
         <q-btn
           v-if="selectedNotesStore.isSomeNotesSelected"
           square
@@ -35,19 +37,19 @@ import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const notesStore = useNotesStore();
 
 const route = useRoute();
 
+const scrollTarget = ref<HTMLElement | null>(null);
+
 const setFiltersFromQuery = () => {
   notesStore.setFilters({
     searchText: route.query.search as string,
     userId: route.params.userId as string,
-    limit: +(route.query.limit as string),
-    offset: +(route.query.offset as string),
   });
 };
 
@@ -80,3 +82,10 @@ const deleteSelectedNotes = () => {
 
 const isModeLineVisible = computed(() => notesStore.notes.length);
 </script>
+
+<style lang="scss">
+.scroll-container {
+  overflow: auto;
+  height: 100vh;
+}
+</style>

@@ -4,7 +4,7 @@ import { Note, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 
 // TODO: master common pagination
-export const PUBLIC_DEFAULT_LIMIT = 1000;
+export const PUBLIC_DEFAULT_LIMIT = 100;
 export const PUBLIC_DEFAULT_OFFSET = 0;
 
 export const usePublicNotesStore = defineStore('publicNotes', () => {

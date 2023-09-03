@@ -10,6 +10,8 @@ export interface NotesFilter {
 export interface NotePreview {
   id: ModelsPublicNote['id'];
   meta: ModelsPublicNote['meta'];
+  createdAt: ModelsPublicNote['createdAt'];
+  updatedAt: ModelsPublicNote['updatedAt'];
   filePath: ModelsPublicNote['filePath'];
   isMy: ModelsPublicNote['isMy'];
 }

@@ -113,7 +113,6 @@ onMounted(() => {
 .text-tag {
   &:hover {
     color: var(--teal);
-    font-weight: bold;
   }
 }
 </style>

@@ -1,7 +1,9 @@
 <template>
-  <template v-if="note">
-    <slot :note="note"></slot>
-  </template>
+  <div :height="height + 'px'">
+    <template v-if="note">
+      <slot :note="note"></slot>
+    </template>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -10,8 +12,8 @@ import { computed, toRef } from 'vue';
 
 const props = defineProps<{
   index: number;
-  offset: number;
   noteList: (Note | NotePreview)[];
+  height: number;
 }>();
 
 const noteList = toRef(props, 'noteList');
@@ -20,6 +22,7 @@ const note = computed(() => {
   const { index } = props;
 
   const note = noteList.value[index];
+  // console.log('✎: [line 23][scroll] index async container: ', index);
   return note;
 });
 </script>

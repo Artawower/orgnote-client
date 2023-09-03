@@ -1,12 +1,13 @@
 <template>
-  <div class="container content">
+  <div class="container content scroll-container">
     <note-list
       :selectable="false"
-      :notes="publicNotesStore.notes as Note[]"
+      :notes="publicNotesStore.notes"
       :limit="limit"
       :offset="offset"
       :total="publicNotesStore.total"
       :fetch-notes="publicNotesStore.fetchNotes"
+      scroll-target=".scroll-container"
       ref="publicNotesRef"
     ></note-list>
   </div>
@@ -14,7 +15,6 @@
 
 <script lang="ts" setup>
 import NoteList from 'components/NoteList.vue';
-import { Note } from 'src/models';
 import { usePublicNotesStore } from 'src/stores';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';

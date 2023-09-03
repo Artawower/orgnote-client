@@ -7,14 +7,14 @@
     }"
   >
     <q-virtual-scroll
+      v-if="scrollTarget"
       ref="virtualScrollRef"
+      @virtual-scroll="onVirtualScroll"
       :items-size="total"
-      :virtual-scroll-slice-size="limit || 10"
+      :virtual-scroll-slice-size="(limit || 10) * 3"
       :virtual-scroll-item-size="230"
-      :virtual-scroll-slice-ratio-before="1"
-      :virtual-scroll-slice-ratio-after="1"
       :items-fn="getPagedNotes"
-      scroll-target="body"
+      :scroll-target="scrollTarget"
       v-slot="{ index }"
       class="full-width"
       style="max-height: cacl(100vh - 66px)"
@@ -22,7 +22,7 @@
       <async-public-note-container
         :note-list="notes"
         :index="index"
-        :offset="offset"
+        :height="230"
       >
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
@@ -48,6 +48,8 @@ import { useViewStore } from 'src/stores/view';
 import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Note, NotePreview } from 'src/models';
+import { debounce } from 'src/tools';
+import { QVirtualScroll } from 'quasar';
 
 defineComponent({
   PublicNotePreview,
@@ -59,12 +61,12 @@ const props = defineProps<{
   offset: number;
   total: number;
   notes: (Note | NotePreview)[];
-  fetchNotes: (offset: number) => void;
+  fetchNotes: (offset: number, limit: number) => Promise<void>;
+  scrollTarget: Element;
 }>();
 
 const selectable = toRef(props, 'selectable');
 const limit = toRef(props, 'limit');
-const offset = toRef(props, 'offset');
 const total = toRef(props, 'total');
 const notes = toRef(props, 'notes');
 
@@ -74,68 +76,53 @@ const tileView = computed(() => viewStore.tile);
 
 const router = useRouter();
 
-const virtualScrollRef = ref(null);
-
-const getRoundedOffset = (from: number) =>
-  Math.ceil(from / limit.value) * limit.value;
-
-const firstTimeScrollInit = ref(false);
-const getPagedNotes = (from: number) => {
-  firstTimeScrollInit.value = true;
-
-  const offset = getRoundedOffset(from);
-  console.log(`✎: [scroll][${new Date().toString()}] FETCH NOTES`);
-
-  props.fetchNotes(offset);
-  router.push({
-    query: {
-      limit: limit.value,
-      offset,
-    },
-  });
-  // console.log(`✎: [scroll][${new Date().toString()}] limit.value`, limit.value);
-  return Object.freeze(new Array(limit.value).fill(null));
-};
-
+const virtualScrollRef = ref<QVirtualScroll>(null);
 const route = useRoute();
-const initialOffset = +route.query.offset;
-console.log('✎: [line 100][scroll] initialOffset: ', initialOffset);
+const fetchNotesWithDebounce = debounce(props.fetchNotes, 300);
+
+const lastFrom = ref(0);
+
+watch(
+  () => lastFrom.value,
+  (from) => router.replace({ query: { from } })
+);
+
+const initialFrom = +route.query.from || 0;
+
+const getPagedNotes = (from: number, size: number) => {
+  const fakeRows = Object.freeze(new Array(size).fill({}));
+  fetchNotesWithDebounce(from, size);
+  return fakeRows;
+};
 
 let alreadyScrolled = false;
 
 const scrollAfterInit = () => {
-  console.log('✎: [line 108][scroll] initialOffset: ', initialOffset);
   if (
     alreadyScrolled ||
-    !initialOffset ||
-    !virtualScrollRef.value ||
-    !notes.value.length
+    !initialFrom ||
+    !total.value ||
+    !virtualScrollRef.value
   ) {
     return;
   }
-  console.log(
-    '✎: [line 110][scroll] virtualScrollRef.value: ',
-    virtualScrollRef.value
-  );
-  props.fetchNotes(initialOffset - limit.value);
+
   setTimeout(() => {
-    console.log(
-      `✎: [scroll][${new Date().toString()}] SCROLL TO`,
-      initialOffset - limit.value
-    );
-    virtualScrollRef.value.scrollTo(initialOffset - limit.value);
-  }, 2500);
+    virtualScrollRef.value.scrollTo(initialFrom, 'start');
+  });
+
   alreadyScrolled = true;
 };
+
+const onVirtualScroll = (details: { index: number }) => {
+  lastFrom.value = details.index;
+};
+
+watch([total, virtualScrollRef], () => scrollAfterInit());
 
 onMounted(() => {
   scrollAfterInit();
 });
-
-watch(
-  () => notes.value,
-  () => scrollAfterInit()
-);
 
 const selectedNotes = ref<Note[]>([]);
 

@@ -64,7 +64,9 @@ export class NoteRepository extends BaseRepository {
       .offset(offset)
       .limit(limit)
       .each((n) => result.push(convertNoteToNotePreview(n)))
-      .then(() => result);
+      .then(() =>
+        result.sort((a, b) => b.createdAt.localeCompare(a.updatedAt))
+      );
   }
 
   async deleteNotes(noteIds: string[]): Promise<void> {

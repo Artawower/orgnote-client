@@ -1,6 +1,6 @@
 <template>
   <article :style="{ height }">
-    <q-card flat class="q-pt-lg">
+    <q-card v-if="notePreview" flat>
       <div
         class="q-px-sm"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
@@ -54,11 +54,7 @@
       </q-card-section>
 
       <q-card-actions class="q-px-none justify-between q-my-sm actions">
-        <note-footer
-          class="q-px-sm"
-          :note="notePreview"
-          :selectable="selectable"
-        ></note-footer>
+        <note-footer :note="notePreview" :selectable="selectable"></note-footer>
       </q-card-actions>
       <q-separator />
     </q-card>
@@ -102,9 +98,9 @@ const settingsStore = useSettingsStore();
 
 const { showUserProfiles } = toRefs(settingsStore);
 
-const previewImage = ref(notePreview.value.meta.images?.[0]);
+const previewImage = ref(notePreview.value?.meta.images?.[0]);
 watch(
-  () => notePreview.value.meta.images,
+  () => notePreview.value?.meta.images,
   (images) => {
     previewImage.value = images?.[0];
   }

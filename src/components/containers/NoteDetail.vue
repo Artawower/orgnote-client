@@ -13,7 +13,11 @@
     <content-renderer v-if="orgTree" :node="orgTree"></content-renderer>
   </div>
   <note-footer :note="note" class="q-pt-md">
-    <tag-list :tags="note?.meta?.fileTags" class="q-pa-sm q-ma-sm" />
+    <tag-list
+      :tags="note?.meta?.fileTags"
+      :inline="false"
+      class="q-pa-sm q-ma-sm"
+    />
   </note-footer>
 </template>
 
