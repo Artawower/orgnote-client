@@ -4,6 +4,7 @@ import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotePreview, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { useSyncStore } from './sync';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -18,6 +19,8 @@ export const useNotesStore = defineStore('notes', () => {
   const total = ref<number>(0);
   const selectedNote = ref<Note>();
 
+  const syncStore = useSyncStore();
+
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
     updatedFilters.searchText = updatedFilters.searchText?.trim();
@@ -29,11 +32,13 @@ export const useNotesStore = defineStore('notes', () => {
   const deleteNotes = async (noteIds: string[]) => {
     await repositories.notes.deleteNotes(noteIds);
     notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
+    syncStore.syncNotes();
   };
 
   const upsertNotes = async (notes: Note[]) => {
     await repositories.notes.saveNotes(notes);
     loadNotes();
+    syncStore.syncNotes();
   };
 
   const fetchNotes = async (offset: number, limit: number) => {
@@ -58,7 +63,11 @@ export const useNotesStore = defineStore('notes', () => {
     try {
       await sdk.notes.notesPost(note);
       loadNotes();
-    } catch (e) {}
+      syncStore.syncNotes();
+    } catch (e) {
+      // TODO: master handle error
+      console.log('✎: [line 68][notes.ts] e: ', e);
+    }
   };
 
   const loadNotes = async () => {

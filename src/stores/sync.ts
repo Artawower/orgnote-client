@@ -13,6 +13,7 @@ export const useSyncStore = defineStore(
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
 
+    // TODO: master add debounce with timeout and accumulation
     const syncNotes = async () => {
       if (!authStore.user) {
         return;

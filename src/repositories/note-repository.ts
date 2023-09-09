@@ -56,7 +56,7 @@ export class NoteRepository extends BaseRepository {
     searchText?: string
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
-    const searchCollection = this.store.orderBy('createdAt');
+    const searchCollection = this.store.orderBy('createdAt').reverse();
     const initialStore = searchText
       ? searchCollection.filter((n) =>
           n.meta.title.toLowerCase().includes(searchText.toLowerCase())
