@@ -19,7 +19,7 @@ const node = toRef(props, 'node');
 const linkAddress = node.value.value;
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .org-image {
   width: 100%;
   height: auto;

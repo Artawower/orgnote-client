@@ -42,7 +42,7 @@ const linkNameNode =
 const linkType = node.value.meta?.linkType;
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .org-image {
   width: 100%;
   height: auto;

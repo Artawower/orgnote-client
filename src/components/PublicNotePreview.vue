@@ -41,7 +41,7 @@
 
         <q-card-section
           v-if="!isTile && previewImage"
-          class="flex col-3 flex-start q-pa-none q-pt-sm justify-end"
+          class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
           <q-img
             v-if="previewImage"
@@ -107,7 +107,7 @@ watch(
 );
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 article {
   --public-preview-image-width: 112px;
   --public-preview-image-height: 112px;
@@ -139,5 +139,11 @@ article {
 
 .note-text-content {
   @include flexify(column, space-between, flex-start);
+  max-width: 66.66%;
+  width: 66.66%;
+}
+
+.img-preview-section {
+  flex: 1;
 }
 </style>
