@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref, toRaw } from 'vue';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
-import { useNotesStore } from '.';
+import { useNotesStore, useSyncStore } from '.';
 import { generateFileName } from 'src/tools';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
@@ -69,9 +69,11 @@ export const useNoteEditorStore = defineStore(
       })
     );
 
-    const upsertNote = () => {
+    const syncStore = useSyncStore();
+
+    const upsertNote = async () => {
       const now = new Date().toISOString();
-      notesStore.upsertNotes([
+      await notesStore.upsertNotes([
         {
           content: noteText.value,
           id: orgTree.value.meta.id,
@@ -83,6 +85,8 @@ export const useNoteEditorStore = defineStore(
           meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
         },
       ]);
+
+      syncStore.syncNotes();
     };
 
     const save = () => {

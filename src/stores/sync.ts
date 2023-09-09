@@ -25,10 +25,6 @@ export const useSyncStore = defineStore(
         (n) => n.id
       );
 
-      console.log(
-        '✎: [line 24][sync] lastSyncTime: ',
-        typeof lastSyncTime.value
-      );
       const rspns = await sdk.notes.notesSyncPost({
         notes: notesFromLastSync,
         deletedNotesIds,

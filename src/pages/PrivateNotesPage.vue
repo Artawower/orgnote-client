@@ -35,6 +35,7 @@
 <script lang="ts" setup>
 import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
+import { useSyncStore } from 'src/stores';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
 import { computed, ref, watch } from 'vue';
@@ -75,8 +76,10 @@ watch(
 
 const selectedNotesStore = useSelectedNotesStore();
 
-const deleteSelectedNotes = () => {
-  notesStore.deleteNotes(selectedNotesStore.selectedNotesIds);
+const syncStore = useSyncStore();
+const deleteSelectedNotes = async () => {
+  await notesStore.deleteNotes(selectedNotesStore.selectedNotesIds);
+  syncStore.syncNotes();
   selectedNotesStore.clearSelectedNotes();
 };
 
