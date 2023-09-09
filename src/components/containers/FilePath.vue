@@ -1,10 +1,10 @@
 <template>
-  <q-breadcrumbs class="text-italic color-secondary pointer">
+  <q-breadcrumbs class="text-italic color-secondary pointer flex breadcrumbs">
     <template v-slot:separator>
       <q-icon size="1.5em" name="chevron_right" class="color-secondary" />
     </template>
     <q-breadcrumbs-el
-      class="color-secondary"
+      class="color-secondary text-no-wrap"
       v-for="(q, i) in filePath"
       :label="i === filePath.length - 1 ? removeFileExtension(q) : q"
       v-bind:key="q"
@@ -28,3 +28,11 @@ const searchInFolder = (folderName: string) =>
     `This functionality is not implemented yet. You clicked on ${folderName}`
   );
 </script>
+
+<style lang="scss">
+.breadcrumbs {
+  div {
+    flex-flow: nowrap;
+  }
+}
+</style>

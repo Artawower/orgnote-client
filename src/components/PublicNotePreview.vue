@@ -19,8 +19,11 @@
           :src="buildMediaFilePath(previewImage)"
         />
 
-        <q-card-section class="fit q-pa-none q-pt-sm note-text-content">
-          <div class="note-info">
+        <q-card-section
+          class="fit q-pa-none q-pt-sm note-text-content"
+          :class="{ 'content-with-img': !!previewImage }"
+        >
+          <div class="full-width">
             <div class="text-overline q-px-sm">
               {{ notePreview.meta.category }}
             </div>
@@ -139,6 +142,9 @@ article {
 
 .note-text-content {
   @include flexify(column, space-between, flex-start);
+}
+
+.content-with-img {
   max-width: 66.66%;
   width: 66.66%;
 }
