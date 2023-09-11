@@ -36,4 +36,5 @@ export default {
   delete: 'delete',
   save: 'save',
   report: 'report',
+  'Drag&drop your notes here!': 'Drag&drop your notes here!',
 };

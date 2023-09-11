@@ -4,6 +4,7 @@ import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotePreview, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { useSyncStore } from './sync';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -34,6 +35,13 @@ export const useNotesStore = defineStore('notes', () => {
   const upsertNotes = async (notes: Note[]) => {
     await repositories.notes.saveNotes(notes);
     loadNotes();
+  };
+
+  const syncStore = useSyncStore();
+
+  const upsertNotesLocally = async (notes: Note[]) => {
+    await upsertNotes(notes);
+    await syncStore.syncNotes();
   };
 
   const fetchNotes = async (offset: number, limit: number) => {
@@ -85,5 +93,6 @@ export const useNotesStore = defineStore('notes', () => {
     setFilters,
     createNote,
     upsertNotes,
+    upsertNotesLocally,
   };
 });

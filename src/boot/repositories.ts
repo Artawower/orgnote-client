@@ -1,10 +1,11 @@
 import { boot } from 'quasar/wrappers';
-import { Database, NoteRepository } from '../repositories';
+import { Database, NoteRepository, FileRepository } from '../repositories';
 
-const db = new Database(NoteRepository);
+const db = new Database(NoteRepository, FileRepository);
 
 const repositories = {
   notes: new NoteRepository(db),
+  files: new FileRepository(db),
 } as const;
 
 export default boot(({ app }) => {

@@ -25,6 +25,13 @@
 - =--completion-item-padding=:  4px 16px;
 - =--completion-item-hover-background=:  var(--base1);
 - =--completion-item-hover-color=:  var(--base0);
+* FileUploader.vue
+** TODO: master refactor
+- =--file-uploader-border-width=:  4px;
+- =--file-uploader-border-style=:  dashed;
+- =--file-uploader-border-color=:  var(--base-3);
+- =--file-uploader-bg=:  var(--bg-alt);
+- =--file-uploader-opacity=:  0.8;
 * ActionBtn.vue
 ** Common
 - =--btn-action-shadow=:  0 1px 0 rgba(27, 31, 36, 0.04),
@@ -141,5 +148,8 @@
 - =--card-background-color=:  var(--bg);
 ** Shadow
 - =--shadow-main=:  none;
+** Sidebar
+- =--sidebar-width=:  56px;
+- =--sidebar-opened-width=:  320px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);

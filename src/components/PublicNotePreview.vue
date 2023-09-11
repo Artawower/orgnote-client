@@ -13,11 +13,7 @@
         class="note-card-content pointer"
         @click="openNoteDetail(notePreview)"
       >
-        <img
-          v-if="isTile && previewImage"
-          class="preview-image rounded-borders"
-          :src="buildMediaFilePath(previewImage)"
-        />
+        <image-resolver v-if="isTile && previewImage" :src="previewImage" />
 
         <q-card-section
           class="fit q-pa-none q-pt-sm note-text-content"
@@ -46,11 +42,7 @@
           v-if="!isTile && previewImage"
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
-          <q-img
-            v-if="previewImage"
-            class="pointer rounded-borders image-preview"
-            :src="buildMediaFilePath(previewImage)"
-          />
+          <image-resolver v-if="previewImage" :src="previewImage" />
           <!-- TODO: add fine markup for notes without preview-->
           <div v-else class="mock-picture pointer rounded-borders"></div>
         </q-card-section>
@@ -73,11 +65,11 @@ import { useViewStore } from 'src/stores/view';
 
 import { Note, NotePreview } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
-import { buildMediaFilePath } from 'src/tools';
 import TagList from 'components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import NoteFooter from 'src/components/NoteFooter.vue';
+import ImageResolver from 'src/components/containers/ImageResolver.vue';
 
 const props = defineProps<{
   notePreview: Note | NotePreview;
@@ -120,11 +112,6 @@ article {
 .note-card-content {
   max-height: var(--public-preview-max-height);
   height: var(--public-preview-max-height);
-}
-
-.image-preview {
-  height: var(--public-preview-image-height);
-  max-width: var(--public-preview-image-width);
 }
 
 .mock-picture {

@@ -69,11 +69,9 @@ export const useNoteEditorStore = defineStore(
       })
     );
 
-    const syncStore = useSyncStore();
-
     const upsertNote = async () => {
       const now = new Date().toISOString();
-      await notesStore.upsertNotes([
+      await notesStore.upsertNotesLocally([
         {
           content: noteText.value,
           id: orgTree.value.meta.id,
@@ -85,8 +83,6 @@ export const useNoteEditorStore = defineStore(
           meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
         },
       ]);
-
-      syncStore.syncNotes();
     };
 
     const save = () => {

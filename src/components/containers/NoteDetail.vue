@@ -4,11 +4,7 @@
     <file-path v-if="note" :file-path="note.filePath"></file-path>
   </div>
   <h4 class="note-description">{{ note?.meta.description }}</h4>
-  <q-img
-    v-if="note?.meta.previewImg"
-    class="pointer rounded-borders"
-    :src="buildMediaFilePath((note.meta as any).previewImg)"
-  />
+  <image-resolver v-if="note?.meta.previewImg" :src="note.meta.previewImg" />
   <div class="note-content">
     <content-renderer v-if="orgTree" :node="orgTree"></content-renderer>
   </div>
@@ -24,7 +20,6 @@
 <script lang="ts" setup>
 import { Note } from 'src/models';
 import { toRef } from 'vue';
-import { buildMediaFilePath } from 'src/tools';
 
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';

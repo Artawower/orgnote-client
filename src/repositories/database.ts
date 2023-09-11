@@ -15,6 +15,7 @@ export class Database<T extends typeof BaseRepository[]> extends Dexie {
     this.version(this.currentVersion).stores(storesSchema);
   }
 
+  // TODO: IMPORTANT add migrations here!
   private getCombinedStoresSchema(repositories: typeof BaseRepository[]): {
     [key: string]: string;
   } {

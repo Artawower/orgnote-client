@@ -6,6 +6,7 @@ import {
   NotesApiFactory,
   TagsApiFactory,
 } from 'src/generated/api';
+import { initFilesApi } from 'src/patches/file-upload-patch';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -32,11 +33,13 @@ api.interceptors.request.use(
 const auth = AuthApiFactory(null, '', api);
 const notes = NotesApiFactory(null, '', api);
 const tags = TagsApiFactory(null, '', api);
+const files = initFilesApi(api);
 
 const sdk = {
   auth,
   notes,
   tags,
+  files,
 };
 
 export default boot(({ app }) => {

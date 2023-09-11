@@ -13,4 +13,5 @@ body {
 .q-menu {
   box-shadow: var(--shadow-main);
   border: var(--border-main);
+  z-index: 999999;
 }

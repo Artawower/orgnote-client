@@ -10,6 +10,7 @@ export * from './auth';
 export * from './sync';
 export * from './current-note';
 export * from './public-notes';
+export * from './file';
 
 /*
  * If not building with SSR mode, you can

@@ -18,7 +18,9 @@
           size="sm"
           @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
         ></q-checkbox>
-        {{ notesStore.notes.length }}
+        <div v-if="selectedNotesStore.selectedNotesIds.length">
+          {{ selectedNotesStore.selectedNotesIds.length }}
+        </div>
         <q-btn
           v-if="selectedNotesStore.isSomeNotesSelected"
           square
@@ -89,6 +91,5 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 <style lang="scss">
 .scroll-container {
   overflow: auto;
-  height: 100vh;
 }
 </style>

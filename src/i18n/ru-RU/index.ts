@@ -33,4 +33,5 @@ export default {
   delete: 'удалить',
   save: 'сохранить',
   report: 'жалоба',
+  'Drag&drop your notes here!': 'Перетащите ваши заметки сюда!',
 };

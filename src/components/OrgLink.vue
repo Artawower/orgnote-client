@@ -3,11 +3,12 @@
     :href="linkType === 'image' ? buildMediaFilePath(linkAddress) : linkAddress"
     target="_blank"
   >
-    <img
+    <image-resolver
       class="image-preview"
       v-if="linkType === 'image'"
-      :src="buildMediaFilePath(linkAddress)"
+      :src="linkAddress"
     />
+
     <template v-else>
       <content-renderer v-if="linkNameNode" :node="linkNameNode" />
       <template v-else>
@@ -22,8 +23,9 @@ import { defineComponent, toRef } from 'vue';
 
 import { OrgNode } from 'org-mode-ast';
 
-import ContentRenderer from './ContentRenderer.vue';
 import { buildMediaFilePath } from 'src/tools';
+import ContentRenderer from './ContentRenderer.vue';
+import ImageResolver from './containers/ImageResolver.vue';
 
 defineComponent({
   ContentRenderer,
