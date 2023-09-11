@@ -37,3 +37,14 @@ body {
 .text {
   font-size: var(--paragraph-font-size);
 }
+
+h6,
+h7,
+h8,
+h9,
+h10,
+h11,
+h12 {
+  font-size: var(--paragraph-font-size);
+  line-height: 1.5rem;
+}

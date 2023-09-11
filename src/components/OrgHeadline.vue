@@ -1,7 +1,7 @@
 <template>
   <div class="section">
     <component
-      :is="'h' + node.level"
+      :is="'h' + Math.min(node.level, 6)"
       class="headline"
       :class="{ folded }"
       @click="toggleContent"
@@ -67,6 +67,7 @@ const toggleContent = () => {
 }
 
 .section-content {
-  margin-left: 20px;
+  /* TODO: master move to extension :) */
+  /* margin-left: 20px; */
 }
 </style>
