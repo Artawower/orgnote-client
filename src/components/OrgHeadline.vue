@@ -59,8 +59,6 @@ const toggleContent = () => {
   }
 }
 .headline {
-  @include flexify(row, flex-start, center);
-
   cursor: pointer;
 
   p {
