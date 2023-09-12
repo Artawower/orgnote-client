@@ -2,7 +2,7 @@
   <article :style="{ height }">
     <q-card v-if="notePreview" class="full-height" flat>
       <div
-        class="full-height"
+        class="q-px-sm"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
       >
         <author-info :author="(notePreview as Note).author"></author-info>

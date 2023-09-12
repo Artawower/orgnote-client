@@ -45,7 +45,7 @@
             <q-item-section>{{ $t('My notes') }}</q-item-section>
           </q-item>
 
-          <q-item :to="{ name: MAIN_PAGE_ROUTE.name }" clickable exact>
+          <q-item :to="{ name: RouteNames.NoteList }" clickable exact>
             <q-item-section avatar>
               <q-icon name="feed" />
             </q-item-section>

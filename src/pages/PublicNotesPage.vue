@@ -1,22 +1,25 @@
 <template>
-  <div class="container content scroll-container">
-    <note-list
-      :selectable="false"
-      :notes="publicNotesStore.notes"
-      :limit="limit"
-      :offset="offset"
-      :total="publicNotesStore.total"
-      :fetch-notes="publicNotesStore.fetchNotes"
-      scroll-target=".scroll-container"
-      ref="publicNotesRef"
-    ></note-list>
+  <div ref="scrollTarget" class="scroll-container">
+    <div class="container content">
+      <note-list
+        :selectable="false"
+        :notes="publicNotesStore.notes"
+        :limit="limit"
+        :offset="offset"
+        :total="publicNotesStore.total"
+        :fetch-notes="publicNotesStore.fetchNotes"
+        :scroll-target="scrollTarget"
+        :height="254"
+        ref="publicNotesRef"
+      ></note-list>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import NoteList from 'components/NoteList.vue';
 import { usePublicNotesStore } from 'src/stores';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const publicNotesStore = usePublicNotesStore();
@@ -40,5 +43,17 @@ const reloadNotes = () => {
   publicNotesStore.loadNotes();
 };
 
+const scrollTarget = ref<HTMLElement | null>(null);
+
 reloadNotes();
 </script>
+
+<style lang="scss" scoped>
+.scroll-container {
+  overflow: auto;
+}
+
+.container.content {
+  height: 100vh;
+}
+</style>

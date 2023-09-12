@@ -22,7 +22,7 @@
       <async-public-note-container
         :note-list="notes"
         :index="index"
-        :height="230"
+        :height="height"
       >
         <template v-slot="{ note }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
@@ -30,7 +30,7 @@
               :note-preview="note as NotePreview"
               :show-author="!selectable"
               :selectable="selectable"
-              :height="230"
+              :height="height"
               @selected="(selected) => selectNote(note as Note, selected)"
             ></public-note-preview>
           </div>
@@ -55,15 +55,21 @@ defineComponent({
   PublicNotePreview,
 });
 
-const props = defineProps<{
-  selectable: boolean;
-  limit: number;
-  offset: number;
-  total: number;
-  notes: (Note | NotePreview)[];
-  fetchNotes: (offset: number, limit: number) => Promise<void>;
-  scrollTarget: Element;
-}>();
+const props = withDefaults(
+  defineProps<{
+    selectable: boolean;
+    limit: number;
+    offset: number;
+    total: number;
+    notes: (Note | NotePreview)[];
+    fetchNotes: (offset: number, limit: number) => Promise<void>;
+    scrollTarget: Element;
+    height?: number;
+  }>(),
+  {
+    height: 230,
+  }
+);
 
 const selectable = toRef(props, 'selectable');
 const limit = toRef(props, 'limit');
