@@ -2,7 +2,7 @@
   <article :style="{ height }">
     <q-card v-if="notePreview" class="full-height" flat>
       <div
-        class="q-px-sm full-height"
+        class="full-height"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
       >
         <author-info :author="(notePreview as Note).author"></author-info>
@@ -14,7 +14,7 @@
           column: isTile,
           'full-height': fullHeight,
         }"
-        class="pointer"
+        class="pointer q-px-sm"
         @click="openNoteDetail(notePreview)"
       >
         <image-resolver v-if="isTile && previewImage" :src="previewImage" />
@@ -24,22 +24,22 @@
           :class="{ 'content-with-img': !!previewImage }"
         >
           <div class="full-width">
-            <div class="text-overline q-px-sm">
+            <div class="text-overline">
               {{ notePreview.meta.category }}
             </div>
-            <div class="text-h4 text-weight-bold pointer q-px-sm">
+            <div class="text-h4 text-weight-bold pointer">
               {{ notePreview.meta.title }}
             </div>
             <file-path
               v-if="notePreview.filePath"
               :filePath="notePreview.filePath"
-              class="q-py-xs q-px-sm"
+              class="q-py-xs"
             ></file-path>
-            <div class="text-caption rft q-px-sm description">
+            <div class="text-caption rft description">
               {{ notePreview.meta.description }}
             </div>
           </div>
-          <tag-list class="q-pa-sm" :tags="notePreview?.meta?.fileTags" />
+          <tag-list :tags="notePreview?.meta?.fileTags" />
         </q-card-section>
 
         <q-card-section
