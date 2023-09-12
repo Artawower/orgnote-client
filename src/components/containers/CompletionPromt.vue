@@ -1,61 +1,27 @@
 <template>
   <template v-if="opened">
-    <Teleport to="#mini-buffer">
-      <div class="q-px-md">
-        <q-input v-model="filter" autofocus borderless>
-          <template v-slot:prepend>
-            <q-icon name="keyboard_arrow_right" />
-          </template>
-        </q-input>
-      </div>
-      <q-list>
-        <q-item
-          v-for="(c, i) in filteredCandidates"
-          :key="c.command"
-          class="flex row completion-item"
-          :active="i === selectedIndex"
-          :clickable="true"
-          @click="executeCommand(c as any)"
-        >
-          <div class="col-4">
-            <q-icon v-if="c.icon" :name="c.icon" class="q-px-md"></q-icon>
-            <span class="text-bold">[{{ c.group }}]: </span>
-            <span>{{ c.command }}</span>
-          </div>
-          <div class="col-8">
-            <span class="text-italic">{{ c.description }}</span>
-          </div>
-        </q-item>
-      </q-list>
+    <Teleport
+      v-if="viewStore.completionPosition === 'bottom'"
+      to="#mini-buffer"
+    >
+      <CompletionResult />
     </Teleport>
+    <div v-else class="completion-container">
+      <CompletionResult />
+    </div>
   </template>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
-import { watch } from 'vue';
-import { useCommandExecutor } from 'src/hooks';
-import { useKeybindingStore } from 'src/stores/keybindings';
+import { useViewStore } from 'src/stores/view';
+import CompletionResult from './CompletionResult.vue';
 
 const completionStore = useCompletionStore();
 
-const { filteredCandidates, opened, filter, selectedIndex } =
-  storeToRefs(completionStore);
-
-const commandExecutor = useCommandExecutor();
-const { executeCommand } = useKeybindingStore();
-
-watch(
-  () => completionStore.opened,
-  (opened) => {
-    if (opened) {
-      commandExecutor.registerDynamicCommands();
-      return;
-    }
-    commandExecutor.unregisterDynamicCommands();
-  }
-);
+const { opened } = storeToRefs(completionStore);
+const viewStore = useViewStore();
 </script>
 
 <style lang="scss">
@@ -67,6 +33,28 @@ watch(
   &:hover {
     background: var(--completion-item-hover-background);
     color: var(--completion-item-hover-color);
+  }
+}
+
+.completion-container {
+  @include flexify(column, flex-start, flex-start);
+  position: fixed;
+  width: var(--completion-width);
+  max-width: var(--completion-max-width);
+  height: 50%;
+  top: var(--completion-float-top);
+  left: 50%;
+  transform: translate(-50%);
+  background: var(--bg-alt);
+  border: 2px solid var(--fg-alt);
+  border-radius: var(--completion-border-radius);
+  overflow: hidden;
+  z-index: 8;
+  margin-left: var(--sidebar-width);
+
+  q-list {
+    flex: 1;
+    overflow: auto;
   }
 }
 </style>

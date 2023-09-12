@@ -120,6 +120,10 @@
 - =--completion-item-padding=:  4px 16px;
 - =--completion-item-hover-background=:  var(--base1);
 - =--completion-item-hover-color=:  var(--base0);
+- =--completion-float-top=:  32px;
+- =--completion-border-radius=:  24px;
+- =--completion-width=:  80%;
+- =--completion-max-width=:  768px;
 ** File uploader
 - =--file-uploader-border-width=:  4px;
 - =--file-uploader-border-style=:  dashed;
