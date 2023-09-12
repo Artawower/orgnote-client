@@ -13,7 +13,6 @@
     <mode-line v-if="isModeLineVisible" :tabMode="false">
       <template v-slot:left>
         <q-checkbox
-          class="q-pl-sm"
           :modelValue="selectedNotesStore.isAllNotesSelected"
           size="sm"
           @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
