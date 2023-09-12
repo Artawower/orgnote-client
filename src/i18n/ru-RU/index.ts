@@ -34,4 +34,5 @@ export default {
   save: 'сохранить',
   report: 'жалоба',
   'Drag&drop your notes here!': 'Перетащите ваши заметки сюда!',
+  'Note not found': 'Заметка не найдена',
 };

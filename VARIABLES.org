@@ -10,11 +10,6 @@
 - =--bg=:  hsl(90, 90%, 20%);
 - =--fg=:  hsl(223, 10%, 10%);
 - =--dur=:  1s;
-* PublicNotePreview.vue
-** Common
-- =--public-preview-image-width=:  112px;
-- =--public-preview-image-height=:  112px;
-- =--public-preview-max-height=:  156px;
 * TagList.vue
 ** Common
 - =--tag-hover-background=:  var(--base0);
@@ -32,6 +27,15 @@
 - =--file-uploader-border-color=:  var(--base-3);
 - =--file-uploader-bg=:  var(--bg-alt);
 - =--file-uploader-opacity=:  0.8;
+* NotePreview.vue
+** Common
+- =--preview-link-max-width=:  365px;
+- =--preview-link-height=:  200px;
+* PublicNotePreview.vue
+** Common
+- =--public-preview-image-width=:  112px;
+- =--public-preview-image-height=:  112px;
+- =--public-preview-max-height=:  156px;
 * ActionBtn.vue
 ** Common
 - =--btn-action-shadow=:  0 1px 0 rgba(27, 31, 36, 0.04),

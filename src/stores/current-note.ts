@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 import { ModelsPublicNote } from 'src/generated/api';
@@ -34,10 +33,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     try {
       return (await sdk.notes.notesIdGet(noteId)).data.data;
     } catch (e: unknown) {
-      if ((e as AxiosError).response?.status === 404) {
-        router.push({ name: RouteNames.NotFound });
-        return;
-      }
       // TODO: master handle error here [low]
       console.log('🦄: [line 41][current-note.ts] [35me: ', e);
     }
@@ -61,23 +56,24 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     noteCache.value = [parsedNote, ...noteCache.value].slice(0, cacheSize);
   };
 
-  const selectNoteById = async (noteId: string): Promise<void> => {
+  const getNoteById = async (noteId: string): Promise<[Note?, OrgNode?]> => {
     const alreadySelected = currentNote.value?.id === noteId;
 
     if (alreadySelected) {
-      return;
+      return [];
     }
 
     const cachedValue = await selectNoteFromCache(noteId);
     if (cachedValue) {
-      currentNote.value = cachedValue.note;
-      currentOrgTree.value = cachedValue.orgTree;
-      return;
+      return [cachedValue.note, cachedValue.orgTree];
     }
 
-    currentNote.value = null;
     const publicNote =
       (await selectMyNote(noteId)) ?? (await selectPublicNote(noteId));
+
+    if (!publicNote) {
+      return [];
+    }
 
     const orgTree = withMetaInfo(parse(publicNote.content));
 
@@ -85,13 +81,22 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
     cacheNote(parsedNote);
 
-    currentNote.value = publicNote;
-    currentOrgTree.value = orgTree;
+    return [publicNote, orgTree];
+  };
+
+  const selectNoteById = async (noteId: string): Promise<void> => {
+    currentNote.value = null;
+
+    [currentNote.value, currentOrgTree.value] = await getNoteById(noteId);
+    if (!currentNote.value) {
+      router.push({ name: RouteNames.NotFound });
+    }
   };
 
   return {
     currentNote,
     currentOrgTree,
     selectNoteById,
+    getNoteById,
   };
 });

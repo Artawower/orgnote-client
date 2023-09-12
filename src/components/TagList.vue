@@ -73,7 +73,6 @@ onMounted(() => {
   --tag-hover-color: var(--base1);
   text-overflow: ellipsis;
   position: relative;
-  background: var(--bg);
   z-index: 2;
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -87,6 +86,7 @@ onMounted(() => {
   &:hover {
     white-space: normal;
     overflow: visible;
+    background: var(--bg);
 
     &.long {
       border: 1px solid var(--fg);

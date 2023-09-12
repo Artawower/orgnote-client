@@ -149,7 +149,6 @@ window.addEventListener(
   --file-uploader-opacity: 0.8;
 
   position: relative;
-  z-index: 10004;
 }
 .drag-target {
   border-color: var(--file-uploader-border-color) !important;

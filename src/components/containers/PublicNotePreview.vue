@@ -1,16 +1,20 @@
 <template>
   <article :style="{ height }">
-    <q-card v-if="notePreview" flat>
+    <q-card v-if="notePreview" class="full-height" flat>
       <div
-        class="q-px-sm"
+        class="q-px-sm full-height"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
       >
         <author-info :author="(notePreview as Note).author"></author-info>
       </div>
       <q-card-section
         horizontal
-        :class="{ 'note-card-content': isTile, column: isTile }"
-        class="note-card-content pointer"
+        :class="{
+          'note-card-content': isTile || !fullHeight,
+          column: isTile,
+          'full-height': fullHeight,
+        }"
+        class="pointer"
         @click="openNoteDetail(notePreview)"
       >
         <image-resolver v-if="isTile && previewImage" :src="previewImage" />
@@ -48,10 +52,13 @@
         </q-card-section>
       </q-card-section>
 
-      <q-card-actions class="q-px-none justify-between q-my-sm actions">
+      <q-card-actions
+        v-if="!hideFooter"
+        class="q-px-none justify-between q-my-sm actions"
+      >
         <note-footer :note="notePreview" :selectable="selectable"></note-footer>
       </q-card-actions>
-      <q-separator />
+      <q-separator v-if="!hideFooter" />
     </q-card>
   </article>
 </template>
@@ -65,7 +72,7 @@ import { useViewStore } from 'src/stores/view';
 
 import { Note, NotePreview } from 'src/models';
 import { useSettingsStore } from 'src/stores/settings';
-import TagList from 'components/TagList.vue';
+import TagList from 'src/components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import NoteFooter from 'src/components/NoteFooter.vue';
@@ -76,6 +83,8 @@ const props = defineProps<{
   showAuthor: boolean;
   selectable?: boolean;
   height: number;
+  hideFooter?: boolean;
+  fullHeight?: boolean;
 }>();
 const { notePreview, selectable } = toRefs(props);
 const height = computed(() => `${props.height}px`);

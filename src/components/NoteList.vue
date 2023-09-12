@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import { computed, defineComponent, onMounted, ref, toRef, watch } from 'vue';
 
-import PublicNotePreview from './PublicNotePreview.vue';
+import PublicNotePreview from './containers/PublicNotePreview.vue';
 import { useViewStore } from 'src/stores/view';
 import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
 import { useRoute, useRouter } from 'vue-router';

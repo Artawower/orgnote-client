@@ -37,4 +37,5 @@ export default {
   save: 'save',
   report: 'report',
   'Drag&drop your notes here!': 'Drag&drop your notes here!',
+  'Note not found': 'Note not found',
 };
