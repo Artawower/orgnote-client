@@ -1,35 +1,37 @@
 <template>
-  <div ref="scrollTarget" class="container content scroll-container">
-    <note-list
-      ref="publicNotesRef"
-      :selectable="true"
-      :limit="limit"
-      :offset="offset"
-      :total="notesStore.total"
-      :fetch-notes="notesStore.fetchNotes"
-      :notes="notesStore.notes"
-      :scroll-target="scrollTarget"
-    ></note-list>
-    <mode-line v-if="isModeLineVisible" :tabMode="false">
-      <template v-slot:left>
-        <q-checkbox
-          :modelValue="selectedNotesStore.isAllNotesSelected"
-          size="sm"
-          @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
-        ></q-checkbox>
-        <div v-if="selectedNotesStore.selectedNotesIds.length">
-          {{ selectedNotesStore.selectedNotesIds.length }}
-        </div>
-        <q-btn
-          v-if="selectedNotesStore.isSomeNotesSelected"
-          square
-          class="themed-button"
-          icon="delete"
-          flat
-          @click="deleteSelectedNotes"
-        />
-      </template>
-    </mode-line>
+  <div ref="scrollTarget" class="scroll-container">
+    <div class="container content">
+      <note-list
+        :selectable="true"
+        :limit="limit"
+        :offset="offset"
+        :total="notesStore.total"
+        :fetch-notes="notesStore.fetchNotes"
+        :notes="notesStore.notes"
+        :scroll-target="scrollTarget"
+      ></note-list>
+      <mode-line v-if="isModeLineVisible" :tabMode="false">
+        <template v-slot:left>
+          <q-checkbox
+            style="margin-left: -3px"
+            :modelValue="selectedNotesStore.isAllNotesSelected"
+            size="sm"
+            @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
+          ></q-checkbox>
+          <div v-if="selectedNotesStore.selectedNotesIds.length">
+            {{ selectedNotesStore.selectedNotesIds.length }}
+          </div>
+          <q-btn
+            v-if="selectedNotesStore.isSomeNotesSelected"
+            square
+            class="themed-button"
+            icon="delete"
+            flat
+            @click="deleteSelectedNotes"
+          />
+        </template>
+      </mode-line>
+    </div>
   </div>
 </template>
 
@@ -90,5 +92,9 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 <style lang="scss">
 .scroll-container {
   overflow: auto;
+}
+
+.container.content {
+  height: 100vh;
 }
 </style>
