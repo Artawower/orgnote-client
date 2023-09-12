@@ -142,12 +142,6 @@ window.addEventListener(
 
 <style lang="scss" scoped>
 .file-uploader {
-  --file-uploader-border-width: 4px;
-  --file-uploader-border-style: dashed;
-  --file-uploader-border-color: var(--base-3);
-  --file-uploader-bg: var(--bg-alt);
-  --file-uploader-opacity: 0.8;
-
   position: relative;
 }
 .drag-target {

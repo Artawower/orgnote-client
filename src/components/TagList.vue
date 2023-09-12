@@ -69,8 +69,6 @@ onMounted(() => {
 
 <style lang="scss">
 .tags-wrapper {
-  --tag-hover-background: var(--base0);
-  --tag-hover-color: var(--base1);
   text-overflow: ellipsis;
   position: relative;
   z-index: 2;

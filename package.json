@@ -6,7 +6,7 @@
   "author": "artawower <artawower@protonmail.com>",
   "private": true,
   "scripts": {
-    "generate:css-doc": "node collect-css-variables.js",
+    "codegen:css-doc": "node collect-css-variables.js",
     "serve:ssr": "node dist/ssr/index.js",
     "serve:android": "quasar dev -m cordova -T android",
     "serve:ios": "quasar dev -m cordova -T ios",

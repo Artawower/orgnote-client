@@ -39,19 +39,6 @@ const clicked = () => {
 
 <style lang="scss">
 .action-btn {
-  --btn-action-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --btn-action-border: 1px solid;
-  --btn-action-border-color: var(--base5);
-  --btn-action-padding: 6px;
-  --btn-action-radius: 6px;
-  --btn-action-fire-color: var(--green);
-  --btn-action-fire-border-color: var(--green);
-  --btn-action-size: 20px;
-  --btn-action-color: var(--base5);
-}
-
-.action-btn {
   width: var(--btn-action-size);
   height: var(--btn-action-size);
   color: var(--btn-action-color);

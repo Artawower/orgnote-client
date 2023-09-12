@@ -35,7 +35,7 @@ const previewImg = computed(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .image-preview {
   height: var(--public-preview-image-height);
   max-width: var(--public-preview-image-width);

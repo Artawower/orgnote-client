@@ -1,4 +1,4 @@
-:root {
+body {
   // Main colors
   --headline-font-weight: 500;
   --font-color-action: var(--blue);
@@ -14,8 +14,10 @@
   // Markup
   --content-max-width: 768px;
 
-  // Global modeline config
+  // Modeline config
   --modeline-height: 48px;
+  --modeline-padding: 0 32px;
+  --modeline-background: var(--base1);
 
   // Card
   --card-background-color: var(--bg);
@@ -26,6 +28,50 @@
   // Sidebar
   --sidebar-width: 56px;
   --sidebar-opened-width: 320px;
+
+  // Public preview
+  --public-preview-image-width: 112px;
+  --public-preview-image-height: 112px;
+  --public-preview-max-height: 156px;
+
+  // Completion item
+  --completion-item-min-height: 24px;
+  --completion-item-padding: 4px 16px;
+  --completion-item-hover-background: var(--base1);
+  --completion-item-hover-color: var(--base0);
+
+  // File uploader
+  --file-uploader-border-width: 4px;
+  --file-uploader-border-style: dashed;
+  --file-uploader-border-color: var(--base-3);
+  --file-uploader-bg: var(--bg-alt);
+  --file-uploader-opacity: 0.8;
+
+  // Note preview link
+  --note-preview-link-max-width: 365px;
+  --note-preview-link-height: 200px;
+
+  // Action btn
+  --btn-action-shadow: 0 1px 0 rgba(27, 31, 36, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --btn-action-border: 1px solid;
+  --btn-action-border-color: var(--base5);
+  --btn-action-padding: 6px;
+  --btn-action-radius: 6px;
+  --btn-action-fire-color: var(--green);
+  --btn-action-fire-border-color: var(--green);
+  --btn-action-size: 20px;
+  --btn-action-color: var(--base5);
+
+  // Mini buffer
+
+  --mini-buffer-background: var(--bg-alt);
+  --mini-buffer-font-color: var(--fg);
+  --mini-buffer-border-top: 1px solid var(--base4);
+
+  // Tags
+  --tag-hover-background: var(--base0);
+  --tag-hover-color: var(--base1);
 }
 
 body {

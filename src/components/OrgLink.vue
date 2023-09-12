@@ -33,7 +33,7 @@ import {
 
 import ContentRenderer from './ContentRenderer.vue';
 import ImageResolver from './containers/ImageResolver.vue';
-import NotePreview from './containers/NotePreview.vue';
+import NotePreviewLink from './containers/NotePreviewLink.vue';
 
 defineComponent({
   ContentRenderer,
@@ -54,7 +54,7 @@ const linkNameNode =
 const linkType = node.value.meta?.linkType;
 
 const orgLinkId = extractOrgLinkId(rawLink);
-const wrapperComponent = linkType === 'id' ? NotePreview : 'span';
+const wrapperComponent = linkType === 'id' ? NotePreviewLink : 'span';
 </script>
 
 <style lang="scss" scoped>
@@ -69,6 +69,7 @@ const wrapperComponent = linkType === 'id' ? NotePreview : 'span';
 }
 
 .image-preview {
+  height: auto;
   max-width: 100% !important;
 }
 </style>

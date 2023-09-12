@@ -60,13 +60,6 @@ watch(
 
 <style lang="scss">
 .completion-item {
-  --completion-item-min-height: 24px;
-  --completion-item-padding: 4px 16px;
-  --completion-item-hover-background: var(--base1);
-  --completion-item-hover-color: var(--base0);
-}
-
-.completion-item {
   min-height: var(--completion-item-min-height);
   padding: var(--completion-item-padding);
   cursor: pointer;

@@ -112,12 +112,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-article {
-  --public-preview-image-width: 112px;
-  --public-preview-image-height: 112px;
-  --public-preview-max-height: 156px;
-}
-
 .note-card-content {
   max-height: var(--public-preview-max-height);
   height: var(--public-preview-max-height);
