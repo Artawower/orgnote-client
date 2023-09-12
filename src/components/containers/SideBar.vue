@@ -31,20 +31,26 @@
             </div>
           </q-item>
 
-          <q-item v-if="isMyNotePage" @click="goToMainPage" clickable>
-            <q-item-section avatar>
-              <q-icon name="feed" />
-            </q-item-section>
-
-            <q-item-section>{{ $t('All articles') }}</q-item-section>
-          </q-item>
-
-          <q-item v-else clickable @click="goToMyNotes">
+          <q-item
+            clickable
+            :to="{
+              name: RouteNames.UserNotes,
+              params: { userId: user.id },
+            }"
+          >
             <q-item-section avatar>
               <q-icon name="account_box" />
             </q-item-section>
 
             <q-item-section>{{ $t('My notes') }}</q-item-section>
+          </q-item>
+
+          <q-item :to="{ name: MAIN_PAGE_ROUTE.name }" clickable exact>
+            <q-item-section avatar>
+              <q-icon name="feed" />
+            </q-item-section>
+
+            <q-item-section>{{ $t('All articles') }}</q-item-section>
           </q-item>
 
           <q-item clickable @click="search">
@@ -90,20 +96,6 @@
 
             <q-item-section class="text-capitalize">
               {{ $t('extensions') }}
-            </q-item-section>
-          </q-item>
-
-          <q-item
-            v-if="isListPage || isMyNotePage"
-            @click="toggleTile"
-            clickable
-          >
-            <q-item-section avatar>
-              <q-icon :name="isTile ? 'format_list_bulleted' : 'grid_view'" />
-            </q-item-section>
-
-            <q-item-section class="text-capitalize">
-              {{ $t('note view') }}
             </q-item-section>
           </q-item>
 
@@ -178,10 +170,8 @@ import RandomQuote from 'components/containers/RandomQuote.vue';
 import DownloadLinks from 'components/DownloadLinks.vue';
 import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
 import { ModelsPublicUser } from 'src/generated/api';
-import { useRouter } from 'vue-router';
-import { computed, ref, toRef, watch } from 'vue';
+import { ref, toRef, watch } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
-import { useViewStore } from 'src/stores/view';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { COMMAND } from 'src/hooks';
 import { version } from '../../../package.json';
@@ -190,13 +180,6 @@ const props = defineProps<{
   user: ModelsPublicUser;
   opened: boolean;
 }>();
-
-const router = useRouter();
-const goToMainPage = () => router.push({ path: MAIN_PAGE_ROUTE.path });
-
-const isMyNotePage = computed(
-  () => router.currentRoute.value.name === RouteNames.UserNotes
-);
 
 const openProfile = () => {
   window.open(user.value.profileUrl, '_blank');
@@ -207,13 +190,6 @@ const user = toRef(props, 'user');
 const drawer = ref(true);
 
 const logout = () => authStore.logout();
-
-const goToMyNotes = () => {
-  router.push({
-    name: RouteNames.UserNotes,
-    params: { userId: user.value.id },
-  });
-};
 
 const { executeCommand } = useKeybindingStore();
 
@@ -233,17 +209,6 @@ watch(
     miniState.value = opened;
   }
 );
-
-const isListPage = computed(
-  () => router.currentRoute.value.name === RouteNames.NoteList
-);
-
-const viewStore = useViewStore();
-const isTile = computed(() => viewStore.tile);
-
-const toggleTile = () => {
-  viewStore.toggleTile();
-};
 </script>
 
 <style lang="scss">
