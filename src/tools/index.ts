@@ -11,3 +11,4 @@ export * from './is-url';
 export * from './get-file-name';
 export * from './sleep';
 export * from './extract-org-link';
+export * from './elem-position-comparator';

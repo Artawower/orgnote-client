@@ -19,15 +19,11 @@
       class="full-width"
       style="max-height: cacl(100vh - 66px)"
     >
-      <async-public-note-container
-        :note-list="notes"
-        :index="index"
-        :height="height"
-      >
-        <template v-slot="{ note }">
+      <async-item-container :items-list="notes" :index="index" :height="height">
+        <template v-slot="{ item }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
             <public-note-preview
-              :note-preview="note as NotePreview"
+              :note-preview="item as NotePreview"
               :show-author="!selectable"
               :selectable="selectable"
               :height="height"
@@ -35,7 +31,7 @@
             ></public-note-preview>
           </div>
         </template>
-      </async-public-note-container>
+      </async-item-container>
     </q-virtual-scroll>
   </div>
 </template>
@@ -45,7 +41,7 @@ import { computed, defineComponent, onMounted, ref, toRef, watch } from 'vue';
 
 import PublicNotePreview from './containers/PublicNotePreview.vue';
 import { useViewStore } from 'src/stores/view';
-import AsyncPublicNoteContainer from './AsyncPublicNoteContainer.vue';
+import AsyncItemContainer from './AsyncItemContainer.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Note, NotePreview } from 'src/models';
 import { debounce } from 'src/tools';

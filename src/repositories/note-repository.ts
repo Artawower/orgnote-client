@@ -59,7 +59,7 @@ export class NoteRepository extends BaseRepository {
     const searchCollection = this.store.orderBy('createdAt').reverse();
     const initialStore = searchText
       ? searchCollection.filter((n) =>
-          n.meta.title.toLowerCase().includes(searchText.toLowerCase())
+          n.meta.title?.toLowerCase().includes(searchText.toLowerCase())
         )
       : searchCollection;
 
@@ -83,7 +83,13 @@ export class NoteRepository extends BaseRepository {
     );
   }
 
-  async count(): Promise<number> {
-    return this.store.count();
+  async count(searchText?: string): Promise<number> {
+    if (!searchText) {
+      return this.store.count();
+    }
+    const lowerCaseSearchText = searchText?.toLowerCase();
+    return this.store
+      .filter((n) => n.meta.title?.toLowerCase().includes(lowerCaseSearchText))
+      .count();
   }
 }

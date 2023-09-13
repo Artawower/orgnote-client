@@ -37,13 +37,15 @@ body {
   // Completion item
   --completion-item-min-height: 24px;
   --completion-item-padding: 4px 16px;
-  --completion-item-hover-background: var(--base1);
-  --completion-item-hover-color: var(--base0);
-
+  --completion-item-hover-background: var(--cyan);
+  --completion-item-hover-color: var(--bg-alt);
   --completion-float-top: 32px;
-  --completion-border-radius: 24px;
+  --completion-border-radius: 8px;
   --completion-width: 80%;
   --completion-max-width: 768px;
+  --completion-border: 1px solid var(--fg-alt);
+  --completion-box-shadow: none;
+  --completion-input-height: 56px;
 
   // File uploader
   --file-uploader-border-width: 4px;
@@ -73,6 +75,7 @@ body {
   --mini-buffer-background: var(--bg-alt);
   --mini-buffer-font-color: var(--fg);
   --mini-buffer-border-top: 1px solid var(--base4);
+  --mini-buffer-max-height: 460px;
 
   // Tags
   --tag-hover-background: var(--base0);

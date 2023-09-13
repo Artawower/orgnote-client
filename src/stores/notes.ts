@@ -55,6 +55,7 @@ export const useNotesStore = defineStore('notes', () => {
       offset,
       filters.value.searchText
     );
+    // TODO: master optimize. Do nothing when notes already loaded
     const indexedNotes = [...notes.value];
     data.forEach((v, i) => {
       indexedNotes[i + offset] = v;

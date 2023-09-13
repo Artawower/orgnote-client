@@ -30,7 +30,11 @@ const viewStore = useViewStore();
   padding: var(--completion-item-padding);
   cursor: pointer;
 
-  &:hover {
+  .q-focus-helper {
+    display: none;
+  }
+
+  &.selected {
     background: var(--completion-item-hover-background);
     color: var(--completion-item-hover-color);
   }
@@ -46,12 +50,12 @@ const viewStore = useViewStore();
   left: 50%;
   transform: translate(-50%);
   background: var(--bg-alt);
-  border: 2px solid var(--fg-alt);
+  border: var(--completion-border);
   border-radius: var(--completion-border-radius);
+  box-shadow: var(--completion-box-shadow);
   overflow: hidden;
-  z-index: 8;
-  margin-left: var(--sidebar-width);
-
+  z-index: 1000;
+  margin-left: calc(var(--sidebar-width) / 2);
   q-list {
     flex: 1;
     overflow: auto;

@@ -35,4 +35,5 @@ export default {
   report: 'жалоба',
   'Drag&drop your notes here!': 'Перетащите ваши заметки сюда!',
   'Note not found': 'Заметка не найдена',
+  'search notes': 'искать заметки',
 };

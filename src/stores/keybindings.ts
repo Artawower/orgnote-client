@@ -54,7 +54,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
 
   const completionStore = useCompletionStore();
 
-  const initCompletionCandidatesGetter = () => {
+  const initCompletion = () => {
     const candidates = keybindingList.value
       .filter((k) => !k.ignorePrompt)
       .map(
@@ -67,9 +67,20 @@ export const useKeybindingStore = defineStore('keybindings', () => {
           } as CompletionCandidate)
       );
 
-    completionStore.setCandidateGetter((filter) =>
-      candidates.filter((c) => c.command.includes(filter))
-    );
+    const itemsGetterFn = (filter: string) => {
+      const filteredCandidates = candidates.filter((c) =>
+        c.command.includes(filter)
+      );
+      return {
+        total: filteredCandidates.length,
+        result: filteredCandidates,
+      };
+    };
+
+    completionStore.initNewCompletion({
+      itemsGetter: itemsGetterFn,
+      placeholder: 'Search command',
+    });
   };
 
   const registerKeybindings = (kb: Keybinding[]) => {
@@ -118,6 +129,6 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     deleteKeybinding,
     groupedKeybindings,
     uregisterKeybindings,
-    initCompletionCandidatesGetter,
+    initCompletion,
   };
 });

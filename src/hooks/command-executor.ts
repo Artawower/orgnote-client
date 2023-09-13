@@ -4,6 +4,7 @@ import { useKeybindingStore } from 'src/stores/keybindings';
 
 export enum COMMAND {
   openSearch = 'openSearch',
+  restoreLastCompletionSession = 'restoreLastCompletionSession',
 }
 export function useCommandExecutor() {
   const { registerKeybindings, executeCommand, uregisterKeybindings } =
@@ -22,8 +23,7 @@ export function useCommandExecutor() {
       allowOnInput: true,
       handler: () => {
         completionStore.toggleCompletion();
-        keybindingStore.initCompletionCandidatesGetter();
-        setTimeout(() => completionStore.setFilter(''));
+        keybindingStore.initCompletion();
       },
     },
     {
@@ -33,8 +33,16 @@ export function useCommandExecutor() {
       group: 'Search',
       handler: () => {
         completionStore.openCompletion();
-        searchStore.initCompletionCandidatesGetter();
-        setTimeout(() => completionStore.setFilter(''));
+        searchStore.initCompletion();
+      },
+    },
+    {
+      command: COMMAND.restoreLastCompletionSession,
+      keySequence: "'",
+      description: ' Restore last completion session',
+      group: 'Search',
+      handler: () => {
+        completionStore.restoreLastCompletionSession();
       },
     },
   ];

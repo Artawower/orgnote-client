@@ -14,5 +14,9 @@
 
 #mini-buffer {
   border-top: var(--mini-buffer-border-top);
+
+  .q-list {
+    max-height: var(--mini-buffer-max-height);
+  }
 }
 </style>
