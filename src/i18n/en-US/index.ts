@@ -39,4 +39,6 @@ export default {
   'Drag&drop your notes here!': 'Drag&drop your notes here!',
   'Note not found': 'Note not found',
   'search notes': 'search notes',
+  'execute command': 'execute command',
+  'search command': 'search command',
 };

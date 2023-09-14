@@ -5,6 +5,7 @@ import { useKeybindingStore } from 'src/stores/keybindings';
 export enum COMMAND {
   openSearch = 'openSearch',
   restoreLastCompletionSession = 'restoreLastCompletionSession',
+  toggleExecuteCommand = 'toggleExecuteCommand',
 }
 export function useCommandExecutor() {
   const { registerKeybindings, executeCommand, uregisterKeybindings } =
@@ -16,7 +17,7 @@ export function useCommandExecutor() {
 
   const keybindingCommands: Keybinding[] = [
     {
-      command: 'toggleExecuteCommand',
+      command: COMMAND.toggleExecuteCommand,
       keySequence: 'Alt+KeyX',
       description: 'Toggle command executor',
       group: 'Completion',

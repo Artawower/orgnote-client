@@ -79,7 +79,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
 
     completionStore.initNewCompletion({
       itemsGetter: itemsGetterFn,
-      placeholder: 'Search command',
+      placeholder: 'search command',
     });
   };
 
@@ -113,7 +113,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     commandHandler,
   }: {
     command: string;
-    commandHandler?: () => void;
+    commandHandler?: (data?: unknown) => void;
   }) => {
     if (commandHandler) {
       commandHandler();

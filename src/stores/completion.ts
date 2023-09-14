@@ -84,6 +84,7 @@ export const useCompletionStore = defineStore('completion', () => {
     offset = 0
   ) => {
     filter.value = newFilter;
+    selectedCandidateIndex.value = 0;
     const res = candidateGetter.value(filter.value, limit, offset);
     if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {
       loading.value = true;

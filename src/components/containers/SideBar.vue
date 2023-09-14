@@ -138,6 +138,21 @@
 
       <q-list>
         <q-separator />
+
+        <q-item
+          v-if="user"
+          clickable
+          @click="executeCommand({ command: COMMAND.toggleExecuteCommand })"
+        >
+          <q-item-section avatar>
+            <q-icon name="terminal" />
+          </q-item-section>
+
+          <q-item-section class="text-capitalize">
+            {{ $t('execute command') }}
+          </q-item-section>
+        </q-item>
+
         <q-item v-if="user" :to="{ name: RouteNames.Settings }" clickable>
           <q-item-section avatar>
             <q-icon name="settings" />
@@ -195,7 +210,6 @@ const { executeCommand } = useKeybindingStore();
 
 const search = () => {
   executeCommand({ command: COMMAND.openSearch });
-  console.log('Search will be here');
 };
 
 const miniState = ref(props.opened);
