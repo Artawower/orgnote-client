@@ -56,6 +56,7 @@ export const useCompletionStore = defineStore('completion', () => {
     candidates.value = [];
     filter.value = '';
     selectedCandidateIndex.value = 0;
+    search(filter.value);
   };
 
   const clearCandidates = () => {
