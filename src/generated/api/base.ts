@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Second Brain API
- * List of methods for work with second brain.
+ * Org Note API
+ * List of methods for work with Org Note.
  *
  * The version of the OpenAPI document: 0.0.1
  * Contact: artawower@protonmail.com

@@ -4,7 +4,7 @@ import { BaseRepository } from './repository';
 export class Database<T extends typeof BaseRepository[]> extends Dexie {
   private readonly currentVersion = 12;
   constructor(...repositories: T) {
-    super('second-brain');
+    super('orgnote');
     this.initSchema(repositories);
     this.open();
     // TODO: master apply migrations here

@@ -22,9 +22,9 @@ echo $STOREPASS
 java -jar bundletool.jar build-apks \
      --mode=universal \
      --bundle=./dist/cordova/android/bundle/release/app-release.aab \
-     --output=./dist/pwa/builds/second-brain.apks \
+     --output=./dist/pwa/builds/orgnote.apks \
      --ks=./sb-release.keystore \
      --ks-pass=pass:$STOREPASS \
      --ks-key-alias=sb
 
-unzip -p ./dist/pwa/builds/second-brain.apks universal.apk > ./dist/pwa/builds/second-brain-$version.apk
+unzip -p ./dist/pwa/builds/orgnote.apks universal.apk > ./dist/pwa/builds/orgnote-$version.apk

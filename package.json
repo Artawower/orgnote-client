@@ -1,8 +1,8 @@
 {
-  "name": "second-brain-client",
+  "name": "orgnote-client",
   "version": "0.8.19",
-  "description": "Second brain client for eponymous service",
-  "productName": "Second brain",
+  "description": "Org Note client for eponymous service",
+  "productName": "Org Note",
   "author": "artawower <artawower@protonmail.com>",
   "private": true,
   "scripts": {

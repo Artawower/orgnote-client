@@ -4,7 +4,7 @@ export class BaseRepository {
   public static readonly indexes: string;
   public static readonly storeName: string;
 
-  protected readonly dbName = 'second-brain';
+  protected readonly dbName = 'orgnote';
 
   constructor(protected readonly db: Dexie) {}
 

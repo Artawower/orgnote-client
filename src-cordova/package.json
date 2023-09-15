@@ -1,15 +1,13 @@
 {
   "name": "org.orgnote.app",
-  "displayName": "Second brain",
+  "displayName": "Org Note",
   "version": "1.0.0",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "ecosystem:cordova"
-  ],
+  "keywords": ["ecosystem:cordova"],
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
@@ -18,10 +16,7 @@
     "cordova-universal-links-plugin": "github:walteram/cordova-universal-links-plugin"
   },
   "cordova": {
-    "platforms": [
-      "android",
-      "ios"
-    ],
+    "platforms": ["android", "ios"],
     "plugins": {
       "cordova-universal-links-plugin": {}
     }

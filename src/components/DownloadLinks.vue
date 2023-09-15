@@ -9,7 +9,7 @@
 <script lang="ts" setup>
 import { version } from '../../package.json';
 
-const apkUrl = `/builds/second-brain-${version}.apk`;
+const apkUrl = `/builds/orgnote-${version}.apk`;
 </script>
 
 <style lang="scss">
