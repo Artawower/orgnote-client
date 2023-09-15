@@ -33,7 +33,7 @@
     "@hsorby/vue3-katex": "0.6.0-rc.3",
     "@quasar/extras": "^1.0.0",
     "@sotaproject/strikethrough": "1.0.1",
-    "axios": "0.27.2",
+    "axios": "1.5.0",
     "dexie": "4.0.1-alpha.25",
     "editorjs-undo": "2.0.21",
     "force-graph": "1.42.13",
@@ -55,7 +55,7 @@
     "tinykeys": "1.4.0",
     "uuid": "9.0.0",
     "vue": "^3.0.0",
-    "vue-i18n": "9.2.0-beta.35",
+    "vue-i18n": "9.4.1",
     "vue-router": "^4.0.0",
     "vue3-easy-data-table": "1.5.47"
   },

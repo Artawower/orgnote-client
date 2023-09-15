@@ -1,5 +1,5 @@
 {
-  "name": "org.cordova.quasar.app",
+  "name": "org.orgnote.app",
   "displayName": "Second brain",
   "version": "1.0.0",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
@@ -13,13 +13,17 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "cordova-android": "^10.1.2",
-    "cordova-ios": "^6.2.0"
+    "cordova-android": "^12.0.1",
+    "cordova-ios": "^7.0.1",
+    "cordova-universal-links-plugin": "github:walteram/cordova-universal-links-plugin"
   },
   "cordova": {
     "platforms": [
       "android",
       "ios"
-    ]
+    ],
+    "plugins": {
+      "cordova-universal-links-plugin": {}
+    }
   }
 }
