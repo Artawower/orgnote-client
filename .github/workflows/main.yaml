@@ -1,4 +1,4 @@
-name: CI/CD second brain client
+name: CI/CD orgnote client
 
 on: [push, pull_request]
 
@@ -53,7 +53,7 @@ jobs:
             ls
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/sb-client
-            cd ~/second-brain/second-brain-client
+            cd ~/orgnote/orgnote-client
             echo ${{ secrets.KEYSTORE }} | base64 -d > sb-release.keystore
             echo ${{ secrets.KEYPASS }} > keypass.txt
             echo ${{ secrets.STOREPASS }} > storepass.txt
