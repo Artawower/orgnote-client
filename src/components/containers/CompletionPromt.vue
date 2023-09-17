@@ -6,7 +6,11 @@
     >
       <CompletionResult />
     </Teleport>
-    <div v-else class="completion-container">
+    <div
+      v-else
+      class="completion-container"
+      :class="{ mobile: $q.screen.lt.sm }"
+    >
       <CompletionResult />
     </div>
   </template>
@@ -56,6 +60,12 @@ const viewStore = useViewStore();
   overflow: hidden;
   z-index: 1000;
   margin-left: calc(var(--sidebar-width) / 2);
+
+  &.mobile {
+    margin-left: 0;
+    width: 96%;
+  }
+
   q-list {
     flex: 1;
     overflow: auto;
