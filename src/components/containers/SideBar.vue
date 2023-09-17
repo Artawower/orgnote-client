@@ -35,6 +35,7 @@
 
           <q-item
             clickable
+            @click="closeSideBarForMobile"
             :to="{
               name: RouteNames.UserNotes,
               params: { userId: user.id },
@@ -47,7 +48,12 @@
             <q-item-section>{{ $t('My notes') }}</q-item-section>
           </q-item>
 
-          <q-item :to="{ name: RouteNames.NoteList }" clickable exact>
+          <q-item
+            @click="closeSideBarForMobile"
+            :to="{ name: RouteNames.NoteList }"
+            clickable
+            exact
+          >
             <q-item-section avatar>
               <q-icon name="feed" />
             </q-item-section>
@@ -67,6 +73,7 @@
 
           <q-item
             v-if="authStore.user"
+            @click="closeSideBarForMobile"
             clickable
             :to="{
               name: RouteNames.UserGraph,
@@ -80,7 +87,12 @@
             <q-item-section>{{ $t('Graph') }}</q-item-section>
           </q-item>
 
-          <q-item v-if="user" :to="{ name: RouteNames.EditNote }" clickable>
+          <q-item
+            v-if="user"
+            @click="closeSideBarForMobile"
+            :to="{ name: RouteNames.EditNote }"
+            clickable
+          >
             <q-item-section avatar>
               <q-icon name="add" />
             </q-item-section>
@@ -89,6 +101,7 @@
 
           <q-item
             class="hidden"
+            @click="closeSideBarForMobile"
             :to="{ name: RouteNames.Extensions }"
             clickable
           >
@@ -214,16 +227,25 @@ const drawer = ref(true);
 
 const logout = () => authStore.logout();
 
-const { executeCommand } = useKeybindingStore();
+const keybindingStore = useKeybindingStore();
 
 const search = () => {
-  executeCommand({ command: COMMAND.openSearch });
+  keybindingStore.executeCommand({ command: COMMAND.openSearch });
+  closeSideBarForMobile();
 };
 
 const miniState = ref(!props.opened);
 const toggleMiniState = () => {
   miniState.value = !miniState.value;
   emits('opened', !miniState.value);
+};
+
+const closeSideBar = () => emits('opened', false);
+const closeSideBarForMobile = () => {
+  if (!fullWidth.value) {
+    return;
+  }
+  closeSideBar();
 };
 
 watch(
@@ -240,6 +262,14 @@ const windowWidth = ref(window.innerWidth);
 
 const setupWindowWidth = () => {
   windowWidth.value = window.innerWidth;
+};
+
+const executeCommand = (cmd: {
+  command: string;
+  commandHandler?: (data?: unknown) => void;
+}) => {
+  keybindingStore.executeCommand(cmd);
+  closeSideBarForMobile();
 };
 
 onMounted(() => window.addEventListener('resize', setupWindowWidth));
