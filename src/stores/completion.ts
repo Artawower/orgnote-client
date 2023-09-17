@@ -79,12 +79,7 @@ export const useCompletionStore = defineStore('completion', () => {
     total.value = r.total;
   };
 
-  const search = (
-    newFilter: string,
-    limit = defaultCompletionLimit,
-    offset = 0
-  ) => {
-    filter.value = newFilter;
+  const search = (limit = defaultCompletionLimit, offset = 0) => {
     selectedCandidateIndex.value = 0;
     const res = candidateGetter.value(filter.value, limit, offset);
     if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {

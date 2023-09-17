@@ -105,7 +105,7 @@ const search = debounce(completionStore.search, 300);
 
 const getPagedResult = (from: number, size: number) => {
   const fakeRows = Object.freeze(new Array(size).fill(null));
-  search(filter.value, size, from);
+  search(size, from);
   return fakeRows;
 };
 
