@@ -21,7 +21,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     [
       {
         name: 'toggle sidebar',
-        icon: 'arrow_circle_right',
+        icon: 'menu_open',
         handler: () => executeCommand({ command: 'toggleLeftBar' }),
       },
       {

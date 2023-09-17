@@ -8,7 +8,11 @@
         :class="{ 'main-action': i === 2 }"
         @click="action.handler"
       >
-        <q-icon :name="action.icon" :size="i === 2 ? 'lg' : 'md'"></q-icon>
+        <q-icon
+          class="color-main"
+          :name="action.icon"
+          :size="i === 2 ? 'lg' : 'md'"
+        ></q-icon>
       </div>
     </div>
   </q-footer>
@@ -34,7 +38,9 @@ const toolbarStore = useToolbarStore();
 
   &:hover,
   &:active {
-    color: var(--toolbar-hover-color);
+    .q-icon {
+      color: var(--toolbar-hover-color);
+    }
   }
 }
 
