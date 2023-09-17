@@ -31,6 +31,9 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'auth/login',
       name: RouteNames.AuthPage,
       component: () => import('pages/AuthPage.vue'),
+      meta: {
+        programmaticalNavigation: false,
+      },
     },
     {
       path: 'extensions',

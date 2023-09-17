@@ -63,7 +63,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
             command: k.command,
             description: k.description,
             group: k.group,
-            icon: 'settings',
+            icon: 'settings', // TODO: get icon from keybinding OR from registry
           } as CompletionCandidate)
       );
 
@@ -117,6 +117,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
   }) => {
     if (commandHandler) {
       commandHandler();
+      completionStore.closeCompletion();
       return;
     }
     keybindings.value[command]?.handler?.();

@@ -80,6 +80,11 @@ body {
   // Tags
   --tag-hover-background: var(--base0);
   --tag-hover-color: var(--base1);
+
+  // Toolbar
+  --toolbar-border-top: 1px solid var(--fg-alt);
+  --toolbar-border: 1px solid var(--fg-alt);
+  --toolbar-hover-color: var(--cyan);
 }
 
 body {

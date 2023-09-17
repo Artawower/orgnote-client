@@ -27,7 +27,9 @@
         :index="index"
         :height="itemHeight"
       >
-        <template v-slot="{ item, index }">
+        <template
+          v-slot="{ item, index }: { item: CompletionCandidate, index: number }"
+        >
           <q-item
             :key="item.command"
             class="flex column completion-item"
@@ -66,7 +68,11 @@ import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useCommandExecutor } from 'src/hooks';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { storeToRefs } from 'pinia';
-import { defaultCompletionLimit, useCompletionStore } from 'src/stores';
+import {
+  CompletionCandidate,
+  defaultCompletionLimit,
+  useCompletionStore,
+} from 'src/stores';
 import { QVirtualScroll } from 'quasar';
 import { debounce, compareElemPositions } from 'src/tools';
 
@@ -86,7 +92,7 @@ const {
 } = storeToRefs(completionStore);
 
 const commandExecutor = useCommandExecutor();
-const { executeCommand } = useKeybindingStore();
+const keybindingStore = useKeybindingStore();
 
 onBeforeMount(() => commandExecutor.registerDynamicCommands());
 
@@ -130,6 +136,11 @@ const focusCompletionCandidate = (e: MouseEvent, index: number) => {
   }
   lastCoords = [e.clientX, e.clientY];
   completionStore.focusCandidate(index);
+};
+
+const executeCommand = (item: CompletionCandidate) => {
+  keybindingStore.executeCommand({ command: item.command });
+  completionStore.closeCompletion();
 };
 </script>
 

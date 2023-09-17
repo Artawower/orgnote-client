@@ -1,10 +1,12 @@
 <template>
   <q-drawer
+    class="sidebar"
     show-if-above
     :mini="miniState"
     v-model="drawer"
-    :width="320"
+    :width="drawerWidth"
     :breakpoint="0"
+    :overlay="fullWidth"
     bordered
   >
     <q-scroll-area class="fit">
@@ -183,9 +185,9 @@
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
 import DownloadLinks from 'components/DownloadLinks.vue';
-import { MAIN_PAGE_ROUTE, RouteNames } from 'src/router/routes';
+import { RouteNames } from 'src/router/routes';
 import { ModelsPublicUser } from 'src/generated/api';
-import { ref, toRef, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { COMMAND } from 'src/hooks';
@@ -194,6 +196,11 @@ import { version } from '../../../package.json';
 const props = defineProps<{
   user: ModelsPublicUser;
   opened: boolean;
+  fullWidth?: boolean;
+}>();
+
+const emits = defineEmits<{
+  (e: 'opened', val: boolean): void;
 }>();
 
 const openProfile = () => {
@@ -202,6 +209,7 @@ const openProfile = () => {
 
 const authStore = useAuthStore();
 const user = toRef(props, 'user');
+const fullWidth = toRef(props, 'fullWidth');
 const drawer = ref(true);
 
 const logout = () => authStore.logout();
@@ -212,17 +220,37 @@ const search = () => {
   executeCommand({ command: COMMAND.openSearch });
 };
 
-const miniState = ref(props.opened);
+const miniState = ref(!props.opened);
 const toggleMiniState = () => {
   miniState.value = !miniState.value;
+  emits('opened', !miniState.value);
 };
 
 watch(
   () => props.opened,
   (opened) => {
-    miniState.value = opened;
+    if (opened === miniState.value) {
+      return;
+    }
+    miniState.value = !opened;
   }
 );
+
+const windowWidth = ref(window.innerWidth);
+
+const setupWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onMounted(() => window.addEventListener('resize', setupWindowWidth));
+onUnmounted(() => window.removeEventListener('resize', setupWindowWidth));
+
+const drawerWidth = computed(() => {
+  if (fullWidth.value) {
+    return windowWidth.value;
+  }
+  return 300;
+});
 </script>
 
 <style lang="scss">
@@ -232,5 +260,9 @@ watch(
 
 .q-list {
   width: 100%;
+}
+
+.siderbar {
+  z-index: 10000;
 }
 </style>

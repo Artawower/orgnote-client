@@ -1,6 +1,8 @@
 import { Keybinding } from 'src/models';
 import { useCompletionStore, useSearchStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { camelCaseToWords } from 'src/tools';
+import { useRouter } from 'vue-router';
 
 export enum COMMAND {
   openSearch = 'openSearch',
@@ -14,6 +16,32 @@ export function useCommandExecutor() {
   const completionStore = useCompletionStore();
   const keybindingStore = useKeybindingStore();
   const searchStore = useSearchStore();
+
+  const router = useRouter();
+
+  console.log(
+    `✎: [routes][${new Date().toString()}] routes`,
+    router
+      .getRoutes()
+      // TODO: master tmp hack for avoid routes with params. Adapt to user input.
+      .filter((r) => r.name && !r.path.includes(':'))
+  );
+
+  const routesCommands: Keybinding[] = router
+    .getRoutes()
+    // TODO: master tmp hack for avoid routes with params. Adapt to user input.
+    .filter(
+      (r) =>
+        r.name &&
+        !r.path.includes(':') &&
+        r?.meta?.programmaticalNavigation !== false
+    )
+    .map((r) => ({
+      command: camelCaseToWords(r.name.toString()),
+      description: `Open ${r.name.toString()}`,
+      group: 'Navigation',
+      handler: () => router.push({ name: r.name }),
+    }));
 
   const keybindingCommands: Keybinding[] = [
     {
@@ -46,6 +74,7 @@ export function useCommandExecutor() {
         completionStore.restoreLastCompletionSession();
       },
     },
+    ...routesCommands,
   ];
 
   const dynamicKeybindings: Keybinding[] = [
@@ -91,6 +120,7 @@ export function useCommandExecutor() {
           return;
         }
         executeCommand(completionStore.selectedCandidate);
+        completionStore.closeCompletion();
       },
     },
   ];
