@@ -10,6 +10,7 @@ import { useAuthStore } from './auth';
 export interface ToolBarAction {
   name: string;
   icon: string;
+  sidebarPosition?: 'top' | 'bottom';
   handler: () => void;
 }
 
@@ -22,11 +23,12 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
       {
         name: 'toggle sidebar',
         icon: 'menu_open',
-        handler: () => executeCommand({ command: 'toggleLeftBar' }),
+        handler: () => executeCommand({ command: 'toggleActionSidePanel' }),
       },
       {
         name: 'my notes',
-        icon: 'feed',
+        icon: 'home',
+        sidebarPosition: 'top',
         handler: () => {
           const authStore = useAuthStore();
           router.push({
@@ -37,16 +39,19 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
       },
       {
         name: 'create note',
+        sidebarPosition: 'top',
         icon: 'add',
         handler: () => router.push({ name: RouteNames.EditNote }),
       },
       {
         name: 'search',
+        sidebarPosition: 'top',
         icon: 'search',
         handler: () => executeCommand({ command: COMMAND.openSearch }),
       },
       {
         name: 'execute command',
+        sidebarPosition: 'bottom',
         icon: 'terminal',
         handler: () =>
           executeCommand({ command: COMMAND.toggleExecuteCommand }),

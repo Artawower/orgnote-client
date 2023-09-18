@@ -12,6 +12,7 @@ export * from './current-note';
 export * from './public-notes';
 export * from './file';
 export * from './toolbar';
+export * from './sidebar';
 
 /*
  * If not building with SSR mode, you can

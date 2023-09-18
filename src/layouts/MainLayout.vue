@@ -4,14 +4,16 @@
       class="main-content"
       @uploaded="notesImportStore.uploadFiles"
     >
-      <side-bar
-        v-if="$q.screen.gt.xs || leftDrawerOpen"
+      <action-side-panel
+        v-if="$q.screen.gt.xs || actionSidePanelOpened"
         :full-width="$q.screen.lt.sm"
         :user="user"
-        :opened="leftDrawerOpen"
         @opened="setLeftDrawerStatus"
       />
-      <q-page-container class="height-max-dynamic">
+      <q-page-container
+        class="height-max-dynamic"
+        :class="{ 'with-composite-bar': $q.screen.gt.xs }"
+      >
         <router-view />
       </q-page-container>
       <mini-buffer />
@@ -29,14 +31,22 @@ import { useCommandExecutor } from 'src/hooks';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { useNotesImportStore } from 'src/stores/import-store';
 
-import SideBar from 'src/components/containers/SideBar.vue';
+import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
 import FileUploader from 'src/components/containers/FileUploader.vue';
 import ToolBar from 'src/components/containers/ToolBar.vue';
+import { useSidebarStore } from 'src/stores';
+import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 
-const leftDrawerOpen = ref(false);
-const toggleLeftDrawer = () => (leftDrawerOpen.value = !leftDrawerOpen.value);
+const actionSidePanelOpened = ref(false);
+
+const sidebarStore = useSidebarStore();
+
+const toggleSidebar = () => {
+  actionSidePanelOpened.value = !actionSidePanelOpened.value;
+  sidebarStore.toggleWithFallback(ProfileSideBar);
+};
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
@@ -48,8 +58,8 @@ useCommandExecutor().register();
 
 registerKeybindings([
   {
-    handler: () => toggleLeftDrawer(),
-    command: 'toggleLeftBar',
+    handler: () => toggleSidebar(),
+    command: 'toggleActionSidePanel',
     keySequence: 'o p',
     description: 'Toggle left sidebar',
   },
@@ -58,12 +68,16 @@ registerKeybindings([
 const notesImportStore = useNotesImportStore();
 
 const setLeftDrawerStatus = (status: boolean) =>
-  (leftDrawerOpen.value = status);
+  (actionSidePanelOpened.value = status);
 </script>
 
 <style lang="scss">
 .content {
   max-width: var(--content-max-width);
   margin: auto;
+}
+
+.with-composite-bar {
+  margin-left: var(--sidebar-width);
 }
 </style>

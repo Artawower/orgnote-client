@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-yarn codegen:css-doc
+bun run codegen:css-doc
 git add VARIABLES.org
