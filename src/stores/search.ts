@@ -34,7 +34,7 @@ export const useSearchStore = defineStore('search', () => {
       offset: number
     ) =>
       new Promise<CompletionSearchResult>(async (resolve, reject) => {
-        const userId = authStore.user.id;
+        // const userId = authStore.user.id;
 
         try {
           // const res = await sdk.notes.notesGet(

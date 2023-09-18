@@ -84,6 +84,7 @@
             </q-item-section>
           </q-item>
         </template>
+        <login-buttons :vertical="true"></login-buttons>
       </q-list>
 
       <q-list>
@@ -155,12 +156,14 @@ import {
 import { useAuthStore } from 'src/stores/auth';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { useSidebarStore } from 'src/stores/sidebar';
-import ProfileSideBar from './ProfileSideBar.vue';
 import { useToolbarStore } from 'src/stores';
 import { getNumericCssVar } from 'src/tools';
 
+import ProfileSideBar from './ProfileSideBar.vue';
+import LoginButtons from 'src/components/LoginButtons.vue';
+
 const props = defineProps<{
-  user: ModelsPublicUser;
+  user?: ModelsPublicUser;
   fullWidth?: boolean;
 }>();
 
