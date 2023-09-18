@@ -1,23 +1,45 @@
 FROM alvrme/alpine-android:android-30-jdk11-v2023.09.10
-USER root
 
-RUN apk add --update --no-cache \ 
+ARG USER=ponny
+ENV HOME /home/$USER
+
+RUN apk add --update sudo
+
+RUN adduser -D $USER \
+        && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
+        && chmod 0440 /etc/sudoers.d/$USER
+
+
+RUN sudo apk add --update --no-cache \ 
+    npm \
     gradle
 
+RUN npm install -g bun
+
+
+RUN bun --version
+RUN whoami
 
 RUN bun install -g @quasar/cli && \
     bun install -g @vue/cli && \
     bun install -g @vue/cli-init && \
     bun install -g cordova
 
-WORKDIR /app
 
-RUN curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/download/1.15.1/bundletool-all-1.15.1.jar 
+USER $USER
 
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.0.2"
+WORKDIR $HOME/app
+
+
+RUN sudo curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/download/1.15.1/bundletool-all-1.15.1.jar 
+
+RUN pwd
 
 COPY bun.lockb package.json ./
-RUN bun install --frozen-lockfile --production
+
+RUN ls
+
+RUN sudo bun install --frozen-lockfile --production --ignore-scripts
 
 COPY . .
 
