@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yarn build:all
+bun run build:all
 mkdir -p ./dist/build
 
 # password=$(uuidgen)

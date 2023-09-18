@@ -1,6 +1,8 @@
-FROM node:16
+FROM oven/bun:1.0.2
 WORKDIR /app
+RUN bun install -g @quasar/cli
+
 COPY package*.json ./
-RUN yarn global add @quasar/cli
-RUN yarn
+RUN bun install 
+
 COPY . .

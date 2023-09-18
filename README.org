@@ -39,12 +39,12 @@ git clone git@github.com:Artawower/orgnote-client.git && cd secon-brain-client
 
 Install dependencies (as alternative you can use ~npm~)
 #+BEGIN_SRC bash
-yarn install
+bun install
 #+END_SRC
 
 Start development
 #+BEGIN_SRC bash :tangle file
-yarn dev
+bun run dev
 #+END_SRC
 ** Environment variables
 ~API_URL~ - url to api server
