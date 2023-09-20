@@ -42,4 +42,5 @@ export default {
   'execute command': 'execute command',
   'search command': 'search command',
   files: 'files',
+  items: 'items',
 };

@@ -58,7 +58,8 @@
     <div
       class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
     >
-      Total items: {{ total }}, Current item number: {{ selectedIndex }}
+      <span class="text-capitalize">{{ $t('items') }}</span
+      >: {{ selectedIndex }}/{{ total }}
     </div>
   </div>
 </template>

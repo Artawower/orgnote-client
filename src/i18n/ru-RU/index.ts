@@ -39,4 +39,5 @@ export default {
   'execute command': 'выполнить команду',
   'search command': 'поиск команды',
   files: 'файлы',
+  items: 'элементов',
 };
