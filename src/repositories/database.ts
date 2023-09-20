@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { BaseRepository } from './repository';
 
 export class Database<T extends typeof BaseRepository[]> extends Dexie {
-  private readonly currentVersion = 12;
+  private readonly currentVersion = 13;
   constructor(...repositories: T) {
     super('orgnote');
     this.initSchema(repositories);

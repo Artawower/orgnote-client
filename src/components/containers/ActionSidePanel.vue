@@ -1,4 +1,5 @@
 <template>
+  <!-- TODO: master move to separated component: composite-bar  -->
   <q-drawer
     class="composite-bar"
     show-if-above
@@ -20,6 +21,16 @@
             <q-avatar size="24px" class="profile-icon">
               <img :src="user.avatarUrl" />
             </q-avatar>
+          </q-item>
+
+          <q-item
+            @click="sidebarStore.toggleWithComponent(FileManagerSidebar)"
+            clickable
+            class="flex items-center justify-center"
+          >
+            <q-item-section avatar>
+              <q-icon name="folder"></q-icon>
+            </q-item-section>
           </q-item>
 
           <template v-if="!fullWidth">
@@ -84,7 +95,7 @@
             </q-item-section>
           </q-item>
         </template>
-        <login-buttons :vertical="true"></login-buttons>
+        <login-buttons v-if="!user" :vertical="true"></login-buttons>
       </q-list>
 
       <q-list>
@@ -161,6 +172,7 @@ import { getNumericCssVar } from 'src/tools';
 
 import ProfileSideBar from './ProfileSideBar.vue';
 import LoginButtons from 'src/components/LoginButtons.vue';
+import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
 
 const props = defineProps<{
   user?: ModelsPublicUser;

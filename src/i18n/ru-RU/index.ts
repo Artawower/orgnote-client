@@ -38,4 +38,5 @@ export default {
   'search notes': 'искать заметки',
   'execute command': 'выполнить команду',
   'search command': 'поиск команды',
+  files: 'файлы',
 };

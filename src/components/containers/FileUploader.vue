@@ -17,6 +17,7 @@
 
 <script lang="ts" setup>
 import { imageFileExtensions } from 'src/constants';
+import { traverseDirectory } from 'src/tools';
 import { computed, ref } from 'vue';
 
 const props = withDefaults(
@@ -39,53 +40,6 @@ const dragCount = ref<number>(0);
 
 const dragOnTarget = computed(() => dragCount.value > 0);
 
-const isFileAcceptable = (fileName: string) => {
-  if (!props.accept) {
-    return true;
-  }
-  const fileExtension = fileName.split('.').pop();
-  return props.accept?.includes(fileExtension);
-};
-
-// TODO: master refactor
-const handleDirectory = (
-  dir: FileSystemDirectoryEntry
-): Promise<FileSystemFileEntry[]> => {
-  const dirReader = dir.createReader();
-  const entriesList: FileSystemFileEntry[] = [];
-
-  const asyncFileSystemReaders = [];
-
-  return new Promise((resolve, reject) => {
-    dirReader.readEntries(
-      (entries) => {
-        if (!entries.length) {
-          resolve(entriesList);
-          return;
-        }
-        asyncFileSystemReaders.push(
-          entries.map(async (entry) => {
-            if (entry.isFile && isFileAcceptable(entry.name)) {
-              entriesList.push(entry);
-            }
-            if (entry.isFile) {
-              resolve(entriesList);
-              return;
-            }
-            const nestedFiles = await handleDirectory(
-              entry as FileSystemDirectoryEntry
-            );
-            return nestedFiles;
-          })
-        );
-      },
-      (err) => reject(err)
-    );
-
-    return entriesList;
-  });
-};
-
 const extractFiles = (
   items: DataTransferItemList
 ): Promise<FileSystemFileEntry[]> => {
@@ -94,12 +48,14 @@ const extractFiles = (
     const entry = item.webkitGetAsEntry();
 
     if (entry.isFile) {
-      acc.push(entry);
+      acc.push(entry as FileSystemFileEntry);
       return acc;
     }
-    const nestedFiles = await handleDirectory(
-      entry as FileSystemDirectoryEntry
+    const nestedFiles = await traverseDirectory(
+      entry as FileSystemDirectoryEntry,
+      props.accept
     );
+
     acc.push(...nestedFiles);
     return acc;
   }, Promise.resolve([]) as Promise<FileSystemFileEntry[]>);
@@ -109,7 +65,10 @@ const onDrop = async (e: DragEvent) => {
   emits('dropped');
   dragCount.value = 0;
   e.preventDefault();
+  // DEBUG: delete
+  console.time('File uploading');
   const extracedFileEntries = await extractFiles(e.dataTransfer?.items);
+  console.timeEnd('File uploading');
   emits('uploaded', extracedFileEntries);
 };
 

@@ -13,6 +13,7 @@ export * from './public-notes';
 export * from './file';
 export * from './toolbar';
 export * from './sidebar';
+export * from './file-manager';
 
 /*
  * If not building with SSR mode, you can

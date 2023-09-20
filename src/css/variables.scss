@@ -85,6 +85,22 @@ body {
   --toolbar-border-top: 1px solid var(--fg-alt);
   --toolbar-border: 1px solid var(--fg-alt);
   --toolbar-hover-color: var(--cyan);
+
+  // HeaderBar
+  --headerbar-height: 28px;
+  --headerbar-border-radius: 10px;
+  --headerbar-background-color: var(--bg);
+  --headerbar-color: var(--fg-alt);
+  --headerbar-border: none;
+
+  // File manager item
+  --file-item-bg-hover: var(--cyan);
+  --file-item-color-hover: var(--base6);
+  --file-item-height: 30px;
+
+  // Icon button
+  --icon-btn-color: var(--fg);
+  --icon-btn-hover-color: var(--cyan);
 }
 
 body {

@@ -17,7 +17,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
   };
 
   const toggleWithComponent = (cmp: VueComponent) => {
-    if (opened.value) {
+    if (opened.value && cmp === component.value) {
       close();
       return;
     }

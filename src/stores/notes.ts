@@ -5,6 +5,7 @@ import { Note, NotePreview, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { useSyncStore } from './sync';
+import { useFileManagerStore as useFileManagerStore } from './file-manager';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -30,6 +31,7 @@ export const useNotesStore = defineStore('notes', () => {
   const deleteNotes = async (noteIds: string[]) => {
     await repositories.notes.deleteNotes(noteIds);
     notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
+    await fileManagerStore.updateFileManager();
   };
 
   const upsertNotes = async (notes: Note[]) => {
@@ -38,10 +40,12 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const syncStore = useSyncStore();
+  const fileManagerStore = useFileManagerStore();
 
   const upsertNotesLocally = async (notes: Note[]) => {
     await upsertNotes(notes);
     await syncStore.syncNotes();
+    await fileManagerStore.updateFileManager();
   };
 
   const fetchNotes = async (offset: number, limit: number) => {

@@ -41,4 +41,5 @@ export default {
   'search notes': 'search notes',
   'execute command': 'execute command',
   'search command': 'search command',
+  files: 'files',
 };

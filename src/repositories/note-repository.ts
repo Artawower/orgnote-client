@@ -3,6 +3,11 @@ import { Note, NotePreview } from 'src/models';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 
+export interface FilePathInfo {
+  filePath: string[];
+  id: string;
+}
+
 export class NoteRepository extends BaseRepository {
   public static storeName = 'notes';
 
@@ -91,5 +96,15 @@ export class NoteRepository extends BaseRepository {
     return this.store
       .filter((n) => n.meta.title?.toLowerCase().includes(lowerCaseSearchText))
       .count();
+  }
+
+  async getFilePaths(): Promise<FilePathInfo[]> {
+    const pathInfo: FilePathInfo[] = [];
+
+    return this.store
+      .each((n) => {
+        pathInfo.push({ id: n.id, filePath: n.filePath });
+      })
+      .then(() => pathInfo);
   }
 }

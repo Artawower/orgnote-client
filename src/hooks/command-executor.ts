@@ -19,14 +19,6 @@ export function useCommandExecutor() {
 
   const router = useRouter();
 
-  console.log(
-    `✎: [routes][${new Date().toString()}] routes`,
-    router
-      .getRoutes()
-      // TODO: master tmp hack for avoid routes with params. Adapt to user input.
-      .filter((r) => r.name && !r.path.includes(':'))
-  );
-
   const routesCommands: Keybinding[] = router
     .getRoutes()
     // TODO: master tmp hack for avoid routes with params. Adapt to user input.

@@ -18,14 +18,17 @@
 </template>
 
 <script lang="ts" setup>
-import { Note } from 'src/models';
 import { toRef } from 'vue';
+
+import { OrgNode } from 'org-mode-ast';
 
 import ContentRenderer from 'components/ContentRenderer.vue';
 import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import FilePath from 'components/containers/FilePath.vue';
-import { OrgNode } from 'org-mode-ast';
+import ImageResolver from 'components/containers/ImageResolver.vue';
+
+import { Note } from 'src/models';
 
 const props = defineProps<{
   note?: Note;

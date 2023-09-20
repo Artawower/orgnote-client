@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref, toRaw } from 'vue';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
-import { useNotesStore, useSyncStore } from '.';
+import { useNotesStore } from '.';
 import { generateFileName } from 'src/tools';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
