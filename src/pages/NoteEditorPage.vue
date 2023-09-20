@@ -38,11 +38,10 @@ import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import ModeLine from 'src/components/ui/ModeLine.vue';
-import { getInitialNoteTemplate } from 'src/constants';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -65,21 +64,17 @@ const setupEditorStore = () => {
   noteEditorStore.setCreatedTime(currentNote.value.createdAt);
 };
 
-if (noteId) {
-  setupEditorStore();
-  watch(
-    () => currentNote.value,
-    () => setupEditorStore()
-  );
-} else {
-  noteEditorStore.setNoteText(getInitialNoteTemplate());
-}
+setupEditorStore();
+watch(
+  () => currentNote.value,
+  () => setupEditorStore()
+);
 
-if (noteId) {
-  currentNoteStore.selectNoteById(noteId);
-}
+currentNoteStore.selectNoteById(noteId);
 
-const noteLoaded = computed(() => !noteId || currentNote.value?.id === noteId);
+const noteLoaded = computed(
+  () => !route.params.id || currentNote.value?.id === route.params.id
+);
 
 const $q = useQuasar();
 const initLoaderStatus = () => {
@@ -92,6 +87,16 @@ initLoaderStatus();
 watch(
   () => noteLoaded.value,
   () => initLoaderStatus()
+);
+
+onBeforeUnmount(() => {
+  $q.loading.hide();
+  noteEditorStore.save();
+});
+
+watch(
+  () => route.params.id,
+  (val) => currentNoteStore.selectNoteById(val as string)
 );
 </script>
 

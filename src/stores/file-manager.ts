@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { v4 } from 'uuid';
 import { FileNode, FileTree } from 'src/repositories';
 import { repositories } from 'src/boot/repositories';
 import {
@@ -12,6 +13,7 @@ import {
   renameFileInTree,
   toDeepRaw,
 } from 'src/tools';
+import { useNoteCreatorStore } from './note-creator';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -53,15 +55,21 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     await storePersistently();
   };
 
+  const noteCreatorStore = useNoteCreatorStore();
+
   const createFile = async (fileNode: FileNode) => {
-    const initialName = 'Untitled-note.org';
+    const initialName = 'Untitled-note';
+    const id = v4();
+
     const newFile: FileNode = {
       name: initialName,
-      filePath: [...fileNode.filePath, fileNode.name],
+      filePath: [...fileNode.filePath, fileNode.name, `${initialName}.org`],
+      id,
       type: 'file',
     };
     fileTree.value = addFileToTree(fileTree.value, newFile);
     editedFileItem.value = newFile;
+    await noteCreatorStore.create(id, newFile.filePath);
     await storePersistently();
   };
 

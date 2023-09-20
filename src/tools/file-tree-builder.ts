@@ -38,6 +38,16 @@ const convertToFileTree = (tree: FilePathInfo[]): FileTree => {
   return result;
 };
 
+const sortFileNodes = (a: FlatTree, b: FlatTree): number => {
+  if (a.type === 'folder' && b.type === 'file') {
+    return -1;
+  }
+  if (a.type === 'file' && b.type === 'folder') {
+    return 1;
+  }
+  return a.name.localeCompare(b.name);
+};
+
 export const convertFileTreeToFlatTree = (fileTree?: FileTree): FlatTree[] => {
   if (!fileTree) {
     return [];
@@ -50,12 +60,7 @@ export const convertFileTreeToFlatTree = (fileTree?: FileTree): FlatTree[] => {
     };
     tree.push(node);
   });
-  const sortedTree = tree.sort((a, b) => {
-    if (a.type === 'folder') {
-      return -1;
-    }
-    return 1;
-  });
+  const sortedTree = tree.sort(sortFileNodes);
   return sortedTree;
 };
 

@@ -5,6 +5,7 @@ import { RouteNames } from 'src/router/routes';
 import { COMMAND } from 'src/hooks';
 import { useKeybindingStore } from './keybindings';
 import { useAuthStore } from './auth';
+import { useNoteCreatorStore } from './note-creator';
 
 // TODO: master potential API interface for extensions 😊
 export interface ToolBarAction {
@@ -17,6 +18,7 @@ export interface ToolBarAction {
 export const useToolbarStore = defineStore('toolbarStore', () => {
   const router = useRouter();
   const { executeCommand } = useKeybindingStore();
+  const noteCreatorStore = useNoteCreatorStore();
 
   const actionsStack = ref<ToolBarAction[][]>([
     [
@@ -41,7 +43,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
         name: 'create note',
         sidebarPosition: 'top',
         icon: 'add',
-        handler: () => router.push({ name: RouteNames.EditNote }),
+        handler: () => noteCreatorStore.create(),
       },
       {
         name: 'search',

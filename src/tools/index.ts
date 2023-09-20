@@ -17,3 +17,4 @@ export * from './get-css-var';
 export * from './file-tree-builder';
 export * from './to-deep-raw';
 export * from './traverse-dir';
+export * from './initial-note-template';

@@ -63,10 +63,11 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return [];
     }
 
-    const cachedValue = await selectNoteFromCache(noteId);
-    if (cachedValue) {
-      return [cachedValue.note, cachedValue.orgTree];
-    }
+    // TODO: master invalidate cache when note upsert
+    // const cachedValue = await selectNoteFromCache(noteId);
+    // if (cachedValue) {
+    //   return [cachedValue.note, cachedValue.orgTree];
+    // }
 
     const publicNote =
       (await selectMyNote(noteId)) ?? (await selectPublicNote(noteId));

@@ -138,7 +138,10 @@ const updateFileName = (e: Event) => {
 
 const currentNoteStore = useCurrentNoteStore();
 const isFileOpened = computed(() => {
-  return currentNoteStore.currentNote?.id === props.fileNode.id;
+  return (
+    currentNoteStore.currentNote &&
+    currentNoteStore.currentNote?.id === props.fileNode.id
+  );
 });
 </script>
 
