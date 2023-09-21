@@ -17,5 +17,5 @@ export interface NotePreview {
 }
 
 export interface Note extends ModelsPublicNote {
-  deleted?: boolean;
+  deleted?: Date;
 }

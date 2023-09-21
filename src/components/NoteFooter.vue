@@ -47,7 +47,7 @@
                 v-if="note.isMy"
                 clickable
                 v-close-popup
-                @click="showNotImplemented($t('delete'))"
+                @click="deleteNote"
               >
                 <q-item-section class="text-capitalize">{{
                   $t('delete')
@@ -84,8 +84,10 @@
 <script lang="ts" setup>
 import { useNotifications } from 'src/hooks';
 import { Note, NotePreview } from 'src/models';
-import { useSelectedNotesStore } from 'src/stores';
+import { RouteNames } from 'src/router/routes';
+import { useNotesStore, useSelectedNotesStore } from 'src/stores';
 import { toRef } from 'vue';
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   selectable?: boolean;
@@ -101,6 +103,13 @@ const notifications = useNotifications();
 
 const showNotImplemented = (feature: string) => {
   notifications.notify(`Feature ${feature} is not implemented yet!`);
+};
+
+const notesStore = useNotesStore();
+const router = useRouter();
+const deleteNote = async () => {
+  await notesStore.markAsDeleted([note.value.id]);
+  router.push({ name: RouteNames.Home });
 };
 </script>
 

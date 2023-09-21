@@ -37,6 +37,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       content,
       id,
       filePath,
+      isMy: true,
       meta: parsedNote.meta as ModelsNoteMeta,
     });
     await notesStore.upsertNotesLocally([note]);

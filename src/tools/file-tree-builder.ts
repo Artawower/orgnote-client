@@ -75,14 +75,28 @@ export const mergeFilesTrees = (
 ): FileTree => {
   const result: FileTree = { ...dstTree };
   Object.entries(srcTree).forEach(([key, value]) => {
-    if (result[key]) {
-      result[key] = {
-        ...result[key],
-        children: mergeFilesTrees(value.children, result[key].children),
-      };
-    } else {
-      result[key] = value;
+    if (value.type === 'file') {
+      return;
     }
+    if (!result[key]) {
+      result[key] = { ...value, children: {} };
+      return;
+    }
+    result[key] = {
+      ...result[key],
+      children: mergeFilesTrees(value.children, result[key].children),
+    };
+  });
+  return result;
+};
+
+const extractNestedFilesIds = (tree: FileTree): string[] => {
+  const result: string[] = [];
+  Object.entries(tree).forEach(([_, value]) => {
+    if (value.type === 'file') {
+      result.push(value.id);
+    }
+    result.push(...extractNestedFilesIds(value.children));
   });
   return result;
 };
@@ -90,7 +104,7 @@ export const mergeFilesTrees = (
 export const deletePathFromTree = (
   tree: FileTree,
   fileNode: FileNode
-): FileTree => {
+): [FileTree, string[]] => {
   let node: FileTree = tree;
   fileNode.filePath.forEach((p) => {
     node = node?.[p]?.children;
@@ -99,11 +113,13 @@ export const deletePathFromTree = (
     }
   });
 
-  if (node) {
-    delete node[fileNode.name];
+  if (!node) {
+    return [tree, []];
   }
 
-  return tree;
+  const deletedFileIds = extractNestedFilesIds(node[fileNode.name].children);
+  delete node[fileNode.name];
+  return [tree, deletedFileIds];
 };
 
 export const addFileToTree = (tree: FileTree, fileNode: FileNode): FileTree => {

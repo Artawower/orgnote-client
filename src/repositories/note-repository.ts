@@ -79,11 +79,11 @@ export class NoteRepository extends BaseRepository {
     await this.store.bulkDelete(noteIds);
   }
 
-  async markNotesAsDeleted(noteIds: string[]): Promise<void> {
+  async markAsDeleted(noteIds: string[]): Promise<void> {
     await this.store.bulkUpdate(
       noteIds.map((id) => ({
         key: id,
-        changes: { deleted: true },
+        changes: { deleted: new Date() },
       }))
     );
   }
@@ -102,6 +102,7 @@ export class NoteRepository extends BaseRepository {
     const pathInfo: FilePathInfo[] = [];
 
     return this.store
+      .filter((n) => !n.deleted)
       .each((n) => {
         pathInfo.push({ id: n.id, filePath: n.filePath });
       })

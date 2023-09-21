@@ -14,6 +14,7 @@ import {
   toDeepRaw,
 } from 'src/tools';
 import { useNoteCreatorStore } from './note-creator';
+import { useNotesStore } from './notes';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -81,9 +82,14 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     return convertFileTreeToFlatTree(fileTree.value);
   });
 
+  const notesStore = useNotesStore();
   const deleteFile = async (fileNode: FileNode) => {
-    fileTree.value = deletePathFromTree(fileTree.value, fileNode);
-    // TODO: master delete real notes ?
+    const [updatedFileTree, deletedFileIds] = deletePathFromTree(
+      fileTree.value,
+      fileNode
+    );
+    fileTree.value = updatedFileTree;
+    await notesStore.markAsDeleted(deletedFileIds);
     await storePersistently();
   };
 

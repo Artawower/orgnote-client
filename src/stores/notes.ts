@@ -34,6 +34,11 @@ export const useNotesStore = defineStore('notes', () => {
     await fileManagerStore.updateFileManager();
   };
 
+  const markAsDeleted = async (noteIds: string[]) => {
+    await repositories.notes.markAsDeleted(noteIds);
+    await fileManagerStore.updateFileManager();
+  };
+
   const upsertNotes = async (notes: Note[]) => {
     await repositories.notes.saveNotes(notes);
     loadNotes();
@@ -91,6 +96,7 @@ export const useNotesStore = defineStore('notes', () => {
     selectedNote,
     total,
     filters,
+    markAsDeleted,
 
     loadNotes,
     deleteNotes,
