@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 
-import { getInitialNoteTemplate } from 'src/tools';
+import { getInitialNoteTemplate, getFileNameWithoutExtension } from 'src/tools';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { Note } from 'src/models';
 import { ModelsNoteMeta } from 'src/generated/api';
@@ -31,7 +31,11 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   ) => {
     id ??= v4();
     filePath ??= ['Untitled.org'];
-    const content = getInitialNoteTemplate(id);
+    const noteName = filePath[filePath.length - 1];
+    const content = getInitialNoteTemplate(
+      id,
+      getFileNameWithoutExtension(noteName)
+    );
     const parsedNote = withMetaInfo(parse(content));
     const note = initNote({
       content,

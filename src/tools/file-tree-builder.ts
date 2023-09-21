@@ -1,7 +1,12 @@
-import { FileTree, FilePathInfo, FileNode } from 'src/repositories';
+import {
+  FileTree,
+  FilePathInfo,
+  FileNode,
+  FileNodeInfo,
+} from 'src/repositories';
 
-export interface FlatTree extends Omit<FileNode, 'children'> {
-  children: FlatTree[];
+export interface FlatTree extends FileNodeInfo {
+  children?: FlatTree[];
 }
 
 // TODO: master convert to class or hook
@@ -195,4 +200,21 @@ export const renameFileInTree = (
   }
 
   return [tree, extractFilePathInfo(node[newName]?.children)];
+};
+
+export const convertFlatTreeToFileTree = (flatTree: FlatTree): FileNode => {
+  const newNode: FileNode = {
+    name: flatTree.name,
+    filePath: flatTree.filePath,
+    type: flatTree.type,
+    id: flatTree.id,
+    children: Object.values(flatTree.children ?? {}).reduce<FileTree>(
+      (acc, cur) => ({
+        ...acc,
+        [cur.name]: convertFlatTreeToFileTree(cur),
+      }),
+      {}
+    ),
+  };
+  return newNode;
 };

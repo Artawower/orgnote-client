@@ -36,14 +36,14 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue';
 
-import { FileNode } from 'src/repositories';
 import IconBtn from 'src/components/ui/IconBtn.vue';
 import { useCurrentNoteStore, useFileManagerStore } from 'src/stores';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
+import { convertFlatTreeToFileTree, FlatTree } from 'src/tools';
 
 const props = defineProps<{
-  fileNode: FileNode;
+  fileNode: FlatTree;
 }>();
 
 const fileName = ref(props.fileNode.name);
@@ -58,7 +58,7 @@ const createFolder = () => {
 };
 
 const createFile = () => {
-  fileManagerStore.createFile(props.fileNode);
+  fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
 };
 
 const router = useRouter();

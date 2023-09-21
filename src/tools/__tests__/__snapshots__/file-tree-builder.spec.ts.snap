@@ -115,3 +115,43 @@ exports[`file-tree-builder Should rename nested files path 1`] = `
   ],
 ]
 `;
+
+exports[`file-tree-builder Should convert flat tree to file tree 1`] = `
+{
+  "children": {
+    "d2": {
+      "children": {
+        "f1": {
+          "children": {},
+          "filePath": [
+            "d1",
+            "d2",
+          ],
+          "id": "fileId",
+          "name": "f1",
+          "type": "file",
+        },
+      },
+      "filePath": [
+        "d1",
+      ],
+      "id": undefined,
+      "name": "d2",
+      "type": "folder",
+    },
+    "f2": {
+      "children": {},
+      "filePath": [
+        "d1",
+      ],
+      "id": "fileId",
+      "name": "f2",
+      "type": "file",
+    },
+  },
+  "filePath": [],
+  "id": undefined,
+  "name": "d1",
+  "type": "folder",
+}
+`;

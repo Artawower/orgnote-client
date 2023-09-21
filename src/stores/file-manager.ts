@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { v4 } from 'uuid';
-import { FileNode, FileTree } from 'src/repositories';
+import { FileNode, FileTree, FileNodeInfo } from 'src/repositories';
 import { repositories } from 'src/boot/repositories';
 import {
   addFileToTree,
@@ -9,6 +9,7 @@ import {
   convertFileTreeToFlatTree,
   debounce,
   deletePathFromTree,
+  getUniqueFileName,
   mergeFilesTrees,
   renameFileInTree,
   toDeepRaw,
@@ -41,7 +42,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     updateFileManagerWithDebounce();
   };
 
-  const createFolder = async (fileNode?: FileNode) => {
+  const createFolder = async (fileNode?: FileNodeInfo) => {
     const initialName = 'Untitled';
     const filePath = fileNode ? [...fileNode.filePath, fileNode.name] : [];
     const newItem: FileNode = {
@@ -58,13 +59,22 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
   const noteCreatorStore = useNoteCreatorStore();
 
-  const createFile = async (fileNode: FileNode) => {
-    const initialName = 'Untitled-note';
+  const createFile = async (parentFileNode?: FileNode) => {
+    const children = parentFileNode?.children ?? fileTree.value;
+    const noteName = getUniqueFileName(children);
     const id = v4();
 
+    const filePath = parentFileNode
+      ? [
+          ...(parentFileNode?.filePath ?? []),
+          parentFileNode.name,
+          `${noteName}.org`,
+        ]
+      : [`${noteName}.org`];
+
     const newFile: FileNode = {
-      name: initialName,
-      filePath: [...fileNode.filePath, fileNode.name, `${initialName}.org`],
+      name: noteName,
+      filePath,
       id,
       type: 'file',
     };
@@ -83,7 +93,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   });
 
   const notesStore = useNotesStore();
-  const deleteFile = async (fileNode: FileNode) => {
+  const deleteFile = async (fileNode: FileNodeInfo) => {
     const [updatedFileTree, deletedFileIds] = deletePathFromTree(
       fileTree.value,
       fileNode

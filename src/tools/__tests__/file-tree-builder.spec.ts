@@ -1,5 +1,10 @@
 import { FileTree, FileNode } from 'src/repositories';
-import { mergeFilesTrees, renameFileInTree } from '../file-tree-builder';
+import {
+  convertFlatTreeToFileTree,
+  FlatTree,
+  mergeFilesTrees,
+  renameFileInTree,
+} from '../file-tree-builder';
 
 describe('file-tree-builder', () => {
   it('Should merge two file tree with preserving folders', () => {
@@ -152,5 +157,37 @@ describe('file-tree-builder', () => {
     const newFolderName = 'newFolderName';
     const newTree = renameFileInTree(t, fileNode, newFolderName);
     expect(newTree).toMatchSnapshot();
+  });
+
+  it('Should convert flat tree to file tree', () => {
+    const flatTree: FlatTree = {
+      name: 'd1',
+      type: 'folder',
+      filePath: [],
+      children: [
+        {
+          name: 'd2',
+          type: 'folder',
+          filePath: ['d1'],
+          children: [
+            {
+              name: 'f1',
+              type: 'file',
+              id: 'fileId',
+              filePath: ['d1', 'd2'],
+            },
+          ],
+        },
+        {
+          name: 'f2',
+          type: 'file',
+          id: 'fileId',
+          filePath: ['d1'],
+        },
+      ],
+    };
+
+    const fileTree = convertFlatTreeToFileTree(flatTree);
+    expect(fileTree).toMatchSnapshot();
   });
 });

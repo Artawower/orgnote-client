@@ -1,17 +1,20 @@
 import Dexie from 'dexie';
 import { BaseRepository } from './repository';
 
-export interface FileNode {
+export interface FileNodeInfo {
   name: string;
   id?: string;
   filePath: string[];
   type: 'file' | 'folder';
-  children?: FileTree;
   meta?: {
     color?: string;
     icon?: string;
     [key: string]: unknown;
   };
+}
+
+export interface FileNode extends FileNodeInfo {
+  children?: FileTree;
 }
 
 export interface FileTree {
