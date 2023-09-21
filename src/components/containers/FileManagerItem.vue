@@ -2,7 +2,7 @@
   <div
     @click="openNote"
     class="file-item q-py-xs q-px-sm full-width cursor-pointer"
-    :class="{ 'edit-mode': editMode, selected: isFileOpened }"
+    :class="{ 'edit-mode': editMode, active: isFileOpened }"
   >
     <div class="file-info">
       <q-icon v-if="!isFile" size="xs" name="folder"></q-icon>
@@ -11,7 +11,7 @@
         class="file-name"
         :contentEditable="editMode"
         @focusout="stopEdit"
-        @keydown.enter="confirmEdit"
+        @keydown.stop.enter="confirmEdit"
         @keydown.escape="stopEdit"
         @input="updateFileName"
       >
@@ -175,7 +175,7 @@ const isFileOpened = computed(() => {
   }
 
   &:hover:not(.edit-mode),
-  &.selected:not(.edit-mode) {
+  &.active:not(.edit-mode) {
     background-color: var(--file-item-bg-hover);
     color: var(--file-item-color-hover);
 
@@ -185,6 +185,10 @@ const isFileOpened = computed(() => {
 
     .actions {
       display: flex;
+    }
+
+    .icon-btn {
+      color: var(--file-item-color-hover);
     }
   }
 }

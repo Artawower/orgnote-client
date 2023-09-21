@@ -1,0 +1,117 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`file-tree-builder Should merge two file tree with preserving folders 1`] = `
+{
+  "d1": {
+    "children": {},
+    "filePath": [],
+    "name": "d1",
+    "type": "folder",
+  },
+  "f1": {
+    "filePath": [],
+    "name": "f1",
+    "type": "file",
+  },
+}
+`;
+
+exports[`file-tree-builder Should merge two file tree with preserving nested folders 1`] = `
+{
+  "d1": {
+    "children": {
+      "d2": {
+        "children": {},
+        "filePath": [
+          "d1",
+        ],
+        "name": "d2",
+        "type": "folder",
+      },
+    },
+    "filePath": [],
+    "name": "d1",
+    "type": "folder",
+  },
+  "f1": {
+    "filePath": [],
+    "name": "f1",
+    "type": "file",
+  },
+}
+`;
+
+exports[`file-tree-builder Should remove files from src directory if they are not in dst 1`] = `
+{
+  "d1": {
+    "children": {},
+    "filePath": [],
+    "name": "d1",
+    "type": "folder",
+  },
+}
+`;
+
+exports[`file-tree-builder Should rename nested file 1`] = `
+[
+  {
+    "d1": {
+      "children": {
+        "newName": {
+          "filePath": [
+            "d1",
+          ],
+          "name": "newName",
+          "type": "file",
+        },
+      },
+      "filePath": [],
+      "name": "d1",
+      "type": "folder",
+    },
+  },
+  [],
+]
+`;
+
+exports[`file-tree-builder Should rename nested files path 1`] = `
+[
+  {
+    "d1": {
+      "children": {
+        "newFolderName": {
+          "children": {
+            "f1": {
+              "filePath": [
+                "d1",
+                "newFolderName",
+              ],
+              "id": "id",
+              "name": "f1",
+              "type": "file",
+            },
+          },
+          "filePath": [
+            "d1",
+          ],
+          "name": "newFolderName",
+          "type": "folder",
+        },
+      },
+      "filePath": [],
+      "name": "d1",
+      "type": "folder",
+    },
+  },
+  [
+    {
+      "filePath": [
+        "d1",
+        "newFolderName",
+        "f1",
+      ],
+      "id": "id",
+    },
+  ],
+]
+`;

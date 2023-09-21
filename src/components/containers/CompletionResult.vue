@@ -59,7 +59,7 @@
       class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
     >
       <span class="text-capitalize">{{ $t('items') }}</span
-      >: {{ selectedIndex }}/{{ total }}
+      >: {{ selectedIndex + 1 }}/{{ total }}
     </div>
   </div>
 </template>

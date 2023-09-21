@@ -5,6 +5,7 @@ export interface FlatTree extends Omit<FileNode, 'children'> {
 }
 
 // TODO: master convert to class or hook
+// TODO: master write tests
 const createHashNode = (
   parentPath: string[],
   path: string,
@@ -79,7 +80,7 @@ export const mergeFilesTrees = (
       return;
     }
     if (!result[key]) {
-      result[key] = { ...value, children: {} };
+      result[key] = { ...value, children: mergeFilesTrees(value.children, {}) };
       return;
     }
     result[key] = {
@@ -138,11 +139,38 @@ export const addFileToTree = (tree: FileTree, fileNode: FileNode): FileTree => {
   return tree;
 };
 
+const extractFilePathInfo = (tree?: FileTree): FilePathInfo[] => {
+  if (!tree) {
+    return [];
+  }
+  return Object.entries(tree).reduce<FilePathInfo[]>((acc, [, value]) => {
+    if (value.type === 'file') {
+      acc.push({ id: value.id, filePath: [...value.filePath, value.name] });
+      return acc;
+    }
+    acc.push(...extractFilePathInfo(value.children));
+    return acc;
+  }, []);
+};
+
+export const updateNestedFilePath = (
+  fileTree: FileTree,
+  path: string,
+  index: number
+): void => {
+  Object.values(fileTree).forEach((value) => {
+    value.filePath[index] = path;
+    if (value.type === 'folder') {
+      updateNestedFilePath(value.children, path, index);
+    }
+  });
+};
+
 export const renameFileInTree = (
   tree: FileTree,
   fileNode: FileNode,
   newName: string
-): FileTree => {
+): [FileTree, FilePathInfo[]] => {
   let node: FileTree = tree;
   fileNode.filePath.forEach((p) => {
     node = node?.[p]?.children;
@@ -151,11 +179,20 @@ export const renameFileInTree = (
     }
   });
 
-  if (node) {
-    const oldNode = node[fileNode.name];
-    delete node[fileNode.name];
-    node[newName] = { ...oldNode, name: newName };
+  if (!node) {
+    return [tree, []];
+  }
+  const oldNode = node[fileNode.name];
+  delete node[fileNode.name];
+  node[newName] = { ...oldNode, name: newName };
+
+  if (node[newName].children) {
+    updateNestedFilePath(
+      node[newName].children,
+      newName,
+      node[newName].filePath.length
+    );
   }
 
-  return tree;
+  return [tree, extractFilePathInfo(node[newName]?.children)];
 };

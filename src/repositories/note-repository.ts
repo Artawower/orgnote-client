@@ -1,5 +1,6 @@
-import Dexie from 'dexie';
+import Dexie, { UpdateSpec } from 'dexie';
 import { Note, NotePreview } from 'src/models';
+import { toDeepRaw } from 'src/tools';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 
@@ -84,6 +85,20 @@ export class NoteRepository extends BaseRepository {
       noteIds.map((id) => ({
         key: id,
         changes: { deleted: new Date() },
+      }))
+    );
+  }
+
+  async bulkPartialUpdate(
+    updates: { id: string; changes: Partial<Note> }[]
+  ): Promise<void> {
+    if (!updates.length) {
+      return;
+    }
+    await this.store.bulkUpdate(
+      toDeepRaw(updates).map((update) => ({
+        key: update.id,
+        changes: update.changes,
       }))
     );
   }

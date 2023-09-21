@@ -94,7 +94,17 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   };
 
   const renameFile = async (fileNode: FileNode, newName: string) => {
-    fileTree.value = renameFileInTree(fileTree.value, fileNode, newName);
+    const [updatedTree, filePaths] = renameFileInTree(
+      fileTree.value,
+      fileNode,
+      newName
+    );
+    fileTree.value = updatedTree;
+    const notesUpdates = filePaths.map((fp) => ({
+      id: fp.id,
+      changes: { filePath: fp.filePath },
+    }));
+    await notesStore.bulkPathNotesLocally(notesUpdates);
     await storePersistently();
   };
 

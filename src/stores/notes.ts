@@ -53,6 +53,20 @@ export const useNotesStore = defineStore('notes', () => {
     await fileManagerStore.updateFileManager();
   };
 
+  const bulkPathNotesLocally = async (
+    updates: { id: string; changes: Partial<Note> }[]
+  ) => {
+    await repositories.notes.bulkPartialUpdate(updates);
+    notes.value = notes.value.map((n) => {
+      const changedNote = updates.find((cn) => cn.id === n.id);
+      if (changedNote) {
+        return { ...n, ...changedNote.changes };
+      }
+      return n;
+    });
+    await syncStore.syncNotes();
+  };
+
   const fetchNotes = async (offset: number, limit: number) => {
     if (filters.value.offset === offset) {
       return;
@@ -105,5 +119,6 @@ export const useNotesStore = defineStore('notes', () => {
     createNote,
     upsertNotes,
     upsertNotesLocally,
+    bulkPathNotesLocally,
   };
 });
