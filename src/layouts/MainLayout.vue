@@ -5,10 +5,9 @@
       @uploaded="notesImportStore.uploadFiles"
     >
       <action-side-panel
-        v-if="$q.screen.gt.xs || actionSidePanelOpened"
+        v-if="$q.screen.gt.xs || sidebarStore.opened"
         :full-width="$q.screen.lt.sm"
         :user="user"
-        @opened="setLeftDrawerStatus"
       />
       <q-page-container
         class="height-max-dynamic"
@@ -25,7 +24,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useAuthStore } from 'src/stores/auth';
 import { useCommandExecutor } from 'src/hooks';
 import { useKeybindingStore } from 'src/stores/keybindings';
@@ -39,14 +38,7 @@ import ToolBar from 'src/components/containers/ToolBar.vue';
 import { useSidebarStore } from 'src/stores';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 
-const actionSidePanelOpened = ref(false);
-
 const sidebarStore = useSidebarStore();
-
-const toggleSidebar = () => {
-  actionSidePanelOpened.value = !actionSidePanelOpened.value;
-  sidebarStore.toggleWithFallback(ProfileSideBar);
-};
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
@@ -58,7 +50,7 @@ useCommandExecutor().register();
 
 registerKeybindings([
   {
-    handler: () => toggleSidebar(),
+    handler: () => sidebarStore.toggleWithFallback(ProfileSideBar),
     command: 'toggleActionSidePanel',
     keySequence: 'o p',
     description: 'Toggle left sidebar',
@@ -66,9 +58,6 @@ registerKeybindings([
 ]);
 
 const notesImportStore = useNotesImportStore();
-
-const setLeftDrawerStatus = (status: boolean) =>
-  (actionSidePanelOpened.value = status);
 </script>
 
 <style lang="scss">
