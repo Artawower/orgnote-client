@@ -43,4 +43,5 @@ export default {
   'search command': 'search command',
   files: 'files',
   items: 'items',
+  edit: 'edit',
 };

@@ -33,22 +33,24 @@
             </q-item-section>
           </q-item>
 
-          <template v-if="!fullWidth">
-            <q-item
-              v-for="item of toolbarStore.actions.filter(
+          <sidepanel-items
+            :items="
+              toolbarStore.hiddenActions.filter(
                 (a) => a.sidebarPosition === 'top'
-              )"
-              clickable
-              @click="executeActionHandler(item.handler)"
-              :key="item.name"
-            >
-              <q-item-section avatar>
-                <q-icon :name="item.icon"></q-icon>
-              </q-item-section>
-              <q-item-section>
-                {{ $t(item.name) }}
-              </q-item-section>
-            </q-item>
+              )
+            "
+            @execute-action="executeActionHandler"
+          />
+
+          <template v-if="!fullWidth">
+            <sidepanel-items
+              :items="
+                toolbarStore.allActions.filter(
+                  (a) => a.sidebarPosition === 'top'
+                )
+              "
+              @execute-action="executeActionHandler"
+            />
           </template>
 
           <q-item
@@ -102,21 +104,14 @@
         <q-separator />
 
         <template v-if="!fullWidth">
-          <q-item
-            v-for="item of toolbarStore.actions.filter(
-              (a) => a.sidebarPosition === 'bottom'
-            )"
-            clickable
-            @click="executeActionHandler(item.handler)"
-            :key="item.name"
-          >
-            <q-item-section avatar>
-              <q-icon :name="item.icon"></q-icon>
-            </q-item-section>
-            <q-item-section>
-              {{ $t(item.name) }}
-            </q-item-section>
-          </q-item>
+          <sidepanel-items
+            :items="
+              toolbarStore.allActions.filter(
+                (a) => a.sidebarPosition === 'bottom'
+              )
+            "
+            @execute-action="executeActionHandler"
+          />
         </template>
 
         <q-item v-if="user" :to="{ name: RouteNames.Settings }" clickable>
@@ -173,6 +168,7 @@ import { getNumericCssVar } from 'src/tools';
 import ProfileSideBar from './ProfileSideBar.vue';
 import LoginButtons from 'src/components/LoginButtons.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
+import SidepanelItems from 'src/components/containers/SidepanelItems.vue';
 
 const props = defineProps<{
   user?: ModelsPublicUser;

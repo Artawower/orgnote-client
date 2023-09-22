@@ -11,6 +11,9 @@ import { useFileManagerStore } from './file-manager';
 export interface ToolBarAction {
   name: string;
   icon: string;
+  // Show in the sidebar when hidden from toolbar.
+  // In other words, always show it somewhere
+  permament?: boolean;
   sidebarPosition?: 'top' | 'bottom';
   handler: () => void;
 }
@@ -19,6 +22,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
   const router = useRouter();
   const { executeCommand } = useKeybindingStore();
   const fileManagerStore = useFileManagerStore();
+  const invisibleActions = ref<{ [key: string]: ToolBarAction }>({});
 
   const actionsStack = ref<ToolBarAction[][]>([
     [
@@ -41,6 +45,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
       },
       {
         name: 'create note',
+        permament: true,
         sidebarPosition: 'top',
         icon: 'add',
         handler: () => fileManagerStore.createFile(),
@@ -62,18 +67,43 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
   ]);
 
   const setActions = (actions: ToolBarAction[]) => {
+    movePermanentActionsToSidebar();
     actionsStack.value.push(actions);
   };
 
   const backToPreviousActions = () => {
     actionsStack.value.pop();
+    movePermanentActionsFromSidebar();
   };
 
   const actions = computed(
     () => actionsStack.value[actionsStack.value.length - 1]
   );
 
+  const allActions = computed(() => [
+    ...actions.value,
+    ...Object.values(invisibleActions.value),
+  ]);
+
+  const movePermanentActionsToSidebar = () => {
+    const permanentActions = actions.value.filter((action) => action.permament);
+    permanentActions.forEach((action) => {
+      invisibleActions.value[action.name] = action;
+    });
+  };
+
+  const movePermanentActionsFromSidebar = () => {
+    actions.value.forEach((action) => {
+      if (invisibleActions.value[action.name]) {
+        delete invisibleActions.value[action.name];
+      }
+    });
+  };
+
+  const hiddenActions = computed(() => Object.values(invisibleActions.value));
+
   const setMainAction = (action: ToolBarAction) => {
+    movePermanentActionsToSidebar();
     const middleIndex = 2;
     const newActions = [...actions.value];
     newActions[middleIndex] = action;
@@ -82,6 +112,8 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
 
   return {
     actions,
+    allActions,
+    hiddenActions,
     setMainAction,
     setActions,
     backToPreviousActions,

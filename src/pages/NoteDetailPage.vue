@@ -11,13 +11,14 @@
       :note="currentNote"
       :org-tree="currentOrgTree as OrgNode"
     ></note-detail>
-    <mode-line v-if="currentNote?.isMy">
+    <!-- TODO: master remove -->
+    <!-- <mode-line v-if="currentNote?.isMy">
       <q-route-tab
         :to="{ name: RouteNames.EditNote, params: { id: currentNote?.id } }"
         icon="edit"
       >
       </q-route-tab>
-    </mode-line>
+    </mode-line> -->
   </q-page>
 </template>
 

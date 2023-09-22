@@ -40,4 +40,5 @@ export default {
   'search command': 'поиск команды',
   files: 'файлы',
   items: 'элементов',
+  edit: 'редактировать',
 };

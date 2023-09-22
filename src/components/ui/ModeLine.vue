@@ -39,4 +39,8 @@ const tabMode = toRef(props, 'tabMode');
   max-width: var(--content-max-width);
   margin: auto;
 }
+
+.q-footer {
+  z-index: 999;
+}
 </style>

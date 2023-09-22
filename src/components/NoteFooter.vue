@@ -54,6 +54,16 @@
                 }}</q-item-section>
               </q-item>
               <q-item
+                v-if="note.isMy"
+                clickable
+                v-close-popup
+                @click="editNote"
+              >
+                <q-item-section class="text-capitalize">{{
+                  $t('edit')
+                }}</q-item-section>
+              </q-item>
+              <q-item
                 v-if="!note.isMy"
                 clickable
                 v-close-popup
@@ -110,6 +120,10 @@ const router = useRouter();
 const deleteNote = async () => {
   await notesStore.markAsDeleted([note.value.id]);
   router.push({ name: RouteNames.Home });
+};
+
+const editNote = () => {
+  router.push({ name: RouteNames.EditNote, params: { id: note.value.id } });
 };
 </script>
 

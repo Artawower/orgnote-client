@@ -8,11 +8,7 @@
         :class="{ 'main-action': i === 2 }"
         @click="action.handler"
       >
-        <q-icon
-          class="color-main"
-          :name="action.icon"
-          :size="i === 2 ? 'lg' : 'md'"
-        ></q-icon>
+        <q-icon class="color-main" :name="action.icon" size="md"></q-icon>
       </div>
     </div>
   </q-footer>

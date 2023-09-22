@@ -38,11 +38,12 @@ import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import ModeLine from 'src/components/ui/ModeLine.vue';
+import { onChangeToolbarActions } from 'src/hooks';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
-import { computed, onBeforeUnmount, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onBeforeUnmount, watch, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 
@@ -98,6 +99,17 @@ watch(
   () => route.params.id,
   (val) => currentNoteStore.selectNoteById(val as string)
 );
+
+const router = useRouter();
+onChangeToolbarActions({
+  observe: ref(route.params),
+  setupMainAction: () => ({
+    icon: 'done',
+    name: 'save',
+    handler: () =>
+      router.push({ name: RouteNames.NoteDetail, params: { id: noteId } }),
+  }),
+});
 </script>
 
 <style lang="scss">

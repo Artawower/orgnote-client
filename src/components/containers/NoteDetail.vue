@@ -29,6 +29,10 @@ import FilePath from 'components/containers/FilePath.vue';
 import ImageResolver from 'components/containers/ImageResolver.vue';
 
 import { Note } from 'src/models';
+import { ToolBarAction, useCurrentNoteStore } from 'src/stores';
+import { RouteNames } from 'src/router/routes';
+import { useRouter } from 'vue-router';
+import { onChangeToolbarActions } from 'src/hooks';
 
 const props = defineProps<{
   note?: Note;
@@ -37,6 +41,31 @@ const props = defineProps<{
 
 const note = toRef(props, 'note');
 const orgTree = toRef(props, 'orgTree');
+
+const router = useRouter();
+const currentNoteStore = useCurrentNoteStore();
+
+const changeMainAction = (): ToolBarAction => {
+  if (!note.value?.isMy) {
+    return;
+  }
+  return {
+    icon: 'edit',
+    name: 'edit',
+    sidebarPosition: 'top',
+    handler: () => {
+      router.push({
+        name: RouteNames.EditNote,
+        params: { id: currentNoteStore.currentNote?.id },
+      });
+    },
+  };
+};
+
+onChangeToolbarActions({
+  setupMainAction: changeMainAction,
+  observe: note,
+});
 </script>
 
 <style lang="scss" scoped>
