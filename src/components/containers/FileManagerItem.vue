@@ -46,6 +46,10 @@ const props = defineProps<{
   fileNode: FlatTree;
 }>();
 
+const emits = defineEmits<{
+  (e: 'expand', key: string): void;
+}>();
+
 const fileName = ref(props.fileNode.name);
 const isFile = props.fileNode.type === 'file';
 
@@ -54,10 +58,12 @@ const deleteFile = () => {
 };
 
 const createFolder = () => {
+  emits('expand', props.fileNode.id);
   fileManagerStore.createFolder(props.fileNode);
 };
 
 const createFile = () => {
+  emits('expand', props.fileNode.id);
   fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
 };
 
@@ -80,9 +86,12 @@ const editName = () => {
   editMode.value = true;
 };
 
-const confirmEdit = () => {
+const confirmEdit = async () => {
   editMode.value = false;
-  fileManagerStore.renameFile(props.fileNode, fileName.value);
+  await fileManagerStore.renameFile(
+    convertFlatTreeToFileTree(props.fileNode),
+    fileName.value
+  );
   fileManagerStore.stopEdit();
 };
 

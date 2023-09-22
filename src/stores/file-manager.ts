@@ -48,6 +48,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     const newItem: FileNode = {
       name: initialName,
       filePath,
+      id: v4(),
       type: 'folder',
       children: {},
     };

@@ -4,6 +4,7 @@ import {
   FileNode,
   FileNodeInfo,
 } from 'src/repositories';
+import { v4 } from 'uuid';
 
 export interface FlatTree extends FileNodeInfo {
   children?: FlatTree[];
@@ -20,28 +21,10 @@ const createHashNode = (
   return {
     name: path,
     filePath: [...parentPath],
-    id: isFileName ? id : undefined,
+    id: id ?? v4(),
     type: isFileName ? 'file' : 'folder',
     children: {},
   };
-};
-
-const convertToFileTree = (tree: FilePathInfo[]): FileTree => {
-  const result = tree.reduce<FileTree>((acc: FileTree, cur: FilePathInfo) => {
-    let nodeHead = acc;
-    const parentPath: string[] = [];
-    cur.filePath.forEach((path) => {
-      if (!nodeHead[path]) {
-        const newNode = createHashNode(parentPath, path, cur.id);
-        nodeHead[path] = newNode;
-      }
-      nodeHead = nodeHead[path].children;
-      parentPath.push(path);
-    });
-
-    return acc;
-  }, {});
-  return result;
 };
 
 const sortFileNodes = (a: FlatTree, b: FlatTree): number => {
@@ -71,8 +54,21 @@ export const convertFileTreeToFlatTree = (fileTree?: FileTree): FlatTree[] => {
 };
 
 export const buildFileTree = (info: FilePathInfo[]): FileTree => {
-  const fileTree = convertToFileTree(info);
-  return fileTree;
+  const result = info.reduce<FileTree>((acc: FileTree, cur: FilePathInfo) => {
+    let nodeHead = acc;
+    const parentPath: string[] = [];
+    cur.filePath.forEach((path) => {
+      if (!nodeHead[path]) {
+        const newNode = createHashNode(parentPath, path, cur.id);
+        nodeHead[path] = newNode;
+      }
+      nodeHead = nodeHead[path].children;
+      parentPath.push(path);
+    });
+
+    return acc;
+  }, {});
+  return result;
 };
 
 export const mergeFilesTrees = (
@@ -90,6 +86,7 @@ export const mergeFilesTrees = (
     }
     result[key] = {
       ...result[key],
+      id: value.id,
       children: mergeFilesTrees(value.children, result[key].children),
     };
   });

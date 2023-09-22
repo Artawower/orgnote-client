@@ -26,12 +26,12 @@
       :filter="search"
       ref="qTreeRef"
       dense
-      node-key="name"
+      node-key="id"
       label-key="name"
       class="fit q-mt-md"
     >
       <template v-slot:default-header="prop">
-        <file-manager-item :file-node="prop.node" />
+        <file-manager-item :file-node="prop.node" @expand="expand" />
       </template>
     </q-tree>
   </sidebar-wrapper>
@@ -67,6 +67,8 @@ const toggleExpanding = () => {
   }
   isExpanded.value = !isExpanded.value;
 };
+
+const expand = (key: string) => qTreeRef.value?.setExpanded(key, true);
 </script>
 
 <style lang="scss">

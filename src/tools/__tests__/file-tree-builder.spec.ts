@@ -65,16 +65,19 @@ describe('file-tree-builder', () => {
       d1: {
         filePath: [],
         name: 'd1',
+        id: 'd1',
         type: 'folder',
         children: {
           f1: {
             filePath: ['d1'],
             name: 'f1',
+            id: 'f1',
             type: 'file',
           },
           f2: {
             filePath: ['d1'],
             name: 'f2',
+            id: 'f2',
             type: 'file',
           },
         },
@@ -85,6 +88,7 @@ describe('file-tree-builder', () => {
       d1: {
         filePath: [],
         name: 'd1',
+        id: 'd1',
         type: 'folder',
         children: {},
       },
@@ -190,5 +194,69 @@ describe('file-tree-builder', () => {
 
     const fileTree = convertFlatTreeToFileTree(flatTree);
     expect(fileTree).toMatchSnapshot();
+  });
+
+  it('Should to have initial id after merging', () => {
+    const srcTree: FileTree = {
+      d1: {
+        filePath: [],
+        name: 'd1',
+        type: 'folder',
+        id: 'id1',
+        children: {},
+      },
+    };
+
+    const dstTree: FileTree = {
+      d1: {
+        filePath: [],
+        name: 'd1',
+        type: 'folder',
+        id: 'id1',
+        children: {
+          f1: {
+            filePath: ['d1'],
+            name: 'f1',
+            type: 'file',
+            id: 'id2',
+          },
+        },
+      },
+    };
+
+    const mergedTree = mergeFilesTrees(srcTree, dstTree);
+    expect(mergedTree).toMatchSnapshot();
+  });
+
+  it('Should to prefer source tree folder id over dst tree with same name', () => {
+    const srcTree: FileTree = {
+      d1: {
+        filePath: [],
+        name: 'd1',
+        type: 'folder',
+        id: 'id1',
+        children: {},
+      },
+    };
+
+    const dstTree: FileTree = {
+      d1: {
+        filePath: [],
+        name: 'd1',
+        type: 'folder',
+        id: 'id2',
+        children: {
+          f1: {
+            filePath: ['d1'],
+            name: 'f1',
+            type: 'file',
+            id: 'id3',
+          },
+        },
+      },
+    };
+
+    const mergedTree = mergeFilesTrees(srcTree, dstTree);
+    expect(mergedTree).toMatchSnapshot();
   });
 });

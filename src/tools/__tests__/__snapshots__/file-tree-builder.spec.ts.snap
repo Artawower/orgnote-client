@@ -46,6 +46,7 @@ exports[`file-tree-builder Should remove files from src directory if they are no
   "d1": {
     "children": {},
     "filePath": [],
+    "id": "d1",
     "name": "d1",
     "type": "folder",
   },
@@ -162,5 +163,47 @@ exports[`file-tree-builder Should convert flat tree to file tree 1`] = `
   "id": undefined,
   "name": "d1",
   "type": "folder",
+}
+`;
+
+exports[`file-tree-builder Should to have initial id after merging 1`] = `
+{
+  "d1": {
+    "children": {
+      "f1": {
+        "filePath": [
+          "d1",
+        ],
+        "id": "id2",
+        "name": "f1",
+        "type": "file",
+      },
+    },
+    "filePath": [],
+    "id": "id1",
+    "name": "d1",
+    "type": "folder",
+  },
+}
+`;
+
+exports[`file-tree-builder Should to prefer source tree folder id over dst tree with same name 1`] = `
+{
+  "d1": {
+    "children": {
+      "f1": {
+        "filePath": [
+          "d1",
+        ],
+        "id": "id3",
+        "name": "f1",
+        "type": "file",
+      },
+    },
+    "filePath": [],
+    "id": "id1",
+    "name": "d1",
+    "type": "folder",
+  },
 }
 `;
