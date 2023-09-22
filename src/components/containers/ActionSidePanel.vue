@@ -95,7 +95,7 @@
           </q-item-section>
         </q-item>
         <login-buttons
-          v-if="!user?.isAnonymous"
+          v-if="user?.isAnonymous"
           :vertical="true"
         ></login-buttons>
       </q-list>
