@@ -34,6 +34,7 @@
           </q-item>
 
           <sidepanel-items
+            v-if="fullWidth"
             :items="
               toolbarStore.hiddenActions.filter(
                 (a) => a.sidebarPosition === 'top'
