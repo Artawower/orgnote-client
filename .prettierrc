@@ -3,5 +3,14 @@
   "tabWidth": 2,
   "semi": true,
   "singleQuote": true,
-  "lineWidth": 80
+  "lineWidth": 80,
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrder": [
+    "^vue$",
+    "^src/^(.(?!.*world))*$",
+    "^@server/(.*)$",
+    "^[./]",
+    "(.*).vue$"
+  ]
 }
