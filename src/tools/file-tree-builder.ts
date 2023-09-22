@@ -199,6 +199,10 @@ export const renameFileInTree = (
     );
   }
 
+  if (node[newName].type === 'file') {
+    return [tree, extractFilePathInfo(node)];
+  }
+
   return [tree, extractFilePathInfo(node[newName]?.children)];
 };
 

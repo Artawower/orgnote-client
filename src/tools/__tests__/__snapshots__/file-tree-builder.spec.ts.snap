@@ -61,6 +61,7 @@ exports[`file-tree-builder Should rename nested file 1`] = `
           "filePath": [
             "d1",
           ],
+          "id": "id",
           "name": "newName",
           "type": "file",
         },
@@ -70,7 +71,15 @@ exports[`file-tree-builder Should rename nested file 1`] = `
       "type": "folder",
     },
   },
-  [],
+  [
+    {
+      "filePath": [
+        "d1",
+        "newName",
+      ],
+      "id": "id",
+    },
+  ],
 ]
 `;
 

@@ -104,6 +104,7 @@ describe('file-tree-builder', () => {
           f1: {
             filePath: ['d1'],
             name: 'f1',
+            id: 'id',
             type: 'file',
           },
         },
