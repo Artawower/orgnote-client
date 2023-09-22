@@ -24,19 +24,20 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { useAuthStore } from 'src/stores/auth';
 import { useCommandExecutor } from 'src/hooks';
-import { useKeybindingStore } from 'src/stores/keybindings';
+import { useSidebarStore } from 'src/stores';
+import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
+import { useKeybindingStore } from 'src/stores/keybindings';
+
+import { computed } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
-import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
 import FileUploader from 'src/components/containers/FileUploader.vue';
-import ToolBar from 'src/components/containers/ToolBar.vue';
-import { useSidebarStore } from 'src/stores';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
+import ToolBar from 'src/components/containers/ToolBar.vue';
+import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 
 const sidebarStore = useSidebarStore();
 

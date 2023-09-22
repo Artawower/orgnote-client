@@ -12,100 +12,99 @@
   >
     <q-scroll-area class="fit">
       <q-list>
-        <template v-if="user">
-          <q-item
-            @click="sidebarStore.toggleWithComponent(ProfileSideBar)"
-            clickable
-            class="flex items-center justify-center"
-          >
-            <q-avatar size="24px" class="profile-icon">
-              <img :src="user.avatarUrl" />
-            </q-avatar>
-          </q-item>
+        <q-item
+          @click="sidebarStore.toggleWithComponent(ProfileSideBar)"
+          clickable
+          class="flex items-center justify-center"
+        >
+          <q-avatar size="24px" class="profile-icon">
+            <img v-if="user?.avatarUrl" :src="user.avatarUrl" />
+            <q-icon v-else name="account_circle" size="sm"></q-icon>
+          </q-avatar>
+        </q-item>
 
-          <q-item
-            @click="sidebarStore.toggleWithComponent(FileManagerSidebar)"
-            clickable
-            class="flex items-center justify-center"
-          >
-            <q-item-section avatar>
-              <q-icon name="folder"></q-icon>
-            </q-item-section>
-          </q-item>
+        <q-item
+          @click="sidebarStore.toggleWithComponent(FileManagerSidebar)"
+          clickable
+          class="flex items-center justify-center"
+        >
+          <q-item-section avatar>
+            <q-icon name="folder"></q-icon>
+          </q-item-section>
+        </q-item>
 
-          <sidepanel-items
-            v-if="fullWidth"
+        <side-panel-items
+          v-if="fullWidth"
+          :items="
+            toolbarStore.hiddenActions.filter(
+              (a) => a.sidebarPosition === 'top'
+            )
+          "
+          @execute-action="executeActionHandler"
+        />
+
+        <template v-if="!fullWidth">
+          <side-panel-items
             :items="
-              toolbarStore.hiddenActions.filter(
-                (a) => a.sidebarPosition === 'top'
-              )
+              toolbarStore.allActions.filter((a) => a.sidebarPosition === 'top')
             "
             @execute-action="executeActionHandler"
           />
-
-          <template v-if="!fullWidth">
-            <sidepanel-items
-              :items="
-                toolbarStore.allActions.filter(
-                  (a) => a.sidebarPosition === 'top'
-                )
-              "
-              @execute-action="executeActionHandler"
-            />
-          </template>
-
-          <q-item
-            @click="closeSideBarForMobile"
-            :to="{ name: RouteNames.NoteList }"
-            clickable
-            exact
-          >
-            <q-item-section avatar>
-              <q-icon name="feed" />
-            </q-item-section>
-
-            <q-item-section>{{ $t('All articles') }}</q-item-section>
-          </q-item>
-
-          <q-item
-            v-if="authStore.user"
-            @click="closeSideBarForMobile"
-            clickable
-            :to="{
-              name: RouteNames.UserGraph,
-              params: { userId: authStore.user.id },
-            }"
-          >
-            <q-item-section avatar>
-              <q-icon name="hub" />
-            </q-item-section>
-
-            <q-item-section>{{ $t('Graph') }}</q-item-section>
-          </q-item>
-
-          <q-item
-            class="hidden"
-            @click="closeSideBarForMobile"
-            :to="{ name: RouteNames.Extensions }"
-            clickable
-          >
-            <q-item-section avatar>
-              <q-icon name="extension" />
-            </q-item-section>
-
-            <q-item-section class="text-capitalize">
-              {{ $t('extensions') }}
-            </q-item-section>
-          </q-item>
         </template>
-        <login-buttons v-if="!user" :vertical="true"></login-buttons>
+
+        <q-item
+          @click="closeSideBarForMobile"
+          :to="{ name: RouteNames.NoteList }"
+          clickable
+          exact
+        >
+          <q-item-section avatar>
+            <q-icon name="feed" />
+          </q-item-section>
+
+          <q-item-section>{{ $t('All articles') }}</q-item-section>
+        </q-item>
+
+        <q-item
+          @click="closeSideBarForMobile"
+          clickable
+          :to="{
+            name: RouteNames.UserGraph,
+            params: { userId: authStore.user.id },
+          }"
+        >
+          <q-item-section avatar>
+            <q-icon name="hub" />
+          </q-item-section>
+
+          <q-item-section>{{ $t('Graph') }}</q-item-section>
+        </q-item>
+
+        <q-item
+          class="hidden"
+          @click="closeSideBarForMobile"
+          :to="{ name: RouteNames.Extensions }"
+          clickable
+        >
+          <q-item-section avatar>
+            <q-icon name="extension" />
+          </q-item-section>
+
+          <q-item-section class="text-capitalize">
+            {{ $t('extensions') }}
+          </q-item-section>
+        </q-item>
+        <login-buttons
+          v-if="!user?.isAnonymous"
+          :vertical="true"
+        ></login-buttons>
       </q-list>
 
       <q-list>
         <q-separator />
 
         <template v-if="!fullWidth">
-          <sidepanel-items
+          <side-panel-items
             :items="
               toolbarStore.allActions.filter(
                 (a) => a.sidebarPosition === 'bottom'
@@ -138,6 +137,7 @@
     </q-scroll-area>
   </q-drawer>
   <q-drawer
+    v-if="sidebarStore.opened"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     bordered
     :overlay="fullWidth"
@@ -150,8 +150,13 @@
 </template>
 
 <script lang="ts" setup>
+import { User } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { ModelsPublicUser } from 'src/generated/api';
+import { useToolbarStore } from 'src/stores';
+import { useAuthStore } from 'src/stores/auth';
+import { useSidebarStore } from 'src/stores/sidebar';
+import { getNumericCssVar } from 'src/tools';
+
 import {
   computed,
   onBeforeMount,
@@ -160,19 +165,14 @@ import {
   ref,
   toRef,
 } from 'vue';
-import { useAuthStore } from 'src/stores/auth';
-import { useKeybindingStore } from 'src/stores/keybindings';
-import { useSidebarStore } from 'src/stores/sidebar';
-import { useToolbarStore } from 'src/stores';
-import { getNumericCssVar } from 'src/tools';
 
-import ProfileSideBar from './ProfileSideBar.vue';
 import LoginButtons from 'src/components/LoginButtons.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
-import SidepanelItems from 'src/components/containers/SidepanelItems.vue';
+import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
+import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
 
 const props = defineProps<{
-  user?: ModelsPublicUser;
+  user?: User;
   fullWidth?: boolean;
 }>();
 
@@ -184,8 +184,6 @@ const authStore = useAuthStore();
 const user = toRef(props, 'user');
 const fullWidth = toRef(props, 'fullWidth');
 const compositeOpened = ref(true);
-
-const keybindingStore = useKeybindingStore();
 
 const sidebarStore = useSidebarStore();
 
@@ -207,13 +205,6 @@ const setupWindowWidth = () => {
   windowWidth.value = window.innerWidth;
 };
 
-const executeCommand = (cmd: {
-  command: string;
-  commandHandler?: (data?: unknown) => void;
-}) => {
-  keybindingStore.executeCommand(cmd);
-  closeSideBarForMobile();
-};
 const showSidebarForSmalDevice = () => {
   if (!fullWidth.value) {
     return;

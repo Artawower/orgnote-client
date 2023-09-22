@@ -8,7 +8,8 @@
         @click="openProfile"
       >
         <q-avatar size="160px" class="q-mx-auto">
-          <img :src="user.avatarUrl" />
+          <img v-if="user.isAnonymous" src="/icons/brain.png" />
+          <img v-else :src="user.avatarUrl" />
         </q-avatar>
         <div class="text-center q-mt-lg">
           {{ user.nickName }}
@@ -22,16 +23,7 @@
         </div>
       </q-item>
 
-      <q-item v-else clickable class="column justify-center">
-        <q-avatar size="160px" class="q-mx-auto">
-          <img src="/icons/brain.png" />
-        </q-avatar>
-        <br />
-        <div class="text-center subtitle text-weight-light text-italic">
-          <random-quote />
-        </div>
-      </q-item>
-      <template v-if="!user">
+      <template v-if="user.isAnonymous">
         <q-item>
           <div class="text-center q-mt-lg full-width">
             {{ $t('login to create your first note') }}
@@ -61,12 +53,14 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from 'src/stores';
+
+import { version } from '../../../package.json';
+
+import DownloadLinks from 'components/DownloadLinks.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
-import DownloadLinks from 'components/DownloadLinks.vue';
-import { version } from '../../../package.json';
-import { useAuthStore } from 'src/stores';
-import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
 

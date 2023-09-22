@@ -1,17 +1,24 @@
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { OAuthProvider } from 'src/boot/sdk';
-import { ModelsPublicUser } from 'src/generated/api';
+import { OAuthProvider } from 'src/models';
+import { User } from 'src/models';
+import { v4 } from 'uuid';
 import { ref } from 'vue';
 import { useSettingsStore } from './settings';
 import { useSyncStore } from './sync';
+
+const defaultUserAccount = (): User => ({
+  id: v4(),
+  nickName: 'Anonymous',
+  isAnonymous: true,
+});
 
 export const useAuthStore = defineStore(
   'auth',
   () => {
     const token = ref<string>();
-    const user = ref<ModelsPublicUser>();
+    const user = ref<User>(defaultUserAccount());
     const provider = ref<OAuthProvider>('github');
 
     const authViaGithub = async () => {
@@ -26,7 +33,7 @@ export const useAuthStore = defineStore(
     };
 
     const resetAuthInfo = () => {
-      user.value = null;
+      user.value = defaultUserAccount();
       token.value = null;
     };
 
@@ -38,7 +45,7 @@ export const useAuthStore = defineStore(
     };
 
     const verifyUser = async () => {
-      if (!token.value) {
+      if (!token.value || user.value.isAnonymous) {
         return;
       }
       try {
@@ -52,7 +59,7 @@ export const useAuthStore = defineStore(
     };
 
     const syncStore = useSyncStore();
-    const authUser = (u: ModelsPublicUser, t: string) => {
+    const authUser = (u: User, t: string) => {
       user.value = u;
       token.value = t;
       syncStore.syncNotes();
