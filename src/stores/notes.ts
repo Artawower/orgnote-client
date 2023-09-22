@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
+import { repositories } from 'src/boot/repositories';
 import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotePreview, NotesFilter } from 'src/models';
+
 import { ref } from 'vue';
-import { repositories } from 'src/boot/repositories';
+
+import { useFileManagerStore } from './file-manager';
 import { useSyncStore } from './sync';
-import { useFileManagerStore as useFileManagerStore } from './file-manager';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -60,7 +62,11 @@ export const useNotesStore = defineStore('notes', () => {
     notes.value = notes.value.map((n) => {
       const changedNote = updates.find((cn) => cn.id === n.id);
       if (changedNote) {
-        return { ...n, ...changedNote.changes };
+        return {
+          ...n,
+          ...changedNote.changes,
+          updateAt: new Date().toISOString(),
+        };
       }
       return n;
     });

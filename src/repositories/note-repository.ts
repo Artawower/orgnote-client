@@ -1,6 +1,7 @@
 import Dexie, { UpdateSpec } from 'dexie';
 import { Note, NotePreview } from 'src/models';
 import { toDeepRaw } from 'src/tools';
+
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 
@@ -13,7 +14,7 @@ export class NoteRepository extends BaseRepository {
   public static storeName = 'notes';
 
   public static readonly indexes =
-    '++id, meta.title, meta.description, createdAt, *meta.fileTags';
+    '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags';
 
   get store(): Dexie.Table<Note, string> {
     return this.db.table(NoteRepository.storeName);
@@ -27,7 +28,7 @@ export class NoteRepository extends BaseRepository {
         .then(() => notes);
     }
     return this.store
-      .where('createdAt')
+      .where('updatedAt')
       .above(updatedTime)
       .each((n) => !n.deleted && notes.push(n))
       .then(() => notes);
@@ -98,7 +99,7 @@ export class NoteRepository extends BaseRepository {
     await this.store.bulkUpdate(
       toDeepRaw(updates).map((update) => ({
         key: update.id,
-        changes: update.changes,
+        changes: { ...update.changes, updatedAt: new Date().toISOString() },
       }))
     );
   }

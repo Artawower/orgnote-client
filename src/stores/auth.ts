@@ -4,7 +4,9 @@ import { sdk } from 'src/boot/axios';
 import { OAuthProvider } from 'src/models';
 import { User } from 'src/models';
 import { v4 } from 'uuid';
+
 import { ref } from 'vue';
+
 import { useSettingsStore } from './settings';
 import { useSyncStore } from './sync';
 
@@ -18,7 +20,7 @@ export const useAuthStore = defineStore(
   'auth',
   () => {
     const token = ref<string>();
-    const user = ref<User>(defaultUserAccount());
+    const user = ref<User>();
     const provider = ref<OAuthProvider>('github');
 
     const authViaGithub = async () => {
@@ -46,6 +48,7 @@ export const useAuthStore = defineStore(
 
     const verifyUser = async () => {
       if (!token.value || user.value.isAnonymous) {
+        resetAuthInfo();
         return;
       }
       try {

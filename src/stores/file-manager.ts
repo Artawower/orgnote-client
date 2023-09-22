@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
-import { v4 } from 'uuid';
-import { FileNode, FileTree, FileNodeInfo } from 'src/repositories';
 import { repositories } from 'src/boot/repositories';
+import { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
 import {
   addFileToTree,
   buildFileTree,
@@ -14,6 +12,10 @@ import {
   renameFileInTree,
   toDeepRaw,
 } from 'src/tools';
+import { v4 } from 'uuid';
+
+import { computed, ref } from 'vue';
+
 import { useNoteCreatorStore } from './note-creator';
 import { useNotesStore } from './notes';
 
