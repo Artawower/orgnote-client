@@ -1,40 +1,86 @@
 <template>
-  <q-page padding>
-    <div class="col-12 q-gutter-y-md">
-      <router-view />
+  <div class="settings flex cols">
+    <q-list class="settings-groups">
+      <q-item
+        v-for="tab of configTabs"
+        @click="openTab(tab.component)"
+        :disable="tab?.disabled"
+        :key="tab.name"
+        :active="configComponent.__name === tab.component.__name"
+        clickable
+        class="rounded-borders justify-start"
+      >
+        <q-item-section avatar>
+          <q-icon :name="tab.icon" />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label class="text-capitalize">{{
+            $t(tab.name)
+          }}</q-item-label>
+        </q-item-section>
+      </q-item>
+    </q-list>
+    <div class="configs q-pl-md">
+      <component :is="configComponent"></component>
     </div>
-    <mode-line>
-      <q-route-tab
-        icon="tune"
-        :to="{ name: RouteNames.ViewSettings }"
-        exact
-        :label="$t('visual')"
-      />
-      <q-route-tab
-        icon="settings"
-        exact
-        :to="{ name: RouteNames.CommonSettings }"
-        :label="$t('common')"
-      >
-      </q-route-tab>
-      <q-route-tab
-        icon="keyboard"
-        exact
-        :to="{ name: RouteNames.Keybindings }"
-        :label="$t('keybindings')"
-      >
-      </q-route-tab>
-      <q-route-tab
-        icon="generating_tokens"
-        :to="{ name: RouteNames.ApiSettings }"
-        exact
-        :label="$t('API tokens')"
-      />
-    </mode-line>
-  </q-page>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { RouteNames } from 'src/router/routes';
-import ModeLine from 'src/components/ui/ModeLine.vue';
+import { VueComponent } from 'src/models';
+import { useAuthStore } from 'src/stores';
+
+import { ref } from 'vue';
+
+import ApiSettingsPage from './ApiSettingsPage.vue';
+import CommonSettingsPage from './CommonSettingsPage.vue';
+import KeybindingsPage from './KeybindingsPage.vue';
+import ViewSettingsPage from 'src/pages/ViewSettingsPage.vue';
+
+interface Tab {
+  name: string;
+  icon: string;
+  component: VueComponent;
+  disabled?: boolean;
+}
+
+const authStore = useAuthStore();
+
+const configTabs: Tab[] = [
+  {
+    name: 'visual',
+    icon: 'tune',
+    component: ViewSettingsPage,
+  },
+  {
+    name: 'common',
+    icon: 'settings',
+    component: CommonSettingsPage,
+  },
+  {
+    name: 'keybindings',
+    icon: 'keyboard',
+    component: KeybindingsPage,
+  },
+  {
+    name: 'api',
+    icon: 'generating_tokens',
+    disabled: authStore.user.isAnonymous,
+    component: ApiSettingsPage,
+  },
+];
+const configComponent = ref<VueComponent>(ViewSettingsPage);
+
+const openTab = (component: VueComponent) => {
+  configComponent.value = component;
+};
 </script>
+
+<style lang="scss" scoped>
+.settings-groups {
+  width: 200px;
+}
+.configs {
+  flex: 1;
+}
+</style>

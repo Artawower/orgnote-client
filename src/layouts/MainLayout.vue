@@ -13,11 +13,11 @@
         class="height-max-dynamic"
         :class="{ 'with-composite-bar': $q.screen.gt.xs }"
       >
+        <modal-window></modal-window>
         <router-view />
       </q-page-container>
       <mini-buffer />
       <completion-prompt />
-
       <ToolBar v-if="$q.screen.lt.sm" />
     </file-uploader>
   </q-layout>
@@ -35,6 +35,7 @@ import { computed } from 'vue';
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
 import FileUploader from 'src/components/containers/FileUploader.vue';
+import ModalWindow from 'src/components/containers/ModalWindow.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import ToolBar from 'src/components/containers/ToolBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
@@ -61,7 +62,7 @@ registerKeybindings([
 const notesImportStore = useNotesImportStore();
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .content {
   max-width: var(--content-max-width);
   margin: auto;

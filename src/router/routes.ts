@@ -7,7 +7,6 @@ export enum RouteNames {
   NoteList = 'NoteList',
   NoteDetail = 'NoteDetail',
   AuthPage = 'AuthPage',
-  Settings = 'Settings',
   NotFound = 'NotFound',
   UserGraph = 'UserGraph',
   EditNote = 'EditNote',
@@ -46,41 +45,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
         }
         return true;
       },
-    },
-    {
-      path: 'settings',
-      name: RouteNames.Settings,
-      component: () => import('pages/SettingsPage.vue'),
-      redirect: { name: RouteNames.ViewSettings },
-      beforeEnter: () => {
-        const authStore = useAuthStore();
-        if (!authStore.user) {
-          return { name: RouteNames.NoteList };
-        }
-        return true;
-      },
-      children: [
-        {
-          path: '',
-          name: RouteNames.ViewSettings,
-          component: () => import('pages/ViewSettingsPage.vue'),
-        },
-        {
-          path: 'common',
-          name: RouteNames.CommonSettings,
-          component: () => import('pages/CommonSettingsPage.vue'),
-        },
-        {
-          path: 'api',
-          name: RouteNames.ApiSettings,
-          component: () => import('pages/ApiSettingsPage.vue'),
-        },
-        {
-          path: 'keybindings',
-          name: RouteNames.Keybindings,
-          component: () => import('pages/KeybindingsPage.vue'),
-        },
-      ],
     },
     {
       path: 'note-editor/:id?',

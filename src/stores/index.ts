@@ -15,6 +15,7 @@ export * from './toolbar';
 export * from './sidebar';
 export * from './file-manager';
 export * from './note-creator';
+export * from './modal';
 
 /*
  * If not building with SSR mode, you can

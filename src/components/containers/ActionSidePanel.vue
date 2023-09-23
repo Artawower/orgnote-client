@@ -114,7 +114,7 @@
           />
         </template>
 
-        <q-item v-if="user" :to="{ name: RouteNames.Settings }" clickable>
+        <q-item @click="openSettings" clickable>
           <q-item-section avatar>
             <q-icon name="settings" />
           </q-item-section>
@@ -152,7 +152,7 @@
 <script lang="ts" setup>
 import { User } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useToolbarStore } from 'src/stores';
+import { useModalStore, useToolbarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar } from 'src/tools';
@@ -170,6 +170,7 @@ import LoginButtons from 'src/components/LoginButtons.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
+import SettingsPage from 'src/pages/SettingsPage.vue';
 
 const props = defineProps<{
   user?: User;
@@ -228,6 +229,11 @@ const toolbarStore = useToolbarStore();
 const executeActionHandler = (handler: () => unknown) => {
   closeSideBarForMobile();
   handler();
+};
+
+const modalStore = useModalStore();
+const openSettings = () => {
+  modalStore.open(SettingsPage, { title: 'settings' });
 };
 </script>
 

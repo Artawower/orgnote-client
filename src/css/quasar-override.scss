@@ -15,3 +15,8 @@ body {
   border: var(--border-main);
   z-index: 999999;
 }
+
+.q-item.q-router-link--active,
+.q-item--active {
+  color: var(--cyan);
+}

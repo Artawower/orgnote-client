@@ -8,9 +8,8 @@
   "importOrderSortSpecifiers": true,
   "importOrder": [
     "^vue$",
-    "^src/^(.(?!.*world))*$",
     "^@server/(.*)$",
-    "^[./]",
-    "(.*).vue$"
+    "^src/^(.(?!.*world))*$",
+    "(.*)\\.vue$"
   ]
 }

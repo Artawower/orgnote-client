@@ -101,6 +101,10 @@ body {
   // Icon button
   --icon-btn-color: var(--fg);
   --icon-btn-hover-color: var(--cyan);
+
+  // Modal
+  --modal-max-height: 80svh;
+  --modal-max-width: 1024px;
 }
 
 body {

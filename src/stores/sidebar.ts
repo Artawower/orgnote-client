@@ -1,7 +1,7 @@
-import { ref, shallowRef } from 'vue';
 import { defineStore } from 'pinia';
+import { VueComponent } from 'src/models';
 
-type VueComponent = unknown;
+import { ref, shallowRef } from 'vue';
 
 export const useSidebarStore = defineStore('sidebar', () => {
   const opened = ref(false);

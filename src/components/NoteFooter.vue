@@ -96,8 +96,9 @@ import { useNotifications } from 'src/hooks';
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore, useSelectedNotesStore } from 'src/stores';
-import { toRef } from 'vue';
 import { useRouter } from 'vue-router';
+
+import { toRef } from 'vue';
 
 const props = defineProps<{
   selectable?: boolean;
@@ -127,7 +128,7 @@ const editNote = () => {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .action-btns {
   height: 33.15px;
 
