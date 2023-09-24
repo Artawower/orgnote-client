@@ -81,8 +81,7 @@
 - =--headline-margin=:  18px 0;
 - =--paragraph-font-size=:  20px;
 - =--main-font-family=:  charter, Georgia, Cambria, 'Times New Roman', Times, serif;
-- =--editor-font-family-main=:  var(
-- =--main-font-family,=: undefined
+- =--editor-font-family-main=:  'Menlo', charter, Georgia, Cambria,
 - =--paragraph-font-family=:  var(--main-font-family);
 ** Note description
 - =--description-font-family=:  var(--main-font-family);
