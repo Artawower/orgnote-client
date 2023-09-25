@@ -3,33 +3,6 @@
     <template v-if="noteLoaded">
       <router-view />
     </template>
-    <mode-line>
-      <q-route-tab
-        :to="{ name: RouteNames.RawEditor, params: { id: noteId } }"
-        :exact="true"
-        icon="draw"
-        label="raw"
-      ></q-route-tab>
-      <q-route-tab
-        :to="{ name: RouteNames.WysiwygEditor, params: { id: noteId } }"
-        :exact="true"
-        icon="wysiwyg"
-        label="wysiwyg"
-      ></q-route-tab>
-      <q-route-tab
-        :to="{ name: RouteNames.PreviewEditor, params: { id: noteId } }"
-        :exact="true"
-        icon="preview"
-        :label="$t('preview')"
-      ></q-route-tab>
-      <q-btn @click="noteEditorStore.save" icon="save" flat></q-btn>
-      <q-btn
-        :icon="specialSymbolsHidden ? 'visibility_off' : 'visibility'"
-        flat
-        @click="specialSymbolsHidden = !specialSymbolsHidden"
-      >
-      </q-btn>
-    </mode-line>
   </q-page>
 </template>
 
@@ -37,21 +10,19 @@
 import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
-import ModeLine from 'src/components/ui/ModeLine.vue';
 import { onChangeToolbarActions } from 'src/hooks';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
-import { computed, onBeforeUnmount, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 const route = useRoute();
 
 const noteId = route.params.id as string;
 
 const noteEditorStore = useNoteEditorStore();
-
-const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
 const currentNoteStore = useCurrentNoteStore();
 const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);

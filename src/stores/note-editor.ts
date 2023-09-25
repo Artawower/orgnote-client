@@ -1,12 +1,13 @@
-import { defineStore } from 'pinia';
-import { computed, ref, toRaw } from 'vue';
-import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { useNotesStore } from '.';
-import { generateFileName } from 'src/tools';
+import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
+import { defineStore } from 'pinia';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
-import { getOrgNodeValidationErrors } from 'src/tools/validators';
 import { Note } from 'src/models';
+import { generateFileName } from 'src/tools';
+import { getOrgNodeValidationErrors } from 'src/tools/validators';
+
+import { computed, ref, toRaw } from 'vue';
 
 export const useNoteEditorStore = defineStore(
   'note-editor',
@@ -14,7 +15,6 @@ export const useNoteEditorStore = defineStore(
     const noteOrgData = ref<OrgNode>();
     const noteText = ref<string>('');
     const lastSavedText = ref<string>('');
-    const specialSymbolsHidden = ref<boolean>(false);
     const filePath = ref<string[]>([]);
     const createdTime = ref<string>();
 
@@ -108,7 +108,6 @@ export const useNoteEditorStore = defineStore(
       orgTree,
 
       setNoteData,
-      specialSymbolsHidden,
       save,
       saved,
       setNoteContent,
