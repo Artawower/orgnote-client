@@ -1,5 +1,5 @@
-import { SyntaxNode } from '@leze/common';
 import { Tag, styleTags } from '@lezer/highlight';
+import { cmNodes } from './node-ids';
 import { tags as t } from '@lezer/highlight';
 import { NodeType } from 'org-mode-ast';
 
@@ -17,6 +17,7 @@ const orgStyledNodes = [
   NodeType.Operator,
   NodeType.BlockProperty,
   NodeType.SrcLanguage,
+  ...cmNodes,
 ] as const;
 
 const orgFullStyledNodes = [...orgStyledNodes, ...codeNodes] as const;

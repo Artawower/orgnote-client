@@ -1,5 +1,10 @@
 // Simple codemirror parser
 // This is a simple parser for codemirror that will highlight the syntax of the
+import { OrgModeParserConfig } from './config';
+import { orgFoldProps } from './folding';
+import { getOrgNodeId } from './node-ids';
+import { orgHighlightStyle } from './syntax-highlighting';
+import { orgTagsStyles } from './tags';
 import {
   Language,
   LanguageSupport,
@@ -15,12 +20,6 @@ import {
   parse,
   withMetaInfo,
 } from 'org-mode-ast';
-
-import { OrgModeParserConfig } from './config';
-import { orgFoldProps } from './folding';
-import { getOrgNodeId } from './node-ids';
-import { orgHighlightStyle } from './syntax-highlighting';
-import { orgTagsStyles } from './tags';
 
 class OrgNodeParser extends Parser {
   constructor(private config?: OrgModeParserConfig) {
@@ -68,10 +67,11 @@ class OrgNodeParser extends Parser {
       return nestedParsedTree;
     }
 
+    const nodeName = this.getCmNodeNameByOrgNode(orgNode);
     return new Tree(
       NodeType.define({
-        id: getOrgNodeId(orgNode),
-        name: orgNode.type,
+        id: getOrgNodeId(nodeName),
+        name: nodeName,
         top: orgNode.is(OrgNodeType.Root),
         props: [orgTagsStyles, orgFoldProps],
       }),
@@ -79,6 +79,16 @@ class OrgNodeParser extends Parser {
       children?.map((c) => c.start - orgNode.start),
       orgNode.length
     );
+  }
+
+  private getCmNodeNameByOrgNode(orgNode: OrgNode): string {
+    if (
+      orgNode.is(OrgNodeType.Title) &&
+      orgNode.parent?.is(OrgNodeType.Headline)
+    ) {
+      return `Headline-${orgNode.parent.level}`;
+    }
+    return orgNode.type;
   }
 
   private tryParseNestedCodeBlock(

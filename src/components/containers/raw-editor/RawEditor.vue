@@ -186,4 +186,33 @@ onMounted(() => initEditor());
     display: inline !important;
   }
 }
+
+.org-headline-1 {
+  font-size: 2rem;
+}
+.org-headline-2 {
+  font-size: 1.8rem;
+}
+
+.org-headline-3 {
+  font-size: 1.6rem;
+}
+
+.org-headline-4 {
+  font-size: 1.4rem;
+}
+
+.org-headline-5 {
+  font-size: 1.2rem;
+}
+
+.org-headline-6,
+.org-headline-7,
+.org-headline-8,
+.org-headline-9,
+.org-headline-10,
+.org-headline-11,
+.org-headline-12 {
+  font-size: 1rem;
+}
 </style>
