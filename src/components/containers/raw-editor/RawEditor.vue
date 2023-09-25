@@ -195,12 +195,19 @@ watch(
   }
 }
 
+.org-link,
 .org-bold,
 .org-italic,
+.org-verbatim,
+.org-inline-code,
 .org-crossed {
   &.org-operator {
     display: none;
   }
+}
+
+.org-link-url {
+  display: none;
 }
 
 .CodeMirror-wrap pre {
@@ -289,8 +296,21 @@ watch(
 .cm-activeLine {
   background-color: unset !important;
 
-  .org-operator {
+  .org-operator,
+  .org-link-url {
     display: inline !important;
+  }
+}
+
+.org-verbatim,
+.org-inline-code {
+  &:not(.org-operator) {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    border-radius: 6px;
+    background-color: var(--inline-code-background);
+    color: var(--inline-code-font-color);
   }
 }
 
