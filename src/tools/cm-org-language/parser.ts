@@ -8,15 +8,7 @@ import {
   foldGutter,
   syntaxHighlighting,
 } from '@codemirror/language';
-import {
-  Input,
-  NodeType,
-  Parser,
-  PartialParse,
-  Tree,
-  TreeFragment,
-} from '@lezer/common';
-import { parser as jsParser } from '@lezer/javascript';
+import { Input, NodeType, Parser, PartialParse, Tree } from '@lezer/common';
 import {
   OrgNode,
   NodeType as OrgNodeType,
@@ -36,19 +28,17 @@ class OrgNodeParser extends Parser {
   }
   createParse(input: Input): PartialParse {
     const doc = input.read(0, input.length);
-    const parsedDoc = parse(doc);
+    const parsedDoc = withMetaInfo(parse(doc));
 
-    this.config?.orgAstChanged?.(withMetaInfo(parsedDoc));
+    this.config?.orgAstChanged?.(parsedDoc);
 
     return {
-      advance(): Tree | null {
-        const tree = convertOrgModeTreeToCmTree(parsedDoc, doc);
-        // console.log('✎: [line 53][parser.ts] tree: ', tree);
+      advance: (): Tree | null => {
+        const tree = this.convertOrgModeTreeToCmTree(parsedDoc, doc);
         // console.log(
         //   '✎: [line 43][parser.ts] parsedDoc: ',
         //   parsedDoc.toString()
         // );
-        // console.log('-'.repeat(80));
         return tree;
       },
       parsedPos: input.length,
@@ -58,44 +48,58 @@ class OrgNodeParser extends Parser {
       stoppedAt: input.length,
     };
   }
-}
 
-function convertOrgModeTreeToCmTree(orgNode: OrgNode, input: string): Tree {
-  const sectionChildren = [];
-  if (orgNode.title) {
-    sectionChildren.push(orgNode.title);
+  private convertOrgModeTreeToCmTree(orgNode: OrgNode, input: string): Tree {
+    const sectionChildren = [];
+    if (orgNode.title) {
+      sectionChildren.push(orgNode.title);
+    }
+
+    if (orgNode.section) {
+      sectionChildren.push(orgNode.section);
+    }
+
+    const children = (orgNode.children ?? sectionChildren).filter((c) =>
+      c.isNot(OrgNodeType.Text)
+    );
+
+    const nestedParsedTree = this.tryParseNestedCodeBlock(input, orgNode);
+    if (nestedParsedTree) {
+      return nestedParsedTree;
+    }
+
+    return new Tree(
+      NodeType.define({
+        id: getOrgNodeId(orgNode),
+        name: orgNode.type,
+        top: orgNode.is(OrgNodeType.Root),
+        props: [orgTagsStyles, orgFoldProps],
+      }),
+      children?.map((c) => this.convertOrgModeTreeToCmTree(c, input)) ?? [],
+      children?.map((c) => c.start - orgNode.start),
+      orgNode.length
+    );
   }
 
-  if (orgNode.section) {
-    sectionChildren.push(orgNode.section);
-  }
+  private tryParseNestedCodeBlock(
+    input: string,
+    orgNode: OrgNode
+  ): Tree | null {
+    if (
+      !orgNode.is(OrgNodeType.BlockBody) ||
+      !orgNode.parent.is(OrgNodeType.SrcBlock)
+    ) {
+      return;
+    }
+    const language = orgNode.parent.properties.language;
 
-  const children = (orgNode.children ?? sectionChildren).filter((c) =>
-    c.isNot(OrgNodeType.Text)
-  );
-
-  if (
-    orgNode.is(OrgNodeType.BlockBody) &&
-    orgNode.parent.is(OrgNodeType.SrcBlock)
-  ) {
-    const nestedParser = jsParser.configure({
-      props: [orgTagsStyles],
-    });
+    const nestedParser = this.config?.wrap?.[language];
+    if (!nestedParser) {
+      return;
+    }
     const parsed = nestedParser.parse(input.slice(orgNode.start, orgNode.end));
     return parsed;
   }
-
-  return new Tree(
-    NodeType.define({
-      id: getOrgNodeId(orgNode),
-      name: orgNode.type,
-      top: orgNode.is(OrgNodeType.Root),
-      props: [orgTagsStyles, orgFoldProps],
-    }),
-    children?.map((c) => convertOrgModeTreeToCmTree(c, input)) ?? [],
-    children?.map((c) => c.start - orgNode.start),
-    orgNode.length
-  );
 }
 
 function initLanguage(config?: OrgModeParserConfig): Language {

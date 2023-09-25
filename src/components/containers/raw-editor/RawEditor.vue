@@ -7,6 +7,8 @@
 <script lang="ts" setup>
 import { EditorState } from '@codemirror/state';
 import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
+import { parser as jsParser } from '@lezer/javascript';
+import { parser as pyParser } from '@lezer/python';
 import { OrgNode } from 'org-mode-ast';
 import { orgMode } from 'src/tools/cm-org-language';
 
@@ -39,6 +41,13 @@ const initEditor = () => {
     extensions: [
       orgMode({
         orgAstChanged: (updatedOrgNode: OrgNode) => (orgNode = updatedOrgNode),
+        wrap: {
+          python: pyParser,
+          javascript: jsParser,
+          js: jsParser,
+          typescript: jsParser.configure({ dialect: 'ts' }),
+          ts: jsParser.configure({ dialect: 'ts' }),
+        },
       }),
       highlightActiveLine(),
       EditorView.lineWrapping,
@@ -138,8 +147,13 @@ onMounted(() => initEditor());
 }
 
 .org-keyword,
-.cm-line-comment {
+.cm-line-comment,
+.org-block-property {
   color: var(--fg-alt);
+}
+
+.org-src-language {
+  color: var(--yellow);
 }
 
 .cm-string,

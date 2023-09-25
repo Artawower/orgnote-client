@@ -15,6 +15,8 @@ const orgStyledNodes = [
   NodeType.Keyword,
   NodeType.Comment,
   NodeType.Operator,
+  NodeType.BlockProperty,
+  NodeType.SrcLanguage,
 ] as const;
 
 const orgFullStyledNodes = [...orgStyledNodes, ...codeNodes] as const;
