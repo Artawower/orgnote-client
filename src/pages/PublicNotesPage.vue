@@ -1,6 +1,6 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <div class="container content">
+    <div class="container page-container">
       <note-list
         :selectable="false"
         :notes="publicNotesStore.notes"
@@ -17,10 +17,12 @@
 </template>
 
 <script lang="ts" setup>
-import NoteList from 'components/NoteList.vue';
 import { usePublicNotesStore } from 'src/stores';
-import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { computed, ref } from 'vue';
+
+import NoteList from 'components/NoteList.vue';
 
 const publicNotesStore = usePublicNotesStore();
 
@@ -53,7 +55,7 @@ reloadNotes();
   overflow: auto;
 }
 
-.container.content {
+page-container {
   height: 100vh;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <div class="container content">
+    <div class="container page-container">
       <note-list
         :selectable="true"
         :limit="limit"
@@ -36,13 +36,15 @@
 </template>
 
 <script lang="ts" setup>
-import NoteList from 'components/NoteList.vue';
-import ModeLine from 'components/ui/ModeLine.vue';
 import { useSyncStore } from 'src/stores';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
-import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { computed, ref, watch } from 'vue';
+
+import NoteList from 'components/NoteList.vue';
+import ModeLine from 'components/ui/ModeLine.vue';
 
 const notesStore = useNotesStore();
 
@@ -92,9 +94,5 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 <style lang="scss">
 .scroll-container {
   overflow: auto;
-}
-
-.container.content {
-  height: 100vh;
 }
 </style>
