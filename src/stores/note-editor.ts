@@ -47,7 +47,10 @@ export const useNoteEditorStore = defineStore(
     const notesStore = useNotesStore();
 
     const orgTree = computed(
-      () => noteOrgData.value?.end !== 0 && withMetaInfo(noteOrgData.value)
+      () =>
+        noteOrgData.value &&
+        noteOrgData.value?.end !== 0 &&
+        withMetaInfo(noteOrgData.value)
     );
 
     const rawNote = computed(
