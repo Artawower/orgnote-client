@@ -32,6 +32,7 @@
     "@editorjs/underline": "1.1.0",
     "@highlightjs/vue-plugin": "2.1.0",
     "@hsorby/vue3-katex": "0.6.0-rc.3",
+    "@lezer/javascript": "1.4.7",
     "@quasar/extras": "^1.0.0",
     "@sotaproject/strikethrough": "1.0.1",
     "axios": "1.5.0",

@@ -8,7 +8,15 @@ import {
   foldGutter,
   syntaxHighlighting,
 } from '@codemirror/language';
-import { Input, NodeType, Parser, PartialParse, Tree } from '@lezer/common';
+import {
+  Input,
+  NodeType,
+  Parser,
+  PartialParse,
+  Tree,
+  TreeFragment,
+} from '@lezer/common';
+import { parser as jsParser } from '@lezer/javascript';
 import {
   OrgNode,
   NodeType as OrgNodeType,
@@ -34,7 +42,7 @@ class OrgNodeParser extends Parser {
 
     return {
       advance(): Tree | null {
-        const tree = convertOrgModeTreeToCmTree(parsedDoc);
+        const tree = convertOrgModeTreeToCmTree(parsedDoc, doc);
         // console.log('✎: [line 53][parser.ts] tree: ', tree);
         // console.log(
         //   '✎: [line 43][parser.ts] parsedDoc: ',
@@ -52,7 +60,7 @@ class OrgNodeParser extends Parser {
   }
 }
 
-function convertOrgModeTreeToCmTree(orgNode: OrgNode): Tree {
+function convertOrgModeTreeToCmTree(orgNode: OrgNode, input: string): Tree {
   const sectionChildren = [];
   if (orgNode.title) {
     sectionChildren.push(orgNode.title);
@@ -63,8 +71,19 @@ function convertOrgModeTreeToCmTree(orgNode: OrgNode): Tree {
   }
 
   const children = (orgNode.children ?? sectionChildren).filter((c) =>
-    c.isNot(OrgNodeType.Text, OrgNodeType.Operator)
+    c.isNot(OrgNodeType.Text)
   );
+
+  if (
+    orgNode.is(OrgNodeType.BlockBody) &&
+    orgNode.parent.is(OrgNodeType.SrcBlock)
+  ) {
+    const nestedParser = jsParser.configure({
+      props: [orgTagsStyles],
+    });
+    const parsed = nestedParser.parse(input.slice(orgNode.start, orgNode.end));
+    return parsed;
+  }
 
   return new Tree(
     NodeType.define({
@@ -73,7 +92,7 @@ function convertOrgModeTreeToCmTree(orgNode: OrgNode): Tree {
       top: orgNode.is(OrgNodeType.Root),
       props: [orgTagsStyles, orgFoldProps],
     }),
-    children?.map((c) => convertOrgModeTreeToCmTree(c)) ?? [],
+    children?.map((c) => convertOrgModeTreeToCmTree(c, input)) ?? [],
     children?.map((c) => c.start - orgNode.start),
     orgNode.length
   );

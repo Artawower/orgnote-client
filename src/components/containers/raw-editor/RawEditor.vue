@@ -6,8 +6,8 @@
 
 <script lang="ts" setup>
 import { EditorState } from '@codemirror/state';
-import { EditorView, ViewUpdate } from '@codemirror/view';
-import { OrgNode, parse } from 'org-mode-ast';
+import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
+import { OrgNode } from 'org-mode-ast';
 import { orgMode } from 'src/tools/cm-org-language';
 
 import { onMounted, ref, toRef } from 'vue';
@@ -24,15 +24,12 @@ const emits = defineEmits<{
   (e: 'update:modelValue', val: [string, OrgNode]): void;
 }>();
 
-// TODO: feature/codemirror move to settings
-const hideSpecialSymbols = toRef(props, 'hideSpecialSymbols');
-
 const text = toRef(props.modelValue, 0);
-const orgNode = ref<OrgNode>();
+let orgNode: OrgNode;
 
 const setText = (t: string) => {
   text.value = t;
-  emits('update:modelValue', [t, orgNode.value]);
+  emits('update:modelValue', [t, orgNode]);
 };
 
 const editor = ref<HTMLDivElement>();
@@ -41,9 +38,9 @@ const initEditor = () => {
     doc: text.value,
     extensions: [
       orgMode({
-        orgAstChanged: (updatedOrgNode: OrgNode) =>
-          (orgNode.value = updatedOrgNode),
+        orgAstChanged: (updatedOrgNode: OrgNode) => (orgNode = updatedOrgNode),
       }),
+      highlightActiveLine(),
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
@@ -98,7 +95,7 @@ onMounted(() => initEditor());
 }
 
 .org-operator {
-  color: red;
+  display: none;
 }
 
 .CodeMirror-wrap pre {
@@ -126,7 +123,7 @@ onMounted(() => initEditor());
   outline: none !important;
 }
 
-.org-propertyDrawer {
+.org-property-drawer {
   color: var(--cyan);
 }
 
@@ -136,13 +133,43 @@ onMounted(() => initEditor());
   font-family: var(--editor-font-family-main);
 }
 
-.CodeMirror-cursor,
-.cm-cursor {
-  background-color: red !important;
-  color: red !important;
-}
-
 .cm-content {
   caret-color: var(--fg) !important;
+}
+
+.org-keyword,
+.cm-line-comment {
+  color: var(--fg-alt);
+}
+
+.cm-string,
+.cm-regexp {
+  color: var(--green);
+}
+
+.cm-definition-keyword,
+.cm-control-keyword,
+.cm-type-name,
+.cm-type-definition,
+.cm-property-definition,
+.cm-private-property-definition {
+  color: var(--violet);
+}
+
+.cm-variable-name,
+.cm-bool {
+  color: var(--fg);
+}
+
+.cm-property-name {
+  color: var(--blue);
+}
+
+.cm-activeLine {
+  background-color: unset !important;
+
+  .org-operator {
+    display: inline !important;
+  }
 }
 </style>

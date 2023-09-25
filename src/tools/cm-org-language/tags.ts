@@ -1,17 +1,27 @@
+import { SyntaxNode } from '@leze/common';
 import { Tag, styleTags } from '@lezer/highlight';
+import { tags as t } from '@lezer/highlight';
 import { NodeType } from 'org-mode-ast';
 
-const styledNodes = [
+const codeNodes = ['Identifier', 'Boolean', 'String', 'LineComment'] as const;
+
+const orgStyledNodes = [
   NodeType.Bold,
   NodeType.Italic,
   NodeType.Crossed,
   NodeType.Title,
   NodeType.PropertyDrawer,
+  NodeType.SrcBlock,
+  NodeType.Keyword,
+  NodeType.Comment,
+  NodeType.Operator,
 ] as const;
 
-type StyledNodes = typeof styledNodes[number];
+const orgFullStyledNodes = [...orgStyledNodes, ...codeNodes] as const;
 
-export const orgTags: { [key in StyledNodes]: Tag } = styledNodes.reduce(
+type StyledNodes = typeof orgFullStyledNodes[number];
+
+export const orgTags: { [key in StyledNodes]: Tag } = orgStyledNodes.reduce(
   (acc, cur) => {
     return { ...acc, [cur]: Tag.define() };
   },
@@ -20,12 +30,20 @@ export const orgTags: { [key in StyledNodes]: Tag } = styledNodes.reduce(
 
 const defineNestedStyle = (styleName: string) => `${styleName}/...`;
 
+const styleCodeLanguageNodes: { [key: string]: Tag } = {
+  'Identifier/...': t.variableName,
+  'Boolean/...': t.bool,
+  'String/...': t.string,
+  'LineComment/...': t.lineComment,
+  'IfStatement/...': t.bool,
+};
+
 export const orgTagsStyles = styleTags(
-  styledNodes.reduce(
+  orgStyledNodes.reduce(
     (acc, curr) => ({
       ...acc,
       [defineNestedStyle(curr)]: orgTags[curr],
     }),
-    {}
+    { ...styleCodeLanguageNodes }
   )
 );
