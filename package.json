@@ -36,6 +36,7 @@
     "@lezer/python": "1.1.8",
     "@quasar/extras": "^1.0.0",
     "@sotaproject/strikethrough": "1.0.1",
+    "@uiw/codemirror-extensions-langs": "4.21.18",
     "axios": "1.5.0",
     "codemirror": "6.0.1",
     "dexie": "4.0.1-alpha.25",

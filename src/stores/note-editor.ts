@@ -17,7 +17,7 @@ export const useNoteEditorStore = defineStore(
     const lastSavedText = ref<string>('');
     const filePath = ref<string[]>([]);
     const createdTime = ref<string>();
-    const debug = ref<boolean>();
+    const debug = ref<boolean>(false);
 
     // TODO: master persistent value should be done via indexed db.
     const setNoteData = (text: string, orgNode: OrgNode) => {

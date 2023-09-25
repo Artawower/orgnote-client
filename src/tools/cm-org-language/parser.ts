@@ -101,7 +101,7 @@ class OrgNodeParser extends Parser {
     ) {
       return;
     }
-    const language = orgNode.parent.properties.language;
+    const language = orgNode.parent.properties.language?.toLowerCase();
 
     const nestedParser = this.config?.wrap?.[language];
     if (!nestedParser) {
