@@ -11,6 +11,7 @@ import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore } from 'src/stores';
+import { useEditorActions } from 'src/hooks/editor-actions-hook';
 
 const noteEditorStore = useNoteEditorStore();
 
@@ -22,4 +23,6 @@ watch(
   () => orgData.value,
   (val) => noteEditorStore.setNoteData(val[0], val[1] as OrgNode)
 );
+
+useEditorActions();
 </script>

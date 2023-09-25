@@ -1,6 +1,6 @@
 import { OrgNode } from 'org-mode-ast';
 
-const requiredFields = ['id', 'title'];
+const requiredFields = ['id'];
 export function getOrgNodeValidationErrors(orgTree: OrgNode): string[] {
   const errors = [];
 

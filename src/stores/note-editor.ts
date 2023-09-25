@@ -17,6 +17,7 @@ export const useNoteEditorStore = defineStore(
     const lastSavedText = ref<string>('');
     const filePath = ref<string[]>([]);
     const createdTime = ref<string>();
+    const debug = ref<boolean>();
 
     // TODO: master persistent value should be done via indexed db.
     const setNoteData = (text: string, orgNode: OrgNode) => {
@@ -45,7 +46,9 @@ export const useNoteEditorStore = defineStore(
     const notifications = useNotifications();
     const notesStore = useNotesStore();
 
-    const orgTree = computed(() => withMetaInfo(noteOrgData.value));
+    const orgTree = computed(
+      () => noteOrgData.value?.end !== 0 && withMetaInfo(noteOrgData.value)
+    );
 
     const rawNote = computed(
       (): ModelsPublicNote => ({
@@ -101,6 +104,8 @@ export const useNoteEditorStore = defineStore(
 
     const saved = computed(() => lastSavedText.value === noteText.value);
 
+    const toggleDebug = () => (debug.value = !debug.value);
+
     return {
       noteOrgData,
       noteText,
@@ -115,6 +120,9 @@ export const useNoteEditorStore = defineStore(
       setNoteText,
       setFilePath,
       setCreatedTime,
+
+      toggleDebug,
+      debug,
     };
   },
   { persist: true }

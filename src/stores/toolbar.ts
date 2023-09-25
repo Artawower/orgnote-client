@@ -1,11 +1,12 @@
-import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { RouteNames } from 'src/router/routes';
-import { COMMAND } from 'src/hooks';
-import { useKeybindingStore } from './keybindings';
 import { useAuthStore } from './auth';
 import { useFileManagerStore } from './file-manager';
+import { useKeybindingStore } from './keybindings';
+import { defineStore } from 'pinia';
+import { COMMAND } from 'src/hooks';
+import { RouteNames } from 'src/router/routes';
+import { useRouter } from 'vue-router';
+
+import { computed, ref } from 'vue';
 
 // TODO: master potential API interface for extensions 😊
 export interface ToolBarAction {
@@ -102,12 +103,19 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
 
   const hiddenActions = computed(() => Object.values(invisibleActions.value));
 
-  const setMainAction = (action: ToolBarAction) => {
+  const setAction = (action: ToolBarAction, index: number) => {
     movePermanentActionsToSidebar();
-    const middleIndex = 2;
     const newActions = [...actions.value];
-    newActions[middleIndex] = action;
+    newActions[index] = action;
     actionsStack.value.push(newActions);
+  };
+
+  const setMainAction = (action: ToolBarAction) => {
+    setAction(action, 2);
+  };
+
+  const setAdditionalAction = (action: ToolBarAction) => {
+    setAction(action, 1);
   };
 
   return {
@@ -117,5 +125,6 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     setMainAction,
     setActions,
     backToPreviousActions,
+    setAdditionalAction,
   };
 });

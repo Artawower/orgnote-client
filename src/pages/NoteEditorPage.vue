@@ -1,7 +1,33 @@
 <template>
-  <q-page class="q-pa-md height-auto with-modeline">
-    <template v-if="noteLoaded">
-      <router-view />
+  <q-page
+    class="q-pa-md height-auto with-modeline"
+    :class="{ flex: noteEditorStore.debug }"
+  >
+    <q-splitter
+      v-if="noteEditorStore.debug"
+      v-model="splitterSize"
+      :horizontal="$q.screen.lt.sm"
+      class="debug-splitter"
+    >
+      <template v-slot:before>
+        <template v-if="noteLoaded">
+          <router-view />
+        </template>
+      </template>
+      <template v-slot:separator>
+        <q-avatar
+          color="primary"
+          text-color="white"
+          size="40px"
+          icon="drag_indicator"
+        />
+      </template>
+      <template v-slot:after>
+        <note-debugger />
+      </template>
+    </q-splitter>
+    <template v-else>
+      <router-view></router-view>
     </template>
   </q-page>
 </template>
@@ -18,6 +44,8 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
+import NoteDebugger from 'src/components/containers/NoteDebugger.vue';
+
 const route = useRoute();
 
 const noteId = route.params.id as string;
@@ -26,6 +54,8 @@ const noteEditorStore = useNoteEditorStore();
 
 const currentNoteStore = useCurrentNoteStore();
 const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
+
+const splitterSize = ref<number>(50);
 
 const setupEditorStore = () => {
   if (!currentNote.value) {
@@ -86,5 +116,10 @@ onChangeToolbarActions({
 <style lang="scss">
 .q-page {
   box-sizing: border-box;
+}
+
+.debug-splitter {
+  flex: 1;
+  max-height: calc(100svh - 80px);
 }
 </style>
