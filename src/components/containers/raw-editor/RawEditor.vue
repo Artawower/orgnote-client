@@ -17,7 +17,6 @@ import { onMounted, ref, toRef } from 'vue';
 const props = withDefaults(
   defineProps<{
     modelValue: [string, OrgNode?];
-    hideSpecialSymbols?: boolean;
   }>(),
   { modelValue: () => [''] }
 );
@@ -148,7 +147,8 @@ onMounted(() => initEditor());
 
 .org-keyword,
 .cm-line-comment,
-.org-block-property {
+.org-block-property,
+.org-comment {
   color: var(--fg-alt);
 }
 

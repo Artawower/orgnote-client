@@ -22,6 +22,7 @@ export const useNoteEditorStore = defineStore(
     const setNoteData = (text: string, orgNode: OrgNode) => {
       noteText.value = text;
       noteOrgData.value = orgNode;
+      save();
     };
 
     const setNoteContent = (orgNode: OrgNode) => {

@@ -1,8 +1,5 @@
 <template>
-  <raw-editor
-    v-model="orgData"
-    :hideSpecialSymbols="specialSymbolsHidden"
-  ></raw-editor>
+  <raw-editor v-model="orgData"></raw-editor>
 </template>
 
 <script lang="ts">
@@ -14,10 +11,8 @@ import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore } from 'src/stores';
-import { storeToRefs } from 'pinia';
 
 const noteEditorStore = useNoteEditorStore();
-const { specialSymbolsHidden } = storeToRefs(noteEditorStore);
 
 const initialNote = noteEditorStore.noteText;
 
