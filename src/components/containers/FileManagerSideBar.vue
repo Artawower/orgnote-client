@@ -28,7 +28,7 @@
       dense
       node-key="id"
       label-key="name"
-      class="fit q-mt-md"
+      class="q-mt-md"
     >
       <template v-slot:default-header="prop">
         <file-manager-item :file-node="prop.node" @expand="expand" />
@@ -38,14 +38,15 @@
 </template>
 
 <script lang="ts" setup>
+import { QTree } from 'quasar';
 import { useFileManagerStore } from 'src/stores';
 
-import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
+import { ref } from 'vue';
+
+import FileManagerItem from './FileManagerItem.vue';
 import HeaderBar from 'src/components/ui/HeaderBar.vue';
 import IconBtn from 'src/components/ui/IconBtn.vue';
-import FileManagerItem from './FileManagerItem.vue';
-import { ref } from 'vue';
-import { QTree } from 'quasar';
+import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
 
 const fileManagerStore = useFileManagerStore();
 
