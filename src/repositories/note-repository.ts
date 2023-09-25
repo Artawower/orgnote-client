@@ -1,9 +1,8 @@
 import Dexie, { UpdateSpec } from 'dexie';
-import { Note, NotePreview } from 'src/models';
-import { toDeepRaw } from 'src/tools';
-
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
+import { Note, NotePreview } from 'src/models';
+import { toDeepRaw } from 'src/tools';
 
 export interface FilePathInfo {
   filePath: string[];
@@ -63,7 +62,10 @@ export class NoteRepository extends BaseRepository {
     searchText?: string
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
-    const searchCollection = this.store.orderBy('createdAt').reverse();
+    const searchCollection = this.store
+      .orderBy('createdAt')
+      .reverse()
+      .filter((n) => !n.deleted);
     const initialStore = searchText
       ? searchCollection.filter((n) =>
           n.meta.title?.toLowerCase().includes(searchText.toLowerCase())
