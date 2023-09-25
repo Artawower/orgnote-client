@@ -83,7 +83,7 @@ const router = useRouter();
 const openNote = () => {
   if (props.fileNode.type === 'file') {
     router.push({
-      name: RouteNames.NoteDetail,
+      name: RouteNames.RawEditor,
       params: { id: props.fileNode.id },
     });
   }

@@ -15,8 +15,9 @@ import {
 import { OrgNode } from 'org-mode-ast';
 import { orgMode } from 'src/tools/cm-org-language';
 
-import { onMounted, ref, toRef } from 'vue';
+import { onMounted, ref, toRef, watch } from 'vue';
 
+// TODO: master refactor. Move editor definition to separate file
 const supportedLanguages: LanguageName[] = [
   'angular',
   'c',
@@ -68,6 +69,7 @@ const setText = (t: string) => {
 };
 
 const editor = ref<HTMLDivElement>();
+let editorView: EditorView;
 const initEditor = () => {
   let startState = EditorState.create({
     doc: text.value,
@@ -119,13 +121,33 @@ const initEditor = () => {
     ],
   });
 
-  new EditorView({
+  editorView = new EditorView({
     state: startState,
     parent: editor.value,
   });
 };
 
+const setEditorText = (text: string) => {
+  editorView.dispatch({
+    changes: {
+      from: 0,
+      to: editorView.state.doc.length,
+      insert: text,
+    },
+  });
+};
+
 onMounted(() => initEditor());
+
+watch(
+  () => props.modelValue,
+  () => {
+    if (!editor.value || props.modelValue[0] === text.value) {
+      return;
+    }
+    setEditorText(props.modelValue[0]);
+  }
+);
 </script>
 
 <style lang="scss">
@@ -165,6 +187,8 @@ onMounted(() => initEditor());
 
 @for $i from 1 through 12 {
   .org-headline-#{$i} {
+    display: inline-block;
+    margin-top: 16px;
     &.org-operator {
       display: none;
     }
@@ -230,6 +254,9 @@ onMounted(() => initEditor());
   color: var(--fg-alt);
 }
 
+.org-src-block {
+  font-size: var(--code-font-size);
+}
 .org-src-language {
   color: var(--yellow);
 }

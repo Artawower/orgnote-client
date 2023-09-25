@@ -16,7 +16,7 @@ import {
 } from 'src/tools';
 import { v4 } from 'uuid';
 
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -122,6 +122,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
   const storePersistently = async () =>
     await repositories.fileManager.upsert(toDeepRaw(fileTree.value));
+
+  onMounted(() => updateFileManager());
 
   return {
     fileTree,

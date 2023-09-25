@@ -14,7 +14,7 @@
 body {
   // Fonts
   --headline-margin: 18px 0;
-  --paragraph-font-size: 20px;
+  --paragraph-font-size: 15px;
   --main-font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
   --editor-font-family-main: 'Menlo', charter, Georgia, Cambria,
     'Times New Roman', Times, serif;
@@ -26,6 +26,9 @@ body {
   --description-font-style: italic;
   --description-font-color: var(--base-5);
   --description-padding: 18px 0px;
+
+  // Code
+  --code-font-size: 14px;
 }
 
 .color-main {

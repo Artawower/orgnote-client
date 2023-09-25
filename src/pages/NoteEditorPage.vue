@@ -73,6 +73,10 @@ watch(
 );
 
 currentNoteStore.selectNoteById(noteId);
+watch(
+  () => route.params.id,
+  (val) => val && currentNoteStore.selectNoteById(val as string)
+);
 
 const noteLoaded = computed(
   () => !route.params.id || currentNote.value?.id === route.params.id
@@ -95,11 +99,6 @@ onBeforeUnmount(() => {
   $q.loading.hide();
   noteEditorStore.save();
 });
-
-watch(
-  () => route.params.id,
-  (val) => val && currentNoteStore.selectNoteById(val as string)
-);
 
 const router = useRouter();
 onChangeToolbarActions({
