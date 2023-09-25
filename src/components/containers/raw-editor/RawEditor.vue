@@ -206,6 +206,12 @@ watch(
   }
 }
 
+.org-link {
+  color: var(--blue);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .org-link-url {
   display: none;
 }
