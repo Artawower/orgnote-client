@@ -1,13 +1,14 @@
+import { useAuthStore } from './auth';
+import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
+import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 import { ModelsPublicNote } from 'src/generated/api';
 import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from './auth';
-import { defineStore } from 'pinia';
-import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
+
+import { ref } from 'vue';
 
 type ParsedNote = { note: Note; orgTree: OrgNode };
 

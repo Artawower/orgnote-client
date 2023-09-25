@@ -20,6 +20,13 @@ const initialNote = noteEditorStore.noteText;
 const orgData = ref<[string, OrgNode]>([initialNote, null]);
 
 watch(
+  () => noteEditorStore.noteText,
+  (val) => {
+    orgData.value = [val, null];
+  }
+);
+
+watch(
   () => orgData.value,
   (val) => noteEditorStore.setNoteData(val[0], val[1] as OrgNode)
 );
