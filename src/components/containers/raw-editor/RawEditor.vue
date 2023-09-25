@@ -163,8 +163,20 @@ onMounted(() => initEditor());
   font-weight: bold;
 }
 
-.org-operator {
-  display: none;
+@for $i from 1 through 12 {
+  .org-headline-#{$i} {
+    &.org-operator {
+      display: none;
+    }
+  }
+}
+
+.org-bold,
+.org-italic,
+.org-crossed {
+  &.org-operator {
+    display: none;
+  }
 }
 
 .CodeMirror-wrap pre {
