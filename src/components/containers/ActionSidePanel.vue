@@ -136,8 +136,9 @@
       </q-list>
     </q-scroll-area>
   </q-drawer>
+  <!-- TODO: master disable quasar animtion. It's very irritable -->
   <q-drawer
-    v-if="sidebarStore.opened"
+    v-show="sidebarStore.opened"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     bordered
     :overlay="fullWidth"
