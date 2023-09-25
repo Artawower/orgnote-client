@@ -68,7 +68,7 @@ onBeforeUnmount(() => {
 
 watch(
   () => route.params.id,
-  (val) => currentNoteStore.selectNoteById(val as string)
+  (val) => val && currentNoteStore.selectNoteById(val as string)
 );
 
 const router = useRouter();

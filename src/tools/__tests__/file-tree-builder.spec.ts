@@ -1,10 +1,11 @@
-import { FileTree, FileNode } from 'src/repositories';
 import {
-  convertFlatTreeToFileTree,
   FlatTree,
+  convertFlatTreeToFileTree,
+  deletePathFromTree,
   mergeFilesTrees,
   renameFileInTree,
 } from '../file-tree-builder';
+import { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
 
 describe('file-tree-builder', () => {
   it('Should merge two file tree with preserving folders', () => {
@@ -258,5 +259,27 @@ describe('file-tree-builder', () => {
 
     const mergedTree = mergeFilesTrees(srcTree, dstTree);
     expect(mergedTree).toMatchSnapshot();
+  });
+
+  it('Should remove top level file.', () => {
+    const srcTree: FileTree = {
+      f1: {
+        filePath: [],
+        name: 'f1',
+        type: 'file',
+        id: 'id1',
+      },
+    };
+
+    const deletedNode: FileNodeInfo = {
+      filePath: [],
+      name: 'f1',
+      type: 'file',
+      id: 'id1',
+    };
+
+    const res = deletePathFromTree(srcTree, deletedNode);
+
+    expect(res).toMatchSnapshot();
   });
 });

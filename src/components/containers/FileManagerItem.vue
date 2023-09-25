@@ -34,13 +34,18 @@
 </template>
 
 <script lang="ts" setup>
+import { RouteNames } from 'src/router/routes';
+import {
+  useAuthStore,
+  useCurrentNoteStore,
+  useFileManagerStore,
+} from 'src/stores';
+import { FlatTree, convertFlatTreeToFileTree } from 'src/tools';
+import { useRouter } from 'vue-router';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 import IconBtn from 'src/components/ui/IconBtn.vue';
-import { useCurrentNoteStore, useFileManagerStore } from 'src/stores';
-import { useRouter } from 'vue-router';
-import { RouteNames } from 'src/router/routes';
-import { convertFlatTreeToFileTree, FlatTree } from 'src/tools';
 
 const props = defineProps<{
   fileNode: FlatTree;
@@ -52,8 +57,15 @@ const emits = defineEmits<{
 
 const fileName = ref(props.fileNode.name);
 const isFile = props.fileNode.type === 'file';
+const authStore = useAuthStore();
 
 const deleteFile = () => {
+  if (isFileOpened.value) {
+    router.push({
+      name: RouteNames.UserNotes,
+      params: { userId: authStore.user.id },
+    });
+  }
   fileManagerStore.deleteFile(props.fileNode);
 };
 

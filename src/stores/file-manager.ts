@@ -1,3 +1,5 @@
+import { useNoteCreatorStore } from './note-creator';
+import { useNotesStore } from './notes';
 import { defineStore } from 'pinia';
 import { repositories } from 'src/boot/repositories';
 import { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
@@ -15,9 +17,6 @@ import {
 import { v4 } from 'uuid';
 
 import { computed, ref } from 'vue';
-
-import { useNoteCreatorStore } from './note-creator';
-import { useNotesStore } from './notes';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.

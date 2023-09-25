@@ -1,8 +1,8 @@
 import {
-  FileTree,
-  FilePathInfo,
   FileNode,
   FileNodeInfo,
+  FilePathInfo,
+  FileTree,
 } from 'src/repositories';
 import { v4 } from 'uuid';
 
@@ -94,6 +94,9 @@ export const mergeFilesTrees = (
 };
 
 const extractNestedFilesIds = (tree: FileTree): string[] => {
+  if (!tree) {
+    return [];
+  }
   const result: string[] = [];
   Object.entries(tree).forEach(([_, value]) => {
     if (value.type === 'file') {
@@ -118,6 +121,10 @@ export const deletePathFromTree = (
 
   if (!node) {
     return [tree, []];
+  }
+
+  if (node[fileNode.name].type === 'file') {
+    return [tree, [node[fileNode.name].id]];
   }
 
   const deletedFileIds = extractNestedFilesIds(node[fileNode.name].children);
