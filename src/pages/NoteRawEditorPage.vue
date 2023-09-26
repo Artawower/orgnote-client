@@ -1,5 +1,8 @@
 <template>
-  <raw-editor v-model="orgData"></raw-editor>
+  <raw-editor
+    v-model="initialNoteText"
+    @data-updated="dataUpdated"
+  ></raw-editor>
 </template>
 
 <script lang="ts">
@@ -15,20 +18,19 @@ import { useEditorActions } from 'src/hooks/editor-actions-hook';
 
 const noteEditorStore = useNoteEditorStore();
 
-const initialNote = noteEditorStore.noteText;
+const initialNoteText = ref<string>(noteEditorStore.noteText);
 
-const orgData = ref<[string, OrgNode]>([initialNote, null]);
-
+const dataUpdated = ([text, orgNode]: [string, OrgNode]) => {
+  noteEditorStore.setNoteData(text, orgNode);
+};
 watch(
   () => noteEditorStore.noteText,
   (val) => {
-    orgData.value = [val, null];
+    if (val === initialNoteText.value) {
+      return;
+    }
+    initialNoteText.value = val;
   }
-);
-
-watch(
-  () => orgData.value,
-  (val) => noteEditorStore.setNoteData(val[0], val[1] as OrgNode)
 );
 
 useEditorActions();

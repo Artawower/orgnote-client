@@ -9,127 +9,126 @@ import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
 import { computed, ref, toRaw } from 'vue';
 
-export const useNoteEditorStore = defineStore(
-  'note-editor',
-  () => {
-    const noteOrgData = ref<OrgNode>();
-    const noteText = ref<string>('');
-    const lastSavedText = ref<string>('');
-    const filePath = ref<string[]>([]);
-    const createdTime = ref<string>();
-    const debug = ref<boolean>(false);
+export const useNoteEditorStore = defineStore('noteEditor', () => {
+  const noteOrgData = ref<OrgNode>();
+  const noteText = ref<string>();
+  const lastSavedText = ref<string>();
+  const filePath = ref<string[]>([]);
+  const createdTime = ref<string>();
+  const debug = ref<boolean>(false);
 
-    // TODO: master persistent value should be done via indexed db.
-    const setNoteData = (text: string, orgNode: OrgNode) => {
-      if (!filePath.value?.length) {
-        return;
-      }
-      noteText.value = text;
-      noteOrgData.value = orgNode;
-      save();
-    };
+  // TODO: master persistent value should be done via indexed db.
+  const setNoteData = (text: string, orgNode: OrgNode) => {
+    if (!filePath.value?.length) {
+      return;
+    }
+    noteText.value = text;
+    noteOrgData.value = orgNode;
+    save();
+  };
 
-    const setNoteContent = (orgNode: OrgNode) => {
-      setNoteData(orgNode.rawValue, orgNode);
-    };
+  const setNoteContent = (orgNode: OrgNode) => {
+    console.log('✎: [line 31][file-manager] orgNode: ', orgNode);
+    setNoteData(orgNode.rawValue, orgNode);
+  };
 
-    const setFilePath = (path: string[]) => {
-      filePath.value = path;
-    };
+  const setFilePath = (path: string[]) => {
+    filePath.value = path;
+  };
 
-    const setCreatedTime = (time: string) => {
-      createdTime.value = time;
-    };
+  const setCreatedTime = (time: string) => {
+    createdTime.value = time;
+  };
 
-    const setNoteText = (text: string) => {
-      noteText.value = text;
-      noteOrgData.value = withMetaInfo(parse(text));
-    };
+  const setNoteText = (text: string) => {
+    noteText.value = text;
+    noteOrgData.value = withMetaInfo(parse(text));
+  };
 
-    const notifications = useNotifications();
-    const notesStore = useNotesStore();
+  const notifications = useNotifications();
+  const notesStore = useNotesStore();
 
-    const orgTree = computed(
-      () =>
-        noteOrgData.value &&
-        noteOrgData.value?.end !== 0 &&
-        withMetaInfo(noteOrgData.value)
-    );
+  const orgTree = computed(
+    () =>
+      noteOrgData.value &&
+      noteOrgData.value?.end !== 0 &&
+      withMetaInfo(noteOrgData.value)
+  );
 
-    const rawNote = computed(
-      (): ModelsPublicNote => ({
+  const rawNote = computed(
+    (): ModelsPublicNote =>
+      orgTree.value && {
         content: noteText.value,
         id: orgTree.value.meta.id,
         filePath: filePath.value ?? [
           generateFileName(orgTree.value.meta.title),
         ],
         meta: orgTree.value.meta as ModelsNoteMeta,
-      })
-    );
+      }
+  );
 
-    // TODO: master fix type
-    const note = computed(
-      (): Note => ({
+  // TODO: master fix type
+  const note = computed(
+    (): Note =>
+      orgTree.value && {
         content: orgTree.value,
         id: orgTree.value.meta.id,
         filePath: filePath.value ?? [
           generateFileName(orgTree.value.meta.title),
         ],
         meta: orgTree.value.meta as ModelsNoteMeta,
-      })
-    );
-
-    const upsertNote = async () => {
-      const now = new Date().toISOString();
-      await notesStore.upsertNotesLocally([
-        {
-          content: noteText.value,
-          id: orgTree.value.meta.id,
-          createdAt: createdTime.value ?? now,
-          updatedAt: now,
-          filePath: filePath.value?.length
-            ? toRaw(filePath.value)
-            : [generateFileName(orgTree.value.meta.title)],
-          meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
-        },
-      ]);
-    };
-
-    const save = () => {
-      if (!noteOrgData.value) {
-        return;
       }
-      const validationErrors = getOrgNodeValidationErrors(orgTree.value);
-      if (validationErrors) {
-        notifications.notify(validationErrors.join('\n'), false, 'error');
-        return;
-      }
-      lastSavedText.value = noteText.value;
-      upsertNote();
-    };
+  );
 
-    const saved = computed(() => lastSavedText.value === noteText.value);
+  const upsertNote = async () => {
+    const now = new Date().toISOString();
+    await notesStore.upsertNotesLocally([
+      {
+        content: noteText.value,
+        id: orgTree.value.meta.id,
+        createdAt: createdTime.value ?? now,
+        updatedAt: now,
+        filePath: filePath.value?.length
+          ? toRaw(filePath.value)
+          : [generateFileName(orgTree.value.meta.title)],
+        meta: toRaw(orgTree.value.meta as ModelsNoteMeta),
+      },
+    ]);
+  };
 
-    const toggleDebug = () => (debug.value = !debug.value);
+  const save = () => {
+    if (!noteOrgData.value) {
+      return;
+    }
+    const validationErrors = getOrgNodeValidationErrors(orgTree.value);
+    if (validationErrors) {
+      notifications.notify(validationErrors.join('\n'), false, 'error');
+      return;
+    }
+    lastSavedText.value = noteText.value;
+    upsertNote();
+  };
 
-    return {
-      noteOrgData,
-      noteText,
-      rawNote,
-      note,
-      orgTree,
+  const saved = computed(() => lastSavedText.value === noteText.value);
 
-      setNoteData,
-      save,
-      saved,
-      setNoteContent,
-      setNoteText,
-      setFilePath,
-      setCreatedTime,
+  const toggleDebug = () => (debug.value = !debug.value);
 
-      toggleDebug,
-      debug,
-    };
-  },
-  { persist: true }
-);
+  return {
+    noteOrgData,
+    noteText,
+    rawNote,
+    note,
+    orgTree,
+
+    setNoteData,
+    save,
+    saved,
+    setNoteContent,
+    setNoteText,
+    setFilePath,
+    setCreatedTime,
+
+    toggleDebug,
+    debug,
+  };
+});

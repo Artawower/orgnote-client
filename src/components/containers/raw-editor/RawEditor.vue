@@ -51,21 +51,23 @@ supportedLanguages.forEach((lang) => loadLanguage(lang));
 
 const props = withDefaults(
   defineProps<{
-    modelValue: [string, OrgNode?];
+    modelValue: string;
   }>(),
-  { modelValue: () => [''] }
+  { modelValue: () => '' }
 );
 
 const emits = defineEmits<{
-  (e: 'update:modelValue', val: [string, OrgNode]): void;
+  (e: 'update:modelValue', val: string): void;
+  (e: 'dataUpdated', val: [string, OrgNode]): void;
 }>();
 
-const text = toRef(props.modelValue, 0);
+const text = toRef(props.modelValue);
+
 let orgNode: OrgNode;
 
 const setText = (t: string) => {
   text.value = t;
-  emits('update:modelValue', [t, orgNode]);
+  emits('dataUpdated', [t, orgNode]);
 };
 
 const editor = ref<HTMLDivElement>();
@@ -142,10 +144,10 @@ onMounted(() => initEditor());
 watch(
   () => props.modelValue,
   () => {
-    if (!editor.value || props.modelValue[0] === text.value) {
+    if (!editor.value || props.modelValue === text.value) {
       return;
     }
-    setEditorText(props.modelValue[0]);
+    setEditorText(props.modelValue);
   }
 );
 </script>

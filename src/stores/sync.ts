@@ -1,12 +1,11 @@
 import { AxiosError } from 'axios';
+import { useAuthStore } from './auth';
+import { useNotesStore } from './notes';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 
 import { ref } from 'vue';
-
-import { useAuthStore } from './auth';
-import { useNotesStore } from './notes';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -18,7 +17,7 @@ export const useSyncStore = defineStore(
 
     // TODO: master add debounce with timeout and accumulation
     const syncNotes = async () => {
-      if (authStore.user.isAnonymous) {
+      if (!authStore.user || authStore.user.isAnonymous) {
         return;
       }
       const notesFromLastSync =
