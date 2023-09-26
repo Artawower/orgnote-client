@@ -13,9 +13,10 @@ import {
   loadLanguage,
 } from '@uiw/codemirror-extensions-langs';
 import { OrgNode } from 'org-mode-ast';
-import { orgMode } from 'src/tools/cm-org-language';
+import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
+import { newOrgModeDecorationPlugin } from 'src/tools/cm-org-language/widgets';
 
-import { onMounted, ref, toRef, watch } from 'vue';
+import { getCurrentInstance, onMounted, ref, toRef, watch } from 'vue';
 
 // TODO: master refactor. Move editor definition to separate file
 const supportedLanguages: LanguageName[] = [
@@ -76,8 +77,21 @@ const initEditor = () => {
   let startState = EditorState.create({
     doc: text.value,
     extensions: [
+      // TODO: Doens't return value in the plugins. Check
+      // orgNodeField.extension,
       orgMode({
-        orgAstChanged: (updatedOrgNode: OrgNode) => (orgNode = updatedOrgNode),
+        orgAstChanged: (updatedOrgNode: OrgNode) => {
+          orgNode = updatedOrgNode;
+          editorView?.dispatch({
+            effects: OrgUpdatedEffect.of(updatedOrgNode),
+          });
+          // console.log(
+          //   '✎: [line 89][checkbox] editorView: ',
+          //   editorView?.state.field(orgNodeField)
+          // );
+          // TODO: master  doesn't work in the widget view
+          // console.log(editorView?.state.field(orgNodeField));
+        },
         wrap: {
           'web-mode': langs.vue().language.parser,
           java: langs.java().language.parser,
@@ -114,6 +128,7 @@ const initEditor = () => {
         },
       }),
       highlightActiveLine(),
+      newOrgModeDecorationPlugin(getCurrentInstance(), () => orgNode),
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
@@ -328,6 +343,10 @@ watch(
 
 .org-headline-1 {
   font-size: 2rem;
+
+  .org-priority {
+    color: var(--green);
+  }
 }
 .org-headline-2 {
   font-size: 1.8rem;
@@ -357,5 +376,29 @@ watch(
 .org-headline-11,
 .org-headline-12 {
   font-size: 1rem;
+}
+
+.org-priority-1 {
+  color: var(--red);
+}
+
+.org-priority-2 {
+  color: var(--orange);
+}
+
+.org-priority-3 {
+  color: var(--yellow);
+}
+
+.org-priority-4 {
+  color: var(--blue);
+}
+
+.org-priority-5 {
+  color: var(--cyan);
+}
+
+.org-priority-6 {
+  color: var(--green);
 }
 </style>
