@@ -22,6 +22,7 @@ const orgStyledNodes = [
   NodeType.LinkUrl,
   NodeType.InlineCode,
   NodeType.Verbatim,
+  NodeType.Checkbox,
   ...cmNodes,
 ] as const;
 

@@ -345,6 +345,10 @@ watch(
   font-size: 1.2rem;
 }
 
+.org-checkbox {
+  color: var(--green);
+}
+
 .org-headline-6,
 .org-headline-7,
 .org-headline-8,

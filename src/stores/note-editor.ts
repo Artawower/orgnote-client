@@ -28,7 +28,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   };
 
   const setNoteContent = (orgNode: OrgNode) => {
-    console.log('✎: [line 31][file-manager] orgNode: ', orgNode);
     setNoteData(orgNode.rawValue, orgNode);
   };
 
