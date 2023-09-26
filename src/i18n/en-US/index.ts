@@ -44,4 +44,5 @@ export default {
   files: 'files',
   items: 'items',
   edit: 'edit',
+  debug: 'debug',
 };

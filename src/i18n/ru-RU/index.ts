@@ -41,4 +41,5 @@ export default {
   files: 'файлы',
   items: 'элементов',
   edit: 'редактировать',
+  debug: 'отладка',
 };
