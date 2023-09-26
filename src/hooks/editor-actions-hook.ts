@@ -12,7 +12,6 @@ export const useEditorActions = () => {
       name: 'debug',
       handler: () => noteEditorStore.toggleDebug(),
       icon: 'bug_report',
-      permament: true,
       sidebarPosition: 'top',
     });
   };

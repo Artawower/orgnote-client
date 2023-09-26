@@ -21,6 +21,9 @@ export const useNoteEditorStore = defineStore(
 
     // TODO: master persistent value should be done via indexed db.
     const setNoteData = (text: string, orgNode: OrgNode) => {
+      if (!filePath.value?.length) {
+        return;
+      }
       noteText.value = text;
       noteOrgData.value = orgNode;
       save();
