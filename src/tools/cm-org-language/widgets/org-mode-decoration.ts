@@ -1,4 +1,5 @@
 import { CheckboxWidget } from './checkbox-widget';
+import { OrgLinkWidget } from './link-widget';
 import { OrgPriorityWidget } from './org-priority-widget';
 import { Range } from '@codemirror/state';
 import {
@@ -24,6 +25,7 @@ const atomDecorationHandlers: {
 } = {
   [NodeType.Checkbox]: CheckboxWidget,
   [NodeType.Priority]: OrgPriorityWidget,
+  [NodeType.Link]: OrgLinkWidget,
 };
 
 class OrgModeDecorationPlugin {
@@ -49,6 +51,7 @@ class OrgModeDecorationPlugin {
     const orgNode = this.getOrgNodeTree();
     const simpleDecorations: Range<Decoration>[] = [];
     const atomicDecorations: Range<Decoration>[] = [];
+    const caretPosition = view.state.selection.main.head;
 
     view.visibleRanges.forEach(({ from, to }) => {
       walkTree(orgNode, (n) => {
@@ -58,6 +61,9 @@ class OrgModeDecorationPlugin {
         if (n.start < from) {
           return;
         }
+        if (caretPosition >= n.start - 1 && caretPosition <= n.end + 1) {
+          return;
+        }
         const atomicDecoration = this.tryHandleAtomicDecoration(n, view);
         if (atomicDecoration) {
           atomicDecorations.push(atomicDecoration);
@@ -65,7 +71,10 @@ class OrgModeDecorationPlugin {
       });
     });
 
-    return [null, Decoration.set(atomicDecorations)];
+    return [
+      Decoration.set(simpleDecorations),
+      Decoration.set(atomicDecorations),
+    ];
   }
 
   private tryHandleAtomicDecoration(
@@ -90,6 +99,7 @@ export const newOrgModeDecorationPlugin = (
       public commonDecorations: DecorationSet;
       public atomicDecorations: DecorationSet;
       public decorationPlugin: OrgModeDecorationPlugin;
+      private lastPosition: number;
 
       constructor(view: EditorView) {
         this.decorationPlugin = OrgModeDecorationPlugin.init(
@@ -105,7 +115,16 @@ export const newOrgModeDecorationPlugin = (
       }
 
       public update(update: ViewUpdate): void {
-        if (update.docChanged || update.viewportChanged) {
+        const caretPosition = update.state.selection.main.head;
+        // TODO: master check also that we have neighbor decorations.
+        // There is no sense to update decorations when
+        // caret changed but we have no decorations around.
+        const caretPositionChanged = this.lastPosition !== caretPosition;
+        if (
+          update.docChanged ||
+          update.viewportChanged ||
+          caretPositionChanged
+        ) {
           this.initDecorations(update.view);
         }
       }

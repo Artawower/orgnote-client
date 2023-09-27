@@ -298,7 +298,8 @@ watch(
   color: var(--fg-alt);
 }
 
-.org-src-block {
+.org-src-block,
+.org-quote-block.org-keyword {
   font-size: var(--code-font-size);
 }
 .org-src-language {
@@ -414,5 +415,18 @@ watch(
 
 .org-priority-6 {
   color: var(--green);
+}
+
+.org-quote-block:not(.org-keyword) {
+  padding-left: 16px;
+  position: relative;
+
+  &::before {
+    content: '┃';
+    color: var(--cyan);
+    position: absolute;
+    left: -4px;
+    transform: scale(1.1);
+  }
 }
 </style>

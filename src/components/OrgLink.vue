@@ -1,6 +1,7 @@
 <template>
   <a
     :href="linkType === 'image' ? buildMediaFilePath(linkAddress) : linkAddress"
+    class="org-link"
     target="_blank"
   >
     <image-resolver
@@ -21,15 +22,14 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, toRef } from 'vue';
-
 import { OrgNode } from 'org-mode-ast';
-
 import {
   buildMediaFilePath,
   extractOrgLink,
   extractOrgLinkId,
 } from 'src/tools';
+
+import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
 import ImageResolver from './containers/ImageResolver.vue';
@@ -71,5 +71,9 @@ const wrapperComponent = linkType === 'id' ? NotePreviewLink : 'span';
 .image-preview {
   height: auto;
   max-width: 100% !important;
+}
+
+.org-link {
+  color: var(--blue);
 }
 </style>
