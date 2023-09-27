@@ -20,7 +20,7 @@ import {
   loadLanguage,
 } from '@uiw/codemirror-extensions-langs';
 import { minimalSetup } from 'codemirror';
-import { OrgNode } from 'org-mode-ast';
+import { OrgNode, parse } from 'org-mode-ast';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import { newOrgModeDecorationPlugin } from 'src/tools/cm-org-language/widgets';
 
@@ -81,9 +81,15 @@ const setText = (t: string) => {
 
 const editor = ref<HTMLDivElement>();
 let editorView: EditorView;
+const vueInstance = getCurrentInstance();
+
 const initEditor = () => {
-  let startState = EditorState.create({
-    doc: text.value,
+  if (!props.modelValue) {
+    return;
+  }
+  editorView?.destroy();
+  const startState = EditorState.create({
+    doc: props.modelValue,
     extensions: [
       // TODO: Doens't return value in the plugins. Check
       // orgNodeField.extension,
@@ -141,7 +147,7 @@ const initEditor = () => {
       indentOnInput(),
       closeBrackets(),
       rectangularSelection(),
-      newOrgModeDecorationPlugin(getCurrentInstance(), () => orgNode),
+      newOrgModeDecorationPlugin(vueInstance, () => orgNode),
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
@@ -157,16 +163,6 @@ const initEditor = () => {
   });
 };
 
-const setEditorText = (text: string) => {
-  editorView.dispatch({
-    changes: {
-      from: 0,
-      to: editorView.state.doc.length,
-      insert: text,
-    },
-  });
-};
-
 onMounted(() => initEditor());
 
 watch(
@@ -175,7 +171,7 @@ watch(
     if (!editor.value || props.modelValue === text.value) {
       return;
     }
-    setEditorText(props.modelValue);
+    initEditor();
   }
 );
 </script>
@@ -417,16 +413,39 @@ watch(
   color: var(--green);
 }
 
-.org-quote-block:not(.org-keyword) {
-  padding-left: 16px;
-  position: relative;
+.cm-line {
+  .org-quote-block:not(.org-keyword):first-child {
+    padding-left: 16px;
+    position: relative;
 
-  &::before {
-    content: '┃';
-    color: var(--cyan);
-    position: absolute;
-    left: -4px;
-    transform: scale(1.1);
+    &::before {
+      content: '┃';
+      color: var(--cyan);
+      position: absolute;
+      left: -4px;
+      transform: scale(1.1);
+    }
   }
+}
+
+[class^='org-keyword-'] {
+  font-weight: bold;
+}
+
+.org-keyword-todo,
+.org-keyword-wait,
+.org-keyword-hold {
+  color: var(--yellow);
+}
+
+.org-keyword-done,
+.org-keyword-idea {
+  color: var(--green);
+}
+
+.org-keyword-kill,
+.org-keyword-rejected,
+org-keyword-block {
+  color: var(--red);
 }
 </style>

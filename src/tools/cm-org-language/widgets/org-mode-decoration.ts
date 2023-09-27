@@ -1,6 +1,7 @@
 import { CheckboxWidget } from './checkbox-widget';
 import { OrgLinkWidget } from './link-widget';
 import { OrgPriorityWidget } from './org-priority-widget';
+import { TodoKeywordWidget } from './todo-keywords-widget';
 import { Range } from '@codemirror/state';
 import {
   Decoration,
@@ -26,6 +27,7 @@ const atomDecorationHandlers: {
   [NodeType.Checkbox]: CheckboxWidget,
   [NodeType.Priority]: OrgPriorityWidget,
   [NodeType.Link]: OrgLinkWidget,
+  [NodeType.TodoKeyword]: TodoKeywordWidget,
 };
 
 class OrgModeDecorationPlugin {

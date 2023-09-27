@@ -23,6 +23,7 @@ const initialNoteText = ref<string>(noteEditorStore.noteText);
 const dataUpdated = ([text, orgNode]: [string, OrgNode]) => {
   noteEditorStore.setNoteData(text, orgNode);
 };
+
 watch(
   () => noteEditorStore.noteText,
   (val) => {
