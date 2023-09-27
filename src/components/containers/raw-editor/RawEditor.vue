@@ -5,13 +5,21 @@
 </template>
 
 <script lang="ts" setup>
+import { closeBrackets } from '@codemirror/autocomplete';
+import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
-import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
+import {
+  EditorView,
+  ViewUpdate,
+  highlightActiveLine,
+  rectangularSelection,
+} from '@codemirror/view';
 import {
   LanguageName,
   langs,
   loadLanguage,
 } from '@uiw/codemirror-extensions-langs';
+import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import { newOrgModeDecorationPlugin } from 'src/tools/cm-org-language/widgets';
@@ -128,6 +136,11 @@ const initEditor = () => {
         },
       }),
       highlightActiveLine(),
+      minimalSetup,
+      bracketMatching(),
+      indentOnInput(),
+      closeBrackets(),
+      rectangularSelection(),
       newOrgModeDecorationPlugin(getCurrentInstance(), () => orgNode),
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
@@ -268,7 +281,8 @@ watch(
   font-family: var(--editor-font-family-main);
 }
 
-.cm-content {
+.cm-content,
+.cm-activeLine.cm-line {
   caret-color: var(--fg) !important;
 }
 

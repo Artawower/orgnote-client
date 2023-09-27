@@ -2,11 +2,7 @@ import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
 
-import {
-  App,
-  ComponentInternalInstance,
-  createApp,
-} from 'vue';
+import { App, ComponentInternalInstance, createApp } from 'vue';
 
 import OrgPriority from './OrgPriority.vue';
 
@@ -29,8 +25,9 @@ export class OrgPriorityWidget extends WidgetType {
   ): Range<Decoration> {
     return Decoration.replace({
       widget: new OrgPriorityWidget(orgNode.children.get(1).value, vueInstance),
-      side: -1,
-    }).range(orgNode.start, orgNode.end);
+      side: 0,
+      inclusive: true,
+    }).range(orgNode.start + 1, orgNode.end - 1);
   }
 
   static handleClick(target: HTMLElement, view: EditorView): boolean {
