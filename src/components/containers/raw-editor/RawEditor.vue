@@ -203,7 +203,9 @@ watch(
 }
 
 /* TODO: feature/codemirror change font style for editor */
-.cm-line {
+.cm-line,
+.org-text,
+.header-text {
   font-size: var(--paragraph-font-size);
   font-family: var(--editor-font-family-main);
 }

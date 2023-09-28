@@ -1,5 +1,5 @@
 <template>
-  <EasyDataTable :headers="headers" :items="items">
+  <EasyDataTable class="raw-table" :headers="headers" :items="items">
     <template
       v-for="h of headers"
       #[`item-${h.value}`]="slotProps"
@@ -57,5 +57,17 @@ const items: Item[] = props.node.children
 <style lang="scss">
 .raw-table {
   width: 100%;
+
+  --easy-table-header-background-color: var(--bg);
+  --easy-table-header-font-color: var(--fg);
+  --easy-table-body-row-background-color: var(--bg);
+  --easy-table-body-row-font-color: var(--fg);
+  --easy-table-body-row-hover-background-color: var(--bg-alt);
+  --easy-table-footer-background-color: var(--bg-alt);
+  --easy-table-footer-font-color: var(--fg);
+  --easy-table-body-row-hover-font-color: var(--fg);
+  --easy-table-row-border: 1px solid var(--base7);
+  --easy-table-border: 1px solid var(--base7);
+  --easy-table-message-font-color: var(--fg-alt);
 }
 </style>
