@@ -25,7 +25,7 @@ import {
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
-import { getCurrentInstance, onMounted, ref, toRef, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -39,7 +39,8 @@ const emits = defineEmits<{
   (e: 'dataUpdated', val: [string, OrgNode]): void;
 }>();
 
-const text = toRef(props.modelValue);
+const text = ref(props.modelValue);
+console.log('✎: [line 43][table] text: ', text.value);
 
 let orgNode: OrgNode;
 
@@ -99,8 +100,8 @@ onMounted(() => initEditor());
 
 watch(
   () => props.modelValue,
-  () => {
-    if (!editor.value || props.modelValue === text.value) {
+  (value) => {
+    if (!editor.value || value === editorView.state.doc.toString()) {
       return;
     }
     initEditor();
