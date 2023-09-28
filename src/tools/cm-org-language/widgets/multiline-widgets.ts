@@ -1,15 +1,30 @@
 import {
   AddWidgetEffect,
-  addTableEffect,
-  removeAllTables,
-  removeTableEffect,
-} from './table-state';
+  addMultilineWidgetEffect,
+  removeAllMultilineWidgetsEffect,
+  removeMultilineWidgetEffect,
+} from './org-multiline-widget-state';
 import { StateEffect } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
-export const orgMultilineWidgets = (getOrgNode: () => OrgNode) => {
+export type EmbeddedOrgWidget = {
+  destroy: () => void;
+};
+
+export type WidgetBuilder = (
+  wrap: HTMLElement,
+  orgNode: OrgNode
+) => EmbeddedOrgWidget;
+export type EmbeddedWidgets = {
+  [key in NodeType]?: WidgetBuilder;
+};
+
+export const orgMultilineWidgets = (
+  getOrgNode: () => OrgNode,
+  widgets: EmbeddedWidgets
+) => {
   let previousCaretPosition: number;
   return EditorView.updateListener.of((v: ViewUpdate) => {
     const orgNode = getOrgNode();
@@ -18,7 +33,7 @@ export const orgMultilineWidgets = (getOrgNode: () => OrgNode) => {
     previousCaretPosition = currentCaretPosition;
 
     if (v.docChanged) {
-      v.view.dispatch({ effects: [removeAllTables.of()] });
+      v.view.dispatch({ effects: [removeAllMultilineWidgetsEffect.of()] });
     }
 
     if (!v.docChanged && !v.viewportChanged && !caretPositionChanged) {
@@ -27,17 +42,23 @@ export const orgMultilineWidgets = (getOrgNode: () => OrgNode) => {
     const effects: StateEffect<OrgNode | AddWidgetEffect>[] = [];
 
     walkTree(orgNode, (n: OrgNode) => {
-      if (n.isNot(NodeType.Table)) {
+      if (!widgets[n.type]) {
         return false;
       }
       if (
         currentCaretPosition >= n.start &&
         currentCaretPosition <= n.end + 1
       ) {
-        effects.push(removeTableEffect.of(n));
+        effects.push(removeMultilineWidgetEffect.of(n));
         return;
       }
-      effects.push(addTableEffect.of({ orgNode: n, view: v.view }));
+      effects.push(
+        addMultilineWidgetEffect.of({
+          orgNode: n,
+          view: v.view,
+          widgetBuilder: widgets[n.type],
+        })
+      );
     });
 
     v.view.dispatch({ effects });

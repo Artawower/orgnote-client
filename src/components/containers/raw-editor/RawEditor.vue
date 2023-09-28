@@ -6,6 +6,7 @@
 
 <script lang="ts" setup>
 import { editorLanguages } from './editor-languages';
+import { useEmbeddedWidgets } from './use-embedded-widgets';
 import { closeBrackets } from '@codemirror/autocomplete';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
@@ -18,8 +19,10 @@ import {
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
-import { newOrgModeDecorationPlugin } from 'src/tools/cm-org-language/widgets';
-import { newTableField } from 'src/tools/cm-org-language/widgets';
+import {
+  newOrgModeDecorationPlugin,
+  orgMultilineWidgetField,
+} from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
 import { getCurrentInstance, onMounted, ref, toRef, watch } from 'vue';
@@ -49,6 +52,8 @@ const editor = ref<HTMLDivElement>();
 let editorView: EditorView;
 const vueInstance = getCurrentInstance();
 
+const { embeddedWidgets } = useEmbeddedWidgets();
+
 const initEditor = () => {
   if (!props.modelValue) {
     return;
@@ -57,7 +62,7 @@ const initEditor = () => {
   const startState = EditorState.create({
     doc: props.modelValue,
     extensions: [
-      newTableField(vueInstance),
+      orgMultilineWidgetField,
       orgMode({
         orgAstChanged: (updatedOrgNode: OrgNode) => {
           orgNode = updatedOrgNode;
@@ -80,7 +85,7 @@ const initEditor = () => {
           setText(v.state.doc.toString());
         }
       }),
-      orgMultilineWidgets(() => orgNode),
+      orgMultilineWidgets(() => orgNode, embeddedWidgets),
     ],
   });
 
