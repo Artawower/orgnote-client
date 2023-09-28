@@ -393,6 +393,18 @@ org-keyword-block {
 
 .org-widget-edit-badge {
   color: var(--fg-alt);
+  opacity: 0;
+  transition-delay: 0.3s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.org-multiline-widget:hover {
+  .org-widget-edit-badge {
+    opacity: 1;
+  }
 }
 
 .org-doc-title-keyword,

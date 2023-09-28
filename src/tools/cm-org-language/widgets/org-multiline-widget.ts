@@ -1,4 +1,4 @@
-import { EmbeddedOrgWidget, WidgetBuilder } from './multiline-widgets';
+import { EmbeddedOrgWidget, WidgetBuilder } from './widget.model';
 import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
@@ -35,10 +35,6 @@ export class OrgMultilineWidget extends WidgetType {
     }).range(orgNode.start, orgNode.end);
   }
 
-  static handleClick(target: HTMLElement, view: EditorView): boolean {
-    return;
-  }
-
   public eq(other: OrgMultilineWidget) {
     return other.orgNode.rawValue === this.orgNode.rawValue;
   }
@@ -46,7 +42,6 @@ export class OrgMultilineWidget extends WidgetType {
   private initEditorBadge(): void {
     this.editorBadge = document.createElement('div');
     this.editorBadge.className = 'org-widget-edit-badge';
-    this.editorBadge.style.display = 'block';
     this.editorBadge.style.position = 'absolute';
     this.editorBadge.style.top = '0';
     this.editorBadge.style.left = '-36px';
@@ -62,6 +57,7 @@ export class OrgMultilineWidget extends WidgetType {
   toDOM() {
     const wrap = document.createElement('div');
     wrap.style.position = 'relative';
+    wrap.classList.add('org-multiline-widget');
     this.widget = this.widgetBuilder(wrap, this.orgNode);
     this.initEditorBadge();
     wrap.appendChild(this.editorBadge);
