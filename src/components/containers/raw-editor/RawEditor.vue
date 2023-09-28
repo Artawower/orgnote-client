@@ -101,7 +101,7 @@ onMounted(() => initEditor());
 watch(
   () => props.modelValue,
   (value) => {
-    if (!editor.value || value === editorView.state.doc.toString()) {
+    if (!editor.value || value === editorView?.state.doc.toString()) {
       return;
     }
     initEditor();
@@ -148,6 +148,7 @@ watch(
   .org-headline-#{$i} {
     display: inline-block;
     margin-top: 16px;
+
     &.org-operator {
       display: none;
     }
@@ -171,7 +172,8 @@ watch(
   cursor: pointer;
 }
 
-.org-link-url {
+.org-link-url,
+.org-doc-title-keyword {
   display: none;
 }
 
@@ -190,10 +192,6 @@ watch(
 .vue-codemirror,
 .cm-editor {
   height: 100%;
-}
-
-.CodeMirror div.CodeMirror-cursor {
-  border-left: 1px solid purple;
 }
 
 .cm-focused {
@@ -233,6 +231,7 @@ div.cm-content.cm-lineWrapping .cm-line,
 .org-quote-block.org-keyword {
   font-size: var(--code-font-size);
 }
+
 .org-src-language {
   color: var(--yellow);
 }
@@ -266,7 +265,8 @@ div.cm-content.cm-lineWrapping .cm-line,
   background-color: unset !important;
 
   .org-operator,
-  .org-link-url {
+  .org-link-url,
+  .org-doc-title-keyword {
     display: inline !important;
   }
 }
@@ -294,6 +294,7 @@ div.cm-content.cm-lineWrapping .cm-line,
     color: var(--green);
   }
 }
+
 .org-headline-2 {
   font-size: 1.8rem;
 }
@@ -390,5 +391,14 @@ org-keyword-block {
 
 .org-widget-edit-badge {
   color: var(--fg-alt);
+}
+
+.org-doc-title-keyword,
+.org-doc-title {
+  font-size: 2rem;
+}
+
+.org-doc-title {
+  color: var(--fg);
 }
 </style>

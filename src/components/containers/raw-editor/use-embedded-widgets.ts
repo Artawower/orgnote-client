@@ -47,6 +47,7 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgLink),
       side: 0,
       inclusive: true,
+      ignoreEvent: true,
     },
     [NodeType.TodoKeyword]: {
       decorationType: 'mark',
@@ -60,6 +61,7 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Checkbox]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgCheckbox),
+      ignoreEvent: true,
     },
   };
 

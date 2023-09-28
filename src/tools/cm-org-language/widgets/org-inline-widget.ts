@@ -13,7 +13,7 @@ export class OrgInlineWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly orgNode: OrgNode,
     private readonly widgetBuilder: WidgetBuilder,
-    public readonly ignoreEvent: boolean = false,
+    public readonly ignoredEvent: boolean = false,
     private readonly wrapComponent?: string
   ) {
     super();
@@ -38,8 +38,11 @@ export class OrgInlineWidget extends WidgetType {
     }).range(orgNode.start, orgNode.end);
   }
 
-  public eq(other: OrgInlineWidget) {
-    return other.orgNode.rawValue == this.orgNode.rawValue;
+  public eq(other: WidgetType) {
+    return (
+      (other as unknown as OrgInlineWidget).orgNode.rawValue ==
+      this.orgNode.rawValue
+    );
   }
 
   toDOM() {
@@ -60,6 +63,10 @@ export class OrgInlineWidget extends WidgetType {
         insert: newVal,
       },
     });
+  }
+
+  public ignoreEvent(): boolean {
+    return this.ignoredEvent;
   }
 
   destroy(): void {

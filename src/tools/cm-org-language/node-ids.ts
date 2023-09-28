@@ -1,6 +1,8 @@
 import { OrgNode } from 'org-mode-ast';
 
 export const cmNodes = [
+  'DocTitle',
+  'DocTitleKeyword',
   'Headline-1',
   'Headline-2',
   'Headline-3',
