@@ -211,6 +211,8 @@ exports[`file-tree-builder Should to prefer source tree folder id over dst tree 
 exports[`file-tree-builder Should remove top level file. 1`] = `
 [
   {},
-  [],
+  [
+    "id1",
+  ],
 ]
 `;

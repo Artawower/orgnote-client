@@ -123,12 +123,12 @@ export const deletePathFromTree = (
     return [tree, []];
   }
 
-  if (node[fileNode.name].type === 'file') {
-    return [tree, [node[fileNode.name].id]];
+  delete node[fileNode.name];
+  if (fileNode.type === 'file') {
+    return [tree, [fileNode.id]];
   }
 
   const deletedFileIds = extractNestedFilesIds(node[fileNode.name].children);
-  delete node[fileNode.name];
   return [tree, deletedFileIds];
 };
 
