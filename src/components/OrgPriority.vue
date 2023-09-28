@@ -5,8 +5,12 @@
 </template>
 
 <script lang="ts" setup>
+import { OrgNode } from 'org-mode-ast';
+
+import { computed } from 'vue';
+
 const props = defineProps<{
-  priority: string;
+  node: OrgNode;
 }>();
 
 const icons: { [key: string]: string } = {
@@ -18,10 +22,12 @@ const icons: { [key: string]: string } = {
   '#F': 'looks_6',
 };
 
-const icon = icons[props.priority.toUpperCase()];
+const priority = computed(() => props.node.children.get(1).value);
+
+const icon = icons[priority.value.toUpperCase()];
 
 const priorityLevel =
-  (Object.keys(icons).indexOf(props.priority.toUpperCase()) ?? 0) + 1;
+  (Object.keys(icons).indexOf(priority.value.toUpperCase()) ?? 0) + 1;
 </script>
 
 <style lang="scss" scoped>

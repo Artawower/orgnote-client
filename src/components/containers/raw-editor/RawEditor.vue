@@ -20,7 +20,7 @@ import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import {
-  newOrgModeDecorationPlugin,
+  orgInlineWidgets,
   orgMultilineWidgetField,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
@@ -50,9 +50,9 @@ const setText = (t: string) => {
 
 const editor = ref<HTMLDivElement>();
 let editorView: EditorView;
-const vueInstance = getCurrentInstance();
 
-const { embeddedWidgets } = useEmbeddedWidgets();
+const { multilineEmbeddedWidgets, inlineEmbeddedWidgets } =
+  useEmbeddedWidgets();
 
 const initEditor = () => {
   if (!props.modelValue) {
@@ -78,14 +78,14 @@ const initEditor = () => {
       indentOnInput(),
       closeBrackets(),
       rectangularSelection(),
-      newOrgModeDecorationPlugin(vueInstance, () => orgNode),
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
         }
       }),
-      orgMultilineWidgets(() => orgNode, embeddedWidgets),
+      orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
+      orgMultilineWidgets(() => orgNode, multilineEmbeddedWidgets),
     ],
   });
 

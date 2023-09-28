@@ -4,26 +4,15 @@ import {
   removeAllMultilineWidgetsEffect,
   removeMultilineWidgetEffect,
 } from './org-multiline-widget-state';
+import { MultilineEmbeddedWidgets } from './widget.model';
 import { StateEffect } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
 import { EditorView } from 'codemirror';
-import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
-
-export type EmbeddedOrgWidget = {
-  destroy: () => void;
-};
-
-export type WidgetBuilder = (
-  wrap: HTMLElement,
-  orgNode: OrgNode
-) => EmbeddedOrgWidget;
-export type EmbeddedWidgets = {
-  [key in NodeType]?: WidgetBuilder;
-};
+import { OrgNode, walkTree } from 'org-mode-ast';
 
 export const orgMultilineWidgets = (
   getOrgNode: () => OrgNode,
-  widgets: EmbeddedWidgets
+  widgets: MultilineEmbeddedWidgets
 ) => {
   let previousCaretPosition: number;
   return EditorView.updateListener.of((v: ViewUpdate) => {

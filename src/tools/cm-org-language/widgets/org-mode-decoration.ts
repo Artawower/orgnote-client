@@ -1,7 +1,5 @@
-import { CheckboxWidget } from './checkbox-widget';
-import { OrgLinkWidget } from './link-widget';
-import { OrgPriorityWidget } from './org-priority-widget';
-import { TodoKeywordWidget } from './todo-keywords-widget';
+import { OrgInlineWidget } from './org-inline-widget';
+import { InlineEmbeddedWidgets } from './widget.model';
 import { Range } from '@codemirror/state';
 import {
   Decoration,
@@ -10,43 +8,25 @@ import {
   ViewPlugin,
   ViewUpdate,
 } from '@codemirror/view';
-import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
-
-import { ComponentInternalInstance } from 'vue';
-
-const atomDecorationHandlers: {
-  [key in NodeType]?: {
-    init: (
-      view: EditorView,
-      orgNode: OrgNode,
-      vueInstance?: ComponentInternalInstance
-    ) => Range<Decoration>;
-    handleClick: (target: HTMLElement, view: EditorView) => void;
-  };
-} = {
-  [NodeType.Checkbox]: CheckboxWidget,
-  [NodeType.Priority]: OrgPriorityWidget,
-  [NodeType.Link]: OrgLinkWidget,
-  [NodeType.TodoKeyword]: TodoKeywordWidget,
-};
+import { OrgNode, walkTree } from 'org-mode-ast';
 
 class OrgModeDecorationPlugin {
   static init(
-    vueInstance: ComponentInternalInstance,
+    inlineWidgets: InlineEmbeddedWidgets,
     getOrgNodeTree?: () => OrgNode
   ): OrgModeDecorationPlugin {
-    return new OrgModeDecorationPlugin(vueInstance, getOrgNodeTree);
+    return new OrgModeDecorationPlugin(inlineWidgets, getOrgNodeTree);
   }
 
   constructor(
-    private readonly vueInstance: ComponentInternalInstance,
+    private readonly inlineWidgets: InlineEmbeddedWidgets,
     private readonly getOrgNodeTree?: () => OrgNode
   ) {}
 
   public handleClick(target: HTMLElement, view: EditorView): void {
-    Object.values(atomDecorationHandlers).forEach((widget) =>
-      widget.handleClick(target, view)
-    );
+    // Object.values(atomDecorationHandlers).forEach((widget) =>
+    //   widget.handleClick(target, view)
+    // );
   }
 
   public buildDecorations(view: EditorView): [DecorationSet, DecorationSet] {
@@ -56,20 +36,30 @@ class OrgModeDecorationPlugin {
     const caretPosition = view.state.selection.main.head;
 
     view.visibleRanges.forEach(({ from, to }) => {
-      walkTree(orgNode, (n) => {
+      walkTree(orgNode, (n: OrgNode) => {
         if (n.start > to) {
           return true;
         }
         if (n.start < from) {
           return;
         }
-        if (caretPosition >= n.start - 1 && caretPosition <= n.end + 1) {
+        const inlineWidget = this.inlineWidgets[n.type];
+
+        if (!inlineWidget) {
           return;
         }
-        const atomicDecoration = this.tryHandleAtomicDecoration(n, view);
-        if (atomicDecoration) {
-          atomicDecorations.push(atomicDecoration);
+
+        const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
+
+        if (
+          caretPosition >= n.start - startOffset &&
+          caretPosition <= n.end + endOffset
+        ) {
+          return;
         }
+
+        const decoration = OrgInlineWidget.init(view, n, inlineWidget);
+        atomicDecorations.push(decoration);
       });
     });
 
@@ -78,23 +68,11 @@ class OrgModeDecorationPlugin {
       Decoration.set(atomicDecorations),
     ];
   }
-
-  private tryHandleAtomicDecoration(
-    orgNode: OrgNode,
-    view: EditorView
-  ): Range<Decoration> {
-    const decoration = atomDecorationHandlers[orgNode.type]?.init(
-      view,
-      orgNode,
-      this.vueInstance
-    );
-    return decoration;
-  }
 }
 
-export const newOrgModeDecorationPlugin = (
-  vueInstance: ComponentInternalInstance,
-  getOrgNodeTree?: () => OrgNode
+export const orgInlineWidgets = (
+  getOrgNodeTree: () => OrgNode,
+  inlineWidgets: InlineEmbeddedWidgets
 ) =>
   ViewPlugin.fromClass(
     class {
@@ -105,7 +83,7 @@ export const newOrgModeDecorationPlugin = (
 
       constructor(view: EditorView) {
         this.decorationPlugin = OrgModeDecorationPlugin.init(
-          vueInstance,
+          inlineWidgets,
           getOrgNodeTree
         );
         this.initDecorations(view);
@@ -137,9 +115,9 @@ export const newOrgModeDecorationPlugin = (
       eventHandlers: {
         mousedown: (e, view) => {
           const target = e.target as HTMLElement;
-          Object.values(atomDecorationHandlers).forEach((widget) =>
-            widget.handleClick(target, view)
-          );
+          // Object.values(atomDecorationHandlers).forEach((widget) =>
+          //   widget.handleClick(target, view)
+          // );
         },
       },
       provide: (plugin) =>

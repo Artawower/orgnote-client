@@ -1,5 +1,5 @@
-import { WidgetBuilder } from './multiline-widgets';
 import { OrgMultilineWidget } from './org-multiline-widget';
+import { WidgetBuilder } from './widget.model';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
