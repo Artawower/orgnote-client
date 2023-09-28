@@ -18,6 +18,7 @@
 <script lang="ts" setup>
 import { imageFileExtensions } from 'src/constants';
 import { traverseDirectory } from 'src/tools';
+
 import { computed, ref } from 'vue';
 
 const props = withDefaults(
@@ -46,6 +47,8 @@ const extractFiles = (
   return Array.from(items).reduce(async (asyncAcc, item) => {
     const acc = await asyncAcc;
     const entry = item.webkitGetAsEntry();
+
+    if (!entry) return acc;
 
     if (entry.isFile) {
       acc.push(entry as FileSystemFileEntry);

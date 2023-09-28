@@ -12,13 +12,13 @@
 
 <!-- TODO: check the other tables. This is a component of one of the lightweight libraries I have found. But it has some disadvantages.  -->
 <script setup lang="ts">
+import { NodeType, OrgNode } from 'org-mode-ast';
 import type { Header, Item } from 'vue3-easy-data-table';
-
-import ContentRenderer from './ContentRenderer.vue';
 import Vue3EasyDataTable from 'vue3-easy-data-table';
 // elsint-disable-next-line @typescript-eslint/no-unused-vars
 import 'vue3-easy-data-table/dist/style.css';
-import { NodeType, OrgNode } from 'org-mode-ast';
+
+import ContentRenderer from './ContentRenderer.vue';
 
 const EasyDataTable = Vue3EasyDataTable;
 
@@ -43,6 +43,10 @@ const items: Item[] = props.node.children
     const item = row.children
       .filter((n) => n.is(NodeType.TableCell))
       .reduce<Item>((acc, c, i) => {
+        if (!headers[i]) {
+          // TODO: master tmp hack. Space at the end is not value.
+          return acc;
+        }
         acc[headers[i].value] = c;
         return acc;
       }, {});

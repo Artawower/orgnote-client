@@ -20,9 +20,14 @@ import {
   loadLanguage,
 } from '@uiw/codemirror-extensions-langs';
 import { minimalSetup } from 'codemirror';
-import { OrgNode, parse } from 'org-mode-ast';
+import { NodeType, OrgNode, parse, walkTree } from 'org-mode-ast';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import { newOrgModeDecorationPlugin } from 'src/tools/cm-org-language/widgets';
+import {
+  addTableEffect,
+  newTableField,
+} from 'src/tools/cm-org-language/widgets';
+import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
 import { getCurrentInstance, onMounted, ref, toRef, watch } from 'vue';
 
@@ -91,20 +96,13 @@ const initEditor = () => {
   const startState = EditorState.create({
     doc: props.modelValue,
     extensions: [
-      // TODO: Doens't return value in the plugins. Check
-      // orgNodeField.extension,
+      newTableField(vueInstance),
       orgMode({
         orgAstChanged: (updatedOrgNode: OrgNode) => {
           orgNode = updatedOrgNode;
           editorView?.dispatch({
             effects: OrgUpdatedEffect.of(updatedOrgNode),
           });
-          // console.log(
-          //   '✎: [line 89][checkbox] editorView: ',
-          //   editorView?.state.field(orgNodeField)
-          // );
-          // TODO: master  doesn't work in the widget view
-          // console.log(editorView?.state.field(orgNodeField));
         },
         wrap: {
           'web-mode': langs.vue().language.parser,
@@ -154,6 +152,7 @@ const initEditor = () => {
           setText(v.state.doc.toString());
         }
       }),
+      orgMultilineWidgets(() => orgNode),
     ],
   });
 
@@ -278,7 +277,9 @@ watch(
 }
 
 .cm-content,
-.cm-activeLine.cm-line {
+.cm-activeLine.cm-line,
+div.cm-content.cm-lineWrapping .cm-line,
+.cm-line {
   caret-color: var(--fg) !important;
 }
 
@@ -447,5 +448,13 @@ watch(
 .org-keyword-rejected,
 org-keyword-block {
   color: var(--red);
+}
+
+.cm-scroller {
+  padding-left: 30px;
+}
+
+.org-widget-edit-badge {
+  color: var(--fg-alt);
 }
 </style>
