@@ -6,6 +6,7 @@ import {
 
 import { Component, createApp, getCurrentInstance } from 'vue';
 
+import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 
 export const useEmbeddedWidgets = () => {
@@ -24,6 +25,7 @@ export const useEmbeddedWidgets = () => {
 
   const embeddedWidgets: EmbeddedWidgets = {
     [NodeType.Table]: createOrgEmbeddedWidget(OrgTable),
+    [NodeType.ExportBlock]: createOrgEmbeddedWidget(OrgLatexBlock),
   };
 
   return {

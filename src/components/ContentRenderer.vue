@@ -11,25 +11,26 @@
 </template>
 
 <script setup lang="ts">
+import { NodeType, OrgNode } from 'org-mode-ast';
+
 import { defineComponent, toRef } from 'vue';
 import type { Component } from 'vue';
 
+import OrgBold from './OrgBold.vue';
 import OrgHeadline from './OrgHeadline.vue';
-import OrgQuote from './OrgQuote.vue';
-import OrgText from './OrgText.vue';
-import OrgPlainList from './OrgPlainList.vue';
+import OrgItalic from './OrgItalic.vue';
+import OrgLatexBlock from './OrgLatexBlock.vue';
 import OrgLink from './OrgLink.vue';
+import NewLine from './OrgNewLine.vue';
+import OrgPlainList from './OrgPlainList.vue';
+import OrgQuote from './OrgQuote.vue';
+import RawLink from './OrgRawLink.vue';
 import OrgSrcBlock from './OrgSrcBlock.vue';
-import OrgStrikeThrough from './OrgStrikeThrough.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
+import OrgStrikeThrough from './OrgStrikeThrough.vue';
 import OrgTable from './OrgTable.vue';
-import OrgBold from './OrgBold.vue';
-import OrgExportBlock from './OrgExportBlock.vue';
-import OrgItalic from './OrgItalic.vue';
-import NewLine from './OrgNewLine.vue';
-import RawLink from './OrgRawLink.vue';
-import { NodeType, OrgNode } from 'org-mode-ast';
+import OrgText from './OrgText.vue';
 
 const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.Headline]: OrgHeadline,
@@ -45,8 +46,8 @@ const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.InlineCode]: OrgSrcInlineCode,
   [NodeType.Table]: OrgTable,
   [NodeType.Bold]: OrgBold,
-  [NodeType.ExportBlock]: OrgExportBlock,
-  [NodeType.LatexEnvironment]: OrgExportBlock,
+  [NodeType.ExportBlock]: OrgLatexBlock,
+  [NodeType.LatexEnvironment]: OrgLatexBlock,
   [NodeType.NewLine]: NewLine,
   [NodeType.RawLink]: RawLink,
 };
