@@ -6,6 +6,7 @@ import {
   MultilineEmbeddedWidgets,
   WidgetBuilder,
 } from 'src/tools/cm-org-language/widgets';
+import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 
 import { Component } from 'vue';
 
@@ -55,8 +56,9 @@ export const useEmbeddedWidgets = () => {
     },
   };
 
-  const lineClasses: { [key in NodeType]?: string } = {
-    [NodeType.Headline]: 'org-headline-line',
+  const lineClasses: OrgLineClasses = {
+    [NodeType.Headline]: (orgNode: OrgNode) =>
+      `org-headline-line org-headline-${orgNode.level}`,
     [NodeType.SrcBlock]: 'org-src-block-line',
   };
 

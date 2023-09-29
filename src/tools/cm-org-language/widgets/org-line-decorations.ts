@@ -1,4 +1,4 @@
-import { OrgLineDecorations as OrgLineClasses } from './line-decoration.model';
+import { OrgLineClasses } from './line-decoration.model';
 import { Range } from '@codemirror/state';
 import {
   Decoration,
@@ -33,7 +33,10 @@ export const orgLineDecoration = (
           }
           lineDecorations.push(
             Decoration.line({
-              class: lineDecoration,
+              class:
+                typeof lineDecoration === 'function'
+                  ? lineDecoration(n)
+                  : lineDecoration,
             }).range(n.start, n.start)
           );
         });

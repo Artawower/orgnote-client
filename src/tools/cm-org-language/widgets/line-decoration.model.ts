@@ -1,4 +1,4 @@
-import { NodeType } from 'org-mode-ast';
+import { NodeType, OrgNode } from 'org-mode-ast';
 
-export type LineClass = string;
-export type OrgLineDecorations = { [key in NodeType]?: LineClass };
+export type OrgLineClass = string | ((orgNode: OrgNode) => string);
+export type OrgLineClasses = { [key in NodeType]?: OrgLineClass };
