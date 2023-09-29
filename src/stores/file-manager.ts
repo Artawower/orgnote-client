@@ -66,16 +66,13 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     const noteName = getUniqueFileName(children);
     const id = v4();
 
+    const fileName = `${noteName}.org`;
     const filePath = parentFileNode
-      ? [
-          ...(parentFileNode?.filePath ?? []),
-          parentFileNode.name,
-          `${noteName}.org`,
-        ]
-      : [`${noteName}.org`];
+      ? [...(parentFileNode?.filePath ?? []), parentFileNode.name, fileName]
+      : [fileName];
 
     const newFile: FileNode = {
-      name: noteName,
+      name: fileName,
       filePath,
       id,
       type: 'file',

@@ -69,14 +69,18 @@ const deleteFile = () => {
   fileManagerStore.deleteFile(props.fileNode);
 };
 
-const createFolder = () => {
+const createFolder = async () => {
+  await fileManagerStore.createFolder(props.fileNode);
   emits('expand', props.fileNode.id);
-  fileManagerStore.createFolder(props.fileNode);
 };
 
-const createFile = () => {
+const createFile = async () => {
+  await fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
   emits('expand', props.fileNode.id);
-  fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
+  console.log(
+    '✎: [line 79][FileManagerItem.vue] props.fileNode.id: ',
+    props.fileNode.id
+  );
 };
 
 const router = useRouter();

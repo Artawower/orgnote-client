@@ -97,7 +97,6 @@ watch(
 
 onBeforeUnmount(() => {
   $q.loading.hide();
-  noteEditorStore.save();
 });
 
 const router = useRouter();

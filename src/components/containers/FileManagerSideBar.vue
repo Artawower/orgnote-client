@@ -3,14 +3,7 @@
     <header-bar>
       <template v-slot:header>
         <div class="text-capitalize">
-          <!-- TODO: master separated component -->
-          <input
-            class="file-search-input"
-            name="search"
-            type="text"
-            v-model="search"
-            :placeholder="$t('files')"
-          />
+          <search-input v-model="search" placeholder="files" />
         </div>
       </template>
       <template v-slot:actions>
@@ -46,6 +39,7 @@ import { ref } from 'vue';
 import FileManagerItem from './FileManagerItem.vue';
 import HeaderBar from 'src/components/ui/HeaderBar.vue';
 import IconBtn from 'src/components/ui/IconBtn.vue';
+import SearchInput from 'src/components/ui/SearchInput.vue';
 import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
 
 const fileManagerStore = useFileManagerStore();
@@ -71,17 +65,3 @@ const toggleExpanding = () => {
 
 const expand = (key: string) => qTreeRef.value?.setExpanded(key, true);
 </script>
-
-<style lang="scss">
-.file-search-input {
-  width: 100%;
-
-  &:focus {
-    outline: none;
-  }
-
-  background-color: transparent;
-  border: none;
-  color: var(--fg);
-}
-</style>
