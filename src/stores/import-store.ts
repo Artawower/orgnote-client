@@ -1,8 +1,8 @@
+import { useFileStore } from './file';
+import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { isOrgFile, readFile, readOrgFile } from 'src/tools';
-import { useFileStore } from './file';
-import { useNotesStore } from './notes';
 
 export const useNotesImportStore = defineStore('importStore', () => {
   const handleFileEntry = async (fileEntry: FileSystemEntry) => {

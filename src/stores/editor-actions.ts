@@ -1,4 +1,5 @@
 import { EditorView } from 'codemirror';
+import { useFileStore } from './file';
 import { defineStore } from 'pinia';
 import { insertTemplate } from 'src/tools';
 
@@ -7,6 +8,8 @@ import { ref } from 'vue';
 import { SearchItem } from 'src/components/ui/SearchContainer.vue';
 
 export const useEditorActionsStore = defineStore('editor-actions', () => {
+  const fileStore = useFileStore();
+
   const actions = ref<SearchItem[]>([
     {
       name: 'headline 1',
@@ -71,8 +74,10 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
       name: 'image',
       icon: 'photo',
       description: 'insert an image',
-      handler: (editorView: EditorView) =>
-        insertTemplate(editorView, '[[]]', 2),
+      handler: async (editorView: EditorView) => {
+        const fileName = await fileStore.uploadMediaFile();
+        return insertTemplate(editorView, `[[${fileName ?? ''}]]`, 2);
+      },
     },
   ]);
 
