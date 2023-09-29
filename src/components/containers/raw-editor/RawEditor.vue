@@ -20,6 +20,7 @@ import {
   editorMenuExtension,
   orgInlineWidgets,
   orgMultilineWidgetField,
+  readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
@@ -80,6 +81,7 @@ const initEditor = () => {
       indentOnInput(),
       closeBrackets(),
       highlightActiveLine(),
+      readOnlyTransactionFilter(() => orgNode),
       editorMenuExtension({
         parentElement: '.q-page',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
@@ -398,7 +400,7 @@ org-keyword-block {
 }
 
 .cm-scroller {
-  padding-left: 30px;
+  padding: 0 30px;
 }
 
 .org-widget-edit-badge {
