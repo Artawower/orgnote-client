@@ -9,7 +9,12 @@ import { editorLanguages } from './editor-languages';
 import { basicOrgTheme } from './org-cm-theme';
 import { useEmbeddedWidgets } from './use-embedded-widgets';
 import { closeBrackets } from '@codemirror/autocomplete';
-import { bracketMatching, indentOnInput } from '@codemirror/language';
+import {
+  bracketMatching,
+  codeFolding,
+  foldGutter,
+  indentOnInput,
+} from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
 import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
@@ -19,6 +24,7 @@ import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import {
   editorMenuExtension,
   orgInlineWidgets,
+  orgLineDecoration,
   orgMultilineWidgetField,
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
@@ -27,6 +33,7 @@ import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline
 import { onMounted, ref, watch } from 'vue';
 
 import EditorMenu from './EditorMenu.vue';
+import GutterMarker from 'src/components/ui/GutterMarker.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -53,7 +60,7 @@ const setText = (t: string) => {
 const editor = ref<HTMLDivElement>();
 let editorView: EditorView;
 
-const { multilineEmbeddedWidgets, inlineEmbeddedWidgets } =
+const { multilineEmbeddedWidgets, inlineEmbeddedWidgets, lineClasses } =
   useEmbeddedWidgets();
 
 const dynamicComponent = useDynamicComponent();
@@ -66,7 +73,6 @@ const initEditor = () => {
   const startState = EditorState.create({
     doc: props.modelValue,
     extensions: [
-      orgMultilineWidgetField,
       orgMode({
         orgAstChanged: (updatedOrgNode: OrgNode) => {
           orgNode = updatedOrgNode;
@@ -76,10 +82,22 @@ const initEditor = () => {
         },
         wrap: editorLanguages,
       }),
+      orgMultilineWidgetField,
       minimalSetup,
       bracketMatching(),
       indentOnInput(),
       closeBrackets(),
+      codeFolding({
+        placeholderText: '{…}',
+      }),
+      foldGutter({
+        markerDOM: (open) => {
+          const gutterMarker = document.createElement('span');
+          dynamicComponent.mount(GutterMarker, gutterMarker, { open });
+          return gutterMarker;
+        },
+      }),
+
       highlightActiveLine(),
       readOnlyTransactionFilter(() => orgNode),
       editorMenuExtension({
@@ -99,6 +117,7 @@ const initEditor = () => {
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
       orgMultilineWidgets(() => orgNode, multilineEmbeddedWidgets),
+      orgLineDecoration(() => orgNode, lineClasses),
     ],
   });
 
@@ -159,7 +178,6 @@ watch(
 @for $i from 1 through 12 {
   .org-headline-#{$i} {
     display: inline-block;
-    padding-top: 16px;
 
     &.org-operator {
       display: none;
@@ -189,10 +207,6 @@ watch(
   display: none;
 }
 
-.CodeMirror-wrap pre {
-  word-break: break-word;
-}
-
 .cm-gutters,
 .cm-gutter {
   background: transparent;
@@ -204,10 +218,6 @@ watch(
 .vue-codemirror,
 .cm-editor {
   height: 100%;
-}
-
-.cm-focused {
-  outline: none !important;
 }
 
 .org-property-drawer {
@@ -436,5 +446,13 @@ org-keyword-block {
 
 .org-doc-title {
   color: var(--fg);
+}
+
+.org-headline-line {
+  padding-top: 16px !important;
+}
+
+.org-src-line {
+  background-color: var(--base7);
 }
 </style>

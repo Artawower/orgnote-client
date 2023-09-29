@@ -29,7 +29,7 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
   wrapElement.className = 'cm-action-menu';
   wrapElement.style.position = 'absolute';
   wrapElement.style.top = `${relativeOffset + 4}px`;
-  wrapElement.style.left = '-10px';
+  wrapElement.style.left = '-16px';
   wrapElement.style.zIndex = '5';
   wrapElement.style.width = '30px';
   wrapElement.style.height = '30px';

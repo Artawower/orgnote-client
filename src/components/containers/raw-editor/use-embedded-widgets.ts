@@ -55,9 +55,15 @@ export const useEmbeddedWidgets = () => {
     },
   };
 
+  const lineClasses: { [key in NodeType]?: string } = {
+    [NodeType.Headline]: 'org-headline-line',
+    [NodeType.SrcBlock]: 'org-src-block-line',
+  };
+
   return {
     createOrgEmbeddedWidget,
     multilineEmbeddedWidgets,
     inlineEmbeddedWidgets,
+    lineClasses,
   };
 };

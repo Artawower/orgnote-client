@@ -15,18 +15,11 @@ export const orgMultilineWidgets = (
   widgets: MultilineEmbeddedWidgets
 ) => {
   let previousCaretPosition: number;
-  // // TODO: tmp approach. Investigate how to prevent multiple decorations
-  // const alreadyMarkedNotes: { [key: string]: boolean } = {};
-
   return EditorView.updateListener.of((v: ViewUpdate) => {
     const orgNode = getOrgNode();
     const currentCaretPosition = v.state.selection.main.head;
     const caretPositionChanged = currentCaretPosition !== previousCaretPosition;
     previousCaretPosition = currentCaretPosition;
-
-    // if (v.docChanged) {
-    //   v.view.dispatch({ effects: [removeAllMultilineWidgetsEffect.of()] });
-    // }
 
     if (!v.docChanged && !v.viewportChanged && !caretPositionChanged) {
       return;
@@ -41,9 +34,6 @@ export const orgMultilineWidgets = (
         effects.push(removeMultilineWidgetEffect.of(n));
         return;
       }
-      // if (alreadyMarkedNotes[n.rawValue]) {
-      //   return;
-      // }
       effects.push(
         addMultilineWidgetEffect.of({
           orgNode: n,

@@ -9,9 +9,7 @@ import { orgTagsStyles } from './tags';
 import {
   Language,
   LanguageSupport,
-  codeFolding,
   defineLanguageFacet,
-  foldGutter,
   syntaxHighlighting,
 } from '@codemirror/language';
 import { Input, NodeType, Parser, PartialParse, Tree } from '@lezer/common';
@@ -128,7 +126,5 @@ function initLanguage(config?: OrgModeParserConfig): Language {
 export function orgMode(config?: OrgModeParserConfig): LanguageSupport {
   return new LanguageSupport(initLanguage(config), [
     syntaxHighlighting(orgHighlightStyle),
-    codeFolding(),
-    foldGutter(),
   ]);
 }
