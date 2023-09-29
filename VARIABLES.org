@@ -52,6 +52,7 @@
 - =--dark-cyan=:  #5699af;
 - =--bg=:  #22272e;
 - =--bg-alt=:  var(--q-dark);
+- =--bg-alt2=:  var(--q-dark);
 - =--fg=:  #{$grey-3};
 - =--fg-alt=:  #{$grey-6};
 - =--base0=:  #{$grey-3};
@@ -64,6 +65,7 @@
 - =--base7=:  rgba(99, 110, 123, 0.4);
 - =--bg=:  #fff;
 - =--bg-alt=:  #fff;
+- =--bg-alt2=:  #f8f9fc;
 - =--fg=:  #{$grey-9};
 - =--fg-alt=:  #{$grey-6};
 - =--base0=:  #{$grey-9};
@@ -176,7 +178,7 @@
 - =--toolbar-hover-color=:  var(--cyan);
 ** HeaderBar
 - =--headerbar-height=:  28px;
-- =--headerbar-border-radius=:  10px;
+- =--headerbar-border-radius=:  8px;
 - =--headerbar-background-color=:  var(--bg);
 - =--headerbar-color=:  var(--fg-alt);
 - =--headerbar-border=:  none;
@@ -190,5 +192,9 @@
 ** Modal
 - =--modal-max-height=:  80svh;
 - =--modal-max-width=:  1024px;
+** Box paddings/margins
+- =--box-padding=:  16px;
+- =--default-item-radius=:  8px;
+- =--search-icn-size=:  42px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
