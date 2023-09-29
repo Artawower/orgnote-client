@@ -416,7 +416,9 @@ org-keyword-block {
 .org-widget-edit-badge {
   color: var(--fg-alt);
   opacity: 0;
-  transition-delay: 0.3s;
+  z-index: 1000;
+  cursor: pointer;
+  transition-delay: 0.1s;
 
   &:hover {
     opacity: 1;

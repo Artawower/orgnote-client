@@ -45,8 +45,6 @@ export class OrgMultilineWidget extends WidgetType {
     this.editorBadge.style.position = 'absolute';
     this.editorBadge.style.top = '0';
     this.editorBadge.style.left = '-36px';
-    this.editorBadge.style.zIndex = '5';
-    this.editorBadge.style.cursor = 'pointer';
     this.editorBadge.innerHTML = this.editIcon;
     this.editorBadge.addEventListener(
       'click',
