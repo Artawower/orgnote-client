@@ -56,8 +56,8 @@ const filteredItems = computed(() =>
   props.items.filter(
     (i) =>
       !search.value ||
-      i.name.includes(search.value) ||
-      i.description?.includes(search.value)
+      i.name.includes(search.value.trim().toLowerCase()) ||
+      i.description?.toLowerCase().includes(search.value.trim().toLowerCase())
   )
 );
 
