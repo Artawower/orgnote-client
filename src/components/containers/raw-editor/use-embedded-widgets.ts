@@ -35,15 +35,10 @@ export const useEmbeddedWidgets = () => {
   const multilineEmbeddedWidgets: MultilineEmbeddedWidgets = {
     [NodeType.Table]: createOrgEmbeddedWidget(OrgTable),
     [NodeType.ExportBlock]: createOrgEmbeddedWidget(OrgLatexBlock),
+    [NodeType.Link]: createOrgEmbeddedWidget(OrgLink),
   };
 
   const inlineEmbeddedWidgets: InlineEmbeddedWidgets = {
-    [NodeType.Link]: {
-      decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgLink),
-      ignoreEvent: true,
-      showRangeOffset: [1, -1],
-    },
     [NodeType.TodoKeyword]: {
       decorationType: 'mark',
       classBuilder: (orgNode: OrgNode) =>

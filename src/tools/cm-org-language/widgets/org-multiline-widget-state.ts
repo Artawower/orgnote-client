@@ -13,31 +13,48 @@ export const addMultilineWidgetEffect = StateEffect.define<AddWidgetEffect>();
 export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
 export const removeAllMultilineWidgetsEffect = StateEffect.define<void>();
 
+// TODO: REFACTOR. badly needs refactoring
 export const orgMultilineWidgetField = StateField.define<DecorationSet>({
   create() {
     return Decoration.none;
   },
   update(tables, tr) {
     for (const e of tr.effects) {
+      if (e.is(removeAllMultilineWidgetsEffect)) {
+        tables = tables.update({
+          filter: () => false,
+        });
+      }
       if (e.is(addMultilineWidgetEffect)) {
+        let alreadyDecoratedNode: Decoration;
+        tables = tables.update({
+          filter: (f, t, value) => {
+            const found = value.spec.widget.eq({ orgNode: e.value.orgNode });
+            if (found) {
+              alreadyDecoratedNode = value;
+            }
+            return !found;
+          },
+        });
+
         tables = tables.update({
           add: [
-            OrgMultilineWidget.init(
-              e.value.view,
-              e.value.orgNode,
-              e.value.widgetBuilder
-            ),
+            alreadyDecoratedNode
+              ? alreadyDecoratedNode.range(
+                  e.value.orgNode.start,
+                  e.value.orgNode.end
+                )
+              : OrgMultilineWidget.init(
+                  e.value.view,
+                  e.value.orgNode,
+                  e.value.widgetBuilder
+                ),
           ],
         });
       }
       if (e.is(removeMultilineWidgetEffect)) {
         tables = tables.update({
           filter: (f, t, value) => !value.spec.widget.eq({ orgNode: e.value }),
-        });
-      }
-      if (e.is(removeAllMultilineWidgetsEffect)) {
-        tables = tables.update({
-          filter: () => false,
         });
       }
     }

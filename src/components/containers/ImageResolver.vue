@@ -1,13 +1,16 @@
 <template>
   <q-img
     class="pointer rounded-borders image-preview"
+    :no-transition="true"
+    :no-spinner="true"
     :src="blobUrl ?? buildMediaFilePath(previewImg)"
   />
 </template>
 
 <script lang="ts" setup>
-import { buildMediaFilePath, getFileName } from 'src/tools';
 import { useFileStore } from 'src/stores';
+import { buildMediaFilePath, getFileName } from 'src/tools';
+
 import { computed, onBeforeMount, ref } from 'vue';
 
 const props = defineProps<{

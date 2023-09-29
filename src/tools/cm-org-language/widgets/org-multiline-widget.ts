@@ -30,7 +30,7 @@ export class OrgMultilineWidget extends WidgetType {
     return Decoration.replace({
       widget: new OrgMultilineWidget(editorView, orgNode, widgetBuilder),
       side: 0,
-      inclusive: true,
+      inclusive: false,
       block: true,
     }).range(orgNode.start, orgNode.end);
   }
