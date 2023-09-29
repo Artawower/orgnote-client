@@ -1,6 +1,6 @@
-import Dexie, { UpdateSpec } from 'dexie';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
+import Dexie, { UpdateSpec } from 'dexie';
 import { Note, NotePreview } from 'src/models';
 import { toDeepRaw } from 'src/tools';
 
@@ -108,11 +108,15 @@ export class NoteRepository extends BaseRepository {
 
   async count(searchText?: string): Promise<number> {
     if (!searchText) {
-      return this.store.count();
+      return this.store.filter((n) => !n.deleted).count();
     }
     const lowerCaseSearchText = searchText?.toLowerCase();
     return this.store
-      .filter((n) => n.meta.title?.toLowerCase().includes(lowerCaseSearchText))
+      .filter(
+        (n) =>
+          !n.deleted &&
+          n.meta.title?.toLowerCase().includes(lowerCaseSearchText)
+      )
       .count();
   }
 

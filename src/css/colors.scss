@@ -17,6 +17,7 @@
 @include dark-mode {
   --bg: #22272e;
   --bg-alt: var(--q-dark);
+  --bg-alt2: var(--q-dark);
   --fg: #{$grey-3};
   --fg-alt: #{$grey-6};
 
@@ -33,6 +34,7 @@
 @include light-mode {
   --bg: #fff;
   --bg-alt: #fff;
+  --bg-alt2: #f8f9fc;
   --fg: #{$grey-9};
   --fg-alt: #{$grey-6};
 

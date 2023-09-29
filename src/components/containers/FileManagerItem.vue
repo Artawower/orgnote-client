@@ -130,7 +130,7 @@ const focusEditedInput = () => {
     // Move carriage to the end of fileNameInput
     const range = document.createRange();
     const sel = window.getSelection();
-    range.setStart(fileNameInput.value, 1);
+    range.setStart(fileNameInput.value, props.fileNode.name.length - 4);
     range.collapse(true);
     sel?.removeAllRanges();
     sel?.addRange(range);

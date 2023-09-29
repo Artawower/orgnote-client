@@ -1,3 +1,5 @@
+import { useFileManagerStore } from './file-manager';
+import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
@@ -5,9 +7,6 @@ import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotePreview, NotesFilter } from 'src/models';
 
 import { ref } from 'vue';
-
-import { useFileManagerStore } from './file-manager';
-import { useSyncStore } from './sync';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;

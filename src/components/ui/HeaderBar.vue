@@ -15,9 +15,8 @@
 .header-bar {
   width: 100%;
   height: var(--headerbar-height);
-  background-color: var(--bg-alt);
   border-radius: var(--headerbar-border-radius);
-  background-color: var(--headerbar-background-color);
+  background-color: var(--base7);
   color: var(--headerbar-color);
   border: var(--headerbar-border);
 }

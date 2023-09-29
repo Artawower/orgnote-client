@@ -29,7 +29,7 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
   wrapElement.className = 'cm-action-menu';
   wrapElement.style.position = 'absolute';
   wrapElement.style.top = `${relativeOffset + 4}px`;
-  wrapElement.style.left = '-30px';
+  wrapElement.style.left = '-10px';
   wrapElement.style.zIndex = '5';
   wrapElement.style.width = '30px';
   wrapElement.style.height = '30px';
@@ -42,7 +42,10 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
 };
 
 export const editorMenuExtension = (config: {
-  menuRenderer: (wrap: Element) => { destroy: () => void };
+  menuRenderer: (
+    wrap: Element,
+    editorView: EditorView
+  ) => { destroy: () => void };
   parentElement: HTMLElement | string;
 }) => {
   let previousLine: number;
@@ -65,6 +68,6 @@ export const editorMenuExtension = (config: {
     if (!wrapElement) {
       return;
     }
-    menu = config.menuRenderer(wrapElement);
+    menu = config.menuRenderer(wrapElement, v.view);
   });
 };

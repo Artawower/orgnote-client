@@ -88,7 +88,7 @@ body {
 
   // HeaderBar
   --headerbar-height: 28px;
-  --headerbar-border-radius: 10px;
+  --headerbar-border-radius: 8px;
   --headerbar-background-color: var(--bg);
   --headerbar-color: var(--fg-alt);
   --headerbar-border: none;
@@ -105,6 +105,11 @@ body {
   // Modal
   --modal-max-height: 80svh;
   --modal-max-width: 1024px;
+
+  // Box paddings/margins
+  --box-padding: 16px;
+  --default-item-radius: 8px;
+  --search-icn-size: 42px;
 }
 
 body {

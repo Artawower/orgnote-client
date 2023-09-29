@@ -17,3 +17,4 @@ export * from './to-deep-raw';
 export * from './traverse-dir';
 export * from './initial-note-template';
 export * from './unique-file-name';
+export * from './codemirror';

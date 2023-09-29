@@ -82,8 +82,10 @@ const initEditor = () => {
       highlightActiveLine(),
       editorMenuExtension({
         parentElement: '.q-page',
-        menuRenderer: (wrap: Element) => {
-          return dynamicComponent.mount(EditorMenu, wrap);
+        menuRenderer: (wrap: Element, editorView: EditorView) => {
+          return dynamicComponent.mount(EditorMenu, wrap, {
+            editorView,
+          });
         },
       }),
       basicOrgTheme,
@@ -422,6 +424,12 @@ org-keyword-block {
 .org-doc-title-keyword,
 .org-doc-title {
   font-size: 2rem;
+}
+
+.cm-line:not(.cm-activeLine) {
+  .org-doc-title {
+    margin-left: -20px;
+  }
 }
 
 .org-doc-title {

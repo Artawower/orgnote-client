@@ -80,7 +80,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     fileTree.value = addFileToTree(fileTree.value, newFile);
     editedFileItem.value = newFile;
     await noteCreatorStore.create(id, newFile.filePath);
-    await storePersistently();
+    // await storePersistently();
   };
 
   const stopEdit = () => {
@@ -99,7 +99,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     );
     fileTree.value = updatedFileTree;
     await notesStore.markAsDeleted(deletedFileIds);
-    await storePersistently();
   };
 
   const renameFile = async (fileNode: FileNode, newName: string) => {

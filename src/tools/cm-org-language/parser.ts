@@ -34,10 +34,6 @@ class OrgNodeParser extends Parser {
     return {
       advance: (): Tree | null => {
         const tree = this.convertOrgModeTreeToCmTree(parsedDoc, doc);
-        // console.log(
-        //   '✎: [line 43][parser.ts] parsedDoc: ',
-        //   parsedDoc.toString()
-        // );
         return tree;
       },
       parsedPos: input.length,
@@ -112,7 +108,7 @@ class OrgNodeParser extends Parser {
     }
     const language = orgNode.parent.properties.language?.toLowerCase();
 
-    const nestedParser = this.config?.wrap?.[language];
+    const nestedParser = this.config?.wrap?.[language ?? 'c'];
     if (!nestedParser) {
       return;
     }
