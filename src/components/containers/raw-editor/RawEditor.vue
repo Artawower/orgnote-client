@@ -159,7 +159,7 @@ watch(
 @for $i from 1 through 12 {
   .org-headline-#{$i} {
     display: inline-block;
-    margin-top: 16px;
+    padding-top: 16px;
 
     &.org-operator {
       display: none;

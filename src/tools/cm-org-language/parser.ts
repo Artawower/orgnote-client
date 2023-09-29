@@ -2,6 +2,7 @@
 // This is a simple parser for codemirror that will highlight the syntax of the
 import { OrgModeParserConfig } from './config';
 import { orgFoldProps } from './folding';
+import { orgIndentProps } from './indent';
 import { getOrgNodeId } from './node-ids';
 import { orgHighlightStyle } from './syntax-highlighting';
 import { orgTagsStyles } from './tags';
@@ -67,7 +68,7 @@ class OrgNodeParser extends Parser {
         id: getOrgNodeId(nodeName),
         name: nodeName,
         top: orgNode.is(OrgNodeType.Root),
-        props: [orgTagsStyles, orgFoldProps],
+        props: [orgTagsStyles, orgFoldProps, orgIndentProps],
       }),
       children?.map((c) => this.convertOrgModeTreeToCmTree(c, input)) ?? [],
       children?.map((c) => c.start - orgNode.start),
