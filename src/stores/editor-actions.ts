@@ -9,13 +9,13 @@ import { SearchItem } from 'src/components/ui/SearchContainer.vue';
 export const useEditorActionsStore = defineStore('editor-actions', () => {
   const actions = ref<SearchItem[]>([
     {
-      name: 'Headline 1',
+      name: 'headline 1',
       icon: 'view_headline',
-      description: 'Insert a headline',
+      description: 'insert a headline',
       handler: (editorView: EditorView) => insertTemplate(editorView, '* '),
     },
     {
-      name: 'Code',
+      name: 'code',
       icon: 'code',
       description: 'insert src code block',
       handler: (editorView: EditorView) =>
@@ -28,7 +28,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
         ),
     },
     {
-      name: 'Quote',
+      name: 'quote',
       icon: 'format_quote',
       description: 'insert a quote',
       handler: (editorView: EditorView) =>
@@ -41,7 +41,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
         ),
     },
     {
-      name: 'Latex',
+      name: 'latex',
       icon: 'functions',
       description: 'insert a latex block',
       handler: (editorView: EditorView) =>
@@ -54,7 +54,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
         ),
     },
     {
-      name: 'Link',
+      name: 'link',
       icon: 'link',
       description: 'insert a link',
       handler: (editorView: EditorView) =>

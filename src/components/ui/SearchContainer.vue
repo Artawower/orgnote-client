@@ -7,6 +7,7 @@
         </div>
       </template>
     </header-bar>
+    <!-- TODO: check item position. Render on top of buttons when no bottom space  -->
     <div class="items">
       <div
         v-for="item of filteredItems"
