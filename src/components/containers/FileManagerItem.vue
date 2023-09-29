@@ -6,17 +6,15 @@
   >
     <div class="file-info">
       <q-icon v-if="!isFile" size="xs" name="folder"></q-icon>
-      <div
+      <input
         ref="fileNameInput"
+        v-model="fileName"
+        :readonly="!editMode"
         class="file-name"
-        :contentEditable="editMode"
         @focusout="stopEdit"
         @keydown.stop.enter="confirmEdit"
         @keydown.escape="stopEdit"
-        @input="updateFileName"
-      >
-        {{ fileName }}
-      </div>
+      />
     </div>
     <div class="actions">
       <template v-if="!isFile">
@@ -126,15 +124,12 @@ const focusEditedInput = () => {
   }
   setTimeout(() => {
     fileNameInput.value.focus();
-
-    // Move carriage to the end of fileNameInput
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.setStart(fileNameInput.value, props.fileNode.name.length - 4);
-    range.collapse(true);
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-  }, 100);
+    fileNameInput.value.setSelectionRange(
+      0,
+      props.fileNode.name.length - 4,
+      'forward'
+    );
+  });
 };
 
 watch(
@@ -179,6 +174,23 @@ const isFileOpened = computed(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+
+  padding: 0;
+  margin: 0;
+  border: none;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+
+  &:not(.edit-mode) {
+    cursor: pointer;
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    border: none;
+  }
 }
 
 .file-info {
@@ -204,6 +216,10 @@ const isFileOpened = computed(() => {
     background-color: var(--file-item-bg-hover);
     color: var(--file-item-color-hover);
 
+    input {
+      color: var(--bg);
+    }
+
     .file-info {
       width: calc(100% - 96px);
     }
@@ -220,6 +236,10 @@ const isFileOpened = computed(() => {
 
 .edit-mode {
   background-color: var(--base5);
+
+  input {
+    color: var(--bg);
+  }
 
   .file-name {
     width: 100%;

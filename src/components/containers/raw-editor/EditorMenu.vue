@@ -45,7 +45,7 @@ const onItemClicked = (itemFn: (arg: any) => void) => {
 
 <style scoped lang="scss">
 .cm-editor-menu {
-  color: var(--base7);
+  color: var(--fg-alt);
   cursor: pointer;
 
   &:hover {

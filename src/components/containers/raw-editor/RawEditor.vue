@@ -362,7 +362,7 @@ div.cm-content.cm-lineWrapping .cm-line,
 }
 
 .cm-line {
-  .org-quote-block:not(.org-keyword):first-child {
+  > .org-quote-block:not(.org-keyword):first-child {
     padding-left: 16px;
     position: relative;
 
