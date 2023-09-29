@@ -6,26 +6,26 @@
 
 <script lang="ts" setup>
 import { editorLanguages } from './editor-languages';
+import { basicOrgTheme } from './org-cm-theme';
 import { useEmbeddedWidgets } from './use-embedded-widgets';
 import { closeBrackets } from '@codemirror/autocomplete';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { EditorState } from '@codemirror/state';
-import {
-  EditorView,
-  ViewUpdate,
-  highlightActiveLine,
-  rectangularSelection,
-} from '@codemirror/view';
+import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
+import { useDynamicComponent } from 'src/hooks';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import {
+  editorMenuExtension,
   orgInlineWidgets,
   orgMultilineWidgetField,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
 import { onMounted, ref, watch } from 'vue';
+
+import EditorMenu from './EditorMenu.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -55,6 +55,8 @@ let editorView: EditorView;
 const { multilineEmbeddedWidgets, inlineEmbeddedWidgets } =
   useEmbeddedWidgets();
 
+const dynamicComponent = useDynamicComponent();
+
 const initEditor = () => {
   if (!props.modelValue) {
     return;
@@ -73,12 +75,18 @@ const initEditor = () => {
         },
         wrap: editorLanguages,
       }),
-      highlightActiveLine(),
       minimalSetup,
       bracketMatching(),
       indentOnInput(),
       closeBrackets(),
-      rectangularSelection(),
+      highlightActiveLine(),
+      editorMenuExtension({
+        parentElement: '.q-page',
+        menuRenderer: (wrap: Element) => {
+          return dynamicComponent.mount(EditorMenu, wrap);
+        },
+      }),
+      basicOrgTheme,
       EditorView.lineWrapping,
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
@@ -210,13 +218,13 @@ watch(
   font-family: var(--editor-font-family-main);
 }
 
-.cm-content,
+/* .cm-content,
 .cm-activeLine.cm-line,
 div.cm-content.cm-lineWrapping .cm-line,
 .cm-line {
   caret-color: var(--fg) !important;
 }
-
+ */
 .cm-tag-name,
 .cm-angle-bracket {
   color: var(--yellow);
@@ -398,12 +406,16 @@ org-keyword-block {
 
   &:hover {
     opacity: 1;
+    color: var(--cyan);
   }
 }
 
-.org-multiline-widget:hover {
-  .org-widget-edit-badge {
-    opacity: 1;
+.org-multiline-widget {
+  &:hover,
+  &:active {
+    .org-widget-edit-badge {
+      opacity: 1;
+    }
   }
 }
 

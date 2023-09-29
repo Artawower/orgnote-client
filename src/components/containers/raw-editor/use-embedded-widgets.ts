@@ -1,4 +1,5 @@
 import { NodeType, OrgNode } from 'org-mode-ast';
+import { useDynamicComponent } from 'src/hooks';
 import {
   EmbeddedOrgWidget,
   InlineEmbeddedWidgets,
@@ -6,7 +7,7 @@ import {
   WidgetBuilder,
 } from 'src/tools/cm-org-language/widgets';
 
-import { Component, createApp, getCurrentInstance } from 'vue';
+import { Component } from 'vue';
 
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
@@ -15,24 +16,19 @@ import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 
 export const useEmbeddedWidgets = () => {
-  const vueInstance = getCurrentInstance();
-
+  const dynamicComponent = useDynamicComponent();
   const createOrgEmbeddedWidget = (cmp: Component): WidgetBuilder => {
     return (
       wrap: HTMLElement,
       orgNode: OrgNode,
       onUpdateFn?: (newVal: string) => void
     ): EmbeddedOrgWidget => {
-      const comp = createApp(cmp, {
+      return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
         update: (newVal: string) => {
           onUpdateFn?.(newVal);
         },
       });
-      Object.assign(comp._context, vueInstance.appContext);
-      comp.provide;
-      comp.mount(wrap);
-      return { destroy: () => comp.unmount() };
     };
   };
 
@@ -45,9 +41,8 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Link]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgLink),
-      side: 0,
-      inclusive: true,
       ignoreEvent: true,
+      showRangeOffset: [1, -1],
     },
     [NodeType.TodoKeyword]: {
       decorationType: 'mark',

@@ -24,6 +24,7 @@ export class OrgInlineWidget extends WidgetType {
     orgNode: OrgNode,
     inlineWidget: InlineEmbeddedWidget
   ): Range<Decoration> {
+    const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
     return Decoration[inlineWidget.decorationType]({
       widget: new OrgInlineWidget(
         view,
@@ -35,7 +36,7 @@ export class OrgInlineWidget extends WidgetType {
       side: inlineWidget.side,
       class: inlineWidget.classBuilder?.(orgNode),
       inclusive: inlineWidget.inclusive,
-    }).range(orgNode.start, orgNode.end);
+    }).range(orgNode.start + startOffset, orgNode.end + endOffset);
   }
 
   public eq(other: WidgetType) {
