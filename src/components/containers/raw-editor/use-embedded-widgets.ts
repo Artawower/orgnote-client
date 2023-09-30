@@ -60,6 +60,25 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Headline]: (orgNode: OrgNode) =>
       `org-headline-line org-headline-${orgNode.level}`,
     [NodeType.SrcBlock]: 'org-src-block-line',
+    [NodeType.Text]: (orgNode: OrgNode) => {
+      let lineClass = '';
+      if (
+        orgNode?.parent?.parent?.is(NodeType.SrcBlock) ||
+        orgNode?.parent?.parent?.parent?.is(NodeType.SrcBlock)
+      ) {
+        lineClass += 'org-src-block-line';
+      }
+
+      if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
+        lineClass += ' org-block-footer';
+      }
+
+      if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
+        lineClass += ' org-block-header';
+      }
+
+      return lineClass;
+    },
   };
 
   return {

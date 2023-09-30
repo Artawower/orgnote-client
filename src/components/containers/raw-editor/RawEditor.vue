@@ -232,13 +232,6 @@ watch(
   font-family: var(--editor-font-family-main);
 }
 
-/* .cm-content,
-.cm-activeLine.cm-line,
-div.cm-content.cm-lineWrapping .cm-line,
-.cm-line {
-  caret-color: var(--fg) !important;
-}
- */
 .cm-tag-name,
 .cm-angle-bracket {
   color: var(--yellow);
@@ -286,8 +279,6 @@ div.cm-content.cm-lineWrapping .cm-line,
 }
 
 .cm-activeLine {
-  background-color: unset !important;
-
   .org-operator,
   .org-link-url,
   .org-doc-title-keyword {
@@ -456,5 +447,23 @@ org-keyword-block {
 
 .org-src-line {
   background-color: var(--base7);
+}
+
+.org-src-block-line {
+  background: var(--base7) !important;
+  padding-left: var(--src-block-padding-x) !important;
+  padding-right: var(--src-block-padding-x) !important;
+}
+
+.org-block-footer {
+  border-bottom-right-radius: var(--default-item-radius);
+  border-bottom-left-radius: var(--default-item-radius);
+  padding-bottom: var(--src-block-padding-y) !important;
+}
+
+.org-block-header {
+  border-top-right-radius: var(--default-item-radius);
+  border-top-left-radius: var(--default-item-radius);
+  padding-top: var(--src-block-padding-y) !important;
 }
 </style>

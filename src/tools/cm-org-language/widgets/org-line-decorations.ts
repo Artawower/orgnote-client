@@ -31,12 +31,31 @@ export const orgLineDecoration = (
           if (!lineDecoration) {
             return false;
           }
+          const lineClass =
+            typeof lineDecoration === 'function'
+              ? lineDecoration(n)
+              : lineDecoration;
+
+          // NOTE: this small hack needed to highlight lines inside nested src block.
+          // Cause nested src block is just a string with \n characters.
+          const linedValues = n.value?.split('\n');
+          let pos = n.start;
+          linedValues?.forEach((v) => {
+            lineDecorations.push(
+              Decoration.line({
+                class: lineClass,
+              }).range(pos, pos)
+            );
+            pos += v.length + 1;
+          });
+
+          if (linedValues) {
+            return;
+          }
+
           lineDecorations.push(
             Decoration.line({
-              class:
-                typeof lineDecoration === 'function'
-                  ? lineDecoration(n)
-                  : lineDecoration,
+              class: lineClass,
             }).range(n.start, n.start)
           );
         });

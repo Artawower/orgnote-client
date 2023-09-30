@@ -33,4 +33,8 @@ export const basicOrgTheme = EditorView.theme({
     fontSize: 'inherit',
     border: 0,
   },
+
+  '.cm-activeLine': {
+    'background-color': 'transparent',
+  },
 });
