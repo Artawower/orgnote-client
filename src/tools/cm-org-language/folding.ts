@@ -7,7 +7,7 @@ export const orgFoldProps = foldNodeProp.add({
       return null;
     }
     const sectionChild = context.lastChild;
-    const foldRange = { from: sectionChild.from - 1, to: sectionChild.to };
+    const foldRange = { from: sectionChild.from - 1, to: sectionChild.to - 1 };
     return foldRange;
   },
 });
