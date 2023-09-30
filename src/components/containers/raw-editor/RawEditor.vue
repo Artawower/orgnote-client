@@ -250,7 +250,6 @@ watch(
 .cm-line,
 .org-text,
 .header-text {
-  line-height: 1.4em;
   letter-spacing: 0.5px;
   font-size: var(--paragraph-font-size);
   font-family: var(--main-font-family);
@@ -402,10 +401,6 @@ watch(
   }
 }
 
-[class^='org-keyword-'] {
-  font-weight: bold;
-}
-
 .org-keyword-todo,
 .org-keyword-wait,
 .org-keyword-hold {
@@ -478,6 +473,10 @@ org-keyword-block {
   background: var(--base7) !important;
   padding-left: var(--src-block-padding-x) !important;
   padding-right: var(--src-block-padding-x) !important;
+}
+
+.org-block-header {
+  position: relative;
 }
 
 .org-block-footer {

@@ -5,7 +5,7 @@ import {
 } from './widget.model';
 import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
-import { OrgNode } from 'org-mode-ast';
+import { OrgNode, parse } from 'org-mode-ast';
 
 export class OrgInlineWidget extends WidgetType {
   private widget: EmbeddedOrgWidget;
@@ -24,6 +24,17 @@ export class OrgInlineWidget extends WidgetType {
     orgNode: OrgNode,
     inlineWidget: InlineEmbeddedWidget
   ): Range<Decoration> {
+    // TODO: master TMP hack.
+    const realText = view.state.doc
+      .toString()
+      .slice(orgNode.start, orgNode.end);
+    if (realText !== orgNode.rawValue) {
+      // TODO: master it's a really dirty hack.
+      // The problem is that we have an unperiodic bug with
+      // incorrect position when editing at the end of line.
+      // In this case we have incorrect range. Investigate it!
+      return;
+    }
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
     return Decoration[inlineWidget.decorationType]({
       widget: new OrgInlineWidget(

@@ -23,12 +23,6 @@ class OrgModeDecorationPlugin {
     private readonly getOrgNodeTree?: () => OrgNode
   ) {}
 
-  public handleClick(target: HTMLElement, view: EditorView): void {
-    // Object.values(atomDecorationHandlers).forEach((widget) =>
-    //   widget.handleClick(target, view)
-    // );
-  }
-
   public buildDecorations(view: EditorView): [DecorationSet, DecorationSet] {
     const orgNode = this.getOrgNodeTree();
     const simpleDecorations: Range<Decoration>[] = [];
@@ -59,7 +53,9 @@ class OrgModeDecorationPlugin {
         }
 
         const decoration = OrgInlineWidget.init(view, n, inlineWidget);
-        atomicDecorations.push(decoration);
+        if (decoration) {
+          atomicDecorations.push(decoration);
+        }
       });
     });
 
@@ -111,19 +107,5 @@ export const orgInlineWidgets = (
     },
     {
       decorations: (v) => v.atomicDecorations,
-
-      eventHandlers: {
-        mousedown: (e, view) => {
-          const target = e.target as HTMLElement;
-          // Object.values(atomDecorationHandlers).forEach((widget) =>
-          //   widget.handleClick(target, view)
-          // );
-        },
-      },
-      provide: (plugin) =>
-        // TODO: master doesn't work...need to fix somehow.
-        EditorView.atomicRanges.of((view) => {
-          return view.plugin(plugin)?.atomicDecorations || Decoration.none;
-        }),
     }
   );

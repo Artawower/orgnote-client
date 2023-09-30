@@ -10,6 +10,7 @@ import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoratio
 
 import { Component } from 'vue';
 
+import OrgBlockWrapper from 'src/components/OrgBlockWrapper.vue';
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
@@ -54,6 +55,16 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgCheckbox),
       ignoreEvent: true,
     },
+    [NodeType.BlockHeader]: {
+      decorationType: 'replace',
+      widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+      ignoreEvent: true,
+    },
+    [NodeType.BlockFooter]: {
+      decorationType: 'replace',
+      widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+      ignoreEvent: true,
+    },
   };
 
   const lineClasses: OrgLineClasses = {
@@ -61,6 +72,11 @@ export const useEmbeddedWidgets = () => {
       `org-headline-line org-headline-${orgNode.level}`,
     [NodeType.SrcBlock]: 'org-src-block-line',
     [NodeType.Keyword]: 'org-keyword-line',
+    [NodeType.NewLine]: (orgNode: OrgNode) => {
+      if (orgNode?.parent?.is(NodeType.SrcBlock)) {
+        return 'org-src-block-line';
+      }
+    },
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (
