@@ -60,6 +60,7 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Headline]: (orgNode: OrgNode) =>
       `org-headline-line org-headline-${orgNode.level}`,
     [NodeType.SrcBlock]: 'org-src-block-line',
+    [NodeType.Keyword]: 'org-keyword-line',
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (

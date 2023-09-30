@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-wrapper">
+  <div class="editor-wrapper" :class="{ readonly }">
     <div id="editor" ref="editor"></div>
   </div>
 </template>
@@ -15,7 +15,7 @@ import {
   foldGutter,
   indentOnInput,
 } from '@codemirror/language';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
@@ -38,6 +38,7 @@ import GutterMarker from 'src/components/ui/GutterMarker.vue';
 const props = withDefaults(
   defineProps<{
     modelValue: string;
+    readonly?: boolean;
   }>(),
   { modelValue: () => '' }
 );
@@ -53,6 +54,9 @@ console.log('✎: [line 43][table] text: ', text.value);
 let orgNode: OrgNode;
 
 const setText = (t: string) => {
+  if (props.readonly) {
+    return;
+  }
   text.value = t;
   emits('dataUpdated', [t, orgNode]);
 };
@@ -100,6 +104,7 @@ const initEditor = () => {
 
       highlightActiveLine(),
       readOnlyTransactionFilter(() => orgNode),
+      basicOrgTheme,
       editorMenuExtension({
         parentElement: '.q-page',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
@@ -108,15 +113,19 @@ const initEditor = () => {
           });
         },
       }),
-      basicOrgTheme,
       EditorView.lineWrapping,
+      EditorState.readOnly.of(props.readonly),
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
         }
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
-      orgMultilineWidgets(() => orgNode, multilineEmbeddedWidgets),
+      orgMultilineWidgets(
+        () => orgNode,
+        multilineEmbeddedWidgets,
+        props.readonly
+      ),
       orgLineDecoration(() => orgNode, lineClasses),
     ],
   });
@@ -133,6 +142,16 @@ watch(
   () => props.modelValue,
   (value) => {
     if (!editor.value || value === editorView?.state.doc.toString()) {
+      return;
+    }
+    initEditor();
+  }
+);
+
+watch(
+  () => props.readonly,
+  () => {
+    if (!editorView) {
       return;
     }
     initEditor();
@@ -177,6 +196,8 @@ watch(
 
 @for $i from 1 through 12 {
   .org-headline-#{$i} {
+    font-family: var(--headline-font-family);
+    font-weight: var(--headline-font-weight);
     display: inline-block;
 
     &.org-operator {
@@ -197,7 +218,7 @@ watch(
 }
 
 .org-link {
-  color: var(--blue);
+  color: var(--fg);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -222,14 +243,19 @@ watch(
 
 .org-property-drawer {
   color: var(--cyan);
+  font-family: var(--editor-font-family-main);
 }
 
 /* TODO: feature/codemirror change font style for editor */
 .cm-line,
 .org-text,
 .header-text {
+  line-height: 1.4em;
+  letter-spacing: 0.5px;
   font-size: var(--paragraph-font-size);
-  font-family: var(--editor-font-family-main);
+  font-family: var(--main-font-family);
+  color: var(--fg);
+  -webkit-font-smoothing: auto;
 }
 
 .cm-tag-name,
@@ -247,6 +273,7 @@ watch(
 .org-src-block,
 .org-quote-block.org-keyword {
   font-size: var(--code-font-size);
+  font-family: var(--editor-font-family-main);
 }
 
 .org-src-language {
@@ -304,10 +331,6 @@ watch(
 
 .org-headline-1 {
   font-size: 2rem;
-
-  .org-priority {
-    color: var(--green);
-  }
 }
 
 .org-headline-2 {
@@ -374,7 +397,7 @@ watch(
       color: var(--cyan);
       position: absolute;
       left: -4px;
-      transform: scale(1.1);
+      transform: scale(1.4);
     }
   }
 }
@@ -429,11 +452,13 @@ org-keyword-block {
 .org-doc-title-keyword,
 .org-doc-title {
   font-size: 2rem;
+  font-weight: var(--headline-font-weight);
+  font-family: var(--headline-font-family);
 }
 
 .cm-line:not(.cm-activeLine) {
   .org-doc-title {
-    margin-left: -20px;
+    margin-left: -10px;
   }
 }
 
@@ -465,5 +490,41 @@ org-keyword-block {
   border-top-right-radius: var(--default-item-radius);
   border-top-left-radius: var(--default-item-radius);
   padding-top: var(--src-block-padding-y) !important;
+}
+
+// Readonly mode
+
+.readonly {
+  .cm-cursor,
+  .cm-dropCursor {
+    display: none !important;
+    border-color: transparent !important;
+  }
+
+  .org-property-drawer,
+  .org-operator,
+  .cm-action-menu {
+    display: none !important;
+  }
+
+  .org-src-block-line {
+    .org-keyword {
+      display: none !important;
+    }
+  }
+
+  .org-keyword-line {
+    .org-keyword:first-of-type {
+      display: none !important;
+    }
+
+    .org-keyword {
+      margin-left: -10px;
+    }
+  }
+
+  .org-widget-edit-badge {
+    display: none !important;
+  }
 }
 </style>

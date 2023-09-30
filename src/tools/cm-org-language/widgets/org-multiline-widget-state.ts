@@ -11,7 +11,6 @@ export interface AddWidgetEffect {
 }
 export const addMultilineWidgetEffect = StateEffect.define<AddWidgetEffect>();
 export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
-export const removeAllMultilineWidgetsEffect = StateEffect.define<void>();
 
 // TODO: REFACTOR. badly needs refactoring
 export const orgMultilineWidgetField = StateField.define<DecorationSet>({
@@ -20,11 +19,6 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
   },
   update(tables, tr) {
     for (const e of tr.effects) {
-      if (e.is(removeAllMultilineWidgetsEffect)) {
-        tables = tables.update({
-          filter: () => false,
-        });
-      }
       if (e.is(addMultilineWidgetEffect)) {
         let alreadyDecoratedNode: Decoration;
         tables = tables.update({

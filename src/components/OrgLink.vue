@@ -74,6 +74,6 @@ const wrapperComponent = linkType === 'id' ? NotePreviewLink : 'span';
 }
 
 .org-link {
-  color: var(--blue);
+  color: var(--fg);
 }
 </style>

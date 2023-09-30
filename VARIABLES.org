@@ -94,10 +94,11 @@
 * typography.scss
 ** Fonts
 - =--headline-margin=:  18px 0;
-- =--paragraph-font-size=:  15px;
-- =--main-font-family=:  charter, Georgia, Cambria, 'Times New Roman', Times, serif;
-- =--editor-font-family-main=:  'Menlo', charter, Georgia, Cambria,
+- =--paragraph-font-size=:  16px;
+- =--main-font-family=:  ui-sans-serif, -apple-system, BlinkMacSystemFont,
+- =--editor-font-family-main=:  'Menlo', charter, Georgia, Cambria, 'Roboto', Times,
 - =--paragraph-font-family=:  var(--main-font-family);
+- =--headline-font-family=:  'Roboto', '-apple-system', 'Helvetica Neue', Helvetica,
 ** Note description
 - =--description-font-family=:  var(--main-font-family);
 - =--description-font-size=:  16px;
