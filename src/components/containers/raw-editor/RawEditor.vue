@@ -15,7 +15,7 @@ import {
   foldGutter,
   indentOnInput,
 } from '@codemirror/language';
-import { EditorState, Extension } from '@codemirror/state';
+import { EditorState } from '@codemirror/state';
 import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';

@@ -50,6 +50,7 @@ export const editorLanguages: { [langName: string]: Parser } = {
   json: langs.json().language.parser,
   clojure: langs.clojure().language.parser,
   'common-lisp': langs.commonLisp().parser,
+  'emacs-lisp': langs.commonLisp().parser,
   css: langs.css().language.parser,
   dart: langs.dart().parser,
   go: langs.go().parser,
