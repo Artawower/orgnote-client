@@ -38,6 +38,10 @@ const props = defineProps<{
   node: OrgNode;
 }>();
 
+defineEmits<{
+  (e: 'update', newValue: string): void;
+}>();
+
 const isHeader = computed(() => {
   return props.node.is(NodeType.BlockHeader);
 });

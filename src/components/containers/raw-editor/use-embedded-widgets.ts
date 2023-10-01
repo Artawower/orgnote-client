@@ -27,7 +27,7 @@ export const useEmbeddedWidgets = () => {
     ): EmbeddedOrgWidget => {
       return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
-        update: (newVal: string) => {
+        onUpdate: (newVal: string) => {
           onUpdateFn?.(newVal);
         },
       });

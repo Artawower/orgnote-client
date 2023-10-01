@@ -7,7 +7,7 @@ import { OrgNode } from 'org-mode-ast';
 
 import { ref, watch } from 'vue';
 
-const props = defineProps<{ node: OrgNode; update?: (val: string) => void }>();
+const props = defineProps<{ node: OrgNode }>();
 const emits = defineEmits<{
   (e: 'update', newValue: string): void;
 }>();
@@ -18,7 +18,6 @@ watch(
   () => checkboxValue.value,
   (newValue) => {
     const newVal = `[${newValue ? 'X' : ' '}]`;
-    props.update?.(newVal);
     emits('update', newVal);
   }
 );

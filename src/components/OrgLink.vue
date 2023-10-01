@@ -43,6 +43,10 @@ const props = defineProps<{
   node: OrgNode;
 }>();
 
+defineEmits<{
+  (e: 'update', newValue: string): void;
+}>();
+
 const node = toRef(props, 'node');
 
 const rawLink = node.value.children.get(1).children.get(1).value;
