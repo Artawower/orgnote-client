@@ -39,7 +39,10 @@ class OrgModeDecorationPlugin {
         }
         const inlineWidget = this.inlineWidgets[n.type];
 
-        if (!inlineWidget) {
+        const unsatisfied =
+          inlineWidget?.satisfied && !inlineWidget?.satisfied?.(n);
+
+        if (!inlineWidget || unsatisfied) {
           return;
         }
 

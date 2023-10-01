@@ -46,6 +46,27 @@ export const useEmbeddedWidgets = () => {
       classBuilder: (orgNode: OrgNode) =>
         `org-keyword-${orgNode.value.toLowerCase()}`,
     },
+    [NodeType.Operator]: {
+      decorationType: 'replace',
+      satisfied: (orgNode: OrgNode) => {
+        return (
+          orgNode.parent?.parent?.is(NodeType.ListItem) &&
+          !orgNode.parent.parent?.parent?.ordered
+        );
+      },
+      widgetBuilder: (wrap: HTMLElement, orgNode: OrgNode) => {
+        const operator = orgNode.rawValue.trim();
+        wrap.classList.add(
+          'org-list-bullet',
+          `bullet-${operator === '-' ? '1' : '2'}`
+        );
+        return {
+          destroy: () => {
+            /* pass */
+          },
+        };
+      },
+    },
     [NodeType.Priority]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgPriority),
@@ -77,6 +98,8 @@ export const useEmbeddedWidgets = () => {
         return 'org-src-block-line';
       }
     },
+    // TODO: master add support for nested lists.
+    [NodeType.ListItem]: 'org-list-item-line',
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (

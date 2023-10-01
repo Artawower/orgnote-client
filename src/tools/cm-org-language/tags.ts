@@ -24,6 +24,7 @@ const orgStyledNodes = [
   NodeType.Verbatim,
   NodeType.Checkbox,
   NodeType.QuoteBlock,
+  NodeType.ListItem,
   ...cmNodes,
 ] as const;
 

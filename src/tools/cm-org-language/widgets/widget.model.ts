@@ -17,6 +17,7 @@ export type MultilineEmbeddedWidgets = {
 export interface InlineEmbeddedWidget {
   showRangeOffset?: [number, number];
   widgetBuilder?: WidgetBuilder;
+  satisfied?: (orgNode: OrgNode) => boolean;
   classBuilder?: (orgNode: OrgNode) => string;
   decorationType: 'mark' | 'widget' | 'replace' | 'line';
   side?: number;

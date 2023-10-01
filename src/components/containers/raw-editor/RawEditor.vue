@@ -506,6 +506,41 @@ org-keyword-block {
 
 // Readonly mode
 
+.org-list-bullet {
+  color: var(--fg-alt);
+  position: relative;
+  margin-right: 5px;
+  margin-left: 10px;
+
+  &.bullet-1 {
+    &::before {
+      content: '•';
+    }
+  }
+
+  &.bullet-2 {
+    &::before {
+      content: '◦';
+    }
+  }
+
+  &::before {
+    transform: scale(1.6);
+    position: absolute;
+    left: -8px;
+    top: -3px;
+  }
+}
+
+.org-operator.org-list-item:first-child {
+  display: inline-block;
+  color: var(--fg-alt);
+}
+
+.org-list-item-line {
+  margin-left: 8px;
+}
+
 .readonly {
   .cm-cursor,
   .cm-dropCursor {
