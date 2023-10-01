@@ -33,7 +33,7 @@ export const orgMultilineWidgets = (
       if (
         !readonly &&
         currentCaretPosition >= n.start &&
-        currentCaretPosition <= n.end
+        currentCaretPosition <= n.end + 1
       ) {
         effects.push(removeMultilineWidgetEffect.of(n));
         return;
