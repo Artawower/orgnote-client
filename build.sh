@@ -8,7 +8,7 @@ mkdir -p ./dist/build
 #                  -dname "cn=Artur Iaroshenko, c=GE" \
 #                  -alias sb \
 #                  -keypass $password \
-#                  -keystore ./sb-release.keystore \
+#                  -keystore ./org-note-release.keystore \
 #                  -storepass $password \
 #                  -keyalg RSA \
 #                  -keysize 4096 \
@@ -23,7 +23,7 @@ java -jar bundletool.jar build-apks \
      --mode=universal \
      --bundle=./dist/cordova/android/bundle/release/app-release.aab \
      --output=./dist/pwa/builds/orgnote.apks \
-     --ks=./sb-release.keystore \
+     --ks=./org-note-release.keystore \
      --ks-pass=pass:$STOREPASS \
      --ks-key-alias=sb
 

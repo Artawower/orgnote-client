@@ -1,0 +1,1 @@
+.modeline{background:var(--modeline-background);color:var(--modeline-font-color)}.footer-content{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;height:var(--modeline-height);max-width:var(--content-max-width);margin:auto}.q-footer{z-index:999}.scroll-container{overflow:auto}

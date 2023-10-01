@@ -75,7 +75,7 @@ jobs:
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/sb-client
             cd ~/orgnote/orgnote-client
-            echo ${{ secrets.KEYSTORE }} | base64 -d > sb-release.keystore
+            echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
             echo ${{ secrets.KEYPASS }} > keypass.txt
             echo ${{ secrets.STOREPASS }} > storepass.txt
 
