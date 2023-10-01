@@ -251,7 +251,7 @@ watch(
 .Codemirror,
 .vue-codemirror,
 .cm-editor {
-  height: 100%;
+  height: calc(100vh - 80px);
 }
 
 .org-property-drawer {

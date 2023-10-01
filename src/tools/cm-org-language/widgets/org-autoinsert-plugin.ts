@@ -11,19 +11,18 @@ export const orgAutoPairCommand = (getOrgNode: () => OrgNode): StateCommand => {
     walkTree(getOrgNode(), (n: OrgNode) => {
       if (n.end === currentPos) {
         currentOrgNode = n;
-        return true;
       }
+      return false;
     });
 
     const transaction = getAutoInsertedSymbol(currentOrgNode);
 
-    if (!transaction) {
-      return insertNewlineAndIndent({ state, dispatch });
+    if (transaction) {
+      const tr = state.update(transaction);
+      if (dispatch) dispatch(tr);
     }
 
-    const tr = state.update(transaction);
-    if (dispatch) dispatch(tr);
-    return true;
+    return insertNewlineAndIndent({ state, dispatch });
   };
 };
 
