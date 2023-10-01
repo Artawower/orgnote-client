@@ -98,7 +98,7 @@ const initEditor = () => {
       indentOnInput(),
       closeBrackets(),
       codeFolding({
-        placeholderText: '{…}',
+        placeholderText: '[…]',
       }),
       foldGutter({
         markerDOM: (open) => {

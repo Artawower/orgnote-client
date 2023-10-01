@@ -35,9 +35,18 @@ export const useEmbeddedWidgets = () => {
   };
 
   const multilineEmbeddedWidgets: MultilineEmbeddedWidgets = {
-    [NodeType.Table]: createOrgEmbeddedWidget(OrgTable),
-    [NodeType.ExportBlock]: createOrgEmbeddedWidget(OrgLatexBlock),
-    [NodeType.Link]: createOrgEmbeddedWidget(OrgLink),
+    [NodeType.Table]: {
+      widgetBuilder: createOrgEmbeddedWidget(OrgTable),
+    },
+    [NodeType.ExportBlock]: {
+      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
+    },
+    [NodeType.Link]: {
+      widgetBuilder: createOrgEmbeddedWidget(OrgLink),
+      satisfied: (orgNode: OrgNode) => {
+        return orgNode.meta.linkType == 'image';
+      },
+    },
   };
 
   const inlineEmbeddedWidgets: InlineEmbeddedWidgets = {
@@ -85,6 +94,12 @@ export const useEmbeddedWidgets = () => {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
       ignoreEvent: true,
+    },
+    [NodeType.Link]: {
+      decorationType: 'replace',
+      widgetBuilder: createOrgEmbeddedWidget(OrgLink),
+      ignoreEvent: true,
+      satisfied: (orgNode: OrgNode) => orgNode.meta.linkType !== 'image',
     },
   };
 

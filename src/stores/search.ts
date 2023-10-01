@@ -1,20 +1,18 @@
-import { ref } from 'vue';
-import { sdk } from 'src/boot/axios';
-import { defineStore } from 'pinia';
-import { useAuthStore } from './auth';
 import {
   CandidateGetterFn,
   CompletionCandidate,
   CompletionSearchResult,
   useCompletionStore,
 } from './completion';
-import { useRouter } from 'vue-router';
-import { useNotesStore } from './notes';
+import { defineStore } from 'pinia';
 import { repositories } from 'src/boot/repositories';
+import { useRouter } from 'vue-router';
+
+import { ref } from 'vue';
 
 export const useSearchStore = defineStore('search', () => {
   // TODO: master adapt for public search
-  const authStore = useAuthStore();
+  // const authStore = useAuthStore();
   const completionStore = useCompletionStore();
 
   const router = useRouter();

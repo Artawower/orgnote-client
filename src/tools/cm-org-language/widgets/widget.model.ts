@@ -10,14 +10,21 @@ export type WidgetBuilder = (
   onUpdateFn?: (newVal: string) => void
 ) => EmbeddedOrgWidget;
 
+interface CommonEmbeddedWidget {
+  satisfied?: (orgNode: OrgNode) => boolean;
+}
+
+interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
+  widgetBuilder: WidgetBuilder;
+}
+
 export type MultilineEmbeddedWidgets = {
-  [key in NodeType]?: WidgetBuilder;
+  [key in NodeType]?: MultilineEmbeddedWidget;
 };
 
-export interface InlineEmbeddedWidget {
+export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   showRangeOffset?: [number, number];
   widgetBuilder?: WidgetBuilder;
-  satisfied?: (orgNode: OrgNode) => boolean;
   classBuilder?: (orgNode: OrgNode) => string;
   decorationType: 'mark' | 'widget' | 'replace' | 'line';
   side?: number;

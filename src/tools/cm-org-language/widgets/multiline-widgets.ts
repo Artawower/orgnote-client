@@ -38,11 +38,19 @@ export const orgMultilineWidgets = (
         effects.push(removeMultilineWidgetEffect.of(n));
         return;
       }
+
+      const multilineEmbeddedWidget = widgets[n.type];
+      if (
+        multilineEmbeddedWidget.satisfied &&
+        !multilineEmbeddedWidget.satisfied(n)
+      ) {
+        return;
+      }
       effects.push(
         addMultilineWidgetEffect.of({
           orgNode: n,
           view: v.view,
-          widgetBuilder: widgets[n.type],
+          widgetBuilder: multilineEmbeddedWidget.widgetBuilder,
         })
       );
     });
