@@ -8,7 +8,7 @@ export function readOnlyTransactionFilter(getOrgNode: () => OrgNode) {
       const blockedRange: [number?, number?] = [];
       const orgNode = getOrgNode();
       walkTree(orgNode, (n) => {
-        if (n.is(NodeType.PropertyDrawer)) {
+        if (n.is(NodeType.PropertyDrawer) && n.parent?.is(NodeType.Root)) {
           blockedRange[0] = n.start;
           blockedRange[1] = n.end + 1;
           return true;

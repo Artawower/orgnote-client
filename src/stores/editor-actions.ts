@@ -31,6 +31,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
 
 #+END_SRC`,
           focusOffset: 12,
+          overrideLine: true,
         }),
     },
     {
@@ -44,6 +45,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
 
 #+END_QUOTE`,
           focusOffset: 14,
+          overrideLine: true,
         }),
     },
     {
@@ -58,6 +60,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
 
 #+END_EXPORT`,
           focusOffset: 12,
+          overrideLine: true,
         }),
     },
     {
@@ -72,7 +75,12 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
       icon: 'hub',
       description: 'insert note link',
       handler: (editorView: EditorView) =>
-        insertTemplate({ editorView, template: '[[]]', focusOffset: 2 }),
+        insertTemplate({
+          editorView,
+          template: '[[]]',
+          focusOffset: 2,
+          overrideLine: true,
+        }),
     },
     {
       name: 'image',
@@ -84,6 +92,7 @@ export const useEditorActionsStore = defineStore('editor-actions', () => {
           editorView,
           template: `[[${fileName ?? ''}]]`,
           focusOffset: 2,
+          overrideLine: true,
         });
       },
     },

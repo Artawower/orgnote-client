@@ -15,8 +15,13 @@ import {
   foldGutter,
   indentOnInput,
 } from '@codemirror/language';
-import { EditorState } from '@codemirror/state';
-import { EditorView, ViewUpdate, highlightActiveLine } from '@codemirror/view';
+import { EditorState, Prec } from '@codemirror/state';
+import {
+  EditorView,
+  ViewUpdate,
+  highlightActiveLine,
+  keymap,
+} from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
@@ -29,6 +34,7 @@ import {
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
+import { orgAutoPairCommand } from 'src/tools/cm-org-language/widgets/org-autoinsert-plugin';
 
 import { onMounted, ref, watch } from 'vue';
 
@@ -49,7 +55,6 @@ const emits = defineEmits<{
 }>();
 
 const text = ref(props.modelValue);
-console.log('✎: [line 43][table] text: ', text.value);
 
 let orgNode: OrgNode;
 
@@ -127,6 +132,14 @@ const initEditor = () => {
         props.readonly
       ),
       orgLineDecoration(() => orgNode, lineClasses),
+      Prec.highest(
+        keymap.of([
+          {
+            key: 'Enter',
+            run: orgAutoPairCommand(() => orgNode),
+          },
+        ])
+      ),
     ],
   });
 
