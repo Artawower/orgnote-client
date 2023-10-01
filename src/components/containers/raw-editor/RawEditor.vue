@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-wrapper" :class="{ readonly }">
+  <div class="editor-wrapper q-pa-md" :class="{ readonly }">
     <div id="editor" ref="editor"></div>
   </div>
 </template>
@@ -111,7 +111,7 @@ const initEditor = () => {
       readOnlyTransactionFilter(() => orgNode),
       basicOrgTheme,
       editorMenuExtension({
-        parentElement: '.q-page',
+        parentElement: '.editor-wrapper',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
           return dynamicComponent.mount(EditorMenu, wrap, {
             editorView,

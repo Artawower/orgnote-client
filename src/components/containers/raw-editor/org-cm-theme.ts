@@ -37,4 +37,8 @@ export const basicOrgTheme = EditorView.theme({
   '.cm-activeLine': {
     'background-color': 'transparent',
   },
+
+  '.cm-scroller': {
+    overflowX: 'unset',
+  },
 });

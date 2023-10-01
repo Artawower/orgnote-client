@@ -20,6 +20,7 @@ export const orgAutoPairCommand = (getOrgNode: () => OrgNode): StateCommand => {
     if (transaction) {
       const tr = state.update(transaction);
       if (dispatch) dispatch(tr);
+      return true;
     }
 
     return insertNewlineAndIndent({ state, dispatch });
@@ -37,7 +38,10 @@ function getAutoInsertedSymbol(node: OrgNode): TransactionSpec {
       changes: { from: node.start, to: node.end, insert: '' },
     };
   }
-  if (node.parent?.parent?.is(NodeType.ListItem)) {
+  if (
+    node.isNot(NodeType.NewLine) &&
+    node.parent?.parent?.is(NodeType.ListItem)
+  ) {
     const operator = node.parent.children.first.rawValue.trim();
 
     const isNumberList = operator.match(/\d+[\)\.]{1}/);

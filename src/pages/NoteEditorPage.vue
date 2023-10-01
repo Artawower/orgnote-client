@@ -1,6 +1,6 @@
 <template>
   <q-page
-    class="q-pa-md height-auto with-modeline"
+    class="height-auto with-modeline"
     :class="{ flex: noteEditorStore.debug }"
   >
     <q-splitter

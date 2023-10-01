@@ -1,5 +1,7 @@
-FROM alvrme/alpine-android:android-30-jdk11-v2023.09.10
+FROM alvrme/alpine-android:android-33-jdk11-v2023.06.10
+# FROM alvrme/alpine-android:android-30-jdk11-v2023.09.10
 
+# TODO
 # ARG USER=ponny
 # ENV HOME /home/$USER
 # ENV ANDROID_SDK_ROOT "/opt/sdk"
