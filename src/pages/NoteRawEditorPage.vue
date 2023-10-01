@@ -2,6 +2,7 @@
   <raw-editor
     v-model="initialNoteText"
     @data-updated="dataUpdated"
+    @change-cursor-position="noteEditorStore.cursorPosition = $event"
   ></raw-editor>
 </template>
 

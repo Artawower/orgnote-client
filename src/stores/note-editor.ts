@@ -16,6 +16,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const filePath = ref<string[]>([]);
   const createdTime = ref<string>();
   const debug = ref<boolean>(false);
+  const cursorPosition = ref<number>(0);
 
   // TODO: master persistent value should be done via indexed db.
   const setNoteData = (text: string, orgNode: OrgNode) => {
@@ -129,5 +130,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
 
     toggleDebug,
     debug,
+    cursorPosition,
   };
 });

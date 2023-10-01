@@ -23,7 +23,14 @@
         />
       </template>
       <template v-slot:after>
-        <note-debugger />
+        <div class="debug">
+          <div class="common-info q-px-md">
+            Cursor: {{ noteEditorStore.cursorPosition }}
+          </div>
+          <div class="debug-tree q-py-sm q-px-md">
+            <note-debugger :cursor-position="noteEditorStore.cursorPosition" />
+          </div>
+        </div>
       </template>
     </q-splitter>
     <template v-else>
@@ -119,5 +126,16 @@ onChangeToolbarActions({
 .debug-splitter {
   flex: 1;
   max-height: calc(100svh - 80px);
+}
+
+.debug {
+  position: relative;
+
+  .common-info {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1;
+  }
 }
 </style>

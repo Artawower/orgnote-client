@@ -52,6 +52,7 @@ const props = withDefaults(
 const emits = defineEmits<{
   (e: 'update:modelValue', val: string): void;
   (e: 'dataUpdated', val: [string, OrgNode]): void;
+  (e: 'changeCursorPosition', val: number): void;
 }>();
 
 const text = ref(props.modelValue);
@@ -124,6 +125,7 @@ const initEditor = () => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
         }
+        emits('changeCursorPosition', v.state.selection.main.head);
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
       orgMultilineWidgets(
