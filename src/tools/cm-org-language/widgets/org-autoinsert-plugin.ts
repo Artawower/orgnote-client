@@ -27,16 +27,28 @@ export const orgAutoPairCommand = (getOrgNode: () => OrgNode): StateCommand => {
   };
 };
 
+const orgOperatorRegexp = /(\- |\+ |\d+[\)\.]{1})/;
+// TODO: master A very likely candidate to be refactored
 function getAutoInsertedSymbol(node: OrgNode): TransactionSpec {
-  if (node.is(NodeType.Operator) && node.rawValue === '- ') {
+  if (!node) {
+    return;
+  }
+  if (node.is(NodeType.Operator) && node.rawValue.match(orgOperatorRegexp)) {
     return {
-      changes: { from: node.end - 2, to: node.end, insert: '' },
+      changes: { from: node.start, to: node.end, insert: '' },
     };
   }
   if (node.parent?.parent?.is(NodeType.ListItem)) {
+    const operator = node.parent.children.first.rawValue.trim();
+
+    const isNumberList = operator.match(/\d+[\)\.]{1}/);
+    const newOperator = isNumberList
+      ? +operator.slice(0, -1) + 1 + operator.slice(-1)
+      : operator;
+
     return {
-      changes: { from: node.end, insert: '\n- ' },
-      selection: { anchor: node.end + 3 },
+      changes: { from: node.end, insert: `\n${newOperator} ` },
+      selection: { anchor: node.end + newOperator.length + 2 },
     };
   }
   if (
