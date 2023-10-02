@@ -1,5 +1,5 @@
 <template>
-  <q-footer class="toolbar" reveal>
+  <q-footer v-show="toolbarStore.showToolbar" class="toolbar" reveal>
     <div class="footer-wrapper fit flex rows justify-between items-center">
       <div
         v-for="action in toolbarStore.actions"

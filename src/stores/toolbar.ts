@@ -24,6 +24,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
   const { executeCommand } = useKeybindingStore();
   const fileManagerStore = useFileManagerStore();
   const invisibleActions = ref<{ [key: string]: ToolBarAction }>({});
+  const showToolbar = ref<boolean>(true);
 
   const actionsStack = ref<ToolBarAction[][]>([
     [
@@ -126,5 +127,6 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     setActions,
     backToPreviousActions,
     setAdditionalAction,
+    showToolbar,
   };
 });
