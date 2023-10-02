@@ -2,10 +2,9 @@
   <q-footer class="toolbar" reveal>
     <div class="footer-wrapper fit flex rows justify-between items-center">
       <div
-        v-for="(action, i) in toolbarStore.actions"
+        v-for="action in toolbarStore.actions"
         :key="action.name"
         class="flex toolbar-action justify-center items-center cursor-pointer"
-        :class="{ 'main-action': i === 2 }"
         @click="action.handler"
       >
         <q-icon class="color-main" :name="action.icon" size="md"></q-icon>
@@ -22,7 +21,7 @@ const toolbarStore = useToolbarStore();
 
 <style lang="scss" scoped>
 .toolbar {
-  height: var(--sidebar-width);
+  height: var(--footer-height);
   background: var(--bg-alt);
   border: var(--tolbar-border);
   border-top: var(--toolbar-border-top);
@@ -42,18 +41,5 @@ const toolbarStore = useToolbarStore();
 
 .footer-wrapper {
   position: relative;
-}
-
-.main-action {
-  min-width: var(--sidebar-width);
-  min-height: var(--sidebar-width);
-  max-width: var(--sidebar-width);
-  max-height: var(--sidebar-width);
-  border-radius: 50%;
-  position: relative;
-  top: -50%;
-  background: var(--bg-alt);
-  border: var(--tolbar-border);
-  border-top: var(--toolbar-border-top);
 }
 </style>

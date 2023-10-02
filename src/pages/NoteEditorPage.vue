@@ -1,41 +1,44 @@
 <template>
   <q-page
-    class="height-auto with-modeline"
-    :class="{ flex: noteEditorStore.debug }"
+    :class="{ flex: noteEditorStore.debug, 'with-modeline': $q.screen.lt.sm }"
   >
-    <q-splitter
-      v-if="noteEditorStore.debug"
-      v-model="splitterSize"
-      :horizontal="$q.screen.lt.sm"
-      class="debug-splitter"
-    >
-      <template v-slot:before>
-        <template v-if="noteLoaded">
-          <router-view />
+    <div class="editor-page-content">
+      <q-splitter
+        v-if="noteEditorStore.debug"
+        v-model="splitterSize"
+        :horizontal="$q.screen.lt.sm"
+        class="debug-splitter"
+      >
+        <template v-slot:before>
+          <template v-if="noteLoaded">
+            <router-view />
+          </template>
         </template>
-      </template>
-      <template v-slot:separator>
-        <q-avatar
-          color="primary"
-          text-color="white"
-          size="40px"
-          icon="drag_indicator"
-        />
-      </template>
-      <template v-slot:after>
-        <div class="debug">
-          <div class="common-info q-px-md">
-            Cursor: {{ noteEditorStore.cursorPosition }}
+        <template v-slot:separator>
+          <q-avatar
+            color="primary"
+            text-color="white"
+            size="40px"
+            icon="drag_indicator"
+          />
+        </template>
+        <template v-slot:after>
+          <div class="debug">
+            <div class="common-info q-px-md">
+              Cursor: {{ noteEditorStore.cursorPosition }}
+            </div>
+            <div class="debug-tree q-py-sm q-px-md">
+              <note-debugger
+                :cursor-position="noteEditorStore.cursorPosition"
+              />
+            </div>
           </div>
-          <div class="debug-tree q-py-sm q-px-md">
-            <note-debugger :cursor-position="noteEditorStore.cursorPosition" />
-          </div>
-        </div>
+        </template>
+      </q-splitter>
+      <template v-else>
+        <router-view></router-view>
       </template>
-    </q-splitter>
-    <template v-else>
-      <router-view></router-view>
-    </template>
+    </div>
   </q-page>
 </template>
 
@@ -118,11 +121,7 @@ onChangeToolbarActions({
 });
 </script>
 
-<style lang="scss">
-.q-page {
-  box-sizing: border-box;
-}
-
+<style lang="scss" scoped>
 .debug-splitter {
   flex: 1;
   max-height: calc(100svh - 80px);
@@ -137,5 +136,10 @@ onChangeToolbarActions({
     background-color: white;
     z-index: 1;
   }
+}
+
+.editor-page-content {
+  height: calc(100vh - var(--sidebar-width));
+  overflow: auto;
 }
 </style>

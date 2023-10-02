@@ -74,7 +74,7 @@ const handleItem = (item: SearchItem) => {
 .search-container {
   @include flexify(column);
 
-  padding: var(--box-padding);
+  padding: var(--default-block-padding);
   max-height: 100%;
 }
 

@@ -1,5 +1,5 @@
 <template>
-  <q-page padding class="note-view height-auto with-modeline">
+  <q-page class="note-view height-auto with-modeline">
     <author-info
       v-if="currentNote && !currentNote?.isMy"
       :author="currentNote?.author"
@@ -11,28 +11,19 @@
       :note="currentNote"
       :org-tree="currentOrgTree as OrgNode"
     ></note-detail>
-    <!-- TODO: master remove -->
-    <!-- <mode-line v-if="currentNote?.isMy">
-      <q-route-tab
-        :to="{ name: RouteNames.EditNote, params: { id: currentNote?.id } }"
-        icon="edit"
-      >
-      </q-route-tab>
-    </mode-line> -->
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useRoute } from 'vue-router';
+
+import { watch } from 'vue';
 
 import AuthorInfo from 'components/containers/AuthorInfo.vue';
-import ModeLine from 'src/components/ui/ModeLine.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
-import { RouteNames } from 'src/router/routes';
-import { useCurrentNoteStore } from 'src/stores/current-note';
-import { OrgNode } from 'org-mode-ast';
 
 const route = useRoute();
 

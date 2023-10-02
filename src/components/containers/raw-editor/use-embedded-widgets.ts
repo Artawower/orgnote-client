@@ -13,6 +13,7 @@ import { Component } from 'vue';
 
 import OrgBlockWrapper from 'src/components/OrgBlockWrapper.vue';
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
+import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
@@ -78,6 +79,10 @@ export const useEmbeddedWidgets = () => {
           },
         };
       },
+    },
+    [NodeType.HorizontalRule]: {
+      decorationType: 'replace',
+      widgetBuilder: createOrgEmbeddedWidget(OrgHorizontalRule),
     },
     [NodeType.Priority]: {
       decorationType: 'replace',

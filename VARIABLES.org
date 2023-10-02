@@ -130,6 +130,8 @@
 ** Sidebar
 - =--sidebar-width=:  56px;
 - =--sidebar-opened-width=:  320px;
+** Mobile footer pane
+- =--footer-height=:  0px;
 ** Public preview
 - =--public-preview-image-width=:  112px;
 - =--public-preview-image-height=:  112px;
@@ -194,11 +196,18 @@
 - =--modal-max-height=:  80svh;
 - =--modal-max-width=:  1024px;
 ** Box paddings/margins
-- =--box-padding=:  16px;
+- =--default-block-padding=:  16px;
 - =--default-item-radius=:  8px;
 - =--search-icn-size=:  42px;
 ** Src block
-- =--src-block-padding-y=:  8px;
+- =--src-block-header-padding-y=:  16px;
+- =--src-block-footer-padding-y=:  8px;
 - =--src-block-padding-x=:  16px;
+** Editor
+- =--editor-padding=:  16px 30px;
+- =--mobile-editor-padding=:  0 0;
+** Max width 599px
+- =--default-block-padding=:  8px;
+- =--footer-height=:  56px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);

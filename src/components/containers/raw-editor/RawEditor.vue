@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-wrapper q-pa-md" :class="{ readonly }">
+  <div class="editor-wrapper" :class="{ readonly, mobile: $q.screen.lt.sm }">
     <div id="editor" ref="editor"></div>
   </div>
 </template>
@@ -100,6 +100,7 @@ const initEditor = () => {
       codeFolding({
         placeholderText: '[…]',
       }),
+      // TODO: master we need to hide fold gutter for active line
       foldGutter({
         markerDOM: (open) => {
           const gutterMarker = document.createElement('span');
@@ -179,8 +180,10 @@ watch(
 
 .editor-wrapper {
   width: 100%;
+  height: 100%;
   max-width: var(--content-max-width);
   margin: auto;
+  padding: var(--editor-padding);
 }
 
 #editor {
@@ -250,12 +253,12 @@ watch(
   border-right: 0 !important;
 }
 
-.Codemirror,
+/* .Codemirror,
 .vue-codemirror,
 .cm-editor {
-  height: calc(100vh - 80px);
+  height: calc(100vh - var(--default-block-padding) * 2);
 }
-
+ */
 .org-property-drawer {
   color: var(--cyan);
   font-family: var(--editor-font-family-main);
@@ -433,10 +436,6 @@ org-keyword-block {
   color: var(--red);
 }
 
-.cm-scroller {
-  padding: 0 30px;
-}
-
 .org-widget-edit-badge {
   color: var(--fg-alt);
   opacity: 0;
@@ -497,13 +496,14 @@ org-keyword-block {
 .org-block-footer {
   border-bottom-right-radius: var(--default-item-radius);
   border-bottom-left-radius: var(--default-item-radius);
-  padding-bottom: var(--src-block-padding-y) !important;
+  padding-bottom: var(--src-block-footer-padding-y) !important;
 }
 
 .org-block-header {
   border-top-right-radius: var(--default-item-radius);
   border-top-left-radius: var(--default-item-radius);
-  padding-top: var(--src-block-padding-y) !important;
+  padding-top: var(--src-block-header-padding-y) !important;
+  padding-bottom: var(--src-block-header-padding-y) !important;
 }
 
 // Readonly mode
@@ -541,6 +541,23 @@ org-keyword-block {
 
 .org-list-item-line {
   margin-left: 8px;
+}
+
+.cm-action-menu {
+  width: 48px;
+  left: -20px;
+}
+
+.mobile {
+  .cm-editor-actions {
+    flex-direction: column-reverse;
+  }
+  .cm-action-menu {
+    left: -16px;
+  }
+  .cm-scroller {
+    padding: var(--mobile-editor-padding);
+  }
 }
 
 .readonly {
