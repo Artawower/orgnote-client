@@ -10,9 +10,7 @@
       active-icon="done"
     />
     <action-btn
-      @click="
-        notifications.notify(`Babel for ${language} is not implemented yet`)
-      "
+      @click="executeCode"
       v-if="isSrcBlock"
       icon="play_arrow"
       active-icon="done"
@@ -29,6 +27,8 @@
 <script lang="ts" setup>
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useNotifications } from 'src/hooks';
+import { useOrgBabelStore } from 'src/stores';
+import { findOrgNode } from 'src/tools';
 
 import { computed } from 'vue';
 
@@ -36,9 +36,10 @@ import ActionBtn from 'src/components/ui/ActionBtn.vue';
 
 const props = defineProps<{
   node: OrgNode;
+  rootNodeSrc: () => OrgNode;
 }>();
 
-defineEmits<{
+const emits = defineEmits<{
   (e: 'update', newValue: string): void;
 }>();
 
@@ -62,6 +63,27 @@ const copySrc = () => {
 };
 
 const notifications = useNotifications();
+
+const orgBabelStore = useOrgBabelStore();
+
+const executeCode = async () => {
+  const actualNode = findOrgNode(
+    props.rootNodeSrc(),
+    (n) =>
+      n.start === props.node.start &&
+      n.end === props.node.end &&
+      n.is(props.node.type)
+  );
+  try {
+    const res = await orgBabelStore.execute(
+      language.value,
+      actualNode.next.next.rawValue
+    );
+    emits('update', res);
+  } catch (e) {
+    notifications.notify((e as Error).message);
+  }
+};
 </script>
 
 <style lang="scss" scoped>

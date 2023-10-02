@@ -1,3 +1,4 @@
+import { srcHeaderViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import {
@@ -23,10 +24,12 @@ export const useEmbeddedWidgets = () => {
     return (
       wrap: HTMLElement,
       orgNode: OrgNode,
+      rootNodeSrc: () => OrgNode,
       onUpdateFn?: (newVal: string) => void
     ): EmbeddedOrgWidget => {
       return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
+        rootNodeSrc,
         onUpdate: (newVal: string) => {
           onUpdateFn?.(newVal);
         },
@@ -88,6 +91,7 @@ export const useEmbeddedWidgets = () => {
     [NodeType.BlockHeader]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+      viewUpdater: srcHeaderViewUpdater,
       ignoreEvent: true,
     },
     [NodeType.BlockFooter]: {

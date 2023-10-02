@@ -1,3 +1,4 @@
+import { ChangeSpec } from '@codemirror/state';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
 export type EmbeddedOrgWidget = {
@@ -7,6 +8,7 @@ export type EmbeddedOrgWidget = {
 export type WidgetBuilder = (
   wrap: HTMLElement,
   orgNode: OrgNode,
+  rootNodeSrc: () => OrgNode,
   onUpdateFn?: (newVal: string) => void
 ) => EmbeddedOrgWidget;
 
@@ -22,6 +24,8 @@ export type MultilineEmbeddedWidgets = {
   [key in NodeType]?: MultilineEmbeddedWidget;
 };
 
+export type ViewUpdateSchema = ChangeSpec;
+
 export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   showRangeOffset?: [number, number];
   widgetBuilder?: WidgetBuilder;
@@ -31,6 +35,7 @@ export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   wrapComponent?: string;
   inclusive?: boolean;
   ignoreEvent?: boolean;
+  viewUpdater?: (orgNode: OrgNode, newVal: string) => ViewUpdateSchema;
 }
 
 export type InlineEmbeddedWidgets = {

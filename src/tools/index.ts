@@ -18,3 +18,4 @@ export * from './traverse-dir';
 export * from './initial-note-template';
 export * from './unique-file-name';
 export * from './codemirror';
+export * from './org-node-navigation';

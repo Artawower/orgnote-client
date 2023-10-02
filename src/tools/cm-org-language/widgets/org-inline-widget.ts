@@ -1,20 +1,15 @@
-import {
-  EmbeddedOrgWidget,
-  InlineEmbeddedWidget,
-  WidgetBuilder,
-} from './widget.model';
+import { EmbeddedOrgWidget, InlineEmbeddedWidget } from './widget.model';
 import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
-import { OrgNode, parse } from 'org-mode-ast';
+import { OrgNode, walkTree } from 'org-mode-ast';
 
 export class OrgInlineWidget extends WidgetType {
   private widget: EmbeddedOrgWidget;
   constructor(
     private readonly view: EditorView,
     private readonly orgNode: OrgNode,
-    private readonly widgetBuilder: WidgetBuilder,
-    public readonly ignoredEvent: boolean = false,
-    private readonly wrapComponent?: string
+    private readonly inlineWidget: InlineEmbeddedWidget,
+    private readonly rootNodeSrc: () => OrgNode
   ) {
     super();
   }
@@ -22,7 +17,8 @@ export class OrgInlineWidget extends WidgetType {
   public static init(
     view: EditorView,
     orgNode: OrgNode,
-    inlineWidget: InlineEmbeddedWidget
+    inlineWidget: InlineEmbeddedWidget,
+    rootNodeSrc: () => OrgNode
   ): Range<Decoration> {
     // TODO: master TMP hack.
     const realText = view.state.doc
@@ -37,13 +33,7 @@ export class OrgInlineWidget extends WidgetType {
     }
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
     return Decoration[inlineWidget.decorationType]({
-      widget: new OrgInlineWidget(
-        view,
-        orgNode,
-        inlineWidget.widgetBuilder,
-        inlineWidget.ignoreEvent,
-        inlineWidget.wrapComponent
-      ),
+      widget: new OrgInlineWidget(view, orgNode, inlineWidget, rootNodeSrc),
       side: inlineWidget.side,
       class: inlineWidget.classBuilder?.(orgNode),
       inclusive: inlineWidget.inclusive,
@@ -58,18 +48,44 @@ export class OrgInlineWidget extends WidgetType {
   }
 
   toDOM() {
-    const wrap = document.createElement(this.wrapComponent ?? 'span');
-    this.widget = this.widgetBuilder(
+    const wrap = document.createElement(
+      this.inlineWidget.wrapComponent ?? 'span'
+    );
+    this.widget = this.inlineWidget.widgetBuilder(
       wrap,
       this.orgNode,
+      // TODO: master I don't like this implementation.
+      // But i need to get actual node position inside nested widgets
+      // Speculate about it.
+      this.rootNodeSrc,
       this.updateValue.bind(this)
     );
     return wrap;
   }
 
+  private getActualNode(oldOrgNode: OrgNode): OrgNode {
+    const rootNode = this.rootNodeSrc();
+    let actualNode: OrgNode;
+    walkTree(rootNode, (n: OrgNode) => {
+      if (
+        n.start === oldOrgNode.start &&
+        n.end === oldOrgNode.end &&
+        n.is(oldOrgNode.type)
+      ) {
+        actualNode = n;
+        return true;
+      }
+    });
+    return actualNode ?? oldOrgNode;
+  }
+
   private updateValue(newVal: string): void {
+    const updateSchema = this.inlineWidget.viewUpdater?.(
+      this.getActualNode(this.orgNode),
+      newVal
+    );
     this.view.dispatch({
-      changes: {
+      changes: updateSchema ?? {
         from: this.orgNode.start,
         to: this.orgNode.end,
         insert: newVal,
@@ -78,7 +94,7 @@ export class OrgInlineWidget extends WidgetType {
   }
 
   public ignoreEvent(): boolean {
-    return this.ignoredEvent;
+    return this.inlineWidget.ignoreEvent;
   }
 
   destroy(): void {

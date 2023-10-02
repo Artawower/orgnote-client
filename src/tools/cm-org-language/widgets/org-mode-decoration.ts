@@ -20,11 +20,11 @@ class OrgModeDecorationPlugin {
 
   constructor(
     private readonly inlineWidgets: InlineEmbeddedWidgets,
-    private readonly getOrgNodeTree?: () => OrgNode
+    private readonly getRootNode?: () => OrgNode
   ) {}
 
   public buildDecorations(view: EditorView): [DecorationSet, DecorationSet] {
-    const orgNode = this.getOrgNodeTree();
+    const orgNode = this.getRootNode();
     const simpleDecorations: Range<Decoration>[] = [];
     const atomicDecorations: Range<Decoration>[] = [];
     const caretPosition = view.state.selection.main.head;
@@ -55,7 +55,12 @@ class OrgModeDecorationPlugin {
           return;
         }
 
-        const decoration = OrgInlineWidget.init(view, n, inlineWidget);
+        const decoration = OrgInlineWidget.init(
+          view,
+          n,
+          inlineWidget,
+          this.getRootNode
+        );
         if (decoration) {
           atomicDecorations.push(decoration);
         }

@@ -18,6 +18,7 @@ export * from './file-manager';
 export * from './note-creator';
 export * from './modal';
 export * from './editor-actions';
+export * from './org-babel';
 
 /*
  * If not building with SSR mode, you can
