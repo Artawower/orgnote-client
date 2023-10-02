@@ -17,7 +17,7 @@
       :scroll-target="scrollTarget"
       v-slot="{ index }"
       class="full-width"
-      style="max-height: cacl(100vh - 66px)"
+      style="max-height: cacl(100svh - 66px)"
     >
       <async-item-container :items-list="notes" :index="index" :height="height">
         <template v-slot="{ item }">
@@ -37,15 +37,16 @@
 </template>
 
 <script setup lang="ts">
+import { QVirtualScroll } from 'quasar';
+import { Note, NotePreview } from 'src/models';
+import { useViewStore } from 'src/stores/view';
+import { debounce } from 'src/tools';
+import { useRoute, useRouter } from 'vue-router';
+
 import { computed, defineComponent, onMounted, ref, toRef, watch } from 'vue';
 
-import PublicNotePreview from './containers/PublicNotePreview.vue';
-import { useViewStore } from 'src/stores/view';
 import AsyncItemContainer from './AsyncItemContainer.vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Note, NotePreview } from 'src/models';
-import { debounce } from 'src/tools';
-import { QVirtualScroll } from 'quasar';
+import PublicNotePreview from './containers/PublicNotePreview.vue';
 
 defineComponent({
   PublicNotePreview,

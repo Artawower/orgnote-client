@@ -39,7 +39,7 @@ const goBack = prevRouteExist
 
 <style lang="scss">
 .not-found-wrapper {
-  height: calc(100vh - var(--top-bar-height));
+  height: calc(100svh - var(--top-bar-height));
 }
 * {
   transition: all 0.6s;

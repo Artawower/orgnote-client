@@ -3,13 +3,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, toRef } from 'vue';
 import ForceGraph, { NodeObject } from 'force-graph';
 import { useQuasar } from 'quasar';
-import { useGraphStore } from 'src/stores/graph';
 import { GraphNoteNode } from 'src/models';
-import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
+import { useGraphStore } from 'src/stores/graph';
+import { useRouter } from 'vue-router';
+
+import { ref, toRef, watch } from 'vue';
+
 type GraphNode = GraphNoteNode & NodeObject;
 
 const chartWrapper = ref(null);
@@ -94,7 +96,7 @@ watch(
   svg,
   canvas {
     width: 100%;
-    height: calc(100vh - var(--top-bar-height)) !important;
+    height: calc(100svh - var(--top-bar-height)) !important;
   }
 }
 </style>

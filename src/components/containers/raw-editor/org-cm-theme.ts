@@ -38,7 +38,7 @@ export const basicOrgTheme = EditorView.theme({
     'background-color': 'transparent',
   },
 
-  // '.cm-scroller': {
-  //   overflowX: 'unset',
-  // },
+  '.cm-scroller': {
+    overflowX: 'unset',
+  },
 });

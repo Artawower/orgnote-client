@@ -176,6 +176,7 @@ const isFileOpened = computed(() => {
   overflow: hidden;
 
   padding: 0;
+  color: var(--fg);
   margin: 0;
   border: none;
   width: 100%;

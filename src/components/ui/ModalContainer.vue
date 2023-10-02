@@ -31,7 +31,11 @@
   position: relative;
   width: 100%;
   height: 100%;
-  max-height: var(--modal-max-height);
+
+  @include tablet-plus {
+    max-height: var(--modal-max-height);
+  }
+
   max-width: var(--modal-max-width) !important;
 }
 
