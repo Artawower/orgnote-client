@@ -6,7 +6,7 @@ import { sleep } from 'src/tools';
 
 export const useFileStore = defineStore('fileStore', () => {
   const saveFile = async (image: File) => {
-    repositories.files.save(image);
+    await repositories.files.save(image);
     preserveFiles();
   };
 
@@ -48,6 +48,9 @@ export const useFileStore = defineStore('fileStore', () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    input.style.width = '0';
+    input.style.height = '0';
+    document.body.appendChild(input);
     input.multiple = false;
 
     const abortController = new AbortController();
@@ -62,8 +65,8 @@ export const useFileStore = defineStore('fileStore', () => {
           const file = input.files[0];
           await saveFile(file);
           resolve(file.name);
+          document.body.removeChild(input);
           abortController.abort();
-          console.log('✎: [line 70][import-store.ts] file: ', file);
         },
         { signal: abortController.signal }
       );
