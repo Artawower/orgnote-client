@@ -76,6 +76,18 @@ const { multilineEmbeddedWidgets, inlineEmbeddedWidgets, lineClasses } =
 
 const dynamicComponent = useDynamicComponent();
 
+const setCursorPositionToTheEOF = () => {
+  if (!editorView) {
+    return;
+  }
+  const lastLine = editorView.state.doc.lineAt(editorView.state.doc.length);
+  editorView.dispatch({
+    selection: {
+      anchor: lastLine.to,
+      head: lastLine.to,
+    },
+  });
+};
 // TODO: master refactor (important)
 const initEditor = () => {
   if (!props.modelValue) {
@@ -166,6 +178,8 @@ const initEditor = () => {
     state: startState,
     parent: editor.value,
   });
+
+  setCursorPositionToTheEOF();
 };
 
 onMounted(() => initEditor());
