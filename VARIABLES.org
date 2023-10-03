@@ -199,6 +199,7 @@
 - =--default-block-padding=:  16px;
 - =--default-item-radius=:  8px;
 - =--search-icn-size=:  42px;
+- =--defult-gap=:  16px;
 ** Src block
 - =--src-block-header-padding-y=:  16px;
 - =--src-block-footer-padding-y=:  8px;
@@ -209,6 +210,7 @@
 ** Max width 599px
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
-- =--editor-padding=:  8px 0;
+- =--editor-padding=:  8px;
+- =--default-gap=:  10px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);

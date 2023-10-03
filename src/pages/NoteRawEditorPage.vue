@@ -4,9 +4,9 @@
     @data-updated="dataUpdated"
     @change-cursor-position="noteEditorStore.cursorPosition = $event"
     @focus-changed="toolbarStore.showToolbar = !$event"
+    @init="setEditorView"
   ></raw-editor>
-  <!-- TODO: add actions for quick insert ? master  -->
-  <!-- <div v-if="!toolbarStore.showToolbar" class="editor-actions">actions</div> -->
+  <editor-actions-toolbar v-if="!toolbarStore.showToolbar" />
 </template>
 
 <script lang="ts">
@@ -15,10 +15,12 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 
 <script lang="ts" setup>
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
+import EditorActionsToolbar from 'src/components/containers/EditorActionsToolbar.vue';
 import { ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
 import { useEditorActions } from 'src/hooks/editor-actions-hook';
+import { EditorView } from 'codemirror';
 
 const noteEditorStore = useNoteEditorStore();
 const toolbarStore = useToolbarStore();
@@ -27,6 +29,10 @@ const initialNoteText = ref<string>(noteEditorStore.noteText);
 
 const dataUpdated = ([text, orgNode]: [string, OrgNode]) => {
   noteEditorStore.setNoteData(text, orgNode);
+};
+
+const setEditorView = ({ view }: { view: EditorView }) => {
+  noteEditorStore.editorView = view;
 };
 
 watch(

@@ -1,4 +1,5 @@
 import { useNotesStore } from '.';
+import { EditorView } from 'codemirror';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
@@ -17,6 +18,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const createdTime = ref<string>();
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
+  const editorView = ref<EditorView>(null);
 
   // TODO: master persistent value should be done via indexed db.
   const setNoteData = (text: string, orgNode: OrgNode) => {
@@ -131,5 +133,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     toggleDebug,
     debug,
     cursorPosition,
+    editorView,
   };
 });

@@ -113,6 +113,7 @@ body {
   --default-block-padding: 16px;
   --default-item-radius: 8px;
   --search-icn-size: 42px;
+  --defult-gap: 16px;
 
   // Src block
   --src-block-header-padding-y: 16px;
@@ -129,7 +130,8 @@ body {
   body {
     --default-block-padding: 8px;
     --footer-height: 56px;
-    --editor-padding: 8px 0;
+    --editor-padding: 8px;
+    --default-gap: 10px;
   }
 }
 

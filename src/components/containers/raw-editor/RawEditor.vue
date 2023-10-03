@@ -54,6 +54,7 @@ const emits = defineEmits<{
   (e: 'dataUpdated', val: [string, OrgNode]): void;
   (e: 'changeCursorPosition', val: number): void;
   (e: 'focusChanged', val: boolean): void;
+  (e: 'init', val: { view: EditorView }): void;
 }>();
 
 const text = ref(props.modelValue);
@@ -179,6 +180,7 @@ const initEditor = () => {
     parent: editor.value,
   });
 
+  emits('init', { view: editorView });
   setCursorPositionToTheEOF();
 };
 
