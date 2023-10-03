@@ -127,7 +127,7 @@ const initEditor = () => {
       readOnlyTransactionFilter(() => orgNode),
       basicOrgTheme,
       editorMenuExtension({
-        parentElement: '.editor-wrapper',
+        parentElement: '.editor-page-content',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
           return dynamicComponent.mount(EditorMenu, wrap, {
             editorView,
@@ -296,6 +296,10 @@ watch(
   -webkit-font-smoothing: auto;
 }
 
+.cm-line:not(.org-src-block-line) {
+  line-height: var(--editor-line-height);
+}
+
 .cm-tag-name,
 .cm-angle-bracket {
   color: var(--yellow);
@@ -435,7 +439,7 @@ watch(
       color: var(--cyan);
       position: absolute;
       left: -4px;
-      transform: scale(1.4);
+      transform: scaleY(var(--editor-line-height));
     }
   }
 }
@@ -553,7 +557,6 @@ org-keyword-block {
     transform: scale(1.6);
     position: absolute;
     left: -8px;
-    top: -3px;
   }
 }
 

@@ -7,7 +7,7 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
     return;
   }
   const sizeCalculateTarget = activeLineElement.firstElementChild
-    ? activeLineElement.firstElementChild
+    ? activeLineElement
     : activeLineElement;
 
   const parentElement: Element =
@@ -18,20 +18,20 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
   const parentElementTopPadding = parseInt(
     window.getComputedStyle(parentElement).paddingTop
   );
-
+  const menuWidth = 30;
   const relativeOffset =
     sizeCalculateTarget.getBoundingClientRect().top +
-    window.scrollY -
-    parentElementTopPadding -
-    6;
+    sizeCalculateTarget.getBoundingClientRect().height / 2 -
+    menuWidth +
+    parentElement.scrollTop -
+    parentElementTopPadding;
 
   const wrapElement = document.createElement('div');
   wrapElement.className = 'cm-action-menu';
   wrapElement.style.position = 'absolute';
   wrapElement.style.top = `${relativeOffset + 4}px`;
   wrapElement.style.zIndex = '5';
-  // wrapElement.style.width = '30px';
-  wrapElement.style.height = '30px';
+  wrapElement.style.height = `${menuWidth}`;
 
   const cmEditor = document.querySelector('.cm-editor');
 
