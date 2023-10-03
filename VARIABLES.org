@@ -205,9 +205,9 @@
 - =--src-block-padding-x=:  16px;
 ** Editor
 - =--editor-padding=:  16px 30px;
-- =--mobile-editor-padding=:  0 0;
 ** Max width 599px
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
+- =--editor-padding=:  8px 0;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);

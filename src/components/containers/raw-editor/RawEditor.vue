@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-wrapper" :class="{ readonly, mobile: $q.screen.lt.sm }">
+  <div class="editor-wrapper" :class="{ readonly }">
     <div id="editor" ref="editor"></div>
   </div>
 </template>
@@ -226,7 +226,6 @@ watch(
   }
 }
 
-.org-link,
 .org-bold,
 .org-italic,
 .org-verbatim,
@@ -243,7 +242,6 @@ watch(
   cursor: pointer;
 }
 
-.org-link-url,
 .org-doc-title-keyword {
   display: none;
 }
@@ -255,18 +253,11 @@ watch(
   border-right: 0 !important;
 }
 
-/* .Codemirror,
-.vue-codemirror,
-.cm-editor {
-  height: calc(100vh - var(--default-block-padding) * 2);
-}
- */
 .org-property-drawer {
   color: var(--cyan);
   font-family: var(--editor-font-family-main);
 }
 
-/* TODO: feature/codemirror change font style for editor */
 .cm-line,
 .org-text,
 .header-text {
@@ -444,6 +435,8 @@ org-keyword-block {
   z-index: 1000;
   cursor: pointer;
   transition-delay: 0.1s;
+  left: -36px;
+  top: 0;
 
   &:hover {
     opacity: 1;
@@ -550,15 +543,45 @@ org-keyword-block {
   left: -20px;
 }
 
-.mobile {
-  .cm-editor-actions {
-    flex-direction: column-reverse;
-  }
-  .cm-action-menu {
-    left: -16px;
-  }
-  .cm-scroller {
-    padding: var(--mobile-editor-padding);
+@include mobile {
+  .editor-wrapper {
+    .cm-editor-actions {
+      flex-direction: column-reverse;
+    }
+
+    .cm-action-menu {
+      left: -16px;
+      display: none;
+    }
+
+    .cm-scroller {
+      padding: var(--mobile-editor-padding);
+    }
+
+    .cm-gutters {
+      position: absolute !important;
+      left: 0;
+    }
+
+    .cm-gutterElement {
+      margin-left: -5px;
+    }
+
+    .org-headline-line {
+      margin-left: 14px;
+    }
+
+    .org-widget-edit-badge {
+      right: 8px;
+      top: 8px;
+      opacity: 1;
+      left: unset;
+    }
+
+    .cm-line {
+      padding-left: var(--default-block-padding);
+      padding-right: var(--default-block-padding);
+    }
   }
 }
 

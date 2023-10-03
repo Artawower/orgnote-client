@@ -1,7 +1,5 @@
 <template>
-  <q-page
-    :class="{ flex: noteEditorStore.debug, 'with-modeline': $q.screen.lt.sm }"
-  >
+  <q-page :class="{ flex: noteEditorStore.debug }">
     <div class="editor-page-content">
       <q-splitter
         v-if="noteEditorStore.debug"

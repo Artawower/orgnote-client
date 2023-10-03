@@ -1,5 +1,5 @@
 <template>
-  <q-page class="note-view height-auto with-modeline">
+  <q-page class="note-view height-auto">
     <author-info
       v-if="currentNote && !currentNote?.isMy"
       :author="currentNote?.author"
