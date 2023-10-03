@@ -32,7 +32,7 @@ export interface SearchItem {
   name: string;
   description?: string;
   icon?: string;
-  handler: (...arg: any[]) => void;
+  handler: (...arg: unknown[]) => void;
 }
 </script>
 
@@ -46,8 +46,8 @@ const props = defineProps<{
   items: SearchItem[];
   autofocus?: boolean;
   handlerWrapper?: (
-    handler: (...arg: any[]) => void
-  ) => (...arg: any[]) => void;
+    handler: (...arg: unknown[]) => void
+  ) => (...arg: unknown[]) => void;
 }>();
 
 const search = ref<string>('');

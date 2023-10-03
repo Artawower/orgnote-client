@@ -38,7 +38,7 @@ const openEditorInsertDialog = () => {
 const editorActions = useEditorActionsStore();
 const editorInsertItems: SearchItem[] = editorActions.actions;
 
-const onItemClicked = (itemFn: (arg: any) => void) => {
+const onItemClicked = (itemFn: (arg: unknown) => void) => {
   return () => itemFn(props.editorView);
 };
 </script>

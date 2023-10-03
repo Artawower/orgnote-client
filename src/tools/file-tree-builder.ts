@@ -42,7 +42,7 @@ export const convertFileTreeToFlatTree = (fileTree?: FileTree): FlatTree[] => {
     return [];
   }
   const tree: FlatTree[] = [];
-  Object.entries(fileTree).forEach(([_, value]) => {
+  Object.entries(fileTree).forEach(([, value]) => {
     const node = {
       ...value,
       children: convertFileTreeToFlatTree(value.children),
@@ -98,7 +98,7 @@ const extractNestedFilesIds = (tree: FileTree): string[] => {
     return [];
   }
   const result: string[] = [];
-  Object.entries(tree).forEach(([_, value]) => {
+  Object.entries(tree).forEach(([, value]) => {
     if (value.type === 'file') {
       result.push(value.id);
     }

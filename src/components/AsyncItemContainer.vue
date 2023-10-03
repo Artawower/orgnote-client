@@ -11,7 +11,7 @@ import { computed, toRef } from 'vue';
 
 const props = defineProps<{
   index: number;
-  itemsList: any[];
+  itemsList: unknown[];
   height: number;
 }>();
 

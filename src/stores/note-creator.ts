@@ -1,13 +1,12 @@
-import { defineStore } from 'pinia';
-
-import { getInitialNoteTemplate, getFileNameWithoutExtension } from 'src/tools';
-import { parse, withMetaInfo } from 'org-mode-ast';
-import { Note } from 'src/models';
-import { ModelsNoteMeta } from 'src/generated/api';
 import { useNotesStore } from './notes';
-import { useRouter } from 'vue-router';
+import { parse, withMetaInfo } from 'org-mode-ast';
+import { defineStore } from 'pinia';
+import { ModelsNoteMeta } from 'src/generated/api';
+import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
+import { getFileNameWithoutExtension, getInitialNoteTemplate } from 'src/tools';
 import { v4 } from 'uuid';
+import { useRouter } from 'vue-router';
 
 export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   // TODO: master template list for plugins.
@@ -24,11 +23,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   const notesStore = useNotesStore();
   const router = useRouter();
 
-  const create = async (
-    id?: string,
-    filePath?: string[],
-    templateId?: string
-  ) => {
+  const create = async (id?: string, filePath?: string[]) => {
     id ??= v4();
     filePath ??= ['Untitled.org'];
     const noteName = filePath[filePath.length - 1];

@@ -1,6 +1,6 @@
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
-import Dexie, { UpdateSpec } from 'dexie';
+import Dexie from 'dexie';
 import { Note, NotePreview } from 'src/models';
 import { toDeepRaw } from 'src/tools';
 

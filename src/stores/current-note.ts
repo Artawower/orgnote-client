@@ -23,10 +23,10 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   const router = useRouter();
   const authStore = useAuthStore();
 
-  const selectNoteFromCache = async (noteId: string): Promise<ParsedNote> => {
-    const foundParsedNote = noteCache.value.find((pn) => pn.note.id === noteId);
-    return foundParsedNote as ParsedNote;
-  };
+  // const selectNoteFromCache = async (noteId: string): Promise<ParsedNote> => {
+  //   const foundParsedNote = noteCache.value.find((pn) => pn.note.id === noteId);
+  //   return foundParsedNote as ParsedNote;
+  // };
 
   const selectPublicNote = async (
     noteId: string

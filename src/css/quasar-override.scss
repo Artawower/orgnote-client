@@ -20,3 +20,8 @@ body {
 .q-item--active {
   color: var(--cyan);
 }
+
+.q-page {
+  height: calc(100svh - var(--footer-height));
+  overflow: auto;
+}
