@@ -123,6 +123,7 @@ onChangeToolbarActions({
 .debug-splitter {
   flex: 1;
   max-height: calc(100svh - 80px);
+  height: calc(100svh - var(--footer-height) + 16px);
 }
 
 .debug {
