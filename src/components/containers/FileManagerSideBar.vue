@@ -33,6 +33,7 @@
 <script lang="ts" setup>
 import { QTree } from 'quasar';
 import { useFileManagerStore } from 'src/stores';
+import { callKeyboard } from 'src/tools';
 
 import { ref } from 'vue';
 
@@ -46,6 +47,7 @@ const fileManagerStore = useFileManagerStore();
 
 const createFolder = () => {
   fileManagerStore.createFolder();
+  callKeyboard();
 };
 
 const search = ref<string>('');

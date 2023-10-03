@@ -19,3 +19,4 @@ export * from './initial-note-template';
 export * from './unique-file-name';
 export * from './codemirror';
 export * from './org-node-navigation';
+export * from './call-keyboard';

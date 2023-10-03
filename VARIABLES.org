@@ -212,5 +212,6 @@
 - =--footer-height=:  56px;
 - =--editor-padding=:  8px;
 - =--default-gap=:  10px;
+- =--file-item-height=:  46px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);

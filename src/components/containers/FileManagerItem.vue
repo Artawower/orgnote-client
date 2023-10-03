@@ -9,6 +9,8 @@
       <input
         ref="fileNameInput"
         v-model="fileName"
+        type="text"
+        autofocus
         :readonly="!editMode"
         class="file-name"
         @focusout="stopEdit"
@@ -16,7 +18,7 @@
         @keydown.escape="stopEdit"
       />
     </div>
-    <div class="actions">
+    <div v-show="!editMode" class="actions">
       <template v-if="!isFile">
         <icon-btn @click.stop="createFile" name="note_add" :hoverable="false" />
         <icon-btn
@@ -25,20 +27,25 @@
           :hoverable="false"
         />
       </template>
-      <icon-btn @click.stop="deleteFile" name="delete" :hoverable="false" />
-      <icon-btn @click.stop="editName" name="edit" :hoverable="false" />
+      <icon-btn
+        @click.stop.prevent="deleteFile"
+        name="delete"
+        :hoverable="false"
+      />
+      <icon-btn @click.stop.prevent="editName" name="edit" :hoverable="false" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
 import {
   useAuthStore,
   useCurrentNoteStore,
   useFileManagerStore,
 } from 'src/stores';
-import { FlatTree, convertFlatTreeToFileTree } from 'src/tools';
+import { FlatTree, callKeyboard, convertFlatTreeToFileTree } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -70,6 +77,7 @@ const deleteFile = () => {
 const createFolder = async () => {
   await fileManagerStore.createFolder(props.fileNode);
   emits('expand', props.fileNode.id);
+  callKeyboard();
 };
 
 const createFile = async () => {
@@ -83,6 +91,9 @@ const createFile = async () => {
 
 const router = useRouter();
 const openNote = () => {
+  if (editMode.value) {
+    return;
+  }
   if (props.fileNode.type === 'file') {
     router.push({
       name: RouteNames.RawEditor,
@@ -98,6 +109,7 @@ const fileNameInput = ref<HTMLInputElement | null>();
 
 const editName = () => {
   editMode.value = true;
+  callKeyboard();
 };
 
 const confirmEdit = async () => {
@@ -109,8 +121,13 @@ const confirmEdit = async () => {
   fileManagerStore.stopEdit();
 };
 
-const stopEdit = () => {
+const $q = useQuasar();
+const stopEdit = async () => {
   if (!editMode.value) {
+    return;
+  }
+  if (!$q.platform.is.desktop) {
+    await confirmEdit();
     return;
   }
   fileManagerStore.stopEdit();
@@ -123,12 +140,13 @@ const focusEditedInput = () => {
     return;
   }
   setTimeout(() => {
-    fileNameInput.value.focus();
+    // TODO: master doesn't work for ios
     fileNameInput.value.setSelectionRange(
       0,
       props.fileNode.name.length - 4,
       'forward'
     );
+    fileNameInput.value.focus();
   });
 };
 
@@ -151,11 +169,6 @@ tryInitEditMode();
 
 onMounted(() => focusEditedInput());
 
-const updateFileName = (e: Event) => {
-  const target = e.target as HTMLDivElement;
-  fileName.value = target.innerText;
-};
-
 const currentNoteStore = useCurrentNoteStore();
 const isFileOpened = computed(() => {
   return (
@@ -168,6 +181,7 @@ const isFileOpened = computed(() => {
 <style lang="scss" scoped>
 .actions {
   @include flexify(row);
+  gap: var(--default-gap);
 }
 
 .file-name {
@@ -232,6 +246,12 @@ const isFileOpened = computed(() => {
     .icon-btn {
       color: var(--file-item-color-hover);
     }
+  }
+}
+
+.mobile {
+  .actions {
+    display: flex;
   }
 }
 

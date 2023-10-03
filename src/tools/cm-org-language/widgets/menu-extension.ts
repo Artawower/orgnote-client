@@ -15,6 +15,10 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
       ? document.querySelector(parent as string)
       : (parent as Element);
 
+  if (!parentElement) {
+    return;
+  }
+
   const parentElementTopPadding = parseInt(
     window.getComputedStyle(parentElement).paddingTop
   );
