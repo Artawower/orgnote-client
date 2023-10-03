@@ -8,7 +8,7 @@ export type EmbeddedOrgWidget = {
 export type WidgetBuilder = (
   wrap: HTMLElement,
   orgNode: OrgNode,
-  rootNodeSrc: () => OrgNode,
+  rootNodeSrc?: () => OrgNode,
   onUpdateFn?: (newVal: string) => void
 ) => EmbeddedOrgWidget;
 

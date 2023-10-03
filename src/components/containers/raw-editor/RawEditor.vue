@@ -76,6 +76,7 @@ const { multilineEmbeddedWidgets, inlineEmbeddedWidgets, lineClasses } =
 
 const dynamicComponent = useDynamicComponent();
 
+// TODO: master refactor (important)
 const initEditor = () => {
   if (!props.modelValue) {
     return;
@@ -129,6 +130,19 @@ const initEditor = () => {
         }
         emits('focusChanged', v.view.hasFocus);
         emits('changeCursorPosition', v.state.selection.main.head);
+
+        if (v.heightChanged) {
+          const currentLine = editorView?.state.doc.lineAt(
+            editorView?.state.selection.main.head
+          );
+          editorView.dispatch({
+            selection: {
+              anchor: editorView.state.selection.main.anchor,
+              head: currentLine?.to ?? 0,
+            },
+            scrollIntoView: true,
+          });
+        }
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
       orgMultilineWidgets(
