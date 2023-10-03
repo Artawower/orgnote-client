@@ -1,12 +1,12 @@
-import { defineStore } from 'pinia';
-import hotkeys from 'src/tools/tinykeys-wrapper';
-import { computed, ref } from 'vue';
-
-import {
-  Keybinding,
-  DEFAULT_KEYBINDING_GROUP,
-} from 'src/models/keybinding.model';
 import { CompletionCandidate, useCompletionStore } from './completion';
+import { defineStore } from 'pinia';
+import {
+  DEFAULT_KEYBINDING_GROUP,
+  Keybinding,
+} from 'src/models/keybinding.model';
+import hotkeys from 'src/tools/tinykeys-wrapper';
+
+import { computed, ref } from 'vue';
 
 type GroupedKeybindings = { [key: string]: Keybinding[] };
 

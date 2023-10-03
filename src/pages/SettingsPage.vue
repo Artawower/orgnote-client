@@ -30,7 +30,7 @@
 import { VueComponent } from 'src/models';
 import { useAuthStore } from 'src/stores';
 
-import { ref, shallowRef } from 'vue';
+import { shallowRef } from 'vue';
 
 import ApiSettingsPage from './ApiSettingsPage.vue';
 import CommonSettingsPage from './CommonSettingsPage.vue';

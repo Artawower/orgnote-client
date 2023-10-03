@@ -4,6 +4,8 @@
       <q-input
         v-model="filter"
         ref="completionInput"
+        autofocus
+        @blur="closeCompletionOnBlur"
         borderless
         :placeholder="$t(placeholder)"
       >
@@ -35,7 +37,7 @@
             class="flex column completion-item"
             :class="{ selected: index === selectedIndex }"
             :clickable="true"
-            @click="executeCommand(item)"
+            @mousedown="executeCommand(item)"
             @mouseover="(e: MouseEvent) => focusCompletionCandidate(e, index)"
           >
             <div>
@@ -65,17 +67,18 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useCommandExecutor } from 'src/hooks';
-import { useKeybindingStore } from 'src/stores/keybindings';
 import { storeToRefs } from 'pinia';
+import { QVirtualScroll } from 'quasar';
+import { useCommandExecutor } from 'src/hooks';
 import {
   CompletionCandidate,
   defaultCompletionLimit,
   useCompletionStore,
 } from 'src/stores';
-import { QVirtualScroll } from 'quasar';
-import { debounce, compareElemPositions } from 'src/tools';
+import { useKeybindingStore } from 'src/stores/keybindings';
+import { compareElemPositions, debounce } from 'src/tools';
+
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 
@@ -140,8 +143,17 @@ const focusCompletionCandidate = (e: MouseEvent, index: number) => {
 };
 
 const executeCommand = (item: CompletionCandidate) => {
-  keybindingStore.executeCommand({ command: item.command });
+  keybindingStore.executeCommand({
+    command: item.command,
+    commandHandler: item.commandHandler,
+  });
   completionStore.closeCompletion();
+};
+
+const closeCompletionOnBlur = () => {
+  setTimeout(() => {
+    completionStore.closeCompletion();
+  }, 10);
 };
 </script>
 
