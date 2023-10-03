@@ -1,33 +1,22 @@
 <template>
-  <a
-    :href="linkType === 'image' ? buildMediaFilePath(linkAddress) : linkAddress"
-    class="org-link"
-    target="_blank"
-  >
-    <image-resolver
-      class="image-preview"
-      v-if="linkType === 'image'"
-      :src="linkAddress"
-    />
-
-    <template v-else>
-      <component :is="wrapperComponent" :id="orgLinkId">
-        <content-renderer v-if="linkNameNode" :node="linkNameNode" />
-        <template v-else>
-          {{ linkAddress }}
-        </template>
-      </component>
-    </template>
+  <image-resolver
+    class="image-preview"
+    v-if="linkType === 'image'"
+    :src="linkAddress"
+  />
+  <a v-else :href="linkAddress" class="org-link" target="_blank">
+    <component :is="wrapperComponent" :id="orgLinkId">
+      <content-renderer v-if="linkNameNode" :node="linkNameNode" />
+      <template v-else>
+        {{ linkAddress }}
+      </template>
+    </component>
   </a>
 </template>
 
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';
-import {
-  buildMediaFilePath,
-  extractOrgLink,
-  extractOrgLinkId,
-} from 'src/tools';
+import { extractOrgLink, extractOrgLinkId } from 'src/tools';
 
 import { defineComponent, toRef } from 'vue';
 

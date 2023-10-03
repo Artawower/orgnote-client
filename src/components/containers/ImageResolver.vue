@@ -1,6 +1,7 @@
 <template>
   <q-img
     class="pointer rounded-borders image-preview"
+    @click="onImgClick"
     :no-transition="true"
     :no-spinner="true"
     :src="blobUrl ?? buildMediaFilePath(previewImg)"
@@ -36,6 +37,13 @@ const initStoredMediaFile = async () => {
 const previewImg = computed(() => {
   return buildMediaFilePath(props.src);
 });
+
+const onImgClick = () => {
+  if (blobUrl.value) {
+    return;
+  }
+  window.open(previewImg.value, '_blank');
+};
 </script>
 
 <style lang="scss" scoped>
