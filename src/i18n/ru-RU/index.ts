@@ -56,4 +56,5 @@ export default {
   'insert note link': 'вставить ссылку на заметку',
   image: 'изображение',
   'insert an image': 'вставить изображение',
+  api: 'api',
 };

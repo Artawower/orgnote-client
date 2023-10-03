@@ -59,4 +59,5 @@ export default {
   'insert note link': 'insert note link',
   image: 'image',
   'insert an image': 'insert an image',
+  api: 'api',
 };
