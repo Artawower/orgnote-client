@@ -138,7 +138,7 @@ onChangeToolbarActions({
 }
 
 .editor-page-content {
-  height: calc(100svh - var(--footer-height) + 16px);
+  height: calc(100svh - var(--footer-height));
   overflow: auto;
 }
 </style>

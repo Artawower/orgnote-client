@@ -172,6 +172,15 @@ const initEditor = () => {
           },
         ])
       ),
+      keymap.of([
+        {
+          key: 'Escape',
+          run: () => {
+            editorView.contentDOM.blur();
+            return false;
+          },
+        },
+      ]),
     ],
   });
 
