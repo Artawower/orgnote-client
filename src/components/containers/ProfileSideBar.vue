@@ -8,7 +8,7 @@
         @click="openProfile"
       >
         <q-avatar size="160px" class="q-mx-auto">
-          <img v-if="user.isAnonymous" src="/icons/brain.png" />
+          <img v-if="user.isAnonymous" src="/icons/unicorn.png" />
           <img v-else :src="user.avatarUrl" />
         </q-avatar>
         <div class="text-center q-mt-lg">
@@ -53,10 +53,9 @@
 </template>
 
 <script lang="ts" setup>
+import { version } from '../../../package.json';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from 'src/stores';
-
-import { version } from '../../../package.json';
 
 import DownloadLinks from 'components/DownloadLinks.vue';
 import LoginButtons from 'components/LoginButtons.vue';
