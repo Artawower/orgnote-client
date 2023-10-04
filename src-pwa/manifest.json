@@ -1,7 +1,17 @@
 {
+  "name": "Org Note",
+  "short_name": "Org Note",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#027be3",
+  "categories": [
+    "books",
+    "education",
+    "lifestyle",
+    "productivity",
+    "utilities"
+  ],
+  "display": "fullscreen",
   "icons": [
     {
       "src": "icons/icon-128x128.png",
