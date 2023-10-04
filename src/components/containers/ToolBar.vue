@@ -42,4 +42,11 @@ const toolbarStore = useToolbarStore();
 .footer-wrapper {
   position: relative;
 }
+
+.mobile {
+  .toolbar {
+    padding-bottom: 24px;
+    height: calc(var(--footer-height) + 24px) !important;
+  }
+}
 </style>

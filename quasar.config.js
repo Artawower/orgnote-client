@@ -202,15 +202,20 @@ module.exports = configure(function (ctx) {
 
         // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
         pwa: {
-            workboxMode: 'injectManifest', // or 'injectManifest'
-            injectPwaMetaTags: true,
-            swFilename: 'sw.js',
-            manifestFilename: 'manifest.json',
-            useCredentialsForManifestTag: false,
-            // extendGenerateSWOptions (cfg) {}
-            // extendInjectManifestOptions (cfg) {},
-            // extendManifestJson (json) {}
-            // extendPWACustomSWConf (esbuildConf) {}
+          workboxMode: 'injectManifest', // or 'injectManifest'
+          injectPwaMetaTags: false,
+          swFilename: 'sw.js',
+          manifestFilename: 'manifest.json',
+          useCredentialsForManifestTag: false,
+          // extendGenerateSWOptions (cfg) {}
+          // extendInjectManifestOptions (cfg) {},
+          // extendManifestJson (json) {}
+          // extendPWACustomSWConf (esbuildConf) {}
+          metaVariables: {
+            appleMobileWebAppStatusBarStyle: 'black-translucent',
+            appleMobileWebAppCapable: 'yes',
+            msapplicationTileColor: 'red'
+          },
         },
 
         // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova

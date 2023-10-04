@@ -1,5 +1,9 @@
 body {
-  background-color: var(--bg) !important;
+  background-color: var(--bg-alt) !important;
+}
+
+.q-page-container {
+  background-color: var(--bg);
 }
 
 .q-drawer {
