@@ -30,8 +30,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onIosViewportChanged, useCommandExecutor } from 'src/hooks';
-import { useSidebarStore } from 'src/stores';
+import { onMobileViewportChanged, useCommandExecutor } from 'src/hooks';
+import { useSidebarStore, useToolbarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
@@ -67,9 +67,17 @@ registerKeybindings([
 
 const notesImportStore = useNotesImportStore();
 
-const { viewportHeight } = onIosViewportChanged((height) => {
-  const isKeyboardOpened = height !== window.innerHeight;
-  document.body.style.maxHeight = isKeyboardOpened ? `${height}px` : 'none';
+const toolbarStore = useToolbarStore();
+const { viewportHeight } = onMobileViewportChanged((info) => {
+  if (info.keyboardOpened.value) {
+    document.body.classList.add('keyboard-opened');
+  } else {
+    document.body.classList.remove('keyboard-opened');
+  }
+  toolbarStore.showToolbar = !info.keyboardOpened.value;
+  document.body.style.maxHeight = info.keyboardOpened.value
+    ? `${info.viewportHeight.value}px`
+    : 'none';
 });
 </script>
 

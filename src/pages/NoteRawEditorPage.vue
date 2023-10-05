@@ -6,7 +6,9 @@
     @focus-changed="toolbarStore.showToolbar = !$event"
     @init="setEditorView"
   ></raw-editor>
-  <editor-actions-toolbar v-if="$q.screen.lt.sm && !toolbarStore.showToolbar" />
+  <editor-actions-toolbar
+    v-if="$q.screen.lt.sm && !toolbarStore.showToolbar && keyboardOpened"
+  />
 </template>
 
 <script lang="ts">
@@ -21,6 +23,7 @@ import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
 import { useEditorActions } from 'src/hooks/editor-actions-hook';
 import { EditorView } from 'codemirror';
+import { onMobileViewportChanged } from 'src/hooks';
 
 const noteEditorStore = useNoteEditorStore();
 const toolbarStore = useToolbarStore();
@@ -44,6 +47,8 @@ watch(
     initialNoteText.value = val;
   }
 );
+
+const { keyboardOpened } = onMobileViewportChanged();
 
 useEditorActions();
 </script>
