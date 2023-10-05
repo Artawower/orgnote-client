@@ -1,4 +1,4 @@
-export function resetPageMinHeight(offset: number): Record<string, string> {
+export function resetPageMinHeight(): Record<string, string> {
   return {
     minHeight: '0',
   };

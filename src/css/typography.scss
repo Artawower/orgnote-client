@@ -50,6 +50,10 @@ body {
   color: var(--font-color-action);
 }
 
+.capitalize::first-letter {
+  text-transform: capitalize;
+}
+
 .text {
   font-size: var(--paragraph-font-size);
 }

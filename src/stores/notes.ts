@@ -33,6 +33,7 @@ export const useNotesStore = defineStore('notes', () => {
     await repositories.notes.deleteNotes(noteIds);
     notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
     await fileManagerStore.updateFileManager();
+    await loadNotes();
   };
 
   const markAsDeleted = async (noteIds: string[]) => {
@@ -110,6 +111,10 @@ export const useNotesStore = defineStore('notes', () => {
     total.value = await repositories.notes.count();
   };
 
+  const loadTotal = async () => {
+    total.value = await repositories.notes.count();
+  };
+
   return {
     notes,
     selectedNote,
@@ -118,6 +123,7 @@ export const useNotesStore = defineStore('notes', () => {
     markAsDeleted,
 
     loadNotes,
+    loadTotal,
     deleteNotes,
     fetchNotes,
     setFilters,

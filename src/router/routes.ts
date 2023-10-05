@@ -19,6 +19,7 @@ export enum RouteNames {
   RawEditor = 'Raw editor',
   WysiwygEditor = 'WYSIWYG editor',
   PreviewEditor = 'Preview editor',
+  Dashboard = 'Dashboard',
 }
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
@@ -86,6 +87,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     },
     {
       path: '',
+      name: RouteNames.Dashboard,
+      component: () => import('pages/DashboardPage.vue'),
+    },
+    {
+      path: 'feed',
       name: RouteNames.NoteList,
       component: () => import('pages/PublicNotesPage.vue'),
     },
