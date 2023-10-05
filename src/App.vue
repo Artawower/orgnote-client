@@ -20,4 +20,8 @@ syncStore.syncNotes();
 // Will be moved into a separate file later.
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
+
+if (window.navigator.standalone) {
+  document.body.classList.add('standalone');
+}
 </script>

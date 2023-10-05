@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts" setup>
-import { onIosViewportChanged } from 'src/hooks';
 import { useEditorActionsStore, useNoteEditorStore } from 'src/stores';
 
 import { SearchItem } from '../ui/SearchContainer.vue';

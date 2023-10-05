@@ -35,7 +35,6 @@ import { useSidebarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { resetPageMinHeight } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
