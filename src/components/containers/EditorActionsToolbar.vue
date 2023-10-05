@@ -12,6 +12,7 @@
 </template>
 
 <script lang="ts" setup>
+import { onIosViewportChanged } from 'src/hooks';
 import { useEditorActionsStore, useNoteEditorStore } from 'src/stores';
 
 import { SearchItem } from '../ui/SearchContainer.vue';
@@ -39,7 +40,7 @@ const handleEditorAction = (action: SearchItem) => {
   after that we can calculate real viewport height
   based on focus status in the CM */
   position: absolute;
-  bottom: 0;
+  top: calc(var(--viewport-height) - 40px);
 
   &:active {
     color: var(--cyan);

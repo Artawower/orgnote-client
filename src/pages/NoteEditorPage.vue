@@ -1,5 +1,8 @@
 <template>
-  <q-page :class="{ flex: noteEditorStore.debug }">
+  <q-page
+    :class="{ flex: noteEditorStore.debug }"
+    :style-fn="resetPageMinHeight"
+  >
     <q-splitter
       v-if="noteEditorStore.debug"
       v-model="splitterSize"
@@ -44,6 +47,7 @@ import { onChangeToolbarActions } from 'src/hooks';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
+import { resetPageMinHeight } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue';

@@ -3,3 +3,4 @@ export * from './notification';
 export * from './change-toolbar-actions';
 export * from './editor-actions-hook';
 export * from './vue-dynamic-mount';
+export * from './ios-viewport-changed';

@@ -587,6 +587,9 @@ org-keyword-block {
 
 @include mobile {
   .editor-wrapper {
+    overflow-y: auto;
+
+    max-height: calc(var(--viewport-height) - 40px);
     .cm-editor-actions {
       flex-direction: column-reverse;
     }

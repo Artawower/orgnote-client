@@ -1,5 +1,11 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout
+    view="lHh Lpr lFf"
+    :style="{
+      '--viewport-height': viewportHeight + 'px',
+      minHeight: 0,
+    }"
+  >
     <file-uploader
       class="main-content"
       @uploaded="notesImportStore.uploadFiles"
@@ -24,13 +30,14 @@
 </template>
 
 <script lang="ts" setup>
-import { useCommandExecutor } from 'src/hooks';
+import { onIosViewportChanged, useCommandExecutor } from 'src/hooks';
 import { useSidebarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { resetPageMinHeight } from 'src/tools';
 
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
@@ -60,6 +67,11 @@ registerKeybindings([
 ]);
 
 const notesImportStore = useNotesImportStore();
+
+const { viewportHeight } = onIosViewportChanged((height) => {
+  const isKeyboardOpened = height !== window.innerHeight;
+  document.body.style.maxHeight = isKeyboardOpened ? `${height}px` : 'none';
+});
 </script>
 
 <style lang="scss" scoped>
@@ -70,5 +82,15 @@ const notesImportStore = useNotesImportStore();
 
 .with-composite-bar {
   margin-left: var(--sidebar-width);
+}
+</style>
+
+<style lang="scss">
+.q-layout,
+.q-page-container,
+.q-page,
+.file-uploader {
+  max-height: var(--viewport-height);
+  height: var(--viewport-height);
 }
 </style>
