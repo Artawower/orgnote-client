@@ -30,4 +30,5 @@ export function insertTemplate(params: {
       head: caretPos,
     },
   });
+  setTimeout(() => editorView.focus());
 }
