@@ -33,7 +33,7 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
   const wrapElement = document.createElement('div');
   wrapElement.className = 'cm-action-menu';
   wrapElement.style.position = 'absolute';
-  wrapElement.style.top = `${relativeOffset + 4}px`;
+  wrapElement.style.top = `${relativeOffset}px`;
   wrapElement.style.zIndex = '5';
   wrapElement.style.height = `${menuWidth}`;
 

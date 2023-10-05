@@ -6,7 +6,7 @@
     @focus-changed="toolbarStore.showToolbar = !$event"
     @init="setEditorView"
   ></raw-editor>
-  <editor-actions-toolbar v-if="!toolbarStore.showToolbar" />
+  <editor-actions-toolbar v-if="$q.screen.lt.sm && !toolbarStore.showToolbar" />
 </template>
 
 <script lang="ts">
