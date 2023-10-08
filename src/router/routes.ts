@@ -22,19 +22,21 @@ export enum RouteNames {
   Dashboard = 'Dashboard',
 }
 
+export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
+  path: 'auth/login',
+  name: RouteNames.AuthPage,
+  component: () => import('pages/AuthPage.vue'),
+  meta: {
+    programmaticalNavigation: false,
+  },
+};
+
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   path: '/',
   component: () => import('layouts/MainLayout.vue'),
   name: RouteNames.Home,
   children: [
-    {
-      path: 'auth/login',
-      name: RouteNames.AuthPage,
-      component: () => import('pages/AuthPage.vue'),
-      meta: {
-        programmaticalNavigation: false,
-      },
-    },
+    AUTH_PAGE_ROUTE,
     {
       path: 'extensions',
       name: RouteNames.Extensions,

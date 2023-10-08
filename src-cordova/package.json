@@ -15,6 +15,7 @@
   "devDependencies": {
     "cordova-android": "^12.0.1",
     "cordova-ios": "^7.0.1",
+    "cordova-plugin-customurlscheme": "github:EddyVerbruggen/LaunchMyApp-PhoneGap-Plugin",
     "cordova-plugin-splashscreen": "^6.0.1"
   },
   "cordova": {
@@ -23,7 +24,10 @@
       "ios"
     ],
     "plugins": {
-      "cordova-plugin-splashscreen": {}
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-customurlscheme": {
+        "URL_SCHEME": "orgnote"
+      }
     }
   }
 }

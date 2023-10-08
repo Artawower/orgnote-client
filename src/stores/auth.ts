@@ -1,14 +1,14 @@
+import { useSettingsStore } from './settings';
+import { useSyncStore } from './sync';
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
+import { AuthApiAxiosParamCreator } from 'src/generated/api';
 import { OAuthProvider } from 'src/models';
 import { User } from 'src/models';
 import { v4 } from 'uuid';
 
 import { ref } from 'vue';
-
-import { useSettingsStore } from './settings';
-import { useSyncStore } from './sync';
 
 const defaultUserAccount = (): User => ({
   id: v4(),
@@ -25,9 +25,19 @@ export const useAuthStore = defineStore(
 
     const authViaGithub = async () => {
       try {
-        const rspns = (await sdk.auth.authProviderLoginGet(provider.value))
-          .data;
-        window.location.replace(rspns.data.redirectUrl);
+        const params = await AuthApiAxiosParamCreator().authProviderLoginGet(
+          provider.value
+        );
+        console.log('✎: [line 29][auth.ts] params: ', params.url);
+        // const rspns = (await sdk.auth.authProviderLoginGet(provider.value))
+        //   .data;
+        const authUrl = `${process.env.AUTH_DOMAIN}/${params.url}`;
+        console.log('✎: [line 35][auth.ts] authUrl: ', authUrl);
+        window.open(authUrl, '_system');
+        // console.log(
+        //   '✎: [line 31][auth.ts] rspns.data.redirectUrl: ',
+        //   rspns.data.redirectUrl
+        // );
       } catch (e) {
         console.log('✎: [line 22][auth.ts] e: ', e);
         // TODO: master  add error handler, notification service

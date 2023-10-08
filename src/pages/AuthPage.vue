@@ -5,8 +5,9 @@
 </template>
 
 <script lang="ts" setup>
+import { useQuasar } from 'quasar';
 import { User } from 'src/models';
-import { RouteNames } from 'src/router/routes';
+import { AUTH_PAGE_ROUTE, RouteNames } from 'src/router/routes';
 import { useAuthStore } from 'src/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -14,6 +15,14 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 
+const $q = useQuasar();
+
+// if ($q.platform.is.mobile) {
+//   // NOTE: Try to open mobile app
+const mobileAppUrl = `orgnote//${AUTH_PAGE_ROUTE}${window.location.search}`;
+window.open(mobileAppUrl, '_system');
+// }
+//
 const userInfo: User = {
   avatarUrl: route.query.avatarUrl as string,
   email: route.query.email as string,
