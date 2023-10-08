@@ -207,6 +207,8 @@
 ** Editor
 - =--editor-padding=:  16px 30px;
 - =--editor-line-height=:  1.8;
+** Device specific feature
+- =--device-padding-bottom=:  0px;
 ** Max width 599px
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
@@ -215,3 +217,4 @@
 - =--file-item-height=:  46px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
+- =--device-padding-bottom=:  24px;

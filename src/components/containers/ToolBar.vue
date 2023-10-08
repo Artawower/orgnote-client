@@ -46,7 +46,9 @@ const toolbarStore = useToolbarStore();
 .standalone {
   .toolbar {
     padding-bottom: 24px;
-    height: calc(var(--footer-height) + 24px) !important;
+    height: calc(
+      var(--footer-height) + var(--device-padding-bottom)
+    ) !important;
   }
 }
 </style>

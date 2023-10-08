@@ -139,6 +139,7 @@
   <!-- TODO: master disable quasar animtion. It's very irritable -->
   <q-drawer
     v-show="sidebarStore.opened"
+    class="main-sidebar"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     bordered
     :overlay="fullWidth"
@@ -251,5 +252,10 @@ const openSettings = () => {
   aside {
     left: var(--sidebar-width);
   }
+}
+
+.composite-bar,
+.main-sidebar {
+  padding-bottom: var(--device-padding-bottom);
 }
 </style>

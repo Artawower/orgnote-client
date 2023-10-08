@@ -123,6 +123,9 @@ body {
   // Editor
   --editor-padding: 16px 30px;
   --editor-line-height: 1.8;
+
+  // Device specific feature
+  --device-padding-bottom: 0px;
 }
 
 // Max width 599px
@@ -139,4 +142,8 @@ body {
 body {
   // Border
   --border-main: 1px solid var(--fg-alt);
+}
+
+body.standalone {
+  --device-padding-bottom: 24px;
 }

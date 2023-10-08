@@ -4,7 +4,6 @@ import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
-import { AuthApiAxiosParamCreator } from 'src/generated/api';
 import { OAuthProvider } from 'src/models';
 import { User } from 'src/models';
 import { v4 } from 'uuid';

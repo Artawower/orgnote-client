@@ -51,5 +51,6 @@ function handleCordovaAuth(url: string) {
   authStore.authUser(userInfo, searchParams.get('token'));
   router.push({ name: RouteNames.Home });
 }
-(window as any).handleOpenURL = handleCordovaAuth.bind(this);
+(window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =
+  handleCordovaAuth.bind(this);
 </script>
