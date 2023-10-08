@@ -21,9 +21,8 @@ export enum RouteNames {
   PreviewEditor = 'Preview editor',
   Dashboard = 'Dashboard',
 }
-
 export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
-  path: 'auth/login',
+  path: 'auth/login/:initialProvider?',
   name: RouteNames.AuthPage,
   component: () => import('pages/AuthPage.vue'),
   meta: {

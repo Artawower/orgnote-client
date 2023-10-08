@@ -9,8 +9,11 @@ export default {
 </script>
 
 <script lang="ts" setup>
+import { useRouter } from 'vue-router';
+import { User } from './models';
 import { jsBabel } from './plugins/js-babel';
-import { useOrgBabelStore, useSyncStore } from './stores';
+import { RouteNames } from './router/routes';
+import { useAuthStore, useOrgBabelStore, useSyncStore } from './stores';
 
 const syncStore = useSyncStore();
 
@@ -24,4 +27,29 @@ orgBabelStore.register(jsBabel);
 if (window.navigator.standalone) {
   document.body.classList.add('standalone');
 }
+
+const authStore = useAuthStore();
+
+const router = useRouter();
+
+// TODO: master move to external method.
+function handleCordovaAuth(url: string) {
+  const urlParams = url.split('?')?.[1];
+  if (!urlParams) {
+    return;
+  }
+  const searchParams = new URLSearchParams(urlParams);
+
+  const userInfo: User = {
+    avatarUrl: searchParams.get('avatarUrl'),
+    email: searchParams.get('email'),
+    nickName: searchParams.get('username'),
+    profileUrl: searchParams.get('profileUrl'),
+    id: searchParams.get('id'),
+  };
+
+  authStore.authUser(userInfo, searchParams.get('token'));
+  router.push({ name: RouteNames.Home });
+}
+(window as any).handleOpenURL = handleCordovaAuth.bind(this);
 </script>

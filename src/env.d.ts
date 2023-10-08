@@ -7,6 +7,6 @@ declare namespace NodeJS {
     VUE_ROUTER_BASE: string | undefined;
     API_URL: string | undefined;
     DATABASE_NAME: string;
-    AUTH_DOMAIN: string;
+    AUTH_URL: string;
   }
 }

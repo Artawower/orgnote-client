@@ -84,7 +84,7 @@ jobs:
             API_URL=${{ secrets.API_URL }}
             KEYPASS=${{ secrets.KEYPASS }}
             STOREPASS=${{ secrets.STOREPASS }}
-            AUTH_DOMAIN=${{ secrets.AUTH_DOMAIN }}
+            AUTH_URL=${{ secrets.AUTH_URL }}
             EOT
             git checkout master
             git fetch --all

@@ -36,12 +36,10 @@ export const useAuthStore = defineStore(
 
     const auth = async (provider: string) => {
       if ($q.platform.is.cordova) {
-        const params = await AuthApiAxiosParamCreator().authProviderLoginGet(
-          provider
-        );
-        console.log('✎: [line 29][auth.ts] params: ', params.url);
-        const authUrl = `${process.env.AUTH_DOMAIN}/${params.url}`;
-        console.log('✎: [line 35][auth.ts] authUrl: ', authUrl);
+        // TODO: master quick tmp solution.
+        // common OAuth for mobile and web
+        const authUrl = `${process.env.AUTH_URL}/auth/login/${provider}`;
+        console.log('✎: [line 42][auth.ts] authUrl: ', authUrl);
         window.open(authUrl, '_system');
         return;
       }
@@ -90,6 +88,7 @@ export const useAuthStore = defineStore(
       token,
       user,
       provider,
+      auth,
 
       authViaGithub,
       logout,

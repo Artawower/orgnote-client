@@ -74,7 +74,7 @@ module.exports = configure(function (ctx) {
             analyze: true,
             env: {
               API_URL: ctx.dev ? '' : process.env.API_URL,
-              AUTH_DOMAIN: process.env.AUTH_DOMAIN,
+              AUTH_URL: process.env.AUTH_URL,
             },
             // rawDefine: {}
             // ignorePublicFolder: true,
