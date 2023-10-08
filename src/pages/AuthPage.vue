@@ -17,12 +17,12 @@ const authStore = useAuthStore();
 
 const $q = useQuasar();
 
-// if ($q.platform.is.mobile) {
-//   // NOTE: Try to open mobile app
-const mobileAppUrl = `orgnote//${AUTH_PAGE_ROUTE}${window.location.search}`;
-window.open(mobileAppUrl, '_system');
-// }
-//
+if (!$q.platform.is.desktop) {
+  // NOTE: Try to open mobile app
+  const mobileAppUrl = `orgnote//${AUTH_PAGE_ROUTE}${window.location.search}`;
+  window.open(mobileAppUrl, '_system');
+}
+
 const userInfo: User = {
   avatarUrl: route.query.avatarUrl as string,
   email: route.query.email as string,

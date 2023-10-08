@@ -2,6 +2,7 @@ import { useSettingsStore } from './settings';
 import { useSyncStore } from './sync';
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
+import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { AuthApiAxiosParamCreator } from 'src/generated/api';
 import { OAuthProvider } from 'src/models';
@@ -22,26 +23,33 @@ export const useAuthStore = defineStore(
     const token = ref<string>();
     const user = ref<User>();
     const provider = ref<OAuthProvider>('github');
+    const $q = useQuasar();
 
     const authViaGithub = async () => {
       try {
-        const params = await AuthApiAxiosParamCreator().authProviderLoginGet(
-          provider.value
-        );
-        console.log('✎: [line 29][auth.ts] params: ', params.url);
-        // const rspns = (await sdk.auth.authProviderLoginGet(provider.value))
-        //   .data;
-        const authUrl = `${process.env.AUTH_DOMAIN}/${params.url}`;
-        console.log('✎: [line 35][auth.ts] authUrl: ', authUrl);
-        window.open(authUrl, '_system');
-        // console.log(
-        //   '✎: [line 31][auth.ts] rspns.data.redirectUrl: ',
-        //   rspns.data.redirectUrl
-        // );
+        await auth(provider.value);
       } catch (e) {
         console.log('✎: [line 22][auth.ts] e: ', e);
         // TODO: master  add error handler, notification service
       }
+    };
+
+    const auth = async (provider: string) => {
+      if ($q.platform.is.cordova) {
+        const params = await AuthApiAxiosParamCreator().authProviderLoginGet(
+          provider
+        );
+        console.log('✎: [line 29][auth.ts] params: ', params.url);
+        const authUrl = `${process.env.AUTH_DOMAIN}/${params.url}`;
+        console.log('✎: [line 35][auth.ts] authUrl: ', authUrl);
+        window.open(authUrl, '_system');
+        return;
+      }
+      const rspns = (await sdk.auth.authProviderLoginGet(provider)).data;
+
+      window.location.replace(rspns.data.redirectUrl);
+
+      return rspns;
     };
 
     const resetAuthInfo = () => {
