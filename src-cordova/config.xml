@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="org.note.app" version="0.8.25" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Org Note</name>
+    <name>OrgNote</name>
     <description>Org Note client for eponymous service</description>
     <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
         Apache Cordova Team
@@ -11,24 +11,25 @@
     <allow-navigation href="about:*" />
     <preference name="SplashMaintainAspectRatio" value="true" />
     <platform name="android">
-        <icon density="ldpi" src="res/android/ldpi.png" />
-        <icon density="mdpi" src="res/android/mdpi.png" />
-        <icon density="hdpi" src="res/android/hdpi.png" />
-        <icon density="xhdpi" src="res/android/xhdpi.png" />
-        <icon density="xxhdpi" src="res/android/xxhdpi.png" />
-        <icon density="xxxhdpi" src="res/android/xxxhdpi.png" />
-        <splash density="land-ldpi" src="res/screen/android/splash-land-ldpi.png" />
-        <splash density="port-ldpi" src="res/screen/android/splash-port-ldpi.png" />
-        <splash density="land-mdpi" src="res/screen/android/splash-land-mdpi.png" />
-        <splash density="port-mdpi" src="res/screen/android/splash-port-mdpi.png" />
-        <splash density="land-hdpi" src="res/screen/android/splash-land-hdpi.png" />
-        <splash density="port-hdpi" src="res/screen/android/splash-port-hdpi.png" />
-        <splash density="land-xhdpi" src="res/screen/android/splash-land-xhdpi.png" />
-        <splash density="port-xhdpi" src="res/screen/android/splash-port-xhdpi.png" />
-        <splash density="land-xxhdpi" src="res/screen/android/splash-land-xxhdpi.png" />
-        <splash density="port-xxhdpi" src="res/screen/android/splash-port-xxhdpi.png" />
-        <splash density="land-xxxhdpi" src="res/screen/android/splash-land-xxxhdpi.png" />
-        <splash density="port-xxxhdpi" src="res/screen/android/splash-port-xxxhdpi.png" />
+        <resource-file src="res/values/colors.xml" target="/app/src/main/res/values/colors.xml" />
+        <icon background="@color/background" density="ldpi" foreground="res/android/ldpi.png" />
+        <icon background="@color/background" density="mdpi" foreground="res/android/mdpi.png" />
+        <icon background="@color/background" density="hdpi" foreground="res/android/hdpi.png" />
+        <icon background="@color/background" density="xhdpi" foreground="res/android/xhdpi.png" />
+        <icon background="@color/background" density="xxhdpi" foreground="res/android/xxhdpi.png" />
+        <icon background="@color/background" density="xxxhdpi" foreground="res/android/xxxhdpi.png" />
+        <splash background="@color/background" density="land-ldpi" foreground="res/screen/android/splash-land-ldpi.png" />
+        <splash background="@color/background" density="port-ldpi" foreground="res/screen/android/splash-port-ldpi.png" />
+        <splash background="@color/background" density="land-mdpi" foreground="res/screen/android/splash-land-mdpi.png" />
+        <splash background="@color/background" density="port-mdpi" foreground="res/screen/android/splash-port-mdpi.png" />
+        <splash background="@color/background" density="land-hdpi" foreground="res/screen/android/splash-land-hdpi.png" />
+        <splash background="@color/background" density="port-hdpi" foreground="res/screen/android/splash-port-hdpi.png" />
+        <splash background="@color/background" density="land-xhdpi" foreground="res/screen/android/splash-land-xhdpi.png" />
+        <splash background="@color/background" density="port-xhdpi" foreground="res/screen/android/splash-port-xhdpi.png" />
+        <splash background="@color/background" density="land-xxhdpi" foreground="res/screen/android/splash-land-xxhdpi.png" />
+        <splash background="@color/background" density="port-xxhdpi" foreground="res/screen/android/splash-port-xxhdpi.png" />
+        <splash background="@color/background" density="land-xxxhdpi" foreground="res/screen/android/splash-land-xxxhdpi.png" />
+        <splash background="@color/background" density="port-xxxhdpi" foreground="res/screen/android/splash-port-xxxhdpi.png" />
     </platform>
     <platform name="ios">
         <icon height="57" src="res/ios/icon.png" width="57" />
