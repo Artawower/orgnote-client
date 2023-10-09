@@ -18,13 +18,12 @@
 
 <script lang="ts" setup>
 import { EditorView } from 'codemirror';
-import { useEditorActionsStore } from 'src/stores';
+import { Command, CommandHandlerParams } from 'src/models';
+import { useCommandsStore } from 'src/stores';
 
 import { ref } from 'vue';
 
-import SearchContainer, {
-  SearchItem,
-} from 'src/components/ui/SearchContainer.vue';
+import SearchContainer from 'src/components/ui/SearchContainer.vue';
 
 const props = defineProps<{
   editorView: EditorView;
@@ -35,11 +34,12 @@ const openEditorInsertDialog = () => {
   dialogOpened.value = true;
 };
 
-const editorActions = useEditorActionsStore();
-const editorInsertItems: SearchItem[] = editorActions.actions;
+const commandsStore = useCommandsStore();
+const editorInsertItems: Command[] =
+  commandsStore.getCommandsFromGroup('editor');
 
-const onItemClicked = (itemFn: (arg: unknown) => void) => {
-  return () => itemFn(props.editorView);
+const onItemClicked = (itemFn: (params: CommandHandlerParams) => void) => {
+  return () => itemFn({ editorView: props.editorView });
 };
 </script>
 

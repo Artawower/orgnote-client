@@ -18,7 +18,7 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 <script lang="ts" setup>
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import EditorActionsToolbar from 'src/components/containers/EditorActionsToolbar.vue';
-import { ref, watch } from 'vue';
+import { onBeforeUnmount, ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
 import { useEditorActions } from 'src/hooks/editor-actions-hook';
@@ -51,4 +51,8 @@ watch(
 const { keyboardOpened } = onMobileViewportChanged();
 
 useEditorActions();
+
+onBeforeUnmount(() => {
+  noteEditorStore.editorView = null;
+});
 </script>

@@ -140,11 +140,7 @@ const initEditor = () => {
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
-        }
-        emits('focusChanged', v.view.hasFocus);
-        emits('changeCursorPosition', v.state.selection.main.head);
 
-        if (v.heightChanged) {
           const currentLine = editorView?.state.doc.lineAt(
             editorView?.state.selection.main.head
           );
@@ -156,6 +152,8 @@ const initEditor = () => {
             scrollIntoView: true,
           });
         }
+        emits('focusChanged', v.view.hasFocus);
+        emits('changeCursorPosition', v.state.selection.main.head);
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
       orgMultilineWidgets(

@@ -69,7 +69,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
-import { useCommandExecutor } from 'src/hooks';
+import { useMainCommands } from 'src/hooks';
 import {
   CompletionCandidate,
   defaultCompletionLimit,
@@ -78,7 +78,7 @@ import {
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { compareElemPositions, debounce } from 'src/tools';
 
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 
@@ -95,12 +95,7 @@ const {
   placeholder,
 } = storeToRefs(completionStore);
 
-const commandExecutor = useCommandExecutor();
 const keybindingStore = useKeybindingStore();
-
-onBeforeMount(() => commandExecutor.registerDynamicCommands());
-
-onBeforeUnmount(() => commandExecutor.unregisterDynamicCommands());
 
 const completionInput = ref<HTMLInputElement | null>(null);
 onMounted(() => setTimeout(() => completionInput.value?.focus()));

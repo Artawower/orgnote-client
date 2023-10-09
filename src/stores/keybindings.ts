@@ -1,4 +1,4 @@
-import { CompletionCandidate, useCompletionStore } from './completion';
+import { useCompletionStore } from './completion';
 import { defineStore } from 'pinia';
 import { Command, DEFAULT_KEYBINDING_GROUP } from 'src/models/keybinding.model';
 import hotkeys from 'src/tools/tinykeys-wrapper';
@@ -44,41 +44,14 @@ export const useKeybindingStore = defineStore('keybindings', () => {
 
   const attachHotkeys = () => {
     Object.values(keybindings.value).forEach((k) => {
-      const command = { [k.keySequence]: k.handler };
+      const command = {
+        [k.keySequence]: (event: KeyboardEvent) => k.handler({ event }),
+      };
       unregisterFunctions.push(hotkeys(window, command, !k.allowOnInput));
     });
   };
 
   const completionStore = useCompletionStore();
-
-  const initCompletion = () => {
-    const candidates = keybindingList.value
-      .filter((k) => !k.ignorePrompt)
-      .map(
-        (k) =>
-          ({
-            command: k.command,
-            description: k.description,
-            group: k.group,
-            icon: 'settings', // TODO: get icon from keybinding OR from registry
-          } as CompletionCandidate)
-      );
-
-    const itemsGetterFn = (filter: string) => {
-      const filteredCandidates = candidates.filter((c) =>
-        c.command.includes(filter)
-      );
-      return {
-        total: filteredCandidates.length,
-        result: filteredCandidates,
-      };
-    };
-
-    completionStore.initNewCompletion({
-      itemsGetter: itemsGetterFn,
-      placeholder: 'search command',
-    });
-  };
 
   const registerKeybindings = (kb: Command[]) => {
     unattachHotkeys();
@@ -127,6 +100,5 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     deleteKeybinding,
     groupedKeybindings,
     uregisterKeybindings,
-    initCompletion,
   };
 });

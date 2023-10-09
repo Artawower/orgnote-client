@@ -30,7 +30,12 @@
 </template>
 
 <script lang="ts" setup>
-import { onMobileViewportChanged, useCommandExecutor } from 'src/hooks';
+import {
+  onMobileViewportChanged,
+  registerEditorCommands,
+  useEditorCommands,
+  useMainCommands,
+} from 'src/hooks';
 import { useSidebarStore, useToolbarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
@@ -54,7 +59,8 @@ authStore.verifyUser();
 
 const { registerKeybindings } = useKeybindingStore();
 
-useCommandExecutor().register();
+useMainCommands().register();
+registerEditorCommands();
 
 registerKeybindings([
   {

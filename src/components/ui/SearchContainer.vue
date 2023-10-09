@@ -10,43 +10,36 @@
     <!-- TODO: check item position. Render on top of buttons when no bottom space  -->
     <div class="items">
       <div
-        v-for="item of filteredItems"
+        v-for="cmd of filteredItems"
         class="search-container-item"
-        :key="item.name"
-        @click="handleItem(item)"
+        :key="cmd.command"
+        @click="handleItem(cmd)"
       >
         <div class="icon">
-          <q-icon size="md" :name="item.icon"></q-icon>
+          <q-icon size="md" :name="cmd.icon"></q-icon>
         </div>
-        <div class="title text-capitalize">{{ $t(item.name) }}</div>
+        <div class="title text-capitalize">{{ $t(cmd.command) }}</div>
         <div class="description text-capitalize">
-          {{ $t(item.description) }}
+          {{ $t(cmd.description) }}
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-export interface SearchItem {
-  name: string;
-  description?: string;
-  icon?: string;
-  handler: (...arg: unknown[]) => void;
-}
-</script>
-
 <script lang="ts" setup>
+import { Command, CommandHandlerParams } from 'src/models';
+
 import { computed, ref } from 'vue';
 
 import HeaderBar from './HeaderBar.vue';
 import SearchInput from './SearchInput.vue';
 
 const props = defineProps<{
-  items: SearchItem[];
+  items: Command[];
   autofocus?: boolean;
   handlerWrapper?: (
-    handler: (...arg: unknown[]) => void
+    handler: (params?: CommandHandlerParams) => void
   ) => (...arg: unknown[]) => void;
 }>();
 
@@ -56,16 +49,16 @@ const filteredItems = computed(() =>
   props.items.filter(
     (i) =>
       !search.value ||
-      i.name.includes(search.value.trim().toLowerCase()) ||
+      i.command.includes(search.value.trim().toLowerCase()) ||
       i.description?.toLowerCase().includes(search.value.trim().toLowerCase())
   )
 );
 
-const handleItem = (item: SearchItem) => {
+const handleItem = (cmd: Command) => {
   if (props.handlerWrapper) {
-    props.handlerWrapper(item.handler)();
+    props.handlerWrapper(cmd.handler)();
   } else {
-    item.handler();
+    cmd.handler();
   }
 };
 </script>

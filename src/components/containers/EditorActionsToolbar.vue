@@ -1,25 +1,26 @@
 <template>
   <div class="editor-actions">
     <div
-      v-for="action of editorActionsStore.actions"
-      @mousedown="handleEditorAction(action)"
-      :key="action.name"
+      v-for="cmd of editorCommands"
+      @mousedown="handleEditorAction(cmd)"
+      :key="cmd.command"
       class="editor-action"
     >
-      <q-icon :name="action.icon" size="sm" />
+      <q-icon :name="cmd.icon" size="sm" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { useEditorActionsStore, useNoteEditorStore } from 'src/stores';
+import { Command } from 'src/models';
+import { useCommandsStore, useNoteEditorStore } from 'src/stores';
 
-import { SearchItem } from '../ui/SearchContainer.vue';
-
-const editorActionsStore = useEditorActionsStore();
 const noteEditorStore = useNoteEditorStore();
+const commandsStore = useCommandsStore();
 
-const handleEditorAction = (action: SearchItem) => {
+const editorCommands = commandsStore.getCommandsFromGroup('editor');
+
+const handleEditorAction = (action: Command) => {
   action.handler(noteEditorStore.editorView);
 };
 </script>

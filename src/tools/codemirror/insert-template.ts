@@ -23,7 +23,6 @@ export function insertTemplate(params: {
 
   const caretPos = insertFromPos + (focusOffset || template.length);
 
-  editorView.focus();
   editorView.dispatch({
     selection: {
       anchor: caretPos,

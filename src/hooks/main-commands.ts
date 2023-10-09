@@ -1,5 +1,9 @@
-import { Command } from 'src/models';
-import { useCompletionStore, useSearchStore } from 'src/stores';
+import { Command, CommandHandlerParams } from 'src/models';
+import {
+  useCommandsStore,
+  useCompletionStore,
+  useSearchStore,
+} from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { camelCaseToWords } from 'src/tools';
 import { useRouter } from 'vue-router';
@@ -9,13 +13,12 @@ export enum COMMAND {
   restoreLastCompletionSession = 'restoreLastCompletionSession',
   toggleExecuteCommand = 'toggleExecuteCommand',
 }
-export function useCommandExecutor() {
-  const { registerKeybindings, executeCommand, uregisterKeybindings } =
-    useKeybindingStore();
+export function useMainCommands() {
+  const { executeCommand } = useKeybindingStore();
 
   const completionStore = useCompletionStore();
-  const keybindingStore = useKeybindingStore();
   const searchStore = useSearchStore();
+  const commandsStore = useCommandsStore();
 
   const router = useRouter();
 
@@ -31,7 +34,7 @@ export function useCommandExecutor() {
     .map((r) => ({
       command: camelCaseToWords(r.name.toString()),
       description: `Open ${r.name.toString()}`,
-      group: 'Navigation',
+      group: 'navigation',
       handler: () => router.push({ name: r.name }),
     }));
 
@@ -40,29 +43,30 @@ export function useCommandExecutor() {
       command: COMMAND.toggleExecuteCommand,
       keySequence: 'Alt+KeyX',
       description: 'Toggle command executor',
-      group: 'Completion',
+      group: 'completion',
       allowOnInput: true,
-      handler: (event) => {
+      handler: (params?: CommandHandlerParams) => {
         completionStore.toggleCompletion();
-        keybindingStore.initCompletion();
-        event.preventDefault();
+        commandsStore.initCompletion();
+        params?.event?.preventDefault();
       },
     },
     {
       command: COMMAND.openSearch,
       keySequence: '/',
       description: 'search notes',
-      group: 'Search',
-      handler: () => {
+      group: 'search',
+      handler: (params) => {
         completionStore.openCompletion();
         searchStore.initCompletion();
+        params.event?.preventDefault();
       },
     },
     {
       command: COMMAND.restoreLastCompletionSession,
       keySequence: "'",
       description: ' Restore last completion session',
-      group: 'Search',
+      group: 'search',
       handler: () => {
         completionStore.restoreLastCompletionSession();
       },
@@ -78,7 +82,7 @@ export function useCommandExecutor() {
       command: 'exitCommandExecutor',
       keySequence: 'Escape',
       description: 'Exit command executor',
-      group: 'Completion',
+      group: 'completion',
       allowOnInput: true,
     },
     {
@@ -88,7 +92,7 @@ export function useCommandExecutor() {
       command: 'nextCandidate',
       keySequence: 'Control+KeyJ',
       description: 'Next candidate',
-      group: 'Completion',
+      group: 'completion',
       allowOnInput: true,
     },
     {
@@ -98,14 +102,14 @@ export function useCommandExecutor() {
       command: 'previousCandidate',
       keySequence: 'Control+KeyK',
       description: 'Previous candidate',
-      group: 'Completion',
+      group: 'completion',
       allowOnInput: true,
     },
     {
       command: 'executeCandidate',
       keySequence: 'Enter',
       description: 'Execute candidate',
-      group: 'Completion',
+      group: 'completion',
       allowOnInput: true,
       ignorePrompt: true,
       handler: () => {
@@ -119,20 +123,14 @@ export function useCommandExecutor() {
   ];
 
   const register = () => {
-    registerKeybindings(keybindingCommands);
-  };
-
-  const registerDynamicCommands = () => {
-    registerKeybindings(dynamicKeybindings);
-  };
-
-  const unregisterDynamicCommands = () => {
-    uregisterKeybindings(dynamicKeybindings);
+    commandsStore.register(
+      ...routesCommands,
+      ...keybindingCommands,
+      ...dynamicKeybindings
+    );
   };
 
   return {
     register,
-    registerDynamicCommands,
-    unregisterDynamicCommands,
   };
 }

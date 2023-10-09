@@ -43,7 +43,7 @@
 import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
-import { onChangeToolbarActions } from 'src/hooks';
+import { onChangeToolbarActions, useEditorCommands } from 'src/hooks';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
@@ -117,6 +117,8 @@ onChangeToolbarActions({
       router.push({ name: RouteNames.NoteDetail, params: { id: noteId } }),
   }),
 });
+
+useEditorCommands();
 </script>
 
 <style lang="scss" scoped>
