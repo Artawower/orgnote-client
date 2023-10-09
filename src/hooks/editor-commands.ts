@@ -74,7 +74,11 @@ export const registerEditorCommands = () => {
       description: 'insert a link',
       group: 'editor',
       handler: () =>
-        insertTemplate({ editorView, template: '[[][]]', focusOffset: 2 }),
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '[[][]]',
+          focusOffset: 2,
+        }),
     },
     {
       command: 'internal link',
