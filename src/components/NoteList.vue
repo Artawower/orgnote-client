@@ -1,6 +1,6 @@
 <template>
   <div
-    class="q-pa-lg items-start public-notes"
+    class="items-start public-notes"
     :class="{
       row: tileView,
       column: !tileView,
@@ -11,7 +11,7 @@
       ref="virtualScrollRef"
       @virtual-scroll="onVirtualScroll"
       :items-size="total"
-      :virtual-scroll-slice-size="(limit || 10) * 3"
+      :virtual-scroll-slice-size="limit || 10"
       :virtual-scroll-item-size="230"
       :items-fn="getPagedNotes"
       :scroll-target="scrollTarget"
@@ -93,6 +93,7 @@ watch(
 const initialFrom = +route.query.from || 0;
 
 const getPagedNotes = (from: number, size: number) => {
+  console.log('✎: [line 96][editor-menu] from: ', from);
   const fakeRows = Object.freeze(new Array(size).fill(null));
   fetchNotesWithDebounce(from, size);
   return fakeRows;

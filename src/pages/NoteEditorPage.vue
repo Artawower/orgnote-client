@@ -138,9 +138,4 @@ useEditorCommands();
     z-index: 1;
   }
 }
-
-/* .editor-page-content {
-  height: calc(100svh - var(--footer-height));
-  overflow: auto;
-} */
 </style>

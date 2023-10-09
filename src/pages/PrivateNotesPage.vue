@@ -1,6 +1,6 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <div class="container page-container">
+    <q-page :style-fn="resetPageMinHeight">
       <note-list
         :selectable="true"
         :limit="limit"
@@ -31,12 +31,13 @@
           />
         </template>
       </mode-line>
-    </div>
+    </q-page>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useSyncStore } from 'src/stores';
+import { resetPageMinHeight } from 'src/tools';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
 import { useRoute } from 'vue-router';
@@ -91,8 +92,14 @@ const deleteSelectedNotes = async () => {
 const isModeLineVisible = computed(() => notesStore.notes.length);
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .scroll-container {
   overflow: auto;
+  height: 100svh;
+}
+
+.q-page {
+  max-height: none;
+  height: auto;
 }
 </style>

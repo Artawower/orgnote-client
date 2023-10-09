@@ -26,8 +26,10 @@ body {
 }
 
 .q-page {
-  height: calc(100svh - var(--footer-height));
-  overflow: auto;
+  height: calc(var(--viewport-height) - var(--footer-height));
+  max-height: calc(var(--viewport-height) - var(--footer-height));
+  overflow-y: auto;
+  padding: var(--page-padding);
 }
 
 .gap-4 {

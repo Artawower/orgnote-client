@@ -128,7 +128,7 @@ const initEditor = () => {
       readOnlyTransactionFilter(() => orgNode),
       basicOrgTheme,
       editorMenuExtension({
-        parentElement: '.q-page',
+        parentElement: '.q-page-container',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
           return dynamicComponent.mount(EditorMenu, wrap, {
             editorView,
@@ -222,7 +222,6 @@ watch(
   height: 100%;
   max-width: var(--content-max-width);
   margin: auto;
-  padding: var(--editor-padding);
 }
 
 #editor {
@@ -585,9 +584,6 @@ org-keyword-block {
 
 @include mobile {
   .editor-wrapper {
-    overflow-y: auto;
-
-    max-height: calc(var(--viewport-height) - 40px);
     .cm-editor-actions {
       flex-direction: column-reverse;
     }

@@ -121,7 +121,7 @@ body {
   --src-block-padding-x: 16px;
 
   // Editor
-  --editor-padding: 16px 30px;
+  --page-padding: 16px 30px;
   --editor-line-height: 1.8;
 
   // Device specific feature
@@ -133,7 +133,7 @@ body {
   body {
     --default-block-padding: 8px;
     --footer-height: 56px;
-    --editor-padding: 8px;
+    --page-padding: 8px;
     --default-gap: 10px;
     --file-item-height: 46px;
   }

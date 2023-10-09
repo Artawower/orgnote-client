@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-lg">
+  <q-page>
     <div class="fit flex items-center justify-center">
       <loader-spinner v-if="creating" />
       <div

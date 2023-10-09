@@ -40,8 +40,7 @@ const handleEditorAction = (action: Command) => {
   after that we can calculate real viewport height
   based on focus status in the CM */
   position: absolute;
-  top: calc(var(--viewport-height) - 40px);
-
+  bottom: 0;
   &:active {
     color: var(--cyan);
   }

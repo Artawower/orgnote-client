@@ -25,6 +25,13 @@
       <mini-buffer />
       <completion-prompt />
       <ToolBar v-if="$q.screen.lt.sm" />
+      <editor-actions-toolbar
+        v-if="
+          $q.screen.lt.sm &&
+          !toolbarStore.showToolbar &&
+          (keyboardOpened || $q.platform.is.desktop)
+        "
+      />
     </file-uploader>
   </q-layout>
 </template>
@@ -33,7 +40,6 @@
 import {
   onMobileViewportChanged,
   registerEditorCommands,
-  useEditorCommands,
   useMainCommands,
 } from 'src/hooks';
 import { useSidebarStore, useToolbarStore } from 'src/stores';
@@ -45,6 +51,7 @@ import { computed } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
+import EditorActionsToolbar from 'src/components/containers/EditorActionsToolbar.vue';
 import FileUploader from 'src/components/containers/FileUploader.vue';
 import ModalWindow from 'src/components/containers/ModalWindow.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
@@ -74,7 +81,7 @@ registerKeybindings([
 const notesImportStore = useNotesImportStore();
 
 const toolbarStore = useToolbarStore();
-const { viewportHeight } = onMobileViewportChanged((info) => {
+const { viewportHeight, keyboardOpened } = onMobileViewportChanged((info) => {
   if (info.keyboardOpened.value) {
     document.body.classList.add('keyboard-opened');
   } else {
@@ -101,7 +108,6 @@ const { viewportHeight } = onMobileViewportChanged((info) => {
 <style lang="scss">
 .q-layout,
 .q-page-container,
-.q-page,
 .file-uploader {
   max-height: var(--viewport-height);
   height: var(--viewport-height);
