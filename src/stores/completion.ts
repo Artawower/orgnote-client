@@ -1,5 +1,6 @@
-import { computed, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
+
+import { computed, ref, watch } from 'vue';
 
 export interface CompletionCandidate<T = unknown> {
   icon?: string;
@@ -56,7 +57,7 @@ export const useCompletionStore = defineStore('completion', () => {
     candidates.value = [];
     filter.value = '';
     selectedCandidateIndex.value = 0;
-    search(filter.value);
+    search();
   };
 
   const clearCandidates = () => {
@@ -65,8 +66,8 @@ export const useCompletionStore = defineStore('completion', () => {
 
   watch(
     () => filter.value,
-    (newFilter) => {
-      search(newFilter);
+    () => {
+      search();
     }
   );
 

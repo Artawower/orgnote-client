@@ -1,17 +1,14 @@
 import { CompletionCandidate, useCompletionStore } from './completion';
 import { defineStore } from 'pinia';
-import {
-  DEFAULT_KEYBINDING_GROUP,
-  Keybinding,
-} from 'src/models/keybinding.model';
+import { Command, DEFAULT_KEYBINDING_GROUP } from 'src/models/keybinding.model';
 import hotkeys from 'src/tools/tinykeys-wrapper';
 
 import { computed, ref } from 'vue';
 
-type GroupedKeybindings = { [key: string]: Keybinding[] };
+type GroupedKeybindings = { [key: string]: Command[] };
 
 export const useKeybindingStore = defineStore('keybindings', () => {
-  const keybindings = ref<{ [command: string]: Keybinding }>({});
+  const keybindings = ref<{ [command: string]: Command }>({});
 
   const groupedKeybindings = computed<GroupedKeybindings>(() =>
     Object.values(keybindings.value).reduce<GroupedKeybindings>(
@@ -25,7 +22,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     )
   );
 
-  const keybindingList = computed<Keybinding[]>(() =>
+  const keybindingList = computed<Command[]>(() =>
     Object.values(keybindings.value)
   );
 
@@ -83,10 +80,10 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     });
   };
 
-  const registerKeybindings = (kb: Keybinding[]) => {
+  const registerKeybindings = (kb: Command[]) => {
     unattachHotkeys();
     const registerKeybindings = kb.reduce<{
-      [command: string]: Keybinding;
+      [command: string]: Command;
     }>((acc, k) => {
       k.group ??= DEFAULT_KEYBINDING_GROUP;
       acc[k.command] = k;
@@ -100,7 +97,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     attachHotkeys();
   };
 
-  const uregisterKeybindings = (kb: Keybinding[]) => {
+  const uregisterKeybindings = (kb: Command[]) => {
     unattachHotkeys();
     kb.forEach((k) => {
       delete keybindings.value[k.command];

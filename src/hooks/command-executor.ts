@@ -1,4 +1,4 @@
-import { Keybinding } from 'src/models';
+import { Command } from 'src/models';
 import { useCompletionStore, useSearchStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { camelCaseToWords } from 'src/tools';
@@ -19,7 +19,7 @@ export function useCommandExecutor() {
 
   const router = useRouter();
 
-  const routesCommands: Keybinding[] = router
+  const routesCommands: Command[] = router
     .getRoutes()
     // TODO: master tmp hack for avoid routes with params. Adapt to user input.
     .filter(
@@ -35,16 +35,17 @@ export function useCommandExecutor() {
       handler: () => router.push({ name: r.name }),
     }));
 
-  const keybindingCommands: Keybinding[] = [
+  const keybindingCommands: Command[] = [
     {
       command: COMMAND.toggleExecuteCommand,
       keySequence: 'Alt+KeyX',
       description: 'Toggle command executor',
       group: 'Completion',
       allowOnInput: true,
-      handler: () => {
+      handler: (event) => {
         completionStore.toggleCompletion();
         keybindingStore.initCompletion();
+        event.preventDefault();
       },
     },
     {
@@ -69,7 +70,7 @@ export function useCommandExecutor() {
     ...routesCommands,
   ];
 
-  const dynamicKeybindings: Keybinding[] = [
+  const dynamicKeybindings: Command[] = [
     {
       handler: () => {
         completionStore.closeCompletion();
@@ -111,8 +112,8 @@ export function useCommandExecutor() {
         if (!completionStore.opened) {
           return;
         }
-        executeCommand(completionStore.selectedCandidate);
         completionStore.closeCompletion();
+        executeCommand(completionStore.selectedCandidate);
       },
     },
   ];

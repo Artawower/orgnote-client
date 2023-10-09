@@ -14,7 +14,7 @@ function isEventTargetInputOrTextArea(target: Window | HTMLElement) {
 
 export default function hotkeys(
   target: Window | HTMLElement,
-  bindings: { [key: string]: (arg?: unknown) => unknown },
+  bindings: { [key: string]: (arg?: KeyboardEvent) => unknown },
   disableOnInputs = true
 ): () => void {
   const wrappedBindings = disableOnInputs
