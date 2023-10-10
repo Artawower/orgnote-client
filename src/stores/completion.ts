@@ -16,19 +16,19 @@ export interface CompletionCandidate<T = unknown> {
 export const defaultCompletionLimit = 500;
 
 // TODO: (extensions) move to API provider layer.
-export interface CompletionSearchResult {
+export interface CompletionSearchResult<T = unknown> {
   total?: number;
-  result: CompletionCandidate[];
+  result: CompletionCandidate<T>[];
 }
 
-export type CandidateGetterFn = (
+export type CandidateGetterFn<T = unknown> = (
   filter: string,
   limit?: number,
   offset?: number
-) => CompletionSearchResult | Promise<CompletionSearchResult>;
+) => CompletionSearchResult<T> | Promise<CompletionSearchResult<T>>;
 
-export interface CompletionConfigs {
-  itemsGetter: CandidateGetterFn;
+export interface CompletionConfigs<T = unknown> {
+  itemsGetter: CandidateGetterFn<T>;
   placeholder?: string;
   itemHeight?: string;
 }
@@ -47,11 +47,11 @@ export const useCompletionStore = defineStore('completion', () => {
 
   const candidateGetter = ref<CandidateGetterFn>(null);
 
-  const setCandidateGetter = (getter: CandidateGetterFn) => {
-    candidateGetter.value = getter;
+  const setCandidateGetter = <T = unknown>(getter: CandidateGetterFn<T>) => {
+    candidateGetter.value = getter as CandidateGetterFn<unknown>;
   };
 
-  const initNewCompletion = (configs: CompletionConfigs) => {
+  const initNewCompletion = <T = unknown>(configs: CompletionConfigs<T>) => {
     setCandidateGetter(configs.itemsGetter);
     placeholder.value = configs.placeholder;
     candidates.value = [];

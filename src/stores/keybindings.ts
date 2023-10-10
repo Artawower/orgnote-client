@@ -78,19 +78,22 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     attachHotkeys();
   };
 
+  // TODO: master move to commands store
   const executeCommand = ({
     command,
     commandHandler,
+    data,
   }: {
     command: string;
     commandHandler?: (data?: unknown) => void;
+    data: unknown;
   }) => {
     if (commandHandler) {
-      commandHandler();
+      commandHandler(data);
       completionStore.closeCompletion();
       return;
     }
-    keybindings.value[command]?.handler?.();
+    keybindings.value[command]?.handler?.({ data });
   };
 
   return {

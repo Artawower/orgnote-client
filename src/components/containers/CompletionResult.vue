@@ -141,6 +141,7 @@ const executeCommand = (item: CompletionCandidate) => {
   keybindingStore.executeCommand({
     command: item.command,
     commandHandler: item.commandHandler,
+    data: item.data,
   });
   completionStore.closeCompletion();
 };

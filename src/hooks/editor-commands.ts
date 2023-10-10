@@ -1,6 +1,12 @@
 import { EditorView } from 'codemirror';
 import { Command } from 'src/models';
-import { useCommandsStore, useFileStore, useNoteEditorStore } from 'src/stores';
+import {
+  useCommandsStore,
+  useCompletionStore,
+  useFileStore,
+  useNoteEditorStore,
+  useSearchStore,
+} from 'src/stores';
 import { insertTemplate } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
@@ -9,6 +15,8 @@ export const registerEditorCommands = () => {
   const commandsStore = useCommandsStore();
   const fileStore = useFileStore();
   const noteEditorStore = useNoteEditorStore();
+  const searchStore = useSearchStore();
+  const completionStore = useCompletionStore();
 
   const commands: Command[] = [
     {
@@ -85,13 +93,17 @@ export const registerEditorCommands = () => {
       icon: 'hub',
       description: 'insert note link',
       group: 'editor',
-      handler: () =>
-        insertTemplate({
-          editorView: noteEditorStore.editorView as EditorView,
-          template: '[[]]',
-          focusOffset: 2,
-          overrideLine: true,
-        }),
+      handler: () => {
+        searchStore.searchWithCustom((note) => {
+          const connectedUrl = `[[id:${note.id}][${note.meta.title}]]`;
+          insertTemplate({
+            editorView: noteEditorStore.editorView as EditorView,
+            template: connectedUrl,
+            focusOffset: connectedUrl.length - 2,
+          });
+        });
+        completionStore.openCompletion();
+      },
     },
     {
       command: 'image',

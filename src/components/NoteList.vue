@@ -93,7 +93,6 @@ watch(
 const initialFrom = +route.query.from || 0;
 
 const getPagedNotes = (from: number, size: number) => {
-  console.log('✎: [line 96][editor-menu] from: ', from);
   const fakeRows = Object.freeze(new Array(size).fill(null));
   fetchNotesWithDebounce(from, size);
   return fakeRows;

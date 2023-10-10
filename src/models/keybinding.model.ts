@@ -9,6 +9,7 @@ export type CommandGroup =
 
 export interface CommandHandlerParams {
   event?: KeyboardEvent;
+  data?: unknown;
   [key: string]: unknown;
 }
 
