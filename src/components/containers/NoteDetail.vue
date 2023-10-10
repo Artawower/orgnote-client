@@ -4,11 +4,7 @@
 
 <script lang="ts" setup>
 import { OrgNode } from 'org-mode-ast';
-import { onChangeToolbarActions } from 'src/hooks';
 import { Note } from 'src/models';
-import { RouteNames } from 'src/router/routes';
-import { ToolBarAction, useCurrentNoteStore } from 'src/stores';
-import { useRouter } from 'vue-router';
 
 import { toRef } from 'vue';
 
@@ -20,31 +16,6 @@ const props = defineProps<{
 }>();
 
 const note = toRef(props, 'note');
-
-const router = useRouter();
-const currentNoteStore = useCurrentNoteStore();
-
-const changeMainAction = (): ToolBarAction => {
-  if (!note.value?.isMy) {
-    return;
-  }
-  return {
-    icon: 'edit',
-    name: 'edit',
-    sidebarPosition: 'top',
-    handler: () => {
-      router.push({
-        name: RouteNames.EditNote,
-        params: { id: currentNoteStore.currentNote?.id },
-      });
-    },
-  };
-};
-
-onChangeToolbarActions({
-  setupMainAction: changeMainAction,
-  observe: note,
-});
 </script>
 
 <style lang="scss" scoped>

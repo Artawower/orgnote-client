@@ -43,12 +43,11 @@
 import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
-import { onChangeToolbarActions, useEditorCommands } from 'src/hooks';
-import { RouteNames } from 'src/router/routes';
+import { useEditorCommands } from 'src/hooks';
 import { useCurrentNoteStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
@@ -105,17 +104,6 @@ watch(
 
 onBeforeUnmount(() => {
   $q.loading.hide();
-});
-
-const router = useRouter();
-onChangeToolbarActions({
-  observe: ref(route.params),
-  setupMainAction: () => ({
-    icon: 'done',
-    name: 'save',
-    handler: () =>
-      router.push({ name: RouteNames.NoteDetail, params: { id: noteId } }),
-  }),
 });
 
 useEditorCommands();

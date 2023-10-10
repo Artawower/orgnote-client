@@ -9,7 +9,7 @@ export default {
   'Create new token': 'Создать новый токен',
   'view settings': 'визуальные настройки',
   'Show author profile info': 'Показать информацию об авторе',
-  'All articles': 'Все статьи',
+  'all articles': 'все статьи',
   'My notes': 'Мои заметки',
   search: 'поиск',
   Graph: 'Граф',
@@ -62,4 +62,7 @@ export default {
     'вы уверены что хотите удалить все данные?',
   cancel: 'отмена',
   confirm: 'подтвердить',
+  'edit mode': 'режим редактирования',
+  'view mode': 'режим просмотра',
+  'dashboard': 'панель управления',
 };

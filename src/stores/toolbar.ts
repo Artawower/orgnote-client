@@ -82,10 +82,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     () => actionsStack.value[actionsStack.value.length - 1]
   );
 
-  const allActions = computed(() => [
-    ...actions.value,
-    ...Object.values(invisibleActions.value),
-  ]);
+  const allActions = computed(() => [...actions.value]);
 
   const movePermanentActionsToSidebar = () => {
     const permanentActions = actions.value.filter((action) => action.permament);

@@ -13,7 +13,7 @@ export default {
   'Create new token': 'Create new token',
   'view settings': 'view settings',
   'Show author profile info': 'Show author profile info',
-  'All articles': 'All articles',
+  'all articles': 'all articles',
   'my notes': 'my notes',
   search: 'search',
   Graph: 'Graph',
@@ -65,4 +65,7 @@ export default {
     'are you sure you want to delete all data?',
   cancel: 'cancel',
   confirm: 'confirm',
+  'edit mode': 'edit mode',
+  'view mode': 'view mode',
+  dashboard: 'dashboard',
 };

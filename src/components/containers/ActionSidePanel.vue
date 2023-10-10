@@ -52,6 +52,14 @@
           />
         </template>
 
+        <q-item :to="{ name: RouteNames.Dashboard }" clickable exact>
+          <q-item-section avatar>
+            <q-icon name="dashboard" />
+          </q-item-section>
+
+          <q-item-section>{{ $t('dashboard') }}</q-item-section>
+        </q-item>
+
         <q-item
           @click="closeSideBarForMobile"
           :to="{ name: RouteNames.NoteList }"
@@ -62,7 +70,27 @@
             <q-icon name="feed" />
           </q-item-section>
 
-          <q-item-section>{{ $t('All articles') }}</q-item-section>
+          <q-item-section>{{ $t('all articles') }}</q-item-section>
+        </q-item>
+
+        <q-item
+          v-if="isNoteDetailPage && currentNote?.isMy"
+          :to="{ name: RouteNames.RawEditor, params: { id: currentNote?.id } }"
+        >
+          <q-item-section avatar>
+            <q-icon name="edit" />
+          </q-item-section>
+          <q-item-section>{{ $t('edit mode') }}</q-item-section>
+        </q-item>
+        <q-item
+          v-else-if="isNoteEditPage"
+          :to="{ name: RouteNames.NoteDetail, params: { id: currentNote?.id } }"
+        >
+          <q-item-section avatar>
+            <q-icon name="visibility" />
+          </q-item-section>
+
+          <q-item-section>{{ $t('view mode') }}</q-item-section>
         </q-item>
 
         <q-item
@@ -152,12 +180,18 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import { User } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useModalStore, useToolbarStore } from 'src/stores';
+import {
+  useCurrentNoteStore,
+  useModalStore,
+  useToolbarStore,
+} from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar } from 'src/tools';
+import { useRoute } from 'vue-router';
 
 import {
   computed,
@@ -237,6 +271,14 @@ const modalStore = useModalStore();
 const openSettings = () => {
   modalStore.open(SettingsPage, { title: 'settings' });
 };
+
+const route = useRoute();
+const isNoteDetailPage = computed(() => route.name == RouteNames.NoteDetail);
+const isNoteEditPage = computed(() =>
+  [RouteNames.EditNote, RouteNames.RawEditor].includes(route.name as RouteNames)
+);
+
+const { currentNote } = storeToRefs(useCurrentNoteStore());
 </script>
 
 <style lang="scss">
