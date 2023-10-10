@@ -180,7 +180,7 @@
 - =--toolbar-border=:  1px solid var(--fg-alt);
 - =--toolbar-hover-color=:  var(--cyan);
 ** HeaderBar
-- =--headerbar-height=:  28px;
+- =--headerbar-height=:  30px;
 - =--headerbar-border-radius=:  8px;
 - =--headerbar-background-color=:  var(--bg);
 - =--headerbar-color=:  var(--fg-alt);
@@ -215,6 +215,7 @@
 - =--page-padding=:  8px;
 - =--default-gap=:  10px;
 - =--file-item-height=:  46px;
+- =--headerbar-height=:  46px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;

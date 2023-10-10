@@ -90,7 +90,7 @@ body {
   --toolbar-hover-color: var(--cyan);
 
   // HeaderBar
-  --headerbar-height: 28px;
+  --headerbar-height: 30px;
   --headerbar-border-radius: 8px;
   --headerbar-background-color: var(--bg);
   --headerbar-color: var(--fg-alt);
@@ -136,6 +136,7 @@ body {
     --page-padding: 8px;
     --default-gap: 10px;
     --file-item-height: 46px;
+    --headerbar-height: 46px;
   }
 }
 

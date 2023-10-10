@@ -21,7 +21,7 @@ const createHashNode = (
   return {
     name: path,
     filePath: [...parentPath],
-    id: id ?? v4(),
+    id: isFileName && id ? id : v4(),
     type: isFileName ? 'file' : 'folder',
     children: {},
   };

@@ -43,7 +43,6 @@ onMounted(() => tryAutofocus());
 <style lang="scss">
 .search-input {
   width: 100%;
-
   &:focus {
     outline: none;
   }

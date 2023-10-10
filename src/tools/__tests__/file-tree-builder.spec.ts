@@ -1,11 +1,18 @@
 import {
   FlatTree,
+  buildFileTree,
   convertFlatTreeToFileTree,
   deletePathFromTree,
   mergeFilesTrees,
   renameFileInTree,
 } from '../file-tree-builder';
-import { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
+import {
+  FileNode,
+  FileNodeInfo,
+  FilePathInfo,
+  FileTree,
+} from 'src/repositories';
+import { validate } from 'uuid';
 
 describe('file-tree-builder', () => {
   it('Should merge two file tree with preserving folders', () => {
@@ -281,5 +288,21 @@ describe('file-tree-builder', () => {
     const res = deletePathFromTree(srcTree, deletedNode);
 
     expect(res).toMatchSnapshot();
+  });
+
+  it('Should create unique id for folder', () => {
+    const filePaths: FilePathInfo[] = [
+      {
+        id: 'Angular pseudo render',
+        filePath: ['angular', 'angular_pseudo_rendering.org'],
+      },
+      {
+        id: 'angular directive',
+        filePath: ['angular', 'angular_directive.org'],
+      },
+    ];
+
+    const fileTree = buildFileTree(filePaths);
+    expect(validate(fileTree['angular'].id)).toBe(true);
   });
 });

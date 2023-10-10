@@ -44,7 +44,6 @@ import SearchInput from 'src/components/ui/SearchInput.vue';
 import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
 
 const fileManagerStore = useFileManagerStore();
-
 const createFolder = () => {
   fileManagerStore.createFolder();
   callKeyboard();
