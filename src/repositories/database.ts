@@ -1,5 +1,5 @@
-import Dexie from 'dexie';
 import { BaseRepository } from './repository';
+import Dexie from 'dexie';
 
 export class Database<T extends typeof BaseRepository[]> extends Dexie {
   private readonly currentVersion = 13;
@@ -28,5 +28,9 @@ export class Database<T extends typeof BaseRepository[]> extends Dexie {
     );
 
     return combinedStoresSchema;
+  }
+
+  public async dropAll(): Promise<void> {
+    await this.delete();
   }
 }

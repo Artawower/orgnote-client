@@ -60,4 +60,9 @@ export default {
   image: 'image',
   'insert an image': 'insert an image',
   api: 'api',
+  'clear all data': 'clear all data',
+  'are you sure you want to delete all data?':
+    'are you sure you want to delete all data?',
+  cancel: 'cancel',
+  confirm: 'confirm',
 };

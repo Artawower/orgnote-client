@@ -1,12 +1,12 @@
-import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
-import { useAuthStore } from 'src/stores/auth';
+import { boot } from 'quasar/wrappers';
 import {
   AuthApiFactory,
   NotesApiFactory,
   TagsApiFactory,
 } from 'src/generated/api';
 import { initFilesApi } from 'src/patches/file-upload-patch';
+import { useAuthStore } from 'src/stores/auth';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -20,7 +20,10 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({ baseURL: `${process.env.API_URL || '/v1'}` });
+const api = axios.create({
+  baseURL: `${process.env.API_URL || '/v1'}`,
+  timeout: +process.env.REQUEST_TIMEOUT || 15000,
+});
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();

@@ -21,3 +21,4 @@ export * from './codemirror';
 export * from './org-node-navigation';
 export * from './call-keyboard';
 export * from './min-page-height';
+export * from './create-promise';

@@ -10,10 +10,10 @@
         clickable
         class="rounded-borders justify-start"
       >
-        <q-item-section avatar>
-          <q-icon :name="tab.icon" />
+        <q-item-section :avatar="$q.screen.gt.xs">
+          <q-icon :name="tab.icon" size="sm" />
         </q-item-section>
-        <q-item-section>
+        <q-item-section v-if="$q.screen.gt.xs">
           <q-item-label class="text-capitalize">{{
             $t(tab.name)
           }}</q-item-label>
@@ -78,7 +78,8 @@ const openTab = (component: VueComponent) => {
 
 <style lang="scss" scoped>
 .settings-groups {
-  width: 200px;
+  /* width: 200px; */
+  width: auto;
 }
 .configs {
   flex: 1;

@@ -19,7 +19,8 @@
         class="height-max-dynamic"
         :class="{ 'with-composite-bar': $q.screen.gt.xs }"
       >
-        <modal-window></modal-window>
+        <modal-window />
+        <confirmation-modal />
         <router-view />
       </q-page-container>
       <mini-buffer />
@@ -51,6 +52,7 @@ import { computed } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
+import ConfirmationModal from 'src/components/containers/ConfirmationModal.vue';
 import EditorActionsToolbar from 'src/components/containers/EditorActionsToolbar.vue';
 import FileUploader from 'src/components/containers/FileUploader.vue';
 import ModalWindow from 'src/components/containers/ModalWindow.vue';

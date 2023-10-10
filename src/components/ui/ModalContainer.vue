@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-container q-pa-md">
+  <div class="modal-container">
     <q-btn
       class="close-btn color-secondary"
       v-close-popup
@@ -26,6 +26,8 @@
 
 .modal-container {
   @include flexify(column, flex-start, flex-start);
+
+  padding: var(--page-padding);
 
   background: var(--bg);
   position: relative;

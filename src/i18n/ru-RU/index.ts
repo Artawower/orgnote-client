@@ -57,4 +57,9 @@ export default {
   image: 'изображение',
   'insert an image': 'вставить изображение',
   api: 'api',
+  'clear all data': 'удалить все данные',
+  'are you sure you want to delete all data?':
+    'вы уверены что хотите удалить все данные?',
+  cancel: 'отмена',
+  confirm: 'подтвердить',
 };
