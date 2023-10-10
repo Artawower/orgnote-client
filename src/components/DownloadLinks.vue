@@ -1,6 +1,10 @@
 <template>
   <div class="download-links">
-    <a :href="apkUrl" target="_blank">
+    <a
+      v-if="!$q.platform.is.cordova && !$q.platform.is.ios"
+      :href="apkUrl"
+      target="_blank"
+    >
       <img src="~assets/google-play.svg" height="26" />
     </a>
   </div>
