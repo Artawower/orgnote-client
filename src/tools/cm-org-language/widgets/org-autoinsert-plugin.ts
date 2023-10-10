@@ -2,6 +2,7 @@ import { insertNewlineAndIndent } from '@codemirror/commands';
 import { StateCommand, TransactionSpec } from '@codemirror/state';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
+// TODO: master refactor.
 export const orgAutoCompleteCommand = (
   getOrgNode: () => OrgNode
 ): StateCommand => {
@@ -72,16 +73,16 @@ function getAutoInsertedSymbol(node: OrgNode): TransactionSpec {
   }
 
   if (
-    node.is(NodeType.BlockBody) &&
-    node.parent?.is(NodeType.QuoteBlock) &&
-    node.children?.last?.is(NodeType.NewLine)
+    node.is(NodeType.NewLine) &&
+    node.parent?.is(NodeType.BlockBody) &&
+    node.parent?.parent?.is(NodeType.QuoteBlock)
   ) {
     return {
       changes: [
         { from: node.end - 1, to: node.end, insert: '' },
-        { from: node.parent.end, insert: '\n' },
+        { from: node.parent.parent.end, insert: '\n' },
       ],
-      selection: { anchor: node.parent.end },
+      selection: { anchor: node.parent.parent.end },
     };
   }
 }
