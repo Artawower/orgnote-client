@@ -128,7 +128,7 @@ const initEditor = () => {
       readOnlyTransactionFilter(() => orgNode),
       basicOrgTheme,
       editorMenuExtension({
-        parentElement: '.q-page-container',
+        parentElement: '.q-page',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
           return dynamicComponent.mount(EditorMenu, wrap, {
             editorView,

@@ -26,7 +26,7 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
   const relativeOffset =
     sizeCalculateTarget.getBoundingClientRect().top +
     sizeCalculateTarget.getBoundingClientRect().height / 2 -
-    menuWidth +
+    menuWidth / 2 +
     parentElement.scrollTop -
     parentElementTopPadding;
 
