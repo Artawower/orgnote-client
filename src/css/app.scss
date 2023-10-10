@@ -21,30 +21,6 @@
   cursor: pointer;
 }
 
-.note-view {
-  max-width: var(--content-max-width);
-  margin: auto;
-
-  p,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  strong,
-  a,
-  b,
-  .org-text {
-    color: var(--fg);
-  }
-
-  a {
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--base0);
-  }
-}
-
 @include light-mode {
   @import 'highlight.js/styles/stackoverflow-light';
 }
@@ -59,30 +35,6 @@
   -webkit-font-smoothing: antialiased;
   font-smooth: antialiased;
   font-size: var(--description-font-size);
-}
-
-.note-view {
-  .org-paragraph,
-  li,
-  .section,
-  ul {
-    font-family: var(--ul-font-family);
-    font-size: var(--ul-font-size);
-    line-height: var(--ul-line-height);
-    -webkit-font-smoothing: antialiased;
-    font-smooth: antialiased;
-  }
-  pre {
-    font-size: 16px;
-  }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-weight: var(--headline-font-weight);
-  }
 }
 
 h1,

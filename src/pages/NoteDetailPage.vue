@@ -1,5 +1,5 @@
 <template>
-  <q-page class="note-view height-auto" :style-fn="resetPageMinHeight">
+  <q-page class="height-auto" :style-fn="resetPageMinHeight">
     <author-info
       v-if="currentNote && !currentNote?.isMy"
       :author="currentNote?.author"

@@ -101,5 +101,7 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 .q-page {
   max-height: none;
   height: auto;
+  max-width: var(--content-max-width);
+  margin: auto;
 }
 </style>

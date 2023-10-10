@@ -1,23 +1,26 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <div class="container page-container">
-      <note-list
-        :selectable="false"
-        :notes="publicNotesStore.notes"
-        :limit="limit"
-        :offset="offset"
-        :total="publicNotesStore.total"
-        :fetch-notes="publicNotesStore.fetchNotes"
-        :scroll-target="scrollTarget"
-        :height="254"
-        ref="publicNotesRef"
-      ></note-list>
-    </div>
+    <q-page :style-fn="resetPageMinHeight">
+      <div class="container page-container">
+        <note-list
+          :selectable="false"
+          :notes="publicNotesStore.notes"
+          :limit="limit"
+          :offset="offset"
+          :total="publicNotesStore.total"
+          :fetch-notes="publicNotesStore.fetchNotes"
+          :scroll-target="scrollTarget"
+          :height="254"
+          ref="publicNotesRef"
+        ></note-list>
+      </div>
+    </q-page>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { usePublicNotesStore } from 'src/stores';
+import { resetPageMinHeight } from 'src/tools';
 import { useRoute } from 'vue-router';
 
 import { computed, ref } from 'vue';
@@ -54,8 +57,8 @@ reloadNotes();
 .scroll-container {
   overflow: auto;
 }
-
-page-container {
-  height: 100svh;
+.q-page {
+  max-width: var(--content-max-width);
+  margin: auto;
 }
 </style>
