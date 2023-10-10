@@ -2,8 +2,11 @@ import { insertNewlineAndIndent } from '@codemirror/commands';
 import { StateCommand, TransactionSpec } from '@codemirror/state';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
-export const orgAutoPairCommand = (getOrgNode: () => OrgNode): StateCommand => {
-  return ({ state, dispatch }) => {
+export const orgAutoCompleteCommand = (
+  getOrgNode: () => OrgNode
+): StateCommand => {
+  return (params) => {
+    const { state, dispatch } = params;
     const currentPos = state.selection.main.head;
 
     let currentOrgNode: OrgNode;

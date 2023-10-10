@@ -34,7 +34,7 @@ import {
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
-import { orgAutoPairCommand } from 'src/tools/cm-org-language/widgets/org-autoinsert-plugin';
+import { orgAutoCompleteCommand } from 'src/tools/cm-org-language/widgets/org-autoinsert-plugin';
 
 import { onMounted, ref, watch } from 'vue';
 
@@ -140,18 +140,8 @@ const initEditor = () => {
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
-
-          const currentLine = editorView?.state.doc.lineAt(
-            editorView?.state.selection.main.head
-          );
-          editorView.dispatch({
-            selection: {
-              anchor: editorView.state.selection.main.anchor,
-              head: currentLine?.to ?? 0,
-            },
-            scrollIntoView: true,
-          });
         }
+
         emits('focusChanged', v.view.hasFocus);
         emits('changeCursorPosition', v.state.selection.main.head);
       }),
@@ -166,7 +156,7 @@ const initEditor = () => {
         keymap.of([
           {
             key: 'Enter',
-            run: orgAutoPairCommand(() => orgNode),
+            run: orgAutoCompleteCommand(() => orgNode),
           },
         ])
       ),

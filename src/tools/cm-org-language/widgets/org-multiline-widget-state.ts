@@ -17,11 +17,11 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
   create() {
     return Decoration.none;
   },
-  update(tables, tr) {
+  update(multilineWidgets, tr) {
     for (const e of tr.effects) {
       if (e.is(addMultilineWidgetEffect)) {
         let alreadyDecoratedNode: Decoration;
-        tables = tables.update({
+        multilineWidgets = multilineWidgets.update({
           filter: (f, t, value) => {
             const found = value.spec.widget.eq({ orgNode: e.value.orgNode });
             if (found) {
@@ -31,7 +31,7 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
           },
         });
 
-        tables = tables.update({
+        multilineWidgets = multilineWidgets.update({
           add: [
             alreadyDecoratedNode
               ? alreadyDecoratedNode.range(
@@ -47,12 +47,12 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
         });
       }
       if (e.is(removeMultilineWidgetEffect)) {
-        tables = tables.update({
+        multilineWidgets = multilineWidgets.update({
           filter: (f, t, value) => !value.spec.widget.eq({ orgNode: e.value }),
         });
       }
     }
-    return tables;
+    return multilineWidgets;
   },
   provide: (f) => {
     return EditorView.decorations.from(f);
