@@ -17,7 +17,7 @@
     <q-virtual-scroll
       ref="scrollTarget"
       :items-size="total"
-      :virtual-scroll-slice-size="defaultCompletionLimit * 3"
+      :virtual-scroll-slice-size="defaultCompletionLimit"
       :virtual-scroll-item-size="itemHeight"
       :items-fn="getPagedResult"
       v-slot="{ index }"
@@ -34,23 +34,25 @@
         >
           <q-item
             :key="item.command"
-            class="flex column completion-item"
+            class="completion-item"
             :class="{ selected: index === selectedIndex }"
             :clickable="true"
             @mousedown="executeCommand(item)"
-            @mouseover="(e: MouseEvent) => focusCompletionCandidate(e, index)"
+            @mouseover=" (e: MouseEvent) => focusCompletionCandidate(e, index) "
           >
-            <div>
-              <q-icon
-                v-if="item.icon"
-                :name="item.icon"
-                class="q-pr-md"
-              ></q-icon>
-              <span class="text-bold">[{{ item.group }}]: </span>
+            <!-- TODO: master combine with src/components/ui/SearchContainer.vue search icon as -->
+            <!-- universal icon component with border (inherit props from quasar icon) -->
+            <div class="icon">
+              <q-icon v-if="item.icon" :name="item.icon" size="sm"></q-icon>
+            </div>
+            <div class="text-bold text-capitalize">
+              <span>[{{ item.group }}]: </span>
               <span>{{ item.command }}</span>
             </div>
             <div>
-              <span class="text-italic">{{ item.description }}</span>
+              <span class="text-italic color-secondary">{{
+                item.description
+              }}</span>
             </div>
           </q-item>
         </template>
@@ -69,7 +71,6 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
-import { useMainCommands } from 'src/hooks';
 import {
   CompletionCandidate,
   defaultCompletionLimit,
@@ -82,7 +83,7 @@ import { onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 
-const itemHeight = 48;
+const itemHeight = 60;
 const scrollTarget = ref<QVirtualScroll | null>();
 
 const completionStore = useCompletionStore();
@@ -161,6 +162,41 @@ const closeCompletionOnBlur = () => {
 .completion-item {
   overflow: hidden;
   height: 100%;
+
+  display: grid;
+  grid-template-columns: var(--search-icn-size) auto;
+  cursor: pointer;
+  align-items: center;
+  padding: 8px;
+  column-gap: 16px;
+
+  min-height: var(--completion-item-min-height);
+  padding: var(--completion-item-padding);
+  margin: var(--completion-item-margin);
+  border-radius: var(--default-item-radius);
+  cursor: pointer;
+
+  .q-focus-helper {
+    display: none;
+  }
+
+  &.selected {
+    background: var(--completion-item-hover-background);
+    color: var(--completion-item-hover-color);
+  }
+
+  .icon {
+    @include flexify(center, center);
+    margin-left: 4px;
+    border: 1px solid var(--base7);
+    border-radius: var(--default-item-radius);
+    width: var(--search-icn-size);
+    height: var(--search-icn-size);
+    grid-column: 1;
+    grid-row-start: 1;
+    grid-row-end: 3;
+    color: var(--fg);
+  }
 }
 
 .completion-scroll {

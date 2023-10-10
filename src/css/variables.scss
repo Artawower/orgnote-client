@@ -39,9 +39,10 @@ body {
 
   // Completion item
   --completion-item-min-height: 24px;
-  --completion-item-padding: 4px 16px;
-  --completion-item-hover-background: var(--cyan);
-  --completion-item-hover-color: var(--bg-alt);
+  --completion-item-padding: 8px 4px;
+  --completion-item-margin: 0 16px;
+  --completion-item-hover-background: var(--base7);
+  --completion-item-hover-color: inherit;
   --completion-float-top: 32px;
   --completion-border-radius: 8px;
   --completion-width: 80%;

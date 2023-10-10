@@ -84,7 +84,7 @@ const handleItem = (cmd: Command) => {
   grid-template-columns: var(--search-icn-size) auto;
   cursor: pointer;
   align-items: center;
-  padding: 8px;
+  padding: 8px 4px;
   column-gap: 16px;
 
   &:hover {

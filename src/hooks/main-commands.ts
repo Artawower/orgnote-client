@@ -35,6 +35,7 @@ export function useMainCommands() {
       command: camelCaseToWords(r.name.toString()),
       description: `Open ${r.name.toString()}`,
       group: 'navigation',
+      icon: 'assistant_navigation',
       handler: () => router.push({ name: r.name }),
     }));
 

@@ -20,6 +20,7 @@
 import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
 import { useViewStore } from 'src/stores/view';
+
 import CompletionResult from './CompletionResult.vue';
 
 const completionStore = useCompletionStore();
@@ -29,21 +30,6 @@ const viewStore = useViewStore();
 </script>
 
 <style lang="scss">
-.completion-item {
-  min-height: var(--completion-item-min-height);
-  padding: var(--completion-item-padding);
-  cursor: pointer;
-
-  .q-focus-helper {
-    display: none;
-  }
-
-  &.selected {
-    background: var(--completion-item-hover-background);
-    color: var(--completion-item-hover-color);
-  }
-}
-
 .completion-container {
   @include flexify(column, flex-start, flex-start);
   position: fixed;
