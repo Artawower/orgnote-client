@@ -1,5 +1,6 @@
 import { useAuthStore } from './auth';
 import { defineStore } from 'pinia';
+import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 import { sleep } from 'src/tools';
@@ -43,11 +44,16 @@ export const useFileStore = defineStore('fileStore', () => {
     }
   };
 
+  const $q = useQuasar();
+
   const uploadMediaFile = async (): Promise<string> => {
     // Programmatically create input for file upload (image extensions)
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    if (!$q.platform.is.android) {
+      // TODO: master add additional check for file type for android.
+      input.accept = 'image/*';
+    }
     input.style.width = '0';
     input.style.height = '0';
     document.body.appendChild(input);

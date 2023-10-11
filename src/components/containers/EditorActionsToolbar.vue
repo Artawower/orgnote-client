@@ -2,7 +2,7 @@
   <div class="editor-actions">
     <div
       v-for="cmd of editorCommands"
-      @mousedown="handleEditorAction(cmd)"
+      @mousedown.prevent.stop="handleEditorAction(cmd)"
       :key="cmd.command"
       class="editor-action"
     >
