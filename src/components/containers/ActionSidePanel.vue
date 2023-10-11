@@ -11,7 +11,7 @@
     bordered
   >
     <q-scroll-area class="fit">
-      <q-list>
+      <q-list class="side-panel-actions">
         <q-item
           @click="sidebarStore.toggleWithComponent(ProfileSideBar)"
           clickable
@@ -128,9 +128,7 @@
         ></login-buttons>
       </q-list>
 
-      <q-list>
-        <q-separator />
-
+      <q-list class="side-panel-actions">
         <template v-if="!fullWidth">
           <side-panel-items
             :items="
@@ -299,5 +297,16 @@ const { currentNote } = storeToRefs(useCurrentNoteStore());
 .composite-bar,
 .main-sidebar {
   padding-bottom: var(--device-padding-bottom);
+}
+
+.side-panel-actions .q-item {
+  .q-focus-helper {
+    border-radius: var(--default-item-radius);
+    transform: translate(-50%, -50%);
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    left: 50%;
+  }
 }
 </style>

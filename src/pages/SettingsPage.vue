@@ -83,5 +83,6 @@ const openTab = (component: VueComponent) => {
 }
 .configs {
   flex: 1;
+  padding-top: 16px;
 }
 </style>
