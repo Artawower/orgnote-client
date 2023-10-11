@@ -127,6 +127,7 @@ const initEditor = () => {
       highlightActiveLine(),
       readOnlyTransactionFilter(() => orgNode),
       basicOrgTheme,
+      // TODO: master optional readonly extension
       editorMenuExtension({
         parentElement: '.q-page',
         menuRenderer: (wrap: Element, editorView: EditorView) => {
@@ -280,7 +281,7 @@ watch(
 }
 
 .org-property-drawer {
-  color: var(--cyan);
+  color: var(--fg-alt);
   font-family: var(--editor-font-family-main);
 }
 

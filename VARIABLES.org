@@ -194,8 +194,9 @@
 - =--icon-btn-color=:  var(--fg);
 - =--icon-btn-hover-color=:  var(--cyan);
 ** Modal
-- =--modal-max-height=:  80svh;
+- =--modal-max-height=:  94svh;
 - =--modal-max-width=:  1024px;
+- =--modal-padding=:  8px 0;
 ** Box paddings/margins
 - =--default-block-padding=:  16px;
 - =--default-item-radius=:  8px;

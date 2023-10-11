@@ -1,29 +1,5 @@
 <template>
-  <div class="settings flex cols">
-    <q-list class="settings-groups">
-      <q-item
-        v-for="tab of configTabs"
-        @click="openTab(tab.component)"
-        :disable="tab?.disabled"
-        :key="tab.name"
-        :active="configComponent.__name === tab.component.__name"
-        clickable
-        class="rounded-borders justify-start"
-      >
-        <q-item-section :avatar="$q.screen.gt.xs">
-          <q-icon :name="tab.icon" size="sm" />
-        </q-item-section>
-        <q-item-section v-if="$q.screen.gt.xs">
-          <q-item-label class="text-capitalize">{{
-            $t(tab.name)
-          }}</q-item-label>
-        </q-item-section>
-      </q-item>
-    </q-list>
-    <div class="configs q-pl-md">
-      <component :is="configComponent"></component>
-    </div>
-  </div>
+  <component-tabs :tabs="configTabs"> </component-tabs>
 </template>
 
 <script lang="ts" setup>
@@ -35,14 +11,9 @@ import { shallowRef } from 'vue';
 import ApiSettingsPage from './ApiSettingsPage.vue';
 import CommonSettingsPage from './CommonSettingsPage.vue';
 import KeybindingsPage from './KeybindingsPage.vue';
+import { Tab } from 'src/components/ui/ComponentTabs.vue';
+import ComponentTabs from 'src/components/ui/ComponentTabs.vue';
 import ViewSettingsPage from 'src/pages/ViewSettingsPage.vue';
-
-interface Tab {
-  name: string;
-  icon: string;
-  component: VueComponent;
-  disabled?: boolean;
-}
 
 const authStore = useAuthStore();
 

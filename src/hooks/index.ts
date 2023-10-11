@@ -5,3 +5,4 @@ export * from './editor-actions-hook';
 export * from './vue-dynamic-mount';
 export * from './mobile-viewport-changed';
 export * from './editor-commands';
+export * from './use-org-file';

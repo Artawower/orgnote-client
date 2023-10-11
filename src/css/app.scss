@@ -44,6 +44,8 @@ h4,
 h5,
 h6 {
   margin: 0;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
 }
 
 .headline,
@@ -64,4 +66,8 @@ p {
 
 .link {
   cursor: pointer;
+}
+
+a {
+  text-decoration: none;
 }

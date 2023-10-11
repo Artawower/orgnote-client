@@ -27,7 +27,7 @@
 .modal-container {
   @include flexify(column, flex-start, flex-start);
 
-  padding: var(--page-padding);
+  padding: var(--modal-padding);
 
   background: var(--bg);
   position: relative;

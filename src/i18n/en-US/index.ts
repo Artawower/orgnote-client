@@ -68,4 +68,9 @@ export default {
   'edit mode': 'edit mode',
   'view mode': 'view mode',
   dashboard: 'dashboard',
+  'project info': 'project info',
+  sponsors: 'sponsors',
+  acknowledgements: 'acknowledgements',
+  info: 'info',
+  'you name could be here': 'you name could be here',
 };

@@ -30,7 +30,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     [
       {
         name: 'toggle sidebar',
-        icon: 'menu_open',
+        icon: 'menu',
         handler: () => executeCommand({ command: 'toggleActionSidePanel' }),
       },
       {

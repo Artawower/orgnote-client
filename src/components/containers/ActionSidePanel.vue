@@ -129,6 +129,16 @@
       </q-list>
 
       <q-list class="side-panel-actions">
+        <q-item clickable @click="openProjectInfo">
+          <q-item-section avatar>
+            <q-icon name="o_info" />
+          </q-item-section>
+
+          <q-item-section class="text-capitalize">
+            {{ $t('project info') }}
+          </q-item-section>
+        </q-item>
+
         <template v-if="!fullWidth">
           <side-panel-items
             :items="
@@ -204,6 +214,7 @@ import LoginButtons from 'src/components/LoginButtons.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
+import ProjectInfo from 'src/pages/ProjectInfo.vue';
 import SettingsPage from 'src/pages/SettingsPage.vue';
 
 const props = defineProps<{
@@ -266,9 +277,8 @@ const executeActionHandler = (handler: () => unknown) => {
 };
 
 const modalStore = useModalStore();
-const openSettings = () => {
-  modalStore.open(SettingsPage, { title: 'settings' });
-};
+const openSettings = () => modalStore.open(SettingsPage, { title: 'settings' });
+const openProjectInfo = () => modalStore.open(ProjectInfo);
 
 const route = useRoute();
 const isNoteDetailPage = computed(() => route.name == RouteNames.NoteDetail);
@@ -301,6 +311,7 @@ const { currentNote } = storeToRefs(useCurrentNoteStore());
 
 .side-panel-actions .q-item {
   .q-focus-helper {
+    position: absolute;
     border-radius: var(--default-item-radius);
     transform: translate(-50%, -50%);
     top: 50%;

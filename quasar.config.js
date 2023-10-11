@@ -47,6 +47,7 @@ module.exports = configure(function (ctx) {
 
             'roboto-font', // optional, you are not bound to it
             'material-icons', // optional, you are not bound to it
+            'material-icons-outlined'
         ],
 
         // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
@@ -131,17 +132,17 @@ module.exports = configure(function (ctx) {
           },
           // TODO: master additional proxy to stage
           proxy: {
-                '/v1': {
-                    target: process.env.API_URL || 'http://localhost:8000',
-                    changeOrigin: true,
-                },
-                '/media': {
-                    target: process.env.API_URL || 'http://localhost:8000',
-                },
+            '/v1': {
+              target: process.env.API_URL || 'http://localhost:8000',
+              changeOrigin: true,
             },
-            headers: {
-                'Access-Control-Allow-Origin': '*',
+            '/media': {
+              target: process.env.API_URL || 'http://localhost:8000',
             },
+          },
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
         },
 
         // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

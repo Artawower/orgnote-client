@@ -20,11 +20,11 @@ declare module '@vue/runtime-core' {
 // good idea to move this instance creation inside of the
 // "export default () => {}" function below (which runs individually
 // for each client)
-const api = axios.create({
+const axiosInstance = axios.create({
   baseURL: `${process.env.API_URL || '/v1'}`,
   timeout: +process.env.REQUEST_TIMEOUT || 15000,
 });
-api.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();
     config.headers.Authorization = `Bearer ${authStore.token}`;
@@ -33,10 +33,10 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const auth = AuthApiFactory(null, '', api);
-const notes = NotesApiFactory(null, '', api);
-const tags = TagsApiFactory(null, '', api);
-const files = initFilesApi(api);
+const auth = AuthApiFactory(null, '', axiosInstance);
+const notes = NotesApiFactory(null, '', axiosInstance);
+const tags = TagsApiFactory(null, '', axiosInstance);
+const files = initFilesApi(axiosInstance);
 
 const sdk = {
   auth,
@@ -52,10 +52,10 @@ export default boot(({ app }) => {
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
 
-  app.config.globalProperties.$api = api;
+  app.config.globalProperties.$api = axiosInstance;
   app.config.globalProperties.$sdk = sdk;
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
 });
 
-export { api, sdk };
+export { axiosInstance, sdk };

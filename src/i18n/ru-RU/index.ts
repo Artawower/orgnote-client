@@ -64,5 +64,10 @@ export default {
   confirm: 'подтвердить',
   'edit mode': 'режим редактирования',
   'view mode': 'режим просмотра',
-  'dashboard': 'панель управления',
+  dashboard: 'панель управления',
+  'project info': 'информация о проекте',
+  sponsors: 'спонсоры',
+  acknowledgements: 'благодарности',
+  info: 'информация',
+  'you name could be here': 'ваше имя может быть здесь',
 };
