@@ -33,7 +33,7 @@ The main idea of the project is to provide full-fledged integration for OrgRoam 
 - The project should be community-oriented, so if you have ideas, please share them with me.
   /You are also my patron, you can vote to prioritize certain features/.
 - The project should be free (including premium features) for open-source developers.
-  /It's hard to share with everyone, but I'll try/.
+  /It's hard to share with everyone, but I'll try/:)
 - It does not collect personal data and has no trackers.
 
 *** Related links

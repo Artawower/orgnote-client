@@ -4,13 +4,12 @@ import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
-import { OAuthProvider } from 'src/models';
-import { User } from 'src/models';
+import { OAuthProvider, PersonalInfo } from 'src/models';
 import { v4 } from 'uuid';
 
 import { ref } from 'vue';
 
-const defaultUserAccount = (): User => ({
+const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
   nickName: 'Anonymous',
   isAnonymous: true,
@@ -20,7 +19,7 @@ export const useAuthStore = defineStore(
   'auth',
   () => {
     const token = ref<string>();
-    const user = ref<User>();
+    const user = ref<PersonalInfo>();
     const provider = ref<OAuthProvider>('github');
     const $q = useQuasar();
 
@@ -77,7 +76,7 @@ export const useAuthStore = defineStore(
     };
 
     const syncStore = useSyncStore();
-    const authUser = (u: User, t: string) => {
+    const authUser = (u: PersonalInfo, t: string) => {
       user.value = u;
       token.value = t;
       syncStore.syncNotes();

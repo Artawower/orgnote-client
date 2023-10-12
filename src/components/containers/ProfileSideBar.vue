@@ -32,15 +32,40 @@
         <login-buttons />
       </template>
 
-      <q-item v-else @click="logout" clickable>
-        <q-item-section avatar>
-          <q-icon name="logout" />
-        </q-item-section>
+      <template v-else>
+        <q-item>
+          <q-item-section class="text-capitalize">
+            {{ $t('used space') }}:
 
-        <q-item-section class="text-capitalize">
-          {{ $t('logout') }}
-        </q-item-section>
-      </q-item>
+            <q-linear-progress
+              dark
+              stripe
+              rounded
+              size="20px"
+              :value="usedSpace"
+              color="red"
+              class="q-mt-sm available-space"
+            >
+              <div class="absolute-full flex flex-center">
+                <q-badge
+                  color="white"
+                  text-color="accent"
+                  :label="`${(usedSpace * 100).toFixed(2)}%`"
+                />
+              </div>
+            </q-linear-progress>
+          </q-item-section>
+        </q-item>
+
+        <q-item @click="logout" clickable>
+          <q-item-section avatar>
+            <q-icon name="logout" />
+          </q-item-section>
+          <q-item-section class="text-capitalize">
+            {{ $t('logout') }}
+          </q-item-section>
+        </q-item>
+      </template>
     </q-list>
 
     <q-list>
@@ -57,6 +82,8 @@ import { version } from '../../../package.json';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from 'src/stores';
 
+import { computed } from 'vue';
+
 import DownloadLinks from 'components/DownloadLinks.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
@@ -70,4 +97,15 @@ const openProfile = () => {
 };
 
 const logout = () => authStore.logout();
+
+const usedSpace = computed(() => {
+  if (!user || user.value.isAnonymous) return 0;
+  return user.value.usedSpace / user.value.spaceLimit;
+});
 </script>
+
+<style lang="scss" scoped>
+.available-space {
+  border: 1px solid var(--fg);
+}
+</style>

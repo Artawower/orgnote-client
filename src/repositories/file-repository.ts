@@ -28,7 +28,7 @@ export class FileRepository extends BaseRepository {
   }
 
   async getByName(name: string): Promise<File> {
-    return this.store.get({ name }).then((file) => file.file);
+    return this.store.get({ name }).then((file) => file?.file);
   }
 
   async getFirst(): Promise<File> {

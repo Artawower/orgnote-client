@@ -291,19 +291,19 @@ export interface HandlersHttpResponseModelsPublicNoteAny {
 /**
  * 
  * @export
- * @interface HandlersHttpResponseModelsPublicUserAny
+ * @interface HandlersHttpResponseModelsUserPersonalInfoAny
  */
-export interface HandlersHttpResponseModelsPublicUserAny {
+export interface HandlersHttpResponseModelsUserPersonalInfoAny {
     /**
      * 
-     * @type {ModelsPublicUser}
-     * @memberof HandlersHttpResponseModelsPublicUserAny
+     * @type {ModelsUserPersonalInfo}
+     * @memberof HandlersHttpResponseModelsUserPersonalInfoAny
      */
-    'data'?: ModelsPublicUser;
+    'data'?: ModelsUserPersonalInfo;
     /**
      * 
      * @type {object}
-     * @memberof HandlersHttpResponseModelsPublicUserAny
+     * @memberof HandlersHttpResponseModelsUserPersonalInfoAny
      */
     'meta'?: object;
 }
@@ -655,6 +655,12 @@ export interface ModelsPublicNote {
     'meta'?: ModelsNoteMeta;
     /**
      * 
+     * @type {number}
+     * @memberof ModelsPublicNote
+     */
+    'size'?: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelsPublicNote
      */
@@ -702,6 +708,61 @@ export interface ModelsPublicUser {
      * @memberof ModelsPublicUser
      */
     'profileUrl'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface ModelsUserPersonalInfo
+ */
+export interface ModelsUserPersonalInfo {
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'avatarUrl'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'email'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'id'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'name'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'nickName'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'profileUrl'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'spaceLimit'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'usedSpace'?: number;
 }
 
 /**
@@ -1011,7 +1072,7 @@ export const AuthApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async authVerifyGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsPublicUserAny>> {
+        async authVerifyGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsUserPersonalInfoAny>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.authVerifyGet(options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
@@ -1088,7 +1149,7 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authVerifyGet(options?: any): AxiosPromise<HandlersHttpResponseModelsPublicUserAny> {
+        authVerifyGet(options?: any): AxiosPromise<HandlersHttpResponseModelsUserPersonalInfoAny> {
             return localVarFp.authVerifyGet(options).then((request) => request(axios, basePath));
         },
     };
