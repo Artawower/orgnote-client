@@ -1,6 +1,6 @@
 <template>
   <q-dialog v-model="confirmationStore.opened" persistent>
-    <q-card>
+    <q-card class="no-shadow">
       <q-card-section class="column items-start gap-8">
         <h5 class="capitalize">{{ $t(confirmationStore.title) }}</h5>
         <div class="capitalize">{{ $t(confirmationStore.description) }}</div>

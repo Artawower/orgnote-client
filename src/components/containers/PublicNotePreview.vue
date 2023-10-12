@@ -64,18 +64,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs, watch } from 'vue';
+import { Note, NotePreview } from 'src/models';
+import { RouteNames } from 'src/router/routes';
+import { useSettingsStore } from 'src/stores/settings';
+import { useViewStore } from 'src/stores/view';
 import { useRouter } from 'vue-router';
 
-import { RouteNames } from 'src/router/routes';
-import { useViewStore } from 'src/stores/view';
+import { computed, ref, toRefs, watch } from 'vue';
 
-import { Note, NotePreview } from 'src/models';
-import { useSettingsStore } from 'src/stores/settings';
+import NoteFooter from 'src/components/NoteFooter.vue';
 import TagList from 'src/components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
-import NoteFooter from 'src/components/NoteFooter.vue';
 import ImageResolver from 'src/components/containers/ImageResolver.vue';
 
 const props = defineProps<{
@@ -92,7 +92,11 @@ const height = computed(() => `${props.height}px`);
 const router = useRouter();
 
 const openNoteDetail = (note: Note | NotePreview) => {
-  router.push({ name: RouteNames.NoteDetail, params: { id: note.id } });
+  const routeName = note.isMy ? RouteNames.RawEditor : RouteNames.NoteDetail;
+  router.push({
+    name: routeName,
+    params: { id: note.id },
+  });
 };
 
 const viewStore = useViewStore();

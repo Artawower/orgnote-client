@@ -42,15 +42,13 @@
           "
           @execute-action="executeActionHandler"
         />
-
-        <template v-if="!fullWidth">
-          <side-panel-items
-            :items="
-              toolbarStore.allActions.filter((a) => a.sidebarPosition === 'top')
-            "
-            @execute-action="executeActionHandler"
-          />
-        </template>
+        <side-panel-items
+          v-else
+          :items="
+            toolbarStore.allActions.filter((a) => a.sidebarPosition === 'top')
+          "
+          @execute-action="executeActionHandler"
+        />
 
         <q-item :to="{ name: RouteNames.Dashboard }" clickable exact>
           <q-item-section avatar>
