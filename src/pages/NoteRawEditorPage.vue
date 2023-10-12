@@ -17,7 +17,6 @@ import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
-import { useEditorActions } from 'src/hooks/editor-actions-hook';
 import { EditorView } from 'codemirror';
 
 const noteEditorStore = useNoteEditorStore();
@@ -42,8 +41,6 @@ watch(
     initialNoteText.value = val;
   }
 );
-
-useEditorActions();
 
 onBeforeUnmount(() => {
   noteEditorStore.editorView = null;

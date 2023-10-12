@@ -10,6 +10,7 @@
     no-swipe-backdrop
     bordered
   >
+    <!-- TODO: master this menu should be built from commands -->
     <q-scroll-area class="fit">
       <q-list class="side-panel-actions">
         <q-item
@@ -120,10 +121,19 @@
             {{ $t('extensions') }}
           </q-item-section>
         </q-item>
-        <login-buttons
-          v-if="user?.isAnonymous"
-          :vertical="true"
-        ></login-buttons>
+        <q-item
+          @click="noteEditorStore.toggleDebug"
+          v-if="isNoteEditPage"
+          clickable
+        >
+          <q-item-section avatar>
+            <q-icon name="bug_report" />
+          </q-item-section>
+
+          <q-item-section class="text-capitalize">
+            {{ $t('debug') }}
+          </q-item-section>
+        </q-item>
       </q-list>
 
       <q-list class="side-panel-actions">
@@ -192,6 +202,7 @@ import { RouteNames } from 'src/router/routes';
 import {
   useCurrentNoteStore,
   useModalStore,
+  useNoteEditorStore,
   useToolbarStore,
 } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
@@ -208,7 +219,6 @@ import {
   toRef,
 } from 'vue';
 
-import LoginButtons from 'src/components/LoginButtons.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
@@ -285,6 +295,8 @@ const isNoteEditPage = computed(() =>
 );
 
 const { currentNote } = storeToRefs(useCurrentNoteStore());
+
+const noteEditorStore = useNoteEditorStore();
 </script>
 
 <style lang="scss">

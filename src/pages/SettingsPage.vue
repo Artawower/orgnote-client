@@ -3,10 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { VueComponent } from 'src/models';
 import { useAuthStore } from 'src/stores';
-
-import { shallowRef } from 'vue';
 
 import ApiSettingsPage from './ApiSettingsPage.vue';
 import CommonSettingsPage from './CommonSettingsPage.vue';
@@ -40,11 +37,6 @@ const configTabs: Tab[] = [
     component: ApiSettingsPage,
   },
 ];
-const configComponent = shallowRef<VueComponent>(ViewSettingsPage);
-
-const openTab = (component: VueComponent) => {
-  configComponent.value = component;
-};
 </script>
 
 <style lang="scss" scoped>
