@@ -73,4 +73,5 @@ export default {
   acknowledgements: 'acknowledgements',
   info: 'info',
   'you name could be here': 'you name could be here',
+  'force sync': 'force sync',
 };

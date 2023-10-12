@@ -21,6 +21,9 @@ export const useNotesStore = defineStore('notes', () => {
   const total = ref<number>(0);
   const selectedNote = ref<Note>();
 
+  const syncStore = useSyncStore();
+  const fileManagerStore = useFileManagerStore();
+
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
     updatedFilters.searchText = updatedFilters.searchText?.trim();
@@ -39,15 +42,13 @@ export const useNotesStore = defineStore('notes', () => {
   const markAsDeleted = async (noteIds: string[]) => {
     await repositories.notes.markAsDeleted(noteIds);
     await fileManagerStore.updateFileManager();
+    await syncStore.syncNotes();
   };
 
   const upsertNotes = async (notes: Note[]) => {
     await repositories.notes.saveNotes(notes);
     loadNotes();
   };
-
-  const syncStore = useSyncStore();
-  const fileManagerStore = useFileManagerStore();
 
   const upsertNotesLocally = async (notes: Note[]) => {
     await upsertNotes(notes);

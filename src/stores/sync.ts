@@ -1,6 +1,6 @@
-import { AxiosError } from 'axios';
 import { useAuthStore } from './auth';
 import { useNotesStore } from './notes';
+import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';

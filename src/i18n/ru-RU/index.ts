@@ -70,4 +70,5 @@ export default {
   acknowledgements: 'благодарности',
   info: 'информация',
   'you name could be here': 'ваше имя может быть здесь',
+  'force sync': 'принудительная синхронизация',
 };

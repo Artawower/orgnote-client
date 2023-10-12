@@ -10,6 +10,11 @@
         $t('clear all data')
       }}</q-btn>
     </div>
+    <div class="q-pt-md">
+      <q-btn @click="forceResync" class="full-width" flat text-color="red">{{
+        $t('force sync')
+      }}</q-btn>
+    </div>
   </div>
 </template>
 
@@ -35,6 +40,13 @@ const clearAllData = async () => {
   }
 
   localStorage.clear();
+  await db.dropAll();
+  router.push(RouteNames.Home);
+  window.location.reload();
+};
+
+const forceResync = async () => {
+  localStorage.removeItem('sync');
   await db.dropAll();
   router.push(RouteNames.Home);
   window.location.reload();
