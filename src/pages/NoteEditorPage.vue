@@ -122,7 +122,7 @@ useEditorCommands();
   .common-info {
     position: sticky;
     top: 0;
-    background-color: white;
+    background-color: var(--bg);
     z-index: 1;
   }
 }
