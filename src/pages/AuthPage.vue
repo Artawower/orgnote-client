@@ -6,7 +6,7 @@
 
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
-import { User } from 'src/models';
+import { PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useAuthStore } from 'src/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
@@ -21,7 +21,6 @@ const $q = useQuasar();
 
 onBeforeMount(() => {
   const initialProvider = route.params.initialProvider as string;
-  console.log('✎: [line 24][AuthPage.vue] initialProvider: ', initialProvider);
   if (initialProvider) {
     authStore.auth(initialProvider);
     return;
@@ -38,17 +37,18 @@ const setupUser = () => {
   ) {
     // NOTE: Try to open mobile app
     const mobileAppUrl = `orgnote://auth/login${window.location.search}`;
-    console.log('✎: [line 37][AuthPage.vue] mobileAppUrl: ', mobileAppUrl);
     window.location.assign(mobileAppUrl);
     return;
   }
 
-  const userInfo: User = {
+  const userInfo: PersonalInfo = {
     avatarUrl: route.query.avatarUrl as string,
     email: route.query.email as string,
     nickName: route.query.username as string,
     profileUrl: route.query.profileUrl as string,
     id: route.query.id as string,
+    spaceLimit: +route.query.spaceLimit,
+    usedSpace: +route.query.usedSpace,
   };
 
   authStore.authUser(userInfo, route.query.token as string);
