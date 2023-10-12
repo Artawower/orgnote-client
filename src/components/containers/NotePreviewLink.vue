@@ -3,9 +3,7 @@
     <slot />
     <q-tooltip @show="loadNote" class="text-inherit">
       <div class="note-preview-wrapper">
-        <div
-          class="preview-link-not-found flex items-center justify-center fit"
-        >
+        <div class="preview-link-not-found flex items-center fit">
           <loader-spinner class="spinner" v-if="loading"></loader-spinner>
           <template v-else>
             <h1 v-if="!note">
@@ -27,10 +25,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-
 import { Note } from 'src/models';
 import { useCurrentNoteStore } from 'src/stores';
+
+import { ref } from 'vue';
 
 import PublicNotePreview from './PublicNotePreview.vue';
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
