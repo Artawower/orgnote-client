@@ -95,7 +95,9 @@ class OrgNodeParser extends Parser {
 
     if (
       orgNode.is(OrgNodeType.Operator) &&
-      orgNode.parent?.parent?.is(OrgNodeType.ListItem)
+      orgNode.parent?.parent?.is(OrgNodeType.ListItem) &&
+      orgNode?.parent.isNot(OrgNodeType.Section) &&
+      (orgNode.value === '- ' || orgNode.value === '+ ')
     ) {
       return 'ListBullet';
     }

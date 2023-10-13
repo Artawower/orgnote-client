@@ -20,6 +20,8 @@ import OrgLink from 'src/components/OrgLink.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 
+// TODO: master refactor 😭
+// what a peremptory bullshit
 export const useEmbeddedWidgets = () => {
   const dynamicComponent = useDynamicComponent();
   const createOrgEmbeddedWidget = (cmp: Component): WidgetBuilder => {
@@ -66,17 +68,16 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Operator]: {
       decorationType: 'replace',
       satisfied: (orgNode: OrgNode) => {
-        return (
+        const satisfied =
           orgNode.parent?.parent?.is(NodeType.ListItem) &&
-          !orgNode.parent.parent?.parent?.ordered
-        );
+          !orgNode.parent.parent?.parent?.ordered &&
+          orgNode?.parent.isNot(NodeType.Section);
+        return satisfied;
       },
       widgetBuilder: (wrap: HTMLElement, orgNode: OrgNode) => {
         const operator = orgNode.rawValue.trim();
-        wrap.classList.add(
-          'org-list-bullet',
-          `bullet-${operator === '-' ? '1' : '2'}`
-        );
+        wrap.innerHTML = operator === '-' ? '•' : '◦';
+        wrap.classList.add('org-list-bullet');
         return {
           destroy: () => {
             /* pass */
@@ -125,9 +126,21 @@ export const useEmbeddedWidgets = () => {
       if (orgNode?.parent?.is(NodeType.SrcBlock)) {
         return 'org-src-block-line';
       }
+      if (
+        orgNode.parent?.is(NodeType.Section) &&
+        orgNode.parent?.parent?.is(NodeType.ListItem) &&
+        !!orgNode.next
+      ) {
+        return 'org-list-item-section-line';
+      }
     },
     // TODO: master add support for nested lists.
     [NodeType.ListItem]: 'org-list-item-line',
+    [NodeType.Section]: (orgNode: OrgNode) => {
+      if (orgNode.parent?.is(NodeType.ListItem)) {
+        return 'org-list-item-section-line';
+      }
+    },
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (
@@ -143,6 +156,13 @@ export const useEmbeddedWidgets = () => {
 
       if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
         lineClass += ' org-block-header';
+      }
+
+      if (
+        orgNode.parent?.is(NodeType.Section) &&
+        orgNode.parent?.parent?.is(NodeType.ListItem)
+      ) {
+        lineClass += ' org-list-item-section-line';
       }
 
       return lineClass;

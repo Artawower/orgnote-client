@@ -43,15 +43,15 @@ The main idea of the project is to provide full-fledged integration for OrgRoam 
 - The project should be community-oriented, so if you have ideas, please share them with me.
   /You are also my patron, you can vote to prioritize certain features/.
 - The project should be free (including premium features) for open-source developers.
-  /It's hard to share with everyone, but I'll try/:)
+  /It's hard to share with everyone, but I'll try/ :)
 - It does not collect personal data and has no trackers.
 
 * [#C] Limitations
 - There is currently no support for [[https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type][CRDT]]. This means that if you use synchronization via =orgnote-cli= you may lose some data.
-  (it should automatically back up if you use it inside emacs with [])
-  *Make sure you back up your data!
+  (it should automatically back up if you use it inside emacs with [[https://github.com/Artawower/web-roam.el][orgnote.el]]
+  *Make sure you back up your data!*
 - There are no migrations in the project! I'm focusing on implementing the core functionality of the core.
-  This means that if you make changes to the program, you may lose your data. *Definitely back up your data!
+  This means that if you make changes to the program, you may lose your data. *Definitely back up your data!*
 - I made AST from scratch and not all org-mode primitives are supported now, also the parser might lack some rules.
   Please, if you encounter such bugs, let me know via GitHub [[https://github.com/Artawower/orgnote/issues][issue]].
 - The design is not in its final state... I'm not a designer, so I'd be glad if someone could help me with this 😊.

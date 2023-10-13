@@ -37,7 +37,7 @@ const initDebugTree = () => {
     ?.toString()
     .replace(
       `[${start}-${end}]`,
-      `<span style="background-color: yellow;">[${start}-${end}]</span>`
+      `<span style="background-color: var(--yellow); color: var(--base2)">[${start}-${end}]</span>`
     );
 };
 

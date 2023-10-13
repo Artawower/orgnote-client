@@ -537,24 +537,11 @@ org-keyword-block {
 .org-list-bullet {
   color: var(--fg-alt);
   position: absolute;
-
   left: -8px;
-  &.bullet-1 {
-    &::before {
-      content: '•';
-    }
-  }
 
-  &.bullet-2 {
-    &::before {
-      content: '◦';
-    }
-  }
-
-  &::before {
-    transform: scale(1.6);
-    position: absolute;
-  }
+  display: inline-block;
+  transform: scale(1.6);
+  width: 16px;
 }
 
 .org-operator.org-list-item:first-child {
@@ -564,12 +551,26 @@ org-keyword-block {
 
 .org-list-item-line {
   position: relative;
+  margin-left: 8px;
+}
+
+.org-list-item-section-line {
   margin-left: 16px;
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: -2px;
+    height: 100%;
+    border-left: 1px solid var(--base7);
+  }
 }
 
 .cm-action-menu {
   width: 48px;
-  left: -20px;
+  left: -32px;
 }
 
 @include mobile {
@@ -579,7 +580,6 @@ org-keyword-block {
     }
 
     .cm-action-menu {
-      left: -16px;
       display: none;
     }
 

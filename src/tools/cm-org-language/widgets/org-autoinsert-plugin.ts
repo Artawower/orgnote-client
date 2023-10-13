@@ -1,5 +1,6 @@
 import { insertNewlineAndIndent } from '@codemirror/commands';
 import { StateCommand, TransactionSpec } from '@codemirror/state';
+import nodeTest from 'node:test';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
 // TODO: master refactor.
@@ -44,7 +45,8 @@ function getAutoInsertedSymbol(node: OrgNode): TransactionSpec {
   }
   if (
     node.isNot(NodeType.NewLine) &&
-    node.parent?.parent?.is(NodeType.ListItem)
+    node.parent?.parent?.is(NodeType.ListItem) &&
+    node.parent?.isNot(NodeType.Section)
   ) {
     const operator = node.parent.children.first.rawValue.trim();
 
@@ -83,6 +85,20 @@ function getAutoInsertedSymbol(node: OrgNode): TransactionSpec {
         { from: node.parent.parent.end, insert: '\n' },
       ],
       selection: { anchor: node.parent.parent.end },
+    };
+  }
+
+  if (node.is(NodeType.Text) && node.parent?.parent?.is(NodeType.ListItem)) {
+    return {
+      changes: { from: node.end, to: node.end, insert: '\n ' },
+      selection: { anchor: node.end + 2 },
+    };
+  }
+
+  if (node.is(NodeType.Indent)) {
+    return {
+      changes: { from: node.start, to: node.end, insert: '' },
+      selection: { anchor: node.start },
     };
   }
 }
