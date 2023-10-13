@@ -37,6 +37,11 @@ export const useSyncStore = defineStore(
         notesStore.deleteNotes(rspns.data.data.deletedNotes.map((n) => n.id));
         notesStore.upsertNotes(rspns.data.data.notes);
 
+        await notesStore.loadTotal();
+        if (!notesStore.total) {
+          return;
+        }
+
         lastSyncTime.value = new Date().toISOString();
       } catch (e: unknown) {
         if ((e as AxiosError).response?.status === 401) {
