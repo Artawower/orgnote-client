@@ -25,6 +25,16 @@
 * [#A] Org Note
 [[https://github.com/Artawower/orgnote][OrgNote]] - is a knowledge base based on [[https://www.orgroam.com/][Org roam]], a package for working with [[https://www.gnu.org/software/emacs/][GNU Emacs]].
 /The current version of the program is a prototype, it contains some bugs and is not stable enough/. Please be sympathetic :)
+
+*** Related links
+- [[https://github.com/Artawower/orgnote-backend][Org Note backend]] 
+- [[https://github.com/Artawower/orgnote-client][Org Note client]]
+- [[https://github.com/Artawower/orgnote-publisher][CLI tool for notes synchronisation]]
+- [[https://github.com/Artawower/web-roam.el][Emacs package for note publishing.]] 
+- [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
+- [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]]
+- [[https://discord.gg/SFpUb2vSDm][Discord server]] 
+
 * [#B] Manifesto
 The main idea of the project is to provide full-fledged integration for OrgRoam for desktop, mobile apps and web interface (+pwa).
 
@@ -35,15 +45,6 @@ The main idea of the project is to provide full-fledged integration for OrgRoam 
 - The project should be free (including premium features) for open-source developers.
   /It's hard to share with everyone, but I'll try/:)
 - It does not collect personal data and has no trackers.
-
-*** Related links
-- [[https://github.com/Artawower/orgnote-backend][Org Note backend]] 
-- [[https://github.com/Artawower/orgnote-client][Org Note client]]
-- [[https://github.com/Artawower/orgnote-publisher][CLI tool for notes synchronisation]]
-- [[https://github.com/Artawower/web-roam.el][Emacs package for note publishing.]] 
-- [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
-- [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]]
-- [[https://discord.gg/SFpUb2vSDm][Discord server]] 
 
 * [#C] Limitations
 - There is currently no support for [[https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type][CRDT]]. This means that if you use synchronization via =orgnote-cli= you may lose some data.

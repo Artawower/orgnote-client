@@ -8,7 +8,6 @@
     :breakpoint="0"
     :overlay="fullWidth"
     no-swipe-backdrop
-    bordered
   >
     <!-- TODO: master this menu should be built from commands -->
     <q-scroll-area class="fit">
@@ -185,7 +184,6 @@
     v-show="sidebarStore.opened"
     class="main-sidebar"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
-    bordered
     :overlay="fullWidth"
     :breakpoint="0"
     no-swipe-backdrop
