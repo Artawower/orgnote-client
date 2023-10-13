@@ -536,10 +536,9 @@ org-keyword-block {
 
 .org-list-bullet {
   color: var(--fg-alt);
-  position: relative;
-  margin-right: 5px;
-  margin-left: 10px;
+  position: absolute;
 
+  left: -8px;
   &.bullet-1 {
     &::before {
       content: '•';
@@ -555,7 +554,6 @@ org-keyword-block {
   &::before {
     transform: scale(1.6);
     position: absolute;
-    left: -8px;
   }
 }
 
@@ -565,7 +563,8 @@ org-keyword-block {
 }
 
 .org-list-item-line {
-  margin-left: 8px;
+  position: relative;
+  margin-left: 16px;
 }
 
 .cm-action-menu {

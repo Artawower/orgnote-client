@@ -1,7 +1,6 @@
+import { orgTags } from './tags';
 import { HighlightStyle } from '@codemirror/language';
 import { Tag, tags } from '@lezer/highlight';
-
-import { orgTags } from './tags';
 
 const kebabIt = (str: string) =>
   str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();

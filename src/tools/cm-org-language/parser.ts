@@ -92,6 +92,13 @@ class OrgNodeParser extends Parser {
     ) {
       return `Headline-${orgNode.parent.level}`;
     }
+
+    if (
+      orgNode.is(OrgNodeType.Operator) &&
+      orgNode.parent?.parent?.is(OrgNodeType.ListItem)
+    ) {
+      return 'ListBullet';
+    }
     return orgNode.type;
   }
 

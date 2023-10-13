@@ -81,12 +81,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   };
 
   const selectNoteById = async (noteId: string): Promise<void> => {
-    const alreadySelected = currentNote.value?.id === noteId;
-
-    if (alreadySelected) {
-      return;
-    }
-
     currentNote.value = null;
 
     [currentNote.value, currentOrgTree.value] = await getNoteById(noteId);
