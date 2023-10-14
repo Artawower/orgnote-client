@@ -509,19 +509,6 @@ org-keyword-block {
   }
 }
 
-.org-doc-title-keyword,
-.org-doc-title {
-  font-size: 2rem;
-  font-weight: var(--headline-font-weight);
-  font-family: var(--headline-font-family);
-}
-
-.cm-line:not(.cm-activeLine) {
-  .org-doc-title {
-    margin-left: -10px;
-  }
-}
-
 .org-doc-title {
   color: var(--fg);
 }
@@ -596,6 +583,38 @@ org-keyword-block {
 .cm-action-menu {
   width: 48px;
   left: -32px;
+}
+
+.org-keyword-title-line {
+  .org-keyword {
+    font-size: 2rem;
+    font-weight: var(--headline-font-weight);
+    font-family: var(--headline-font-family);
+  }
+  .org-keyword:not(:first-of-type) {
+    color: var(--fg);
+  }
+}
+
+.org-keyword-description-line,
+.org-keyword-title-line,
+.org-keyword-filetags-line {
+  &:not(.cm-activeLine) {
+    .org-keyword:first-of-type {
+      display: none !important;
+    }
+    > *:not(:first-of-type) {
+      margin-left: -6px;
+    }
+  }
+}
+
+.org-keyword-description-line {
+  .org-keyword:not(:first-of-type) {
+    font-style: italic;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
 }
 
 @include mobile {

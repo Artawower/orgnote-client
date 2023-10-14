@@ -131,7 +131,10 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Headline]: (orgNode: OrgNode) =>
       `org-headline-line org-headline-${orgNode.level}`,
     [NodeType.SrcBlock]: 'org-src-block-line',
-    [NodeType.Keyword]: 'org-keyword-line',
+    [NodeType.Keyword]: (orgNode: OrgNode) =>
+      `org-keyword-line org-keyword-${orgNode.children.first.value
+        .toLowerCase()
+        .slice(2, -1)}-line`,
     [NodeType.NewLine]: (orgNode: OrgNode) => {
       if (orgNode?.parent?.is(NodeType.SrcBlock)) {
         return 'org-src-block-line';

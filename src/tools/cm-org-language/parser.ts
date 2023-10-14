@@ -75,17 +75,6 @@ class OrgNodeParser extends Parser {
   }
 
   private getCmNodeNameByOrgNode(orgNode: OrgNode): string {
-    const titleKeyword = '#+title:';
-    const isParentTitleKeyword =
-      orgNode.parent?.is(OrgNodeType.Keyword) &&
-      orgNode.parent?.children?.get(0).value.toLowerCase() === titleKeyword;
-
-    if (isParentTitleKeyword && orgNode.value.toLowerCase() === titleKeyword) {
-      return 'DocTitleKeyword';
-    }
-    if (isParentTitleKeyword) {
-      return 'DocTitle';
-    }
     if (
       orgNode.is(OrgNodeType.Title) &&
       orgNode.parent?.is(OrgNodeType.Headline)
