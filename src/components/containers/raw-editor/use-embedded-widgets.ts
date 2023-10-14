@@ -19,12 +19,16 @@ import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgTable from 'src/components/OrgTable.vue';
+import OrgTags from 'src/components/OrgTags.vue';
 
 // TODO: master refactor 😭
 // what a peremptory bullshit
 export const useEmbeddedWidgets = () => {
   const dynamicComponent = useDynamicComponent();
-  const createOrgEmbeddedWidget = (cmp: Component): WidgetBuilder => {
+  const createOrgEmbeddedWidget = (
+    cmp: Component,
+    props: { [key: string]: unknown } = {}
+  ): WidgetBuilder => {
     return (
       wrap: HTMLElement,
       orgNode: OrgNode,
@@ -34,6 +38,7 @@ export const useEmbeddedWidgets = () => {
       return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
         rootNodeSrc,
+        ...props,
         onUpdate: (newVal: string) => {
           onUpdateFn?.(newVal);
         },
@@ -64,6 +69,11 @@ export const useEmbeddedWidgets = () => {
       decorationType: 'mark',
       classBuilder: (orgNode: OrgNode) =>
         `org-keyword-${orgNode.value.toLowerCase()}`,
+    },
+    [NodeType.TagList]: {
+      decorationType: 'replace',
+      ignoreEvent: true,
+      widgetBuilder: createOrgEmbeddedWidget(OrgTags, { container: 'span' }),
     },
     [NodeType.Operator]: {
       decorationType: 'replace',

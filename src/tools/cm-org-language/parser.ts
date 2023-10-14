@@ -101,6 +101,13 @@ class OrgNodeParser extends Parser {
     ) {
       return 'ListBullet';
     }
+
+    if (
+      orgNode.is(OrgNodeType.Text) &&
+      orgNode.parent?.is(OrgNodeType.TagList)
+    ) {
+      return 'FileTag';
+    }
     return orgNode.type;
   }
 

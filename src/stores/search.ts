@@ -7,6 +7,7 @@ import {
 import { defineStore } from 'pinia';
 import { repositories } from 'src/boot/repositories';
 import { NotePreview } from 'src/models';
+import { exctractSearchInfo } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
@@ -26,9 +27,11 @@ export const useSearchStore = defineStore('search', () => {
   // const notesStore = useNotesStore();
 
   // TODO [completion]: need to allow pagination for scroll event.
-  const initCompletion = async (
-    customHandler?: (arg: NotePreview) => void
-  ): Promise<void> => {
+  const initCompletion = async (params?: {
+    customHandler?: (arg: NotePreview) => void;
+    searchText?: string;
+  }): Promise<void> => {
+    completionStore.filter = params?.searchText ?? '';
     const completionCandidateGetter: CandidateGetterFn<NotePreview> = (
       filter: string,
       limit: number,
@@ -37,24 +40,28 @@ export const useSearchStore = defineStore('search', () => {
       new Promise<CompletionSearchResult<NotePreview>>(
         async (resolve, reject) => {
           // const userId = authStore.user.id;
-
           try {
-            const total = await repositories.notes.count(filter);
+            const [searchString, tags] = exctractSearchInfo(filter);
+            const total = await repositories.notes.count(searchString, tags);
+
             const notes = await repositories.notes.getNotePreviews(
               limit,
               offset,
-              filter
+              searchString,
+              tags
             );
 
             const completionCandidates: CompletionCandidate<NotePreview>[] =
               notes.map((d) => ({
                 command: d.meta.title,
                 icon: 'description',
-                description: d.meta.description,
+                description: `${d.meta.description ?? ''} \n${
+                  d.meta.fileTags?.map((t) => `#${t}`).join(' ') ?? ''
+                }`,
                 group: 'Notes',
                 data: d,
                 commandHandler:
-                  customHandler ??
+                  params?.customHandler ??
                   (() => {
                     // TODO: master url builder from router.
                     router.push(`/note-editor/${d.id}/raw`);
@@ -75,11 +82,13 @@ export const useSearchStore = defineStore('search', () => {
     completionStore.initNewCompletion({
       itemsGetter: completionCandidateGetter,
       placeholder: 'search notes',
+      searchText: params?.searchText,
     });
+    completionStore.openCompletion();
   };
 
   const searchWithCustom = (handler: (arg0: NotePreview) => void) => {
-    initCompletion(handler);
+    initCompletion({ customHandler: handler });
   };
 
   return {

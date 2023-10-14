@@ -58,7 +58,6 @@ export function useMainCommands() {
       description: 'search notes',
       group: 'search',
       handler: (params) => {
-        completionStore.openCompletion();
         searchStore.initCompletion();
         params.event?.preventDefault();
       },

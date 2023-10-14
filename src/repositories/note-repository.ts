@@ -1,6 +1,6 @@
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
-import Dexie from 'dexie';
+import Dexie, { Collection } from 'dexie';
 import { Note, NotePreview } from 'src/models';
 import { toDeepRaw } from 'src/tools';
 
@@ -59,24 +59,51 @@ export class NoteRepository extends BaseRepository {
   async getNotePreviews(
     limit: number,
     offset: number,
-    searchText?: string
+    searchText?: string,
+    tags?: string[]
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
     const searchCollection = this.store
       .orderBy('createdAt')
       .reverse()
       .filter((n) => !n.deleted);
-    const initialStore = searchText
-      ? searchCollection.filter((n) =>
-          n.meta.title?.toLowerCase().includes(searchText.toLowerCase())
-        )
-      : searchCollection;
-
+    const initialStore = this.applySearchInfo(
+      searchCollection,
+      searchText,
+      tags
+    );
     return initialStore
       .offset(offset)
       .limit(limit)
       .each((n) => result.push(convertNoteToNotePreview(n)))
       .then(() => result);
+  }
+
+  private applySearchInfo(
+    collection: Collection<Note, string>,
+    searchText?: string,
+    tags?: string[]
+  ): Collection<Note, string> {
+    if (searchText) {
+      collection = collection.filter((n) =>
+        n.meta.title?.toLowerCase().includes(searchText.toLowerCase().trim())
+      );
+    }
+
+    if (tags?.length) {
+      collection = collection.filter((n) => this.tagMatched(n, tags));
+    }
+
+    return collection;
+  }
+
+  private tagMatched(note: Note, tags: string[]): boolean {
+    return note.meta.fileTags?.some((t) => {
+      const found = tags.find((tag) =>
+        tag.toLowerCase().includes(t.toLowerCase())
+      );
+      return found;
+    });
   }
 
   async deleteNotes(noteIds: string[]): Promise<void> {
@@ -106,7 +133,7 @@ export class NoteRepository extends BaseRepository {
     );
   }
 
-  async count(searchText?: string): Promise<number> {
+  async count(searchText?: string, tags?: string[]): Promise<number> {
     if (!searchText) {
       return this.store.filter((n) => !n.deleted).count();
     }
@@ -115,7 +142,8 @@ export class NoteRepository extends BaseRepository {
       .filter(
         (n) =>
           !n.deleted &&
-          n.meta.title?.toLowerCase().includes(lowerCaseSearchText)
+          (n.meta.title?.toLowerCase().includes(lowerCaseSearchText) ||
+            this.tagMatched(n, tags))
       )
       .count();
   }

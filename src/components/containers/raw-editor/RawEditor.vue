@@ -263,6 +263,15 @@ watch(
   }
 }
 
+.org-file-tag {
+  color: var(--cyan) !important;
+}
+
+.org-keyword.org-operator {
+  color: var(--cyan);
+  padding: 4px;
+}
+
 .org-link {
   color: var(--fg);
   text-decoration: underline;

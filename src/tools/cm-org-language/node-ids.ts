@@ -1,8 +1,10 @@
 import { OrgNode } from 'org-mode-ast';
 
+// TODO: master use enum
 export const cmNodes = [
   'DocTitle',
   'DocTitleKeyword',
+  'FileTag',
   'ListBullet',
   'Headline-1',
   'Headline-2',

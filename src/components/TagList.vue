@@ -1,5 +1,6 @@
 <template>
-  <div
+  <component
+    :is="container ?? 'div'"
     ref="tagsWrapperRef"
     v-if="tags?.length"
     class="tags-wrapper"
@@ -29,11 +30,12 @@
         #{{ tag }}
       </span>
     </template>
-  </div>
+  </component>
 </template>
 
 <script lang="ts" setup>
-import { useNotesStore } from 'src/stores/notes';
+import { useSearchStore } from 'src/stores';
+
 import { computed, onMounted, ref } from 'vue';
 
 const props = withDefaults(
@@ -41,6 +43,7 @@ const props = withDefaults(
     tags?: string[];
     type?: 'text' | 'badges';
     inline?: boolean;
+    container?: string;
   }>(),
   {
     type: 'text',
@@ -50,8 +53,10 @@ const props = withDefaults(
 
 const tags = computed(() => Array.from(new Set(props.tags)));
 
-const notesStore = useNotesStore();
-const searchByTag = (tag: string) => notesStore.setFilters({ searchText: tag });
+const searchStore = useSearchStore();
+const searchByTag = (tag: string) => {
+  searchStore.initCompletion({ searchText: `#${tag}` });
+};
 const ellipsisExists = ref(false);
 const tagsWrapperRef = ref<HTMLElement | null>(null);
 

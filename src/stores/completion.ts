@@ -31,6 +31,7 @@ export interface CompletionConfigs<T = unknown> {
   itemsGetter: CandidateGetterFn<T>;
   placeholder?: string;
   itemHeight?: string;
+  searchText?: string;
 }
 
 export const useCompletionStore = defineStore('completion', () => {
@@ -55,7 +56,7 @@ export const useCompletionStore = defineStore('completion', () => {
     setCandidateGetter(configs.itemsGetter);
     placeholder.value = configs.placeholder;
     candidates.value = [];
-    filter.value = '';
+    filter.value = configs.searchText ?? '';
     selectedCandidateIndex.value = 0;
     search();
   };
