@@ -30,7 +30,13 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
     new NavigationRoute(
       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
       {
-        denylist: [/sw\.js$/, /workbox-(.)*\.js$/, /index\.html$/, /api\/(.)*/],
+        denylist: [
+          /sw\.js$/,
+          /workbox-(.)*\.js$/,
+          /index\.html$/,
+          /api\/(.)*/,
+          /builds\/(.)*/,
+        ],
       }
     )
   );

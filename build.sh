@@ -16,9 +16,6 @@ mkdir -p ./dist/build
 
 version=$(awk -F '"' '/"version": ".+"/{ print $4; exit; }' ./package.json)
 
-echo $KEYPASS
-echo $STOREPASS
-
 java -jar bundletool.jar build-apks \
      --mode=universal \
      --bundle=./dist/cordova/android/bundle/release/app-release.aab \
