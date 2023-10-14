@@ -12,7 +12,7 @@ export function extractOrgLink(link: string): string {
   const linkId = extractOrgLinkId(link);
 
   if (linkId) {
-    return `${window.origin}/#/detail/${linkId}`;
+    return `${window.origin}/detail/${linkId}`;
   }
 
   return link;

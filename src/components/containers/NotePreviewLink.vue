@@ -65,4 +65,8 @@ const loadNote = async () => {
 .spinner {
   transform: scale(0.45);
 }
+
+article {
+  width: 100%;
+}
 </styles>
