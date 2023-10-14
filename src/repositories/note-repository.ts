@@ -84,23 +84,35 @@ export class NoteRepository extends BaseRepository {
     searchText?: string,
     tags?: string[]
   ): Collection<Note, string> {
-    if (searchText) {
-      collection = collection.filter((n) =>
-        n.meta.title?.toLowerCase().includes(searchText.toLowerCase().trim())
-      );
-    }
-
-    if (tags?.length) {
-      collection = collection.filter((n) => this.tagMatched(n, tags));
-    }
-
-    return collection;
+    return collection.filter((n) => this.searchMath(n, searchText, tags));
   }
 
-  private tagMatched(note: Note, tags: string[]): boolean {
+  private searchMath(
+    note: Note,
+    searchText?: string,
+    tags?: string[]
+  ): boolean {
+    if (!searchText && !tags?.length) {
+      return true;
+    }
+
+    const titleMatched =
+      searchText &&
+      note.meta.title?.toLowerCase().includes(searchText?.toLowerCase());
+
+    const descriptionMatched =
+      searchText &&
+      note.meta.description?.toLowerCase().includes(searchText?.toLowerCase());
+
+    const tagMatched = this.tagMatched(note, tags);
+
+    return descriptionMatched || titleMatched || tagMatched;
+  }
+
+  private tagMatched(note: Note, tags: string[] = []): boolean {
     return note.meta.fileTags?.some((t) => {
       const found = tags.find((tag) =>
-        tag.toLowerCase().includes(t.toLowerCase())
+        t.toLowerCase().includes(tag.toLowerCase())
       );
       return found;
     });
@@ -134,17 +146,8 @@ export class NoteRepository extends BaseRepository {
   }
 
   async count(searchText?: string, tags?: string[]): Promise<number> {
-    if (!searchText) {
-      return this.store.filter((n) => !n.deleted).count();
-    }
-    const lowerCaseSearchText = searchText?.toLowerCase();
     return this.store
-      .filter(
-        (n) =>
-          !n.deleted &&
-          (n.meta.title?.toLowerCase().includes(lowerCaseSearchText) ||
-            this.tagMatched(n, tags))
-      )
+      .filter((n) => !n.deleted && this.searchMath(n, searchText, tags))
       .count();
   }
 
