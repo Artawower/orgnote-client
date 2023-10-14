@@ -143,8 +143,8 @@ const initEditor = () => {
           setText(v.state.doc.toString());
         }
 
-        emits('focusChanged', v.view.hasFocus);
         emits('changeCursorPosition', v.state.selection.main.head);
+        changeFocus(v.view.hasFocus);
       }),
       orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
       orgMultilineWidgets(
@@ -180,6 +180,22 @@ const initEditor = () => {
 
   emits('init', { view: editorView });
   setCursorPositionToTheEOF();
+};
+
+const focus = ref<boolean>();
+const changeFocus = (hasFocus: boolean) => {
+  if (focus.value === hasFocus) {
+    return;
+  }
+  focus.value = hasFocus;
+  emits('focusChanged', hasFocus);
+  setTimeout(() => scrollIntoCurrentLine(), 10);
+};
+
+const scrollIntoCurrentLine = () => {
+  editorView.dispatch({
+    scrollIntoView: true,
+  });
 };
 
 onMounted(() => initEditor());

@@ -1,5 +1,5 @@
 <template>
-  <div class="editor-actions">
+  <div class="editor-actions" @touchmove="touchMove" @touchstart="touchStart">
     <div
       v-for="cmd of editorCommands"
       @mousedown.prevent.stop="handleEditorAction(cmd)"
@@ -12,6 +12,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useQuasar } from 'quasar';
 import { Command } from 'src/models';
 import { useCommandsStore, useNoteEditorStore } from 'src/stores';
 
@@ -22,6 +23,21 @@ const editorCommands = commandsStore.getCommandsFromGroup('editor');
 
 const handleEditorAction = (action: Command) => {
   action.handler(noteEditorStore.editorView);
+};
+
+const $q = useQuasar();
+let startY = 0;
+const touchStart = (e: TouchEvent) => {
+  startY = e.touches[0].clientY;
+};
+const touchMove = (e: TouchEvent) => {
+  if (
+    e.changedTouches[0].clientY < startY &&
+    $q.platform.is.ios &&
+    !$q.platform.is.cordova
+  ) {
+    e.preventDefault();
+  }
 };
 </script>
 
