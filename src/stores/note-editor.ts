@@ -1,11 +1,11 @@
-import { useNotesStore } from '.';
+import { useFileManagerStore, useNotesStore } from '.';
 import { EditorView } from 'codemirror';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { Note } from 'src/models';
-import { generateFileName } from 'src/tools';
+import { generateFileName, textToKebab } from 'src/tools';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
 import { computed, ref, toRaw } from 'vue';
@@ -20,10 +20,20 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const cursorPosition = ref<number>(0);
   const editorView = ref<EditorView>(null);
 
+  const fileManagerStore = useFileManagerStore();
   // TODO: master persistent value should be done via indexed db.
   const setNoteData = (text: string, orgNode: OrgNode) => {
     if (!filePath.value?.length) {
       return;
+    }
+    const titleChanged =
+      orgNode.meta.title &&
+      noteOrgData.value &&
+      orgNode.meta.title !== noteOrgData.value?.meta.title;
+    const newName = `${textToKebab(orgNode.meta.title)}.org`;
+    if (titleChanged) {
+      fileManagerStore.updateFileManager();
+      filePath.value.splice(-1, 1, newName);
     }
     noteText.value = text;
     noteOrgData.value = orgNode;

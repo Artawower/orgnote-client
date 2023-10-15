@@ -160,6 +160,15 @@ watch(
   () => tryInitEditMode()
 );
 
+watch(
+  () => props.fileNode,
+  (val) => {
+    if (val.name !== fileName.value) {
+      fileName.value = val.name;
+    }
+  }
+);
+
 const tryInitEditMode = () => {
   editMode.value =
     fileManagerStore.editedFileItem?.name &&

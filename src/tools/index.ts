@@ -23,3 +23,4 @@ export * from './call-keyboard';
 export * from './min-page-height';
 export * from './create-promise';
 export * from './extract-search-info';
+export * from './text-to-kebab';
