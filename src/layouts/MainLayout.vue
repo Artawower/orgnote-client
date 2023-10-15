@@ -39,11 +39,12 @@
 
 <script lang="ts" setup>
 import {
+  onAppActive,
   onMobileViewportChanged,
   registerEditorCommands,
   useMainCommands,
 } from 'src/hooks';
-import { useSidebarStore, useToolbarStore } from 'src/stores';
+import { useSidebarStore, useSyncStore, useToolbarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
@@ -98,6 +99,13 @@ const { viewportHeight, keyboardOpened } = onMobileViewportChanged((info) => {
   document.body.style.height = info.viewportHeight.value + 'px';
   if (info.keyboardOpened.value) {
     alignViaVirtualkeyboard();
+  }
+});
+
+const syncStore = useSyncStore();
+onAppActive((active: boolean) => {
+  if (active) {
+    syncStore.syncNotes();
   }
 });
 </script>
