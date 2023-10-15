@@ -8,7 +8,7 @@ import { Note } from 'src/models';
 import { generateFileName, textToKebab } from 'src/tools';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
-import { computed, ref, toRaw } from 'vue';
+import { computed, ref, shallowRef, toRaw } from 'vue';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();
@@ -18,7 +18,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const createdTime = ref<string>();
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
-  const editorView = ref<EditorView>(null);
+  const editorView = shallowRef<EditorView>(null);
 
   const fileManagerStore = useFileManagerStore();
   // TODO: master persistent value should be done via indexed db.

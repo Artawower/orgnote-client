@@ -1,4 +1,6 @@
 import { EditorView } from 'codemirror';
+import { redo, undo } from '@codemirror/commands';
+import { undo, redo } from '@codemirror/commands';
 import { Command } from 'src/models';
 import {
   useCommandsStore,
@@ -10,6 +12,7 @@ import {
 import { insertTemplate } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
+import { useNotifications } from './notification';
 
 export const registerEditorCommands = () => {
   const commandsStore = useCommandsStore();
@@ -17,8 +20,31 @@ export const registerEditorCommands = () => {
   const noteEditorStore = useNoteEditorStore();
   const searchStore = useSearchStore();
   const completionStore = useCompletionStore();
+  const notificationStore = useNotifications();
 
   const commands: Command[] = [
+    {
+      command: 'undo',
+      icon: 'undo',
+      description: 'undo',
+      group: 'editor',
+      handler: () => undo(noteEditorStore.editorView as EditorView),
+    },
+    {
+      command: 'redo',
+      icon: 'redo',
+      description: 'redo',
+      group: 'editor',
+      handler: () => redo(noteEditorStore.editorView as EditorView),
+    },
+    {
+      command: 'tab',
+      icon: 'keyboard_tab',
+      description: 'tab',
+      group: 'editor',
+      // TODO: master implement smart tab with jump
+      handler: () => notificationStore.notify('not implemented yet'),
+    },
     {
       command: 'headline 1',
       icon: 'view_headline',
@@ -72,7 +98,7 @@ export const registerEditorCommands = () => {
           template: `#+BEGIN_EXPORT latex
 
 #+END_EXPORT`,
-          focusOffset: 12,
+          focusOffset: 21,
           overrideLine: true,
         }),
     },
@@ -119,6 +145,132 @@ export const registerEditorCommands = () => {
           overrideLine: true,
         });
       },
+    },
+    {
+      command: 'bold',
+      icon: 'format_bold',
+      description: 'insert bold text',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '**',
+          focusOffset: 1,
+        }),
+    },
+    {
+      command: 'italic',
+      icon: 'format_italic',
+      description: 'insert italic text',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '//',
+          focusOffset: 1,
+        }),
+    },
+    {
+      command: 'strike through',
+      icon: 'format_strikethrough',
+      description: 'insert strike through text',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '++',
+          focusOffset: 1,
+        }),
+    },
+    {
+      command: 'inline code',
+      icon: 'data_object',
+      description: 'insert inline code',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '==',
+          focusOffset: 1,
+        }),
+    },
+    {
+      command: 'bullet list',
+      icon: 'list',
+      description: 'insert bullet list',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '- ',
+        }),
+    },
+    {
+      command: 'numeric list',
+      icon: 'format_list_numbered',
+      description: 'insert numeric list',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '1. ',
+        }),
+    },
+    {
+      command: 'check list',
+      icon: 'checklist',
+      description: 'insert check list',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '- [ ] ',
+        }),
+    },
+    {
+      command: 'horizontal rule',
+      icon: 'horizontal_rule',
+      description: 'insert horizontal line',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '-----\n',
+        }),
+    },
+    {
+      command: 'html',
+      icon: 'html',
+      description: 'insert html code block',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '#+BEGIN_HTML\n\n#+END_HTML',
+          focusOffset: 13,
+        }),
+    },
+    {
+      command: 'checkbox',
+      icon: 'check_box',
+      description: 'insert checkbox',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '[ ] ',
+        }),
+    },
+    {
+      command: 'table',
+      icon: 'grid_on',
+      description: 'insert table',
+      group: 'editor',
+      handler: () =>
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template: '\n| ',
+        }),
     },
   ];
 
