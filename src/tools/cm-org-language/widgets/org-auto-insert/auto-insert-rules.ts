@@ -76,7 +76,7 @@ export function exitCodeBlock(node: OrgNode): TransactionSpec {
 
 export function exitList(node: OrgNode): TransactionSpec {
   if (
-    node.is(NodeType.NewLine) ||
+    node.is(NodeType.NewLine, NodeType.Indent) ||
     (node.is(NodeType.Text) && !!node.value.trim()) ||
     !node.parent?.parent?.is(NodeType.ListItem)
   ) {
