@@ -561,6 +561,10 @@ org-keyword-block {
   min-height: 28.8px;
 }
 
+.org-list-item-checked {
+  text-decoration: line-through;
+}
+
 .org-operator.org-list-item:first-child {
   display: inline-block;
   color: var(--fg-alt);
