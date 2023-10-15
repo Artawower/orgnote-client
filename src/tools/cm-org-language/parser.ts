@@ -106,13 +106,14 @@ class OrgNodeParser extends Parser {
   ): Tree | null {
     if (
       !orgNode.is(OrgNodeType.BlockBody) ||
-      !orgNode.parent.is(OrgNodeType.SrcBlock)
+      !orgNode.parent.is(OrgNodeType.SrcBlock, OrgNodeType.HtmlBlock)
     ) {
       return;
     }
     const language = orgNode.parent.properties.language?.toLowerCase();
+    const htmlParser = orgNode.parent.is(OrgNodeType.HtmlBlock) ? 'html' : null;
 
-    const nestedParser = this.config?.wrap?.[language ?? 'c'];
+    const nestedParser = this.config?.wrap?.[language ?? htmlParser ?? 'c'];
     if (!nestedParser) {
       return;
     }
