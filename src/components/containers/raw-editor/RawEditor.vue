@@ -28,13 +28,13 @@ import { useDynamicComponent } from 'src/hooks';
 import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
 import {
   editorMenuExtension,
+  orgAutoInsertCommand,
   orgInlineWidgets,
   orgLineDecoration,
   orgMultilineWidgetField,
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
-import { orgAutoCompleteCommand } from 'src/tools/cm-org-language/widgets/org-autoinsert-plugin';
 
 import { onMounted, ref, watch } from 'vue';
 
@@ -157,7 +157,7 @@ const initEditor = () => {
         keymap.of([
           {
             key: 'Enter',
-            run: orgAutoCompleteCommand(() => orgNode),
+            run: orgAutoInsertCommand(() => orgNode),
           },
         ])
       ),
