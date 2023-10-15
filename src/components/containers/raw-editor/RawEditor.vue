@@ -556,6 +556,11 @@ org-keyword-block {
   width: 16px;
 }
 
+/* FIXME: hack for empty line with absolute bullet */
+.org-list-item-line.cm-activeLine {
+  min-height: 28.8px;
+}
+
 .org-operator.org-list-item:first-child {
   display: inline-block;
   color: var(--fg-alt);
