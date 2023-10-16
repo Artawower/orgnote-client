@@ -149,6 +149,7 @@
 - =--completion-border=:  1px solid var(--fg-alt);
 - =--completion-box-shadow=:  none;
 - =--completion-input-height=:  56px;
+- =--completion-container-margin=:  0px;
 ** File uploader
 - =--file-uploader-border-width=:  4px;
 - =--file-uploader-border-style=:  dashed;
@@ -217,6 +218,7 @@
 - =--default-gap=:  10px;
 - =--file-item-height=:  46px;
 - =--headerbar-height=:  46px;
+- =--completion-container-margin=:  6px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;

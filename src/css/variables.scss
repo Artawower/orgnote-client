@@ -50,6 +50,7 @@ body {
   --completion-border: 1px solid var(--fg-alt);
   --completion-box-shadow: none;
   --completion-input-height: 56px;
+  --completion-container-margin: 0px;
 
   // File uploader
   --file-uploader-border-width: 4px;
@@ -138,6 +139,8 @@ body {
     --default-gap: 10px;
     --file-item-height: 46px;
     --headerbar-height: 46px;
+
+    --completion-container-margin: 6px;
   }
 }
 

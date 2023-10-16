@@ -48,8 +48,14 @@ const viewStore = useViewStore();
   margin-left: calc(var(--sidebar-width) / 2);
 
   &.mobile {
+    top: 0;
     margin-left: 0;
-    width: 96%;
+    width: calc(100% - 10px);
+    height: calc(
+      var(--viewport-height) - var(--completion-container-margin) * 2
+    );
+    transform: translate(calc(-50% - var(--completion-container-margin)));
+    margin: var(--completion-container-margin);
   }
 
   q-list {
