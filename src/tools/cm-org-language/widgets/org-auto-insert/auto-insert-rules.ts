@@ -1,5 +1,5 @@
 import { TransactionSpec } from '@codemirror/state';
-import { NodeType, OrgNode } from 'org-mode-ast';
+import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 
 export function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
   const orgOperatorRegexp = /(\- |\+ |\d+[\)\.]{1})/;
@@ -12,18 +12,26 @@ export function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
 }
 
 export function newListItem(node: OrgNode): TransactionSpec {
+  const parentListItem = findParent(node, (n) => {
+    if (n.isNot(NodeType.Title)) {
+      return false;
+    }
+    if (n.parent?.isNot(NodeType.ListItem)) {
+      return [false, true];
+    }
+    return true;
+  });
   if (
     node.is(NodeType.NewLine) ||
     !node.parent ||
     !node.parent.parent ||
-    node.parent?.parent?.isNot(NodeType.ListItem) ||
-    node.parent?.is(NodeType.Section)
+    !parentListItem
   ) {
     return;
   }
-  const operator = node.parent.children.first.rawValue.trim();
+  const operator = parentListItem.children.first.rawValue.trim();
 
-  const checkbox = node.parent.children?.get(1)?.is(NodeType.Checkbox)
+  const checkbox = parentListItem.children?.get(1)?.is(NodeType.Checkbox)
     ? '[ ]'
     : '';
 
