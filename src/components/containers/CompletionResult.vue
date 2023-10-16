@@ -79,13 +79,13 @@ import {
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { compareElemPositions, debounce } from 'src/tools';
 
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 
 const $q = useQuasar();
 
-const itemHeight = $q.platform.is.desktop ? 60 : 75;
+const itemHeight = computed(() => ($q.screen.gt.xs ? 60 : 75));
 const scrollTarget = ref<QVirtualScroll | null>();
 
 const completionStore = useCompletionStore();
