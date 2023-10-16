@@ -144,6 +144,27 @@ export function exitSrcBlock(node: OrgNode): TransactionSpec {
   };
 }
 
+export function indentListItemSection(node: OrgNode): TransactionSpec {
+  const parentSection = findParent(node, (n) => {
+    if (n.isNot(NodeType.Section)) {
+      return false;
+    }
+    if (!n.parent?.is(NodeType.ListItem)) {
+      return [false, true];
+    }
+    return true;
+  });
+
+  if (!parentSection) {
+    return;
+  }
+
+  return {
+    changes: { from: node.end, to: node.end, insert: '\n ' },
+    selection: { anchor: node.end + 2 },
+  };
+}
+
 export const autoInsertRules = [
   exitList,
   exitSrcBlock,
@@ -152,4 +173,5 @@ export const autoInsertRules = [
   blockFooter,
   exitCodeBlock,
   exitIndentedBlock,
+  indentListItemSection,
 ] as const;

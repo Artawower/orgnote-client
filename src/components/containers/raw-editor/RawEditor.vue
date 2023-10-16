@@ -9,12 +9,7 @@ import { editorLanguages } from './editor-languages';
 import { basicOrgTheme } from './org-cm-theme';
 import { useEmbeddedWidgets } from './use-embedded-widgets';
 import { closeBrackets } from '@codemirror/autocomplete';
-import {
-  bracketMatching,
-  codeFolding,
-  foldGutter,
-  indentOnInput,
-} from '@codemirror/language';
+import { bracketMatching, codeFolding, foldGutter } from '@codemirror/language';
 import { EditorState, Prec } from '@codemirror/state';
 import {
   EditorView,
@@ -110,7 +105,6 @@ const initEditor = () => {
       orgMultilineWidgetField,
       minimalSetup,
       bracketMatching(),
-      indentOnInput(),
       closeBrackets(),
       codeFolding({
         placeholderText: '[…]',
@@ -595,14 +589,18 @@ org-keyword-block {
 }
 
 .org-list-item-section-line {
-  margin-left: 32px;
+  margin-left: 40px;
   position: relative;
+
+  > .org-list-item:first-of-type {
+    margin-left: -4.6px;
+  }
 
   &::before {
     content: '';
     display: block;
     position: absolute;
-    left: -2px;
+    left: -8px;
     height: 100%;
     border-left: 1px solid var(--base7);
   }
