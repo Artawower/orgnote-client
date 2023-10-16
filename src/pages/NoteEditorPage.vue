@@ -44,10 +44,12 @@ import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
-import { useCurrentNoteStore } from 'src/stores';
+import { FileNode } from 'src/repositories';
+import { RouteNames } from 'src/router/routes';
+import { useCurrentNoteStore, useFileManagerStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
@@ -107,6 +109,28 @@ onBeforeUnmount(() => {
 });
 
 useEditorCommands();
+
+const fileManagerStore = useFileManagerStore();
+
+const router = useRouter();
+const unsubscribeFileManager = fileManagerStore.$onAction(({ name, args }) => {
+  const arg = args?.[0] as FileNode;
+  if (name !== 'deleteFile' || !arg) {
+    return;
+  }
+
+  const isCurrentNoteDeleted =
+    noteEditorStore.note.id === arg.id ||
+    Object.values(arg.children).find((c) => c.id === noteEditorStore.note.id);
+
+  if (!isCurrentNoteDeleted) {
+    return;
+  }
+
+  router.push({ name: RouteNames.Home });
+});
+
+onBeforeUnmount(() => unsubscribeFileManager());
 </script>
 
 <style lang="scss" scoped>
