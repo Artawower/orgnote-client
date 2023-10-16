@@ -62,6 +62,9 @@ const noteId = route.params.id as string;
 const noteEditorStore = useNoteEditorStore();
 
 const currentNoteStore = useCurrentNoteStore();
+currentNoteStore.resetNote();
+currentNoteStore.selectNoteById(noteId);
+
 const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
 
 const splitterSize = ref<number>(50);
@@ -81,7 +84,6 @@ watch(
   () => setupEditorStore()
 );
 
-currentNoteStore.selectNoteById(noteId);
 watch(
   () => route.params.id,
   (val) => val && currentNoteStore.selectNoteById(val as string)
@@ -103,10 +105,6 @@ watch(
   () => noteLoaded.value,
   () => initLoaderStatus()
 );
-
-onBeforeUnmount(() => {
-  $q.loading.hide();
-});
 
 useEditorCommands();
 
@@ -130,7 +128,10 @@ const unsubscribeFileManager = fileManagerStore.$onAction(({ name, args }) => {
   router.push({ name: RouteNames.Home });
 });
 
-onBeforeUnmount(() => unsubscribeFileManager());
+onBeforeUnmount(() => {
+  $q.loading.hide();
+  unsubscribeFileManager();
+});
 </script>
 
 <style lang="scss" scoped>

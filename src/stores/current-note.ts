@@ -58,12 +58,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   };
 
   const getNoteById = async (noteId: string): Promise<[Note?, OrgNode?]> => {
-    // TODO: master invalidate cache when note upsert
-    // const cachedValue = await selectNoteFromCache(noteId);
-    // if (cachedValue) {
-    //   return [cachedValue.note, cachedValue.orgTree];
-    // }
-
     const publicNote =
       (await selectMyNote(noteId)) ?? (await selectPublicNote(noteId));
 
@@ -89,10 +83,13 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     }
   };
 
+  const resetNote = (): void => (currentNote.value = null);
+
   return {
     currentNote,
     currentOrgTree,
     selectNoteById,
     getNoteById,
+    resetNote,
   };
 });

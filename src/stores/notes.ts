@@ -116,6 +116,10 @@ export const useNotesStore = defineStore('notes', () => {
     total.value = await repositories.notes.count();
   };
 
+  const resetCache = () => {
+    notes.value = [];
+  };
+
   return {
     notes,
     selectedNote,
@@ -132,5 +136,6 @@ export const useNotesStore = defineStore('notes', () => {
     upsertNotes,
     upsertNotesLocally,
     bulkPathNotesLocally,
+    resetCache,
   };
 });
