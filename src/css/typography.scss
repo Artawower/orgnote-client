@@ -68,3 +68,7 @@ h12 {
   font-size: var(--paragraph-font-size);
   line-height: 1.5rem;
 }
+
+.line-limit-2 {
+  @include line-limit(2);
+}

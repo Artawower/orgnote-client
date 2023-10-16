@@ -219,6 +219,7 @@
 - =--file-item-height=:  46px;
 - =--headerbar-height=:  46px;
 - =--completion-container-margin=:  6px;
+- =--search-icn-size=:  56px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;

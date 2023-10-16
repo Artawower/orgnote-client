@@ -50,7 +50,7 @@
               <span>{{ item.command }}</span>
             </div>
             <div>
-              <span class="text-italic color-secondary">{{
+              <span class="text-italic color-secondary line-limit-2">{{
                 item.description
               }}</span>
             </div>
@@ -70,7 +70,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { QVirtualScroll } from 'quasar';
+import { QVirtualScroll, useQuasar } from 'quasar';
 import {
   CompletionCandidate,
   defaultCompletionLimit,
@@ -83,7 +83,9 @@ import { onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 
-const itemHeight = 60;
+const $q = useQuasar();
+
+const itemHeight = $q.platform.is.desktop ? 60 : 75;
 const scrollTarget = ref<QVirtualScroll | null>();
 
 const completionStore = useCompletionStore();

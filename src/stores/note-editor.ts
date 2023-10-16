@@ -30,8 +30,9 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       orgNode.meta.title &&
       noteOrgData.value &&
       orgNode.meta.title !== noteOrgData.value?.meta.title;
-    const newName = `${textToKebab(orgNode.meta.title)}.org`;
+
     if (titleChanged) {
+      const newName = `${textToKebab(orgNode.meta.title)}.org`;
       fileManagerStore.updateFileManager();
       filePath.value.splice(-1, 1, newName);
     }
