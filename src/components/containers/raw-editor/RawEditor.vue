@@ -222,8 +222,6 @@ watch(
 </script>
 
 <style lang="scss">
-@import 'src/tools/cm-org-language/theme.scss';
-
 /* TODO: master simplify classes for CM */
 .editor-wrapper {
   width: 100%;
@@ -278,6 +276,19 @@ watch(
   &.org-operator {
     display: none;
   }
+}
+
+.org-bold {
+  font-weight: bold;
+}
+
+.org-italic {
+  font-style: italic;
+}
+
+.org-crossed {
+  text-decoration: line-through;
+  color: var(--fg-alt);
 }
 
 .org-file-tag {
@@ -565,6 +576,7 @@ org-keyword-block {
 .org-list-item-checked {
   .org-list-item:not(.org-checkbox) {
     text-decoration: line-through;
+    color: var(--fg-alt);
   }
 }
 
