@@ -24,3 +24,4 @@ export * from './min-page-height';
 export * from './create-promise';
 export * from './extract-search-info';
 export * from './text-to-kebab';
+export * from './file-upload';

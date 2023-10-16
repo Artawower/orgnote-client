@@ -5,17 +5,17 @@ import { defineStore } from 'pinia';
 import { isOrgFile, readFile, readOrgFile } from 'src/tools';
 
 export const useNotesImportStore = defineStore('importStore', () => {
-  const handleFileEntry = async (fileEntry: FileSystemEntry) => {
-    if (isOrgFile(fileEntry.name)) {
-      handleOrgFile(fileEntry);
+  const handleFile = async (file: FileEntry | File) => {
+    if (isOrgFile(file.name)) {
+      handleOrgFile(file);
       return;
     }
-    handleMediaFile(fileEntry);
+    handleMediaFile(file);
   };
 
   const notesStore = useNotesStore();
 
-  const handleOrgFile = async (fileEntry: FileSystemEntry) => {
+  const handleOrgFile = async (fileEntry: File | FileEntry) => {
     const orgInfo = await readOrgFile(fileEntry);
     const orgTree = withMetaInfo(parse(orgInfo.content));
 
@@ -38,15 +38,19 @@ export const useNotesImportStore = defineStore('importStore', () => {
 
   const fileStore = useFileStore();
 
-  const handleMediaFile = async (fileEntry: FileSystemEntry) => {
-    console.log('✎: [line 44][import-store.ts] fileEntry: ', fileEntry);
-    const file = await readFile(fileEntry);
+  const handleMediaFile = async (file: File | FileEntry) => {
+    if (!(file instanceof File)) {
+      file = await readFile(file);
+    }
     await fileStore.saveFile(file);
   };
 
-  const uploadFiles = async (files: FileSystemEntry[]) => {
-    files.forEach(async (file) => {
-      await handleFileEntry(file);
+  const uploadFiles = async (files: FileEntry[] | FileList) => {
+    const unwrappedFiles =
+      files instanceof FileList ? Array.from(files) : files;
+
+    unwrappedFiles.forEach(async (file) => {
+      await handleFile(file);
     });
   };
 

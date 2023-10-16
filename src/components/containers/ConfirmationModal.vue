@@ -8,17 +8,17 @@
 
       <q-card-actions align="right">
         <q-btn
-          @click="confirmationStore.resolveConfirmation(true)"
-          flat
-          :label="$t('confirm')"
-          color="primary"
-          v-close-popup
-        />
-        <q-btn
           @click="confirmationStore.resolveConfirmation(false)"
           flat
           :label="$t('cancel')"
           color="red"
+          v-close-popup
+        />
+        <q-btn
+          @click="confirmationStore.resolveConfirmation(true)"
+          flat
+          :label="$t('confirm')"
+          color="primary"
           v-close-popup
         />
       </q-card-actions>

@@ -16,14 +16,14 @@ const authStore = useAuthStore();
 
 const configTabs: Tab[] = [
   {
-    name: 'visual',
-    icon: 'tune',
-    component: ViewSettingsPage,
-  },
-  {
     name: 'common',
     icon: 'settings',
     component: CommonSettingsPage,
+  },
+  {
+    name: 'visual',
+    icon: 'tune',
+    component: ViewSettingsPage,
   },
   {
     name: 'keybindings',

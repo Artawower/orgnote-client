@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
-import { sleep } from 'src/tools';
+import { sleep, uploadFiles } from 'src/tools';
 
 export const useFileStore = defineStore('fileStore', () => {
   const saveFile = async (image: File) => {
@@ -48,38 +48,11 @@ export const useFileStore = defineStore('fileStore', () => {
 
   const uploadMediaFile = async (): Promise<string> => {
     // Programmatically create input for file upload (image extensions)
-    const input = document.createElement('input');
-    input.type = 'file';
-    if (!$q.platform.is.android) {
-      // TODO: master add additional check for file type for android.
-      input.accept = 'image/*';
-    }
-    input.style.width = '0';
-    input.style.height = '0';
-    document.body.appendChild(input);
-    input.multiple = false;
-
-    const abortController = new AbortController();
-
-    const fileUploadPromise = new Promise<string>((resolve) => {
-      input.addEventListener(
-        'change',
-        async () => {
-          if (!input.files?.length) {
-            return;
-          }
-          const file = input.files[0];
-          await saveFile(file);
-          resolve(file.name);
-          document.body.removeChild(input);
-          abortController.abort();
-        },
-        { signal: abortController.signal }
-      );
-    });
-
-    input.click();
-    return fileUploadPromise;
+    const accept = !$q.platform.is.android ? 'image/*' : undefined;
+    const files = await uploadFiles({ accept });
+    const file = files[0];
+    await saveFile(file);
+    return file.name;
   };
 
   return {

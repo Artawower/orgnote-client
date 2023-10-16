@@ -7,6 +7,7 @@
         </div>
       </template>
       <template v-slot:actions>
+        <icon-btn @click="importFiles" name="cloud_upload" />
         <icon-btn
           @click="toggleExpanding"
           :name="isExpanded ? 'unfold_less' : 'unfold_more'"
@@ -34,7 +35,8 @@
 <script lang="ts" setup>
 import { QTree } from 'quasar';
 import { useFileManagerStore } from 'src/stores';
-import { callKeyboard } from 'src/tools';
+import { useNotesImportStore } from 'src/stores/import-store';
+import { callKeyboard, uploadFiles } from 'src/tools';
 
 import { ref } from 'vue';
 
@@ -66,4 +68,10 @@ const toggleExpanding = () => {
 };
 
 const expand = (key: string) => qTreeRef.value?.setExpanded(key, true);
+
+const notesImportStore = useNotesImportStore();
+const importFiles = async () => {
+  const files = await uploadFiles({ multiple: true, accept: '.org' });
+  notesImportStore.uploadFiles(files);
+};
 </script>

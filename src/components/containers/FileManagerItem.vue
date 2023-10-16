@@ -97,8 +97,8 @@ const openNote = () => {
       name: RouteNames.RawEditor,
       params: { id: props.fileNode.id },
     });
+    sidebarStore.close();
   }
-  sidebarStore.close();
 };
 
 const fileManagerStore = useFileManagerStore();
