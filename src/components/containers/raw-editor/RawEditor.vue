@@ -563,7 +563,9 @@ org-keyword-block {
 }
 
 .org-list-item-checked {
-  text-decoration: line-through;
+  .org-list-item:not(.org-checkbox) {
+    text-decoration: line-through;
+  }
 }
 
 .org-operator.org-list-item:first-child {
