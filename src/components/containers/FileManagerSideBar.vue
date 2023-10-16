@@ -54,7 +54,7 @@ const search = ref<string>('');
 
 const qTreeRef = ref<QTree | null>();
 
-const isExpanded = ref<boolean>(false);
+const isExpanded = ref<boolean>(true);
 
 const toggleExpanding = () => {
   if (isExpanded.value) {

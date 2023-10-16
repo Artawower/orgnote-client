@@ -44,6 +44,7 @@ import {
   useAuthStore,
   useCurrentNoteStore,
   useFileManagerStore,
+  useSidebarStore,
 } from 'src/stores';
 import { FlatTree, callKeyboard, convertFlatTreeToFileTree } from 'src/tools';
 import { useRouter } from 'vue-router';
@@ -83,13 +84,10 @@ const createFolder = async () => {
 const createFile = async () => {
   await fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
   emits('expand', props.fileNode.id);
-  console.log(
-    '✎: [line 79][FileManagerItem.vue] props.fileNode.id: ',
-    props.fileNode.id
-  );
 };
 
 const router = useRouter();
+const sidebarStore = useSidebarStore();
 const openNote = () => {
   if (editMode.value) {
     return;
@@ -100,6 +98,7 @@ const openNote = () => {
       params: { id: props.fileNode.id },
     });
   }
+  sidebarStore.close();
 };
 
 const fileManagerStore = useFileManagerStore();
