@@ -121,7 +121,10 @@
           </q-item-section>
         </q-item>
         <q-item
-          @click="noteEditorStore.toggleDebug"
+          @click="
+            noteEditorStore.toggleDebug();
+            closeSideBarForMobile();
+          "
           v-if="isNoteEditPage"
           clickable
         >
