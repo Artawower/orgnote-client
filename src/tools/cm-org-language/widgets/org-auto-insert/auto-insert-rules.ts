@@ -32,7 +32,7 @@ export function newListItem(node: OrgNode): TransactionSpec {
   const operator = parentListItem.children.first.rawValue.trim();
 
   const checkbox = parentListItem.children?.get(1)?.is(NodeType.Checkbox)
-    ? '[ ]'
+    ? '[ ] '
     : '';
 
   const isNumberList = operator.match(/\d+[\)\.]{1}/);
@@ -40,7 +40,7 @@ export function newListItem(node: OrgNode): TransactionSpec {
     ? +operator.slice(0, -1) + 1 + operator.slice(-1)
     : operator;
 
-  const insert = `\n${newOperator} ${checkbox} `;
+  const insert = `\n${newOperator} ${checkbox}`;
 
   return {
     changes: { from: node.end, insert },

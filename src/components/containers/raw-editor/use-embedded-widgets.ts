@@ -150,7 +150,11 @@ export const useEmbeddedWidgets = () => {
     // TODO: master add support for nested lists.
     [NodeType.ListItem]: (orgNode: OrgNode) =>
       `org-list-item-line ${
-        orgNode.title?.children?.get(1)?.checked ? 'org-list-item-checked' : 'q'
+        orgNode.title?.children?.get(1)?.checked ? 'org-list-item-checked' : ''
+      } ${
+        orgNode.parent?.ordered
+          ? 'org-list-item-ordered-line'
+          : 'org-list-item-bullet-line'
       }`,
     [NodeType.Section]: (orgNode: OrgNode) => {
       if (orgNode.parent?.is(NodeType.ListItem)) {

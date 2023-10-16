@@ -224,6 +224,7 @@ watch(
 <style lang="scss">
 @import 'src/tools/cm-org-language/theme.scss';
 
+/* TODO: master simplify classes for CM */
 .editor-wrapper {
   width: 100%;
   height: 100%;
@@ -575,8 +576,12 @@ org-keyword-block {
   margin-left: 8px;
 }
 
+.org-list-item-bullet-line {
+  margin-left: 24px;
+}
+
 .org-list-item-section-line {
-  margin-left: 16px;
+  margin-left: 32px;
   position: relative;
 
   &::before {
