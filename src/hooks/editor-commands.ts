@@ -1,6 +1,7 @@
-import { EditorView } from 'codemirror';
+import { useNotifications } from './notification';
 import { redo, undo } from '@codemirror/commands';
-import { undo, redo } from '@codemirror/commands';
+import { EditorView } from 'codemirror';
+import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/models';
 import {
   useCommandsStore,
@@ -12,7 +13,6 @@ import {
 import { insertTemplate } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
-import { useNotifications } from './notification';
 
 export const registerEditorCommands = () => {
   const commandsStore = useCommandsStore();
@@ -271,6 +271,44 @@ export const registerEditorCommands = () => {
           editorView: noteEditorStore.editorView as EditorView,
           template: '\n| ',
         }),
+    },
+    {
+      command: 'tag',
+      icon: 'tag',
+      description: 'insert tags',
+      group: 'editor',
+      handler: () => {
+        let titleNode: OrgNode;
+        const filetagKeyword = noteEditorStore.orgTree.children.find((c) => {
+          if (c.isNot(NodeType.Keyword)) {
+            return;
+          }
+          // TODO: master magic strings to constants
+          if (c.children?.first?.rawValue.toLowerCase() === '#+title:') {
+            titleNode = c;
+          }
+          return c.children?.first?.rawValue.toLowerCase() === '#+filetags:';
+        });
+        if (filetagKeyword) {
+          noteEditorStore.editorView.dispatch({
+            selection: { anchor: filetagKeyword.end, head: filetagKeyword.end },
+            scrollIntoView: true,
+          });
+          return;
+        }
+        if (titleNode) {
+          noteEditorStore.editorView.dispatch({
+            changes: {
+              from: titleNode.end,
+              to: titleNode.end,
+              insert: '\n#+FILETAGS: ::',
+            },
+            selection: { anchor: titleNode.end + 14, head: titleNode.end + 14 },
+            scrollIntoView: true,
+          });
+          return;
+        }
+      },
     },
   ];
 
