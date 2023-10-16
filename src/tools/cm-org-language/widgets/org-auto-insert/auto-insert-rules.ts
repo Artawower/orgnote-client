@@ -83,13 +83,30 @@ export function exitCodeBlock(node: OrgNode): TransactionSpec {
 }
 
 export function exitList(node: OrgNode): TransactionSpec {
-  if (
-    node.is(NodeType.NewLine, NodeType.Indent) ||
-    (node.is(NodeType.Text) && !!node.value.trim()) ||
-    !node.parent?.parent?.is(NodeType.ListItem)
-  ) {
+  const titleParent = findParent(node, (n) => {
+    if (n.isNot(NodeType.Title)) {
+      return;
+    }
+    if (n.parent?.isNot(NodeType.ListItem)) {
+      return [false, true];
+    }
+    return true;
+  });
+  if (!titleParent) {
     return;
   }
+  const isCheckList = titleParent?.children.get(1).is(NodeType.Checkbox);
+
+  const rawValue = titleParent.children
+    ?.slice(isCheckList ? 2 : 1)
+    .map((n: OrgNode) => n.rawValue)
+    .join('')
+    .trim();
+
+  if (rawValue) {
+    return;
+  }
+
   return {
     changes: { from: node.parent?.parent.start, to: node.end, insert: '\n' },
     selection: { anchor: node.parent?.parent.start },
