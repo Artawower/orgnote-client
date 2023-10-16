@@ -869,10 +869,11 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
          * Entrypoint for login
          * @summary OAuth Login
          * @param {string} provider provider
+         * @param {string} [state] OAuth state
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authProviderLoginGet: async (provider: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+        authProviderLoginGet: async (provider: string, state?: string, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'provider' is not null or undefined
             assertParamExists('authProviderLoginGet', 'provider', provider)
             const localVarPath = `/auth/{provider}/login`
@@ -887,6 +888,10 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+
+            if (state !== undefined) {
+                localVarQueryParameter['state'] = state;
+            }
 
 
     
@@ -1038,11 +1043,12 @@ export const AuthApiFp = function(configuration?: Configuration) {
          * Entrypoint for login
          * @summary OAuth Login
          * @param {string} provider provider
+         * @param {string} [state] OAuth state
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async authProviderLoginGet(provider: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.authProviderLoginGet(provider, options);
+        async authProviderLoginGet(provider: string, state?: string, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authProviderLoginGet(provider, state, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
@@ -1118,11 +1124,12 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          * Entrypoint for login
          * @summary OAuth Login
          * @param {string} provider provider
+         * @param {string} [state] OAuth state
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        authProviderLoginGet(provider: string, options?: any): AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny> {
-            return localVarFp.authProviderLoginGet(provider, options).then((request) => request(axios, basePath));
+        authProviderLoginGet(provider: string, state?: string, options?: any): AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny> {
+            return localVarFp.authProviderLoginGet(provider, state, options).then((request) => request(axios, basePath));
         },
         /**
          * Create API token
@@ -1200,12 +1207,13 @@ export class AuthApi extends BaseAPI {
      * Entrypoint for login
      * @summary OAuth Login
      * @param {string} provider provider
+     * @param {string} [state] OAuth state
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof AuthApi
      */
-    public authProviderLoginGet(provider: string, options?: AxiosRequestConfig) {
-        return AuthApiFp(this.configuration).authProviderLoginGet(provider, options).then((request) => request(this.axios, this.basePath));
+    public authProviderLoginGet(provider: string, state?: string, options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authProviderLoginGet(provider, state, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

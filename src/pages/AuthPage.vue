@@ -30,11 +30,9 @@ onBeforeMount(() => {
 
 const router = useRouter();
 const setupUser = () => {
-  if (
-    !$q.platform.is.cordova &&
-    $q.platform.is.mobile &&
-    !window.navigator.standalone
-  ) {
+  const isMobile = route.query.state === 'mobile';
+  console.log('✎: [line 34][auth] route.query.state: ', route.query.state);
+  if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
     // NOTE: Try to open mobile app
     const mobileAppUrl = `orgnote://auth/login${window.location.search}`;
     window.location.assign(mobileAppUrl);
