@@ -30,7 +30,7 @@ const tabs: Tab[] = [
 ];
 </script>
 
-<style>
+<style lang="scss">
 .project-info {
   .active-tab {
     max-height: calc(

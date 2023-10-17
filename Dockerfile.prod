@@ -14,15 +14,19 @@ FROM alvrme/alpine-android:android-33-jdk11-v2023.06.10
 #         && chmod 0440 /etc/sudoers.d/$USER
 
 
+
+# Gradle
+RUN apk add bash zip curl && \
+  curl -s "https://get.sdkman.io" | bash
+RUN bash -c "source $HOME/.sdkman/bin/sdkman-init.sh && sdk install gradle 7.6 && which gradle"
+ENV PATH="$PATH:/root/.sdkman/candidates/gradle/current/bin"
+RUN gradle --version
+
 RUN apk add --update --no-cache \ 
-    npm \
-    gradle
-
-RUN npm install -g bun
-
+    npm && \
+    npm install -g bun
 
 RUN bun --version
-RUN whoami
 
 RUN npm install -g @quasar/cli && \
     npm install -g @vue/cli && \
@@ -49,4 +53,4 @@ RUN bun install --frozen-lockfile --ignore-scripts
 
 COPY . .
 
-ENTRYPOINT ["sh", "build.sh"]
+ENTRYPOINT ["bash", "build.sh"]

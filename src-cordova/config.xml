@@ -18,18 +18,9 @@
         <icon background="@color/background" density="xhdpi" foreground="res/android/xhdpi.png" />
         <icon background="@color/background" density="xxhdpi" foreground="res/android/xxhdpi.png" />
         <icon background="@color/background" density="xxxhdpi" foreground="res/android/xxxhdpi.png" />
-        <splash background="@color/background" density="land-ldpi" foreground="res/screen/android/splash-land-ldpi.png" />
-        <splash background="@color/background" density="port-ldpi" foreground="res/screen/android/splash-port-ldpi.png" />
-        <splash background="@color/background" density="land-mdpi" foreground="res/screen/android/splash-land-mdpi.png" />
-        <splash background="@color/background" density="port-mdpi" foreground="res/screen/android/splash-port-mdpi.png" />
-        <splash background="@color/background" density="land-hdpi" foreground="res/screen/android/splash-land-hdpi.png" />
-        <splash background="@color/background" density="port-hdpi" foreground="res/screen/android/splash-port-hdpi.png" />
-        <splash background="@color/background" density="land-xhdpi" foreground="res/screen/android/splash-land-xhdpi.png" />
-        <splash background="@color/background" density="port-xhdpi" foreground="res/screen/android/splash-port-xhdpi.png" />
-        <splash background="@color/background" density="land-xxhdpi" foreground="res/screen/android/splash-land-xxhdpi.png" />
-        <splash background="@color/background" density="port-xxhdpi" foreground="res/screen/android/splash-port-xxhdpi.png" />
-        <splash background="@color/background" density="land-xxxhdpi" foreground="res/screen/android/splash-land-xxxhdpi.png" />
-        <splash background="@color/background" density="port-xxxhdpi" foreground="res/screen/android/splash-port-xxxhdpi.png" />
+        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/screen/android/unicorn.png" />
+        <preference name="AndroidWindowSplashScreenBackgroundColor" value="@color/background" />
+        <preference name="AndroidWindowSplashScreenScaleType" value="centerCrop" />
     </platform>
     <platform name="ios">
         <icon background="@color/background" foreground="res/ios/icon.png" height="57" width="57" />

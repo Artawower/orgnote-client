@@ -60,11 +60,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
           component: () => import('pages/NoteRawEditorPage.vue'),
         },
         {
-          name: RouteNames.WysiwygEditor,
-          path: 'wysiwyg',
-          component: () => import('pages/NoteWysiwygEditorPage.vue'),
-        },
-        {
           name: RouteNames.PreviewEditor,
           path: 'preview',
           component: () => import('pages/NotePreviewEditorPage.vue'),

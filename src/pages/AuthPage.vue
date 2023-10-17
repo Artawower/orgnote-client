@@ -30,7 +30,7 @@ onBeforeMount(() => {
 
 const router = useRouter();
 const setupUser = () => {
-  const isMobile = route.query.state === 'mobile';
+  const isMobile = route.query.state !== 'desktop';
   console.log('✎: [line 34][auth] route.query.state: ', route.query.state);
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
     // NOTE: Try to open mobile app

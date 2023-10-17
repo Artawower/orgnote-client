@@ -15,13 +15,12 @@
   "devDependencies": {
     "cordova-android": "^12.0.1",
     "cordova-ios": "^7.0.1",
-    "cordova-plugin-customurlscheme": "github:EddyVerbruggen/Custom-URL-scheme",
     "cordova-plugin-splashscreen": "^6.0.1"
   },
   "cordova": {
     "platforms": [
-      "android",
-      "ios"
+      "ios",
+      "android"
     ],
     "plugins": {
       "cordova-plugin-splashscreen": {},
@@ -29,5 +28,8 @@
         "URL_SCHEME": "orgnote"
       }
     }
+  },
+  "dependencies": {
+    "cordova-plugin-customurlscheme": "^5.0.2"
   }
 }
