@@ -13,6 +13,7 @@ import { Component } from 'vue';
 
 import OrgBlockWrapper from 'src/components/OrgBlockWrapper.vue';
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
+import OrgDateTime from 'src/components/OrgDateTime.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
@@ -78,6 +79,11 @@ export const useEmbeddedWidgets = () => {
         container: 'span',
         withHash: false,
       }),
+    },
+    [NodeType.Date]: {
+      decorationType: 'replace',
+      ignoreEvent: true,
+      widgetBuilder: createOrgEmbeddedWidget(OrgDateTime),
     },
     [NodeType.TagList]: {
       decorationType: 'replace',
