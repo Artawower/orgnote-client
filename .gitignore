@@ -24,6 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 
-sb-release.keystore
+org-note-release.keystore
 
 src-cordova/www
