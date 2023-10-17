@@ -90,6 +90,6 @@ jobs:
             git fetch --all
             git reset --hard origin/master
             docker system prune -f
-            docker-compose up --build
+            docker compose up --build
             exit
           args: '-tt -vvv'

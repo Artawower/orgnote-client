@@ -16,23 +16,18 @@ FROM alvrme/alpine-android:android-33-jdk11-v2023.06.10
 
 
 # Gradle
-RUN apk add bash zip curl && \
-  curl -s "https://get.sdkman.io" | bash
-RUN bash -c "source $HOME/.sdkman/bin/sdkman-init.sh && sdk install gradle 7.6 && which gradle"
-ENV PATH="$PATH:/root/.sdkman/candidates/gradle/current/bin"
-RUN gradle --version
-
 RUN apk add --update --no-cache \ 
-    npm && \
-    npm install -g bun
+    npm \
+    gradle
 
-RUN bun --version
 
-RUN npm install -g @quasar/cli && \
+RUN npm install -g bun && \
+    npm install -g @quasar/cli && \
     npm install -g @vue/cli && \
     npm install -g @vue/cli-init && \
     npm install -g cordova
 
+RUN bun --version
 
 USER $USER
 
