@@ -1,5 +1,10 @@
 <template>
-  <div class="editor-actions" @touchmove="touchMove" @touchstart="touchStart">
+  <div
+    v-if="inited"
+    class="editor-actions"
+    @touchmove="touchMove"
+    @touchstart="touchStart"
+  >
     <div
       v-for="cmd of editorCommands"
       @mousedown.prevent.stop="handleEditorAction(cmd)"
@@ -16,6 +21,8 @@ import { useQuasar } from 'quasar';
 import { Command } from 'src/models';
 import { useCommandsStore, useNoteEditorStore } from 'src/stores';
 
+import { onMounted, ref } from 'vue';
+
 const noteEditorStore = useNoteEditorStore();
 const commandsStore = useCommandsStore();
 
@@ -27,18 +34,27 @@ const handleEditorAction = (action: Command) => {
 
 const $q = useQuasar();
 let startY = 0;
+let startX = 0;
 const touchStart = (e: TouchEvent) => {
   startY = e.touches[0].clientY;
+  startX = e.touches[0].clientX;
 };
 const touchMove = (e: TouchEvent) => {
+  const isVertical = Math.abs(e.changedTouches[0].clientY - startY) > 15;
+  const isHorizontal = Math.abs(e.changedTouches[0].clientX - startX) > 5;
   if (
-    e.changedTouches[0].clientY < startY &&
+    (isVertical || !isHorizontal) &&
     $q.platform.is.ios &&
     !$q.platform.is.cordova
   ) {
     e.preventDefault();
+    return;
   }
 };
+
+const inited = ref<boolean>(false);
+
+onMounted(() => setTimeout(() => (inited.value = true), 100));
 </script>
 
 <style lang="scss">
@@ -47,8 +63,9 @@ const touchMove = (e: TouchEvent) => {
   background: var(--bg-alt);
   overflow-x: auto;
   gap: var(--default-gap);
-  padding: var(--default-block-padding);
+  /* padding: var(--default-block-padding); */
   width: 100%;
+  height: var(--footer-height);
 
   /* TODO: master doesn't work for ios
   need to get list of available devices
