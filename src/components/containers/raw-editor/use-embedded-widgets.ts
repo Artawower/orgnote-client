@@ -17,6 +17,7 @@ import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
+import OrgListTag from 'src/components/OrgListTag.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 import OrgTags from 'src/components/OrgTags.vue';
@@ -69,6 +70,14 @@ export const useEmbeddedWidgets = () => {
       decorationType: 'mark',
       classBuilder: (orgNode: OrgNode) =>
         `org-keyword-${orgNode.value.toLowerCase()}`,
+    },
+    [NodeType.ListTag]: {
+      decorationType: 'replace',
+      ignoreEvent: true,
+      widgetBuilder: createOrgEmbeddedWidget(OrgListTag, {
+        container: 'span',
+        withHash: false,
+      }),
     },
     [NodeType.TagList]: {
       decorationType: 'replace',

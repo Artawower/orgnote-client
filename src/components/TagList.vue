@@ -27,7 +27,7 @@
         :key="tag"
         @click.stop.prevent="searchByTag(tag)"
       >
-        #{{ tag }}
+        {{ withHash ? '#' : '' }}{{ tag }}
       </span>
     </template>
   </component>
@@ -44,10 +44,12 @@ const props = withDefaults(
     type?: 'text' | 'badges';
     inline?: boolean;
     container?: string;
+    withHash?: boolean;
   }>(),
   {
     type: 'text',
     inline: true,
+    withHash: true,
   }
 );
 
