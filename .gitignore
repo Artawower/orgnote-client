@@ -27,3 +27,4 @@ dist-ssr
 org-note-release.keystore
 
 src-cordova/www
+.env

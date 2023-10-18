@@ -176,14 +176,16 @@ const initEditor = () => {
   setCursorPositionToTheEOF();
 };
 
-const focus = ref<boolean>();
+const focus = ref<boolean>(false);
 const changeFocus = (hasFocus: boolean) => {
   if (focus.value === hasFocus) {
     return;
   }
   focus.value = hasFocus;
   emits('focusChanged', hasFocus);
-  setTimeout(() => scrollIntoCurrentLine(), 10);
+  if (!hasFocus) {
+    setTimeout(() => scrollIntoCurrentLine(), 10);
+  }
 };
 
 const scrollIntoCurrentLine = () => {
