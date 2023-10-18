@@ -44,9 +44,8 @@ import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
-import { FileNode } from 'src/repositories';
 import { RouteNames } from 'src/router/routes';
-import { useCurrentNoteStore, useFileManagerStore } from 'src/stores';
+import { useCurrentNoteStore, useFileManagerStore, useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -108,18 +107,16 @@ watch(
 
 useEditorCommands();
 
-const fileManagerStore = useFileManagerStore();
-
 const router = useRouter();
-const unsubscribeFileManager = fileManagerStore.$onAction(({ name, args }) => {
-  const arg = args?.[0] as FileNode;
-  if (name !== 'deleteFile' || !arg) {
+const notesStore = useNotesStore();
+const unsubscribeFileManager = notesStore.$onAction(({ name, args }) => {
+  const deletedNoteIds = args?.[0] as string[];
+  if (name !== 'deleteNotes' || !deletedNoteIds) {
     return;
   }
 
   const isCurrentNoteDeleted =
-    noteEditorStore.note.id === arg.id ||
-    Object.values(arg.children).find((c) => c.id === noteEditorStore.note.id);
+    deletedNoteIds.find(deletedId => deletedId === noteEditorStore.note.id);
 
   if (!isCurrentNoteDeleted) {
     return;
