@@ -310,6 +310,26 @@ export const registerEditorCommands = () => {
         }
       },
     },
+    {
+      command: 'datetime',
+      icon: 'calendar_today',
+      description: 'insert datetime',
+      group: 'editor',
+      handler: () => {
+        const now = new Date();
+        const weekDay = now.toLocaleDateString('default', {
+          weekday: 'short',
+        });
+        const template = `<${now.getFullYear()}-${
+          now.getMonth() + 1
+        }-${now.getDate()} ${weekDay}> `;
+
+        insertTemplate({
+          editorView: noteEditorStore.editorView as EditorView,
+          template,
+        });
+      },
+    },
   ];
 
   commandsStore.register(...commands);

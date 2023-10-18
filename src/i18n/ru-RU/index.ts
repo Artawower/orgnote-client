@@ -71,4 +71,5 @@ export default {
   info: 'информация',
   'you name could be here': 'ваше имя может быть здесь',
   'force sync': 'принудительная синхронизация',
+  'create your first note': 'создайте свою первую заметку',
 };

@@ -74,4 +74,5 @@ export default {
   info: 'info',
   'you name could be here': 'you name could be here',
   'force sync': 'force sync',
+  'create your first note': 'create your first note',
 };
