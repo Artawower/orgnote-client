@@ -48,20 +48,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   const upsertNotes = async (notes: Note[]) => {
     await repositories.notes.saveNotes(notes);
-    checkCurrentEditedNoteChanged(notes);
     loadNotes();
-  };
-
-  const noteEditorStore = useNoteEditorStore();
-  const checkCurrentEditedNoteChanged = (updatedNotes: Note[]) => {
-    const noteUpdated = updatedNotes.find(
-      (un) => un.id === noteEditorStore.noteOrgData?.meta.id
-    );
-    if (noteUpdated) {
-      noteEditorStore.setFilePath(noteUpdated.filePath);
-      noteEditorStore.setNoteText(noteUpdated.content);
-      noteEditorStore.setCreatedTime(noteUpdated.createdAt);
-    }
   };
 
   const upsertNotesLocally = async (notes: Note[]) => {

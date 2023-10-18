@@ -19,8 +19,8 @@ import {
 } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
-import { useDynamicComponent } from 'src/hooks';
-import { OrgUpdatedEffect, orgMode } from 'src/tools/cm-org-language';
+import { onMobileViewportChanged, useDynamicComponent } from 'src/hooks';
+import { orgMode } from 'src/tools/cm-org-language';
 import {
   editorMenuExtension,
   orgAutoInsertCommand,
@@ -96,9 +96,6 @@ const initEditor = () => {
       orgMode({
         orgAstChanged: (updatedOrgNode: OrgNode) => {
           orgNode = updatedOrgNode;
-          editorView?.dispatch({
-            effects: OrgUpdatedEffect.of(updatedOrgNode),
-          });
         },
         wrap: editorLanguages,
       }),
@@ -183,13 +180,27 @@ const changeFocus = (hasFocus: boolean) => {
   }
   focus.value = hasFocus;
   emits('focusChanged', hasFocus);
-  if (!hasFocus) {
-    setTimeout(() => scrollIntoCurrentLine(), 10);
-  }
 };
 
+const { keyboardOpened } = onMobileViewportChanged();
+
+watch(
+  () => keyboardOpened.value,
+  (opened) => {
+    if (opened) {
+      setTimeout(() => scrollIntoCurrentLine(), 100);
+    }
+  }
+);
+
 const scrollIntoCurrentLine = () => {
+  console.log('SCROLL INTO CURRENT LINE');
+  window.scroll(0, -1);
   editorView.dispatch({
+    selection: {
+      anchor: editorView.state.selection.main.head,
+      head: editorView.state.selection.main.head,
+    },
     scrollIntoView: true,
   });
 };

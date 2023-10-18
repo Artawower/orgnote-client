@@ -45,7 +45,7 @@ import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
 import { RouteNames } from 'src/router/routes';
-import { useCurrentNoteStore, useFileManagerStore, useNotesStore } from 'src/stores';
+import { useCurrentNoteStore, useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -115,8 +115,9 @@ const unsubscribeFileManager = notesStore.$onAction(({ name, args }) => {
     return;
   }
 
-  const isCurrentNoteDeleted =
-    deletedNoteIds.find(deletedId => deletedId === noteEditorStore.note.id);
+  const isCurrentNoteDeleted = deletedNoteIds.find(
+    (deletedId) => deletedId === noteEditorStore.note.id
+  );
 
   if (!isCurrentNoteDeleted) {
     return;

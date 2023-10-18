@@ -18,14 +18,17 @@ import { onBeforeUnmount, ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
 import { EditorView } from 'codemirror';
+import { debounce } from 'src/tools';
 
 const noteEditorStore = useNoteEditorStore();
 const toolbarStore = useToolbarStore();
 
 const initialNoteText = ref<string>(noteEditorStore.noteText);
 
+const updateStoreDate = debounce(noteEditorStore.setNoteData, 100);
+
 const dataUpdated = ([text, orgNode]: [string, OrgNode]) => {
-  noteEditorStore.setNoteData(text, orgNode);
+  updateStoreDate(text, orgNode);
 };
 
 const setEditorView = ({ view }: { view: EditorView }) => {
@@ -34,11 +37,11 @@ const setEditorView = ({ view }: { view: EditorView }) => {
 
 watch(
   () => noteEditorStore.noteText,
-  (val) => {
-    if (val === initialNoteText.value) {
+  (curr, prev) => {
+    if (curr === prev) {
       return;
     }
-    initialNoteText.value = val;
+    initialNoteText.value = curr;
   }
 );
 

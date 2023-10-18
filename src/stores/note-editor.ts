@@ -2,7 +2,7 @@ import { useFileManagerStore, useNotesStore } from '.';
 import { EditorView } from 'codemirror';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
-import { ModelsNoteMeta, ModelsPublicNote } from 'src/generated/api';
+import { ModelsNoteMeta } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { Note } from 'src/models';
 import { generateFileName, textToKebab } from 'src/tools';
@@ -68,18 +68,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       withMetaInfo(noteOrgData.value)
   );
 
-  const rawNote = computed(
-    (): ModelsPublicNote =>
-      orgTree.value && {
-        content: noteText.value,
-        id: orgTree.value.meta.id,
-        filePath: filePath.value ?? [
-          generateFileName(orgTree.value.meta.title),
-        ],
-        meta: orgTree.value.meta as ModelsNoteMeta,
-      }
-  );
-
   // TODO: master fix type
   const note = computed(
     (): Note =>
@@ -97,7 +85,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     const now = new Date().toISOString();
     await notesStore.upsertNotesLocally([
       {
-        content: noteText.value,
+        content: lastSavedText.value,
         id: orgTree.value.meta.id,
         createdAt: createdTime.value ?? now,
         isMy: true,
@@ -130,12 +118,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   return {
     noteOrgData,
     noteText,
-    rawNote,
     note,
     orgTree,
 
     setNoteData,
-    save,
     saved,
     setNoteContent,
     setNoteText,
