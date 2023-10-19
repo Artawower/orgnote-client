@@ -19,6 +19,7 @@
       :nodes="fileManagerStore.fileManager"
       :filter="search"
       :default-expand-all="true"
+      :expanded="fileManagerStore.expandedNodes"
       ref="qTreeRef"
       dense
       node-key="id"
