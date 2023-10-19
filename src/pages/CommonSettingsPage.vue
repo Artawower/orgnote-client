@@ -11,9 +11,14 @@
       }}</q-btn>
     </div>
     <div class="q-pt-md">
-      <q-btn @click="forceResync" class="full-width" flat text-color="red">{{
-        $t('force sync')
-      }}</q-btn>
+      <q-btn
+        @click="forceResync"
+        class="full-width"
+        flat
+        text-color="red"
+        :disabled="authStore.user?.isAnonymous"
+        >{{ $t('force sync') }}</q-btn
+      >
     </div>
   </div>
 </template>
@@ -21,6 +26,7 @@
 <script lang="ts" setup>
 import { db } from 'src/boot/repositories';
 import { RouteNames } from 'src/router/routes';
+import { useAuthStore } from 'src/stores';
 import { useConfirmationModalStore } from 'src/stores/confirmation-modal';
 import { useRouter } from 'vue-router';
 
@@ -51,6 +57,8 @@ const forceResync = async () => {
   router.push(RouteNames.Home);
   window.location.reload();
 };
+
+const authStore = useAuthStore();
 </script>
 
 <style lang="scss"></style>
