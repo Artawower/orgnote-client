@@ -5,7 +5,7 @@ import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { Note } from 'src/models';
-import { generateFileName, textToKebab } from 'src/tools';
+import { generateFileName, getFileNameFromText, textToKebab } from 'src/tools';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
 import { computed, ref, shallowRef, toRaw } from 'vue';
@@ -32,7 +32,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       orgNode.meta.title !== noteOrgData.value?.meta.title;
 
     if (titleChanged) {
-      const newName = `${textToKebab(orgNode.meta.title)}.org`;
+      const newName = `${getFileNameFromText(orgNode.meta.title)}.org`;
       fileManagerStore.updateFileManager();
       filePath.value.splice(-1, 1, newName);
     }
