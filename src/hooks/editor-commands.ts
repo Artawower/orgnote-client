@@ -10,7 +10,7 @@ import {
   useNoteEditorStore,
   useSearchStore,
 } from 'src/stores';
-import { insertTemplate } from 'src/tools';
+import { insertTemplate, isUrl } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
 
@@ -107,12 +107,17 @@ export const registerEditorCommands = () => {
       icon: 'link',
       description: 'insert a link',
       group: 'editor',
-      handler: () =>
+      handler: async () => {
+        const text = await navigator.clipboard.readText();
+        const insertedUrl = isUrl(text) ? text : '';
+        const template = `[[${insertedUrl}][]]`;
+        const focusOffset = insertedUrl ? insertedUrl.length + 4 : 2;
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
-          template: '[[][]]',
-          focusOffset: 2,
-        }),
+          template,
+          focusOffset,
+        });
+      },
     },
     {
       command: 'internal link',
