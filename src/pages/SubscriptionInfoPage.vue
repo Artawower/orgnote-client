@@ -1,7 +1,10 @@
 <template>
   <div class="full-width">
     <template v-if="authStore.user.active">
-      <everything-fine :text="$t('you are successfully subscribed!')" />
+      <everything-fine
+        class="q-pb-md"
+        :text="$t('you are successfully subscribed!')"
+      />
       <used-space />
     </template>
     <template v-else>

@@ -33,12 +33,6 @@
       </template>
 
       <template v-else>
-        <q-item>
-          <q-item-section class="text-capitalize">
-            <used-space />
-          </q-item-section>
-        </q-item>
-
         <q-item @click="logout" clickable>
           <q-item-section avatar>
             <q-icon name="logout" />

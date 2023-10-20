@@ -12,7 +12,7 @@
       <div class="absolute-full flex flex-center">
         <q-badge
           color="transparent"
-          text-color="accent"
+          class="used-space-badge"
           :label="`${(usedSpace * 100).toFixed(2)}%`"
         />
       </div>
@@ -49,5 +49,9 @@ const barColor = computed(() => {
 <style lang="scss" scoped>
 .available-space {
   background: 1px solid var(--fg);
+}
+
+.used-space-badge {
+  color: var(--fg);
 }
 </style>
