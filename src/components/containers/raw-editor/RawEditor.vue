@@ -299,11 +299,11 @@ watch(
 }
 
 .org-file-tag {
-  color: var(--cyan) !important;
+  color: var(--base8) !important;
 }
 
 .org-keyword.org-operator {
-  color: var(--cyan);
+  color: var(--base8);
   padding: 4px;
 }
 
@@ -465,7 +465,7 @@ watch(
 }
 
 .org-priority-5 {
-  color: var(--cyan);
+  color: var(--base8);
 }
 
 .org-priority-6 {
@@ -479,7 +479,7 @@ watch(
 
     &::before {
       content: '┃';
-      color: var(--cyan);
+      color: var(--base8);
       position: absolute;
       left: -4px;
       transform: scaleY(var(--editor-line-height));
@@ -515,7 +515,7 @@ org-keyword-block {
 
   &:hover {
     opacity: 1;
-    color: var(--cyan);
+    color: var(--base8);
   }
 }
 

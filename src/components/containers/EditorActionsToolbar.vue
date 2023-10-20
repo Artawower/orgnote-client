@@ -75,7 +75,7 @@ onMounted(() => setTimeout(() => (inited.value = true), 100));
   position: absolute;
   bottom: 0;
   &:active {
-    color: var(--cyan);
+    color: var(--base8);
   }
 
   .editor-action {

@@ -9,7 +9,7 @@ export const basicOrgTheme = EditorView.theme({
   '.cm-cursor, .cm-dropCursor': { borderLeftColor: cursorColor },
 
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection, .cm-line ::selection':
-    { backgroundColor: 'var(--cyan) !important', color: 'var(--bg)' },
+    { backgroundColor: 'var(--base8) !important', color: 'var(--bg)' },
 
   '.cm-gutterElement': {
     color: 'var(--fg-alt)',
@@ -23,7 +23,7 @@ export const basicOrgTheme = EditorView.theme({
   },
 
   '.cm-gutterElement:hover': {
-    color: 'var(--cyan)',
+    color: 'var(--base8)',
   },
 
   '.cm-foldPlaceholder': {

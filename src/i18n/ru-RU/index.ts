@@ -75,7 +75,7 @@ export default {
   'subscription key': 'ключ подписки',
   'you are successfully subscribed!': 'вы успешно подписались!',
   'used space': 'использованное пространство',
-  subscription: 'подписка',
+  susbscription: 'подписка',
   undo: 'отменить',
   redo: 'повторить',
   tab: 'вкладка',

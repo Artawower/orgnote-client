@@ -88,7 +88,7 @@ body {
 
   // Toolbar
   --toolbar-border-top: 0;
-  --toolbar-hover-color: var(--cyan);
+  --toolbar-hover-color: var(--base8);
 
   // HeaderBar
   --headerbar-height: 30px;
@@ -98,13 +98,13 @@ body {
   --headerbar-border: none;
 
   // File manager item
-  --file-item-bg-hover: var(--cyan);
+  --file-item-bg-hover: var(--base8);
   --file-item-color-hover: var(--base6);
   --file-item-height: 30px;
 
   // Icon button
   --icon-btn-color: var(--fg);
-  --icon-btn-hover-color: var(--cyan);
+  --icon-btn-hover-color: var(--base8);
 
   // Modal
   --modal-max-height: 94svh;

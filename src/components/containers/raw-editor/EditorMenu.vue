@@ -49,7 +49,7 @@ const onItemClicked = (itemFn: (params: CommandHandlerParams) => void) => {
   cursor: pointer;
 
   &:hover {
-    color: var(--cyan);
+    color: var(--base8);
   }
 }
 .cm-editor-actions {
