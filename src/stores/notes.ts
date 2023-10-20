@@ -1,5 +1,4 @@
 import { useFileManagerStore } from './file-manager';
-import { useNoteEditorStore } from './note-editor';
 import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';

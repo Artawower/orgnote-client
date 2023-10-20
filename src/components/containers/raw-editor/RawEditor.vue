@@ -668,6 +668,7 @@ org-keyword-block {
 
     .cm-scroller {
       padding: var(--mobile-editor-padding);
+      outline: none !important;
     }
 
     .cm-gutters {

@@ -61,7 +61,6 @@ import { useAuthStore } from 'src/stores';
 import DownloadLinks from 'components/DownloadLinks.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
-import UsedSpace from 'components/containers/UsedSpace.vue';
 
 const authStore = useAuthStore();
 
