@@ -8,6 +8,7 @@ import { useAuthStore } from 'src/stores';
 import ApiSettingsPage from './ApiSettingsPage.vue';
 import CommonSettingsPage from './CommonSettingsPage.vue';
 import KeybindingsPage from './KeybindingsPage.vue';
+import SubscriptionInfoPage from './SubscriptionInfoPage.vue';
 import { Tab } from 'src/components/ui/ComponentTabs.vue';
 import ComponentTabs from 'src/components/ui/ComponentTabs.vue';
 import ViewSettingsPage from 'src/pages/ViewSettingsPage.vue';
@@ -29,6 +30,12 @@ const configTabs: Tab[] = [
     name: 'keybindings',
     icon: 'keyboard',
     component: KeybindingsPage,
+  },
+  {
+    name: 'susbscription',
+    icon: 'workspace_premium',
+    component: SubscriptionInfoPage,
+    disabled: authStore.user.isAnonymous,
   },
   {
     name: 'api',

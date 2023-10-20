@@ -44,10 +44,17 @@ body {
   gap: 32px;
 }
 
+.gap-16 {
+  gap: 16px;
+}
+
 .text-red {
   color: var(--red) !important;
 }
 
 .text-primary {
   color: var(--blue) !important;
+}
+.q-field--standout.q-field--dark.q-field--highlighted .q-field__native {
+  color: white;
 }

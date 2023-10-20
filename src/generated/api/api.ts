@@ -323,6 +323,19 @@ export interface HandlersOAuthRedirectData {
 /**
  * 
  * @export
+ * @interface HandlersSubscribeBody
+ */
+export interface HandlersSubscribeBody {
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersSubscribeBody
+     */
+    'token'?: string;
+}
+/**
+ * 
+ * @export
  * @interface HandlersSyncNotesRequest
  */
 export interface HandlersSyncNotesRequest {
@@ -717,6 +730,12 @@ export interface ModelsPublicUser {
 export interface ModelsUserPersonalInfo {
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelsUserPersonalInfo
+     */
+    'active'?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelsUserPersonalInfo
      */
@@ -905,6 +924,42 @@ export const AuthApiAxiosParamCreator = function (configuration?: Configuration)
             };
         },
         /**
+         * Subscribe for backend features, like sync notes
+         * @summary Subscribe
+         * @param {HandlersSubscribeBody} data token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authSubscribePost: async (data: HandlersSubscribeBody, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'data' is not null or undefined
+            assertParamExists('authSubscribePost', 'data', data)
+            const localVarPath = `/auth/subscribe`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(data, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Create API token
          * @summary Create API token
          * @param {*} [options] Override http request option.
@@ -1052,6 +1107,17 @@ export const AuthApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
+         * Subscribe for backend features, like sync notes
+         * @summary Subscribe
+         * @param {HandlersSubscribeBody} data token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authSubscribePost(data: HandlersSubscribeBody, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authSubscribePost(data, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Create API token
          * @summary Create API token
          * @param {*} [options] Override http request option.
@@ -1130,6 +1196,16 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
          */
         authProviderLoginGet(provider: string, state?: string, options?: any): AxiosPromise<HandlersHttpResponseHandlersOAuthRedirectDataAny> {
             return localVarFp.authProviderLoginGet(provider, state, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Subscribe for backend features, like sync notes
+         * @summary Subscribe
+         * @param {HandlersSubscribeBody} data token
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authSubscribePost(data: HandlersSubscribeBody, options?: any): AxiosPromise<object> {
+            return localVarFp.authSubscribePost(data, options).then((request) => request(axios, basePath));
         },
         /**
          * Create API token
@@ -1214,6 +1290,18 @@ export class AuthApi extends BaseAPI {
      */
     public authProviderLoginGet(provider: string, state?: string, options?: AxiosRequestConfig) {
         return AuthApiFp(this.configuration).authProviderLoginGet(provider, state, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Subscribe for backend features, like sync notes
+     * @summary Subscribe
+     * @param {HandlersSubscribeBody} data token
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public authSubscribePost(data: HandlersSubscribeBody, options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authSubscribePost(data, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
+import { useNotifications } from 'src/hooks';
 import { OAuthProvider, PersonalInfo } from 'src/models';
 import { v4 } from 'uuid';
 
@@ -22,6 +23,7 @@ export const useAuthStore = defineStore(
     const user = ref<PersonalInfo>();
     const provider = ref<OAuthProvider>('github');
     const $q = useQuasar();
+    const notificaitons = useNotifications();
 
     const authViaGithub = async () => {
       try {
@@ -70,6 +72,7 @@ export const useAuthStore = defineStore(
         const { data } = (await sdk.auth.authVerifyGet()).data;
         user.value = data;
       } catch (e: unknown) {
+        // TODO: master move error handling to special function
         if ((e as AxiosError).response.status === 400) {
           resetAuthInfo();
         }
@@ -83,6 +86,20 @@ export const useAuthStore = defineStore(
       syncStore.syncNotes();
     };
 
+    const subscribe = async (token: string) => {
+      try {
+        await sdk.auth.authSubscribePost({ token });
+        await verifyUser();
+      } catch (e) {
+        if (!(e as AxiosError).response.status) {
+          throw e;
+        }
+        const axiosErr = e as AxiosError<{ message?: string }>;
+        notificaitons.notify(axiosErr.response.data?.message, true, 'error');
+        return;
+      }
+    };
+
     return {
       token,
       user,
@@ -93,6 +110,7 @@ export const useAuthStore = defineStore(
       logout,
       verifyUser,
       authUser,
+      subscribe,
     };
   },
   { persist: true }

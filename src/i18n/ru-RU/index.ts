@@ -72,4 +72,6 @@ export default {
   'you name could be here': 'ваше имя может быть здесь',
   'force sync': 'принудительная синхронизация',
   'create your first note': 'создайте свою первую заметку',
+  'subscription key': 'ключ подписки',
+  'you are successfully subscribed!': 'вы успешно подписались!',
 };

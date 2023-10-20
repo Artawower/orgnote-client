@@ -75,4 +75,6 @@ export default {
   'you name could be here': 'you name could be here',
   'force sync': 'force sync',
   'create your first note': 'create your first note',
+  'subscription key': 'subscription key',
+  'you are successfully subscribed!': 'you are successfully subscribed!',
 };
