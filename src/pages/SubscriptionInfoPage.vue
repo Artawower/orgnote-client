@@ -5,6 +5,7 @@
       <used-space />
     </template>
     <template v-else>
+      <!-- TODO: master add email field here -->
       <q-input
         class="color-white"
         standout="bg-black text-white"

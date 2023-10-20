@@ -21,10 +21,14 @@ export const useSyncStore = defineStore(
     // TODO: master add debounce with timeout and accumulation
     // Use websockets instead
     const syncNotes = async () => {
-      cancelPreviousRequest();
-      if (!authStore.user || authStore.user.isAnonymous) {
+      if (
+        !authStore.user ||
+        authStore.user.isAnonymous ||
+        !authStore.user.active
+      ) {
         return;
       }
+      cancelPreviousRequest();
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
 

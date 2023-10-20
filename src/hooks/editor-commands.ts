@@ -105,7 +105,7 @@ export const registerEditorCommands = () => {
     {
       command: 'link',
       icon: 'link',
-      description: 'insert a link',
+      description: 'insert a link (url)',
       group: 'editor',
       handler: async () => {
         const text = await navigator.clipboard.readText();
@@ -176,9 +176,9 @@ export const registerEditorCommands = () => {
         }),
     },
     {
-      command: 'strike through',
+      command: 'strikethrough',
       icon: 'format_strikethrough',
-      description: 'insert strike through text',
+      description: 'insert strikethrough text',
       group: 'editor',
       handler: () =>
         insertTemplate({
