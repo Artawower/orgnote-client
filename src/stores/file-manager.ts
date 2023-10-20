@@ -23,7 +23,7 @@ import { computed, onMounted, ref } from 'vue';
 export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTree = ref<FileTree>();
   const editedFileItem = ref<FileNode | null>();
-  const expandedNodes = ref<string[]>();
+  const expandedNodes = ref<string[]>([]);
 
   repositories.fileManager.getAll().then((fm) => {
     fileTree.value = fm || {};

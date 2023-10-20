@@ -18,8 +18,9 @@
     <q-tree
       :nodes="fileManagerStore.fileManager"
       :filter="search"
-      :default-expand-all="true"
-      :expanded="fileManagerStore.expandedNodes"
+      :key="fileManagerStore.fileManager.length"
+      v-model:expanded="fileManagerStore.expandedNodes"
+      no-transition
       ref="qTreeRef"
       dense
       node-key="id"
