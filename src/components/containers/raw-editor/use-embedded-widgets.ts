@@ -176,6 +176,7 @@ export const useEmbeddedWidgets = () => {
         return 'org-list-item-section-line';
       }
     },
+    [NodeType.HorizontalRule]: 'org-horizontal-rule-line',
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (

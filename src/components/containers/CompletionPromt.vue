@@ -44,7 +44,7 @@ const viewStore = useViewStore();
   border-radius: var(--completion-border-radius);
   box-shadow: var(--completion-box-shadow);
   overflow: hidden;
-  z-index: 1000;
+  z-index: 7000;
   margin-left: calc(var(--sidebar-width) / 2);
 
   &.mobile {

@@ -536,6 +536,16 @@ org-keyword-block {
   padding-top: 16px !important;
 }
 
+.org-horizontal-rule-line {
+  @include flexify();
+  height: var(--editor-default-line-height);
+  span {
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+  }
+}
+
 .org-src-line {
   background-color: var(--base7);
 }
@@ -577,7 +587,7 @@ org-keyword-block {
 
 /* FIXME: hack for empty line with absolute bullet */
 .org-list-item-line.cm-activeLine {
-  min-height: 28.8px;
+  min-height: var(--editor-default-line-height);
 }
 
 .org-list-item-checked {
