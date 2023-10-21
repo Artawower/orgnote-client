@@ -108,4 +108,6 @@ export default {
   'insert datetime': 'вставить дату и время',
   strikethrough: 'зачеркнутый',
   'insert strikethrough text': 'вставить зачеркнутый текст',
+  editor: 'редаткор',
+  showSpecialChars: 'показывать специальные символы',
 };

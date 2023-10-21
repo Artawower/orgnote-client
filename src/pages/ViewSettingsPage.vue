@@ -21,12 +21,15 @@
         <span v-else>Light mode</span>
       </template>
     </q-select>
+    <dynamic-config-builder class="q-py-md" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { useSettingsStore } from 'src/stores/settings';
+
+import DynamicConfigBuilder from 'src/components/containers/DynamicConfigBuilder.vue';
 
 const settingsStore = useSettingsStore();
 
@@ -41,4 +44,6 @@ const darkModeOptions = [
 const setDarkMode = (value: boolean | 'auto') => {
   settingsStore.setDarkMode(value);
 };
+
+const { config } = useSettingsStore();
 </script>

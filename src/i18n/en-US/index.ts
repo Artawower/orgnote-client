@@ -111,4 +111,6 @@ export default {
   'insert datetime': 'insert datetime',
   strikethrough: 'strikethrough',
   'insert strikethrough text': 'insert strikethrough text',
+  editor: 'editor',
+  showSpecialChars: 'show special chars',
 };

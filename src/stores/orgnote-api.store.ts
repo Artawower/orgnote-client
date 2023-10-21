@@ -1,14 +1,18 @@
-import { OrgNoteApi } from 'src/api';
 import { useCurrentNoteStore } from './current-note';
+import { useSettingsStore } from './settings';
+import { OrgNoteApi } from 'src/api';
 import { RouteNames } from 'src/router/routes';
 import { Router, useRouter } from 'vue-router';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
 
+  const settings = useSettingsStore();
+
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
     currentNote: useCurrentNote(),
+    configuration: () => settings.config,
   };
 
   return {

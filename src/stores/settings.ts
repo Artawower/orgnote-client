@@ -1,18 +1,25 @@
 import { defineStore } from 'pinia';
+import 'pinia-plugin-persistedstate';
+import { Dark } from 'quasar';
+import { OrgNoteConfig } from 'src/api';
 import { sdk } from 'src/boot/axios';
 import { ModelsAPIToken } from 'src/generated/api';
-import { ref } from 'vue';
-import { Dark } from 'quasar';
-import {} from 'pinia-plugin-persistedstate';
+
+import { reactive, ref } from 'vue';
 
 export const useSettingsStore = defineStore(
   'settings',
   () => {
     const tokens = ref<ModelsAPIToken[]>([]);
-
     const showUserProfiles = ref<boolean>(true);
     const locale = ref<string>('en-US');
     const darkMode = ref<boolean | 'auto'>('auto');
+
+    const config = reactive<OrgNoteConfig>({
+      editor: {
+        showSpecialChars: false,
+      },
+    });
 
     const setLocale = (lc: string) => {
       locale.value = lc;
@@ -72,6 +79,7 @@ export const useSettingsStore = defineStore(
       toggleProfileVisibility,
       setDarkMode,
       updateDarkMode,
+      config,
     };
   },
   { persist: { afterRestore: ({ store }) => store.updateDarkMode() } }

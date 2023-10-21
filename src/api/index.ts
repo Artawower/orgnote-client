@@ -8,4 +8,12 @@ export interface OrgNoteApi {
   currentNote: {
     getCurrentNote: () => Note;
   };
+  configuration: () => OrgNoteConfig;
+}
+
+// NOTE: default configs
+export interface OrgNoteConfig {
+  editor: {
+    showSpecialChars: boolean;
+  };
 }
