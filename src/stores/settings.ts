@@ -17,7 +17,7 @@ export const useSettingsStore = defineStore(
 
     const config = reactive<OrgNoteConfig>({
       editor: {
-        showSpecialChars: false,
+        showSpecialSymbols: false,
       },
     });
 

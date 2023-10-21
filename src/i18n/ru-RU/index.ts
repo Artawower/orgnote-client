@@ -109,5 +109,5 @@ export default {
   strikethrough: 'зачеркнутый',
   'insert strikethrough text': 'вставить зачеркнутый текст',
   editor: 'редаткор',
-  showSpecialChars: 'показывать специальные символы',
+  showSpecialSymbols: 'показывать специальные символы',
 };

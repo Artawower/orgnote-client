@@ -14,6 +14,6 @@ export interface OrgNoteApi {
 // NOTE: default configs
 export interface OrgNoteConfig {
   editor: {
-    showSpecialChars: boolean;
+    showSpecialSymbols: boolean;
   };
 }

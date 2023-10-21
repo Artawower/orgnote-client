@@ -112,5 +112,5 @@ export default {
   strikethrough: 'strikethrough',
   'insert strikethrough text': 'insert strikethrough text',
   editor: 'editor',
-  showSpecialChars: 'show special chars',
+  showSpecialSymbols: 'show special symbols',
 };

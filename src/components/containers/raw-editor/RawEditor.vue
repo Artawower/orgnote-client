@@ -1,45 +1,30 @@
 <template>
-  <div class="editor-wrapper" :class="{ readonly }">
+  <div
+    class="editor-wrapper"
+    :class="{ readonly, 'hide-special-symbols': !config?.showSpecialSymbols }"
+  >
     <div id="editor" ref="editor"></div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { initEditorExtensions } from './editor-extensions';
 import { editorLanguages } from './editor-languages';
-import { basicOrgTheme } from './org-cm-theme';
 import { useEmbeddedWidgets } from './use-embedded-widgets';
-import { closeBrackets } from '@codemirror/autocomplete';
-import { bracketMatching, codeFolding, foldGutter } from '@codemirror/language';
-import { EditorState, Prec } from '@codemirror/state';
-import {
-  EditorView,
-  ViewUpdate,
-  highlightActiveLine,
-  keymap,
-} from '@codemirror/view';
-import { minimalSetup } from 'codemirror';
+import { EditorState } from '@codemirror/state';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
+import { OrgNoteConfig } from 'src/api';
 import { onMobileViewportChanged, useDynamicComponent } from 'src/hooks';
 import { orgMode } from 'src/tools/cm-org-language';
-import {
-  editorMenuExtension,
-  orgAutoInsertCommand,
-  orgInlineWidgets,
-  orgLineDecoration,
-  orgMultilineWidgetField,
-  readOnlyTransactionFilter,
-} from 'src/tools/cm-org-language/widgets';
-import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 
 import { onMounted, ref, watch } from 'vue';
-
-import EditorMenu from './EditorMenu.vue';
-import GutterMarker from 'src/components/ui/GutterMarker.vue';
 
 const props = withDefaults(
   defineProps<{
     modelValue: string;
     readonly?: boolean;
+    config: OrgNoteConfig['editor'];
   }>(),
   { modelValue: () => '' }
 );
@@ -99,68 +84,23 @@ const initEditor = () => {
         },
         wrap: editorLanguages,
       }),
-      orgMultilineWidgetField,
-      minimalSetup,
-      bracketMatching(),
-      closeBrackets(),
-      codeFolding({
-        placeholderText: '[…]',
-      }),
-      // TODO: master we need to hide fold gutter for active line
-      foldGutter({
-        markerDOM: (open) => {
-          const gutterMarker = document.createElement('span');
-          dynamicComponent.mount(GutterMarker, gutterMarker, { open });
-          return gutterMarker;
-        },
-      }),
-
-      highlightActiveLine(),
-      readOnlyTransactionFilter(() => orgNode),
-      basicOrgTheme,
-      // TODO: master optional readonly extension
-      editorMenuExtension({
-        parentElement: '.q-page',
-        menuRenderer: (wrap: Element, editorView: EditorView) => {
-          return dynamicComponent.mount(EditorMenu, wrap, {
-            editorView,
-          });
-        },
-      }),
-      EditorView.lineWrapping,
-      EditorState.readOnly.of(props.readonly),
       EditorView.updateListener.of((v: ViewUpdate) => {
         if (v.docChanged) {
           setText(v.state.doc.toString());
         }
-
         emits('changeCursorPosition', v.state.selection.main.head);
         changeFocus(v.view.hasFocus);
       }),
-      orgInlineWidgets(() => orgNode, inlineEmbeddedWidgets),
-      orgMultilineWidgets(
-        () => orgNode,
+      initEditorExtensions({
+        dynamicComponent,
+        editorViewGetter: () => editorView,
+        inlineEmbeddedWidgets,
+        lineClasses,
         multilineEmbeddedWidgets,
-        props.readonly
-      ),
-      orgLineDecoration(() => orgNode, lineClasses),
-      Prec.highest(
-        keymap.of([
-          {
-            key: 'Enter',
-            run: orgAutoInsertCommand(() => orgNode),
-          },
-        ])
-      ),
-      keymap.of([
-        {
-          key: 'Escape',
-          run: () => {
-            editorView.contentDOM.blur();
-            return false;
-          },
-        },
-      ]),
+        readonly: props.readonly,
+        orgNodeGetter: () => orgNode,
+        showSpecialSymbols: props.config?.showSpecialSymbols,
+      }),
     ],
   });
 
@@ -217,13 +157,14 @@ watch(
 );
 
 watch(
-  () => props.readonly,
+  () => [props.readonly, props.config],
   () => {
     if (!editorView) {
       return;
     }
     initEditor();
-  }
+  },
+  { deep: true }
 );
 </script>
 
@@ -266,20 +207,39 @@ watch(
   .org-headline-#{$i} {
     font-family: var(--headline-font-family);
     font-weight: var(--headline-font-weight);
+  }
+}
 
+.hide-special-symbols {
+  .org-bold,
+  .org-italic,
+  .org-verbatim,
+  .org-inline-code,
+  .org-crossed {
     &.org-operator {
       display: none;
     }
   }
-}
 
-.org-bold,
-.org-italic,
-.org-verbatim,
-.org-inline-code,
-.org-crossed {
-  &.org-operator {
-    display: none;
+  @for $i from 1 through 12 {
+    .org-headline-#{$i} {
+      &.org-operator {
+        display: none;
+      }
+    }
+  }
+
+  .org-keyword-description-line,
+  .org-keyword-title-line,
+  .org-keyword-filetags-line {
+    &:not(.cm-activeLine) {
+      .org-keyword:first-of-type {
+        display: none !important;
+      }
+      > *:not(:first-of-type) {
+        margin-left: -6px;
+      }
+    }
   }
 }
 
@@ -309,10 +269,6 @@ watch(
   color: var(--fg);
   text-decoration: underline;
   cursor: pointer;
-}
-
-.org-doc-title-keyword {
-  display: none;
 }
 
 .cm-gutters,
@@ -643,19 +599,6 @@ org-keyword-block {
   }
   .org-keyword:not(:first-of-type) {
     color: var(--fg);
-  }
-}
-
-.org-keyword-description-line,
-.org-keyword-title-line,
-.org-keyword-filetags-line {
-  &:not(.cm-activeLine) {
-    .org-keyword:first-of-type {
-      display: none !important;
-    }
-    > *:not(:first-of-type) {
-      margin-left: -6px;
-    }
   }
 }
 

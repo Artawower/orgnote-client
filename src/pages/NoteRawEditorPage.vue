@@ -1,6 +1,7 @@
 <template>
   <raw-editor
     v-model="initialNoteText"
+    :config="config.editor"
     @data-updated="dataUpdated"
     @change-cursor-position="noteEditorStore.cursorPosition = $event"
     @focus-changed="toolbarStore.showToolbar = !$event"
@@ -19,6 +20,7 @@ import { OrgNode } from 'org-mode-ast';
 import { useNoteEditorStore, useToolbarStore } from 'src/stores';
 import { EditorView } from 'codemirror';
 import { debounce } from 'src/tools';
+import { useSettingsStore } from 'src/stores/settings';
 
 const noteEditorStore = useNoteEditorStore();
 const toolbarStore = useToolbarStore();
@@ -48,4 +50,6 @@ watch(
 onBeforeUnmount(() => {
   noteEditorStore.editorView = null;
 });
+
+const { config } = useSettingsStore();
 </script>
