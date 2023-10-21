@@ -1,9 +1,6 @@
 <template>
   <p class="org-paragraph">
     <template v-for="(n, i) in node.children" v-bind:key="i">
-      <!-- TODO: master  -->
-      <!-- <template v-if="c.type === 'text'">{{ c.value }} </template> -->
-      <!-- TODO: master  Optimize.-->
       <org-link v-if="n.type === 'link'" :node="n"></org-link>
       <org-src-inline-code
         v-else-if="n.type === 'verbatim'"
@@ -18,7 +15,8 @@
 
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';
-import { toRef, defineComponent } from 'vue';
+
+import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
 import OrgLink from './OrgLink.vue';

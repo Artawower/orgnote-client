@@ -4,10 +4,11 @@ export function extractFileNameFromPath(path: string): string {
   return path.split('/').pop();
 }
 
-export function buildMediaFilePath(path: string): string {
+export function buildMediaFilePath(path: string, folder?: string): string {
   const fileName = extractFileNameFromPath(path);
   if (isUrl(path)) {
     return path;
   }
-  return `/media/${fileName}`;
+  folder = folder ? `${folder}/` : '';
+  return `/media/${folder}${fileName}`;
 }

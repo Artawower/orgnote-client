@@ -4,12 +4,12 @@
     @click="onImgClick"
     :no-transition="true"
     :no-spinner="true"
-    :src="blobUrl ?? buildMediaFilePath(previewImg)"
+    :src="blobUrl ?? previewImg"
   />
 </template>
 
 <script lang="ts" setup>
-import { useFileStore } from 'src/stores';
+import { useFileStore, useOrgNoteApiStore } from 'src/stores';
 import { buildMediaFilePath, getFileName } from 'src/tools';
 
 import { computed, onBeforeMount, ref } from 'vue';
@@ -34,8 +34,11 @@ const initStoredMediaFile = async () => {
   blobUrl.value = URL.createObjectURL(file);
 };
 
+const { orgNoteApi } = useOrgNoteApiStore();
+
 const previewImg = computed(() => {
-  return buildMediaFilePath(props.src);
+  const folder = orgNoteApi.currentNote.getCurrentNote().author.id;
+  return buildMediaFilePath(props.src, folder);
 });
 
 const onImgClick = () => {

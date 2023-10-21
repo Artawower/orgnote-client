@@ -31,10 +31,10 @@ export class FileRepository extends BaseRepository {
     return this.store.get({ name }).then((file) => file?.file);
   }
 
-  async getFirst(): Promise<File> {
+  async getFirst(): Promise<File | null> {
     return this.store
       .toCollection()
       .first()
-      .then((file) => file.file);
+      .then((file) => file?.file);
   }
 }

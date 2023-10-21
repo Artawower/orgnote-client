@@ -35,11 +35,12 @@ export const useFileStore = defineStore('fileStore', () => {
       try {
         await sdk.files.uploadFile(firstFile);
         await deleteFile(firstFile.name);
-        await sleep(1500);
         firstFile = await repositories.files.getFirst();
       } catch (e) {
         console.error(e);
-        preserveFiles();
+        break;
+      } finally {
+        await sleep(1500);
       }
     }
   };
