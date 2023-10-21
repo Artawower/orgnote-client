@@ -194,7 +194,6 @@ watch(
 );
 
 const scrollIntoCurrentLine = () => {
-  console.log('SCROLL INTO CURRENT LINE');
   window.scroll(0, -1);
   editorView.dispatch({
     selection: {
@@ -267,7 +266,6 @@ watch(
   .org-headline-#{$i} {
     font-family: var(--headline-font-family);
     font-weight: var(--headline-font-weight);
-    display: inline-block;
 
     &.org-operator {
       display: none;
@@ -333,6 +331,8 @@ watch(
 .org-text,
 .header-text {
   letter-spacing: 0.5px;
+  line-break: anywhere;
+  white-space: pre-wrap;
   font-size: var(--paragraph-font-size);
   font-family: var(--main-font-family);
   color: var(--fg);
@@ -533,6 +533,7 @@ org-keyword-block {
 }
 
 .org-headline-line {
+  /* TODO: master create padding for main title */
   padding-top: 16px !important;
 }
 
