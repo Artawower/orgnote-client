@@ -61,8 +61,11 @@ export const useCommandsStore = defineStore('commands', () => {
       );
 
     const itemsGetterFn = (filter: string) => {
-      const filteredCandidates = candidates.filter((c) =>
-        c.command.includes(filter)
+      const filteredCandidates = candidates.filter(
+        (c) =>
+          c.command.toLowerCase().includes(filter.toLowerCase()) ||
+          c.description.toLowerCase().includes(filter.toLowerCase()) ||
+          c.group?.toLowerCase().includes(filter.toLowerCase())
       );
       return {
         total: filteredCandidates.length,
