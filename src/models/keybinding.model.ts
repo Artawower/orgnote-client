@@ -1,6 +1,7 @@
 export const DEFAULT_KEYBINDING_GROUP = 'default';
 
 export type CommandGroup =
+  | 'settings'
   | 'editor'
   | 'global'
   | 'note-detail'

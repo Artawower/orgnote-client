@@ -5,6 +5,7 @@ import {
   useSearchStore,
 } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords } from 'src/tools';
 import { useRouter } from 'vue-router';
 
@@ -20,24 +21,8 @@ export function useMainCommands() {
   const searchStore = useSearchStore();
   const commandsStore = useCommandsStore();
 
-  const router = useRouter();
-
-  const routesCommands: Command[] = router
-    .getRoutes()
-    // TODO: master tmp hack for avoid routes with params. Adapt to user input.
-    .filter(
-      (r) =>
-        r.name &&
-        !r.path.includes(':') &&
-        r?.meta?.programmaticalNavigation !== false
-    )
-    .map((r) => ({
-      command: camelCaseToWords(r.name.toString()),
-      description: `Open ${r.name.toString()}`,
-      group: 'navigation',
-      icon: 'assistant_navigation',
-      handler: () => router.push({ name: r.name }),
-    }));
+  const routesCommands = getRoutesCommands();
+  const settingsCommands = getSettingsCommands();
 
   const keybindingCommands: Command[] = [
     {
@@ -71,7 +56,6 @@ export function useMainCommands() {
         completionStore.restoreLastCompletionSession();
       },
     },
-    ...routesCommands,
   ];
 
   const dynamicKeybindings: Command[] = [
@@ -125,6 +109,7 @@ export function useMainCommands() {
   const register = () => {
     commandsStore.register(
       ...routesCommands,
+      ...settingsCommands,
       ...keybindingCommands,
       ...dynamicKeybindings
     );
@@ -133,4 +118,52 @@ export function useMainCommands() {
   return {
     register,
   };
+}
+
+function getRoutesCommands(): Command[] {
+  const router = useRouter();
+  const routesCommands: Command[] = router
+    .getRoutes()
+    // TODO: master tmp hack for avoid routes with params. Adapt to user input.
+    .filter(
+      (r) =>
+        r.name &&
+        !r.path.includes(':') &&
+        r?.meta?.programmaticalNavigation !== false
+    )
+    .map((r) => ({
+      command: camelCaseToWords(r.name.toString()),
+      description: `Open ${r.name.toString()}`,
+      group: 'navigation',
+      icon: 'assistant_navigation',
+      handler: () => router.push({ name: r.name }),
+    }));
+  return routesCommands;
+}
+
+// TODO: master right now this works only for boolean settings
+function getSettingsCommands(): Command[] {
+  const { config } = useSettingsStore();
+  const settingsCommands = getNestedConfigCommands(config);
+  return settingsCommands;
+}
+
+function getNestedConfigCommands(config: Record<string, unknown>): Command[] {
+  return Object.keys(config).reduce<Command[]>((acc, key) => {
+    const value = config[key];
+    if (typeof value === 'boolean') {
+      acc.push({
+        command: camelCaseToWords(key),
+        description: `Toggle ${key}`,
+        group: 'settings',
+        icon: 'settings',
+        handler: () => {
+          config[key] = !config[key];
+        },
+      });
+    } else if (typeof value === 'object') {
+      acc.push(...getNestedConfigCommands(value as Record<string, unknown>));
+    }
+    return acc;
+  }, []);
 }

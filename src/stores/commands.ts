@@ -16,6 +16,7 @@ export const useCommandsStore = defineStore('commands', () => {
 
   const currentGroups = ref<CommandGroup[]>([
     'global',
+    'settings',
     'completion',
     'search',
     'navigation',
