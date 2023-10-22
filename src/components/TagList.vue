@@ -76,9 +76,9 @@ onMounted(() => {
 
 <style lang="scss">
 .tags-wrapper {
-  @include flexify-inline();
+  @include flexify-inline(row, flex-start);
   flex-wrap: wrap;
-  gap: 0 var(--default-gap);
+  gap: 0 var(--small-gap);
 
   text-overflow: ellipsis;
   position: relative;
