@@ -214,7 +214,7 @@
 - =--editor-default-line-height=:  28.8px;
 ** Device specific feature
 - =--device-padding-bottom=:  0px;
-** Max width 599px
+- =--completion-border=:  1px solid var(--fg-alt);
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
 - =--page-padding=:  8px;
@@ -224,8 +224,8 @@
 - =--completion-container-margin=:  0px;
 - =--completion-width=:  100%;
 - =--completion-border-radius=:  0px;
+- =--completion-border=:  none !important;
 - =--search-icn-size=:  56px;
-- =--completion-border=:  1px solid var(--fg-alt);
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;

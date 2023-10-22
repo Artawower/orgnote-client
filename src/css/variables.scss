@@ -131,9 +131,13 @@ body {
   --device-padding-bottom: 0px;
 }
 
-// Max width 599px
+@include light-mode {
+  --completion-border: 1px solid var(--fg-alt);
+}
+
 @include mobile {
-  body {
+  body.body--dark,
+  body.body--light {
     --default-block-padding: 8px;
     --footer-height: 56px;
     --page-padding: 8px;
@@ -144,12 +148,9 @@ body {
     --completion-container-margin: 0px;
     --completion-width: 100%;
     --completion-border-radius: 0px;
+    --completion-border: none !important;
     --search-icn-size: 56px;
   }
-}
-
-@include light-mode {
-  --completion-border: 1px solid var(--fg-alt);
 }
 
 body {
