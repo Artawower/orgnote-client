@@ -12,6 +12,14 @@
         <template v-slot:prepend>
           <q-icon name="keyboard_arrow_right" />
         </template>
+        <template v-slot:append>
+          <q-icon
+            @click="completionStore.closeCompletion"
+            flat
+            name="close"
+            class="cursor-pointer color-secondary"
+          />
+        </template>
       </q-input>
     </div>
     <q-virtual-scroll

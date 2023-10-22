@@ -47,7 +47,7 @@ body {
   --completion-border-radius: 8px;
   --completion-width: 80%;
   --completion-max-width: 768px;
-  --completion-border: 1px solid var(--fg-alt);
+  --completion-border: none;
   --completion-box-shadow: none;
   --completion-input-height: 56px;
   --completion-container-margin: 0px;
@@ -141,9 +141,15 @@ body {
     --file-item-height: 46px;
     --headerbar-height: 46px;
 
-    --completion-container-margin: 6px;
+    --completion-container-margin: 0px;
+    --completion-width: 100%;
+    --completion-border-radius: 0px;
     --search-icn-size: 56px;
   }
+}
+
+@include light-mode {
+  --completion-border: 1px solid var(--fg-alt);
 }
 
 body {

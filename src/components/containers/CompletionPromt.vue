@@ -50,7 +50,6 @@ const viewStore = useViewStore();
   &.mobile {
     top: 0;
     margin-left: 0;
-    width: calc(100% - 10px);
     height: calc(
       var(--viewport-height) - var(--completion-container-margin) * 2
     );
