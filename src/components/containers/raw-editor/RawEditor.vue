@@ -285,12 +285,19 @@ watch(
 .org-text,
 .header-text {
   letter-spacing: 0.5px;
-  line-break: anywhere;
   white-space: pre-wrap;
   font-size: var(--paragraph-font-size);
   font-family: var(--main-font-family);
   color: var(--fg);
   -webkit-font-smoothing: auto;
+}
+
+.cm-line {
+  &:not(.org-headline-line),
+  &:not(.org-keyword-title-line) {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
 }
 
 .cm-line:not(.org-src-block-line, .org-headline-line) {
