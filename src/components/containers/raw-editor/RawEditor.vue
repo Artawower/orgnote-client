@@ -595,6 +595,9 @@ org-keyword-block {
     font-weight: var(--headline-font-weight);
     font-family: var(--headline-font-family);
   }
+  .org-keyword {
+    line-height: var(--editor-headline-line-height);
+  }
   .org-keyword:not(:first-of-type) {
     color: var(--fg);
   }
