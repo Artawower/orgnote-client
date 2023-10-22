@@ -5,6 +5,17 @@
   align-items: $align;
 }
 
+@mixin flexify-inline(
+  $direction: row,
+  $justify: space-between,
+  $align: center
+) {
+  display: inline-flex !important;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
 @mixin dark-mode {
   body.body--dark {
     @content;

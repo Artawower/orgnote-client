@@ -76,6 +76,10 @@ onMounted(() => {
 
 <style lang="scss">
 .tags-wrapper {
+  @include flexify-inline();
+  flex-wrap: wrap;
+  gap: 0 var(--default-gap);
+
   text-overflow: ellipsis;
   position: relative;
   z-index: 2;
@@ -102,10 +106,6 @@ onMounted(() => {
 .text-tag,
 .tag {
   cursor: pointer;
-
-  &:not(:first-child) {
-    margin-left: 0.5rem;
-  }
 }
 
 .tag {

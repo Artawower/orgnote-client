@@ -16,6 +16,7 @@ import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
+import OrgInvisible from 'src/components/OrgInvisible.vue';
 import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
 import OrgListTag from 'src/components/OrgListTag.vue';
@@ -90,6 +91,15 @@ export const useEmbeddedWidgets = () => {
       ignoreEvent: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgTags, { container: 'span' }),
     },
+    [NodeType.Text]: {
+      decorationType: 'replace',
+      satisfied: (orgNode: OrgNode) => {
+        return (
+          orgNode.parent?.is(NodeType.Keyword) && orgNode.value.startsWith('#+')
+        );
+      },
+      widgetBuilder: createOrgEmbeddedWidget(OrgInvisible),
+    },
     [NodeType.Operator]: {
       decorationType: 'replace',
       satisfied: (orgNode: OrgNode) => {
@@ -148,6 +158,7 @@ export const useEmbeddedWidgets = () => {
     [NodeType.SrcBlock]: 'org-src-block-line',
     [NodeType.Keyword]: (orgNode: OrgNode) =>
       `org-keyword-line org-keyword-${orgNode.children.first.value
+        .trim()
         .toLowerCase()
         .slice(2, -1)}-line`,
     [NodeType.NewLine]: (orgNode: OrgNode) => {

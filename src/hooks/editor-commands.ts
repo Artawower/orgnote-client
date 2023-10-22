@@ -289,10 +289,10 @@ export const registerEditorCommands = () => {
             return;
           }
           // TODO: master magic strings to constants
-          if (c.children?.first?.rawValue.toLowerCase() === '#+title:') {
+          if (c.children?.first?.rawValue.toLowerCase() === '#+title: ') {
             titleNode = c;
           }
-          return c.children?.first?.rawValue.toLowerCase() === '#+filetags:';
+          return c.children?.first?.rawValue.toLowerCase() === '#+filetags: ';
         });
         if (filetagKeyword) {
           noteEditorStore.editorView.dispatch({

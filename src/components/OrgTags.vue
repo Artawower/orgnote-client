@@ -1,5 +1,5 @@
 <template>
-  <tag-list :tags="tags"></tag-list>
+  <tag-list :tags="tags" :inline="false"></tag-list>
 </template>
 
 <script lang="ts" setup>
