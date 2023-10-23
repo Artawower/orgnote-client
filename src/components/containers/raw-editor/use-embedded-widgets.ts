@@ -22,6 +22,7 @@ import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
 import OrgLink from 'src/components/OrgLink.vue';
 import OrgListTag from 'src/components/OrgListTag.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
+import OrgRawLink from 'src/components/OrgRawLink.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 import OrgTags from 'src/components/OrgTags.vue';
 
@@ -126,6 +127,11 @@ export const useEmbeddedWidgets = () => {
     [NodeType.HorizontalRule]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgHorizontalRule),
+    },
+    [NodeType.RawLink]: {
+      decorationType: 'replace',
+      ignoreEvent: true,
+      widgetBuilder: createOrgEmbeddedWidget(OrgRawLink),
     },
     [NodeType.Priority]: {
       decorationType: 'replace',

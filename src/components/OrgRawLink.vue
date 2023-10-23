@@ -1,14 +1,14 @@
 <template>
-  <a :href="linkAddress" target="_blank" class="raw-link">
-    {{ linkAddress }}
+  <a :href="linkAddress" target="_blank" class="org-raw-link">
+    {{ shortLink }}
   </a>
 </template>
 
 <script setup lang="ts">
 // TODO: master Write extension to minify raw links (right now it's so bulky)
-import { toRef } from 'vue';
-
 import { OrgNode } from 'org-mode-ast';
+
+import { computed, toRef } from 'vue';
 
 const props = defineProps<{
   node: OrgNode;
@@ -17,6 +17,11 @@ const props = defineProps<{
 const node = toRef(props, 'node');
 
 const linkAddress = node.value.value;
+
+const shortLink = computed(() => {
+  const url = new URL(linkAddress);
+  return url.hostname;
+});
 </script>
 
 <style lang="scss" scoped>

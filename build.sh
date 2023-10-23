@@ -14,3 +14,4 @@ java -jar bundletool.jar build-apks \
      --ks-key-alias=sb
 
 unzip -p ./dist/pwa/builds/orgnote.apks universal.apk > ./dist/pwa/builds/orgnote-$version.apk
+echo "OrgNote APK built at ./dist/pwa/builds/orgnote-$version.apk"
