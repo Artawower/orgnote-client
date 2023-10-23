@@ -110,4 +110,6 @@ export default {
   'insert strikethrough text': 'вставить зачеркнутый текст',
   editor: 'редаткор',
   showSpecialSymbols: 'показывать специальные символы',
+  'edit note': 'редактировать',
+  'create folder': 'создать папку',
 };

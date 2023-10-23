@@ -52,6 +52,9 @@ body {
   --completion-input-height: 56px;
   --completion-container-margin: 0px;
 
+  // Menu
+  --menu-padding: 8px 16px;
+
   // File uploader
   --file-uploader-border-width: 4px;
   --file-uploader-border-style: dashed;
@@ -117,6 +120,7 @@ body {
   --search-icn-size: 42px;
   --default-gap: 16px;
   --small-gap: 8px;
+  --xs-gap: 4px;
 
   // Src block
   --src-block-header-padding-y: 16px;

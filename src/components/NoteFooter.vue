@@ -13,7 +13,7 @@
       <div class="right row gap-sm action-btns">
         <q-btn size="sm" flat round icon="far fa-bookmark" class="q-pa-none" />
         <q-btn size="sm" flat round icon="far fa-paper-plane" class="q-pa-none">
-          <q-menu class="flex row no-wrap q-pa-sm">
+          <q-menu class="flex row no-wrap">
             <q-btn
               flat
               rounded

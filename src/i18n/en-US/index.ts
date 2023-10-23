@@ -113,4 +113,6 @@ export default {
   'insert strikethrough text': 'insert strikethrough text',
   editor: 'editor',
   showSpecialSymbols: 'show special symbols',
+  'edit note': 'edit note',
+  'create folder': 'create folder',
 };

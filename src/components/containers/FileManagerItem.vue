@@ -19,26 +19,50 @@
       />
     </div>
     <div v-show="!editMode" class="actions">
-      <template v-if="!isFile">
-        <icon-btn @click.stop="createFile" name="note_add" :hoverable="false" />
-        <icon-btn
-          @click.stop="createFolder"
-          name="add_box"
-          :hoverable="false"
-        />
-      </template>
       <icon-btn
-        @click.stop.prevent="deleteFile"
-        name="delete"
+        v-if="!isFile"
+        @click.stop="createFile"
+        name="add_box"
         :hoverable="false"
       />
-      <icon-btn @click.stop.prevent="editName" name="edit" :hoverable="false" />
+      <icon-btn @click.stop name="o_more_vert">
+        <template v-slot:menu>
+          <q-menu ref="actionMenuRef" max-width="300px">
+            <q-list>
+              <q-item clickable @click.stop.prevent="editName">
+                <icon-btn name="edit" size="xs" :hoverable="false">
+                  <template v-slot:append>
+                    {{ $t('edit note') }}
+                  </template>
+                </icon-btn>
+              </q-item>
+              <q-item
+                v-if="!isFile"
+                clickable
+                @click.stop="createFolder"
+                v-close-popup
+              >
+                <icon-btn name="note_add" size="xs" :hoverable="false">
+                  <template v-slot:append>{{ $t('create folder') }}</template>
+                </icon-btn>
+              </q-item>
+              <q-item clickable @click.stop.prevent="deleteFile" v-close-popup>
+                <icon-btn name="delete" size="xs" :hoverable="false">
+                  <template v-slot:append>
+                    {{ $t('delete') }}
+                  </template>
+                </icon-btn>
+              </q-item>
+            </q-list>
+          </q-menu>
+        </template>
+      </icon-btn>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from 'quasar';
+import { QMenu, useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
 import {
   useAuthStore,
@@ -106,7 +130,10 @@ const fileManagerStore = useFileManagerStore();
 const editMode = ref(false);
 const fileNameInput = ref<HTMLInputElement | null>();
 
+const actionMenuRef = ref<QMenu>();
+
 const editName = () => {
+  actionMenuRef.value?.hide();
   editMode.value = true;
   callKeyboard();
 };
@@ -189,7 +216,7 @@ const isFileOpened = computed(() => {
 <style lang="scss" scoped>
 .actions {
   @include flexify(row);
-  gap: var(--small-gap);
+  gap: var(--xs-gap);
 }
 
 .file-name {
@@ -234,6 +261,10 @@ const isFileOpened = computed(() => {
     display: none;
   }
 
+  .icon-btn {
+    color: var(--fg-alt);
+  }
+
   &:hover:not(.edit-mode),
   &.active:not(.edit-mode) {
     background-color: var(--file-item-bg-hover);
@@ -252,7 +283,7 @@ const isFileOpened = computed(() => {
     }
 
     .icon-btn {
-      color: var(--file-item-color-hover);
+      color: var(--file-item-color-hover) !important;
     }
   }
 }

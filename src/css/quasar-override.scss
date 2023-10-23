@@ -58,3 +58,9 @@ body {
 .q-field--standout.q-field--dark.q-field--highlighted .q-field__native {
   color: white;
 }
+
+.q-list {
+  .q-item {
+    padding: var(--menu-padding);
+  }
+}
