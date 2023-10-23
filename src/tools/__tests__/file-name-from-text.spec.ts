@@ -7,4 +7,11 @@ describe('file-name-from-text', () => {
 
     expect(fileName).toEqual('this-is-a-test-text');
   });
+
+  it('Should replace extra characters with not english sentence', () => {
+    const text = 'Привет мир!';
+    const fileName = getFileNameFromText(text);
+
+    expect(fileName).toEqual('привет-мир');
+  });
 });

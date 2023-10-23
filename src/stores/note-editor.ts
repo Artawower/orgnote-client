@@ -5,7 +5,7 @@ import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
 import { Note } from 'src/models';
-import { generateFileName, getFileNameFromText, textToKebab } from 'src/tools';
+import { generateFileName, getFileNameFromText } from 'src/tools';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
 import { computed, ref, shallowRef, toRaw } from 'vue';
