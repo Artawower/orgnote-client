@@ -77,6 +77,13 @@ export const useEmbeddedWidgets = () => {
       classBuilder: (orgNode: OrgNode) =>
         `org-keyword-${orgNode.value.toLowerCase()}`,
     },
+    [NodeType.LatexFragment]: {
+      decorationType: 'replace',
+      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock, {
+        container: 'span',
+        withHash: false,
+      }),
+    },
     [NodeType.ListTag]: {
       decorationType: 'replace',
       ignoreEvent: true,

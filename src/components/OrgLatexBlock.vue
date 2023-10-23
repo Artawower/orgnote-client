@@ -1,22 +1,37 @@
 <template>
-  <div class="latex" v-katex:display="latexFormula"></div>
+  <component
+    :is="container"
+    class="latex"
+    v-katex:display="latexFormula"
+  ></component>
 </template>
 
 <script setup lang="ts">
-import { OrgNode } from 'org-mode-ast';
+import { NodeType, OrgNode } from 'org-mode-ast';
 
 import { computed, toRef } from 'vue';
 
 const props = defineProps<{
   node: OrgNode;
+  container?: 'string';
 }>();
 
 const node = toRef(props, 'node');
-const latexFormula = computed(() => node.value.children.get(2).rawValue);
+const formulaIndex = computed(() =>
+  node.value.is(NodeType.LatexFragment) ? 1 : 2
+);
+const latexFormula = computed(
+  () => node.value.children.get(formulaIndex.value).rawValue
+);
+const container = computed(() => props.container ?? 'div');
 </script>
 
 <style lang="scss">
 .latex {
   width: calc(100% - 2px);
+}
+.katex-display {
+  padding: 0;
+  margin: 0;
 }
 </style>
