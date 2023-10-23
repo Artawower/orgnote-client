@@ -618,6 +618,10 @@ org-keyword-block {
   }
 }
 
+.org-embedded-taglist {
+  display: inline-block;
+}
+
 @include mobile {
   .cm-gutters {
     left: -10px !important;

@@ -1,6 +1,7 @@
 import { srcHeaderViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
+import { textToKebab } from 'src/tools';
 import {
   EmbeddedOrgWidget,
   InlineEmbeddedWidgets,
@@ -38,6 +39,8 @@ export const useEmbeddedWidgets = () => {
       rootNodeSrc: () => OrgNode,
       onUpdateFn?: (newVal: string) => void
     ): EmbeddedOrgWidget => {
+      const normalizedOrgNodeType = textToKebab(orgNode.type.toLowerCase());
+      wrap.classList.add(`org-embedded-${normalizedOrgNodeType}`);
       return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
         rootNodeSrc,
