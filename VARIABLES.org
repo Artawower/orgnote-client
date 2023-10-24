@@ -50,6 +50,7 @@
 - =--violet=:  #c75ae8;
 - =--cyan=:  #34bfd0;
 - =--dark-cyan=:  #5699af;
+- =--white=:  #f8f9fc;
 - =--bg=:  #22272e;
 - =--bg-alt=:  var(--q-dark);
 - =--bg-alt2=:  var(--q-dark);

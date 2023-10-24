@@ -2,7 +2,11 @@
   <div
     @click="openNote"
     class="file-item q-py-xs q-px-sm full-width cursor-pointer"
-    :class="{ 'edit-mode': editMode, active: isFileOpened }"
+    :class="{
+      'edit-mode': editMode,
+      active: isFileOpened,
+      desktop: $q.platform.is.desktop,
+    }"
   >
     <div class="file-info">
       <q-icon v-if="!isFile" size="xs" name="folder"></q-icon>
@@ -271,7 +275,7 @@ const isFileOpened = computed(() => {
     color: var(--file-item-color-hover);
 
     input {
-      color: var(--bg);
+      color: var(--white);
     }
 
     .file-info {
@@ -288,9 +292,15 @@ const isFileOpened = computed(() => {
   }
 }
 
-.mobile {
+.file-item.desktop {
   .actions {
-    display: flex;
+    display: none !important;
+  }
+
+  &:hover {
+    .actions {
+      display: flex !important;
+    }
   }
 }
 
