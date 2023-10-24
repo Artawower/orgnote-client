@@ -618,7 +618,9 @@ org-keyword-block {
   }
 }
 
+/* TODO: master what a hell..need to fix dual name in org parser */
 .org-embedded-listtag,
+.org-embedded-taglist,
 .org-embedded-latexfragment {
   display: inline-block;
 }
