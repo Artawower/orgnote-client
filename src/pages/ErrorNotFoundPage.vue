@@ -37,7 +37,7 @@ const goBack = prevRouteExist
   : () => router.push({ name: RouteNames.Home });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .not-found-wrapper {
   height: calc(100svh - var(--top-bar-height));
 }
