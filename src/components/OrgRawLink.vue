@@ -41,4 +41,9 @@ const shortLink = computed(() => {
 .raw-link {
   line-break: anywhere;
 }
+
+.org-raw-link {
+  color: var(--fg);
+  text-decoration: underline;
+}
 </style>

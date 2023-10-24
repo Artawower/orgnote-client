@@ -618,10 +618,9 @@ org-keyword-block {
   }
 }
 
-.org-embedded-taglist,
+.org-embedded-listtag,
 .org-embedded-latexfragment {
   display: inline-block;
-  line-height: 0;
 }
 
 @include mobile {
