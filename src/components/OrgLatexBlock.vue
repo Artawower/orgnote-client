@@ -20,8 +20,10 @@ const node = toRef(props, 'node');
 const formulaIndex = computed(() =>
   node.value.is(NodeType.LatexFragment) ? 1 : 2
 );
-const latexFormula = computed(
-  () => node.value.children.get(formulaIndex.value).rawValue
+const latexFormula = computed(() =>
+  node.value.children
+    ? node.value.children.get(formulaIndex.value).rawValue
+    : node.value.value
 );
 const container = computed(() => props.container ?? 'div');
 </script>

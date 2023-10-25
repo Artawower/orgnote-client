@@ -60,6 +60,9 @@ export const useEmbeddedWidgets = () => {
     [NodeType.ExportBlock]: {
       widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
     },
+    [NodeType.LatexEnvironment]: {
+      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
+    },
     [NodeType.Link]: {
       widgetBuilder: createOrgEmbeddedWidget(OrgLink),
       satisfied: (orgNode: OrgNode) => {
