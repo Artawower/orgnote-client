@@ -5,14 +5,13 @@
 <script lang="ts" setup>
 import ForceGraph, { NodeObject } from 'force-graph';
 import { useQuasar } from 'quasar';
-import { GraphNoteNode } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useGraphStore } from 'src/stores/graph';
 import { useRouter } from 'vue-router';
 
 import { ref, toRef, watch } from 'vue';
 
-type GraphNode = GraphNoteNode & NodeObject;
+type GraphNode = NodeObject;
 
 const chartWrapper = ref(null);
 const q$ = useQuasar();
