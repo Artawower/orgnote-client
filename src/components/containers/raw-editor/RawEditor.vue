@@ -24,7 +24,7 @@ const props = withDefaults(
   defineProps<{
     modelValue: string;
     readonly?: boolean;
-    config: OrgNoteConfig['editor'];
+    config?: OrgNoteConfig['editor'];
   }>(),
   { modelValue: () => '' }
 );
