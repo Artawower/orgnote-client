@@ -135,6 +135,11 @@ body {
 
   // Device specific feature
   --device-padding-bottom: 0px;
+
+  // Graph
+  --graph-node-color: var(--fg-alt);
+  --graph-edge-color: var(--fg-alt);
+  --graph-active-color: var(--red);
 }
 
 @include light-mode {

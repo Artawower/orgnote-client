@@ -532,6 +532,12 @@ export interface ModelsNoteMeta {
     'category'?: ModelsCategory;
     /**
      * 
+     * @type {Array<ModelsNoteLink>}
+     * @memberof ModelsNoteMeta
+     */
+    'connectedNotes'?: Array<ModelsNoteLink>;
+    /**
+     * 
      * @type {string}
      * @memberof ModelsNoteMeta
      */
@@ -560,12 +566,6 @@ export interface ModelsNoteMeta {
      * @memberof ModelsNoteMeta
      */
     'images'?: Array<string>;
-    /**
-     * 
-     * @type {Array<ModelsNoteLink>}
-     * @memberof ModelsNoteMeta
-     */
-    'linkedArticles'?: Array<ModelsNoteLink>;
     /**
      * 
      * @type {string}

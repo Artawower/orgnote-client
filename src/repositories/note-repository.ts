@@ -2,7 +2,6 @@ import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
 import { Note, NotePreview } from 'src/models';
-import { toDeepRaw } from 'src/tools';
 
 export interface FilePathInfo {
   filePath: string[];
@@ -57,8 +56,8 @@ export class NoteRepository extends BaseRepository {
   }
 
   async getNotePreviews(
-    limit: number,
-    offset: number,
+    limit?: number,
+    offset?: number,
     searchText?: string,
     tags?: string[]
   ): Promise<NotePreview[]> {
@@ -72,6 +71,11 @@ export class NoteRepository extends BaseRepository {
       searchText,
       tags
     );
+    if (!limit) {
+      return initialStore
+        .each((n) => result.push(convertNoteToNotePreview(n)))
+        .then(() => result);
+    }
     return initialStore
       .offset(offset)
       .limit(limit)
@@ -138,7 +142,7 @@ export class NoteRepository extends BaseRepository {
       return;
     }
     await this.store.bulkUpdate(
-      toDeepRaw(updates).map((update) => ({
+      updates.map((update) => ({
         key: update.id,
         changes: { ...update.changes, updatedAt: new Date().toISOString() },
       }))

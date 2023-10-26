@@ -1,35 +1,71 @@
 import { defineStore } from 'pinia';
-import { sdk } from 'src/boot/axios';
-import { ModelsNoteGraph } from 'src/generated/api';
-import { UpdateGraphAction, newGraphSwClient } from 'src/workers';
+import { GraphNoteNode, NoteGraph } from 'src/models';
+import {
+  GraphUpdatedAction,
+  UpdateGraphAction,
+  WorkerEventType,
+  newGraphSwClient,
+} from 'src/workers';
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 export const useGraphStore = defineStore('graph', () => {
-  const graph = ref<ModelsNoteGraph>(null);
+  const graph = ref<NoteGraph>(null);
   const loading = ref<boolean>(false);
   const error = ref<Error>(null);
 
   const connection = newGraphSwClient();
+  const graphLinks = ref<{ [id: string]: string[] }>({});
 
   const rebuildGraph = () => {
     connection.emit(new UpdateGraphAction());
+    connection
+      .watchMessage<GraphUpdatedAction>(WorkerEventType.GraphUpdated)
+      .subscribe((data) => {
+        graph.value = data.payload;
+        getGraphLinks();
+      });
   };
+
+  const getGraphLinks = () => {
+    if (!graph.value) {
+      graphLinks.value = {};
+    }
+    graphLinks.value = graph.value.links.reduce<{ [id: string]: string[] }>(
+      (acc, curr) => {
+        if (!acc[curr.source]) {
+          acc[curr.source] = [];
+        }
+        if (!acc[curr.target]) {
+          acc[curr.target] = [];
+        }
+        acc[curr.source].push(curr.target);
+        acc[curr.target].push(curr.source);
+        return acc;
+      },
+      {}
+    );
+  };
+
+  const graphNodes = computed(() => {
+    return graph.value.nodes.reduce<{ [id: string]: GraphNoteNode }>(
+      (acc, cur) => {
+        acc[cur.id] = cur;
+        return acc;
+      },
+      {}
+    );
+  });
 
   const loadGraph = async () => {
-    try {
-      graph.value = (await sdk.notes.notesGraphGet()).data.data;
-    } catch (e) {
-      // TODO: handle real error [low]
-      console.warn(e);
-    }
+    rebuildGraph();
   };
-
-  rebuildGraph();
 
   return {
     graph,
     loading,
+    graphNodes,
+    graphLinks,
     error,
     loadGraph,
     rebuildGraph,

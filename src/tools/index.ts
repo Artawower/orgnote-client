@@ -26,3 +26,5 @@ export * from './extract-search-info';
 export * from './text-to-kebab';
 export * from './file-upload';
 export * from './file-name-from-text';
+export * from './truncate';
+export * from './hex-to-rgba';

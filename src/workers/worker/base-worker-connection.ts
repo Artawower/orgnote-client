@@ -1,12 +1,21 @@
 import { WorkerAction, WorkerEventType } from './worker.actions';
-import { Subject } from 'rxjs';
+import { Observable, Subject, filter } from 'rxjs';
 
-export class BaseWorkerConnection<Actions = unknown> {
+export class BaseWorkerConnection<
+  Actions extends { type: string; [key: string]: any },
+  WorkerEventType extends string = string
+> {
   public readonly closed$: Subject<void> = new Subject();
   public readonly message$: Subject<WorkerAction | Actions> = new Subject();
 
   constructor(protected worker: Worker) {
     this.watchMessages();
+  }
+
+  public watchMessage<T extends Actions = any>(
+    type: WorkerEventType
+  ): Observable<T> {
+    return this.message$.pipe(filter((m) => m.type === type)) as Observable<T>;
   }
 
   protected watchMessages(): void {

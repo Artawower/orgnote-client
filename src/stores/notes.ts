@@ -5,6 +5,7 @@ import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 import { HandlersCreatingNote } from 'src/generated/api';
 import { Note, NotePreview, NotesFilter } from 'src/models';
+import { toDeepRaw } from 'src/tools';
 
 import { ref } from 'vue';
 
@@ -59,7 +60,7 @@ export const useNotesStore = defineStore('notes', () => {
   const bulkPathNotesLocally = async (
     updates: { id: string; changes: Partial<Note> }[]
   ) => {
-    await repositories.notes.bulkPartialUpdate(updates);
+    await repositories.notes.bulkPartialUpdate(toDeepRaw(updates));
     notes.value = notes.value.map((n) => {
       const changedNote = updates.find((cn) => cn.id === n.id);
       if (changedNote) {

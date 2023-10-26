@@ -1,3 +1,5 @@
+import { NoteGraph } from 'src/models';
+
 export enum WorkerEventType {
   UpdateGraph = 'update graph',
   GraphUpdated = 'graph updated',
@@ -9,6 +11,7 @@ export class UpdateGraphAction {
 
 export class GraphUpdatedAction {
   public readonly type = WorkerEventType.GraphUpdated;
+  constructor(public readonly payload: NoteGraph) {}
 }
 
 export type WorkerAction = UpdateGraphAction | GraphUpdatedAction;

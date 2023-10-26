@@ -220,6 +220,10 @@
 - =--editor-default-line-height=:  28.8px;
 ** Device specific feature
 - =--device-padding-bottom=:  0px;
+** Graph
+- =--graph-node-color=:  var(--fg-alt);
+- =--graph-edge-color=:  var(--fg-alt);
+- =--graph-active-color=:  var(--red);
 - =--completion-border=:  1px solid var(--fg-alt);
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
