@@ -1,18 +1,27 @@
 <template>
   <div class="chart-wrapper" ref="chartWrapper"></div>
+  <span>
+    <mobile-note-preview
+      :note-id="selectedNoteId"
+      @closed="resetSelectedNote"
+    />
+  </span>
 </template>
 
 <script lang="ts" setup>
 // TODO: master move to external container
 import ForceGraph, { LinkObject, NodeObject } from 'force-graph';
 import { storeToRefs } from 'pinia';
-import { GraphNoteNode, NoteGraphLink } from 'src/models';
+import { useQuasar } from 'quasar';
+import { GraphNoteNode } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useGraphStore } from 'src/stores/graph';
-import { debounce, getCssVar, hexToRgba, truncate } from 'src/tools';
+import { getCssVar, hexToRgba, truncate } from 'src/tools';
 import { useRouter } from 'vue-router';
 
-import { computed, ref, toRef, watch } from 'vue';
+import { ref, watch } from 'vue';
+
+import MobileNotePreview from 'src/components/containers/MobileNotePreview.vue';
 
 const chartWrapper = ref<HTMLElement>(null);
 
@@ -63,10 +72,6 @@ const recalculateHighlightedNodes = (currentNodeId: string) => {
   activeNodeIds = findConnectedLinks(currentNodeId);
 };
 
-const recalculateHighlightedNodesDebounced = debounce(
-  recalculateHighlightedNodes
-);
-
 const minCircleSize = 16;
 const mainColor = () => getCssVar('graph-node-color');
 const edgeColor = () => getCssVar('graph-edge-color');
@@ -96,6 +101,21 @@ const getEdgeColor = (link: LinkObject) => {
   return edgeColor();
 };
 
+const $q = useQuasar();
+const scaleFactorLimit = $q.platform.is.mobile ? 1 : 1.2;
+const selectedNoteId = ref<string | null>(null);
+
+const resetSelectedNote = (): void => (selectedNoteId.value = null);
+
+const nodeClick = (node: NodeObject) => {
+  const id = (node as GraphNoteNode).id;
+  if ($q.platform.is.mobile) {
+    selectedNoteId.value = id;
+    return;
+  }
+  goToRowDetail(id);
+};
+
 const buildGraph = () => {
   if (!graph.value || !graph.value.nodes) {
     return;
@@ -109,23 +129,22 @@ const buildGraph = () => {
     .linkVisibility(() => true)
     .linkColor(getEdgeColor)
     .nodeId('id')
-    .onNodeClick((node) => goToRowDetail((node as GraphNoteNode).id))
+    .onNodeClick(nodeClick)
     .height(getGrpahHeight())
     .width(getGraphWidth())
     .onNodeHover((node) => {
-      recalculateHighlightedNodesDebounced(node?.id as string);
+      recalculateHighlightedNodes(node?.id as string);
     })
     .nodeCanvasObjectMode(() => 'before')
     .linkDirectionalParticleWidth(1.4)
     .nodeColor(getNodeColor)
-    // TODO: master redraw only after some action
     .autoPauseRedraw(false)
     .nodeCanvasObject((node, ctx, globalScale) => {
       const n = node as GraphNoteNode;
       const scaleFactor = n.weight * globalScale;
       const nodeInFocus = n.id === activeNodeId;
 
-      if (scaleFactor < 1.2 || nodeInFocus) {
+      if (scaleFactor < scaleFactorLimit || nodeInFocus) {
         return;
       }
 
@@ -138,6 +157,7 @@ const buildGraph = () => {
       ctx.fillStyle = 'opacity: 0.1';
     })
     .graphData(graph.value)
+    .d3VelocityDecay(0.3)
     .d3Force('link')
     .distance(
       (l: { target: { weight: number }; source: { weight: number } }) => {

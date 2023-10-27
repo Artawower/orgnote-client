@@ -44,6 +44,4 @@ const darkModeOptions = [
 const setDarkMode = (value: boolean | 'auto') => {
   settingsStore.setDarkMode(value);
 };
-
-const { config } = useSettingsStore();
 </script>

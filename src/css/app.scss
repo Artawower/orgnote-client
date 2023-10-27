@@ -71,3 +71,11 @@ p {
 a {
   text-decoration: none;
 }
+
+.bg-main {
+  background: var(--bg);
+}
+
+.bg-alt {
+  background: var(--bg-alt);
+}

@@ -1,4 +1,5 @@
 import { useFileManagerStore } from './file-manager';
+import { useGraphStore } from './graph';
 import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
@@ -24,6 +25,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   const syncStore = useSyncStore();
   const fileManagerStore = useFileManagerStore();
+  const graphStore = useGraphStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -55,6 +57,7 @@ export const useNotesStore = defineStore('notes', () => {
     await upsertNotes(notes);
     await syncStore.syncNotes();
     await fileManagerStore.updateFileManager();
+    graphStore.rebuildGraph();
   };
 
   const bulkPathNotesLocally = async (

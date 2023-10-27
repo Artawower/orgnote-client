@@ -2,7 +2,7 @@ import { WorkerAction, WorkerEventType } from './worker.actions';
 import { Observable, Subject, filter } from 'rxjs';
 
 export class BaseWorkerConnection<
-  Actions extends { type: string; [key: string]: any },
+  Actions extends { type: string; [key: string]: unknown },
   WorkerEventType extends string = string
 > {
   public readonly closed$: Subject<void> = new Subject();
@@ -12,9 +12,7 @@ export class BaseWorkerConnection<
     this.watchMessages();
   }
 
-  public watchMessage<T extends Actions = any>(
-    type: WorkerEventType
-  ): Observable<T> {
+  public watchMessage<T extends Actions>(type: WorkerEventType): Observable<T> {
     return this.message$.pipe(filter((m) => m.type === type)) as Observable<T>;
   }
 
