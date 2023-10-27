@@ -1,27 +1,29 @@
 <template>
   <div class="flex column items-start justify-start fit no-wrap">
-    <div class="q-px-md full-width completion-input">
-      <q-input
-        v-model="filter"
-        ref="completionInput"
-        autofocus
-        @blur="closeCompletionOnBlur"
-        borderless
-        :placeholder="$t(placeholder)"
-      >
-        <template v-slot:prepend>
-          <q-icon name="keyboard_arrow_right" />
-        </template>
-        <template v-slot:append>
-          <q-icon
-            @click="completionStore.closeCompletion"
-            flat
-            name="close"
-            class="cursor-pointer color-secondary"
-          />
-        </template>
-      </q-input>
-    </div>
+    <prevent-ios-touch>
+      <div class="q-px-md full-width completion-input">
+        <q-input
+          v-model="filter"
+          ref="completionInput"
+          autofocus
+          @blur="closeCompletionOnBlur"
+          borderless
+          :placeholder="$t(placeholder)"
+        >
+          <template v-slot:prepend>
+            <q-icon name="keyboard_arrow_right" />
+          </template>
+          <template v-slot:append>
+            <q-icon
+              @click="completionStore.closeCompletion"
+              flat
+              name="close"
+              class="cursor-pointer color-secondary"
+            />
+          </template>
+        </q-input>
+      </div>
+    </prevent-ios-touch>
     <q-virtual-scroll
       ref="scrollTarget"
       :items-size="total"
@@ -67,12 +69,14 @@
       </async-item-container>
     </q-virtual-scroll>
 
-    <div
-      class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
-    >
-      <span class="text-capitalize">{{ $t('items') }}</span
-      >: {{ selectedIndex + 1 }}/{{ total }}
-    </div>
+    <prevent-ios-touch>
+      <div
+        class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
+      >
+        <span class="text-capitalize">{{ $t('items') }}</span
+        >: {{ selectedIndex + 1 }}/{{ total }}
+      </div>
+    </prevent-ios-touch>
   </div>
 </template>
 
@@ -90,6 +94,7 @@ import { compareElemPositions, debounce } from 'src/tools';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
+import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
 
 const $q = useQuasar();
 
