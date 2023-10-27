@@ -5,7 +5,7 @@
     :no-focus="false"
     @hide="emits('closed')"
   >
-    <div class="q-pa-md bg-main">
+    <div class="q-pa-md bg-main note-preview">
       <public-note-preview
         @click="openNote"
         :notePreview="note"
@@ -71,3 +71,11 @@ const loadCurrentNote = async () => {
 
 const openNote = () => orgNoteApi.navigation.editNote(note.value.id);
 </script>
+
+<style lang="scss" scoped>
+.note-preview {
+  padding-bottom: calc(
+    var(--default-block-padding) + var(--device-padding-bottom)
+  );
+}
+</style>
