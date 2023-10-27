@@ -8,6 +8,7 @@
 import { useQuasar } from 'quasar';
 import { PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
+import { useSyncStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -19,17 +20,18 @@ const authStore = useAuthStore();
 
 const $q = useQuasar();
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
     authStore.auth(initialProvider);
     return;
   }
-  setupUser();
+  await setupUser();
 });
 
 const router = useRouter();
-const setupUser = () => {
+const syncStore = useSyncStore();
+const setupUser = async () => {
   const isMobile = route.query.state !== 'desktop';
   console.log('✎: [line 34][auth] route.query.state: ', route.query.state);
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
@@ -50,7 +52,7 @@ const setupUser = () => {
   };
 
   authStore.authUser(userInfo, route.query.token as string);
-
+  await syncStore.syncNotes();
   router.push({ name: RouteNames.Home });
 };
 </script>
