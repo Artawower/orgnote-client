@@ -437,14 +437,19 @@ watch(
   > .org-quote-block:not(.org-keyword):first-child {
     padding-left: 16px;
     position: relative;
+  }
+}
 
-    &::before {
-      content: '┃';
-      color: var(--base8);
-      position: absolute;
-      left: -4px;
-      transform: scaleY(var(--editor-line-height));
-    }
+.org-quote-block-line {
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: -8px;
+    height: 100%;
+    border-left: 1px solid var(--base8);
   }
 }
 

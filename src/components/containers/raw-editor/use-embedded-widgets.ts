@@ -191,6 +191,9 @@ export const useEmbeddedWidgets = () => {
       ) {
         return 'org-list-item-section-line';
       }
+      if (orgNode.parent?.is(NodeType.QuoteBlock) && orgNode.next?.isNot(NodeType.BlockFooter)) {
+        return 'org-quote-block-line';
+      }
     },
     // TODO: master add support for nested lists.
     [NodeType.ListItem]: (orgNode: OrgNode) =>
@@ -214,6 +217,10 @@ export const useEmbeddedWidgets = () => {
         orgNode?.parent?.parent?.parent?.is(NodeType.SrcBlock)
       ) {
         lineClass += 'org-src-block-line';
+      }
+
+      if (orgNode?.parent?.parent?.is(NodeType.QuoteBlock)) {
+        lineClass += 'org-quote-block-line';
       }
 
       if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
