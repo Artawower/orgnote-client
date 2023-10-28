@@ -5,6 +5,9 @@ export interface OrgNoteApi {
     openNote: (id: string) => void;
     editNote: (id: string) => void;
   };
+  interaction: {
+    confirm: (title: string, message: string) => Promise<boolean>;
+  };
   currentNote: {
     getCurrentNote: () => Note;
   };

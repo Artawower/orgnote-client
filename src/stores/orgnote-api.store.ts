@@ -1,3 +1,4 @@
+import { useConfirmationModalStore } from './confirmation-modal';
 import { useCurrentNoteStore } from './current-note';
 import { useSettingsStore } from './settings';
 import { OrgNoteApi } from 'src/api';
@@ -8,10 +9,12 @@ export const useOrgNoteApiStore = () => {
   const router = useRouter();
 
   const settings = useSettingsStore();
+  const interaction = useInteraction();
 
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
     currentNote: useCurrentNote(),
+    interaction,
     configuration: () => settings.config,
   };
 
@@ -36,5 +39,12 @@ const useCurrentNote = (): OrgNoteApi['currentNote'] => {
   const currentNoteStore = useCurrentNoteStore();
   return {
     getCurrentNote: () => currentNoteStore.currentNote,
+  };
+};
+
+const useInteraction = (): OrgNoteApi['interaction'] => {
+  const confirmationModalStore = useConfirmationModalStore();
+  return {
+    confirm: confirmationModalStore.confirm,
   };
 };

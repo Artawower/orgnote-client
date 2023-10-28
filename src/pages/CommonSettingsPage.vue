@@ -7,7 +7,7 @@
 
     <div class="q-pt-md">
       <q-btn @click="clearAllData" class="full-width" flat text-color="red">{{
-        $t('clear all data')
+        $t('clear all local data')
       }}</q-btn>
     </div>
     <div class="q-pt-md">
@@ -20,23 +20,32 @@
         >{{ $t('force sync') }}</q-btn
       >
     </div>
+    <div class="q-pt-md">
+      <q-btn
+        @click="removeAccount"
+        class="full-width"
+        flat
+        text-color="red"
+        :disabled="authStore.user?.isAnonymous"
+        >{{ $t('remove account') }}</q-btn
+      >
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { db } from 'src/boot/repositories';
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore } from 'src/stores';
-import { useConfirmationModalStore } from 'src/stores/confirmation-modal';
+import { useAuthStore, useOrgNoteApiStore } from 'src/stores';
 import { useRouter } from 'vue-router';
 
 import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 
-const confirmationModalStore = useConfirmationModalStore();
+const { orgNoteApi } = useOrgNoteApiStore();
 
 const router = useRouter();
 const clearAllData = async () => {
-  const clear = await confirmationModalStore.confirm(
+  const clear = await orgNoteApi.interaction.confirm(
     'clear all data',
     'are you sure you want to delete all data?'
   );
@@ -59,6 +68,18 @@ const forceResync = async () => {
 };
 
 const authStore = useAuthStore();
+
+const removeAccount = async () => {
+  const confirmed = await orgNoteApi.interaction.confirm(
+    'remove account',
+    'are you sure you want to remove your account?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+  await authStore.removeUserAccount();
+};
 </script>
 
 <style lang="scss"></style>

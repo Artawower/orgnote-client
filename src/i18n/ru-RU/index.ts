@@ -57,7 +57,7 @@ export default {
   image: 'изображение',
   'insert an image': 'вставить изображение',
   api: 'api',
-  'clear all data': 'удалить все данные',
+  'clear all local data': 'удалить все данные локально',
   'are you sure you want to delete all data?':
     'вы уверены что хотите удалить все данные?',
   cancel: 'отмена',
@@ -112,4 +112,7 @@ export default {
   showSpecialSymbols: 'показывать специальные символы',
   'edit note': 'редактировать',
   'create folder': 'создать папку',
+  'remove account': 'удалить аккаунт',
+  'are you sure you want to remove your account?':
+    'вы уверены что хотите удалить свой аккаунт?',
 };

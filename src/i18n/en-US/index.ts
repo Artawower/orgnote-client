@@ -60,7 +60,7 @@ export default {
   image: 'image',
   'insert an image': 'insert an image',
   api: 'api',
-  'clear all data': 'clear all data',
+  'clear all local data': 'clear all local data',
   'are you sure you want to delete all data?':
     'are you sure you want to delete all data?',
   cancel: 'cancel',
@@ -115,4 +115,7 @@ export default {
   showSpecialSymbols: 'show special symbols',
   'edit note': 'edit note',
   'create folder': 'create folder',
+  'remove account': 'remove account',
+  'are you sure you want to remove your account?':
+    'are you sure you want to remove your account?',
 };

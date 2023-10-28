@@ -10,12 +10,9 @@ export enum RouteNames {
   NotFound = 'NotFound',
   UserGraph = 'UserGraph',
   EditNote = 'EditNote',
-  ApiSettings = 'ApiSettings',
-  ViewSettings = 'ViewSettings',
-  CommonSettings = 'CommonSettings',
+  SettingsPage = 'SettingsPage',
   Extensions = 'Extensions',
   Keybindings = 'Keybindings',
-
   RawEditor = 'Raw editor',
   WysiwygEditor = 'WYSIWYG editor',
   PreviewEditor = 'Preview editor',
@@ -90,6 +87,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'feed',
       name: RouteNames.NoteList,
       component: () => import('pages/PublicNotesPage.vue'),
+    },
+    {
+      path: 'settings',
+      name: RouteNames.SettingsPage,
+      component: () => import('pages/SettingsPage.vue'),
     },
     {
       path: '/:catchAll(.*)*',

@@ -253,25 +253,6 @@ export interface HandlersHttpResponseModelsAPITokenAny {
 /**
  * 
  * @export
- * @interface HandlersHttpResponseModelsNoteGraphAny
- */
-export interface HandlersHttpResponseModelsNoteGraphAny {
-    /**
-     * 
-     * @type {ModelsNoteGraph}
-     * @memberof HandlersHttpResponseModelsNoteGraphAny
-     */
-    'data'?: ModelsNoteGraph;
-    /**
-     * 
-     * @type {object}
-     * @memberof HandlersHttpResponseModelsNoteGraphAny
-     */
-    'meta'?: object;
-}
-/**
- * 
- * @export
  * @interface HandlersHttpResponseModelsPublicNoteAny
  */
 export interface HandlersHttpResponseModelsPublicNoteAny {
@@ -420,69 +401,6 @@ export type ModelsCategory = typeof ModelsCategory[keyof typeof ModelsCategory];
 /**
  * 
  * @export
- * @interface ModelsGraphNoteLink
- */
-export interface ModelsGraphNoteLink {
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsGraphNoteLink
-     */
-    'source'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsGraphNoteLink
-     */
-    'target'?: string;
-}
-/**
- * 
- * @export
- * @interface ModelsGraphNoteNode
- */
-export interface ModelsGraphNoteNode {
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsGraphNoteNode
-     */
-    'externalId'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelsGraphNoteNode
-     */
-    'title'?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelsGraphNoteNode
-     */
-    'weight'?: number;
-}
-/**
- * 
- * @export
- * @interface ModelsNoteGraph
- */
-export interface ModelsNoteGraph {
-    /**
-     * 
-     * @type {Array<ModelsGraphNoteLink>}
-     * @memberof ModelsNoteGraph
-     */
-    'links'?: Array<ModelsGraphNoteLink>;
-    /**
-     * 
-     * @type {Array<ModelsGraphNoteNode>}
-     * @memberof ModelsNoteGraph
-     */
-    'nodes'?: Array<ModelsGraphNoteNode>;
-}
-/**
- * 
- * @export
  * @interface ModelsNoteHeading
  */
 export interface ModelsNoteHeading {
@@ -532,10 +450,10 @@ export interface ModelsNoteMeta {
     'category'?: ModelsCategory;
     /**
      * 
-     * @type {Array<ModelsNoteLink>}
+     * @type {{ [key: string]: string; }}
      * @memberof ModelsNoteMeta
      */
-    'connectedNotes'?: Array<ModelsNoteLink>;
+    'connectedNotes'?: { [key: string]: string; };
     /**
      * 
      * @type {string}
@@ -790,6 +708,36 @@ export interface ModelsUserPersonalInfo {
  */
 export const AuthApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * Delete user account
+         * @summary Delete user account
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authAccountDelete: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/auth/account`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Return all available API tokens
          * @summary Get API tokens
@@ -1064,6 +1012,16 @@ export const AuthApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = AuthApiAxiosParamCreator(configuration)
     return {
         /**
+         * Delete user account
+         * @summary Delete user account
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async authAccountDelete(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.authAccountDelete(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Return all available API tokens
          * @summary Get API tokens
          * @param {*} [options] Override http request option.
@@ -1159,6 +1117,15 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
     const localVarFp = AuthApiFp(configuration)
     return {
         /**
+         * Delete user account
+         * @summary Delete user account
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        authAccountDelete(options?: any): AxiosPromise<object> {
+            return localVarFp.authAccountDelete(options).then((request) => request(axios, basePath));
+        },
+        /**
          * Return all available API tokens
          * @summary Get API tokens
          * @param {*} [options] Override http request option.
@@ -1245,6 +1212,17 @@ export const AuthApiFactory = function (configuration?: Configuration, basePath?
  * @extends {BaseAPI}
  */
 export class AuthApi extends BaseAPI {
+    /**
+     * Delete user account
+     * @summary Delete user account
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApi
+     */
+    public authAccountDelete(options?: AxiosRequestConfig) {
+        return AuthApiFp(this.configuration).authAccountDelete(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Return all available API tokens
      * @summary Get API tokens
@@ -1591,36 +1569,6 @@ export const NotesApiAxiosParamCreator = function (configuration?: Configuration
             };
         },
         /**
-         * Return graph model with links between connected notes
-         * @summary Get notes graph
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notesGraphGet: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/notes/graph`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * get note by id
          * @summary Get note
          * @param {string} id Note ID
@@ -1776,16 +1724,6 @@ export const NotesApiFp = function(configuration?: Configuration) {
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
         /**
-         * Return graph model with links between connected notes
-         * @summary Get notes graph
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async notesGraphGet(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<HandlersHttpResponseModelsNoteGraphAny>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.notesGraphGet(options);
-            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
-        },
-        /**
          * get note by id
          * @summary Get note
          * @param {string} id Note ID
@@ -1863,15 +1801,6 @@ export const NotesApiFactory = function (configuration?: Configuration, basePath
          */
         notesGet(limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options?: any): AxiosPromise<HandlersHttpResponseArrayModelsPublicNoteModelsPagination> {
             return localVarFp.notesGet(limit, offset, userId, searchText, my, from, includeDeleted, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Return graph model with links between connected notes
-         * @summary Get notes graph
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        notesGraphGet(options?: any): AxiosPromise<HandlersHttpResponseModelsNoteGraphAny> {
-            return localVarFp.notesGraphGet(options).then((request) => request(axios, basePath));
         },
         /**
          * get note by id
@@ -1953,17 +1882,6 @@ export class NotesApi extends BaseAPI {
      */
     public notesGet(limit?: number, offset?: number, userId?: string, searchText?: string, my?: boolean, from?: string, includeDeleted?: boolean, options?: AxiosRequestConfig) {
         return NotesApiFp(this.configuration).notesGet(limit, offset, userId, searchText, my, from, includeDeleted, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Return graph model with links between connected notes
-     * @summary Get notes graph
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof NotesApi
-     */
-    public notesGraphGet(options?: AxiosRequestConfig) {
-        return NotesApiFp(this.configuration).notesGraphGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

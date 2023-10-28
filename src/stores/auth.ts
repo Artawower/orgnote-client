@@ -6,7 +6,9 @@ import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useNotifications } from 'src/hooks';
 import { OAuthProvider, PersonalInfo } from 'src/models';
+import { RouteNames } from 'src/router/routes';
 import { v4 } from 'uuid';
+import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
 
@@ -24,6 +26,7 @@ export const useAuthStore = defineStore(
     const provider = ref<OAuthProvider>('github');
     const $q = useQuasar();
     const notificaitons = useNotifications();
+    const router = useRouter();
 
     const authViaGithub = async () => {
       try {
@@ -100,6 +103,13 @@ export const useAuthStore = defineStore(
       }
     };
 
+    const removeUserAccount = async () => {
+      await sdk.auth.authAccountDelete();
+      localStorage.clear();
+      router.push(RouteNames.Home);
+      window.location.reload();
+    };
+
     return {
       token,
       user,
@@ -111,6 +121,7 @@ export const useAuthStore = defineStore(
       verifyUser,
       authUser,
       subscribe,
+      removeUserAccount,
     };
   },
   { persist: true }
