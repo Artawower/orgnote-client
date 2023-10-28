@@ -14,10 +14,12 @@ export const basicOrgTheme = EditorView.theme({
   '.cm-gutterElement': {
     color: 'var(--fg-alt)',
     display: 'flex',
-    'align-items': 'center',
-    'margin-top': '4px',
+    alignItems: 'start',
   },
 
+  '.cm-gutterElement > span': {
+    marginTop: '18px',
+  },
   '&.cm-focused': {
     outline: 'none',
   },

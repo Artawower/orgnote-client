@@ -7,6 +7,7 @@ import {
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
   WidgetBuilder,
+  WidgetBuilderParams,
 } from 'src/tools/cm-org-language/widgets';
 import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 
@@ -34,16 +35,18 @@ export const useEmbeddedWidgets = () => {
     cmp: Component,
     props: { [key: string]: unknown } = {}
   ): WidgetBuilder => {
-    return (
-      wrap: HTMLElement,
-      orgNode: OrgNode,
-      rootNodeSrc: () => OrgNode,
-      onUpdateFn?: (newVal: string) => void
-    ): EmbeddedOrgWidget => {
+    return ({
+      wrap,
+      rootNodeSrc,
+      onUpdateFn,
+      orgNode,
+      editorView,
+    }: WidgetBuilderParams): EmbeddedOrgWidget => {
       const normalizedOrgNodeType = textToKebab(orgNode.type.toLowerCase());
       wrap.classList.add(`org-embedded-${normalizedOrgNodeType}`);
       return dynamicComponent.mount(cmp, wrap, {
         node: orgNode,
+        editorView,
         rootNodeSrc,
         ...props,
         onUpdate: (newVal: string) => {
@@ -116,17 +119,27 @@ export const useEmbeddedWidgets = () => {
     },
     [NodeType.Operator]: {
       decorationType: 'replace',
+      ignoreEvent: true,
       satisfied: (orgNode: OrgNode) => {
-        const satisfied =
+        const isListOperator =
           orgNode.parent?.parent?.is(NodeType.ListItem) &&
           !orgNode.parent.parent?.parent?.ordered &&
           orgNode?.parent.isNot(NodeType.Section);
+
+        const isHeadlineOperator = orgNode.parent?.parent?.is(
+          NodeType.Headline
+        );
+        const satisfied = isListOperator || isHeadlineOperator;
         return satisfied;
       },
-      widgetBuilder: (wrap: HTMLElement, orgNode: OrgNode) => {
-        const operator = orgNode.rawValue.trim();
-        wrap.innerHTML = operator === '-' ? '•' : '◦';
-        wrap.classList.add('org-list-bullet');
+      widgetBuilder: (params) => {
+        const isHeadline = params.orgNode.parent?.parent?.is(NodeType.Headline);
+        if (isHeadline) {
+          return createOrgEmbeddedWidget(OrgInvisible)(params);
+        }
+        const operator = params.orgNode.rawValue.trim();
+        params.wrap.innerHTML = operator === '-' ? '•' : '◦';
+        params.wrap.classList.add('org-list-bullet');
         return {
           destroy: () => {
             /* pass */
@@ -191,7 +204,10 @@ export const useEmbeddedWidgets = () => {
       ) {
         return 'org-list-item-section-line';
       }
-      if (orgNode.parent?.is(NodeType.QuoteBlock) && orgNode.next?.isNot(NodeType.BlockFooter)) {
+      if (
+        orgNode.parent?.is(NodeType.QuoteBlock) &&
+        orgNode.next?.isNot(NodeType.BlockFooter)
+      ) {
         return 'org-quote-block-line';
       }
     },

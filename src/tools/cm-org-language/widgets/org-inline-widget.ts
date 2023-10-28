@@ -51,15 +51,16 @@ export class OrgInlineWidget extends WidgetType {
     const wrap = document.createElement(
       this.inlineWidget.wrapComponent ?? 'span'
     );
-    this.widget = this.inlineWidget.widgetBuilder(
+    this.widget = this.inlineWidget.widgetBuilder({
       wrap,
-      this.orgNode,
+      orgNode: this.orgNode,
       // TODO: master I don't like this implementation.
       // But i need to get actual node position inside nested widgets
       // Speculate about it.
-      this.rootNodeSrc,
-      this.updateValue.bind(this)
-    );
+      rootNodeSrc: this.rootNodeSrc,
+      onUpdateFn: this.updateValue.bind(this),
+      editorView: this.view,
+    });
     return wrap;
   }
 

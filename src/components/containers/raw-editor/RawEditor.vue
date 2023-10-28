@@ -638,7 +638,7 @@ org-keyword-block {
 
 @include mobile {
   .cm-gutters {
-    left: -10px !important;
+    left: -16px !important;
   }
 
   .editor-wrapper {
@@ -660,14 +660,10 @@ org-keyword-block {
       left: 0;
     }
 
-    .cm-gutterElement {
-      margin-left: -5px;
+    .org-headline-line {
+      left: -8px;
     }
 
-    /* .org-headline-line {
-      margin-left: 14px;
-    }
- */
     .org-widget-edit-badge {
       right: 8px;
       top: 8px;

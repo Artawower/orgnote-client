@@ -227,7 +227,7 @@
 - =--completion-border=:  1px solid var(--fg-alt);
 - =--default-block-padding=:  8px;
 - =--footer-height=:  56px;
-- =--page-padding=:  8px;
+- =--page-padding=:  14px;
 - =--default-gap=:  10px;
 - =--file-item-height=:  46px;
 - =--headerbar-height=:  46px;

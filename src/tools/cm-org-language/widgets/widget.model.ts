@@ -1,16 +1,20 @@
 import { ChangeSpec } from '@codemirror/state';
+import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
 export type EmbeddedOrgWidget = {
   destroy: () => void;
 };
 
-export type WidgetBuilder = (
-  wrap: HTMLElement,
-  orgNode: OrgNode,
-  rootNodeSrc?: () => OrgNode,
-  onUpdateFn?: (newVal: string) => void
-) => EmbeddedOrgWidget;
+export interface WidgetBuilderParams {
+  wrap: HTMLElement;
+  orgNode: OrgNode;
+  rootNodeSrc?: () => OrgNode;
+  onUpdateFn?: (newVal: string) => void;
+  editorView: EditorView;
+}
+
+export type WidgetBuilder = (params: WidgetBuilderParams) => EmbeddedOrgWidget;
 
 interface CommonEmbeddedWidget {
   satisfied?: (orgNode: OrgNode) => boolean;
