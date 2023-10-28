@@ -623,6 +623,12 @@ org-keyword-block {
   }
 }
 
+.org-keyword-filetags-line,
+.org-keyword-description-line,
+.org-keyword-title-line {
+  padding-bottom: var(--default-block-padding) !important;
+}
+
 /* TODO: master what a hell..need to fix dual name in org parser */
 .org-embedded-listtag,
 .org-embedded-taglist,
