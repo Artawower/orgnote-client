@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="$q.platform.is.ios && !$q.platform.is.cordova"
+    v-if="$q.platform.is.mobile && !$q.platform.is.cordova"
     @touchmove="touchMove"
     @touchstart="touchStart"
     class="prevent-touch"
