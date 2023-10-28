@@ -21,14 +21,9 @@
       >
     </div>
     <div class="q-pt-md">
-      <q-btn
-        @click="removeAccount"
-        class="full-width"
-        flat
-        text-color="red"
-        :disabled="authStore.user?.isAnonymous"
-        >{{ $t('remove account') }}</q-btn
-      >
+      <q-btn @click="removeAccount" class="full-width" flat text-color="red">{{
+        $t('remove account')
+      }}</q-btn>
     </div>
   </div>
 </template>

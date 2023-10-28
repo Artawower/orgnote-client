@@ -104,7 +104,9 @@ export const useAuthStore = defineStore(
     };
 
     const removeUserAccount = async () => {
-      await sdk.auth.authAccountDelete();
+      if (user.value && !user.value.isAnonymous) {
+        await sdk.auth.authAccountDelete();
+      }
       localStorage.clear();
       router.push(RouteNames.Home);
       window.location.reload();
