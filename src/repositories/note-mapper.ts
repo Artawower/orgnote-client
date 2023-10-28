@@ -7,5 +7,6 @@ export function convertNoteToNotePreview(note: Note): NotePreview {
     filePath: note.filePath,
     isMy: note.isMy,
     createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
   };
 }

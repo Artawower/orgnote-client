@@ -19,6 +19,9 @@ export const useSettingsStore = defineStore(
       editor: {
         showSpecialSymbols: false,
       },
+      common: {
+        developerMode: false,
+      },
     });
 
     const setLocale = (lc: string) => {

@@ -118,4 +118,5 @@ export default {
   'remove account': 'remove account',
   'are you sure you want to remove your account?':
     'are you sure you want to remove your account?',
+  developerMode: 'developer mode',
 };

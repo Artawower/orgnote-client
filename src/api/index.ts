@@ -19,4 +19,7 @@ export interface OrgNoteConfig {
   editor: {
     showSpecialSymbols: boolean;
   };
+  common: {
+    developerMode: boolean;
+  };
 }

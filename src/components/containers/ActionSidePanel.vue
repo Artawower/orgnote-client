@@ -125,7 +125,7 @@
             noteEditorStore.toggleDebug();
             closeSideBarForMobile();
           "
-          v-if="isNoteEditPage"
+          v-if="isNoteEditPage && settingsStore.config.common.developerMode"
           clickable
         >
           <q-item-section avatar>
@@ -207,6 +207,7 @@ import {
   useToolbarStore,
 } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
+import { useSettingsStore } from 'src/stores/settings';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar } from 'src/tools';
 import { useRoute } from 'vue-router';
@@ -298,6 +299,7 @@ const isNoteEditPage = computed(() =>
 const { currentNote } = storeToRefs(useCurrentNoteStore());
 
 const noteEditorStore = useNoteEditorStore();
+const settingsStore = useSettingsStore();
 </script>
 
 <style lang="scss">

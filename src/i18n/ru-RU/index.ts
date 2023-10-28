@@ -115,4 +115,5 @@ export default {
   'remove account': 'удалить аккаунт',
   'are you sure you want to remove your account?':
     'вы уверены что хотите удалить свой аккаунт?',
+  developerMode: 'режим разработчика',
 };

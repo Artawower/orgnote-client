@@ -36,6 +36,12 @@
               class="q-py-xs"
             ></file-path>
             <div class="text-caption rft description">
+              <span
+                v-if="settingsStore.config.common.developerMode"
+                class="italic color-secondary"
+              >
+                [{{ new Date(notePreview.updatedAt).toLocaleString() }}]
+              </span>
               {{ notePreview.meta.description }}
             </div>
           </div>

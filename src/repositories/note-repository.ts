@@ -63,7 +63,7 @@ export class NoteRepository extends BaseRepository {
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
     const searchCollection = this.store
-      .orderBy('createdAt')
+      .orderBy('updatedAt')
       .reverse()
       .filter((n) => !n.deleted);
     const initialStore = this.applySearchInfo(
