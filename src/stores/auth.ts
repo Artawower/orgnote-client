@@ -83,7 +83,7 @@ export const useAuthStore = defineStore(
     };
 
     const syncStore = useSyncStore();
-    const authUser = (u: PersonalInfo, t: string) => {
+    const authUser = async (u: PersonalInfo, t: string) => {
       user.value = u;
       token.value = t;
       syncStore.syncNotes();

@@ -33,7 +33,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 // TODO: master move to external method.
-function handleCordovaAuth(url: string) {
+async function handleCordovaAuth(url: string) {
   const urlParams = url.split('?')?.[1];
   if (!urlParams) {
     return;
@@ -48,7 +48,7 @@ function handleCordovaAuth(url: string) {
     id: searchParams.get('id'),
   };
 
-  authStore.authUser(userInfo, searchParams.get('token'));
+  await authStore.authUser(userInfo, searchParams.get('token'));
   router.push({ name: RouteNames.Home });
 }
 (window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =

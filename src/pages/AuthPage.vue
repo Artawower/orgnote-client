@@ -1,15 +1,26 @@
 <template>
-  <h2 class="text-h2 absolute-center text-center">
-    {{ $t('Wait a second, we are trying to identify you') }}
-  </h2>
+  <div class="absolute-center">
+    <h2 class="text-h2 text-center">
+      {{ $t('Wait a second, we are trying to identify you') }}<br />
+    </h2>
+    <div
+      class="color-secondary q-pt-lg q-pl-lg"
+      v-if="config.common.developerMode"
+    >
+      <div>Route state: {{ route.query.state }}</div>
+      <div>Is native app: {{ !!$q.platform.is.cordova }}</div>
+      <div>Is mobile: {{ !!$q.platform.is.mobile }}</div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useSyncStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
+import { useSettingsStore } from 'src/stores/settings';
+import { sleep } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 
 import { onBeforeMount } from 'vue';
@@ -30,9 +41,13 @@ onBeforeMount(async () => {
 });
 
 const router = useRouter();
-const syncStore = useSyncStore();
+const { config } = useSettingsStore();
+
 const setupUser = async () => {
   const isMobile = route.query.state !== 'desktop';
+  if (config.common.developerMode) {
+    await sleep(10000);
+  }
   console.log('✎: [line 34][auth] route.query.state: ', route.query.state);
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
     // NOTE: Try to open mobile app
@@ -51,8 +66,7 @@ const setupUser = async () => {
     usedSpace: +route.query.usedSpace,
   };
 
-  authStore.authUser(userInfo, route.query.token as string);
-  await syncStore.syncNotes();
+  await authStore.authUser(userInfo, route.query.token as string);
   router.push({ name: RouteNames.Home });
 };
 </script>
