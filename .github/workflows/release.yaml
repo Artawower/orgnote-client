@@ -1,0 +1,34 @@
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add global @quasar/cli
+          npm install -g cordova
+          npm install -g @quasar/cli
+
+      - name: Build
+        run: bun run build:android
+      - name: Download bundletool
+        run: |
+          curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/download/1.15.1/bundletool-all-1.15.1.jar
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./path/file.ext
+          asset_name: AssetName
+          asset_content_type: application/octet-stream
