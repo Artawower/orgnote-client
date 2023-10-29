@@ -54,6 +54,24 @@ jobs:
       - name: Run tests
         run: bun test
 
+  release:
+    name: Create release
+    needs: [build, lint, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Release
+        uses: justincy/github-action-npm-release@2.0.2
+        id: release
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Print release output
+        if: ${{ steps.release.outputs.released == 'true' }}
+        run: echo Release ID ${{ steps.release.outputs.release_id }}
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
@@ -76,8 +94,6 @@ jobs:
             ssh-add ~/.ssh/sb-client
             cd ~/orgnote/orgnote-client
             echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
-            echo ${{ secrets.KEYPASS }} > keypass.txt
-            echo ${{ secrets.STOREPASS }} > storepass.txt
 
             cat <<EOT > .env
             DEUBG=true
