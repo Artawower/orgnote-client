@@ -55,8 +55,8 @@
             <div class="icon">
               <q-icon v-if="item.icon" :name="item.icon" size="sm"></q-icon>
             </div>
-            <div class="text-bold flex flex-start gap-8">
-              <div>[{{ item.group }}]:</div>
+            <div class="text-bold flex flex-start gap-8 line-limit-1">
+              <div v-if="config.completion.showGroup">[{{ item.group }}]:</div>
               <div class="capitalize">{{ item.command }}</div>
             </div>
             <div>
@@ -89,6 +89,7 @@ import {
   useCompletionStore,
 } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -167,6 +168,8 @@ const closeCompletionOnBlur = () => {
     completionStore.closeCompletion();
   }, 10);
 };
+
+const { config } = useSettingsStore();
 </script>
 
 <style lang="scss" setup>

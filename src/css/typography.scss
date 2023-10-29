@@ -69,6 +69,10 @@ h12 {
   line-height: 1.5rem;
 }
 
+.line-limit-1 {
+  @include line-limit(1);
+}
+
 .line-limit-2 {
   @include line-limit(2);
 }

@@ -162,12 +162,15 @@ function getSettingsCommands(): Command[] {
   return settingsCommands;
 }
 
-function getNestedConfigCommands(config: Record<string, unknown>): Command[] {
+function getNestedConfigCommands(
+  config: Record<string, unknown>,
+  path = ''
+): Command[] {
   return Object.keys(config).reduce<Command[]>((acc, key) => {
     const value = config[key];
     if (typeof value === 'boolean') {
       acc.push({
-        command: camelCaseToWords(key),
+        command: `${path}: ${camelCaseToWords(key)}`,
         description: `Toggle ${key}`,
         group: 'settings',
         icon: 'settings',
@@ -176,7 +179,9 @@ function getNestedConfigCommands(config: Record<string, unknown>): Command[] {
         },
       });
     } else if (typeof value === 'object') {
-      acc.push(...getNestedConfigCommands(value as Record<string, unknown>));
+      acc.push(
+        ...getNestedConfigCommands(value as Record<string, unknown>, key)
+      );
     }
     return acc;
   }, []);

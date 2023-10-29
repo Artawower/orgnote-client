@@ -22,6 +22,9 @@ export const useSettingsStore = defineStore(
       common: {
         developerMode: false,
       },
+      completion: {
+        showGroup: false,
+      },
     });
 
     const setLocale = (lc: string) => {

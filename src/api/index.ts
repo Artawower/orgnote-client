@@ -22,4 +22,7 @@ export interface OrgNoteConfig {
   common: {
     developerMode: boolean;
   };
+  completion: {
+    showGroup: boolean;
+  };
 }
