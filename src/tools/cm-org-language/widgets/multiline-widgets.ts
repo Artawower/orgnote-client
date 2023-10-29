@@ -6,8 +6,17 @@ import {
 import { MultilineEmbeddedWidgets } from './widget.model';
 import { StateEffect } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
+import { ChangedRange } from '@lezer/common';
 import { EditorView } from 'codemirror';
 import { OrgNode, walkTree } from 'org-mode-ast';
+import { hasIntersection } from 'src/tools/has-intersection';
+
+interface ChangeRange {
+  fromA: number;
+  toA: number;
+  fromB: number;
+  toB: number;
+}
 
 export const orgMultilineWidgets = (
   getOrgNode: () => OrgNode,
@@ -30,11 +39,17 @@ export const orgMultilineWidgets = (
       if (!widgets[n.type]) {
         return false;
       }
-      if (
-        !readonly &&
-        currentCaretPosition >= n.start &&
-        currentCaretPosition <= n.end + 1
-      ) {
+
+      const widgetRemoved = (
+        v as unknown as { changedRanges: ChangedRange[] }
+      ).changedRanges.find((r) =>
+        hasIntersection(r.fromA, r.toA, n.start, n.end + 1)
+      );
+
+      const caretIntoWidget =
+        currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
+
+      if (!readonly && (widgetRemoved || caretIntoWidget)) {
         effects.push(removeMultilineWidgetEffect.of(n));
         return;
       }

@@ -28,3 +28,4 @@ export * from './file-upload';
 export * from './file-name-from-text';
 export * from './truncate';
 export * from './hex-to-rgba';
+export * from './has-intersection';
