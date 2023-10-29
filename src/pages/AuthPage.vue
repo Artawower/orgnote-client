@@ -71,6 +71,7 @@ const setupUser = async () => {
     id: route.query.id as string,
     spaceLimit: +route.query.spaceLimit,
     usedSpace: +route.query.usedSpace,
+    active: !!route.query.active,
   };
 
   await authStore.authUser(userInfo, route.query.token as string);

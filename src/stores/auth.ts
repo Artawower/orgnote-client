@@ -85,7 +85,7 @@ export const useAuthStore = defineStore(
     const authUser = async (u: PersonalInfo, t: string) => {
       user.value = u;
       token.value = t;
-      syncStore.syncNotes();
+      await syncStore.syncNotes();
     };
 
     const subscribe = async (token: string) => {
