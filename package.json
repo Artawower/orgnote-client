@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.11.11",
+  "version": "0.11.12",
   "description": "Org Note client for eponymous service",
   "productName": "Org Note",
   "author": "artawower <artawower@protonmail.com>",
@@ -18,7 +18,7 @@
     "build": "quasar build",
     "build:ssr": "bun run build -m ssr",
     "build:electron": "bun run build -m electron",
-    "build:all": "bun run build:pwa && bun run build:ssr && bun run build:android",
+    "build:all": "bun run build:pwa && bun run build:android",
     "build:pwa": "quasar build -m pwa",
     "build:android": "quasar build -m android",
     "build:ios": "quasar build -m ios",
