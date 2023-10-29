@@ -77,7 +77,7 @@ export function useMainCommands() {
       handler: () => {
         completionStore.closeCompletion();
       },
-      command: 'exitCommandExecutor',
+      command: 'exit command executor',
       keySequence: 'Escape',
       description: 'Exit command executor',
       group: 'completion',
@@ -87,7 +87,8 @@ export function useMainCommands() {
       handler: () => {
         completionStore.nextCandidate();
       },
-      command: 'nextCandidate',
+      command: 'next candidate',
+      ignorePrompt: true,
       keySequence: 'Control+KeyJ',
       description: 'Next candidate',
       group: 'completion',
@@ -97,14 +98,15 @@ export function useMainCommands() {
       handler: () => {
         completionStore.previousCandidate();
       },
-      command: 'previousCandidate',
+      command: 'previous candidate',
+      ignorePrompt: true,
       keySequence: 'Control+KeyK',
       description: 'Previous candidate',
       group: 'completion',
       allowOnInput: true,
     },
     {
-      command: 'executeCandidate',
+      command: 'execute candidate',
       keySequence: 'Enter',
       description: 'Execute candidate',
       group: 'completion',
