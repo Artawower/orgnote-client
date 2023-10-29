@@ -41,14 +41,16 @@ export const useEmbeddedWidgets = () => {
       onUpdateFn,
       orgNode,
       editorView,
+      readonly,
     }: WidgetBuilderParams): EmbeddedOrgWidget => {
       const normalizedOrgNodeType = textToKebab(orgNode.type.toLowerCase());
       wrap.classList.add(`org-embedded-${normalizedOrgNodeType}`);
       return dynamicComponent.mount(cmp, wrap, {
+        ...props,
         node: orgNode,
         editorView,
         rootNodeSrc,
-        ...props,
+        readonly,
         onUpdate: (newVal: string) => {
           onUpdateFn?.(newVal);
         },

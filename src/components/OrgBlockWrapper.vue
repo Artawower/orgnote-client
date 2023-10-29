@@ -29,7 +29,7 @@ import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useNotifications } from 'src/hooks';
 import { useOrgBabelStore } from 'src/stores';
-import { findOrgNode } from 'src/tools';
+import { findActualOrgNode } from 'src/tools';
 
 import { computed } from 'vue';
 
@@ -69,13 +69,7 @@ const notifications = useNotifications();
 const orgBabelStore = useOrgBabelStore();
 
 const executeCode = async () => {
-  const actualNode = findOrgNode(
-    props.rootNodeSrc(),
-    (n) =>
-      n.start === props.node.start &&
-      n.end === props.node.end &&
-      n.is(props.node.type)
-  );
+  const actualNode = findActualOrgNode(props.node, props.rootNodeSrc());
   try {
     const res = await orgBabelStore.execute(
       language.value,

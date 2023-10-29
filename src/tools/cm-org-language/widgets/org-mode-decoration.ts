@@ -13,13 +13,15 @@ import { OrgNode, walkTree } from 'org-mode-ast';
 class OrgModeDecorationPlugin {
   static init(
     inlineWidgets: InlineEmbeddedWidgets,
+    readonly: boolean,
     getOrgNodeTree?: () => OrgNode
   ): OrgModeDecorationPlugin {
-    return new OrgModeDecorationPlugin(inlineWidgets, getOrgNodeTree);
+    return new OrgModeDecorationPlugin(inlineWidgets, readonly, getOrgNodeTree);
   }
 
   constructor(
     private readonly inlineWidgets: InlineEmbeddedWidgets,
+    private readonly readonly: boolean,
     private readonly getRootNode?: () => OrgNode
   ) {}
 
@@ -59,7 +61,8 @@ class OrgModeDecorationPlugin {
           view,
           n,
           inlineWidget,
-          this.getRootNode
+          this.getRootNode,
+          this.readonly
         );
         if (decoration) {
           atomicDecorations.push(decoration);
@@ -76,7 +79,8 @@ class OrgModeDecorationPlugin {
 
 export const orgInlineWidgets = (
   getOrgNodeTree: () => OrgNode,
-  inlineWidgets: InlineEmbeddedWidgets
+  inlineWidgets: InlineEmbeddedWidgets,
+  readonly: boolean
 ) =>
   ViewPlugin.fromClass(
     class {
@@ -88,6 +92,7 @@ export const orgInlineWidgets = (
       constructor(view: EditorView) {
         this.decorationPlugin = OrgModeDecorationPlugin.init(
           inlineWidgets,
+          readonly,
           getOrgNodeTree
         );
         this.initDecorations(view);

@@ -9,7 +9,8 @@ export class OrgInlineWidget extends WidgetType {
     private readonly view: EditorView,
     private readonly orgNode: OrgNode,
     private readonly inlineWidget: InlineEmbeddedWidget,
-    private readonly rootNodeSrc: () => OrgNode
+    private readonly rootNodeSrc: () => OrgNode,
+    private readonly readonly: boolean
   ) {
     super();
   }
@@ -18,7 +19,8 @@ export class OrgInlineWidget extends WidgetType {
     view: EditorView,
     orgNode: OrgNode,
     inlineWidget: InlineEmbeddedWidget,
-    rootNodeSrc: () => OrgNode
+    rootNodeSrc: () => OrgNode,
+    redaonly: boolean
   ): Range<Decoration> {
     // TODO: master TMP hack.
     const realText = view.state.doc
@@ -33,7 +35,13 @@ export class OrgInlineWidget extends WidgetType {
     }
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
     return Decoration[inlineWidget.decorationType]({
-      widget: new OrgInlineWidget(view, orgNode, inlineWidget, rootNodeSrc),
+      widget: new OrgInlineWidget(
+        view,
+        orgNode,
+        inlineWidget,
+        rootNodeSrc,
+        redaonly
+      ),
       side: inlineWidget.side,
       class: inlineWidget.classBuilder?.(orgNode),
       inclusive: inlineWidget.inclusive,
@@ -60,6 +68,7 @@ export class OrgInlineWidget extends WidgetType {
       rootNodeSrc: this.rootNodeSrc,
       onUpdateFn: this.updateValue.bind(this),
       editorView: this.view,
+      readonly: this.readonly,
     });
     return wrap;
   }

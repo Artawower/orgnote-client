@@ -84,7 +84,11 @@ export function initEditorExtensions(params: {
 
   const specialSymbolsExtensions = !params.showSpecialSymbols
     ? [
-        orgInlineWidgets(params.orgNodeGetter, params.inlineEmbeddedWidgets),
+        orgInlineWidgets(
+          params.orgNodeGetter,
+          params.inlineEmbeddedWidgets,
+          params.readonly
+        ),
         orgMultilineWidgets(
           params.orgNodeGetter,
           params.multilineEmbeddedWidgets,

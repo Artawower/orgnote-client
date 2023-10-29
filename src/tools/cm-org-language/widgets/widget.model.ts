@@ -12,6 +12,7 @@ export interface WidgetBuilderParams {
   rootNodeSrc?: () => OrgNode;
   onUpdateFn?: (newVal: string) => void;
   editorView: EditorView;
+  readonly?: boolean;
 }
 
 export type WidgetBuilder = (params: WidgetBuilderParams) => EmbeddedOrgWidget;
