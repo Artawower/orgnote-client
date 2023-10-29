@@ -1,17 +1,19 @@
 #!/bin/bash
 
-bun run build:all
-mkdir -p ./dist/build
+bun run build:pwa
 
-version=$(awk -F '"' '/"version": ".+"/{ print $4; exit; }' ./package.json)
+# This build are unused cause releases are done by github actions
+# mkdir -p ./dist/build
 
-java -jar bundletool.jar build-apks \
-     --mode=universal \
-     --bundle=./dist/cordova/android/bundle/release/app-release.aab \
-     --output=./dist/pwa/builds/orgnote.apks \
-     --ks=./org-note-release.keystore \
-     --ks-pass=pass:$STOREPASS \
-     --ks-key-alias=sb
+# version=$(awk -F '"' '/"version": ".+"/{ print $4; exit; }' ./package.json)
 
-unzip -p ./dist/pwa/builds/orgnote.apks universal.apk > ./dist/pwa/builds/orgnote-$version.apk
-echo "OrgNote APK built at ./dist/pwa/builds/orgnote-$version.apk"
+# java -jar bundletool.jar build-apks \
+#      --mode=universal \
+#      --bundle=./dist/cordova/android/bundle/release/app-release.aab \
+#      --output=./dist/pwa/builds/orgnote.apks \
+#      --ks=./org-note-release.keystore \
+#      --ks-pass=pass:$STOREPASS \
+#      --ks-key-alias=sb
+
+# unzip -p ./dist/pwa/builds/orgnote.apks universal.apk > ./dist/pwa/builds/orgnote-$version.apk
+# echo "OrgNote APK built at ./dist/pwa/builds/orgnote-$version.apk"

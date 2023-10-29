@@ -13,7 +13,7 @@
 <script lang="ts" setup>
 import { version } from '../../package.json';
 
-const apkUrl = `/builds/orgnote-${version}.apk`;
+const apkUrl = `https://github.com/Artawower/orgnote-client/releases/download/${version}/orgnote-${version}.apk`;
 </script>
 
 <style lang="scss">
