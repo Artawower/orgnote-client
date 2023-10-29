@@ -55,7 +55,11 @@ export class OrgMultilineWidget extends WidgetType {
     const wrap = document.createElement('div');
     wrap.style.position = 'relative';
     wrap.classList.add('org-multiline-widget');
-    this.widget = this.widgetBuilder(wrap, this.orgNode);
+    this.widget = this.widgetBuilder({
+      wrap,
+      orgNode: this.orgNode,
+      editorView: this.editorView,
+    });
     this.initEditorBadge();
     wrap.appendChild(this.editorBadge);
     return wrap;
