@@ -11,6 +11,9 @@
       <div>Is native app: {{ !!$q.platform.is.cordova }}</div>
       <div>Is mobile: {{ !!$q.platform.is.mobile }}</div>
     </div>
+    <h3>
+      <a v-if="mobileUrl" :href="mobileUrl">{{ $t('return to mobile app') }}</a>
+    </h3>
   </div>
 </template>
 
@@ -23,7 +26,7 @@ import { useSettingsStore } from 'src/stores/settings';
 import { sleep } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 
-import { onBeforeMount } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 
 const route = useRoute();
 
@@ -31,10 +34,12 @@ const authStore = useAuthStore();
 
 const $q = useQuasar();
 
+const state = computed(() => route.query.state as string);
+
 onBeforeMount(async () => {
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
-    authStore.auth(initialProvider);
+    authStore.auth(initialProvider, state.value);
     return;
   }
   await setupUser();
@@ -43,12 +48,14 @@ onBeforeMount(async () => {
 const router = useRouter();
 const { config } = useSettingsStore();
 
+const mobileUrl = ref<string>();
+
 const setupUser = async () => {
   const isMobile = route.query.state !== 'desktop';
   if (config.common.developerMode) {
     await sleep(10000);
   }
-  console.log('✎: [line 34][auth] route.query.state: ', route.query.state);
+  console.log('✎: [line 34][auth] route.query.state: ', state.value);
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
     // NOTE: Try to open mobile app
     const mobileAppUrl = `orgnote://auth/login${window.location.search}`;

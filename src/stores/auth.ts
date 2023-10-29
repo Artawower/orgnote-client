@@ -37,7 +37,7 @@ export const useAuthStore = defineStore(
       }
     };
 
-    const auth = async (provider: string) => {
+    const auth = async (provider: string, state = 'desktop') => {
       if ($q.platform.is.cordova) {
         // TODO: master quick tmp solution.
         // common OAuth for mobile and web
@@ -46,8 +46,7 @@ export const useAuthStore = defineStore(
         window.open(authUrl, '_system');
         return;
       }
-      const rspns = (await sdk.auth.authProviderLoginGet(provider, 'desktop'))
-        .data;
+      const rspns = (await sdk.auth.authProviderLoginGet(provider, state)).data;
 
       window.location.replace(rspns.data.redirectUrl);
 
