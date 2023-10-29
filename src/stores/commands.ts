@@ -20,6 +20,7 @@ export const useCommandsStore = defineStore('commands', () => {
     'completion',
     'search',
     'navigation',
+    'debug',
   ]);
   const allCommands = ref<Command[]>([]);
 

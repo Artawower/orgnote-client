@@ -119,4 +119,7 @@ export default {
   'are you sure you want to remove your account?':
     'are you sure you want to remove your account?',
   developerMode: 'developer mode',
+  'system info': 'system info',
+  'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.':
+    'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.',
 };

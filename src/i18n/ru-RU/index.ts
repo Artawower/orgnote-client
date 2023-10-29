@@ -116,4 +116,7 @@ export default {
   'are you sure you want to remove your account?':
     'вы уверены что хотите удалить свой аккаунт?',
   developerMode: 'режим разработчика',
+  'system info': 'информация о системе',
+  'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.':
+    'эта информация доступна только на вашем устройстве. Она не будет отправлена на сервер. Вы можете использовать ее для создания GitHub issue.',
 };

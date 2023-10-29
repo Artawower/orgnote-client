@@ -11,13 +11,6 @@ import { EditorView } from 'codemirror';
 import { OrgNode, walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/tools/has-intersection';
 
-interface ChangeRange {
-  fromA: number;
-  toA: number;
-  fromB: number;
-  toB: number;
-}
-
 export const orgMultilineWidgets = (
   getOrgNode: () => OrgNode,
   widgets: MultilineEmbeddedWidgets,

@@ -55,9 +55,9 @@
             <div class="icon">
               <q-icon v-if="item.icon" :name="item.icon" size="sm"></q-icon>
             </div>
-            <div class="text-bold text-capitalize">
-              <span>[{{ item.group }}]: </span>
-              <span>{{ item.command }}</span>
+            <div class="text-bold flex flex-start gap-8">
+              <div>[{{ item.group }}]:</div>
+              <div class="capitalize">{{ item.command }}</div>
             </div>
             <div>
               <span class="text-italic color-secondary line-limit-2">{{

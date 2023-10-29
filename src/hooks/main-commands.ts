@@ -2,6 +2,7 @@ import { Command, CommandHandlerParams } from 'src/models';
 import {
   useCommandsStore,
   useCompletionStore,
+  useModalStore,
   useSearchStore,
 } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
@@ -9,10 +10,13 @@ import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords } from 'src/tools';
 import { useRouter } from 'vue-router';
 
+import DebugPage from 'src/pages/DebugPage.vue';
+
 export enum COMMAND {
-  openSearch = 'openSearch',
-  restoreLastCompletionSession = 'restoreLastCompletionSession',
-  toggleExecuteCommand = 'toggleExecuteCommand',
+  openSearch = 'search',
+  restoreLastCompletionSession = 'restore last completion',
+  toggleExecuteCommand = 'toggle commands',
+  openDebugInfo = 'open debug info',
 }
 export function useMainCommands() {
   const { executeCommand } = useKeybindingStore();
@@ -23,6 +27,7 @@ export function useMainCommands() {
 
   const routesCommands = getRoutesCommands();
   const settingsCommands = getSettingsCommands();
+  const modalStore = useModalStore();
 
   const keybindingCommands: Command[] = [
     {
@@ -50,10 +55,19 @@ export function useMainCommands() {
     {
       command: COMMAND.restoreLastCompletionSession,
       keySequence: "'",
-      description: ' Restore last completion session',
+      description: 'Restore last completion session',
       group: 'search',
       handler: () => {
         completionStore.restoreLastCompletionSession();
+      },
+    },
+    {
+      command: COMMAND.openDebugInfo,
+      keySequence: 'Ctrl+KeyD',
+      description: 'Open debug info',
+      group: 'debug',
+      handler: () => {
+        modalStore.open(DebugPage, { title: 'system info' });
       },
     },
   ];
