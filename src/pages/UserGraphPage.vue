@@ -1,11 +1,11 @@
 <template>
-  <div class="chart-wrapper" ref="chartWrapper"></div>
-  <span>
-    <mobile-note-preview
-      :note-id="selectedNoteId"
-      @closed="resetSelectedNote"
-    />
-  </span>
+	<div class="chart-wrapper" ref="chartWrapper"></div>
+	<span>
+		<mobile-note-preview
+			:note-id="selectedNoteId"
+			@closed="resetSelectedNote"
+		/>
+	</span>
 </template>
 
 <script lang="ts" setup>
@@ -31,32 +31,32 @@ const { graph } = storeToRefs(graphStore);
 
 const router = useRouter();
 const goToRowDetail = (id: string) => {
-  router.push({ name: RouteNames.NoteDetail, params: { id } });
+	router.push({ name: RouteNames.NoteDetail, params: { id } });
 };
 
 const getGrpahHeight = () =>
-  window.innerHeight -
-  parseInt(
-    getComputedStyle(document.body).getPropertyValue('--top-bar-height')
-  );
+	window.innerHeight -
+	parseInt(
+		getComputedStyle(document.body).getPropertyValue('--top-bar-height')
+	);
 
 const findConnectedLinks = (
-  nodeId: string,
-  foundedNodeIds: string[] = []
+	nodeId: string,
+	foundedNodeIds: string[] = []
 ): string[] => {
-  if (foundedNodeIds.includes(nodeId)) {
-    return foundedNodeIds;
-  }
+	if (foundedNodeIds.includes(nodeId)) {
+		return foundedNodeIds;
+	}
 
-  let unvisitedNode = graphStore.graphLinks[nodeId];
-  foundedNodeIds.push(nodeId);
-  if (unvisitedNode) {
-    unvisitedNode.forEach((nodeId) => {
-      findConnectedLinks(nodeId, foundedNodeIds);
-    });
-  }
+	let unvisitedNode = graphStore.graphLinks[nodeId];
+	foundedNodeIds.push(nodeId);
+	if (unvisitedNode) {
+		unvisitedNode.forEach((nodeId) => {
+			findConnectedLinks(nodeId, foundedNodeIds);
+		});
+	}
 
-  return foundedNodeIds;
+	return foundedNodeIds;
 };
 
 const getGraphWidth = () => window.innerWidth;
@@ -64,12 +64,12 @@ let activeNodeIds: string[] = [];
 let activeNodeId: string;
 
 const recalculateHighlightedNodes = (currentNodeId: string) => {
-  activeNodeId = currentNodeId;
-  if (!currentNodeId) {
-    activeNodeIds = [];
-    return;
-  }
-  activeNodeIds = findConnectedLinks(currentNodeId);
+	activeNodeId = currentNodeId;
+	if (!currentNodeId) {
+		activeNodeIds = [];
+		return;
+	}
+	activeNodeIds = findConnectedLinks(currentNodeId);
 };
 
 const minCircleSize = 16;
@@ -78,27 +78,27 @@ const edgeColor = () => getCssVar('graph-edge-color');
 const activeColor = () => getCssVar('graph-active-color');
 
 const getNodeColor = (node: NodeObject) => {
-  if (activeNodeIds.includes(node.id as string)) {
-    return activeColor();
-  }
-  if (activeNodeId) {
-    return hexToRgba(mainColor(), 0.6);
-  }
-  return mainColor();
+	if (activeNodeIds.includes(node.id as string)) {
+		return activeColor();
+	}
+	if (activeNodeId) {
+		return hexToRgba(mainColor(), 0.6);
+	}
+	return mainColor();
 };
 
 const getEdgeColor = (link: LinkObject) => {
-  const l = link as { source: { id: string }; target: { id: string } };
-  if (
-    activeNodeIds.includes(l.source.id as string) ||
-    activeNodeIds.includes(l.target.id as string)
-  ) {
-    return activeColor();
-  }
-  if (activeNodeId) {
-    return hexToRgba(mainColor(), 0.6);
-  }
-  return edgeColor();
+	const l = link as { source: { id: string }; target: { id: string } };
+	if (
+		activeNodeIds.includes(l.source.id as string) ||
+		activeNodeIds.includes(l.target.id as string)
+	) {
+		return activeColor();
+	}
+	if (activeNodeId) {
+		return hexToRgba(mainColor(), 0.6);
+	}
+	return edgeColor();
 };
 
 const $q = useQuasar();
@@ -108,80 +108,81 @@ const selectedNoteId = ref<string | null>(null);
 const resetSelectedNote = (): void => (selectedNoteId.value = null);
 
 const nodeClick = (node: NodeObject) => {
-  const id = (node as GraphNoteNode).id;
-  if ($q.platform.is.mobile) {
-    selectedNoteId.value = id;
-    return;
-  }
-  goToRowDetail(id);
+	const id = (node as GraphNoteNode).id;
+	if ($q.platform.is.mobile) {
+		selectedNoteId.value = id;
+		return;
+	}
+	goToRowDetail(id);
 };
 
 const buildGraph = () => {
-  if (!graph.value || !graph.value.nodes) {
-    return;
-  }
+	if (!graph.value || !graph.value.nodes) {
+		return;
+	}
 
-  ForceGraph()(chartWrapper.value)
-    .nodeRelSize(minCircleSize)
-    .nodeVal((node) => (node as GraphNoteNode).weight)
-    .zoom(0.35)
-    .nodeLabel((node) => `${(node as GraphNoteNode).title}`)
-    .linkVisibility(() => true)
-    .linkColor(getEdgeColor)
-    .nodeId('id')
-    .onNodeClick(nodeClick)
-    .height(getGrpahHeight())
-    .width(getGraphWidth())
-    .onNodeHover((node) => {
-      recalculateHighlightedNodes(node?.id as string);
-    })
-    .nodeCanvasObjectMode(() => 'before')
-    .linkDirectionalParticleWidth(1.4)
-    .nodeColor(getNodeColor)
-    .autoPauseRedraw(false)
-    .nodeCanvasObject((node, ctx, globalScale) => {
-      const n = node as GraphNoteNode;
-      const scaleFactor = n.weight * globalScale;
-      const nodeInFocus = n.id === activeNodeId;
+	ForceGraph()(chartWrapper.value)
+		.nodeRelSize(minCircleSize)
+		.nodeVal((node) => (node as GraphNoteNode).weight)
+		.zoom(0.35)
+		.nodeLabel((node) => `${(node as GraphNoteNode).title}`)
+		.linkVisibility(() => true)
+		.linkColor(getEdgeColor)
+		.nodeId('id')
+		.onNodeClick(nodeClick)
+		.height(getGrpahHeight())
+		.width(getGraphWidth())
+		.onNodeHover((node) => {
+			recalculateHighlightedNodes(node?.id as string);
+		})
+		.nodeCanvasObjectMode(() => 'before')
+		.linkDirectionalParticleWidth(1.4)
+		.nodeColor(getNodeColor)
+		.autoPauseRedraw(false)
+		.nodeCanvasObject((node, ctx, globalScale) => {
+			const n = node as GraphNoteNode;
+			const minFontSize = 7;
+			const nodeInFocus = n.id === activeNodeId;
 
-      if (scaleFactor < scaleFactorLimit || nodeInFocus) {
-        return;
-      }
+			const fontSize = 16 * globalScale * n.weight * 0.8;
+			if (fontSize < minFontSize || nodeInFocus) {
+				return;
+			}
 
-      const label = truncate(n.title, 20);
-      const fontSize = 16 / globalScale;
-      ctx.font = `${fontSize}px Sans-Serif`;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = mainColor();
-      ctx.fillText(label, node.x, node.y + minCircleSize * n.weight + 20);
-      ctx.fillStyle = 'opacity: 0.1';
-    })
-    .graphData(graph.value)
-    .d3VelocityDecay(0.3)
-    .d3Force('link')
-    .distance(
-      (l: { target: { weight: number }; source: { weight: number } }) => {
-        return 20 * (l.target.weight + l.source.weight);
-      }
-    );
+			const realFontSize = fontSize > 16 ? 16 : fontSize;
+
+			const label = truncate(n.title, 20);
+			ctx.font = `${realFontSize}px Sans-Serif`;
+			ctx.textAlign = 'center';
+			ctx.fillStyle = mainColor();
+			ctx.fillText(label, node.x, node.y + minCircleSize * n.weight + 20);
+		})
+		.graphData(graph.value)
+		.d3VelocityDecay(0.3)
+		.d3Force('link')
+		.distance(
+			(l: { target: { weight: number }; source: { weight: number } }) => {
+				return 20 * (l.target.weight + l.source.weight);
+			}
+		);
 };
 
 watch(
-  () => graph.value,
-  () => {
-    buildGraph();
-  }
+	() => graph.value,
+	() => {
+		buildGraph();
+	}
 );
 </script>
 
 <style lang="scss">
 .chart-wrapper {
-  width: 100%;
+	width: 100%;
 
-  svg,
-  canvas {
-    width: 100%;
-    height: calc(100svh - var(--top-bar-height)) !important;
-  }
+	svg,
+	canvas {
+		width: 100%;
+		height: calc(100svh - var(--top-bar-height)) !important;
+	}
 }
 </style>
