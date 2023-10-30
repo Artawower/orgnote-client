@@ -11,6 +11,7 @@ import {
   MultilineEmbeddedWidgets,
   editorMenuExtension,
   orgAutoInsertCommand,
+  orgInitialFoldingExtension,
   orgInlineWidgets,
   orgLineDecoration,
   orgMultilineWidgetField,
@@ -39,7 +40,7 @@ export function initEditorExtensions(params: {
     bracketMatching(),
     closeBrackets(),
     codeFolding({
-      placeholderText: '[…]',
+      placeholderText: '…',
     }),
     highlightActiveLine(),
     readOnlyTransactionFilter(params.orgNodeGetter),
@@ -63,6 +64,7 @@ export function initEditorExtensions(params: {
         return gutterMarker;
       },
     }),
+    orgInitialFoldingExtension(params.editorViewGetter, params.orgNodeGetter),
     Prec.highest(
       keymap.of([
         {
