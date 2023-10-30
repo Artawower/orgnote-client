@@ -1,5 +1,9 @@
 <template>
-  <tag-list :tags="tags" :with-hash="props.withHash"></tag-list>
+  <tag-list
+    class="org-tag-list"
+    :tags="tags"
+    :with-hash="props.withHash"
+  ></tag-list>
 </template>
 
 <script lang="ts" setup>
@@ -16,3 +20,9 @@ const props = defineProps<{
 
 const tags = computed<string[]>(() => [props.node.value]);
 </script>
+
+<style lang="scss" scoped>
+.org-tag-list {
+  margin-left: 4px;
+}
+</style>
