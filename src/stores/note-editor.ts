@@ -22,7 +22,13 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
 
   const fileManagerStore = useFileManagerStore();
   // TODO: master persistent value should be done via indexed db.
-  const setNoteData = (text: string, orgNode: OrgNode) => {
+  const saveNoteData = (text: string, orgNode: OrgNode) => {
+    if (setNoteContent(text, orgNode)) {
+      save();
+    }
+  };
+
+  const setNoteContent = (text: string, orgNode: OrgNode): boolean => {
     if (!filePath.value?.length) {
       return;
     }
@@ -38,11 +44,11 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     }
     noteText.value = text;
     noteOrgData.value = orgNode;
-    save();
+    return true;
   };
 
-  const setNoteContent = (orgNode: OrgNode) => {
-    setNoteData(orgNode.rawValue, orgNode);
+  const setNoteTree = (orgNode: OrgNode) => {
+    setNoteContent(orgNode.rawValue, orgNode);
   };
 
   const setFilePath = (path: string[]) => {
@@ -121,9 +127,9 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     note,
     orgTree,
 
-    setNoteData,
+    saveNoteData,
     saved,
-    setNoteContent,
+    setNoteTree,
     setNoteText,
     setFilePath,
     setCreatedTime,

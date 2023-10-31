@@ -73,7 +73,7 @@ const setupEditorStore = () => {
     return;
   }
   noteEditorStore.setFilePath(currentNote.value.filePath);
-  noteEditorStore.setNoteContent(currentOrgTree.value as OrgNode);
+  noteEditorStore.setNoteTree(currentOrgTree.value as OrgNode);
   noteEditorStore.setCreatedTime(currentNote.value.createdAt);
 };
 
