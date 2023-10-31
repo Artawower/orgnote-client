@@ -2,6 +2,18 @@
   <EasyDataTable class="raw-table" :headers="headers" :items="items">
     <template
       v-for="h of headers"
+      #[`header-${h.value}`]="slotProps"
+      :key="h.value"
+    >
+      <span class="header-text">
+        {{ slotProps.value }}
+        <q-tooltip :delay="200">
+          <span class="color-reverse">{{ slotProps.value }}</span>
+        </q-tooltip>
+      </span>
+    </template>
+    <template
+      v-for="h of headers"
       #[`item-${h.value}`]="slotProps"
       :key="h.value"
     >
@@ -56,8 +68,8 @@ const items: Item[] = props.node.children
 
 <style lang="scss">
 .raw-table {
-  width: 100%;
-
+  /* width: 100%;
+ */
   --easy-table-header-background-color: var(--bg);
   --easy-table-header-font-color: var(--fg);
   --easy-table-body-row-background-color: var(--bg);
@@ -69,5 +81,14 @@ const items: Item[] = props.node.children
   --easy-table-row-border: 1px solid var(--base7);
   --easy-table-border: 1px solid var(--base7);
   --easy-table-message-font-color: var(--fg-alt);
+
+  td {
+    min-width: 140px;
+  }
+
+  .header-text {
+    @include line-limit(1);
+    text-align: left;
+  }
 }
 </style>
