@@ -50,6 +50,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
     myNote.author = authStore.user;
     myNote.isMy = true;
+    await repositories.notes.touchNote(myNote.id);
     return myNote;
   };
 
