@@ -60,9 +60,12 @@
               <div class="capitalize">{{ item.command }}</div>
             </div>
             <div>
-              <span class="text-italic color-secondary line-limit-2">{{
-                item.description
-              }}</span>
+              <span
+                class="text-italic color-secondary"
+                :class="$q.platform.is.mobile ? 'line-limit-2' : 'line-limit-1'"
+              >
+                {{ item.description }}
+              </span>
             </div>
           </q-item>
         </template>
@@ -183,6 +186,7 @@ const { config } = useSettingsStore();
 
   display: grid;
   grid-template-columns: var(--search-icn-size) auto;
+  grid-auto-rows: 1fr;
   cursor: pointer;
   align-items: center;
   padding: 8px;
