@@ -1,4 +1,5 @@
 import { BaseRepository } from './repository';
+import { migrator } from './migrator';
 import Dexie from 'dexie';
 
 // NOTE: dirty hack for safari. Without it safari doesn't create name key
@@ -10,7 +11,10 @@ interface MediaFile {
 export class FileRepository extends BaseRepository {
   public static storeName = 'files';
 
-  public static readonly indexes = '++id,name';
+  public static readonly migrations = migrator()
+    .v(1)
+    .indexes('++id,name')
+    .build();
 
   get store(): Dexie.Table<MediaFile, string> {
     return this.db.table(FileRepository.storeName);

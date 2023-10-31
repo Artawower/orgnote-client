@@ -1,7 +1,8 @@
 import Dexie from 'dexie';
+import { DbMigrations } from './migrator';
 
 export class BaseRepository {
-  public static readonly indexes: string;
+  public static readonly migrations: DbMigrations;
   public static readonly storeName: string;
 
   protected readonly dbName = 'orgnote';

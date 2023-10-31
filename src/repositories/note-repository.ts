@@ -1,3 +1,4 @@
+import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
@@ -11,8 +12,17 @@ export interface FilePathInfo {
 export class NoteRepository extends BaseRepository {
   public static storeName = 'notes';
 
-  public static readonly indexes =
-    '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags';
+  public static readonly migrations = migrator<Note>()
+    .v(1)
+    .indexes(
+      '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags'
+    )
+    .v(2)
+    .indexes(
+      '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt'
+    )
+    .upgrade((n) => (n.touchedAt = new Date().toISOString()))
+    .build();
 
   get store(): Dexie.Table<Note, string> {
     return this.db.table(NoteRepository.storeName);
@@ -63,7 +73,7 @@ export class NoteRepository extends BaseRepository {
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
     const searchCollection = this.store
-      .orderBy('updatedAt')
+      .orderBy('touchedAt')
       .reverse()
       .filter((n) => !n.deleted);
     const initialStore = this.applySearchInfo(
@@ -164,5 +174,9 @@ export class NoteRepository extends BaseRepository {
         pathInfo.push({ id: n.id, filePath: n.filePath });
       })
       .then(() => pathInfo);
+  }
+
+  async touchNote(noteId: string): Promise<void> {
+    await this.store.update(noteId, { touchedAt: new Date().toISOString() });
   }
 }

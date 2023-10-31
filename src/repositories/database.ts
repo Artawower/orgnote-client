@@ -1,6 +1,13 @@
 import { BaseRepository } from './repository';
 import Dexie from 'dexie';
 
+interface CombinedMigrations {
+  [version: string]: {
+    schema: { [key: string]: string };
+    migrate?: { [key: string]: (v: unknown) => void };
+  };
+}
+
 export class Database<T extends typeof BaseRepository[]> extends Dexie {
   private readonly currentVersion = 13;
   constructor(...repositories: T) {
@@ -11,23 +18,44 @@ export class Database<T extends typeof BaseRepository[]> extends Dexie {
   }
 
   private initSchema(repositories: T): void {
-    const storesSchema = this.getCombinedStoresSchema(repositories);
-    this.version(this.currentVersion).stores(storesSchema);
+    const migrations = this.getCombinedStoresSchema(repositories);
+    Object.keys(migrations).forEach((v) => {
+      const m = migrations[v];
+
+      this.version(+v)
+        .stores(m.schema)
+        .upgrade((tx) => {
+          const tableUpdateTasks = Object.keys(m.migrate ?? {}).map(
+            async (storeName) => {
+              const updateFn = m.migrate?.[storeName];
+              if (!updateFn) return;
+              return tx.table(storeName).toCollection().modify(updateFn);
+            }
+          );
+          return Promise.all(tableUpdateTasks);
+        });
+    });
   }
 
-  // TODO: IMPORTANT add migrations here!
-  private getCombinedStoresSchema(repositories: typeof BaseRepository[]): {
-    [key: string]: string;
-  } {
-    const combinedStoresSchema = repositories.reduce<{ [key: string]: string }>(
-      (acc, repo: T[number]) => {
-        acc[repo.storeName] = repo.indexes;
-        return acc;
-      },
-      {}
-    );
+  private getCombinedStoresSchema(
+    repositories: typeof BaseRepository[]
+  ): CombinedMigrations {
+    const combinedMigrations: CombinedMigrations = {};
 
-    return combinedStoresSchema;
+    repositories.forEach((repository) => {
+      Object.keys(repository.migrations).forEach((v) => {
+        if (!combinedMigrations[v]) {
+          combinedMigrations[v] = { schema: {}, migrate: {} };
+        }
+
+        combinedMigrations[v].schema[repository.storeName] =
+          repository.migrations[v].indexes;
+        combinedMigrations[v].migrate[repository.storeName] =
+          repository.migrations[v].migrate;
+      });
+    });
+
+    return combinedMigrations;
   }
 
   public async dropAll(): Promise<void> {

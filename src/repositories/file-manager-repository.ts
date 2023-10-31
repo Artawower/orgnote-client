@@ -1,5 +1,6 @@
-import Dexie from 'dexie';
+import { migrator } from './migrator';
 import { BaseRepository } from './repository';
+import Dexie from 'dexie';
 
 export interface FileNodeInfo {
   name: string;
@@ -24,7 +25,10 @@ export interface FileTree {
 export class FileManagerRepository extends BaseRepository {
   public static storeName = 'file-manager';
 
-  public static readonly indexes = '&key';
+  public static readonly migrations = migrator<FileTree>()
+    .v(1)
+    .indexes('++key')
+    .build();
 
   get store(): Dexie.Table<{ key: string; fileTree: FileTree }, string> {
     return this.db.table(

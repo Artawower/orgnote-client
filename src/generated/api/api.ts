@@ -77,6 +77,12 @@ export interface HandlersCreatingNote {
      * @type {string}
      * @memberof HandlersCreatingNote
      */
+    'touchedAt'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersCreatingNote
+     */
     'updatedAt'?: string;
 }
 /**
@@ -590,6 +596,12 @@ export interface ModelsPublicNote {
      * @memberof ModelsPublicNote
      */
     'size'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelsPublicNote
+     */
+    'touchedAt'?: string;
     /**
      * 
      * @type {string}
