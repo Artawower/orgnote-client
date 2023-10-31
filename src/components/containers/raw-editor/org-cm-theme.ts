@@ -5,6 +5,7 @@ const cursorColor = 'var(--fg)';
 export const basicOrgTheme = EditorView.theme({
   '.cm-content': {
     caretColor: cursorColor,
+    width: '100%',
   },
   '.cm-cursor, .cm-dropCursor': { borderLeftColor: cursorColor },
 

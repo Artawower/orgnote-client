@@ -492,6 +492,10 @@ org-keyword-block {
       opacity: 1;
     }
   }
+
+  width: 100%;
+  overflow: auto;
+  display: inline-block;
 }
 
 .org-doc-title {
