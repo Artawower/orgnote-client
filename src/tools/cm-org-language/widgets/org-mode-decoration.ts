@@ -51,6 +51,7 @@ class OrgModeDecorationPlugin {
         const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
         if (
+          !inlineWidget.ignoreEditing &&
           caretPosition >= n.start - startOffset &&
           caretPosition <= n.end + endOffset
         ) {
@@ -120,5 +121,9 @@ export const orgInlineWidgets = (
     },
     {
       decorations: (v) => v.atomicDecorations,
+      provide: (plugin) =>
+        EditorView.atomicRanges.of((view) => {
+          return view.plugin(plugin)?.atomicDecorations || Decoration.none;
+        }),
     }
   );

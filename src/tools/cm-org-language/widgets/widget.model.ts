@@ -36,6 +36,7 @@ export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   widgetBuilder?: WidgetBuilder;
   classBuilder?: (orgNode: OrgNode) => string;
   decorationType: 'mark' | 'widget' | 'replace' | 'line';
+  ignoreEditing?: boolean;
   side?: number;
   wrapComponent?: string;
   inclusive?: boolean;

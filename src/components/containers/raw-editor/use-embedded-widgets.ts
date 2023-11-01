@@ -92,6 +92,11 @@ export const useEmbeddedWidgets = () => {
         withHash: false,
       }),
     },
+    [NodeType.Indent]: {
+      decorationType: 'replace',
+      ignoreEditing: true,
+      widgetBuilder: createOrgEmbeddedWidget(OrgInvisible),
+    },
     [NodeType.ListTag]: {
       decorationType: 'replace',
       ignoreEvent: true,
