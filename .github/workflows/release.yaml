@@ -18,6 +18,18 @@ jobs:
           bun add global @quasar/cli
           npm install -g cordova
           npm install -g @quasar/cli
+      - name: Init environment
+        run: |
+          echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
+
+          cat <<EOT > .env
+          DEUBG=true
+          API_URL=${{ secrets.API_URL }}
+          KEYPASS=${{ secrets.KEYPASS }}
+          STOREPASS=${{ secrets.STOREPASS }}
+          AUTH_URL=${{ secrets.AUTH_URL }}
+          EOT
+
       - name: Build
         run: bun run build:android
       - name: Download bundletool
@@ -32,7 +44,6 @@ jobs:
         run: |
           version=${{ github.event.release.tag_name }}
           mkdir -p ./dist/build
-          echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
           java -jar bundletool.jar build-apks \
               --mode=universal \
               --bundle=./dist/cordova/android/bundle/release/app-release.aab \
