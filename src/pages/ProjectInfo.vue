@@ -9,7 +9,7 @@
           <q-item-section :avatar="$q.screen.gt.xs">
             <q-icon name="quiz" size="sm" />
           </q-item-section>
-          <q-item-section> WIKI </q-item-section>
+          <q-item-section v-if="$q.screen.gt.xs"> WIKI </q-item-section>
         </q-item>
       </template>
     </component-tabs>

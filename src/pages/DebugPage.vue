@@ -1,6 +1,6 @@
 <template>
   <div class="debug-page">
-    <div class="capitalize text-h5 q-pb-md">
+    <div class="capitalize q-pb-md q-px-sm">
       {{
         $t(
           'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.'
