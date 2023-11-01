@@ -1,6 +1,18 @@
 <template>
   <div class="project-info">
-    <component-tabs :tabs="tabs" />
+    <component-tabs :tabs="tabs">
+      <template v-slot:custom-tabs>
+        <q-item
+          href="https://github.com/Artawower/orgnote/wiki/General"
+          target="_blank"
+        >
+          <q-item-section :avatar="$q.screen.gt.xs">
+            <q-icon name="quiz" size="sm" />
+          </q-item-section>
+          <q-item-section> WIKI </q-item-section>
+        </q-item>
+      </template>
+    </component-tabs>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <component-tabs :tabs="configTabs"> </component-tabs>
+  <component-tabs :tabs="configTabs" />
 </template>
 
 <script lang="ts" setup>

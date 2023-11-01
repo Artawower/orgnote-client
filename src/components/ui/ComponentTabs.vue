@@ -19,6 +19,7 @@
           }}</q-item-label>
         </q-item-section>
       </q-item>
+      <slot name="custom-tabs" />
     </q-list>
     <div class="active-tab">
       <component :is="activeComponent"></component>
