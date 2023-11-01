@@ -54,7 +54,6 @@ const onImgClick = () => {
 
 <style lang="scss" scoped>
 .image-preview {
-  height: var(--public-preview-image-height);
   max-width: var(--public-preview-image-width);
 }
 </style>
