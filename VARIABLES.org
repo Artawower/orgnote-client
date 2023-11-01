@@ -205,7 +205,7 @@
 ** Box paddings/margins
 - =--default-block-padding=:  16px;
 - =--default-item-radius=:  8px;
-- =--search-icn-size=:  42px;
+- =--search-icn-size=:  44px;
 - =--default-gap=:  16px;
 - =--small-gap=:  8px;
 - =--xs-gap=:  4px;
@@ -235,7 +235,6 @@
 - =--completion-width=:  100%;
 - =--completion-border-radius=:  0px;
 - =--completion-border=:  none !important;
-- =--search-icn-size=:  56px;
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;

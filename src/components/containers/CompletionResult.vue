@@ -60,10 +60,7 @@
               <div class="capitalize">{{ item.command }}</div>
             </div>
             <div>
-              <span
-                class="text-italic color-secondary"
-                :class="$q.platform.is.mobile ? 'line-limit-2' : 'line-limit-1'"
-              >
+              <span class="text-italic color-secondary line-limit-1">
                 {{ item.description }}
               </span>
             </div>
@@ -95,14 +92,12 @@ import { useKeybindingStore } from 'src/stores/keybindings';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
 
-const $q = useQuasar();
-
-const itemHeight = computed(() => ($q.screen.gt.xs ? 60 : 75));
+const itemHeight = 70;
 const scrollTarget = ref<QVirtualScroll | null>();
 
 const completionStore = useCompletionStore();
