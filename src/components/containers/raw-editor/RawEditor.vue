@@ -447,9 +447,8 @@ watch(
     content: '';
     display: block;
     position: absolute;
-    left: -8px;
     height: 100%;
-    border-left: 1px solid var(--base8);
+    border-left: 3px solid var(--base8);
   }
 }
 
@@ -579,11 +578,11 @@ org-keyword-block {
 }
 
 .org-list-item-bullet-line {
-  margin-left: 24px;
+  margin-left: var(--org-list-item-bullet-margin-left);
 }
 
 .org-list-item-section-line {
-  margin-left: 40px;
+  margin-left: calc(var(--org-list-item-bullet-margin-left) + 16px);
   position: relative;
 
   > .org-list-item:first-of-type {
