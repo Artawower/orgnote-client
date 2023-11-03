@@ -49,9 +49,11 @@ export class OrgInlineWidget extends WidgetType {
   }
 
   public eq(other: WidgetType) {
+    const otherNode = (other as unknown as OrgInlineWidget).orgNode;
     return (
-      (other as unknown as OrgInlineWidget).orgNode.rawValue ==
-      this.orgNode.rawValue
+      otherNode.rawValue == this.orgNode.rawValue &&
+      otherNode.parent.type === this.orgNode.parent.type &&
+      otherNode.children?.length === this.orgNode.children?.length
     );
   }
 

@@ -1,5 +1,10 @@
 <template>
-  <q-icon name="expand_more" size="sm" :class="{ closed: !open }"></q-icon>
+  <q-icon
+    name="expand_more"
+    size="sm"
+    class="text-bold"
+    :class="{ closed: !open }"
+  ></q-icon>
 </template>
 
 <script lang="ts" setup>

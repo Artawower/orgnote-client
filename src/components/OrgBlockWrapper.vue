@@ -68,6 +68,7 @@ const notifications = useNotifications();
 
 const orgBabelStore = useOrgBabelStore();
 
+// TODO: master mixin, or use find node for refresh
 const executeCode = async () => {
   const actualNode = findActualOrgNode(props.node, props.rootNodeSrc());
   try {

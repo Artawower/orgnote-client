@@ -52,8 +52,12 @@ const setText = (t: string) => {
 const editor = ref<HTMLDivElement>();
 let editorView: EditorView;
 
-const { multilineEmbeddedWidgets, inlineEmbeddedWidgets, lineClasses } =
-  useEmbeddedWidgets();
+const {
+  multilineEmbeddedWidgets,
+  inlineEmbeddedWidgets,
+  lineClasses,
+  foldWidget,
+} = useEmbeddedWidgets();
 
 const dynamicComponent = useDynamicComponent();
 
@@ -100,6 +104,7 @@ const initEditor = () => {
         readonly: props.readonly,
         orgNodeGetter: () => orgNode,
         showSpecialSymbols: props.config?.showSpecialSymbols,
+        foldWidget,
       }),
     ],
   });
@@ -205,9 +210,18 @@ watch(
 
 @for $i from 1 through 12 {
   .org-headline-#{$i} {
+    position: relative;
     line-height: var(--editor-headline-line-height);
     font-family: var(--headline-font-family);
     font-weight: var(--headline-font-weight);
+
+    .org-embedded-operator {
+      margin-left: -6px;
+      /* TODO: master plugin */
+      /* position: absolute;
+      // left - 100% from size of container via transform
+      transform: translateX(-100%); */
+    }
   }
 }
 
@@ -601,7 +615,7 @@ org-keyword-block {
 
 .cm-action-menu {
   width: 48px;
-  left: -32px;
+  left: -48px;
 }
 
 .org-keyword-title-line {
@@ -645,10 +659,6 @@ org-keyword-block {
   }
 
   .editor-wrapper {
-    .cm-editor-actions {
-      flex-direction: column-reverse;
-    }
-
     .cm-action-menu {
       display: none;
     }

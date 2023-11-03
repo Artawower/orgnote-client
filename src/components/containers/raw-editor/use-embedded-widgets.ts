@@ -4,6 +4,7 @@ import { useDynamicComponent } from 'src/hooks';
 import { textToKebab } from 'src/tools';
 import {
   EmbeddedOrgWidget,
+  InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
   WidgetBuilder,
@@ -16,6 +17,7 @@ import { Component } from 'vue';
 import OrgBlockWrapper from 'src/components/OrgBlockWrapper.vue';
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
+import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
 import OrgInvisible from 'src/components/OrgInvisible.vue';
@@ -132,18 +134,10 @@ export const useEmbeddedWidgets = () => {
           orgNode.parent?.parent?.is(NodeType.ListItem) &&
           !orgNode.parent.parent?.parent?.ordered &&
           orgNode?.parent.isNot(NodeType.Section);
-
-        const isHeadlineOperator = orgNode.parent?.parent?.is(
-          NodeType.Headline
-        );
-        const satisfied = isListOperator || isHeadlineOperator;
+        const satisfied = isListOperator;
         return satisfied;
       },
       widgetBuilder: (params) => {
-        const isHeadline = params.orgNode.parent?.parent?.is(NodeType.Headline);
-        if (isHeadline) {
-          return createOrgEmbeddedWidget(OrgInvisible)(params);
-        }
         const operator = params.orgNode.rawValue.trim();
         params.wrap.innerHTML = operator === '-' ? '•' : '◦';
         params.wrap.classList.add('org-list-bullet');
@@ -265,10 +259,17 @@ export const useEmbeddedWidgets = () => {
     },
   };
 
+  const foldWidget: InlineEmbeddedWidget = {
+    decorationType: 'replace',
+    ignoreEvent: true,
+    widgetBuilder: createOrgEmbeddedWidget(OrgHeadlineOperator),
+  };
+
   return {
     createOrgEmbeddedWidget,
     multilineEmbeddedWidgets,
     inlineEmbeddedWidgets,
     lineClasses,
+    foldWidget,
   };
 };

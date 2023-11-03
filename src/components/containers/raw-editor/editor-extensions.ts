@@ -7,6 +7,7 @@ import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import {
+  InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
   editorMenuExtension,
@@ -19,9 +20,12 @@ import {
 } from 'src/tools/cm-org-language/widgets';
 import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
+import {
+  orgFolding,
+  orgFoldingField,
+} from 'src/tools/cm-org-language/widgets/org-folding';
 
 import EditorMenu from './EditorMenu.vue';
-import GutterMarker from 'src/components/ui/GutterMarker.vue';
 
 export function initEditorExtensions(params: {
   orgNodeGetter: () => OrgNode;
@@ -33,15 +37,14 @@ export function initEditorExtensions(params: {
   multilineEmbeddedWidgets: MultilineEmbeddedWidgets;
   lineClasses: OrgLineClasses;
   editorViewGetter: () => EditorView;
+  foldWidget?: InlineEmbeddedWidget;
 }): Extension[] {
   const baseExtensions = [
     orgMultilineWidgetField,
     minimalSetup,
     bracketMatching(),
     closeBrackets(),
-    codeFolding({
-      placeholderText: '…',
-    }),
+    codeFolding(),
     highlightActiveLine(),
     readOnlyTransactionFilter(params.orgNodeGetter),
     basicOrgTheme,
@@ -56,14 +59,6 @@ export function initEditorExtensions(params: {
     }),
     EditorView.lineWrapping,
     EditorState.readOnly.of(params.readonly),
-    // TODO: master we need to hide fold gutter for active line
-    foldGutter({
-      markerDOM: (open) => {
-        const gutterMarker = document.createElement('span');
-        params.dynamicComponent.mount(GutterMarker, gutterMarker, { open });
-        return gutterMarker;
-      },
-    }),
     orgInitialFoldingExtension(params.editorViewGetter, params.orgNodeGetter),
     Prec.highest(
       keymap.of([
@@ -83,6 +78,17 @@ export function initEditorExtensions(params: {
       },
     ]),
   ];
+
+  if (params.foldWidget) {
+    baseExtensions.push(
+      orgFolding(
+        params.orgNodeGetter,
+        params.editorViewGetter,
+        params.foldWidget
+      ),
+      orgFoldingField
+    );
+  }
 
   const specialSymbolsExtensions = !params.showSpecialSymbols
     ? [

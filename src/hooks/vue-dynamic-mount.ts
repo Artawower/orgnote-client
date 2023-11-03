@@ -11,7 +11,10 @@ export const useDynamicComponent = () => {
     Object.assign(comp._context, vueInstance.appContext);
     comp.provide;
     comp.mount(wrap);
-    return { destroy: () => comp.unmount() };
+    return {
+      destroy: () => comp.unmount(),
+      refresh: (...args: unknown[]) => comp._instance?.exposed.refresh(...args),
+    };
   };
 
   return {
