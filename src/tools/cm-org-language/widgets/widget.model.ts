@@ -4,6 +4,7 @@ import { NodeType, OrgNode } from 'org-mode-ast';
 
 export type EmbeddedOrgWidget = {
   destroy: () => void;
+  refresh?: () => void;
 };
 
 export interface WidgetBuilderParams {

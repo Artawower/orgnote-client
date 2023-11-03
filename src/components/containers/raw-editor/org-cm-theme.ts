@@ -35,9 +35,10 @@ export const basicOrgTheme = EditorView.theme({
   '.cm-foldPlaceholder': {
     backgroundColor: 'none',
     background: 'none',
-    color: 'var(--fg-alt)',
+    color: 'var(--fg)',
     fontSize: 'inherit',
     border: 0,
+    display: 'none',
   },
 
   '.cm-activeLine': {

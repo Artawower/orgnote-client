@@ -79,6 +79,9 @@ function findFoldingRanges(
       const r = rangeStack.pop();
       addRange(r.from, node.start - 1);
     }
+    if (!node.section) {
+      return;
+    }
     rangeStack.push({ level: node.level, from: node.section.start - 1 });
   });
 

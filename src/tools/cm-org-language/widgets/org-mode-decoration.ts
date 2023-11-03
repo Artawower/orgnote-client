@@ -110,6 +110,7 @@ export const orgInlineWidgets = (
         // There is no sense to update decorations when
         // caret changed but we have no decorations around.
         const caretPositionChanged = this.lastPosition !== caretPosition;
+        this.lastPosition = caretPosition;
         if (
           update.docChanged ||
           update.viewportChanged ||
