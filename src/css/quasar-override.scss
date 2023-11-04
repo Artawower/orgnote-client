@@ -1,4 +1,8 @@
 body {
+  background-color: var(--bg) !important;
+}
+
+.body.standalone.sidebar-opened {
   background-color: var(--bg-alt) !important;
 }
 

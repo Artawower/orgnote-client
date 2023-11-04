@@ -219,6 +219,7 @@ import {
   onUnmounted,
   ref,
   toRef,
+  watch,
 } from 'vue';
 
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';

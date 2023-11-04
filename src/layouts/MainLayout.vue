@@ -42,6 +42,7 @@ import {
   onAppActive,
   onMobileViewportChanged,
   registerEditorCommands,
+  useBodySidebarClass,
   useMainCommands,
 } from 'src/hooks';
 import { useSidebarStore, useSyncStore, useToolbarStore } from 'src/stores';
@@ -50,7 +51,7 @@ import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { debounce } from 'src/tools';
 
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
@@ -108,6 +109,8 @@ onAppActive((active: boolean) => {
     syncStore.syncNotes();
   }
 });
+
+useBodySidebarClass();
 </script>
 
 <style lang="scss" scoped>
