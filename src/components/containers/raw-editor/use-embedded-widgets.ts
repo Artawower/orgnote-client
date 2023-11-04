@@ -81,6 +81,7 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgHtmlBlock),
     },
     [NodeType.PropertyDrawer]: {
+      ignoreEvent: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgPropertyDrawer),
     },
   };

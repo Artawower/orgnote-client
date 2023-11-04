@@ -76,14 +76,6 @@ export class OrgInlineWidget extends BaseOrgWidget {
     return wrap;
   }
 
-  public ignoreEvent(event: Event): boolean {
-    if (this.inlineWidget.ignoreEvent) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    return this.inlineWidget.ignoreEvent;
-  }
-
   destroy(): void {
     this.widget.destroy();
   }

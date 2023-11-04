@@ -46,4 +46,12 @@ export class BaseOrgWidget extends WidgetType {
     });
     return actualNode ?? oldOrgNode;
   }
+
+  public ignoreEvent(event: Event): boolean {
+    if (this.embeddedWidget.ignoreEvent) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    return this.embeddedWidget.ignoreEvent;
+  }
 }

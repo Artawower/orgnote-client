@@ -2,6 +2,7 @@
   <span @click.prevent.stop="showMobile">
     <slot name="content" />
     <q-tooltip
+      v-if="!$q.platform.is.mobile"
       v-model="showTooltip"
       @show="emits('show', $event)"
       class="date-tooltip"

@@ -1,17 +1,22 @@
 <template>
-  <q-form @submit="updateProperties" class="q-gutter-md q-pa-md">
-    <div
-      v-for="(_, key) in collectedFields"
-      :key="key"
-      class="flex row q-gutter-md"
-    >
+  <q-form @submit="updateProperties" class="q-pa-md full-height">
+    <div v-for="(_, key) in collectedFields" :key="key" class="flex row gap-16">
       <q-input
         :disable="(key as string).toLowerCase() === 'id'"
         :model-value="key"
         @update:model-value="changeKey(key as string, $event as string)"
         @blur="applyKeyChanging"
         label="key"
-      />
+      >
+        <template v-slot:prepend>
+          <q-icon
+            class="pointer color-danger"
+            size="sm"
+            @click="remove(key as string)"
+            name="cancel"
+          />
+        </template>
+      </q-input>
       <q-input
         :disable="(key as string).toLowerCase() === 'id'"
         v-model="collectedFields[key]"
@@ -19,14 +24,27 @@
         label="value"
       />
     </div>
-    <q-btn type="submit" :label="$t('save')" color="primary" flat />
-    <q-btn
-      @click="emits('cancel')"
-      type="button"
-      :label="$t('cancel')"
-      color="red"
-      flat
-    />
+    <div class="add-action">
+      <q-btn
+        @click="addNewProperty"
+        class="q-pa-sm"
+        type="button"
+        icon="add"
+        color="primary"
+        rounded
+      />
+      <!-- <q-separator class="add-separator" /> -->
+    </div>
+    <div class="actions">
+      <q-btn
+        @click="emits('cancel')"
+        type="button"
+        :label="$t('cancel')"
+        color="red"
+        flat
+      />
+      <q-btn type="submit" :label="$t('save')" color="primary" flat />
+    </div>
   </q-form>
 </template>
 
@@ -86,4 +104,35 @@ const applyKeyChanging = () => {
 const updateProperties = () => {
   emits('change', rawValue.value);
 };
+
+const addNewProperty = () => {
+  collectedFields[''] = '';
+};
+
+const remove = (key: string) => {
+  delete collectedFields[key];
+};
 </script>
+
+<style lang="scss" scoped>
+.actions {
+  @include flexify(row, end, center);
+}
+.add-action {
+  @include flexify(row, center, center);
+
+  position: relative;
+  width: 100%;
+
+  padding: 32px;
+
+  button {
+    z-index: 2;
+  }
+}
+.add-separator {
+  width: 100%;
+  z-index: 1;
+  position: absolute;
+}
+</style>

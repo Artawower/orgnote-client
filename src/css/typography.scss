@@ -50,6 +50,10 @@ body {
   color: var(--font-color-action);
 }
 
+.color-danger {
+  color: var(--red);
+}
+
 .capitalize::first-letter {
   text-transform: capitalize;
 }

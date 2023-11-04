@@ -104,8 +104,4 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     this.editorBadge.removeEventListener('click', this.editMultilineWidget);
     this.editorBadge.remove();
   }
-
-  ignoreEvent() {
-    return true;
-  }
 }

@@ -22,6 +22,7 @@ export interface CommonEmbeddedWidget {
   satisfied?: (orgNode: OrgNode) => boolean;
   widgetBuilder?: WidgetBuilder;
   viewUpdater?: (orgNode: OrgNode, newVal: string) => ViewUpdateSchema;
+  ignoreEvent?: boolean;
 }
 
 export interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
@@ -42,7 +43,6 @@ export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   side?: number;
   wrapComponent?: string;
   inclusive?: boolean;
-  ignoreEvent?: boolean;
 }
 
 export type InlineEmbeddedWidgets = {

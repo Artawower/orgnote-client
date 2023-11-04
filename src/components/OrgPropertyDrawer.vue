@@ -1,12 +1,15 @@
 <template>
   <div class="property-drawer">
-    <div class="info">
+    <div class="info line-limit-1">
       <template v-if="node.parent?.meta.id">
         id:{{ node.parent?.meta.id }}
       </template>
     </div>
     <div v-if="!readonly" class="actions">
-      <icon-btn @click.stop="openPropertyDrawerEditDialog" name="o_more_vert" />
+      <icon-btn
+        @click.stop.prevent="openPropertyDrawerEditDialog"
+        name="o_more_vert"
+      />
     </div>
   </div>
   <q-dialog
@@ -53,7 +56,7 @@ const updateProperties = (properties: string) => {
 };
 </script>
 
-<style lang="scss" setup>
+<style lang="scss" scoped>
 .property-drawer {
   @include flexify(row, space-between, center);
 
