@@ -1,10 +1,6 @@
 <template>
-  <span
-    v-if="sectionExist"
-    @click.stop.prevent="toggleFolding"
-    class="headline-fold"
-  >
-    <gutter-marker :open="opened" />
+  <span @click.stop.prevent="toggleFolding" class="headline-fold">
+    <gutter-marker :open="opened" :disabled="!sectionExist" />
   </span>
 </template>
 
@@ -52,6 +48,9 @@ const sectionExist = node.value.parent?.parent?.section?.children?.length;
 const opened = ref<boolean>(!ranges.find(([s, e]) => s === from));
 
 const toggleFolding = () => {
+  if (!sectionExist) {
+    return;
+  }
   opened.value = !opened.value;
   if (opened.value) {
     props.editorView.dispatch({

@@ -3,13 +3,14 @@
     name="expand_more"
     size="sm"
     class="text-bold fold-gutter"
-    :class="{ closed: !open }"
+    :class="{ closed: !open, disabled }"
   ></q-icon>
 </template>
 
 <script lang="ts" setup>
 defineProps<{
   open: boolean;
+  disabled?: boolean;
 }>();
 </script>
 
@@ -21,6 +22,10 @@ defineProps<{
 .fold-gutter {
   &:hover {
     color: var(--base8);
+  }
+  &.disabled,
+  &disabled:hover {
+    color: var(--base5);
   }
 }
 </style>
