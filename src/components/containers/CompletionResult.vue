@@ -82,7 +82,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { QVirtualScroll, useQuasar } from 'quasar';
+import { QVirtualScroll } from 'quasar';
 import {
   CompletionCandidate,
   defaultCompletionLimit,

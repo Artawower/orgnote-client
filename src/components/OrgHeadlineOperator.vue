@@ -45,7 +45,7 @@ const lastElemOffset = node.value.parent.parent.section?.lastChild?.is(
 const to = node.value.parent.parent.end - lastElemOffset;
 
 const sectionExist = node.value.parent?.parent?.section?.children?.length;
-const opened = ref<boolean>(!ranges.find(([s, e]) => s === from));
+const opened = ref<boolean>(!ranges.find(([s]) => s === from));
 
 const toggleFolding = () => {
   if (!sectionExist) {

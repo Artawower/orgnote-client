@@ -22,7 +22,10 @@ import CodeBlock from 'src/components/ui/CodeBlock.vue';
 const $q = useQuasar();
 
 const prettyQuasarPlatform = Object.keys($q.platform.is)
-  .map((key: string) => ` ${key}: ${($q.platform.is as any)[key]}`)
+  .map(
+    (key: string) =>
+      ` ${key}: ${$q.platform.is[key as keyof typeof $q.platform.is]}`
+  )
   .join('\n');
 
 const systemInfo = `OrgNote: ${version}

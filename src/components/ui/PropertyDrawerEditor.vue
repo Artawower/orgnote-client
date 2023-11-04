@@ -116,7 +116,7 @@ const remove = (key: string) => {
 
 <style lang="scss" scoped>
 .actions {
-  @include flexify(row, end, center);
+  @include flexify(row, flex-end, center);
 }
 .add-action {
   @include flexify(row, center, center);

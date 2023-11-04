@@ -1,8 +1,12 @@
 body {
   background-color: var(--bg) !important;
+
+  &.mobile.sidebar-opened {
+    background-color: var(--bg-alt) !important;
+  }
 }
 
-.body.standalone.sidebar-opened {
+body.standalone.sidebar-opened {
   background-color: var(--bg-alt) !important;
 }
 

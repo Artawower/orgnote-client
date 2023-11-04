@@ -51,7 +51,7 @@ import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { debounce } from 'src/tools';
 
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
