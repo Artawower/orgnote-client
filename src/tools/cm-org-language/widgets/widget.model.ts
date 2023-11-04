@@ -18,11 +18,13 @@ export interface WidgetBuilderParams {
 
 export type WidgetBuilder = (params: WidgetBuilderParams) => EmbeddedOrgWidget;
 
-interface CommonEmbeddedWidget {
+export interface CommonEmbeddedWidget {
   satisfied?: (orgNode: OrgNode) => boolean;
+  widgetBuilder?: WidgetBuilder;
+  viewUpdater?: (orgNode: OrgNode, newVal: string) => ViewUpdateSchema;
 }
 
-interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
+export interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
   widgetBuilder: WidgetBuilder;
 }
 
@@ -34,7 +36,6 @@ export type ViewUpdateSchema = ChangeSpec;
 
 export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   showRangeOffset?: [number, number];
-  widgetBuilder?: WidgetBuilder;
   classBuilder?: (orgNode: OrgNode) => string;
   decorationType: 'mark' | 'widget' | 'replace' | 'line';
   ignoreEditing?: boolean;
@@ -42,7 +43,6 @@ export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
   wrapComponent?: string;
   inclusive?: boolean;
   ignoreEvent?: boolean;
-  viewUpdater?: (orgNode: OrgNode, newVal: string) => ViewUpdateSchema;
 }
 
 export type InlineEmbeddedWidgets = {

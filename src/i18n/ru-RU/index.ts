@@ -120,4 +120,5 @@ export default {
   'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.':
     'эта информация доступна только на вашем устройстве. Она не будет отправлена на сервер. Вы можете использовать ее для создания GitHub issue.',
   'return to mobile app': 'вернуться в мобильное приложение',
+  showPropertyDrawer: 'показать панель свойств',
 };

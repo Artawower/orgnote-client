@@ -1,18 +1,19 @@
+import { BaseOrgWidget } from './base-org-widget';
 import { EmbeddedOrgWidget, InlineEmbeddedWidget } from './widget.model';
 import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
-import { OrgNode, walkTree } from 'org-mode-ast';
+import { OrgNode } from 'org-mode-ast';
 
-export class OrgInlineWidget extends WidgetType {
+export class OrgInlineWidget extends BaseOrgWidget {
   private widget: EmbeddedOrgWidget;
   constructor(
-    private readonly view: EditorView,
-    private readonly orgNode: OrgNode,
+    view: EditorView,
+    orgNode: OrgNode,
     private readonly inlineWidget: InlineEmbeddedWidget,
-    private readonly rootNodeSrc: () => OrgNode,
+    rootNodeSrc: () => OrgNode,
     private readonly readonly: boolean
   ) {
-    super();
+    super(view, rootNodeSrc, orgNode, inlineWidget);
   }
 
   public static init(
@@ -61,7 +62,7 @@ export class OrgInlineWidget extends WidgetType {
     const wrap = document.createElement(
       this.inlineWidget.wrapComponent ?? 'span'
     );
-    this.widget = this.inlineWidget.widgetBuilder({
+    this.widget = this.embeddedWidget.widgetBuilder({
       wrap,
       orgNode: this.orgNode,
       // TODO: master I don't like this implementation.
@@ -73,36 +74,6 @@ export class OrgInlineWidget extends WidgetType {
       readonly: this.readonly,
     });
     return wrap;
-  }
-
-  private getActualNode(oldOrgNode: OrgNode): OrgNode {
-    const rootNode = this.rootNodeSrc();
-    let actualNode: OrgNode;
-    walkTree(rootNode, (n: OrgNode) => {
-      if (
-        n.start === oldOrgNode.start &&
-        n.end === oldOrgNode.end &&
-        n.is(oldOrgNode.type)
-      ) {
-        actualNode = n;
-        return true;
-      }
-    });
-    return actualNode ?? oldOrgNode;
-  }
-
-  private updateValue(newVal: string): void {
-    const updateSchema = this.inlineWidget.viewUpdater?.(
-      this.getActualNode(this.orgNode),
-      newVal
-    );
-    this.view.dispatch({
-      changes: updateSchema ?? {
-        from: this.orgNode.start,
-        to: this.orgNode.end,
-        insert: newVal,
-      },
-    });
   }
 
   public ignoreEvent(): boolean {

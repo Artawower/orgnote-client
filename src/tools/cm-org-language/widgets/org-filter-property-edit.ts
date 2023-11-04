@@ -3,7 +3,7 @@ import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
 export function readOnlyTransactionFilter(getOrgNode: () => OrgNode) {
   return EditorState.transactionFilter.of((tr) => {
-    if (tr.docChanged && !tr.annotation(Transaction.remote)) {
+    if (tr.docChanged && tr.annotation(Transaction.userEvent)) {
       let block = false;
       const blockedRange: [number?, number?] = [];
       const orgNode = getOrgNode();

@@ -38,7 +38,6 @@ export const orgMultilineWidgets = (
       ).changedRanges.find((r) =>
         hasIntersection(r.fromA, r.toA, n.start, n.end + 1)
       );
-
       const caretIntoWidget =
         currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
 
@@ -58,7 +57,8 @@ export const orgMultilineWidgets = (
         addMultilineWidgetEffect.of({
           orgNode: n,
           view: v.view,
-          widgetBuilder: multilineEmbeddedWidget.widgetBuilder,
+          rootNodeSrc: getOrgNode,
+          multilineWidget: multilineEmbeddedWidget,
         })
       );
     });

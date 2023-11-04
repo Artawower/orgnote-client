@@ -64,3 +64,6 @@ body {
     padding: var(--menu-padding);
   }
 }
+.q-dialog__inner.no-pointer-events {
+  pointer-events: all !important;
+}

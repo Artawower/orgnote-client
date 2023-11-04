@@ -1,7 +1,11 @@
 <template>
   <div
     class="editor-wrapper"
-    :class="{ readonly, 'hide-special-symbols': !config?.showSpecialSymbols }"
+    :class="{
+      readonly,
+      'hide-special-symbols': !config?.showSpecialSymbols,
+      'show-property-drawer': config?.showPropertyDrawer,
+    }"
   >
     <div id="editor" ref="editor"></div>
   </div>
@@ -644,6 +648,16 @@ org-keyword-block {
 .org-keyword-description-line,
 .org-keyword-title-line {
   padding-bottom: var(--default-block-padding) !important;
+}
+
+.org-embedded-propertydrawer {
+  display: none;
+}
+
+.show-property-drawer {
+  .org-embedded-propertydrawer {
+    display: block;
+  }
 }
 
 /* TODO: master what a hell..need to fix dual name in org parser */
