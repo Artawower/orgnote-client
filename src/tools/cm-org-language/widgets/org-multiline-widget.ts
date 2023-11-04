@@ -1,9 +1,10 @@
-import { EmbeddedOrgWidget, WidgetBuilder } from './widget.model';
+import { BaseOrgWidget } from './base-org-widget';
+import { EmbeddedOrgWidget, MultilineEmbeddedWidget } from './widget.model';
 import { Range } from '@codemirror/state';
-import { Decoration, EditorView, WidgetType } from '@codemirror/view';
+import { Decoration, EditorView } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
 
-export class OrgMultilineWidget extends WidgetType {
+export class OrgMultilineWidget extends BaseOrgWidget {
   private readonly editIcon = `<svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4 5L15 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M4 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -15,20 +16,27 @@ export class OrgMultilineWidget extends WidgetType {
   private widget: EmbeddedOrgWidget;
 
   constructor(
-    private readonly editorView: EditorView,
-    private readonly orgNode: OrgNode,
-    private readonly widgetBuilder: WidgetBuilder
+    view: EditorView,
+    orgNode: OrgNode,
+    rootNodeSrc: () => OrgNode,
+    private readonly multilineWidget: MultilineEmbeddedWidget
   ) {
-    super();
+    super(view, rootNodeSrc, orgNode, multilineWidget);
   }
 
   public static init(
     editorView: EditorView,
     orgNode: OrgNode,
-    widgetBuilder: WidgetBuilder
+    rootNodeSrc: () => OrgNode,
+    multilineWidget: MultilineEmbeddedWidget
   ): Range<Decoration> {
     return Decoration.replace({
-      widget: new OrgMultilineWidget(editorView, orgNode, widgetBuilder),
+      widget: new OrgMultilineWidget(
+        editorView,
+        orgNode,
+        rootNodeSrc,
+        multilineWidget
+      ),
       side: 0,
       inclusive: false,
       block: true,
@@ -36,7 +44,24 @@ export class OrgMultilineWidget extends WidgetType {
   }
 
   public eq(other: OrgMultilineWidget) {
-    return other.orgNode.rawValue === this.orgNode.rawValue;
+    return (
+      other.orgNode.is() && other.orgNode.rawValue === this.orgNode.rawValue
+    );
+  }
+
+  public sameNode(other: OrgMultilineWidget): boolean {
+    if (other.orgNode.isNot(this.orgNode.type)) {
+      return false;
+    }
+    if (other.orgNode.rawValue === this.orgNode.rawValue) {
+      return true;
+    }
+    if (
+      other.orgNode.start === this.orgNode.start ||
+      other.orgNode.end === this.orgNode.end
+    ) {
+      return true;
+    }
   }
 
   private initEditorBadge(): void {
@@ -55,10 +80,12 @@ export class OrgMultilineWidget extends WidgetType {
     const wrap = document.createElement('div');
     wrap.style.position = 'relative';
     wrap.classList.add('org-multiline-widget');
-    this.widget = this.widgetBuilder({
+    this.widget = this.multilineWidget.widgetBuilder({
       wrap,
       orgNode: this.orgNode,
-      editorView: this.editorView,
+      editorView: this.view,
+      // TODO: master base function win inline
+      onUpdateFn: this.updateValue.bind(this),
     });
     this.initEditorBadge();
     wrap.appendChild(this.editorBadge);
@@ -67,7 +94,7 @@ export class OrgMultilineWidget extends WidgetType {
 
   private editMultilineWidget(event: MouseEvent): void {
     event.preventDefault();
-    this.editorView.dispatch({
+    this.view.dispatch({
       selection: { anchor: this.orgNode.end, head: this.orgNode.end },
     });
   }

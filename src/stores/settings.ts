@@ -18,6 +18,7 @@ export const useSettingsStore = defineStore(
     const config = reactive<OrgNoteConfig>({
       editor: {
         showSpecialSymbols: false,
+        showPropertyDrawer: true,
       },
       common: {
         developerMode: false,

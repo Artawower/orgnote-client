@@ -18,6 +18,7 @@ export interface OrgNoteApi {
 export interface OrgNoteConfig {
   editor: {
     showSpecialSymbols: boolean;
+    showPropertyDrawer: boolean;
   };
   common: {
     developerMode: boolean;

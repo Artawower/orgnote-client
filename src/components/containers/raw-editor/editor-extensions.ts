@@ -1,6 +1,6 @@
 import { basicOrgTheme } from './org-cm-theme';
 import { closeBrackets } from '@codemirror/autocomplete';
-import { bracketMatching, codeFolding, foldGutter } from '@codemirror/language';
+import { bracketMatching, codeFolding } from '@codemirror/language';
 import { EditorState, Extension, Prec } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';

@@ -25,8 +25,8 @@
 </template>
 
 <script lang="ts" setup>
-import { EditorView } from 'codemirror';
-import { NodeType, OrgNode } from 'org-mode-ast';
+import { OrgComponentProps } from './org-component-props';
+import { NodeType } from 'org-mode-ast';
 import { useNotifications } from 'src/hooks';
 import { useOrgBabelStore } from 'src/stores';
 import { findActualOrgNode } from 'src/tools';
@@ -35,11 +35,7 @@ import { computed } from 'vue';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 
-const props = defineProps<{
-  node: OrgNode;
-  rootNodeSrc: () => OrgNode;
-  editorView?: EditorView;
-}>();
+const props = defineProps<OrgComponentProps>();
 
 const emits = defineEmits<{
   (e: 'update', newValue: string): void;

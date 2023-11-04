@@ -1,5 +1,5 @@
 import { OrgMultilineWidget } from './org-multiline-widget';
-import { WidgetBuilder } from './widget.model';
+import { MultilineEmbeddedWidget } from './widget.model';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
@@ -7,7 +7,8 @@ import { OrgNode } from 'org-mode-ast';
 export interface AddWidgetEffect {
   orgNode: OrgNode;
   view: EditorView;
-  widgetBuilder: WidgetBuilder;
+  multilineWidget: MultilineEmbeddedWidget;
+  rootNodeSrc: () => OrgNode;
 }
 export const addMultilineWidgetEffect = StateEffect.define<AddWidgetEffect>();
 export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
@@ -41,14 +42,16 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
               : OrgMultilineWidget.init(
                   e.value.view,
                   e.value.orgNode,
-                  e.value.widgetBuilder
+                  e.value.rootNodeSrc,
+                  e.value.multilineWidget
                 ),
           ],
         });
       }
       if (e.is(removeMultilineWidgetEffect)) {
         multilineWidgets = multilineWidgets.update({
-          filter: (f, t, value) => !value.spec.widget.eq({ orgNode: e.value }),
+          filter: (f, t, value) =>
+            !value.spec.widget.sameNode({ orgNode: e.value }),
         });
       }
     }
