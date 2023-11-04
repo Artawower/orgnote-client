@@ -1,6 +1,10 @@
 <template>
-  <span v-if="sectionExist" class="headline-fold">
-    <gutter-marker @click="toggleFolding" :open="opened" />
+  <span
+    v-if="sectionExist"
+    @click.stop.prevent="toggleFolding"
+    class="headline-fold"
+  >
+    <gutter-marker :open="opened" />
   </span>
 </template>
 
