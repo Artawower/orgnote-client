@@ -105,7 +105,11 @@ export class OrgInlineWidget extends WidgetType {
     });
   }
 
-  public ignoreEvent(): boolean {
+  public ignoreEvent(event: Event): boolean {
+    if (this.inlineWidget.ignoreEvent) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     return this.inlineWidget.ignoreEvent;
   }
 

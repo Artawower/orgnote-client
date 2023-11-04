@@ -8,7 +8,7 @@ export const getUniqueFileName = (
   let initialName = notePrefix;
 
   let inc = 0;
-  while (children[`${initialName}${fileExt}`]) {
+  while (children?.[`${initialName}${fileExt}`]) {
     inc++;
     initialName = `${notePrefix}-${inc}`;
   }
