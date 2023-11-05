@@ -21,6 +21,10 @@
 
 
 * Introduction
+#+html: <div align='center'>
+#+html: <img src='./images/app.png' width='100%' height='auto'>
+#+html: </div>
+#+html: &nbsp;
 This project is part of [[https://github.com/Artawower/orgnote][Org Note project]]. This is client side based on the [[https://quasar.dev/][Quasar]] framework. It's include ios/android/pwa and desktop build.
 It's a proof of concept solution, in the future I have plan to migrate this repo into native app or Flutter.
 
