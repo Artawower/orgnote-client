@@ -5,19 +5,31 @@
       <div class="left">
         <q-checkbox
           v-if="selectable"
-          size="sm"
+          :size="iconSize"
           :model-value="selectedNotesStore.isNoteSelected(note.id)"
           @update:model-value="selectedNotesStore.toggleNoteSelection(note.id)"
         ></q-checkbox>
       </div>
       <div class="right row gap-sm action-btns">
-        <q-btn size="sm" flat round icon="far fa-bookmark" class="q-pa-none" />
-        <q-btn size="sm" flat round icon="far fa-paper-plane" class="q-pa-none">
+        <q-btn
+          :size="iconSize"
+          flat
+          round
+          icon="far fa-bookmark"
+          class="q-pa-none"
+        />
+        <q-btn
+          :size="iconSize"
+          flat
+          round
+          icon="far fa-paper-plane"
+          class="q-pa-none"
+        >
           <q-menu class="flex row no-wrap">
             <q-btn
               flat
               rounded
-              size="md"
+              :size="iconSize"
               icon="fa-brands fa-square-twitter"
               class="q-pa-sm"
               @click="showNotImplemented('Twitter share')"
@@ -25,7 +37,7 @@
             <q-btn
               flat
               rounded
-              size="md"
+              :size="iconSize"
               icon="fa-brands fa-telegram"
               class="q-pa-sm"
               @click="showNotImplemented('Telegram share')"
@@ -33,14 +45,20 @@
             <q-btn
               flat
               rounded
-              size="md"
+              :size="iconSize"
               icon="far fa-copy"
               class="q-pa-sm"
               @click="showNotImplemented('Copy link')"
             ></q-btn>
           </q-menu>
         </q-btn>
-        <q-btn size="sm" flat round icon="fas fa-ellipsis" class="q-pa-none">
+        <q-btn
+          :size="iconSize"
+          flat
+          round
+          icon="fas fa-ellipsis"
+          class="q-pa-none"
+        >
           <q-menu>
             <q-list style="min-width: 100px">
               <q-item
@@ -92,7 +110,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useNotifications } from 'src/hooks';
+import { useNotifications, usePlatformSize } from 'src/hooks';
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useNotesStore, useSelectedNotesStore } from 'src/stores';
@@ -126,6 +144,8 @@ const deleteNote = async () => {
 const editNote = () => {
   router.push({ name: RouteNames.EditNote, params: { id: note.value.id } });
 };
+
+const { iconSize } = usePlatformSize();
 </script>
 
 <style lang="scss" scoped>

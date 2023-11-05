@@ -7,3 +7,4 @@ export * from './editor-commands';
 export * from './use-org-file';
 export * from './on-app-active';
 export * from './body-sidebar-class';
+export * from './platform-size';
