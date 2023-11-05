@@ -211,9 +211,10 @@
 - =--small-gap=:  8px;
 - =--xs-gap=:  4px;
 ** Src block
-- =--src-block-header-padding-y=:  16px;
+- =--src-block-header-padding-y=:  8px;
 - =--src-block-footer-padding-y=:  8px;
 - =--src-block-padding-x=:  16px;
+- =--src-block-margin-y=:  16px;
 ** Editor
 - =--page-padding=:  16px 30px;
 - =--editor-line-height=:  1.8;
