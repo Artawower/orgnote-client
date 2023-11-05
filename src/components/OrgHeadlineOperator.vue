@@ -65,5 +65,6 @@ const toggleFolding = () => {
 <style lang="scss" scoped>
 .headline-fold {
   cursor: pointer;
+  padding-right: 8px;
 }
 </style>

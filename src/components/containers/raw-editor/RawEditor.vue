@@ -687,10 +687,6 @@ org-keyword-block {
       left: 0;
     }
 
-    .org-headline-line {
-      left: -8px;
-    }
-
     .org-widget-edit-badge {
       right: 8px;
       top: 8px;
