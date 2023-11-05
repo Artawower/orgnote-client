@@ -72,6 +72,8 @@ export const useSettingsStore = defineStore(
       Dark.set(darkMode.value);
     };
 
+    updateDarkMode();
+
     return {
       tokens,
       showUserProfiles,
