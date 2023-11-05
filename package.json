@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.12.5",
+  "version": "0.12.7",
   "description": "Org Note client for eponymous service",
   "productName": "Org Note",
   "author": "artawower <artawower@protonmail.com>",
@@ -20,6 +20,8 @@
     "build:electron": "bun run build -m electron",
     "build:all": "bun run build:pwa && bun run build:android",
     "build:pwa": "quasar build -m pwa",
+    "sign:android": "jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore org-note-release.keystore -signedjar org-note-release-signed.aab ./dist/cordova/android/bundle/release/app-release.aab sb",
+    "build:android:sign": "bun run build:android && export API_URL=https://org-note.com/api && export AUTH_URL=https://org-note.com && bun run sign:android",
     "build:android": "quasar build -m android",
     "build:ios": "quasar build -m ios",
     "codegen:api": "openapi-generator-cli generate",
