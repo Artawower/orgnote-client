@@ -7,7 +7,7 @@
 <script lang="ts" setup>
 import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
 import { EditorView } from 'codemirror';
-import { NodeType, OrgNode } from 'org-mode-ast';
+import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 
 import { ref, toRef } from 'vue';
 
@@ -36,12 +36,10 @@ const getFoldedRanges = () => {
 
 const ranges = getFoldedRanges();
 
+const root = findParent(node.value, (n) => n.is(NodeType.Root));
+
 const from = node.value.parent.end - 1;
-const lastElemOffset = node.value.parent.parent.section?.lastChild?.is(
-  NodeType.NewLine
-)
-  ? 1
-  : 0;
+const lastElemOffset = node.value.parent.parent.end === root.end ? 0 : 1;
 const to = node.value.parent.parent.end - lastElemOffset;
 
 const sectionExist = node.value.parent?.parent?.section?.children?.length;
