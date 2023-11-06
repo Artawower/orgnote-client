@@ -23,6 +23,7 @@ export interface CommonEmbeddedWidget {
   widgetBuilder?: WidgetBuilder;
   viewUpdater?: (orgNode: OrgNode, newVal: string) => ViewUpdateSchema;
   ignoreEvent?: boolean;
+  showRangeOffset?: [number, number];
 }
 
 export interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
@@ -36,7 +37,6 @@ export type MultilineEmbeddedWidgets = {
 export type ViewUpdateSchema = ChangeSpec;
 
 export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
-  showRangeOffset?: [number, number];
   classBuilder?: (orgNode: OrgNode) => string;
   decorationType: 'mark' | 'widget' | 'replace' | 'line';
   ignoreEditing?: boolean;

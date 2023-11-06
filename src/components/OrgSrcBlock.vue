@@ -1,16 +1,20 @@
 <template>
   <div class="src-code-wrapper">
     <action-btn @click="copySrc" icon="content_copy" active-icon="done" />
-    <highlightjs autodetect :code="node?.children.get(2)?.rawValue" />
+    <highlightjs
+      autodetect
+      :code="node?.children?.get(2)?.rawValue ?? node?.rawValue"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import ActionBtn from './ui/ActionBtn.vue';
+import { OrgNode } from 'org-mode-ast';
+import { copyToClipboard } from 'quasar';
+
 import { toRef } from 'vue';
 
-import { copyToClipboard } from 'quasar';
-import { OrgNode } from 'org-mode-ast';
+import ActionBtn from './ui/ActionBtn.vue';
 
 const props = defineProps<{
   node: OrgNode;
@@ -19,6 +23,7 @@ const props = defineProps<{
 const node = toRef(props, 'node');
 
 const copySrc = () => {
+  copyToClipboard(node.value.children.get(2).rawValue);
   copyToClipboard(node.value.children.get(2).rawValue);
 };
 </script>
@@ -37,6 +42,14 @@ const copySrc = () => {
   &:hover {
     .action-btn {
       display: flex;
+    }
+  }
+  pre {
+    margin: 0 !important;
+
+    code {
+      padding: var(--src-block-padding-y) var(--src-block-padding-x);
+      border-radius: var(--sm-block-border-radius);
     }
   }
 }

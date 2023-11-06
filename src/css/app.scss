@@ -16,18 +16,23 @@
 @import 'quasar-override';
 @import 'tooltip';
 @import 'pages';
+@import 'hljs';
 
 .pointer {
   cursor: pointer;
 }
 
 @include light-mode {
-  @import 'highlight.js/styles/stackoverflow-light';
+  .hljs {
+    background: var(--base7);
+  }
 }
 
 @include dark-mode {
-  @import 'highlight.js/styles/atom-one-dark';
   background: rgb(34, 39, 46);
+  .hljs {
+    background: var(--base7);
+  }
 }
 
 .rft {

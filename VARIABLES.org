@@ -102,6 +102,7 @@
 - =--editor-font-family-main=:  'Menlo', charter, Georgia, Cambria, 'Roboto', Times,
 - =--paragraph-font-family=:  var(--main-font-family);
 - =--headline-font-family=:  'Roboto', '-apple-system', 'Helvetica Neue', Helvetica,
+- =--code-font-family=:  monospace, monospace;
 ** Note description
 - =--description-font-family=:  var(--main-font-family);
 - =--description-font-size=:  16px;
@@ -205,15 +206,18 @@
 ** Box paddings/margins
 - =--default-block-padding=:  16px;
 - =--default-block-border-radius=:  16px;
+- =--sm-block-border-radius=:  6px;
 - =--default-item-radius=:  8px;
 - =--search-icn-size=:  44px;
 - =--default-gap=:  16px;
 - =--small-gap=:  8px;
 - =--xs-gap=:  4px;
 ** Src block
-- =--src-block-header-padding-y=:  16px;
+- =--src-block-header-padding-y=:  8px;
 - =--src-block-footer-padding-y=:  8px;
 - =--src-block-padding-x=:  16px;
+- =--src-block-padding-y=:  16px;
+- =--src-block-margin-y=:  16px;
 ** Editor
 - =--page-padding=:  16px 30px;
 - =--editor-line-height=:  1.8;

@@ -1,4 +1,3 @@
-import { srcHeaderViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import { textToKebab } from 'src/tools';
@@ -27,6 +26,7 @@ import OrgListTag from 'src/components/OrgListTag.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgPropertyDrawer from 'src/components/OrgPropertyDrawer.vue';
 import OrgRawLink from 'src/components/OrgRawLink.vue';
+import OrgSrcBlock from 'src/components/OrgSrcBlock.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 import OrgTags from 'src/components/OrgTags.vue';
 
@@ -64,6 +64,7 @@ export const useEmbeddedWidgets = () => {
   const multilineEmbeddedWidgets: MultilineEmbeddedWidgets = {
     [NodeType.Table]: {
       widgetBuilder: createOrgEmbeddedWidget(OrgTable),
+      ignoreEvent: true,
     },
     [NodeType.ExportBlock]: {
       widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
@@ -83,6 +84,11 @@ export const useEmbeddedWidgets = () => {
     [NodeType.PropertyDrawer]: {
       ignoreEvent: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgPropertyDrawer),
+    },
+    [NodeType.SrcBlock]: {
+      ignoreEvent: false,
+      widgetBuilder: createOrgEmbeddedWidget(OrgSrcBlock),
+      // showRangeOffset: [-1, 1],
     },
   };
 
@@ -125,9 +131,13 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Text]: {
       decorationType: 'replace',
       satisfied: (orgNode: OrgNode) => {
-        return (
-          orgNode.parent?.is(NodeType.Keyword) && orgNode.value.startsWith('#+')
-        );
+        const rawValue = orgNode.value.toLowerCase();
+        const notBlockKeyword =
+          rawValue.startsWith('#+') &&
+          !rawValue.startsWith('#+begin_') &&
+          !rawValue.startsWith('#+end_');
+
+        return orgNode.parent?.is(NodeType.Keyword) && notBlockKeyword;
       },
       widgetBuilder: createOrgEmbeddedWidget(OrgInvisible),
     },
@@ -171,17 +181,17 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgCheckbox),
       ignoreEvent: true,
     },
-    [NodeType.BlockHeader]: {
-      decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
-      viewUpdater: srcHeaderViewUpdater,
-      ignoreEvent: true,
-    },
-    [NodeType.BlockFooter]: {
-      decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
-      ignoreEvent: true,
-    },
+    // [NodeType.BlockHeader]: {
+    //   decorationType: 'replace',
+    //   widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+    //   viewUpdater: srcHeaderViewUpdater,
+    //   ignoreEvent: true,
+    // },
+    // [NodeType.BlockFooter]: {
+    //   decorationType: 'replace',
+    //   widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+    //   ignoreEvent: true,
+    // },
     [NodeType.Link]: {
       decorationType: 'replace',
       widgetBuilder: createOrgEmbeddedWidget(OrgLink),
@@ -193,7 +203,6 @@ export const useEmbeddedWidgets = () => {
   const lineClasses: OrgLineClasses = {
     [NodeType.Headline]: (orgNode: OrgNode) =>
       `org-headline-line org-headline-${orgNode.level}`,
-    [NodeType.SrcBlock]: 'org-src-block-line',
     [NodeType.Keyword]: (orgNode: OrgNode) =>
       `org-keyword-line org-keyword-${orgNode.children.first.value
         .trim()
@@ -215,6 +224,9 @@ export const useEmbeddedWidgets = () => {
         orgNode.next?.isNot(NodeType.BlockFooter)
       ) {
         return 'org-quote-block-line';
+      }
+      if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
+        return ' org-block-footer';
       }
     },
     // TODO: master add support for nested lists.
@@ -240,26 +252,21 @@ export const useEmbeddedWidgets = () => {
       ) {
         lineClass += 'org-src-block-line';
       }
-
       if (orgNode?.parent?.parent?.is(NodeType.QuoteBlock)) {
         lineClass += 'org-quote-block-line';
       }
-
       if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
         lineClass += ' org-block-footer';
       }
-
       if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
         lineClass += ' org-block-header';
       }
-
       if (
         orgNode.parent?.is(NodeType.Section) &&
         orgNode.parent?.parent?.is(NodeType.ListItem)
       ) {
         lineClass += ' org-list-item-section-line';
       }
-
       return lineClass;
     },
   };

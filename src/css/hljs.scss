@@ -1,0 +1,69 @@
+@import 'mixins';
+
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+}
+code.hljs {
+  padding: 3px 5px;
+}
+
+.hljs {
+  color: var(--fg);
+  background: var(--base7);
+}
+.hljs,
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--editor-font-family-main) !important;
+  font-size: var(--code-font-size);
+  -webkit-font-smoothing: auto;
+}
+
+.hljs-bullet,
+.hljs-literal,
+.hljs-number,
+.hljs-symbol {
+  color: var(--dark-cyan);
+}
+.hljs-deletion,
+.hljs-keyword,
+.hljs-selector-tag {
+  color: var(--magenta);
+}
+.hljs-link,
+.hljs-template-variable,
+.hljs-variable {
+  color: var(--blue);
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--fg-alt);
+}
+.hljs-meta {
+  color: var(--magenta);
+}
+.hljs-addition,
+.hljs-attribute,
+.hljs-string {
+  color: var(--green);
+}
+.hljs-section,
+.hljs-title,
+.hljs-type {
+  color: var(--yellow);
+}
+.hljs-name,
+.hljs-selector-class,
+.hljs-selector-id {
+  color: var(--red);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
+}

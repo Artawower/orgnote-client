@@ -30,6 +30,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     rootNodeSrc: () => OrgNode,
     multilineWidget: MultilineEmbeddedWidget
   ): Range<Decoration> {
+    const [startOffset, endOffset] = multilineWidget.showRangeOffset || [0, 0];
     return Decoration.replace({
       widget: new OrgMultilineWidget(
         editorView,
@@ -38,9 +39,9 @@ export class OrgMultilineWidget extends BaseOrgWidget {
         multilineWidget
       ),
       side: 0,
-      inclusive: false,
+      inclusive: true,
       block: true,
-    }).range(orgNode.start, orgNode.end);
+    }).range(orgNode.start + startOffset, orgNode.end + endOffset);
   }
 
   public eq(other: OrgMultilineWidget) {
