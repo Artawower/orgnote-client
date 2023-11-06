@@ -5,7 +5,13 @@
 </template>
 
 <script lang="ts" setup>
-import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
+import {
+  foldAll,
+  foldEffect,
+  foldedRanges,
+  unfoldAll,
+  unfoldEffect,
+} from '@codemirror/language';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 

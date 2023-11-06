@@ -1,5 +1,6 @@
 import { useNotifications } from './notification';
 import { redo, undo } from '@codemirror/commands';
+import { foldAll, unfoldAll } from '@codemirror/language';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/models';
@@ -333,6 +334,24 @@ export const registerEditorCommands = () => {
           editorView: noteEditorStore.editorView as EditorView,
           template,
         });
+      },
+    },
+    {
+      command: 'unfold all',
+      icon: 'unfold_more',
+      description: 'unfold all headlines',
+      group: 'editor',
+      handler: () => {
+        unfoldAll(noteEditorStore.editorView as EditorView);
+      },
+    },
+    {
+      command: 'fold all',
+      icon: 'unfold_less',
+      description: 'fold all headlines',
+      group: 'editor',
+      handler: () => {
+        foldAll(noteEditorStore.editorView as EditorView);
       },
     },
   ];
