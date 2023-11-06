@@ -10,7 +10,7 @@ export type EmbeddedOrgWidget = {
 export interface WidgetBuilderParams {
   wrap: HTMLElement;
   orgNode: OrgNode;
-  rootNodeSrc?: () => OrgNode;
+  rootNodeSrc: () => OrgNode;
   onUpdateFn?: (newVal: string) => void;
   editorView: EditorView;
   readonly?: boolean;

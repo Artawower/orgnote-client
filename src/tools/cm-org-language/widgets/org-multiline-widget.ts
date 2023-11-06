@@ -83,6 +83,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
       wrap,
       orgNode: this.orgNode,
       editorView: this.view,
+      rootNodeSrc: this.rootNodeSrc,
       // TODO: master base function win inline
       onUpdateFn: this.updateValue.bind(this),
     });

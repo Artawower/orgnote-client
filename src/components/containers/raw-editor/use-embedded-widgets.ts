@@ -1,3 +1,4 @@
+import { srcBlockViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import { textToKebab } from 'src/tools';
@@ -13,7 +14,6 @@ import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoratio
 
 import { Component } from 'vue';
 
-import OrgBlockWrapper from 'src/components/OrgBlockWrapper.vue';
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
@@ -88,7 +88,7 @@ export const useEmbeddedWidgets = () => {
     [NodeType.SrcBlock]: {
       ignoreEvent: false,
       widgetBuilder: createOrgEmbeddedWidget(OrgSrcBlock),
-      // showRangeOffset: [-1, 1],
+      viewUpdater: srcBlockViewUpdater,
     },
   };
 

@@ -513,7 +513,7 @@ org-keyword-block {
   width: 100%;
   overflow: auto;
 
-  .action-btn {
+  .actions {
     right: 56px;
   }
 }

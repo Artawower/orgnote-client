@@ -19,7 +19,7 @@ const copySrc = () => {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .src-code-wrapper {
   position: relative;
 
