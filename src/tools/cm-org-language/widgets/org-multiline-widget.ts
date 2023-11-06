@@ -44,9 +44,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   }
 
   public eq(other: OrgMultilineWidget) {
-    return (
-      other.orgNode.is() && other.orgNode.rawValue === this.orgNode.rawValue
-    );
+    return other.orgNode.rawValue === this.orgNode.rawValue;
   }
 
   public sameNode(other: OrgMultilineWidget): boolean {
