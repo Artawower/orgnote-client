@@ -7,6 +7,7 @@ import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import {
+  EmbeddedWidgetBuilder,
   InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
@@ -38,6 +39,7 @@ export function initEditorExtensions(params: {
   lineClasses: OrgLineClasses;
   editorViewGetter: () => EditorView;
   foldWidget?: InlineEmbeddedWidget;
+  editBadgeWidget?: EmbeddedWidgetBuilder;
 }): Extension[] {
   const baseExtensions = [
     orgMultilineWidgetField,
@@ -100,7 +102,8 @@ export function initEditorExtensions(params: {
         orgMultilineWidgets(
           params.orgNodeGetter,
           params.multilineEmbeddedWidgets,
-          params.readonly
+          params.readonly,
+          params.editBadgeWidget
         ),
         orgLineDecoration(params.orgNodeGetter, params.lineClasses),
       ]

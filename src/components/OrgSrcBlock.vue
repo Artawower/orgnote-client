@@ -64,17 +64,17 @@ const executeCode = async () => {
 
   .actions {
     @include flexify();
-    display: none;
-    gap: 8px;
+    display: none !important;
+    gap: var(--small-gap);
     position: absolute;
     right: 10px;
-    top: 8px;
+    top: var(--small-gap);
     z-index: 1000;
   }
 
   &:hover {
     .actions {
-      display: flex;
+      display: flex !important;
     }
   }
   pre {

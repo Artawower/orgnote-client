@@ -3,7 +3,8 @@ import { NodeType, OrgNode } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/hooks';
 import { textToKebab } from 'src/tools';
 import {
-  EmbeddedOrgWidget,
+  EmbeddedWidget,
+  EmbeddedWidgetBuilder,
   InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
@@ -29,6 +30,7 @@ import OrgRawLink from 'src/components/OrgRawLink.vue';
 import OrgSrcBlock from 'src/components/OrgSrcBlock.vue';
 import OrgTable from 'src/components/OrgTable.vue';
 import OrgTags from 'src/components/OrgTags.vue';
+import ActionBtn from 'src/components/ui/ActionBtn.vue';
 
 // TODO: master refactor 😭
 // what a peremptory bullshit
@@ -45,7 +47,7 @@ export const useEmbeddedWidgets = () => {
       orgNode,
       editorView,
       readonly,
-    }: WidgetBuilderParams): EmbeddedOrgWidget => {
+    }: WidgetBuilderParams): EmbeddedWidget => {
       const normalizedOrgNodeType = textToKebab(orgNode.type.toLowerCase());
       wrap.classList.add(`org-embedded-${normalizedOrgNodeType}`);
       return dynamicComponent.mount(cmp, wrap, {
@@ -271,6 +273,19 @@ export const useEmbeddedWidgets = () => {
     },
   };
 
+  const createEmbeddedWidget =
+    (cmp: Component, props = {}): EmbeddedWidgetBuilder =>
+    (wrap: HTMLElement, dynamicProps: { [key: string]: unknown } = {}) =>
+      dynamicComponent.mount(cmp, wrap, {
+        ...props,
+        ...dynamicProps,
+      });
+
+  const editBadgeWidget = createEmbeddedWidget(ActionBtn, {
+    icon: 'edit_note',
+    activeIcon: 'done',
+  });
+
   const foldWidget: InlineEmbeddedWidget = {
     decorationType: 'replace',
     ignoreEvent: true,
@@ -283,5 +298,6 @@ export const useEmbeddedWidgets = () => {
     inlineEmbeddedWidgets,
     lineClasses,
     foldWidget,
+    editBadgeWidget,
   };
 };

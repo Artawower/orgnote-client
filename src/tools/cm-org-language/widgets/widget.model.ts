@@ -2,9 +2,9 @@ import { ChangeSpec } from '@codemirror/state';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 
-export type EmbeddedOrgWidget = {
+export type EmbeddedWidget = {
   destroy: () => void;
-  refresh?: () => void;
+  refresh?: (...args: unknown[]) => void;
 };
 
 export interface WidgetBuilderParams {
@@ -16,7 +16,7 @@ export interface WidgetBuilderParams {
   readonly?: boolean;
 }
 
-export type WidgetBuilder = (params: WidgetBuilderParams) => EmbeddedOrgWidget;
+export type WidgetBuilder = (params: WidgetBuilderParams) => EmbeddedWidget;
 
 export interface CommonEmbeddedWidget {
   satisfied?: (orgNode: OrgNode) => boolean;
@@ -48,3 +48,8 @@ export interface InlineEmbeddedWidget extends CommonEmbeddedWidget {
 export type InlineEmbeddedWidgets = {
   [key in NodeType]?: InlineEmbeddedWidget;
 };
+
+export type EmbeddedWidgetBuilder = (
+  wrap: HTMLElement,
+  dynamicProps?: { [key: string]: unknown }
+) => EmbeddedWidget;

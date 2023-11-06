@@ -61,6 +61,7 @@ const {
   inlineEmbeddedWidgets,
   lineClasses,
   foldWidget,
+  editBadgeWidget,
 } = useEmbeddedWidgets();
 
 const dynamicComponent = useDynamicComponent();
@@ -109,6 +110,7 @@ const initEditor = () => {
         orgNodeGetter: () => orgNode,
         showSpecialSymbols: props.config?.showSpecialSymbols,
         foldWidget,
+        editBadgeWidget,
       }),
     ],
   });
@@ -488,17 +490,17 @@ org-keyword-block {
 }
 
 .org-widget-edit-badge {
+  position: absolute;
+  cursor: pointer;
   color: var(--fg-alt);
   opacity: 0;
   z-index: 1000;
   cursor: pointer;
-  transition-delay: 0.1s;
   right: 16px;
-  top: 16px;
+  top: var(--small-gap);
 
   &:hover {
     opacity: 1;
-    color: var(--base8);
   }
 }
 

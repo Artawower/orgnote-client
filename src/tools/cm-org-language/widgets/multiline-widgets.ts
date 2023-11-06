@@ -3,7 +3,11 @@ import {
   addMultilineWidgetEffect,
   removeMultilineWidgetEffect,
 } from './org-multiline-widget-state';
-import { MultilineEmbeddedWidgets } from './widget.model';
+import {
+  EmbeddedWidget,
+  EmbeddedWidgetBuilder,
+  MultilineEmbeddedWidgets,
+} from './widget.model';
 import { StateEffect } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
 import { ChangedRange } from '@lezer/common';
@@ -14,7 +18,8 @@ import { hasIntersection } from 'src/tools/has-intersection';
 export const orgMultilineWidgets = (
   getOrgNode: () => OrgNode,
   widgets: MultilineEmbeddedWidgets,
-  readonly?: boolean
+  readonly?: boolean,
+  editBadgeWidget?: EmbeddedWidgetBuilder
 ) => {
   let previousCaretPosition: number;
   return EditorView.updateListener.of((v: ViewUpdate) => {
@@ -59,6 +64,7 @@ export const orgMultilineWidgets = (
           view: v.view,
           rootNodeSrc: getOrgNode,
           multilineWidget: multilineEmbeddedWidget,
+          editBadgeWidget,
         })
       );
     });

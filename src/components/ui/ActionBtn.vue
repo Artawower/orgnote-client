@@ -4,12 +4,12 @@
     :name="fired ? activeIcon : icon"
     size="1rem"
     class="action-btn"
-    :class="{ fired, dark: $q.dark.isActive }"
+    :class="[{ fired, dark: $q.dark.isActive }, contentClass ?? '']"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref, Ref, toRefs } from 'vue';
+import { Ref, ref, toRefs } from 'vue';
 
 const emits = defineEmits<{
   (e: 'click'): void;
@@ -18,6 +18,7 @@ const emits = defineEmits<{
 const props = defineProps<{
   icon: string;
   activeIcon?: string;
+  contentClass?: string;
 }>();
 
 const { icon, activeIcon } = toRefs(props);

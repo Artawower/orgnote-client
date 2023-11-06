@@ -1,5 +1,5 @@
 import { OrgMultilineWidget } from './org-multiline-widget';
-import { MultilineEmbeddedWidget } from './widget.model';
+import { EmbeddedWidgetBuilder, MultilineEmbeddedWidget } from './widget.model';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
@@ -9,6 +9,7 @@ export interface AddWidgetEffect {
   view: EditorView;
   multilineWidget: MultilineEmbeddedWidget;
   rootNodeSrc: () => OrgNode;
+  editBadgeWidget?: EmbeddedWidgetBuilder;
 }
 export const addMultilineWidgetEffect = StateEffect.define<AddWidgetEffect>();
 export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
@@ -43,7 +44,8 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
                   e.value.view,
                   e.value.orgNode,
                   e.value.rootNodeSrc,
-                  e.value.multilineWidget
+                  e.value.multilineWidget,
+                  e.value.editBadgeWidget
                 ),
           ],
         });
