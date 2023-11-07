@@ -36,6 +36,10 @@ Screen:
  Screen color depth: ${screen.colorDepth}
  Device pixel ratio: ${window.devicePixelRatio}
 
+Env:
+ API URL: ${process.env.API_URL}
+ MODE: ${process.env.NODE_ENV}
+
 Quasar info:
 ${prettyQuasarPlatform}`;
 </script>
