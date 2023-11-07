@@ -31,45 +31,48 @@ class OrgModeDecorationPlugin {
     const atomicDecorations: Range<Decoration>[] = [];
     const caretPosition = view.state.selection.main.head;
 
-    view.visibleRanges.forEach(({ from, to }) => {
-      walkTree(orgNode, (n: OrgNode) => {
-        if (n.start > to) {
-          return true;
-        }
-        if (n.start < from) {
-          return;
-        }
-        const inlineWidget = this.inlineWidgets[n.type];
+    const [visibleStart, visibleEnd] = [
+      view.visibleRanges[0].from,
+      view.visibleRanges[view.visibleRanges.length - 1].to,
+    ];
 
-        const unsatisfied =
-          inlineWidget?.satisfied && !inlineWidget?.satisfied?.(n);
+    walkTree(orgNode, (n: OrgNode) => {
+      if (n.start > visibleEnd) {
+        return true;
+      }
+      if (n.start < visibleStart) {
+        return;
+      }
+      const inlineWidget = this.inlineWidgets[n.type];
 
-        if (!inlineWidget || unsatisfied) {
-          return;
-        }
+      const unsatisfied =
+        inlineWidget?.satisfied && !inlineWidget?.satisfied?.(n);
 
-        const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
+      if (!inlineWidget || unsatisfied) {
+        return;
+      }
 
-        if (
-          view.hasFocus &&
-          !inlineWidget.ignoreEditing &&
-          caretPosition >= n.start - startOffset &&
-          caretPosition <= n.end + endOffset
-        ) {
-          return;
-        }
+      const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
-        const decoration = OrgInlineWidget.init(
-          view,
-          n,
-          inlineWidget,
-          this.getRootNode,
-          this.readonly
-        );
-        if (decoration) {
-          atomicDecorations.push(decoration);
-        }
-      });
+      if (
+        view.hasFocus &&
+        !inlineWidget.ignoreEditing &&
+        caretPosition >= n.start - startOffset &&
+        caretPosition <= n.end + endOffset
+      ) {
+        return;
+      }
+
+      const decoration = OrgInlineWidget.init(
+        view,
+        n,
+        inlineWidget,
+        this.getRootNode,
+        this.readonly
+      );
+      if (decoration) {
+        atomicDecorations.push(decoration);
+      }
     });
 
     return [

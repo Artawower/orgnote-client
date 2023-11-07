@@ -53,7 +53,10 @@ export class OrgMultilineWidget extends BaseOrgWidget {
 
   // TODO: master this method should be optimized for performance issue with big document
   public eq(other: OrgMultilineWidget) {
-    return other.orgNode.rawValue === this.orgNode.rawValue;
+    const sameLengthAndType =
+      other.orgNode.length === this.orgNode.length &&
+      other.orgNode.is(this.orgNode.type);
+    return sameLengthAndType;
   }
 
   public sameNode(other: OrgMultilineWidget): boolean {
