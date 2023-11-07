@@ -4,7 +4,6 @@ import {
   removeMultilineWidgetEffect,
 } from './org-multiline-widget-state';
 import {
-  EmbeddedWidget,
   EmbeddedWidgetBuilder,
   MultilineEmbeddedWidgets,
 } from './widget.model';
@@ -53,6 +52,7 @@ export const orgMultilineWidgets = (
 
       const multilineEmbeddedWidget = widgets[n.type];
       if (
+        !multilineEmbeddedWidget.suppressEdit &&
         multilineEmbeddedWidget.satisfied &&
         !multilineEmbeddedWidget.satisfied(n)
       ) {

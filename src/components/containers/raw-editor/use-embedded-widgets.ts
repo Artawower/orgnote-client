@@ -85,10 +85,11 @@ export const useEmbeddedWidgets = () => {
     },
     [NodeType.PropertyDrawer]: {
       ignoreEvent: true,
+      suppressEdit: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgPropertyDrawer),
     },
     [NodeType.SrcBlock]: {
-      ignoreEvent: false,
+      ignoreEvent: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgSrcBlock),
       viewUpdater: srcBlockViewUpdater,
     },

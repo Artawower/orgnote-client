@@ -650,6 +650,7 @@ org-keyword-block {
 }
 
 .org-embedded-propertydrawer {
+  padding-bottom: calc(var(--default-block-padding) * 2);
   display: none;
 }
 

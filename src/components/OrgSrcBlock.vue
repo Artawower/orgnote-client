@@ -13,7 +13,6 @@
 
 <script setup lang="ts">
 import { OrgComponentProps } from './org-component-props';
-import { NodeType } from 'org-mode-ast';
 import { copyToClipboard } from 'quasar';
 import { useNotifications } from 'src/hooks';
 import { useOrgBabelStore } from 'src/stores';

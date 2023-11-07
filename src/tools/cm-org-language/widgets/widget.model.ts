@@ -28,6 +28,7 @@ export interface CommonEmbeddedWidget {
 
 export interface MultilineEmbeddedWidget extends CommonEmbeddedWidget {
   widgetBuilder: WidgetBuilder;
+  suppressEdit?: boolean;
 }
 
 export type MultilineEmbeddedWidgets = {

@@ -70,7 +70,10 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     }
   }
 
-  private initEditorBadge(): void {
+  private initEditorBadge(wrap: HTMLElement): void {
+    if (this.multilineWidget.suppressEdit) {
+      return;
+    }
     this.editBadge = document.createElement('div');
     if (this.editBadgeWidget) {
       this.editBadgeWidget(this.editBadge, {});
@@ -84,6 +87,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
       'click',
       this.editMultilineWidget.bind(this)
     );
+    wrap.appendChild(this.editBadge);
   }
 
   toDOM() {
@@ -98,8 +102,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
       // TODO: master base function win inline
       onUpdateFn: this.updateValue.bind(this),
     });
-    this.initEditorBadge();
-    wrap.appendChild(this.editBadge);
+    this.initEditorBadge(wrap);
     return wrap;
   }
 

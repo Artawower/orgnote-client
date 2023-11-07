@@ -69,12 +69,6 @@ const updateProperties = (properties: string) => {
   color: var(--fg);
 }
 
-.actions {
-  @include mobile {
-    margin-right: 48px;
-  }
-}
-
 .property-drawer-editor {
   width: 600px;
   background: var(--bg);
