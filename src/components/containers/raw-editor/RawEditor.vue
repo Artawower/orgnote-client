@@ -140,7 +140,9 @@ watch(
   (opened) => {
     if (opened) {
       setTimeout(() => scrollIntoCurrentLine(), 100);
+      return;
     }
+    editorView.contentDOM.blur();
   }
 );
 

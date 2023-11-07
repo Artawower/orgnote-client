@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.12.10",
+  "version": "0.12.11",
   "description": "Org Note client for eponymous service",
   "productName": "Org Note",
   "author": "artawower <artawower@protonmail.com>",

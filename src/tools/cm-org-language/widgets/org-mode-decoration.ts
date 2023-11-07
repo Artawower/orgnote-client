@@ -51,6 +51,7 @@ class OrgModeDecorationPlugin {
         const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
         if (
+          view.hasFocus &&
           !inlineWidget.ignoreEditing &&
           caretPosition >= n.start - startOffset &&
           caretPosition <= n.end + endOffset
@@ -114,6 +115,7 @@ export const orgInlineWidgets = (
         if (
           update.docChanged ||
           update.viewportChanged ||
+          update.focusChanged ||
           caretPositionChanged
         ) {
           this.initDecorations(update.view);

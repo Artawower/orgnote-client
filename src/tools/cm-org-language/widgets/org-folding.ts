@@ -20,7 +20,11 @@ const getFoldingWidgets = (
   const editorView = getEditorView();
   const rangeSet: Range<Decoration>[] = [];
   walkTree(orgNode, (n: OrgNode) => {
-    if (caretPosition >= n.start && caretPosition <= n.end) {
+    if (
+      editorView.hasFocus &&
+      caretPosition >= n.start &&
+      caretPosition <= n.end
+    ) {
       return;
     }
     if (n.is(NodeType.Operator) && n.parent?.parent?.is(NodeType.Headline)) {
@@ -82,7 +86,8 @@ const foldingListener = (
       !updateFolding &&
       !update.docChanged &&
       !update.viewportChanged &&
-      !caretPositionChanged
+      !caretPositionChanged &&
+      !update.focusChanged
     ) {
       return;
     }
