@@ -83,6 +83,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
+import { useBodyActionPaneClass } from 'src/hooks';
 import {
   CompletionCandidate,
   defaultCompletionLimit,
@@ -168,6 +169,7 @@ const closeCompletionOnBlur = () => {
 };
 
 const { config } = useSettingsStore();
+useBodyActionPaneClass();
 </script>
 
 <style lang="scss" setup>

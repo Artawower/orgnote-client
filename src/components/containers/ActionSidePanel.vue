@@ -184,7 +184,7 @@
   </q-drawer>
   <!-- TODO: master disable quasar animtion. It's very irritable -->
   <q-drawer
-    v-show="sidebarStore.opened"
+    v-if="sidebarStore.opened"
     class="main-sidebar"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     :overlay="fullWidth"
@@ -192,7 +192,9 @@
     no-swipe-backdrop
     v-model="sidebarStore.opened"
   >
-    <component :is="sidebarStore.component"></component>
+    <action-pane-wrapper>
+      <component :is="sidebarStore.component"></component>
+    </action-pane-wrapper>
   </q-drawer>
 </template>
 
@@ -221,6 +223,7 @@ import {
   toRef,
 } from 'vue';
 
+import ActionPaneWrapper from 'src/components/ActionPaneWrapper.vue';
 import FileManagerSidebar from 'src/components/containers/FileManagerSideBar.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';

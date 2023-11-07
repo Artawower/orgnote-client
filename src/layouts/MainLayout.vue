@@ -42,7 +42,6 @@ import {
   onAppActive,
   onMobileViewportChanged,
   registerEditorCommands,
-  useBodySidebarClass,
   useMainCommands,
 } from 'src/hooks';
 import { useSidebarStore, useSyncStore, useToolbarStore } from 'src/stores';
@@ -109,8 +108,6 @@ onAppActive((active: boolean) => {
     syncStore.syncNotes();
   }
 });
-
-useBodySidebarClass();
 </script>
 
 <style lang="scss" scoped>
