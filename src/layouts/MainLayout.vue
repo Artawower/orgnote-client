@@ -17,6 +17,7 @@
       />
       <q-page-container
         class="height-max-dynamic"
+        v-touch-swipe.mouse.right="sidebarStore.open"
         :class="{ 'with-composite-bar': $q.screen.gt.xs }"
       >
         <modal-window />

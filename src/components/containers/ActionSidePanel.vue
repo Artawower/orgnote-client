@@ -185,6 +185,7 @@
   <!-- TODO: master disable quasar animtion. It's very irritable -->
   <q-drawer
     v-if="sidebarStore.opened"
+    v-touch-swipe.mouse.left="closeSideBarForMobile"
     class="main-sidebar"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     :overlay="fullWidth"
