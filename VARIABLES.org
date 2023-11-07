@@ -205,6 +205,7 @@
 - =--modal-padding=:  8px 0;
 ** Box paddings/margins
 - =--default-block-padding=:  16px;
+- =--default-block-margin=:  16px;
 - =--default-block-border-radius=:  16px;
 - =--sm-block-border-radius=:  6px;
 - =--default-item-radius=:  8px;

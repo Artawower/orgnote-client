@@ -507,6 +507,7 @@ org-keyword-block {
 }
 
 .org-multiline-widget {
+  margin-top: var(--default-block-margin);
   &:hover,
   &:active {
     .org-widget-edit-badge {
@@ -555,6 +556,7 @@ org-keyword-block {
 }
 
 .org-block-header {
+  margin-top: var(--default-block-margin);
   position: relative;
 
   border-top-right-radius: var(--sm-block-border-radius);

@@ -51,6 +51,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     }).range(orgNode.start + startOffset, orgNode.end + endOffset);
   }
 
+  // TODO: master this method should be optimized for performance issue with big document
   public eq(other: OrgMultilineWidget) {
     return other.orgNode.rawValue === this.orgNode.rawValue;
   }
@@ -115,7 +116,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
 
   destroy(): void {
     this.widget.destroy();
-    this.editBadge.removeEventListener('click', this.editMultilineWidget);
-    this.editBadge.remove();
+    this.editBadge?.removeEventListener('click', this.editMultilineWidget);
+    this.editBadge?.remove();
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <div class="property-drawer">
     <div class="info line-limit-1">
-      <template v-if="node.parent?.meta.id">
-        id:{{ node.parent?.meta.id }}
+      <template v-if="node.parent?.meta?.id">
+        id:{{ node.parent?.meta?.id }}
       </template>
     </div>
     <div v-if="!readonly" class="actions">
