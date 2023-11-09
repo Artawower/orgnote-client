@@ -1,9 +1,8 @@
 import { useSettingsStore } from './settings';
 import { useSyncStore } from './sync';
-import { app } from '@electron/remote';
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
-import { openURL, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useNotifications } from 'src/hooks';
 import { OAuthProvider, PersonalInfo } from 'src/models';

@@ -201,6 +201,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
+import { useQuasar } from 'quasar';
 import { User } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import {
@@ -222,6 +223,7 @@ import {
   onUnmounted,
   ref,
   toRef,
+  watch,
 } from 'vue';
 
 import ActionPaneWrapper from 'src/components/ActionPaneWrapper.vue';
@@ -304,6 +306,12 @@ const { currentNote } = storeToRefs(useCurrentNoteStore());
 
 const noteEditorStore = useNoteEditorStore();
 const settingsStore = useSettingsStore();
+
+// NOTE: master strange behaviour of caret inside editor when it has focus
+const $q = useQuasar();
+if ($q.platform.is.ios) {
+  (document.activeElement as HTMLInputElement)?.blur();
+}
 </script>
 
 <style lang="scss">
