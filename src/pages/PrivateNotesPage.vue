@@ -95,7 +95,7 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 <style lang="scss" scoped>
 .scroll-container {
   overflow: auto;
-  height: 100svh;
+  height: calc(100svh - var(--top-bar-height));
 }
 
 .q-page {

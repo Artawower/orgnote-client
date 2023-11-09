@@ -74,8 +74,9 @@ module.exports = configure(function (ctx) {
       // publicPath: '/',
       analyze: true,
       env: {
-        API_URL: ctx.dev ? '' : process.env.API_URL,
+        API_URL: process.env.API_URL ?? '',
         AUTH_URL: process.env.AUTH_URL,
+        VUE_ROUTER_MODE: 'history',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
@@ -242,12 +243,13 @@ module.exports = configure(function (ctx) {
 
       inspectPort: 5858,
 
-      bundler: 'packager', // 'packager' or 'builder'
+      // bundler: 'packager', // 'packager' or 'builder'
+      bundler: 'builder', // 'packager' or 'builder'
 
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
         // OS X / Mac App Store
-        // appBundleId: '',
+        appBundleId: 'org.note.app',
         // appCategoryType: '',
         // osxSign: '',
         // protocol: 'myapp://path',
@@ -258,7 +260,7 @@ module.exports = configure(function (ctx) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'orgnote-client',
+        appId: 'org.note.app',
       },
     },
 

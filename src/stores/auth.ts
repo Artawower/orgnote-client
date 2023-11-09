@@ -1,8 +1,9 @@
 import { useSettingsStore } from './settings';
 import { useSyncStore } from './sync';
+import { app } from '@electron/remote';
 import { AxiosError } from 'axios';
 import { defineStore } from 'pinia';
-import { useQuasar } from 'quasar';
+import { openURL, useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useNotifications } from 'src/hooks';
 import { OAuthProvider, PersonalInfo } from 'src/models';
@@ -42,12 +43,18 @@ export const useAuthStore = defineStore(
         // TODO: master quick tmp solution.
         // common OAuth for mobile and web
         const authUrl = `${process.env.AUTH_URL}/auth/login/${provider}?state=mobile`;
-        console.log('✎: [line 42][auth.ts] authUrl: ', authUrl);
         window.open(authUrl, '_system');
         return;
       }
-      const rspns = (await sdk.auth.authProviderLoginGet(provider, state)).data;
 
+      if ($q.platform.is.electron) {
+        const { redirectUrl } = await electron.auth(
+          `${process.env.AUTH_URL}/auth/login/${provider}?state=desktop`
+        );
+        router.push(redirectUrl);
+        return;
+      }
+      const rspns = (await sdk.auth.authProviderLoginGet(provider, state)).data;
       window.location.replace(rspns.data.redirectUrl);
 
       return rspns;

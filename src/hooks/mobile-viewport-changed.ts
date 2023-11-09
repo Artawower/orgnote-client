@@ -8,10 +8,10 @@ interface ViewportInfo {
 }
 
 export function onMobileViewportChanged(cb?: (info: ViewportInfo) => void) {
-  const viewportHeight = ref<number>(window.innerHeight);
-  const keyboardOpened = ref<boolean>(false);
-
   const $q = useQuasar();
+  const electronOffset = $q.platform.is.electron ? 32 : 0;
+  const viewportHeight = ref<number>(window.innerHeight - electronOffset);
+  const keyboardOpened = ref<boolean>(false);
 
   const viewportInfo: ViewportInfo = {
     viewportHeight,
@@ -28,7 +28,7 @@ export function onMobileViewportChanged(cb?: (info: ViewportInfo) => void) {
         Math.round(window.visualViewport.height) ||
       window.innerHeight / window.screen.availHeight <= 0.6;
 
-    viewportHeight.value = window.visualViewport.height;
+    viewportHeight.value = window.visualViewport.height - electronOffset;
     cb?.(viewportInfo);
   };
 

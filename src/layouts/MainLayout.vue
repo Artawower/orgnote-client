@@ -10,6 +10,7 @@
       class="main-content"
       @uploaded="notesImportStore.uploadFiles"
     >
+      <the-header />
       <action-side-panel
         v-if="$q.screen.gt.xs || sidebarStore.opened"
         :full-width="$q.screen.lt.sm"
@@ -60,6 +61,7 @@ import EditorActionsToolbar from 'src/components/containers/EditorActionsToolbar
 import FileUploader from 'src/components/containers/FileUploader.vue';
 import ModalWindow from 'src/components/containers/ModalWindow.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
+import TheHeader from 'src/components/containers/TheHeader.vue';
 import ToolBar from 'src/components/containers/ToolBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 
@@ -122,11 +124,14 @@ onAppActive((active: boolean) => {
 }
 </style>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .q-layout,
 .q-page-container,
 .file-uploader {
   max-height: var(--viewport-height);
   height: var(--viewport-height);
+}
+.q-header {
+  left: 0 !important;
 }
 </style>

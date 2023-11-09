@@ -55,9 +55,7 @@ const setupUser = async () => {
   if (config.common.developerMode) {
     await sleep(10000);
   }
-  console.log('✎: [line 34][auth] route.query.state: ', state.value);
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
-    // NOTE: Try to open mobile app
     const mobileAppUrl = `orgnote://auth/login${window.location.search}`;
     window.location.assign(mobileAppUrl);
     return;

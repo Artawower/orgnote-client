@@ -56,7 +56,9 @@ reloadNotes();
 <style lang="scss" scoped>
 .scroll-container {
   overflow: auto;
+  height: calc(100svh - var(--top-bar-height));
 }
+
 .q-page {
   max-width: var(--content-max-width);
   margin: auto;
