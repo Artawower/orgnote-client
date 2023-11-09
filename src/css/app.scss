@@ -84,3 +84,9 @@ a {
 .bg-alt {
   background: var(--bg-alt);
 }
+
+@include electron {
+  .top-offset {
+    padding-top: 32px;
+  }
+}

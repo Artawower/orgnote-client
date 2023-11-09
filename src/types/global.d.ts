@@ -10,4 +10,7 @@ interface Navigator extends Navigator {
 // declare var electron: ElectronApi;
 declare global {
   const electron: ElectronApi;
+  interface Window {
+    electron: ElectronApi;
+  }
 }

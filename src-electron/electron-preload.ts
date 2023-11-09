@@ -34,6 +34,7 @@ import {
   sender,
 } from './communication';
 import { ElectronApi } from './electron-api';
+import { BrowserWindow } from '@electron/remote';
 import { contextBridge, ipcRenderer } from 'electron';
 
 const api: ElectronApi = {
@@ -41,6 +42,23 @@ const api: ElectronApi = {
     sender(ipcRenderer)(new AuthAction(url));
     const redirectUrl = await receiveOnce(new AuthSuccessAction());
     return { redirectUrl };
+  },
+  minimize() {
+    BrowserWindow.getFocusedWindow().minimize();
+  },
+
+  toggleMaximize() {
+    const win = BrowserWindow.getFocusedWindow();
+
+    if (win.isFullScreen()) {
+      win.setFullScreen(false);
+    } else {
+      win.setFullScreen(true);
+    }
+  },
+
+  close() {
+    BrowserWindow.getFocusedWindow().close();
   },
 };
 

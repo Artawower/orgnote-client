@@ -4,6 +4,7 @@ import { shell } from 'electron';
 import os from 'os';
 import path from 'path';
 
+require('@electron/remote/main').initialize();
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
 
@@ -32,6 +33,7 @@ function createWindow() {
     width: 1000,
     height: 600,
     useContentSize: true,
+    frame: false,
     webPreferences: {
       sandbox: false,
       contextIsolation: true,
@@ -39,6 +41,7 @@ function createWindow() {
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
     },
   });
+  require('@electron/remote/main').enable(mainWindow.webContents);
 
   openDevTools(mainWindow);
 

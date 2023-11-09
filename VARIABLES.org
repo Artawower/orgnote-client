@@ -245,3 +245,4 @@
 ** Border
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;
+- =--top-bar-height=:  32px;

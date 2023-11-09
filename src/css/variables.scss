@@ -177,3 +177,7 @@ body {
 body.standalone {
   --device-padding-bottom: 24px;
 }
+
+@include electron {
+  --top-bar-height: 32px;
+}

@@ -1,7 +1,7 @@
 <template>
   <!-- TODO: master move to separated component: composite-bar  -->
   <q-drawer
-    class="composite-bar"
+    class="composite-bar top-offset"
     show-if-above
     :mini="true"
     v-model="compositeOpened"
@@ -186,7 +186,7 @@
   <q-drawer
     v-if="sidebarStore.opened"
     v-touch-swipe.mouse.left="closeSideBarForMobile"
-    class="main-sidebar"
+    class="main-sidebar top-offset"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
     :overlay="fullWidth"
     :breakpoint="0"
@@ -315,7 +315,7 @@ const settingsStore = useSettingsStore();
   width: 100%;
 }
 
-.q-drawer-container:nth-child(2) {
+.q-drawer-container:nth-child(3) {
   aside {
     left: var(--sidebar-width);
   }
