@@ -1,8 +1,8 @@
 <template>
   <div
     v-if="$q.platform.is.mobile && !$q.platform.is.cordova"
-    @touchmove="touchMove"
-    @touchstart="touchStart"
+    @touchmove.stop="touchMove"
+    @touchstart.stop="touchStart"
     class="prevent-touch"
   >
     <slot />
