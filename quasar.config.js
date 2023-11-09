@@ -74,8 +74,9 @@ module.exports = configure(function (ctx) {
       // publicPath: '/',
       analyze: true,
       env: {
-        API_URL: ctx.dev ? '' : process.env.API_URL,
+        API_URL: process.env.API_URL ?? '',
         AUTH_URL: process.env.AUTH_URL,
+        VUE_ROUTER_MODE: 'history',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
@@ -258,7 +259,7 @@ module.exports = configure(function (ctx) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'orgnote-client',
+        appId: 'orgnote',
       },
     },
 

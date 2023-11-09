@@ -27,3 +27,21 @@
  *   }
  * }
  */
+import {
+  AuthAction,
+  AuthSuccessAction,
+  receiveOnce,
+  sender,
+} from './communication';
+import { ElectronApi } from './electron-api';
+import { contextBridge, ipcRenderer } from 'electron';
+
+const api: ElectronApi = {
+  auth: async (url: string) => {
+    sender(ipcRenderer)(new AuthAction(url));
+    const redirectUrl = await receiveOnce(new AuthSuccessAction());
+    return { redirectUrl };
+  },
+};
+
+contextBridge.exposeInMainWorld('electron', api);
