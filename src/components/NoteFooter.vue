@@ -29,7 +29,7 @@
             <q-btn
               flat
               rounded
-              :size="iconSize"
+              size="md"
               icon="fa-brands fa-square-twitter"
               class="q-pa-sm"
               @click="showNotImplemented('Twitter share')"
@@ -37,7 +37,7 @@
             <q-btn
               flat
               rounded
-              :size="iconSize"
+              size="md"
               icon="fa-brands fa-telegram"
               class="q-pa-sm"
               @click="showNotImplemented('Telegram share')"
@@ -45,7 +45,7 @@
             <q-btn
               flat
               rounded
-              :size="iconSize"
+              size="md"
               icon="far fa-copy"
               class="q-pa-sm"
               @click="showNotImplemented('Copy link')"
