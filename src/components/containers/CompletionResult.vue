@@ -56,8 +56,10 @@
               <q-icon v-if="item.icon" :name="item.icon" size="sm"></q-icon>
             </div>
             <div class="text-bold flex flex-start gap-8 line-limit-1">
-              <div v-if="config.completion.showGroup">[{{ item.group }}]:</div>
-              <div class="capitalize">{{ item.command }}</div>
+              <span v-if="config.completion.showGroup"
+                >[{{ item.group }}]:&nbsp</span
+              >
+              <span class="capitalize">{{ item.command }}</span>
             </div>
             <div>
               <span class="text-italic color-secondary line-limit-1">
