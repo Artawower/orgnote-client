@@ -1,4 +1,4 @@
-import { ModelsPublicNote } from 'src/generated/api';
+import { ModelsPublicNote, ModelsPublicUser } from 'src/generated/api';
 
 export interface NotesFilter {
   searchText?: string;
@@ -14,6 +14,7 @@ export interface NotePreview {
   updatedAt: ModelsPublicNote['updatedAt'];
   filePath: ModelsPublicNote['filePath'];
   isMy: ModelsPublicNote['isMy'];
+  author?: ModelsPublicUser;
 }
 
 export interface Note extends ModelsPublicNote {

@@ -52,7 +52,11 @@
           v-if="!isTile && previewImage"
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
-          <image-resolver v-if="previewImage" :src="previewImage" />
+          <image-resolver
+            :authorId="notePreview.author.id"
+            v-if="previewImage"
+            :src="previewImage"
+          />
           <!-- TODO: add fine markup for notes without preview-->
           <div v-else class="mock-picture pointer rounded-borders"></div>
         </q-card-section>

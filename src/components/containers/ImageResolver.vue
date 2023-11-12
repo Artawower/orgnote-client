@@ -15,7 +15,8 @@ import { buildMediaFilePath, getFileName } from 'src/tools';
 import { computed, onBeforeMount, ref } from 'vue';
 
 const props = defineProps<{
-  src: string | null;
+  src?: string;
+  authorId?: string;
 }>();
 
 const fileStore = useFileStore();
@@ -37,11 +38,13 @@ const initStoredMediaFile = async () => {
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const previewImg = computed(() => {
-  const folder = orgNoteApi.currentNote.getCurrentNote()?.author.id;
+  const folder =
+    props.authorId ?? orgNoteApi.currentNote.getCurrentNote()?.author.id;
   if (!folder) {
     return null;
   }
-  return buildMediaFilePath(props.src, folder);
+  const mediaFilePath = buildMediaFilePath(props.src, folder);
+  return mediaFilePath;
 });
 
 const onImgClick = () => {
