@@ -45,7 +45,10 @@
     </q-list>
 
     <q-list>
-      <q-item class="text-italic flex-center">{{ version }}</q-item>
+      <q-item class="text-italic flex-center"
+        >{{ version }}
+        <span class="text-weight-light text-caption">&nbsp;(beta)</span></q-item
+      >
       <q-item>
         <download-links></download-links>
       </q-item>
