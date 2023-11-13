@@ -79,7 +79,7 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const fetchNotes = async (offset: number, limit: number) => {
-    if (filters.value.offset === offset) {
+    if (!!filters.value.offset && filters.value.offset === offset) {
       return;
     }
 

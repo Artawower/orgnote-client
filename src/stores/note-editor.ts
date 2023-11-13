@@ -96,6 +96,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
         createdAt: createdTime.value ?? now,
         isMy: true,
         updatedAt: now,
+        touchedAt: now,
         filePath: filePath.value?.length
           ? toRaw(filePath.value)
           : [generateFileName(orgTree.value.meta.title)],

@@ -45,7 +45,7 @@
               {{ notePreview.meta.description }}
             </div>
           </div>
-          <tag-list :tags="notePreview?.meta?.fileTags" />
+          <tag-list :tags="notePreview?.meta?.fileTags" :inline="true" />
         </q-card-section>
 
         <q-card-section
@@ -53,7 +53,7 @@
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
           <image-resolver
-            :authorId="notePreview.author.id"
+            :authorId="notePreview.author?.id ?? authStore.user?.id"
             v-if="previewImage"
             :src="previewImage"
           />
@@ -76,6 +76,7 @@
 <script setup lang="ts">
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
+import { useAuthStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { useViewStore } from 'src/stores/view';
 import { useRouter } from 'vue-router';
@@ -123,6 +124,8 @@ watch(
     previewImage.value = images?.[0];
   }
 );
+
+const authStore = useAuthStore();
 </script>
 
 <style lang="scss" scoped>

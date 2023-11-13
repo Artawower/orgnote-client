@@ -1,3 +1,4 @@
+import { useAuthStore } from './auth';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
@@ -22,6 +23,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
 
   const notesStore = useNotesStore();
   const router = useRouter();
+  const authStore = useAuthStore();
 
   const create = async (id?: string, filePath?: string[]) => {
     id ??= v4();
@@ -37,6 +39,8 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       id,
       filePath,
       isMy: true,
+      author: { id: authStore.user.id },
+      touchedAt: new Date().toISOString(),
       meta: parsedNote.meta as ModelsNoteMeta,
     });
     await notesStore.upsertNotesLocally([note]);
