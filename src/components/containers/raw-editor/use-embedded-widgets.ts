@@ -119,6 +119,7 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgListTag, {
         container: 'span',
         withHash: false,
+        inline: false,
       }),
     },
     [NodeType.Date]: {

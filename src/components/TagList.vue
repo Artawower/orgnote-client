@@ -88,14 +88,20 @@ onMounted(() => {
   width: 100%;
 
   &.inline {
-    white-space: nowrap;
-    overflow: hidden;
+    @include line-limit(1);
+    .text-tag {
+      margin-right: var(--small-gap);
+    }
   }
 
   &:hover {
-    white-space: normal;
+    display: flex !important;
     overflow: visible;
     background: var(--bg);
+    -webkit-line-clamp: unset;
+    .text-tag {
+      margin-right: 0;
+    }
 
     &.long {
       border: 1px solid var(--fg);
