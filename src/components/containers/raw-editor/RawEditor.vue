@@ -555,13 +555,17 @@ org-keyword-block {
   margin-bottom: var(--src-block-margin-y);
 }
 
+.org-keyword-description-line,
+.org-keyword-title-line {
+  :not(&) + .org-block-header {
+    margin-top: var(--sm-block-margin);
+  }
+}
 .org-block-header {
-  margin-top: var(--default-block-margin);
   position: relative;
 
   border-top-right-radius: var(--sm-block-border-radius);
   border-top-left-radius: var(--sm-block-border-radius);
-  padding-top: var(--src-block-header-padding-y) !important;
 }
 
 // Readonly mode
@@ -622,7 +626,7 @@ org-keyword-block {
 
 .cm-action-menu {
   width: 48px;
-  left: -48px;
+  left: -56px;
 }
 
 .org-keyword-title-line {

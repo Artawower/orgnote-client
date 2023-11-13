@@ -1,14 +1,12 @@
 import { ViewUpdate } from '@codemirror/view';
 import { EditorView } from 'codemirror';
+import { getCssNumericProperty } from 'src/tools';
 
 const renderParentMenuContainer = (parent: HTMLElement | string) => {
   const activeLineElement = document.querySelector('.cm-activeLine');
   if (!activeLineElement) {
     return;
   }
-  const sizeCalculateTarget = activeLineElement.firstElementChild
-    ? activeLineElement
-    : activeLineElement;
 
   const parentElement: Element =
     typeof parent === 'string'
@@ -23,10 +21,15 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
     window.getComputedStyle(parentElement).paddingTop
   );
   const menuWidth = 30;
+  const menuHeight = 24;
+  const paddingTop = getCssNumericProperty(activeLineElement, 'padding-top');
+  const lineHeight = getCssNumericProperty(activeLineElement, 'line-height');
+  const centerOffset = lineHeight / 2 - menuHeight / 2;
+
   const relativeOffset =
-    sizeCalculateTarget.getBoundingClientRect().top +
-    sizeCalculateTarget.getBoundingClientRect().height / 2 -
-    menuWidth / 2 +
+    activeLineElement.getBoundingClientRect().top +
+    paddingTop * 1.1 +
+    centerOffset +
     parentElement.scrollTop -
     parentElementTopPadding;
 
