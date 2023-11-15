@@ -68,6 +68,7 @@ export const useAuthStore = defineStore(
       const settingsStore = useSettingsStore();
       settingsStore.reset();
       resetAuthInfo();
+      router.push({ name: RouteNames.Home });
       await sdk.auth.authLogoutGet();
     };
 

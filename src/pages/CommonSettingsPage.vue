@@ -49,9 +49,9 @@ const clearAllData = async () => {
     return;
   }
 
+  await router.push({ name: RouteNames.Home });
   localStorage.clear();
   await db.dropAll();
-  router.push(RouteNames.Home);
   window.location.reload();
 };
 
