@@ -26,6 +26,7 @@ import OrgLink from 'src/components/OrgLink.vue';
 import OrgListTag from 'src/components/OrgListTag.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
 import OrgPropertyDrawer from 'src/components/OrgPropertyDrawer.vue';
+import OrgQuoteBlock from 'src/components/OrgQuoteBlock.vue';
 import OrgRawLink from 'src/components/OrgRawLink.vue';
 import OrgSrcBlock from 'src/components/OrgSrcBlock.vue';
 import OrgTable from 'src/components/OrgTable.vue';
@@ -89,9 +90,11 @@ export const useEmbeddedWidgets = () => {
       widgetBuilder: createOrgEmbeddedWidget(OrgPropertyDrawer),
     },
     [NodeType.SrcBlock]: {
-      ignoreEvent: true,
       widgetBuilder: createOrgEmbeddedWidget(OrgSrcBlock),
       viewUpdater: srcBlockViewUpdater,
+    },
+    [NodeType.QuoteBlock]: {
+      widgetBuilder: createOrgEmbeddedWidget(OrgQuoteBlock),
     },
   };
 

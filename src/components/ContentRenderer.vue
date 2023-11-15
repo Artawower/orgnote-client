@@ -23,7 +23,7 @@ import OrgLatexBlock from './OrgLatexBlock.vue';
 import OrgLink from './OrgLink.vue';
 import NewLine from './OrgNewLine.vue';
 import OrgPlainList from './OrgPlainList.vue';
-import OrgQuote from './OrgQuote.vue';
+import OrgQuoteBlock from './OrgQuoteBlock.vue';
 import RawLink from './OrgRawLink.vue';
 import OrgSrcBlock from './OrgSrcBlock.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
@@ -34,7 +34,7 @@ import OrgText from './OrgText.vue';
 
 const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.Headline]: OrgHeadline,
-  [NodeType.QuoteBlock]: OrgQuote,
+  [NodeType.QuoteBlock]: OrgQuoteBlock,
   [NodeType.Italic]: OrgItalic,
   [NodeType.Text]: OrgText,
   [NodeType.List]: OrgPlainList,
