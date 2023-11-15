@@ -92,7 +92,13 @@ export const useAuthStore = defineStore(
     const authUser = async (u: PersonalInfo, t: string) => {
       user.value = u;
       token.value = t;
-      await syncStore.syncNotes();
+      try {
+        await syncStore.syncNotes();
+      } catch (e) {
+        if (!(e as AxiosError).response.status) {
+          throw e;
+        }
+      }
     };
 
     const subscribe = async (token: string) => {
