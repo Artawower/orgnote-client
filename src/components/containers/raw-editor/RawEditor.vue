@@ -519,7 +519,7 @@ org-keyword-block {
   overflow: auto;
 
   .actions {
-    right: 56px;
+    right: 58px;
   }
 }
 
@@ -700,11 +700,26 @@ org-keyword-block {
       top: 8px;
       opacity: 1;
       left: unset;
+      display: none;
+    }
+
+    .org-multiline-widget {
+      &:hover {
+        .org-widget-edit-badge {
+          display: block;
+        }
+      }
     }
 
     .cm-line {
       padding-left: var(--default-block-padding);
       padding-right: var(--default-block-padding);
+    }
+  }
+
+  .org-multiline-widget {
+    .actions {
+      right: 50px;
     }
   }
 }
