@@ -1,6 +1,7 @@
 <template>
   <prevent-ios-touch>
-    <div v-if="inited" class="editor-actions">
+    revent-ios-touchvent-ios-touch>
+    <div v-if="inited" class="editor-actions" @touchstart.stop @mousedown.stop>
       <div
         v-for="cmd of editorCommands"
         @mousedown.prevent.stop="handleEditorAction(cmd)"
