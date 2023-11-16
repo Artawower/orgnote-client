@@ -11,9 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-import { version } from '../../package.json';
-
-const apkUrl = `https://github.com/Artawower/orgnote-client/releases/download/${version}/orgnote-${version}.apk`;
+const apkUrl = 'https://play.google.com/store/apps/details?id=org.note.app';
 </script>
 
 <style lang="scss">
