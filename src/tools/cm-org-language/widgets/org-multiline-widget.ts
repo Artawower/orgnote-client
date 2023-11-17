@@ -98,6 +98,8 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     const wrap = document.createElement('div');
     wrap.style.position = 'relative';
     wrap.classList.add('org-multiline-widget');
+    wrap.addEventListener('touchstart', (e: Event) => e.stopPropagation());
+    wrap.addEventListener('mousedown', (e: Event) => e.stopPropagation());
     this.widget = this.multilineWidget.widgetBuilder({
       wrap,
       orgNode: this.orgNode,
