@@ -18,6 +18,11 @@ const defaultUserAccount = (): PersonalInfo => ({
   isAnonymous: true,
 });
 
+export interface AuthState {
+  environment: string;
+  redirectUrl?: string;
+}
+
 export const useAuthStore = defineStore(
   'auth',
   () => {
@@ -28,35 +33,58 @@ export const useAuthStore = defineStore(
     const notificaitons = useNotifications();
     const router = useRouter();
 
-    const authViaGithub = async () => {
+    const authViaGithub = async (redirectUrl?: string) => {
       try {
-        await auth(provider.value);
+        await auth({
+          provider: provider.value,
+          redirectUrl,
+        });
       } catch (e) {
         console.log('✎: [line 22][auth.ts] e: ', e);
         // TODO: master  add error handler, notification service
       }
     };
 
-    const auth = async (provider: string, state = 'desktop') => {
+    const auth = async ({
+      provider,
+      environment = 'desktop',
+      redirectUrl,
+    }: {
+      provider: string;
+      environment?: string;
+      redirectUrl?: string;
+    }) => {
+      const state: AuthState = { environment, redirectUrl };
+      const authUrl = getAuthUrl(provider, state);
+
       if ($q.platform.is.cordova) {
         // TODO: master quick tmp solution.
         // common OAuth for mobile and web
-        const authUrl = `${process.env.AUTH_URL}/auth/login/${provider}?state=mobile`;
         window.open(authUrl, '_system');
         return;
       }
 
       if ($q.platform.is.electron) {
-        const { redirectUrl } = await electron.auth(
-          `${process.env.AUTH_URL}/auth/login/${provider}?state=desktop`
-        );
+        const { redirectUrl } = await electron.auth(authUrl);
         router.push(redirectUrl);
         return;
       }
-      const rspns = (await sdk.auth.authProviderLoginGet(provider, state)).data;
+
+      const rspns = (
+        await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
+      ).data;
       window.location.replace(rspns.data.redirectUrl);
 
       return rspns;
+    };
+
+    const getAuthUrl = (provider: string, state: AuthState): string => {
+      const strState = encodeURIComponent(buildAuthState(state));
+      return `${process.env.AUTH_URL}/auth/login/${provider}?state=${strState}`;
+    };
+
+    const buildAuthState = (state: AuthState): string => {
+      return JSON.stringify(state);
     };
 
     const resetAuthInfo = () => {
@@ -101,9 +129,9 @@ export const useAuthStore = defineStore(
       }
     };
 
-    const subscribe = async (token: string) => {
+    const subscribe = async (token: string, email?: string) => {
       try {
-        await sdk.auth.authSubscribePost({ token });
+        await sdk.auth.authSubscribePost({ token, email });
         await verifyUser();
       } catch (e) {
         if (!(e as AxiosError).response.status) {

@@ -23,7 +23,7 @@ import { PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useAuthStore } from 'src/stores/auth';
 import { useSettingsStore } from 'src/stores/settings';
-import { sleep } from 'src/tools';
+import { decodeAuthState, sleep } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 
 import { computed, onBeforeMount, ref } from 'vue';
@@ -34,12 +34,15 @@ const authStore = useAuthStore();
 
 const $q = useQuasar();
 
-const state = computed(() => route.query.state as string);
+const state = computed(() => decodeAuthState(route.query.state as string));
 
 onBeforeMount(async () => {
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
-    authStore.auth(initialProvider, state.value);
+    authStore.auth({
+      provider: initialProvider,
+      environment: state.value.environment,
+    });
     return;
   }
   await setupUser();
@@ -61,6 +64,8 @@ const setupUser = async () => {
     return;
   }
 
+  const state = decodeAuthState(route.query.state as string);
+
   const userInfo: PersonalInfo = {
     avatarUrl: route.query.avatarUrl as string,
     email: route.query.email as string,
@@ -73,6 +78,10 @@ const setupUser = async () => {
   };
 
   await authStore.authUser(userInfo, route.query.token as string);
+  if (state.redirectUrl) {
+    window.location.assign(state.redirectUrl);
+    return;
+  }
   router.push({ name: RouteNames.Home });
 };
 </script>

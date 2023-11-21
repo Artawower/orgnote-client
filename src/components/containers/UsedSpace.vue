@@ -1,6 +1,6 @@
 <template>
   <template v-if="user?.active">
-    {{ $t('used space') }}:
+    <p class="font-main color-secondary">{{ $t('used space') }}:</p>
     <q-linear-progress
       stripe
       rounded

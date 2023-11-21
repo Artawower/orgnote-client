@@ -5,7 +5,11 @@
         class="q-pb-md"
         :text="$t('you are successfully subscribed!')"
       />
-      <used-space />
+      <p class="font-main color-secondary">{{ $t('activateion key') }}</p>
+      <code-block :code="authStore.user.active" />
+      <div class="used-space">
+        <used-space />
+      </div>
     </template>
     <template v-else>
       <!-- TODO: master add email field here -->
@@ -36,9 +40,16 @@ import { useAuthStore } from 'src/stores';
 import { ref } from 'vue';
 
 import UsedSpace from 'src/components/containers/UsedSpace.vue';
+import CodeBlock from 'src/components/ui/CodeBlock.vue';
 import EverythingFine from 'src/components/ui/EverythingFine.vue';
 
 const subscriptionKey = ref('');
 
 const authStore = useAuthStore();
 </script>
+
+<style lang="scss" scoped>
+.used-space {
+  margin-top: var(--default-block-margin);
+}
+</style>

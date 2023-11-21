@@ -318,6 +318,12 @@ export interface HandlersSubscribeBody {
      * @type {string}
      * @memberof HandlersSubscribeBody
      */
+    'email'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof HandlersSubscribeBody
+     */
     'token'?: string;
 }
 /**
@@ -660,10 +666,10 @@ export interface ModelsPublicUser {
 export interface ModelsUserPersonalInfo {
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof ModelsUserPersonalInfo
      */
-    'active'?: boolean;
+    'active'?: string;
     /**
      * 
      * @type {string}
