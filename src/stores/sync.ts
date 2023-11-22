@@ -3,6 +3,7 @@ import { useNoteEditorStore } from './note-editor';
 import { useNotesStore } from './notes';
 import { AxiosError, CanceledError } from 'axios';
 import { defineStore } from 'pinia';
+import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
 import { Note } from 'src/models';
@@ -28,6 +29,10 @@ export const useSyncStore = defineStore(
       ) {
         return;
       }
+      runSyncTask();
+    };
+
+    const syncTask = async () => {
       cancelPreviousRequest();
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
@@ -70,6 +75,8 @@ export const useSyncStore = defineStore(
         throw e;
       }
     };
+
+    const runSyncTask = debounce(syncTask, 5000);
 
     const cancelPreviousRequest = () => {
       abortController?.abort();

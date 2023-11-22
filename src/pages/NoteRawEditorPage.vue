@@ -27,7 +27,7 @@ const toolbarStore = useToolbarStore();
 
 const initialNoteText = ref<string>(noteEditorStore.noteText);
 
-const updateStoreDate = debounce(noteEditorStore.saveNoteData, 100);
+const updateStoreDate = debounce(noteEditorStore.saveNoteData, 500);
 
 const dataUpdated = ([text, orgNode]: [string, OrgNode]) => {
   updateStoreDate(text, orgNode);
