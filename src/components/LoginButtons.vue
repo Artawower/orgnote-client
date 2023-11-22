@@ -17,11 +17,12 @@ const authStore = useAuthStore();
 
 const props = defineProps<{
   vertical?: boolean;
+  redirectUrl?: string;
 }>();
 
 const vertical = ref(props.vertical);
 
 const authGithub = () => {
-  authStore.authViaGithub();
+  authStore.authViaGithub(props.redirectUrl);
 };
 </script>

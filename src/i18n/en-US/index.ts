@@ -124,4 +124,12 @@ export default {
     'this information is available only on your device. It will not be sent to the server. You are free to use it for a GitHub issue.',
   'return to mobile app': 'return to mobile app',
   showPropertyDrawer: 'show property drawer',
+  'unfold all': 'unfold all',
+  'unfold all headlines': 'unfold all headlines',
+  'fold all': 'fold all',
+  'fold all headlines': 'fold all headlines',
+  susbscription: 'susbscription',
+  completion: 'completion',
+  showGroup: 'showGroup',
+  'activateion key': 'activateion key',
 };

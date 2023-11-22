@@ -1,5 +1,5 @@
 import { useAuthStore } from 'src/stores/auth';
-import { RouteRecordRaw } from 'vue-router';
+import { RouteRecord, RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
   Home = 'Home',
@@ -17,11 +17,21 @@ export enum RouteNames {
   WysiwygEditor = 'WYSIWYG editor',
   PreviewEditor = 'Preview editor',
   Dashboard = 'Dashboard',
+  ActivationPage = 'ActivationPage',
 }
 export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
   path: 'auth/login/:initialProvider?',
   name: RouteNames.AuthPage,
   component: () => import('pages/AuthPage.vue'),
+  meta: {
+    programmaticalNavigation: false,
+  },
+};
+
+export const ACTIVATION_PAGE: RouteRecordRaw = {
+  path: 'auth/activate',
+  name: RouteNames.ActivationPage,
+  component: () => import('pages/ActivationPage.vue'),
   meta: {
     programmaticalNavigation: false,
   },
@@ -33,6 +43,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   name: RouteNames.Home,
   children: [
     AUTH_PAGE_ROUTE,
+    ACTIVATION_PAGE,
     {
       path: 'extensions',
       name: RouteNames.Extensions,

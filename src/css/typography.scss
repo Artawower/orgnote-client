@@ -81,3 +81,8 @@ h12 {
 .line-limit-2 {
   @include line-limit(2);
 }
+
+.font-main {
+  font-family: var(--main-font-family);
+  color: var(--fg);
+}

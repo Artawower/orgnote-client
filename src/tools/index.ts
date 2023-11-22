@@ -30,3 +30,4 @@ export * from './truncate';
 export * from './hex-to-rgba';
 export * from './has-intersection';
 export * from './find-actual-org-node';
+export * from './decode-auth-state';
