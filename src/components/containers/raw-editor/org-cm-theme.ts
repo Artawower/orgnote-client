@@ -15,7 +15,7 @@ export const basicOrgTheme = EditorView.theme({
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection, .cm-line ::selection':
     {
       backgroundColor: 'var(--base8) !important',
-      color: 'var(--fg) !important',
+      color: 'var(--bg) !important',
     },
 
   '.cm-gutterElement': {
