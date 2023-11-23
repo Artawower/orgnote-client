@@ -31,3 +31,4 @@ export * from './hex-to-rgba';
 export * from './has-intersection';
 export * from './find-actual-org-node';
 export * from './decode-auth-state';
+export * from './size-converter';
