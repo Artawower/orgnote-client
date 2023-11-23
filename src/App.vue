@@ -17,7 +17,7 @@ import { useAuthStore, useOrgBabelStore, useSyncStore } from './stores';
 
 const syncStore = useSyncStore();
 
-syncStore.syncNotes();
+syncStore.markToSync();
 
 // TODO: tmp place for register potential plugins.
 // Will be moved into a separate file later.

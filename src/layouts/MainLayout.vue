@@ -108,7 +108,7 @@ const { viewportHeight, keyboardOpened } = onMobileViewportChanged((info) => {
 const syncStore = useSyncStore();
 onAppActive((active: boolean) => {
   if (active) {
-    syncStore.syncNotes();
+    syncStore.sync();
   }
 });
 </script>

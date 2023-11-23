@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { useAuthStore } from 'src/stores';
 
-import { ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 
 import UsedSpace from 'src/components/containers/UsedSpace.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
@@ -46,6 +46,9 @@ import EverythingFine from 'src/components/ui/EverythingFine.vue';
 const subscriptionKey = ref('');
 
 const authStore = useAuthStore();
+onBeforeMount(() => {
+  authStore.verifyUser();
+});
 </script>
 
 <style lang="scss" scoped>

@@ -45,7 +45,7 @@ export const useNotesStore = defineStore('notes', () => {
   const markAsDeleted = async (noteIds: string[]) => {
     await repositories.notes.markAsDeleted(noteIds);
     await fileManagerStore.updateFileManager();
-    await syncStore.syncNotes();
+    await syncStore.markToSync();
   };
 
   const upsertNotes = async (notes: Note[]) => {
@@ -55,7 +55,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   const upsertNotesLocally = async (notes: Note[]) => {
     await upsertNotes(notes);
-    await syncStore.syncNotes();
+    await syncStore.markToSync();
     await fileManagerStore.updateFileManager();
     graphStore.rebuildGraph();
   };
@@ -75,7 +75,7 @@ export const useNotesStore = defineStore('notes', () => {
       }
       return n;
     });
-    await syncStore.syncNotes();
+    await syncStore.markToSync();
   };
 
   const fetchNotes = async (offset: number, limit: number) => {
@@ -101,7 +101,7 @@ export const useNotesStore = defineStore('notes', () => {
     try {
       await sdk.notes.notesPost(note);
       loadNotes();
-      syncStore.syncNotes();
+      syncStore.markToSync();
     } catch (e) {
       // TODO: master handle error
       console.log('✎: [line 68][notes.ts] e: ', e);

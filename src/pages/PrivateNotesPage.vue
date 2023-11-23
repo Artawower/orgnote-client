@@ -85,7 +85,7 @@ const selectedNotesStore = useSelectedNotesStore();
 const syncStore = useSyncStore();
 const deleteSelectedNotes = async () => {
   await notesStore.deleteNotes(selectedNotesStore.selectedNotesIds);
-  syncStore.syncNotes();
+  syncStore.markToSync();
   selectedNotesStore.clearSelectedNotes();
 };
 

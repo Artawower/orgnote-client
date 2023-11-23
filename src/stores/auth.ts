@@ -121,7 +121,7 @@ export const useAuthStore = defineStore(
       user.value = u;
       token.value = t;
       try {
-        await syncStore.syncNotes();
+        await syncStore.markToSync();
       } catch (e) {
         if (!(e as AxiosError).response.status) {
           throw e;

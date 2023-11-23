@@ -21,7 +21,7 @@ export const useSyncStore = defineStore(
 
     // TODO: master add debounce with timeout and accumulation
     // Use websockets instead
-    const syncNotes = async () => {
+    const markToSync = async () => {
       if (
         !authStore.user ||
         authStore.user.isAnonymous ||
@@ -32,7 +32,7 @@ export const useSyncStore = defineStore(
       runSyncTask();
     };
 
-    const syncTask = async () => {
+    const sync = async () => {
       cancelPreviousRequest();
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
@@ -76,7 +76,7 @@ export const useSyncStore = defineStore(
       }
     };
 
-    const runSyncTask = debounce(syncTask, 5000);
+    const runSyncTask = debounce(sync, 5000);
 
     const cancelPreviousRequest = () => {
       abortController?.abort();
@@ -96,7 +96,8 @@ export const useSyncStore = defineStore(
     };
 
     return {
-      syncNotes,
+      markToSync,
+      sync,
       lastSyncTime,
     };
   },
