@@ -175,6 +175,7 @@
 - =--btn-action-fire-border-color=:  var(--green);
 - =--btn-action-size=:  20px;
 - =--btn-action-color=:  var(--base5);
+- =--btn-action-bg=:  var(--bg);
 ** Mini buffer
 - =--mini-buffer-background=:  var(--bg-alt);
 - =--mini-buffer-font-color=:  var(--fg);

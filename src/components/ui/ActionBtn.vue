@@ -48,6 +48,7 @@ const clicked = () => {
   border-color: var(--btn-action-border-color);
   border-radius: var(--btn-action-radius);
   padding: var(--btn-action-padding);
+  background: var(--btn-action-bg);
 
   cursor: pointer;
 
