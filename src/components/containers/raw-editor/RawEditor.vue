@@ -573,7 +573,7 @@ org-keyword-block {
 .org-list-bullet {
   color: var(--fg-alt);
   position: absolute;
-  left: -8px;
+  left: -14px;
 
   display: inline-block;
   transform: scale(1.6);
