@@ -146,7 +146,7 @@ export const registerEditorCommands = () => {
         const fileName = await fileStore.uploadMediaFile();
         return insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
-          template: `[[${fileName ?? ''}]]`,
+          template: `[[./${fileName ?? ''}]]`,
           focusOffset: 2,
           overrideLine: true,
         });

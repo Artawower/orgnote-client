@@ -55,7 +55,8 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   public eq(other: OrgMultilineWidget) {
     const sameLengthAndType =
       other.orgNode.length === this.orgNode.length &&
-      other.orgNode.is(this.orgNode.type);
+      other.orgNode.is(this.orgNode.type) &&
+      other.orgNode.rawValue === this.orgNode.rawValue;
     return sameLengthAndType;
   }
 
