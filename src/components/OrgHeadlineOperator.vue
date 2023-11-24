@@ -36,19 +36,25 @@ const getFoldedRanges = () => {
 
 const ranges = getFoldedRanges();
 
-const root = findParent(node.value, (n) => n.is(NodeType.Root));
-
-const from = node.value.parent.end - 1;
-const lastElemOffset = node.value.parent.parent.end === root.end ? 0 : 1;
-const to = node.value.parent.parent.end - lastElemOffset;
-
+const getFromFolding = () => node.value.parent.end - 1;
 const sectionExist = node.value.parent?.parent?.section?.children?.length;
+
+const from = getFromFolding();
 const opened = ref<boolean>(!ranges.find(([s]) => s === from));
+
+const getFoldingRange = (): [number, number] => {
+  const root = findParent(node.value, (n) => n.is(NodeType.Root));
+  const lastElemOffset = node.value.parent.parent.end === root.end ? 0 : 1;
+  const from = getFromFolding();
+  const to = node.value.parent.parent.end - lastElemOffset;
+  return [from, to];
+};
 
 const toggleFolding = () => {
   if (!sectionExist) {
     return;
   }
+  const [from, to] = getFoldingRange();
   opened.value = !opened.value;
   if (opened.value) {
     props.editorView.dispatch({
