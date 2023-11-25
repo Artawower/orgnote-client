@@ -7,7 +7,7 @@
         class="column justify-center avatar-item"
         @click="openProfile"
       >
-        <q-avatar size="160px" class="q-mx-auto">
+        <q-avatar size="160px" class="q-mx-auto q-pt-xs">
           <img v-if="user.isAnonymous" src="/icons/unicorn.png" />
           <img v-else :src="user.avatarUrl" />
         </q-avatar>
@@ -75,3 +75,9 @@ const openProfile = () => {
 
 const logout = () => authStore.logout();
 </script>
+
+<style lang="scss" scoped>
+.avatar-item {
+  padding-top: var(--default-block-padding);
+}
+</style>

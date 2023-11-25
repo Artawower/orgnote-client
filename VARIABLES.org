@@ -226,6 +226,8 @@
 - =--editor-line-height=:  1.8;
 - =--editor-headline-line-height=:  1.2;
 - =--editor-default-line-height=:  28.8px;
+- =--editor-padding-bottom=:  48px;
+** List
 - =--org-list-item-bullet-margin-left=:  20px;
 ** Device specific feature
 - =--device-padding-bottom=:  0px;
@@ -239,7 +241,7 @@
 - =--page-padding=:  14px;
 - =--default-gap=:  10px;
 - =--file-item-height=:  46px;
-- =--headerbar-height=:  46px;
+- =--headerbar-height=:  42px;
 - =--completion-container-margin=:  0px;
 - =--completion-width=:  100%;
 - =--completion-border-radius=:  0px;
@@ -248,3 +250,6 @@
 - =--border-main=:  1px solid var(--fg-alt);
 - =--device-padding-bottom=:  24px;
 - =--top-bar-height=:  32px;
+* NoteEditorPage.vue
+** Common
+- =--page-padding=:  0px;

@@ -192,6 +192,7 @@ watch(
 
 #editor {
   font-family: var(--editor-font-family-main);
+  padding-bottom: var(--editor-padding-bottom);
 }
 
 .ql-editor {

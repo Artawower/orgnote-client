@@ -2,6 +2,8 @@
   <q-img
     class="pointer rounded-borders image-preview"
     @click="onImgClick"
+    :width="width"
+    :height="height"
     :no-transition="true"
     :no-spinner="true"
     :src="blobUrl ?? previewImg"
@@ -16,6 +18,8 @@ import { computed, onBeforeMount, ref } from 'vue';
 
 const props = defineProps<{
   src?: string;
+  width?: string;
+  height?: string;
   authorId?: string;
 }>();
 

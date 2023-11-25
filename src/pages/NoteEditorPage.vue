@@ -1,6 +1,9 @@
 <template>
   <q-page
-    :class="{ flex: noteEditorStore.debug }"
+    :class="{
+      flex: noteEditorStore.debug,
+      'debug-page': noteEditorStore.debug,
+    }"
     :style-fn="resetPageMinHeight"
   >
     <q-splitter
@@ -10,9 +13,9 @@
       class="debug-splitter"
     >
       <template v-slot:before>
-        <template v-if="noteLoaded">
+        <div v-if="noteLoaded" class="q-pa-md">
           <router-view />
-        </template>
+        </div>
       </template>
       <template v-slot:separator>
         <q-avatar
@@ -23,7 +26,7 @@
         />
       </template>
       <template v-slot:after>
-        <div class="debug">
+        <div class="debug q-pa-md">
           <div class="common-info q-px-md">
             Cursor: {{ noteEditorStore.cursorPosition }}
           </div>
@@ -133,10 +136,20 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+$offset: 8px;
+
 .debug-splitter {
   flex: 1;
-  max-height: calc(100svh - 80px);
-  height: calc(100svh - var(--footer-height) + 16px);
+  height: 100svh;
+
+  @include mobile {
+    max-height: calc(100svh - var(--footer-height) - #{$offset});
+    height: calc(100svh - var(--footer-height) - #{$offset});
+  }
+}
+
+.debug-page {
+  --page-padding: 0px;
 }
 
 .debug {

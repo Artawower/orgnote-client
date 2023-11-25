@@ -139,6 +139,9 @@ body {
   --editor-line-height: 1.8;
   --editor-headline-line-height: 1.2;
   --editor-default-line-height: 28.8px;
+  --editor-padding-bottom: 48px;
+
+  // List
   --org-list-item-bullet-margin-left: 20px;
 
   // Device specific feature
@@ -162,7 +165,7 @@ body {
     --page-padding: 14px;
     --default-gap: 10px;
     --file-item-height: 46px;
-    --headerbar-height: 46px;
+    --headerbar-height: 42px;
 
     --completion-container-margin: 0px;
     --completion-width: 100%;

@@ -54,6 +54,8 @@
         >
           <image-resolver
             :authorId="notePreview.author?.id ?? authStore.user?.id"
+            width="112px"
+            height="112px"
             v-if="previewImage"
             :src="previewImage"
           />

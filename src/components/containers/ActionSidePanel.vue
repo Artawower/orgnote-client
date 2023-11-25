@@ -10,7 +10,7 @@
     no-swipe-backdrop
   >
     <!-- TODO: master this menu should be built from commands -->
-    <q-scroll-area class="fit">
+    <q-scroll-area class="fit q-pt-xs">
       <q-list class="side-panel-actions">
         <q-item
           @click="sidebarStore.toggleWithComponent(ProfileSideBar)"
@@ -184,7 +184,7 @@
   </q-drawer>
   <!-- TODO: master disable quasar animtion. It's very irritable -->
   <q-drawer
-    v-if="sidebarStore.opened"
+    v-show="sidebarStore.opened"
     v-touch-swipe.mouse.left="closeSideBarForMobile"
     class="main-sidebar top-offset"
     :width="drawerWidth - getNumericCssVar('sidebar-width')"
