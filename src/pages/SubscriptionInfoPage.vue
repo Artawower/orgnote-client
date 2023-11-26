@@ -30,6 +30,47 @@
           />
         </template>
       </q-input>
+
+      <div class="reference font-main">
+        <p class="capitalize">
+          {{ $t('want to get a key for synchronization?') }}
+        </p>
+
+        <p class="capitalize">{{ $t('you have several options!') }}</p>
+        <ul>
+          <li>
+            <a
+              href="https://about.org-note.com"
+              target="_blank"
+              class="link capitalize"
+              >{{ $t('sign up for beta testing') }}</a
+            >
+            {{ $t('active testers will receive a key in the release version') }}
+          </li>
+          <li class="capitalize">
+            {{
+              $t(
+                'you are an open-source developer, write to app.orgnote@gmail.com'
+              )
+            }}
+          </li>
+          <li class="capitalize">
+            {{
+              $t(
+                'try to set up your own server for synchronization (unfortunately instructions are in progress)'
+              )
+            }}
+          </li>
+          <li class="capitalize">
+            <a
+              href="https://www.patreon.com/artawower"
+              target="_blank"
+              class="link"
+              >{{ $t('subscribe to my patreon') }}</a
+            >
+          </li>
+        </ul>
+      </div>
     </template>
   </div>
 </template>
@@ -54,5 +95,9 @@ onBeforeMount(() => {
 <style lang="scss" scoped>
 .used-space {
   margin-top: var(--default-block-margin);
+}
+
+.reference {
+  padding-top: var(--default-block-padding);
 }
 </style>

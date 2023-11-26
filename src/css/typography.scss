@@ -86,3 +86,12 @@ h12 {
   font-family: var(--main-font-family);
   color: var(--fg);
 }
+p {
+  font-family: var(--main-font-family);
+}
+
+.link {
+  color: var(--fg);
+  text-decoration: underline;
+  cursor: pointer;
+}

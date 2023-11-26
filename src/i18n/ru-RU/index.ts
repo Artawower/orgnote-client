@@ -129,4 +129,19 @@ export default {
   completion: 'завершение',
   showGroup: 'показать группу',
   'activateion key': 'ключ активации',
+  'wait a second, we are trying to identify you':
+    'подождите секунду, мы пытаемся вас идентифицировать',
+  'this message appears because developer mode is enabled':
+    'вы видите это сообщение поскольку включен режим разработчика',
+  'want to get a key for synchronization?':
+    'хотите получить ключ для синхронизации?',
+  'you have several options!': 'у вас есть несколько вариантов!',
+  'sign up for beta testing': 'зарегистрируйтесь для бета-тестирования',
+  'active testers will receive a key in the release version':
+    'активные тестировщики получат ключ в релизной версии',
+  'you are an open-source developer, write to app.orgnote@gmail.com':
+    'вы разработчик с открытым исходным кодом, пишите на app.orgnote@gmail.com',
+  'try to set up your own server for synchronization (unfortunately instructions are in progress)':
+    'попробуйте настроить свой сервер для синхронизации (к сожалению, инструкции в процессе)',
+  'subscribe to my patreon': 'подпишитесь на мой патреон',
 };

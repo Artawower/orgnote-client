@@ -6,7 +6,7 @@ body {
   // Ul
   --ul-font-size: 20px;
   --ul-line-height: 32px;
-  --ul-font-family: charter, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --ul-font-family: var(--main-font-family);
 
   // Bars
   --top-bar-height: 50px;

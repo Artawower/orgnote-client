@@ -1,12 +1,15 @@
 <template>
   <div class="absolute-center">
-    <h2 class="text-h2 text-center">
-      {{ $t('Wait a second, we are trying to identify you') }}<br />
+    <h2 class="text-h2 text-center capitalize">
+      {{ $t('wait a second, we are trying to identify you') }}<br />
     </h2>
     <div
       class="color-secondary q-pt-lg q-pl-lg"
       v-if="config.common.developerMode"
     >
+      <div class="capitalize">
+        {{ $t('this message appears because developer mode is enabled') }}
+      </div>
       <div>Route state: {{ route.query.state }}</div>
       <div>Is native app: {{ !!$q.platform.is.cordova }}</div>
       <div>Is mobile: {{ !!$q.platform.is.mobile }}</div>

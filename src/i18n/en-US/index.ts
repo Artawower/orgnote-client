@@ -132,4 +132,19 @@ export default {
   completion: 'completion',
   showGroup: 'showGroup',
   'activateion key': 'activateion key',
+  'wait a second, we are trying to identify you':
+    'wait a second, we are trying to identify you',
+  'this message appears because developer mode is enabled':
+    'this message appears because developer mode is enabled',
+  'want to get a key for synchronization?':
+    'want to get a key for synchronization?',
+  'you have several options!': 'you have several options!',
+  'sign up for beta testing': 'sign up for beta testing',
+  'active testers will receive a key in the release version':
+    'active testers will receive a key in the release version',
+  'you are an open-source developer, write to app.orgnote@gmail.com':
+    'you are an open-source developer, write to app.orgnote@gmail.com',
+  'try to set up your own server for synchronization (unfortunately instructions are in progress)':
+    'try to set up your own server for synchronization (unfortunately instructions are in progress)',
+  'subscribe to my patreon': 'subscribe to my patreon',
 };

@@ -41,7 +41,7 @@ const { orgNoteApi } = useOrgNoteApiStore();
 const router = useRouter();
 const clearAllData = async () => {
   const clear = await orgNoteApi.interaction.confirm(
-    'clear all data',
+    'clear all local data',
     'are you sure you want to delete all data?'
   );
 
