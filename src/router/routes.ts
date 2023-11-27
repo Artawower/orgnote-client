@@ -1,5 +1,5 @@
 import { useAuthStore } from 'src/stores/auth';
-import { RouteRecord, RouteRecordRaw } from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
   Home = 'Home',
