@@ -49,7 +49,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
         name: 'create note',
         permament: true,
         sidebarPosition: 'top',
-        icon: 'add',
+        icon: 'o_add_box',
         handler: () => fileManagerStore.createFile(),
       },
       {

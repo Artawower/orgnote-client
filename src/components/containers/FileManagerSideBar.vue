@@ -40,7 +40,7 @@ import { useFileManagerStore } from 'src/stores';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { callKeyboard, uploadFiles } from 'src/tools';
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 import FileManagerItem from './FileManagerItem.vue';
 import HeaderBar from 'src/components/ui/HeaderBar.vue';
@@ -70,6 +70,16 @@ const toggleExpanding = () => {
 };
 
 const expand = (key: string) => qTreeRef.value?.setExpanded(key, true);
+
+watch(
+  () => search.value,
+  (value) => {
+    if (!value?.length) {
+      return;
+    }
+    qTreeRef.value?.expandAll();
+  }
+);
 
 const notesImportStore = useNotesImportStore();
 const importFiles = async () => {
