@@ -28,13 +28,11 @@ const touchStart = (e: TouchEvent) => {
   startX = e.touches[0].clientX;
 };
 const touchMove = (e: TouchEvent) => {
-  const isVertical = Math.abs(e.changedTouches[0].clientY - startY) > 15;
-  const isHorizontal = Math.abs(e.changedTouches[0].clientX - startX) > 5;
-  if (
-    (isVertical || !isHorizontal) &&
-    $q.platform.is.ios &&
-    !$q.platform.is.cordova
-  ) {
+  const isVertical =
+    Math.abs(e.changedTouches[0].clientY - startY) >
+    Math.abs(e.changedTouches[0].clientX - startX);
+
+  if (isVertical && $q.platform.is.ios && !$q.platform.is.cordova) {
     e.preventDefault();
     return;
   }

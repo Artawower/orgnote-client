@@ -1,17 +1,18 @@
 <template>
-  <prevent-ios-touch>
-    revent-ios-touchvent-ios-touch>
-    <div v-if="inited" class="editor-actions" @touchstart.stop @mousedown.stop>
-      <div
-        v-for="cmd of editorCommands"
-        @mousedown.prevent.stop="handleEditorAction(cmd)"
-        :key="cmd.command"
-        class="editor-action"
-      >
-        <q-icon :name="cmd.icon" size="sm" />
+  <div @touchstart.stop @mousedown.stop>
+    <prevent-ios-touch>
+      <div v-if="inited" class="editor-actions">
+        <div
+          v-for="cmd of editorCommands"
+          @mousedown.prevent.stop="handleEditorAction(cmd)"
+          :key="cmd.command"
+          class="editor-action"
+        >
+          <q-icon :name="cmd.icon" size="sm" />
+        </div>
       </div>
-    </div>
-  </prevent-ios-touch>
+    </prevent-ios-touch>
+  </div>
 </template>
 
 <script lang="ts" setup>
