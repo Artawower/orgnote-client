@@ -576,6 +576,10 @@ org-keyword-block {
   position: absolute;
   left: -14px;
 
+  @include mobile {
+    left: -6px;
+  }
+
   display: inline-block;
   transform: scale(1.6);
   width: 16px;
