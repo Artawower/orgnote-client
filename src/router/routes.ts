@@ -18,6 +18,7 @@ export enum RouteNames {
   PreviewEditor = 'Preview editor',
   Dashboard = 'Dashboard',
   ActivationPage = 'ActivationPage',
+  LoggerPage = 'LoggerPage',
 }
 export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
   path: 'auth/login/:initialProvider?',
@@ -26,6 +27,12 @@ export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
   meta: {
     programmaticalNavigation: false,
   },
+};
+
+export const LOGGER_PAGE: RouteRecordRaw = {
+  path: 'logger',
+  name: RouteNames.LoggerPage,
+  component: () => import('pages/LoggerPage.vue'),
 };
 
 export const ACTIVATION_PAGE: RouteRecordRaw = {

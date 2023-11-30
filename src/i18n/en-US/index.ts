@@ -147,4 +147,5 @@ export default {
   'try to set up your own server for synchronization (unfortunately instructions are in progress)':
     'try to set up your own server for synchronization (unfortunately instructions are in progress)',
   'subscribe to my patreon': 'subscribe to my patreon',
+  logs: 'logs',
 };

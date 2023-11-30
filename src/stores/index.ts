@@ -20,6 +20,7 @@ export * from './modal';
 export * from './org-babel';
 export * from './commands';
 export * from './orgnote-api.store';
+export * from './logger';
 
 /*
  * If not building with SSR mode, you can

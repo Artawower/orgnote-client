@@ -22,6 +22,7 @@ export const useSettingsStore = defineStore(
       },
       common: {
         developerMode: false,
+        maximumLogsCount: 1000,
       },
       completion: {
         showGroup: false,

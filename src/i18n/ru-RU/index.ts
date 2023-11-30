@@ -144,4 +144,5 @@ export default {
   'try to set up your own server for synchronization (unfortunately instructions are in progress)':
     'попробуйте настроить свой сервер для синхронизации (к сожалению, инструкции в процессе)',
   'subscribe to my patreon': 'подпишитесь на мой патреон',
+  logs: 'логи',
 };

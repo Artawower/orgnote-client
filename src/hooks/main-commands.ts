@@ -11,12 +11,14 @@ import { camelCaseToWords } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import DebugPage from 'src/pages/DebugPage.vue';
+import LoggerPage from 'src/pages/LoggerPage.vue';
 
 export enum COMMAND {
   openSearch = 'search',
   restoreLastCompletionSession = 'restore last completion',
   toggleExecuteCommand = 'toggle commands',
   openDebugInfo = 'open debug info',
+  showLogs = 'show logs',
 }
 export function useMainCommands() {
   const { executeCommand } = useKeybindingStore();
@@ -55,7 +57,7 @@ export function useMainCommands() {
     {
       command: COMMAND.restoreLastCompletionSession,
       keySequence: "'",
-      description: 'Restore last completion session',
+      description: 'restore last completion session',
       group: 'search',
       handler: () => {
         completionStore.restoreLastCompletionSession();
@@ -64,10 +66,19 @@ export function useMainCommands() {
     {
       command: COMMAND.openDebugInfo,
       keySequence: 'Ctrl+KeyD',
-      description: 'Open debug info',
+      description: 'open debug info',
       group: 'debug',
       handler: () => {
         modalStore.open(DebugPage, { title: 'system info' });
+      },
+    },
+    {
+      command: COMMAND.showLogs,
+      keySequence: 'Ctrl+KeyD',
+      description: 'show logs',
+      group: 'debug',
+      handler: () => {
+        modalStore.open(LoggerPage, { title: 'logs' });
       },
     },
   ];
