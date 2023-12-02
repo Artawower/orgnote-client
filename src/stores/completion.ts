@@ -1,3 +1,4 @@
+import { useKeybindingStore } from './keybindings';
 import { defineStore } from 'pinia';
 
 import { computed, ref, watch } from 'vue';
@@ -32,11 +33,13 @@ export interface CompletionConfigs<T = unknown> {
   placeholder?: string;
   itemHeight?: string;
   searchText?: string;
+  onClicked?: (config: CompletionCandidate<T>) => void;
 }
 
 export const useCompletionStore = defineStore('completion', () => {
   const candidates = ref<CompletionCandidate[]>([]);
   const candidateSelectedByDirection = ref<number>();
+  let onClicked: (candidate: CompletionCandidate<any>) => void;
   const filter = ref('');
   const opened = ref(false);
   const loading = ref(false);
@@ -56,6 +59,7 @@ export const useCompletionStore = defineStore('completion', () => {
     setCandidateGetter(configs.itemsGetter);
     placeholder.value = configs.placeholder;
     candidates.value = [];
+    onClicked = configs.onClicked;
     filter.value = configs.searchText ?? '';
     selectedCandidateIndex.value = 0;
     search();
@@ -157,6 +161,17 @@ export const useCompletionStore = defineStore('completion', () => {
     opened.value = true;
   };
 
+  const keybindingStore = useKeybindingStore();
+  const executeCandidate = (item: CompletionCandidate) => {
+    keybindingStore.executeCommand({
+      command: item.command,
+      commandHandler: item.commandHandler,
+      data: item.data,
+    });
+    onClicked?.(item);
+    closeCompletion();
+  };
+
   return {
     candidates,
     clearCandidates,
@@ -177,5 +192,6 @@ export const useCompletionStore = defineStore('completion', () => {
     candidateSelectedByDirection,
     placeholder,
     restoreLastCompletionSession,
+    executeCandidate,
   };
 });

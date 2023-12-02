@@ -1,4 +1,5 @@
 import { CompletionCandidate, useCompletionStore } from './completion';
+import { useRecentCommandsStore } from './recent-commands-store';
 import { defineStore } from 'pinia';
 import { Command, CommandGroup } from 'src/models';
 import { useKeybindingStore } from 'src/stores/keybindings';
@@ -14,6 +15,7 @@ export enum COMMAND {
 export const useCommandsStore = defineStore('commands', () => {
   const { registerKeybindings } = useKeybindingStore();
 
+  const commandsCompletionGroup = 'commands';
   const currentGroups = ref<CommandGroup[]>([
     'global',
     'settings',
@@ -48,9 +50,11 @@ export const useCommandsStore = defineStore('commands', () => {
   };
 
   const completionStore = useCompletionStore();
+  const recentCommandsStore = useRecentCommandsStore();
   const initCompletion = () => {
     const candidates = commands.value
       .filter((c) => !c.ignorePrompt)
+      .sort(recentCommandsStore.sort(commandsCompletionGroup))
       .map(
         (c) =>
           ({
@@ -77,6 +81,12 @@ export const useCommandsStore = defineStore('commands', () => {
     completionStore.initNewCompletion({
       itemsGetter: itemsGetterFn,
       placeholder: 'search command',
+      onClicked: (candidate) => {
+        recentCommandsStore.incUsage(
+          commandsCompletionGroup,
+          candidate.command
+        );
+      },
     });
   };
 

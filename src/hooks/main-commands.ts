@@ -5,7 +5,6 @@ import {
   useModalStore,
   useSearchStore,
 } from 'src/stores';
-import { useKeybindingStore } from 'src/stores/keybindings';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords } from 'src/tools';
 import { useRouter } from 'vue-router';
@@ -21,8 +20,6 @@ export enum COMMAND {
   showLogs = 'show logs',
 }
 export function useMainCommands() {
-  const { executeCommand } = useKeybindingStore();
-
   const completionStore = useCompletionStore();
   const searchStore = useSearchStore();
   const commandsStore = useCommandsStore();
@@ -127,8 +124,7 @@ export function useMainCommands() {
         if (!completionStore.opened) {
           return;
         }
-        completionStore.closeCompletion();
-        executeCommand(completionStore.selectedCandidate);
+        completionStore.executeCandidate(completionStore.selectedCandidate);
       },
     },
   ];

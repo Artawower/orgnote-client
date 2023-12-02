@@ -21,6 +21,7 @@ export * from './org-babel';
 export * from './commands';
 export * from './orgnote-api.store';
 export * from './logger';
+export * from './recent-commands-store';
 
 /*
  * If not building with SSR mode, you can

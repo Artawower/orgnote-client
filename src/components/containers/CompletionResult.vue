@@ -47,7 +47,7 @@
             class="completion-item"
             :class="{ selected: index === selectedIndex }"
             :clickable="true"
-            @mousedown="executeCommand(item)"
+            @mousedown="completionStore.executeCandidate(item)"
             @mouseover=" (e: MouseEvent) => focusCompletionCandidate(e, index) "
           >
             <!-- TODO: master combine with src/components/ui/SearchContainer.vue search icon as -->
@@ -91,7 +91,6 @@ import {
   defaultCompletionLimit,
   useCompletionStore,
 } from 'src/stores';
-import { useKeybindingStore } from 'src/stores/keybindings';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
@@ -112,8 +111,6 @@ const {
   candidateSelectedByDirection,
   placeholder,
 } = storeToRefs(completionStore);
-
-const keybindingStore = useKeybindingStore();
 
 const completionInput = ref<HTMLInputElement | null>(null);
 onMounted(() => setTimeout(() => completionInput.value?.focus()));
@@ -153,15 +150,6 @@ const focusCompletionCandidate = (e: MouseEvent, index: number) => {
   }
   lastCoords = [e.clientX, e.clientY];
   completionStore.focusCandidate(index);
-};
-
-const executeCommand = (item: CompletionCandidate) => {
-  keybindingStore.executeCommand({
-    command: item.command,
-    commandHandler: item.commandHandler,
-    data: item.data,
-  });
-  completionStore.closeCompletion();
 };
 
 const closeCompletionOnBlur = () => {
