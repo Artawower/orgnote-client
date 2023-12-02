@@ -22,11 +22,15 @@
 
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
-import { PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useAuthStore } from 'src/stores/auth';
 import { useSettingsStore } from 'src/stores/settings';
-import { decodeAuthState, sleep } from 'src/tools';
+import {
+  decodeAuthState,
+  extractAuthQueryInfo,
+  getMobileAppUrl,
+  sleep,
+} from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 
 import { computed, onBeforeMount, ref } from 'vue';
@@ -62,25 +66,17 @@ const setupUser = async () => {
     await sleep(10000);
   }
   if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
-    const mobileAppUrl = `orgnote://auth/login${window.location.search}`;
+    const mobileAppUrl = getMobileAppUrl(`auth/login${window.location.search}`);
     window.location.assign(mobileAppUrl);
     return;
   }
 
   const state = decodeAuthState(route.query.state as string);
+  const personalInfo = extractAuthQueryInfo(
+    route.query as Record<string, string>
+  );
 
-  const userInfo: PersonalInfo = {
-    avatarUrl: route.query.avatarUrl as string,
-    email: route.query.email as string,
-    nickName: route.query.username as string,
-    profileUrl: route.query.profileUrl as string,
-    id: route.query.id as string,
-    spaceLimit: +route.query.spaceLimit,
-    usedSpace: +route.query.usedSpace,
-    active: !!route.query.active,
-  };
-
-  await authStore.authUser(userInfo, route.query.token as string);
+  await authStore.authUser(personalInfo, route.query.token as string);
   if (state.redirectUrl) {
     window.location.assign(state.redirectUrl);
     return;

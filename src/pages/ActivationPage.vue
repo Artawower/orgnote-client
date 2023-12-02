@@ -71,7 +71,9 @@ const initFromQueryParams = () => {
   email.value = route.query.email as string;
 };
 
-const redirectUrl = computed(() => window.location.href);
+const redirectUrl = computed(
+  () => window.location.pathname + window.location.search
+);
 
 const { config } = useSettingsStore();
 const router = useRouter();

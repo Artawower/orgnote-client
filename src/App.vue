@@ -10,12 +10,19 @@ export default {
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router';
-import { User } from './models';
 import { jsBabel } from './plugins/js-babel';
 import { RouteNames } from './router/routes';
-import { useAuthStore, useOrgBabelStore, useSyncStore } from './stores';
+import {
+  useAuthStore,
+  useOrgBabelStore,
+  useLoggerStore,
+  useSyncStore,
+} from './stores';
+import { decodeAuthState, extractAuthQueryInfo } from './tools';
 
 const syncStore = useSyncStore();
+
+useLoggerStore().init();
 
 syncStore.markToSync();
 
@@ -40,15 +47,18 @@ async function handleCordovaAuth(url: string) {
   }
   const searchParams = new URLSearchParams(urlParams);
 
-  const userInfo: User = {
-    avatarUrl: searchParams.get('avatarUrl'),
-    email: searchParams.get('email'),
-    nickName: searchParams.get('username'),
-    profileUrl: searchParams.get('profileUrl'),
-    id: searchParams.get('id'),
-  };
+  const personalInfo = extractAuthQueryInfo(Object.fromEntries(searchParams));
+  console.debug('✎: [AUTH] personalInfo: ', personalInfo);
+  const state = decodeAuthState(searchParams.get('state'));
+  console.debug('✎: [AUTH] state: ', state);
 
-  await authStore.authUser(userInfo, searchParams.get('token'));
+  await authStore.authUser(personalInfo, searchParams.get('token'));
+
+  if (state.redirectUrl) {
+    window.location.assign(`/#${state.redirectUrl}`);
+    return;
+  }
+
   router.push({ name: RouteNames.Home });
 }
 (window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =

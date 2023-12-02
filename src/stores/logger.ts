@@ -3,52 +3,101 @@ import { defineStore } from 'pinia';
 
 import { computed, ref } from 'vue';
 
-export const userLoggerStore = defineStore('logger', () => {
-  const logs = ref<string[]>([]);
+interface Log {
+  mode: string;
+  message: string;
+  count: number;
+}
 
-  const { config } = useSettingsStore();
+export const useLoggerStore = defineStore(
+  'logger',
+  () => {
+    const storedLogs = ref<Log[]>([]);
 
-  const addLog = (mode: string, message?: string) => {
-    const formattedMessage = formatMessage(mode, message);
-    logs.value = [...logs.value, formattedMessage];
-    if (logs.value.length > config.common.maximumLogsCount) {
-      logs.value = logs.value.slice(1);
-    }
-  };
+    const { config } = useSettingsStore();
 
-  const formatMessage = (mode: string, message?: string) =>
-    `[${mode.toUpperCase()}] ${message}`;
+    const init = () => {
+      const availableModes: (keyof Pick<
+        typeof console,
+        'info' | 'log' | 'warn' | 'error' | 'debug'
+      >)[] = ['info', 'warn', 'log', 'error'];
 
-  const init = () => {
-    const availableModes: (keyof Pick<
-      typeof console,
-      'info' | 'log' | 'warn' | 'error'
-    >)[] = ['info', 'warn', 'log', 'error'];
+      if (config.common.developerMode) {
+        availableModes.push('debug');
+      }
 
-    availableModes.forEach((mode) => {
-      const defaultLogger = console[mode].bind(console);
+      availableModes.forEach((mode) => {
+        const defaultLogger = console[mode].bind(console);
 
-      console[mode] = function (...args: string[]) {
-        addLog(mode, args[0]);
-        defaultLogger(...args);
+        console[mode] = function (...args: string[]) {
+          addLog(mode, args);
+          defaultLogger(...args);
+        };
+      });
+
+      window.onerror = function (message, source, lineno, colno, error) {
+        addLog(
+          'error',
+          `[line: ${lineno}, col: ${colno}] ${message}\n\t${source}\n\t${error}`
+        );
       };
+    };
+
+    const addLog = (mode: string, ...messages: unknown[]) => {
+      setTimeout(() => {
+        const formattedMessage = formatMessages(messages);
+        addOrUpdateLog(mode, formattedMessage);
+        removeOldLogs();
+      }, 10);
+    };
+
+    const addOrUpdateLog = (mode: string, message: string) => {
+      if (storedLogs.value[storedLogs.value.length - 1]?.message === message) {
+        storedLogs.value[storedLogs.value.length - 1].count++;
+        return;
+      }
+      storedLogs.value = [
+        ...storedLogs.value,
+        {
+          mode,
+          message,
+          count: 0,
+        },
+      ];
+    };
+
+    const removeOldLogs = () => {
+      if (storedLogs.value.length > config.common.maximumLogsCount) {
+        storedLogs.value = storedLogs.value.slice(1);
+      }
+    };
+
+    const formatMessages = (messages: unknown[]) => {
+      const formattedContent = messages
+        .map((m) => JSON.stringify(m))
+        .join(', ');
+      return formattedContent;
+    };
+
+    const clearLogs = () => {
+      storedLogs.value = [];
+    };
+
+    const prettyLogs = computed(() => {
+      return storedLogs.value
+        .map(
+          (l) =>
+            `[${l.mode}] ${l.message} ${l.count ? '(' + l.count + ')' : ''}`
+        )
+        .join('\n');
     });
 
-    window.onerror = function (message, source, lineno, colno, error) {
-      addLog(
-        'error',
-        `[line: ${lineno}, col: ${colno}] ${message}\n\t${source}\n\t${error}`
-      );
+    return {
+      init,
+      logs: storedLogs,
+      prettyLogs,
+      clearLogs,
     };
-  };
-
-  const prettyLogs = computed(() => {
-    return logs.value.join('\n');
-  });
-
-  return {
-    init,
-    logs,
-    prettyLogs,
-  };
-});
+  },
+  { persist: true }
+);

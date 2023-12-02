@@ -32,3 +32,5 @@ export * from './has-intersection';
 export * from './find-actual-org-node';
 export * from './decode-auth-state';
 export * from './size-converter';
+export * from './extract-auth-query-info';
+export * from './get-mobile-app-url';

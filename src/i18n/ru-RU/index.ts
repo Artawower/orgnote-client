@@ -131,6 +131,8 @@ export default {
   'activateion key': 'ключ активации',
   'wait a second, we are trying to identify you':
     'подождите секунду, мы пытаемся вас идентифицировать',
+  'wait a second, we are trying to activate your account':
+    'подождите секунду, мы пытаемся активировать ваш аккаунт',
   'this message appears because developer mode is enabled':
     'вы видите это сообщение поскольку включен режим разработчика',
   'want to get a key for synchronization?':
@@ -145,4 +147,6 @@ export default {
     'попробуйте настроить свой сервер для синхронизации (к сожалению, инструкции в процессе)',
   'subscribe to my patreon': 'подпишитесь на мой патреон',
   logs: 'логи',
+  'to activate the license key you need to log in to the system':
+    'для активации лицензионного ключа вам необходимо войти в систему',
 };

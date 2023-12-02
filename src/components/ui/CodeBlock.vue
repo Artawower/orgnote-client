@@ -1,6 +1,9 @@
 <template>
   <div class="src-code-wrapper">
-    <action-btn @click="copySrc" icon="content_copy" active-icon="done" />
+    <div v-if="code.length" class="actions">
+      <slot name="actions" />
+      <action-btn @click="copySrc" icon="content_copy" active-icon="done" />
+    </div>
     <highlightjs autodetect :code="code" />
   </div>
 </template>
@@ -8,7 +11,7 @@
 <script setup lang="ts">
 import { copyToClipboard } from 'quasar';
 
-import ActionBtn from './ActionBtn.vue';
+import ActionBtn from 'src/components/ui/ActionBtn.vue';
 
 const props = defineProps<{
   code: string;
@@ -20,10 +23,14 @@ const copySrc = () => {
 </script>
 
 <style lang="scss" scoped>
+.actions {
+  @include flexify();
+  gap: var(--small-gap);
+}
 .src-code-wrapper {
   position: relative;
 
-  .action-btn {
+  .actions {
     position: absolute;
     right: 10px;
     top: 8px;

@@ -134,6 +134,8 @@ export default {
   'activateion key': 'activateion key',
   'wait a second, we are trying to identify you':
     'wait a second, we are trying to identify you',
+  'wait a second, we are trying to activate your account':
+    'wait a second, we are trying to activate your account',
   'this message appears because developer mode is enabled':
     'this message appears because developer mode is enabled',
   'want to get a key for synchronization?':
@@ -148,4 +150,6 @@ export default {
     'try to set up your own server for synchronization (unfortunately instructions are in progress)',
   'subscribe to my patreon': 'subscribe to my patreon',
   logs: 'logs',
+  'to activate the license key you need to log in to the system':
+    'to activate the license key you need to log in to the system',
 };

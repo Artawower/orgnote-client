@@ -22,6 +22,7 @@ export interface OrgNoteConfig {
   };
   common: {
     developerMode: boolean;
+    maximumLogsCount: number;
   };
   completion: {
     showGroup: boolean;
