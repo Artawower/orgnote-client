@@ -1,6 +1,7 @@
 // This is just an example,
 // so you can safely delete all default props below
 
+// TODO: generate from the list
 // TODO: master in truth, this should be enum for preventing  mistakes with overriding
 export default {
   failed: 'Action failed',
@@ -152,4 +153,5 @@ export default {
   logs: 'logs',
   'to activate the license key you need to log in to the system':
     'to activate the license key you need to log in to the system',
+  'report bug': 'report bug',
 };

@@ -149,4 +149,5 @@ export default {
   logs: 'логи',
   'to activate the license key you need to log in to the system':
     'для активации лицензионного ключа вам необходимо войти в систему',
+  'report bug': 'сообщить об ошибке',
 };

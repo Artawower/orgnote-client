@@ -16,6 +16,7 @@ export enum COMMAND {
   openSearch = 'search',
   restoreLastCompletionSession = 'restore last completion',
   toggleExecuteCommand = 'toggle commands',
+  reportBug = 'report bug',
   openDebugInfo = 'open debug info',
   showLogs = 'show logs',
 }
@@ -40,6 +41,16 @@ export function useMainCommands() {
         commandsStore.initCompletion();
         params?.event?.preventDefault();
       },
+    },
+    {
+      command: COMMAND.reportBug,
+      description: 'report bug',
+      group: 'debug',
+      handler: () =>
+        window.open(
+          'https://github.com/Artawower/orgnote-client/issues/new/choose',
+          '_blank'
+        ),
     },
     {
       command: COMMAND.openSearch,
