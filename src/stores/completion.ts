@@ -33,13 +33,13 @@ export interface CompletionConfigs<T = unknown> {
   placeholder?: string;
   itemHeight?: string;
   searchText?: string;
-  onClicked?: (config: CompletionCandidate<T>) => void;
+  onClicked?: (candidate: CompletionCandidate<T>) => void;
 }
 
 export const useCompletionStore = defineStore('completion', () => {
   const candidates = ref<CompletionCandidate[]>([]);
   const candidateSelectedByDirection = ref<number>();
-  let onClicked: (candidate: CompletionCandidate<any>) => void;
+  let onClicked: (candidate: CompletionCandidate<unknown>) => void;
   const filter = ref('');
   const opened = ref(false);
   const loading = ref(false);
@@ -59,7 +59,9 @@ export const useCompletionStore = defineStore('completion', () => {
     setCandidateGetter(configs.itemsGetter);
     placeholder.value = configs.placeholder;
     candidates.value = [];
-    onClicked = configs.onClicked;
+    onClicked = configs.onClicked as (
+      candidate: CompletionCandidate<unknown>
+    ) => void;
     filter.value = configs.searchText ?? '';
     selectedCandidateIndex.value = 0;
     search();

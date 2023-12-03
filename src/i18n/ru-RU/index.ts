@@ -150,4 +150,6 @@ export default {
   'to activate the license key you need to log in to the system':
     'для активации лицензионного ключа вам необходимо войти в систему',
   'report bug': 'сообщить об ошибке',
+  'new version available!': 'доступна новая версия!',
+  'please, restart app!': 'пожалуйста, перезапустите приложение!',
 };

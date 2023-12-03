@@ -1,3 +1,4 @@
+import { sdk } from 'src/boot/axios';
 import { Note } from 'src/models';
 
 export interface OrgNoteApi {
@@ -12,6 +13,7 @@ export interface OrgNoteApi {
     getCurrentNote: () => Note;
   };
   configuration: () => OrgNoteConfig;
+  sdk: typeof sdk;
 }
 
 // NOTE: default configs

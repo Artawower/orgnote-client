@@ -17,6 +17,7 @@ import {
   useOrgBabelStore,
   useLoggerStore,
   useSyncStore,
+  useOrgNoteApiStore,
 } from './stores';
 import { decodeAuthState, extractAuthQueryInfo } from './tools';
 
@@ -63,4 +64,7 @@ async function handleCordovaAuth(url: string) {
 }
 (window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =
   handleCordovaAuth.bind(this);
+
+const { orgNoteApi } = useOrgNoteApiStore();
+window.orgnote = orgNoteApi;
 </script>

@@ -4,6 +4,7 @@ import { useSettingsStore } from './settings';
 import { OrgNoteApi } from 'src/api';
 import { RouteNames } from 'src/router/routes';
 import { Router, useRouter } from 'vue-router';
+import { sdk } from 'src/boot/axios';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ export const useOrgNoteApiStore = () => {
     currentNote: useCurrentNote(),
     interaction,
     configuration: () => settings.config,
+    sdk: sdk,
   };
 
   return {

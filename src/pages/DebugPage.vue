@@ -21,12 +21,13 @@ import CodeBlock from 'src/components/ui/CodeBlock.vue';
 
 const $q = useQuasar();
 
-const prettyQuasarPlatform = Object.keys($q.platform.is)
-  .map(
+const prettyQuasarPlatform = [
+  ...Object.keys($q.platform.is).map(
     (key: string) =>
       ` ${key}: ${$q.platform.is[key as keyof typeof $q.platform.is]}`
-  )
-  .join('\n');
+  ),
+  ` standalone: ${!!window.navigator.standalone}`,
+].join('\n');
 
 const systemInfo = `OrgNote: ${version}
 Language: ${navigator.language}

@@ -43,7 +43,7 @@ const sdk = {
   notes,
   tags,
   files,
-};
+} as const;
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

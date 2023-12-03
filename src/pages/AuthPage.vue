@@ -65,7 +65,13 @@ const setupUser = async () => {
   if (config.common.developerMode) {
     await sleep(10000);
   }
-  if (!$q.platform.is.cordova && $q.platform.is.mobile && isMobile) {
+  if (
+    !$q.platform.is.cordova &&
+    $q.platform.is.mobile &&
+    isMobile &&
+    !window.navigator.standalone &&
+    !$q.platform.is.ios // Tmp disable opening mobile app for ios device
+  ) {
     const mobileAppUrl = getMobileAppUrl(`auth/login${window.location.search}`);
     window.location.assign(mobileAppUrl);
     return;

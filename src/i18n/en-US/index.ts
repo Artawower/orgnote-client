@@ -154,4 +154,6 @@ export default {
   'to activate the license key you need to log in to the system':
     'to activate the license key you need to log in to the system',
   'report bug': 'report bug',
+  'new version available!': 'new version available!',
+  'please, restart app!': 'please, restart the app!',
 };
