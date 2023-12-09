@@ -67,7 +67,7 @@ const handleItem = (cmd: Command) => {
 .search-container {
   @include flexify(column);
 
-  padding: var(--default-block-padding);
+  padding: var(--block-default-padding);
   max-height: 100%;
 }
 
@@ -89,14 +89,14 @@ const handleItem = (cmd: Command) => {
 
   &:hover {
     background-color: var(--base7);
-    border-radius: var(--default-item-radius);
+    border-radius: var(--item-default-radius);
   }
 
   .icon {
     @include flexify(center, center);
     margin-left: 4px;
     border: 1px solid var(--base7);
-    border-radius: var(--default-item-radius);
+    border-radius: var(--item-default-radius);
     width: var(--search-icn-size);
     height: var(--search-icn-size);
     grid-column: 1;

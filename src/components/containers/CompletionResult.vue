@@ -86,11 +86,7 @@
 import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
 import { useBodyActionPaneClass } from 'src/hooks';
-import {
-  CompletionCandidate,
-  defaultCompletionLimit,
-  useCompletionStore,
-} from 'src/stores';
+import { useCompletionStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
@@ -182,7 +178,7 @@ useBodyActionPaneClass();
   min-height: var(--completion-item-min-height);
   padding: var(--completion-item-padding);
   margin: var(--completion-item-margin);
-  border-radius: var(--default-item-radius);
+  border-radius: var(--item-default-radius);
   cursor: pointer;
 
   .q-focus-helper {
@@ -198,7 +194,7 @@ useBodyActionPaneClass();
     @include flexify(center, center);
     margin-left: 4px;
     border: 1px solid var(--base7);
-    border-radius: var(--default-item-radius);
+    border-radius: var(--item-default-radius);
     width: var(--search-icn-size);
     height: var(--search-icn-size);
     grid-column: 1;

@@ -1,25 +1,25 @@
 import { EditorView } from 'codemirror';
 
-const cursorColor = 'var(--fg)';
-
 export const basicOrgTheme = EditorView.theme({
   '.cm-content': {
-    caretColor: cursorColor,
+    caretColor: 'var(--editor-caret-color)',
     width: '100%',
   },
-  '.cm-cursor, .cm-dropCursor': { borderLeftColor: cursorColor },
+  '.cm-cursor, .cm-dropCursor': {
+    borderLeftColor: 'var(--editor-caret-color)',
+  },
 
   '.cm-line': {
     padding: '0',
   },
   '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection, .cm-line ::selection':
     {
-      backgroundColor: 'var(--base8) !important',
-      color: 'var(--bg) !important',
+      backgroundColor: 'var(--editor-selection-bg-color) !important',
+      color: 'var(--editor-selection-color) !important',
     },
 
   '.cm-gutterElement': {
-    color: 'var(--fg-alt)',
+    color: 'var(--editor-gutter-color)',
     display: 'flex',
     alignItems: 'start',
   },
@@ -32,20 +32,20 @@ export const basicOrgTheme = EditorView.theme({
   },
 
   '.cm-gutterElement:hover': {
-    color: 'var(--base8)',
+    color: 'var(--editor-gutter-hover-color)',
   },
 
   '.cm-foldPlaceholder': {
     backgroundColor: 'none',
     background: 'none',
-    color: 'var(--fg)',
+    color: 'var(--editor-fold-placeholder-color)',
     fontSize: 'inherit',
     border: 0,
     display: 'none',
   },
 
   '.cm-activeLine': {
-    'background-color': 'transparent',
+    'background-color': 'var(--editor-active-line-bg-color)',
   },
 
   '.cm-scroller': {

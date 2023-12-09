@@ -3,10 +3,6 @@ import {
   addMultilineWidgetEffect,
   removeMultilineWidgetEffect,
 } from './org-multiline-widget-state';
-import {
-  EmbeddedWidgetBuilder,
-  MultilineEmbeddedWidgets,
-} from './widget.model';
 import { StateEffect } from '@codemirror/state';
 import { ViewUpdate } from '@codemirror/view';
 import { ChangedRange } from '@lezer/common';

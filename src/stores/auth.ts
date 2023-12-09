@@ -110,7 +110,7 @@ export const useAuthStore = defineStore(
         user.value = data;
       } catch (e: unknown) {
         // TODO: master move error handling to special function
-        if ((e as AxiosError).response.status === 400) {
+        if ((e as AxiosError).response?.status === 400) {
           resetAuthInfo();
         }
       }

@@ -50,6 +50,6 @@ ${prettyQuasarPlatform}`;
   white-space: pre-line;
 }
 .debug-page {
-  padding: var(--default-block-padding);
+  padding: var(--block-default-padding);
 }
 </style>

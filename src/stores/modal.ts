@@ -1,13 +1,8 @@
 import { defineStore } from 'pinia';
+import { ModalConfig } from 'src/api';
 import { VueComponent } from 'src/models';
 
 import { computed, ref, shallowRef } from 'vue';
-
-// TODO: api
-export interface ModalConfig {
-  closable?: boolean;
-  title?: string;
-}
 
 export const useModalStore = defineStore('modal', () => {
   const opened = ref<boolean>(false);

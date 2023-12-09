@@ -336,7 +336,7 @@ if ($q.platform.is.ios) {
 .side-panel-actions .q-item {
   .q-focus-helper {
     position: absolute;
-    border-radius: var(--default-item-radius);
+    border-radius: var(--item-default-radius);
     transform: translate(-50%, -50%);
     top: 50%;
     width: 40px;

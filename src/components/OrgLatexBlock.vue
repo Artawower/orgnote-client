@@ -31,7 +31,6 @@ const container = computed(() => props.container ?? 'div');
 <style lang="scss">
 .latex {
   width: calc(100% - 2px);
-  overflow: auto;
 }
 .katex-display {
   padding: 0;

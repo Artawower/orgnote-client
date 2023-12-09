@@ -34,6 +34,6 @@ const { prettyLogs } = storeToRefs(loggerStore);
 
 <style lang="scss" scoped>
 .logger-page {
-  padding: var(--default-block-padding);
+  padding: var(--block-default-padding);
 }
 </style>

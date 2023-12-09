@@ -94,10 +94,10 @@ onBeforeMount(() => {
 
 <style lang="scss" scoped>
 .used-space {
-  margin-top: var(--default-block-margin);
+  margin-top: var(--block-default-margin);
 }
 
 .reference {
-  padding-top: var(--default-block-padding);
+  padding-top: var(--block-default-padding);
 }
 </style>

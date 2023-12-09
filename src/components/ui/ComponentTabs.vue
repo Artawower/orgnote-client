@@ -58,6 +58,6 @@ const openTab = (component: VueComponent) => {
 }
 .active-tab {
   flex: 1;
-  padding: var(--default-block-padding);
+  padding: var(--block-default-padding);
 }
 </style>

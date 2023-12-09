@@ -6,6 +6,6 @@
 
 <style lang="scss" scoped>
 .sidebar-wrapper {
-  padding: var(--default-block-padding);
+  padding: var(--block-default-padding);
 }
 </style>

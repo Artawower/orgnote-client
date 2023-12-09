@@ -1,7 +1,7 @@
-import { CompletionCandidate, useCompletionStore } from './completion';
+import { useCompletionStore } from './completion';
 import { useRecentCommandsStore } from './recent-commands-store';
 import { defineStore } from 'pinia';
-import { Command, CommandGroup } from 'src/models';
+import { Command, CommandGroup, CompletionCandidate } from 'src/api';
 import { useKeybindingStore } from 'src/stores/keybindings';
 
 import { computed, ref } from 'vue';

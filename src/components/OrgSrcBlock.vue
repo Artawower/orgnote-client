@@ -81,7 +81,7 @@ const executeCode = async () => {
 
     code {
       padding: var(--src-block-padding-y) var(--src-block-padding-x);
-      border-radius: var(--sm-block-border-radius);
+      border-radius: var(--block-sm-border-radius);
     }
   }
 }

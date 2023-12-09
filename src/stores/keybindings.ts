@@ -1,6 +1,6 @@
 import { useCompletionStore } from './completion';
 import { defineStore } from 'pinia';
-import { Command, DEFAULT_KEYBINDING_GROUP } from 'src/models/keybinding.model';
+import { Command, DEFAULT_KEYBINDING_GROUP } from 'src/api';
 import hotkeys from 'src/tools/tinykeys-wrapper';
 
 import { computed, ref } from 'vue';
@@ -45,7 +45,8 @@ export const useKeybindingStore = defineStore('keybindings', () => {
   const attachHotkeys = () => {
     Object.values(keybindings.value).forEach((k) => {
       const command = {
-        [k.keySequence]: (event: KeyboardEvent) => k.handler({ event }),
+        [k.keySequence as string]: (event: KeyboardEvent) =>
+          k.handler({ event }),
       };
       unregisterFunctions.push(hotkeys(window, command, !k.allowOnInput));
     });

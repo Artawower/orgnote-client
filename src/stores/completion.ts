@@ -1,40 +1,13 @@
 import { useKeybindingStore } from './keybindings';
 import { defineStore } from 'pinia';
+import {
+  CandidateGetterFn,
+  CompletionCandidate,
+  CompletionConfigs,
+  CompletionSearchResult,
+} from 'src/api/completion';
 
 import { computed, ref, watch } from 'vue';
-
-export interface CompletionCandidate<T = unknown> {
-  icon?: string;
-  group?: string;
-  description?: string;
-  command: string;
-  data: T;
-  /* Command handler could be used instead of command string */
-  commandHandler?: (data: T) => void;
-}
-
-// TODO: make this field configurable from CompletionConfig
-export const defaultCompletionLimit = 500;
-
-// TODO: (extensions) move to API provider layer.
-export interface CompletionSearchResult<T = unknown> {
-  total?: number;
-  result: CompletionCandidate<T>[];
-}
-
-export type CandidateGetterFn<T = unknown> = (
-  filter: string,
-  limit?: number,
-  offset?: number
-) => CompletionSearchResult<T> | Promise<CompletionSearchResult<T>>;
-
-export interface CompletionConfigs<T = unknown> {
-  itemsGetter: CandidateGetterFn<T>;
-  placeholder?: string;
-  itemHeight?: string;
-  searchText?: string;
-  onClicked?: (candidate: CompletionCandidate<T>) => void;
-}
 
 export const useCompletionStore = defineStore('completion', () => {
   const candidates = ref<CompletionCandidate[]>([]);

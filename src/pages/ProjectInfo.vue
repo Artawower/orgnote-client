@@ -46,9 +46,9 @@ const tabs: Tab[] = [
 .project-info {
   .active-tab {
     max-height: calc(
-      var(--modal-max-height) - (var(--default-block-padding) * 2)
+      var(--modal-max-height) - (var(--block-default-padding) * 2)
     );
-    height: calc(var(--modal-max-height) - (var(--default-block-padding) * 2));
+    height: calc(var(--modal-max-height) - (var(--block-default-padding) * 2));
     overflow: auto;
   }
 }

@@ -508,7 +508,7 @@ org-keyword-block {
 }
 
 .org-multiline-widget {
-  margin-top: var(--default-block-margin);
+  margin-top: var(--block-default-margin);
   &:hover,
   &:active {
     .org-widget-edit-badge {
@@ -550,8 +550,8 @@ org-keyword-block {
 }
 
 .org-block-footer {
-  border-bottom-right-radius: var(--sm-block-border-radius);
-  border-bottom-left-radius: var(--sm-block-border-radius);
+  border-bottom-right-radius: var(--block-sm-border-radius);
+  border-bottom-left-radius: var(--block-sm-border-radius);
   padding-bottom: var(--src-block-footer-padding-y) !important;
   margin-bottom: var(--src-block-margin-y);
 }
@@ -559,14 +559,14 @@ org-keyword-block {
 .org-keyword-description-line,
 .org-keyword-title-line {
   :not(&) + .org-block-header {
-    margin-top: var(--sm-block-margin);
+    margin-top: var(--block-sm-margin);
   }
 }
 .org-block-header {
   position: relative;
 
-  border-top-right-radius: var(--sm-block-border-radius);
-  border-top-left-radius: var(--sm-block-border-radius);
+  border-top-right-radius: var(--block-sm-border-radius);
+  border-top-left-radius: var(--block-sm-border-radius);
 }
 
 // Readonly mode
@@ -659,11 +659,11 @@ org-keyword-block {
 .org-keyword-filetags-line,
 .org-keyword-description-line,
 .org-keyword-title-line {
-  padding-bottom: var(--default-block-padding) !important;
+  padding-bottom: var(--block-default-padding) !important;
 }
 
 .org-embedded-propertydrawer {
-  padding-bottom: calc(var(--default-block-padding) * 2);
+  padding-bottom: calc(var(--block-default-padding) * 2);
   display: none;
 }
 
@@ -717,8 +717,8 @@ org-keyword-block {
     }
 
     .cm-line {
-      padding-left: var(--default-block-padding);
-      padding-right: var(--default-block-padding);
+      padding-left: var(--block-default-padding);
+      padding-right: var(--block-default-padding);
     }
   }
 

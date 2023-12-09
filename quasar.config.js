@@ -9,6 +9,7 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require('quasar/wrappers');
+const { checker } = require('vite-plugin-checker');
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
 const path = require('path');
@@ -97,6 +98,9 @@ module.exports = configure(function (ctx) {
             // you need to set i18n resource including paths !
             include: path.resolve(__dirname, './src/i18n/**'),
           },
+          checker({
+            typescript: true,
+          }),
         ],
       ],
 

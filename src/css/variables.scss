@@ -80,7 +80,6 @@ body {
   --btn-action-bg: var(--bg);
 
   // Mini buffer
-
   --mini-buffer-background: var(--bg-alt);
   --mini-buffer-font-color: var(--fg);
   --mini-buffer-border-top: 1px solid var(--base4);
@@ -116,12 +115,12 @@ body {
   --modal-padding: 8px 0;
 
   // Box paddings/margins
-  --default-block-padding: 16px;
-  --default-block-margin: 16px;
-  --sm-block-margin: 8px;
-  --default-block-border-radius: 16px;
-  --sm-block-border-radius: 6px;
-  --default-item-radius: 8px;
+  --block-default-padding: 16px;
+  --block-default-margin: 16px;
+  --block-sm-margin: 8px;
+  --block-default-border-radius: 16px;
+  --block-sm-border-radius: 6px;
+  --item-default-radius: 8px;
   --search-icn-size: 44px;
   --default-gap: 16px;
   --small-gap: 8px;
@@ -140,6 +139,14 @@ body {
   --editor-headline-line-height: 1.2;
   --editor-default-line-height: 28.8px;
   --editor-padding-bottom: 48px;
+  --editor-cursor-color: var(--fg);
+  --editor-selection-bg-color: var(--base8);
+  --editor-selection-color: var(--bg);
+  --editor-gutter-color: var(--fg-alt);
+  --editor-gutter-hover-color: var(--base8);
+  --editor-fold-placeholder-color: var(--fg);
+  --editor-active-line-bg-color: transparent;
+  --editor-caret-color: var(--fg);
 
   // List
   --org-list-item-bullet-margin-left: 20px;
@@ -160,7 +167,7 @@ body {
 @include mobile {
   body.body--dark,
   body.body--light {
-    --default-block-padding: 8px;
+    --block-default-padding: 8px;
     --footer-height: 56px;
     --page-padding: 14px;
     --default-gap: 10px;

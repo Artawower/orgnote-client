@@ -26,6 +26,7 @@ export const useSettingsStore = defineStore(
       },
       completion: {
         showGroup: false,
+        defaultCompletionLimit: 500,
       },
     });
 

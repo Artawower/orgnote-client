@@ -15,7 +15,8 @@ export interface CommandHandlerParams {
 }
 
 export interface Command {
-  keySequence?: string; // TODO: add support for multiple key sequences
+  // TODO: add support for multiple key sequences
+  keySequence?: string | string[];
   description?: string;
   command?: string;
   icon?: string;
