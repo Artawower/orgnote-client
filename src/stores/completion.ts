@@ -1,4 +1,5 @@
 import { useKeybindingStore } from './keybindings';
+import { useSettingsStore } from './settings';
 import { defineStore } from 'pinia';
 import {
   CandidateGetterFn,
@@ -60,8 +61,11 @@ export const useCompletionStore = defineStore('completion', () => {
     total.value = r.total;
   };
 
-  const search = (limit = defaultCompletionLimit, offset = 0) => {
+  const search = (limit?: number, offset = 0) => {
+    const { config } = useSettingsStore();
+    limit ??= config.completion.defaultCompletionLimit;
     selectedCandidateIndex.value = 0;
+
     const res = candidateGetter.value(filter.value, limit, offset);
     if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {
       loading.value = true;

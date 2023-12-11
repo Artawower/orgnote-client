@@ -27,7 +27,7 @@
     <q-virtual-scroll
       ref="scrollTarget"
       :items-size="total"
-      :virtual-scroll-slice-size="defaultCompletionLimit"
+      :virtual-scroll-slice-size="config.completion.defaultCompletionLimit"
       :virtual-scroll-item-size="itemHeight"
       :items-fn="getPagedResult"
       v-slot="{ index }"
@@ -85,6 +85,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
+import { CompletionCandidate } from 'src/api';
 import { useBodyActionPaneClass } from 'src/hooks';
 import { useCompletionStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
@@ -172,14 +173,12 @@ useBodyActionPaneClass();
   grid-auto-rows: 1fr;
   cursor: pointer;
   align-items: center;
-  padding: 8px;
   column-gap: 16px;
 
   min-height: var(--completion-item-min-height);
   padding: var(--completion-item-padding);
   margin: var(--completion-item-margin);
   border-radius: var(--item-default-radius);
-  cursor: pointer;
 
   .q-focus-helper {
     display: none;
