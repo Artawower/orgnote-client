@@ -39,6 +39,7 @@ Screen:
 
 Env:
  API URL: ${process.env.API_URL}
+ AUTH URL: ${process.env.AUTH_URL}
  MODE: ${process.env.NODE_ENV}
 
 Quasar info:

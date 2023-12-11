@@ -22,7 +22,7 @@ jobs:
         run: |
           echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
 
-          cat <<EOT > .env
+          cat <<EOT > .env.prod
           DEUBG=true
           API_URL=${{ secrets.API_URL }}
           KEYPASS=${{ secrets.KEYPASS }}
@@ -84,7 +84,7 @@ jobs:
             cd ~/orgnote/orgnote-client
             echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
 
-            cat <<EOT > .env
+            cat <<EOT > .env.prod
             DEUBG=true
             API_URL=${{ secrets.API_URL }}
             KEYPASS=${{ secrets.KEYPASS }}
