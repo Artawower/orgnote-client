@@ -102,7 +102,7 @@ const getEdgeColor = (link: LinkObject) => {
 };
 
 const $q = useQuasar();
-const scaleFactorLimit = $q.platform.is.mobile ? 0.8 : 1;
+// const scaleFactorLimit = $q.platform.is.mobile ? 0.8 : 1;
 const selectedNoteId = ref<string | null>(null);
 
 const resetSelectedNote = (): void => (selectedNoteId.value = null);

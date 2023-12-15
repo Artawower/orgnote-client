@@ -13,10 +13,9 @@
 
 <script setup lang="ts">
 import { OrgComponentProps } from './org-component-props';
-import { copyToClipboard } from 'quasar';
 import { useNotifications } from 'src/hooks';
 import { useOrgBabelStore } from 'src/stores';
-import { findActualOrgNode } from 'src/tools';
+import { copyToClipboard, findActualOrgNode } from 'src/tools';
 
 import { computed, toRef } from 'vue';
 
@@ -30,7 +29,6 @@ const emits = defineEmits<{
 const node = toRef(props, 'node');
 
 const copySrc = () => {
-  copyToClipboard(node.value.children.get(2).rawValue);
   copyToClipboard(node.value.children.get(2).rawValue);
 };
 

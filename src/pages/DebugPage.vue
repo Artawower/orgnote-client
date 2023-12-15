@@ -29,6 +29,14 @@ const prettyQuasarPlatform = [
   ` standalone: ${!!window.navigator.standalone}`,
 ].join('\n');
 
+const deviceSpecificInfo = $q.platform.is.cordova
+  ? `\nDevice info:
+ Model: ${device.model}
+ Manufacturer: ${device.manufacturer}
+ ${$q.platform.is.android ? 'SDK version: ' + device.sdkVersion : ''}
+ Version: ${device.version}`
+  : '';
+
 const systemInfo = `OrgNote: ${version}
 Language: ${navigator.language}
 
@@ -43,7 +51,8 @@ Env:
  MODE: ${process.env.NODE_ENV}
 
 Quasar info:
-${prettyQuasarPlatform}`;
+${prettyQuasarPlatform}
+${deviceSpecificInfo}`;
 </script>
 
 <style lang="scss" scoped>

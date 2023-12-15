@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { copyToClipboard } from 'quasar';
+import { copyToClipboard } from 'src/tools';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 
@@ -18,6 +18,7 @@ const props = defineProps<{
 }>();
 
 const copySrc = () => {
+  console.log('[line 21]: copy src');
   copyToClipboard(props.code);
 };
 </script>

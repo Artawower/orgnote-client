@@ -30,3 +30,4 @@ src-cordova/www
 .env
 .env.prod
 local/*
+build-local.sh

@@ -35,12 +35,14 @@ export const useLoggerStore = defineStore(
         };
       });
 
-      window.onerror = function (message, source, lineno, colno, error) {
+      window.addEventListener('error', function ({ error }) {
         addLog(
           'error',
-          `[line: ${lineno}, col: ${colno}] ${message}\n\t${source}\n\t${error}`
+          `[line: ${error.lineno}, col: ${error.colno}] mes: ${JSON.stringify(
+            error.message
+          )}\n\t${error.stack}`
         );
-      };
+      });
     };
 
     const addLog = (mode: string, ...messages: unknown[]) => {
