@@ -18,6 +18,13 @@
             $t(tab.name)
           }}</q-item-label>
         </q-item-section>
+        <q-tooltip
+          v-if="tab.disabledReason"
+          anchor="center right"
+          self="center start"
+        >
+          {{ $t(tab.disabledReason) }}
+        </q-tooltip>
       </q-item>
       <slot name="custom-tabs" />
     </q-list>
@@ -32,6 +39,7 @@ export interface Tab {
   name: string;
   icon: string;
   component: VueComponent;
+  disabledReason?: string;
   disabled?: boolean;
 }
 </script>

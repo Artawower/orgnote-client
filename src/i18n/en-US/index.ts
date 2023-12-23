@@ -156,4 +156,6 @@ export default {
   'report bug': 'report bug',
   'new version available!': 'new version available!',
   'please, restart app!': 'please, restart the app!',
+  'available to subscribers only':
+    'available to subscribers only',
 };

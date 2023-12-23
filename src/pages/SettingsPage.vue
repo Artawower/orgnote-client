@@ -40,7 +40,8 @@ const configTabs: Tab[] = [
   {
     name: 'api',
     icon: 'generating_tokens',
-    disabled: authStore.user.isAnonymous,
+    disabled: authStore.user.isAnonymous || !authStore.user.active,
+    disabledReason: 'available to subscribers only',
     component: ApiSettingsPage,
   },
 ];
