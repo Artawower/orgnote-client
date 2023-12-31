@@ -17,6 +17,7 @@ import { defineComponent, toRef } from 'vue';
 import type { Component } from 'vue';
 
 import OrgBold from './OrgBold.vue';
+import OrgEntity from './OrgEntity.vue';
 import OrgHeadline from './OrgHeadline.vue';
 import OrgItalic from './OrgItalic.vue';
 import OrgLatexBlock from './OrgLatexBlock.vue';
@@ -50,6 +51,7 @@ const typedComponents: { [key in NodeType]?: Component } = {
   [NodeType.LatexEnvironment]: OrgLatexBlock,
   [NodeType.NewLine]: NewLine,
   [NodeType.RawLink]: RawLink,
+  [NodeType.Entity]: OrgEntity,
 };
 
 const props = defineProps<{

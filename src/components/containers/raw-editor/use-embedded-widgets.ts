@@ -17,6 +17,7 @@ import { Component } from 'vue';
 
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
+import OrgEntity from 'src/components/OrgEntity.vue';
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
@@ -110,6 +111,10 @@ export const useEmbeddedWidgets = () => {
         container: 'span',
         withHash: false,
       }),
+    },
+    [NodeType.Entity]: {
+      decorationType: 'mark',
+      classBuilder: () => 'org-entity',
     },
     [NodeType.Indent]: {
       decorationType: 'replace',
@@ -251,6 +256,19 @@ export const useEmbeddedWidgets = () => {
       }
     },
     [NodeType.HorizontalRule]: 'org-horizontal-rule-line',
+    [NodeType.Indent]: (orgNode: OrgNode) => {
+      let lineClass = '';
+      if (orgNode.parent?.parent?.is(NodeType.SrcBlock)) {
+        lineClass += 'org-src-block-line';
+      }
+      if (orgNode.parent?.is(NodeType.BlockHeader)) {
+        lineClass += ' org-block-header';
+      }
+      if (orgNode.parent?.is(NodeType.BlockFooter)) {
+        lineClass += ' org-block-footer';
+      }
+      return lineClass;
+    },
     [NodeType.Text]: (orgNode: OrgNode) => {
       let lineClass = '';
       if (

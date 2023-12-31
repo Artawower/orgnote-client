@@ -339,6 +339,10 @@ watch(
   color: var(--fg-alt);
 }
 
+.org-entity {
+  color: var(--orange);
+}
+
 .org-src-block,
 .org-quote-block.org-keyword {
   font-size: var(--code-font-size);
