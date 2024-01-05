@@ -72,7 +72,7 @@ const recalculateHighlightedNodes = (currentNodeId: string) => {
   activeNodeIds = findConnectedLinks(currentNodeId);
 };
 
-const minCircleSize = 16;
+const minCircleSize = 12;
 const mainColor = () => getCssVar('graph-node-color');
 const edgeColor = () => getCssVar('graph-edge-color');
 const activeColor = () => getCssVar('graph-active-color');
@@ -124,7 +124,7 @@ const buildGraph = () => {
   ForceGraph()(chartWrapper.value)
     .nodeRelSize(minCircleSize)
     .nodeVal((node) => (node as GraphNoteNode).weight)
-    .zoom(0.35)
+    .zoom(0.3)
     .nodeLabel((node) => `${(node as GraphNoteNode).title}`)
     .linkVisibility(() => true)
     .linkColor(getEdgeColor)
@@ -162,7 +162,7 @@ const buildGraph = () => {
     .d3Force('link')
     .distance(
       (l: { target: { weight: number }; source: { weight: number } }) => {
-        return 20 * (l.target.weight + l.source.weight);
+        return 30 * (l.target.weight + l.source.weight);
       }
     );
 };
