@@ -78,6 +78,7 @@ module.exports = configure(function (ctx) {
         API_URL: process.env.API_URL ?? '',
         AUTH_URL: process.env.AUTH_URL,
         VUE_ROUTER_MODE: 'history',
+        DISABLE_LOGGER: process.env.DISABLE_LOGGER,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

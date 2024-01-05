@@ -1,6 +1,7 @@
 export interface CompletionCandidate<T = unknown> {
-  icon?: string;
+  icon?: string | (() => string);
   group?: string;
+  title?: string | (() => string);
   description?: string;
   command: string;
   data: T;

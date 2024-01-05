@@ -15,8 +15,10 @@ export interface NotePreview {
   filePath: ModelsPublicNote['filePath'];
   isMy: ModelsPublicNote['isMy'];
   author?: ModelsPublicUser;
+  bookmarked?: boolean;
 }
 
 export interface Note extends ModelsPublicNote {
   deleted?: Date;
+  bookmarked?: boolean;
 }

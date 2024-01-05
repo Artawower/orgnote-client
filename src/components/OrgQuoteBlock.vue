@@ -28,7 +28,7 @@ const node = toRef(props, 'node');
 .org-quote {
   display: block;
   border-left: 3px solid var(--base8);
-  padding-left: var(--block-default-padding);
+  padding-left: var(--block-padding-md);
   font-style: italic;
 
   &::before {

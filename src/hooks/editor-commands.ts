@@ -3,7 +3,7 @@ import { redo, undo } from '@codemirror/commands';
 import { foldAll, unfoldAll } from '@codemirror/language';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
-import { Command } from 'src/models';
+import { Command } from 'src/api';
 import {
   useCommandsStore,
   useCompletionStore,

@@ -62,7 +62,7 @@ const updateProperties = (properties: string) => {
 
   width: 100%;
   border-bottom: 1px solid var(--base7);
-  padding: var(--block-default-padding) 0;
+  padding: var(--block-padding-md) 0;
   box-sizing: border-box;
 }
 .info {

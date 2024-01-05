@@ -1,6 +1,6 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <q-page :style-fn="resetPageMinHeight">
+    <q-page :style-fn="resetPageMinHeight" class="center-container">
       <note-list
         :selectable="true"
         :limit="limit"
@@ -101,7 +101,5 @@ const isModeLineVisible = computed(() => notesStore.notes.length);
 .q-page {
   max-height: none;
   height: auto;
-  max-width: var(--content-max-width);
-  margin: auto;
 }
 </style>

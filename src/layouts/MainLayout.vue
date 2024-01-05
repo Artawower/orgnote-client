@@ -6,10 +6,7 @@
       minHeight: 0,
     }"
   >
-    <file-uploader
-      class="main-content"
-      @uploaded="notesImportStore.uploadFiles"
-    >
+    <file-uploader @uploaded="notesImportStore.uploadFiles">
       <the-header />
       <action-side-panel
         v-if="$q.screen.gt.xs || sidebarStore.opened"
@@ -46,6 +43,7 @@ import {
   registerEditorCommands,
   useMainCommands,
 } from 'src/hooks';
+import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
 import { useSidebarStore, useSyncStore, useToolbarStore } from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
@@ -75,6 +73,7 @@ const { registerKeybindings } = useKeybindingStore();
 
 useMainCommands().register();
 registerEditorCommands();
+registerNoteDetailCommands();
 
 registerKeybindings([
   {
@@ -114,11 +113,6 @@ onAppActive((active: boolean) => {
 </script>
 
 <style lang="scss" scoped>
-.content {
-  max-width: var(--content-max-width);
-  margin: auto;
-}
-
 .with-composite-bar {
   margin-left: var(--sidebar-width);
 }

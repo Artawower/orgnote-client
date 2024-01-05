@@ -86,11 +86,22 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
   const resetNote = (): void => (currentNote.value = null);
 
+  const updateCurrentNotePartially = async (
+    note: Partial<Note>
+  ): Promise<void> => {
+    if (!currentNote.value) {
+      return;
+    }
+
+    currentNote.value = { ...currentNote.value, ...note };
+  };
+
   return {
     currentNote,
     currentOrgTree,
     selectNoteById,
     getNoteById,
     resetNote,
+    updateCurrentNotePartially,
   };
 });

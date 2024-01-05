@@ -47,6 +47,7 @@ import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
 import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
+import { useDetailCommands } from 'src/hooks/note-detail-commands';
 import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore, useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
@@ -109,6 +110,7 @@ watch(
 );
 
 useEditorCommands();
+useDetailCommands();
 
 const router = useRouter();
 const notesStore = useNotesStore();

@@ -1,6 +1,6 @@
 <template>
   <div ref="scrollTarget" class="scroll-container">
-    <q-page :style-fn="resetPageMinHeight">
+    <q-page :style-fn="resetPageMinHeight" class="center-container">
       <div class="container page-container">
         <note-list
           :selectable="false"
@@ -57,10 +57,5 @@ reloadNotes();
 .scroll-container {
   overflow: auto;
   height: calc(100svh - var(--top-bar-height));
-}
-
-.q-page {
-  max-width: var(--content-max-width);
-  margin: auto;
 }
 </style>

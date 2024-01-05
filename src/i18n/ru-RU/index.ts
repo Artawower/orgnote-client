@@ -152,6 +152,10 @@ export default {
   'report bug': 'сообщить об ошибке',
   'new version available!': 'доступна новая версия!',
   'please, restart app!': 'пожалуйста, перезапустите приложение!',
-  'available to subscribers only':
-    'доступно только подписчикам',
+  'available to subscribers only': 'доступно только подписчикам',
+  'recent notes': 'последние заметки',
+  bookmarks: 'закладки',
+  tags: 'теги',
+  'no tags yet': 'теги отсутствуют',
+  'no bookmarks yet': 'закладки отсутствуют',
 };

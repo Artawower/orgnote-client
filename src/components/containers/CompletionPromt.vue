@@ -1,17 +1,17 @@
 <template>
   <template v-if="opened">
-    <Teleport
+    <teleport
       v-if="viewStore.completionPosition === 'bottom'"
       to="#mini-buffer"
     >
-      <CompletionResult />
-    </Teleport>
+      <completion-result />
+    </teleport>
     <div
       v-else
       class="completion-container"
       :class="{ mobile: $q.screen.lt.sm }"
     >
-      <CompletionResult />
+      <completion-result />
     </div>
   </template>
 </template>

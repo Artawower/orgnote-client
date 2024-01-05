@@ -17,7 +17,6 @@ import { Component } from 'vue';
 
 import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
-import OrgEntity from 'src/components/OrgEntity.vue';
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
 import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';

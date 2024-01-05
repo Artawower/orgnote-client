@@ -8,5 +8,6 @@ export function convertNoteToNotePreview(note: Note): NotePreview {
     isMy: note.isMy,
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
+    bookmarked: note.bookmarked,
   };
 }

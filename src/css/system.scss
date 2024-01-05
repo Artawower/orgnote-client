@@ -1,0 +1,38 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+.pa-sm {
+  padding: var(--block-padding-sm);
+}
+
+.pa-x-sm {
+  padding-left: var(--block-padding-sm);
+  padding-right: var(--block-padding-sm);
+}
+
+.pa-y-sm {
+  padding-top: var(--block-padding-sm);
+  padding-bottom: var(--block-padding-sm);
+}
+
+.pa-y-lg {
+  padding-top: var(--block-padding-lg);
+  padding-bottom: var(--block-padding-lg);
+}
+
+.pa-r-sm {
+  padding-right: var(--block-padding-sm);
+}
+
+.active {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--blue);
+  }
+}
+
+.column-center {
+  @include flexify(column, center, center);
+}
