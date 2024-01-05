@@ -12,6 +12,7 @@
 </template>
 
 <script lang="ts" setup>
+// TODO: master rework
 import { toRef } from 'vue';
 
 const props = withDefaults(

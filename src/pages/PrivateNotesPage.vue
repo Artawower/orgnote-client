@@ -89,7 +89,8 @@ const deleteSelectedNotes = async () => {
   selectedNotesStore.clearSelectedNotes();
 };
 
-const isModeLineVisible = computed(() => notesStore.notes.length);
+// const isModeLineVisible = computed(() => notesStore.notes.length);
+const isModeLineVisible = false;
 </script>
 
 <style lang="scss" scoped>
