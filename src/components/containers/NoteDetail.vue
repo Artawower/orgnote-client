@@ -25,6 +25,7 @@ const note = toRef(props, 'note');
 
 const readonlyConfig: OrgNoteConfig['editor'] = {
   showSpecialSymbols: false,
+  showPropertyDrawer: false,
 };
 </script>
 

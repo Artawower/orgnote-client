@@ -3,6 +3,7 @@ import { useRecentCommandsStore } from './recent-commands-store';
 import { defineStore } from 'pinia';
 import { Command, CommandGroup, CompletionCandidate } from 'src/api';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { extractDynamicValue } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
@@ -61,7 +62,8 @@ export const useCommandsStore = defineStore('commands', () => {
             command: c.command,
             description: c.description,
             group: c.group,
-            icon: c.icon ?? 'settings',
+            icon: extractDynamicValue(c.icon) ?? 'settings',
+            title: extractDynamicValue(c.title),
           } as CompletionCandidate)
       );
 
@@ -69,7 +71,7 @@ export const useCommandsStore = defineStore('commands', () => {
       const filteredCandidates = candidates.filter(
         (c) =>
           c.command.toLowerCase().includes(filter.toLowerCase()) ||
-          c.description.toLowerCase().includes(filter.toLowerCase()) ||
+          c.description?.toLowerCase().includes(filter.toLowerCase()) ||
           c.group?.toLowerCase().includes(filter.toLowerCase())
       );
       return {
@@ -96,5 +98,6 @@ export const useCommandsStore = defineStore('commands', () => {
     getCommandsFromGroup,
     deactivateGroup,
     initCompletion,
+    currentGroups,
   };
 });

@@ -8,7 +8,7 @@
           :key="cmd.command"
           class="editor-action"
         >
-          <q-icon :name="cmd.icon" size="sm" />
+          <q-icon :name="extractDynamicValue(cmd.icon)" size="sm" />
         </div>
       </div>
     </prevent-ios-touch>
@@ -16,8 +16,9 @@
 </template>
 
 <script lang="ts" setup>
-import { Command } from 'src/models';
+import { Command } from 'src/api';
 import { useCommandsStore, useNoteEditorStore } from 'src/stores';
+import { extractDynamicValue } from 'src/tools';
 
 import { onMounted, ref } from 'vue';
 
@@ -43,7 +44,6 @@ onMounted(() => setTimeout(() => (inited.value = true), 100));
   background: var(--bg-alt);
   overflow-x: auto;
   gap: var(--default-gap);
-  /* padding: var(--block-default-padding); */
   width: 100%;
   height: var(--footer-height);
 

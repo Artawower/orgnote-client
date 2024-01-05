@@ -42,31 +42,13 @@
         <template
           v-slot="{ item, index }: { item: CompletionCandidate, index: number }"
         >
-          <q-item
-            :key="item.command"
-            class="completion-item"
-            :class="{ selected: index === selectedIndex }"
-            :clickable="true"
-            @mousedown="completionStore.executeCandidate(item)"
-            @mouseover=" (e: MouseEvent) => focusCompletionCandidate(e, index) "
-          >
-            <!-- TODO: master combine with src/components/ui/SearchContainer.vue search icon as -->
-            <!-- universal icon component with border (inherit props from quasar icon) -->
-            <div class="icon">
-              <q-icon v-if="item.icon" :name="item.icon" size="sm"></q-icon>
-            </div>
-            <div class="text-bold flex flex-start gap-8 line-limit-1">
-              <span v-if="config.completion.showGroup"
-                >[{{ item.group }}]:&nbsp</span
-              >
-              <span class="capitalize">{{ item.command }}</span>
-            </div>
-            <div>
-              <span class="text-italic color-secondary line-limit-1">
-                {{ item.description }}
-              </span>
-            </div>
-          </q-item>
+          <keep-alive>
+            <completion-result-item
+              :item="item"
+              :index="index"
+              :selected="index === selectedIndex"
+            />
+          </keep-alive>
         </template>
       </async-item-container>
     </q-virtual-scroll>
@@ -93,6 +75,7 @@ import { compareElemPositions, debounce } from 'src/tools';
 
 import { onMounted, ref, watch } from 'vue';
 
+import CompletionResultItem from './CompletionResultItem.vue';
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
 
@@ -135,19 +118,6 @@ const ensureSelectedIndexVisible = () => {
 };
 
 watch(() => candidateSelectedByDirection.value, ensureSelectedIndexVisible);
-
-let lastCoords = [0, 0];
-
-const focusCompletionCandidate = (e: MouseEvent, index: number) => {
-  const coordsChanged =
-    lastCoords[0] !== e.clientX || lastCoords[1] !== e.clientY;
-
-  if (!coordsChanged) {
-    return;
-  }
-  lastCoords = [e.clientX, e.clientY];
-  completionStore.focusCandidate(index);
-};
 
 const closeCompletionOnBlur = () => {
   setTimeout(() => {

@@ -30,8 +30,9 @@ export const useNotesImportStore = defineStore('importStore', () => {
         id: orgTree.meta.id,
         createdAt: now,
         updatedAt: now,
+        touchedAt: now,
         filePath: orgInfo.filePath,
-        meta: orgTree.meta,
+        meta: orgTree.meta as unknown,
       },
     ]);
   };

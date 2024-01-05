@@ -17,6 +17,7 @@
 <script setup lang="ts">
 import { OrgNode } from 'org-mode-ast';
 import { storeToRefs } from 'pinia';
+import { useDetailCommands } from 'src/hooks/note-detail-commands';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute } from 'vue-router';
@@ -40,4 +41,5 @@ watch(
   () => route.params.id,
   (id) => id && currentNoteStore.selectNoteById(route.params.id as string)
 );
+useDetailCommands();
 </script>

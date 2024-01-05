@@ -16,7 +16,7 @@
         @click="handleItem(cmd)"
       >
         <div class="icon">
-          <q-icon size="md" :name="cmd.icon"></q-icon>
+          <q-icon size="md" :name="extractDynamicValue(cmd.icon)"></q-icon>
         </div>
         <div class="title text-capitalize">{{ $t(cmd.command) }}</div>
         <div class="description text-capitalize">
@@ -28,7 +28,8 @@
 </template>
 
 <script lang="ts" setup>
-import { Command, CommandHandlerParams } from 'src/models';
+import { Command, CommandHandlerParams } from 'src/api';
+import { extractDynamicValue } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
@@ -67,7 +68,7 @@ const handleItem = (cmd: Command) => {
 .search-container {
   @include flexify(column);
 
-  padding: var(--block-default-padding);
+  padding: var(--block-padding-md);
   max-height: 100%;
 }
 

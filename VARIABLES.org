@@ -205,11 +205,13 @@
 - =--modal-max-width=:  1024px;
 - =--modal-padding=:  8px 0;
 ** Box paddings/margins
-- =--block-default-padding=:  16px;
-- =--block-default-margin=:  16px;
-- =--block-sm-margin=:  8px;
-- =--block-default-border-radius=:  16px;
-- =--block-sm-border-radius=:  6px;
+- =--block-padding-sm=:  8px;
+- =--block-padding-md=:  16px;
+- =--block-padding-lg=:  32px;
+- =--block-margin-md=:  16px;
+- =--block-margin-sm=:  8px;
+- =--block-border-radius-md=:  16px;
+- =--block-border-radius-sm=:  6px;
 - =--item-default-radius=:  8px;
 - =--search-icn-size=:  44px;
 - =--default-gap=:  16px;
@@ -244,7 +246,7 @@
 - =--graph-edge-color=:  var(--fg-alt);
 - =--graph-active-color=:  var(--red);
 - =--completion-border=:  1px solid var(--fg-alt);
-- =--block-default-padding=:  8px;
+- =--block-padding-md=:  8px;
 - =--footer-height=:  56px;
 - =--page-padding=:  14px;
 - =--default-gap=:  10px;

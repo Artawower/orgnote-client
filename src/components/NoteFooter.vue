@@ -12,10 +12,11 @@
       </div>
       <div class="right row gap-sm action-btns">
         <q-btn
+          @click="notesStore.toggleBookmark(note)"
           :size="iconSize"
           flat
           round
-          icon="far fa-bookmark"
+          :icon="note.bookmarked ? 'o_bookmark' : 'o_bookmark_added'"
           class="q-pa-none"
         />
         <q-btn

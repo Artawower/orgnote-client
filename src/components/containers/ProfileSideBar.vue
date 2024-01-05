@@ -78,6 +78,6 @@ const logout = () => authStore.logout();
 
 <style lang="scss" scoped>
 .avatar-item {
-  padding-top: var(--block-default-padding);
+  padding-top: var(--block-padding-md);
 }
 </style>

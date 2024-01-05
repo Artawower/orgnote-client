@@ -75,7 +75,7 @@ const openNote = () => orgNoteApi.navigation.editNote(note.value.id);
 <style lang="scss" scoped>
 .note-preview {
   padding-bottom: calc(
-    var(--block-default-padding) + var(--device-padding-bottom)
+    var(--block-padding-md) + var(--device-padding-bottom)
   );
 }
 </style>

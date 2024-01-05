@@ -1,3 +1,4 @@
+import { useCurrentNoteStore } from './current-note';
 import { useFileManagerStore } from './file-manager';
 import { useGraphStore } from './graph';
 import { useSyncStore } from './sync';
@@ -26,6 +27,7 @@ export const useNotesStore = defineStore('notes', () => {
   const syncStore = useSyncStore();
   const fileManagerStore = useFileManagerStore();
   const graphStore = useGraphStore();
+  const currentNoteStore = useCurrentNoteStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -84,11 +86,11 @@ export const useNotesStore = defineStore('notes', () => {
     }
 
     setFilters({ offset });
-    const data = await repositories.notes.getNotePreviews(
+    const data = await repositories.notes.getNotePreviews({
       limit,
       offset,
-      filters.value.searchText
-    );
+      searchText: filters.value.searchText,
+    });
     // TODO: master optimize. Do nothing when notes already loaded
     const indexedNotes = [...notes.value];
     data.forEach((v, i) => {
@@ -109,15 +111,36 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const loadNotes = async () => {
-    notes.value = await repositories.notes.getNotePreviews(
-      filters.value.limit,
-      filters.value.offset
-    );
+    notes.value = await repositories.notes.getNotePreviews({
+      limit: filters.value.limit,
+      offset: filters.value.offset,
+    });
     total.value = await repositories.notes.count();
   };
 
   const loadTotal = async () => {
     total.value = await repositories.notes.count();
+  };
+
+  const toggleBookmark = async (note: NotePreview | Note) => {
+    if (note.bookmarked) {
+      await repositories.notes.deleteBookmark(note.id);
+    } else {
+      await repositories.notes.addBookmark(note.id);
+    }
+
+    if (currentNoteStore.currentNote?.id === note.id) {
+      currentNoteStore.updateCurrentNotePartially({
+        bookmarked: !note.bookmarked,
+      });
+    }
+
+    notes.value = notes.value.map((n) => {
+      if (n.id === note.id) {
+        return { ...n, bookmarked: !n.bookmarked };
+      }
+      return n;
+    });
   };
 
   const resetCache = () => {
@@ -140,6 +163,7 @@ export const useNotesStore = defineStore('notes', () => {
     upsertNotes,
     upsertNotesLocally,
     bulkPathNotesLocally,
+    toggleBookmark,
     resetCache,
   };
 });

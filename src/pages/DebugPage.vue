@@ -60,6 +60,6 @@ ${deviceSpecificInfo}`;
   white-space: pre-line;
 }
 .debug-page {
-  padding: var(--block-default-padding);
+  padding: var(--block-padding-md);
 }
 </style>

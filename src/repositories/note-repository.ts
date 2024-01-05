@@ -66,10 +66,19 @@ export class NoteRepository extends BaseRepository {
   }
 
   async getNotePreviews(
-    limit?: number,
-    offset?: number,
-    searchText?: string,
-    tags?: string[]
+    {
+      limit,
+      offset = 0,
+      searchText,
+      tags,
+      bookmarked,
+    }: {
+      limit?: number;
+      offset?: number;
+      searchText?: string;
+      tags?: string[];
+      bookmarked?: boolean;
+    } = { offset: 0 }
   ): Promise<NotePreview[]> {
     const result: NotePreview[] = [];
     const searchCollection = this.store
@@ -79,7 +88,8 @@ export class NoteRepository extends BaseRepository {
     const initialStore = this.applySearchInfo(
       searchCollection,
       searchText,
-      tags
+      tags,
+      bookmarked
     );
     if (!limit) {
       return initialStore
@@ -96,17 +106,21 @@ export class NoteRepository extends BaseRepository {
   private applySearchInfo(
     collection: Collection<Note, string>,
     searchText?: string,
-    tags?: string[]
+    tags?: string[],
+    bookmarked?: boolean
   ): Collection<Note, string> {
-    return collection.filter((n) => this.searchMath(n, searchText, tags));
+    return collection.filter((n) =>
+      this.searchMath(n, searchText, tags, bookmarked)
+    );
   }
 
   private searchMath(
     note: Note,
     searchText?: string,
-    tags?: string[]
+    tags?: string[],
+    bookmarked?: boolean
   ): boolean {
-    if (!searchText && !tags?.length) {
+    if (!searchText && !tags?.length && bookmarked == null) {
       return true;
     }
 
@@ -120,7 +134,12 @@ export class NoteRepository extends BaseRepository {
 
     const tagMatched = this.tagMatched(note, tags);
 
-    return descriptionMatched || titleMatched || tagMatched;
+    const bookmarkedMatched =
+      bookmarked != null && note.bookmarked === bookmarked;
+
+    return (
+      descriptionMatched || titleMatched || tagMatched || bookmarkedMatched
+    );
   }
 
   private tagMatched(note: Note, tags: string[] = []): boolean {
@@ -178,5 +197,30 @@ export class NoteRepository extends BaseRepository {
 
   async touchNote(noteId: string): Promise<void> {
     await this.store.update(noteId, { touchedAt: new Date().toISOString() });
+  }
+
+  async getTagsStatistic(): Promise<{ tag: string; count: number }[]> {
+    const tags: { tag: string; count: number }[] = [];
+    return this.store
+      .filter((n) => !n.deleted)
+      .each((n) => {
+        n.meta.fileTags?.forEach((t) => {
+          const tag = tags.find((tag) => tag.tag === t);
+          if (tag) {
+            tag.count++;
+            return;
+          }
+          tags.push({ tag: t, count: 1 });
+        });
+      })
+      .then(() => tags.sort((a, b) => b.count - a.count));
+  }
+
+  async addBookmark(noteId: string): Promise<void> {
+    await this.store.update(noteId, { bookmarked: true });
+  }
+
+  async deleteBookmark(noteId: string): Promise<void> {
+    await this.store.update(noteId, { bookmarked: false });
   }
 }

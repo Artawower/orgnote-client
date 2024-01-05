@@ -7,6 +7,7 @@ import {
   CompletionConfigs,
   CompletionSearchResult,
 } from 'src/api/completion';
+import { debounce } from 'src/tools';
 
 import { computed, ref, watch } from 'vue';
 
@@ -48,7 +49,7 @@ export const useCompletionStore = defineStore('completion', () => {
   watch(
     () => filter.value,
     () => {
-      search();
+      searchWithDebounce();
     }
   );
 
@@ -77,6 +78,8 @@ export const useCompletionStore = defineStore('completion', () => {
     }
     setupCandidates(res as CompletionSearchResult, offset);
   };
+
+  const searchWithDebounce = debounce(search, 100);
 
   const openCompletion = () => {
     opened.value = true;

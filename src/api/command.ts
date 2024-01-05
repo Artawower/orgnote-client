@@ -6,6 +6,7 @@ export type CommandGroup =
   | 'global'
   | 'note-detail'
   | 'completion'
+  | 'note-detail'
   | string;
 
 export interface CommandHandlerParams {
@@ -19,7 +20,8 @@ export interface Command {
   keySequence?: string | string[];
   description?: string;
   command?: string;
-  icon?: string;
+  title?: string | (() => string);
+  icon?: string | (() => string);
   /* Where is this command available, default value is global */
   group?: CommandGroup;
   allowOnInput?: boolean;

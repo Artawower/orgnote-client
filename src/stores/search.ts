@@ -1,10 +1,10 @@
+import { useCompletionStore } from './completion';
+import { defineStore } from 'pinia';
 import {
   CandidateGetterFn,
   CompletionCandidate,
   CompletionSearchResult,
-  useCompletionStore,
-} from './completion';
-import { defineStore } from 'pinia';
+} from 'src/api';
 import { repositories } from 'src/boot/repositories';
 import { NotePreview } from 'src/models';
 import { exctractSearchInfo } from 'src/tools';
@@ -39,17 +39,16 @@ export const useSearchStore = defineStore('search', () => {
     ) =>
       new Promise<CompletionSearchResult<NotePreview>>(
         async (resolve, reject) => {
-          // const userId = authStore.user.id;
           try {
-            const [searchString, tags] = exctractSearchInfo(filter);
-            const total = await repositories.notes.count(searchString, tags);
+            const [searchText, tags] = exctractSearchInfo(filter);
+            const total = await repositories.notes.count(searchText, tags);
 
-            const notes = await repositories.notes.getNotePreviews(
+            const notes = await repositories.notes.getNotePreviews({
               limit,
               offset,
-              searchString,
-              tags
-            );
+              searchText,
+              tags,
+            });
 
             const completionCandidates: CompletionCandidate<NotePreview>[] =
               notes.map((d) => ({

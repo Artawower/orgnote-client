@@ -1,5 +1,5 @@
 <template>
-  <q-footer class="no-shadow modeline">
+  <q-footer class="no-shadow modeline center-container">
     <q-tabs v-if="tabMode" inline-label indicator-color="red">
       <slot></slot>
     </q-tabs>
@@ -36,8 +36,6 @@ const tabMode = toRef(props, 'tabMode');
   @include flexify(row, flex-start);
 
   height: var(--modeline-height);
-  max-width: var(--content-max-width);
-  margin: auto;
 }
 
 .q-footer {
