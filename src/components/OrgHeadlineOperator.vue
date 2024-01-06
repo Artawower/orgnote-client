@@ -8,6 +8,7 @@
 import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode, findParent } from 'org-mode-ast';
+import { findOrgNode } from 'src/tools';
 
 import { ref, toRef } from 'vue';
 
@@ -50,19 +51,37 @@ const getFoldingRange = (): [number, number] => {
   return [from, to];
 };
 
+const getFirstNestedHeadline = (): OrgNode => {
+  return findOrgNode(node.value.parent?.parent?.section, (n) => {
+    return n.is(NodeType.Headline);
+  });
+};
+
 const toggleFolding = () => {
   if (!sectionExist) {
     return;
   }
   const [from, to] = getFoldingRange();
+  const firstHeadline = getFirstNestedHeadline();
+
   opened.value = !opened.value;
-  if (opened.value) {
-    props.editorView.dispatch({
-      effects: unfoldEffect.of({ from, to }),
-    });
+
+  if (!opened.value) {
+    props.editorView.dispatch({ effects: foldEffect.of({ from, to }) });
     return;
   }
-  props.editorView.dispatch({ effects: foldEffect.of({ from, to }) });
+
+  const fullSectionRange = { from, to };
+  const effects = [unfoldEffect.of(fullSectionRange)];
+
+  if (firstHeadline) {
+    const rangeTillFirstHealing = { from, to: firstHeadline.start - 1 };
+    effects.push(unfoldEffect.of(rangeTillFirstHealing));
+  }
+
+  props.editorView.dispatch({
+    effects,
+  });
 };
 </script>
 

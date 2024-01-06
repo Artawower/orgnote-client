@@ -4,6 +4,10 @@ export const findOrgNode = (
   orgNode: OrgNode,
   foundFn: (orgNode: OrgNode) => boolean
 ): OrgNode => {
+  if (!orgNode) {
+    return;
+  }
+
   let foundNode: OrgNode;
   walkTree(orgNode, (n: OrgNode) => {
     const found = foundFn(n);
