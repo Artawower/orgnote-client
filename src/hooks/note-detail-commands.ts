@@ -1,18 +1,24 @@
-import { Command } from 'src/api';
+import { foldAll, unfoldAll } from '@codemirror/language';
+import { EditorView } from 'codemirror';
+import { Command, CommandGroup } from 'src/api';
 import {
   useCommandsStore,
   useCurrentNoteStore,
+  useNoteEditorStore,
   useNotesStore,
 } from 'src/stores';
 import { useRouter } from 'vue-router';
 
 import { onBeforeUnmount, onMounted } from 'vue';
 
+const group: CommandGroup = 'note-detail';
+
 export const registerNoteDetailCommands = () => {
   const commandsStore = useCommandsStore();
   const currentNoteStore = useCurrentNoteStore();
   const notesStore = useNotesStore();
   const router = useRouter();
+  const noteEditorStore = useNoteEditorStore();
 
   const commands: Command[] = [
     {
@@ -26,7 +32,7 @@ export const registerNoteDetailCommands = () => {
         return isBookmarked ? 'remove bookmark' : 'add bookmark';
       },
       description: 'toggle bookmark',
-      group: 'note-detail',
+      group,
       handler: () => {
         notesStore.toggleBookmark(currentNoteStore.currentNote);
       },
@@ -34,13 +40,31 @@ export const registerNoteDetailCommands = () => {
     {
       command: 'delete note',
       icon: () => 'delete',
-      group: 'note-detail',
+      group,
       handler: () => {
         if (!currentNoteStore.currentNote?.id) {
           return;
         }
         notesStore.markAsDeleted([currentNoteStore.currentNote.id]);
         router.push('/');
+      },
+    },
+    {
+      command: 'unfold all',
+      icon: 'unfold_more',
+      description: 'unfold all headlines',
+      group,
+      handler: () => {
+        unfoldAll(noteEditorStore.editorView as EditorView);
+      },
+    },
+    {
+      command: 'fold all',
+      icon: 'unfold_less',
+      description: 'fold all headlines',
+      group,
+      handler: () => {
+        foldAll(noteEditorStore.editorView as EditorView);
       },
     },
   ];

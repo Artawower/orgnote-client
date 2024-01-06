@@ -1,6 +1,5 @@
 import { useNotifications } from './notification';
 import { redo, undo } from '@codemirror/commands';
-import { foldAll, unfoldAll } from '@codemirror/language';
 import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/api';
@@ -15,6 +14,8 @@ import { insertTemplate, isUrl } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
 
+const group = 'editor';
+
 export const registerEditorCommands = () => {
   const commandsStore = useCommandsStore();
   const fileStore = useFileStore();
@@ -28,21 +29,21 @@ export const registerEditorCommands = () => {
       command: 'undo',
       icon: 'undo',
       description: 'undo',
-      group: 'editor',
+      group,
       handler: () => undo(noteEditorStore.editorView as EditorView),
     },
     {
       command: 'redo',
       icon: 'redo',
       description: 'redo',
-      group: 'editor',
+      group,
       handler: () => redo(noteEditorStore.editorView as EditorView),
     },
     {
       command: 'tab',
       icon: 'keyboard_tab',
       description: 'tab',
-      group: 'editor',
+      group,
       // TODO: master implement smart tab with jump
       handler: () => notificationStore.notify('not implemented yet'),
     },
@@ -50,7 +51,7 @@ export const registerEditorCommands = () => {
       command: 'headline 1',
       icon: 'view_headline',
       description: 'insert a headline',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -62,7 +63,7 @@ export const registerEditorCommands = () => {
       command: 'code',
       icon: 'code',
       description: 'insert src code block',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -75,7 +76,7 @@ export const registerEditorCommands = () => {
     },
     {
       command: 'quote',
-      group: 'editor',
+      group,
       icon: 'format_quote',
       description: 'insert a quote',
       handler: () =>
@@ -91,7 +92,7 @@ export const registerEditorCommands = () => {
     {
       command: 'latex',
       icon: 'functions',
-      group: 'editor',
+      group,
       description: 'insert a latex block',
       handler: () =>
         insertTemplate({
@@ -107,7 +108,7 @@ export const registerEditorCommands = () => {
       command: 'link',
       icon: 'link',
       description: 'insert a link (url)',
-      group: 'editor',
+      group,
       handler: async () => {
         const text = await navigator.clipboard.readText();
         const insertedUrl = isUrl(text) ? text : '';
@@ -124,7 +125,7 @@ export const registerEditorCommands = () => {
       command: 'internal link',
       icon: 'hub',
       description: 'insert note link',
-      group: 'editor',
+      group,
       handler: () => {
         searchStore.searchWithCustom((note) => {
           const connectedUrl = `[[id:${note.id}][${note.meta.title}]]`;
@@ -141,7 +142,7 @@ export const registerEditorCommands = () => {
       command: 'image',
       icon: 'photo',
       description: 'insert an image',
-      group: 'editor',
+      group,
       handler: async () => {
         const fileName = await fileStore.uploadMediaFile();
         return insertTemplate({
@@ -156,7 +157,7 @@ export const registerEditorCommands = () => {
       command: 'bold',
       icon: 'format_bold',
       description: 'insert bold text',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -168,7 +169,7 @@ export const registerEditorCommands = () => {
       command: 'italic',
       icon: 'format_italic',
       description: 'insert italic text',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -180,7 +181,7 @@ export const registerEditorCommands = () => {
       command: 'strikethrough',
       icon: 'format_strikethrough',
       description: 'insert strikethrough text',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -192,7 +193,7 @@ export const registerEditorCommands = () => {
       command: 'inline code',
       icon: 'data_object',
       description: 'insert inline code',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -204,7 +205,7 @@ export const registerEditorCommands = () => {
       command: 'bullet list',
       icon: 'list',
       description: 'insert bullet list',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -215,7 +216,7 @@ export const registerEditorCommands = () => {
       command: 'numeric list',
       icon: 'format_list_numbered',
       description: 'insert numeric list',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -226,7 +227,7 @@ export const registerEditorCommands = () => {
       command: 'check list',
       icon: 'checklist',
       description: 'insert check list',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -237,7 +238,7 @@ export const registerEditorCommands = () => {
       command: 'horizontal rule',
       icon: 'horizontal_rule',
       description: 'insert horizontal line',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -248,7 +249,7 @@ export const registerEditorCommands = () => {
       command: 'html',
       icon: 'html',
       description: 'insert html code block',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -260,7 +261,7 @@ export const registerEditorCommands = () => {
       command: 'checkbox',
       icon: 'check_box',
       description: 'insert checkbox',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -271,7 +272,7 @@ export const registerEditorCommands = () => {
       command: 'table',
       icon: 'grid_on',
       description: 'insert table',
-      group: 'editor',
+      group,
       handler: () =>
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
@@ -282,7 +283,7 @@ export const registerEditorCommands = () => {
       command: 'tag',
       icon: 'tag',
       description: 'insert tags',
-      group: 'editor',
+      group,
       handler: () => {
         let titleNode: OrgNode;
         const filetagKeyword = noteEditorStore.orgTree.children.find((c) => {
@@ -320,7 +321,7 @@ export const registerEditorCommands = () => {
       command: 'datetime',
       icon: 'calendar_today',
       description: 'insert datetime',
-      group: 'editor',
+      group,
       handler: () => {
         const now = new Date();
         const weekDay = now.toLocaleDateString('default', {
@@ -334,24 +335,6 @@ export const registerEditorCommands = () => {
           editorView: noteEditorStore.editorView as EditorView,
           template,
         });
-      },
-    },
-    {
-      command: 'unfold all',
-      icon: 'unfold_more',
-      description: 'unfold all headlines',
-      group: 'editor',
-      handler: () => {
-        unfoldAll(noteEditorStore.editorView as EditorView);
-      },
-    },
-    {
-      command: 'fold all',
-      icon: 'unfold_less',
-      description: 'fold all headlines',
-      group: 'editor',
-      handler: () => {
-        foldAll(noteEditorStore.editorView as EditorView);
       },
     },
   ];
