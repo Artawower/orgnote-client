@@ -33,6 +33,7 @@ export interface OrgNoteApi {
   sdk: typeof sdk;
 }
 
+// TODO: add config for runtime validation and command builders
 export interface OrgNoteConfig {
   editor: {
     showSpecialSymbols: boolean;

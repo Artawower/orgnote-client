@@ -177,9 +177,24 @@ function getRoutesCommands(): Command[] {
 
 // TODO: master right now this works only for boolean settings
 function getSettingsCommands(): Command[] {
-  const { config } = useSettingsStore();
-  const settingsCommands = getNestedConfigCommands(config);
-  return settingsCommands;
+  const settingsStore = useSettingsStore();
+  const generatedCommands = getNestedConfigCommands(settingsStore.config);
+
+  return [
+    ...generatedCommands,
+    {
+      command: 'toggle dark mode',
+      group: 'settings',
+      icon: 'dark_mode',
+      title: () =>
+        settingsStore.darkMode
+          ? 'switch to light theme'
+          : 'switch to dark theme',
+      handler: () => {
+        settingsStore.setDarkMode(!settingsStore.darkMode);
+      },
+    },
+  ];
 }
 
 function getNestedConfigCommands(
