@@ -27,12 +27,23 @@ const getFoldingWidgets = (
     ) {
       return;
     }
-    if (n.is(NodeType.Operator) && n.parent?.parent?.is(NodeType.Headline)) {
-      rangeSet.push(
-        OrgInlineWidget.init(editorView, n, foldWidget, getOrgNodeTree, false)
-      );
+    if (
+      n.isNot(NodeType.Operator) ||
+      (n.parent?.parent && n.parent.parent.isNot(NodeType.Headline))
+    ) {
+      return false;
     }
-    return false;
+    const widget = OrgInlineWidget.init(
+      editorView,
+      n,
+      foldWidget,
+      getOrgNodeTree,
+      false
+    );
+    if (!widget) {
+      return false;
+    }
+    rangeSet.push(widget);
   });
   return rangeSet;
 };
