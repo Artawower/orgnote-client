@@ -135,11 +135,13 @@ export class NoteRepository extends BaseRepository {
     const tagMatched = this.tagMatched(note, tags);
 
     const bookmarkedMatched =
-      bookmarked != null && note.bookmarked === bookmarked;
+      bookmarked == null || note.bookmarked === bookmarked;
 
-    return (
-      descriptionMatched || titleMatched || tagMatched || bookmarkedMatched
-    );
+    const searchMatched = descriptionMatched || titleMatched || tagMatched;
+
+    const matched = (searchMatched || !searchText) && bookmarkedMatched;
+
+    return matched;
   }
 
   private tagMatched(note: Note, tags: string[] = []): boolean {
