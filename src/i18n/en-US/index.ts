@@ -162,4 +162,6 @@ export default {
   tags: 'tags',
   'no tags yet': 'no tags yet',
   'no bookmarks yet': 'no bookmarks yet',
+  'sponsors.appretiate':
+    'I really appreciate your help, your donations allow me to maintain the necessary infrastructure as well as pay for subscriptions to publish apps on public app stores',
 };
