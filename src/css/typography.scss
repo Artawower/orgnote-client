@@ -103,6 +103,28 @@ body {
   color: var(--red);
 }
 
+@keyframes hue {
+  from {
+    -webkit-filter: hue-rotate(0deg);
+  }
+  to {
+    -webkit-filter: hue-rotate(-360deg);
+  }
+}
+
+// NOTE: https://codepen.io/caseycallow/pen/yMNqPY
+.color-magic {
+  color: var(--orange);
+  background-image: -webkit-linear-gradient(
+    92deg,
+    var(--orange),
+    var(--yellow)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-animation: hue 10s infinite linear;
+}
+
 .capitalize::first-letter {
   text-transform: capitalize;
 }
