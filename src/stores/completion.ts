@@ -13,6 +13,7 @@ import { computed, ref, watch } from 'vue';
 
 export const useCompletionStore = defineStore('completion', () => {
   const candidates = ref<CompletionCandidate[]>([]);
+  const searchAutocompletions = ref<string[]>([]);
   const candidateSelectedByDirection = ref<number>();
   let onClicked: (candidate: CompletionCandidate<unknown>) => void;
   const filter = ref('');
@@ -33,6 +34,7 @@ export const useCompletionStore = defineStore('completion', () => {
   const initNewCompletion = <T = unknown>(configs: CompletionConfigs<T>) => {
     setCandidateGetter(configs.itemsGetter);
     placeholder.value = configs.placeholder;
+    searchAutocompletions.value = configs.searchAutocompletions ?? [];
     candidates.value = [];
     onClicked = configs.onClicked as (
       candidate: CompletionCandidate<unknown>
@@ -54,6 +56,11 @@ export const useCompletionStore = defineStore('completion', () => {
   );
 
   const setupCandidates = (r: CompletionSearchResult, offset: number): void => {
+    if (!offset) {
+      candidates.value = r.result;
+      total.value = r.total;
+      return;
+    }
     const indexedCandidates = [...candidates.value];
     r.result.forEach((v, i) => {
       indexedCandidates[i + offset] = v;
@@ -175,5 +182,6 @@ export const useCompletionStore = defineStore('completion', () => {
     placeholder,
     restoreLastCompletionSession,
     executeCandidate,
+    searchAutocompletions,
   };
 });

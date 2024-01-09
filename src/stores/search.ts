@@ -23,6 +23,8 @@ export const useSearchStore = defineStore('search', () => {
   const searchResults = ref<CompletionCandidate[]>([]);
   const limit = ref<number>(10);
   const offset = ref<number>(0);
+  const bookmarkScope = '@bookmark';
+  const searchAutocompletions = ref<string[]>([bookmarkScope]);
 
   // const notesStore = useNotesStore();
 
@@ -40,14 +42,16 @@ export const useSearchStore = defineStore('search', () => {
       new Promise<CompletionSearchResult<NotePreview>>(
         async (resolve, reject) => {
           try {
-            const [searchText, tags] = exctractSearchInfo(filter);
-            const total = await repositories.notes.count(searchText, tags);
+            const { searchQuery, tags, scope } = exctractSearchInfo(filter);
+            const total = await repositories.notes.count(searchQuery, tags);
+            const bookmarked = scope === bookmarkScope ? true : undefined;
 
             const notes = await repositories.notes.getNotePreviews({
               limit,
               offset,
-              searchText,
+              searchText: searchQuery,
               tags,
+              bookmarked,
             });
 
             const completionCandidates: CompletionCandidate<NotePreview>[] =
@@ -80,6 +84,7 @@ export const useSearchStore = defineStore('search', () => {
 
     completionStore.initNewCompletion({
       itemsGetter: completionCandidateGetter,
+      searchAutocompletions: searchAutocompletions.value,
       placeholder: 'search notes',
       searchText: params?.searchText,
     });
