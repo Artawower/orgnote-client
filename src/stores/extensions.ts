@@ -61,7 +61,6 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
   const enableExtension = async (extensionName: string) => {
     const ext = await repositories.extensions.getExtension(extensionName);
     const module = await importExtension(ext.module);
-    console.log('✎: [line 47][extensions.ts] module: ', module);
     module.onMounted(apiStore.orgNoteApi);
     activeExtensions.value.push({
       active: true,
