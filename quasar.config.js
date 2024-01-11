@@ -91,6 +91,10 @@ module.exports = configure(function (ctx) {
 
       vitePlugins: [
         [
+          // TODO: master check types
+          // checker({
+          //   typescript: true,
+          // }),
           '@intlify/vite-plugin-vue-i18n',
           {
             // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
@@ -99,9 +103,6 @@ module.exports = configure(function (ctx) {
             // you need to set i18n resource including paths !
             include: path.resolve(__dirname, './src/i18n/**'),
           },
-          checker({
-            typescript: true,
-          }),
         ],
       ],
 

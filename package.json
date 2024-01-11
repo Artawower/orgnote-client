@@ -6,7 +6,8 @@
   "author": "OrgNote <app.orgnote@gmail.com>",
   "private": true,
   "scripts": {
-    "codegen:css-doc": "node collect-css-variables.js",
+    "codegen:css-doc": "node collect-css-variables.js --docs",
+    "codegen:css-types": "node collect-css-variables.js --types",
     "serve:ssr": "node dist/ssr/index.js",
     "dev:android": "quasar dev -m cordova -T android",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T android -- -d",
@@ -84,6 +85,7 @@
     "@typescript-eslint/eslint-plugin": "5.31.0",
     "@typescript-eslint/parser": "5.31.0",
     "autoprefixer": "10.4.7",
+    "commander": "11.1.0",
     "electron": "27.0.3",
     "electron-builder": "24.3.0",
     "electron-packager": "17.1.1",

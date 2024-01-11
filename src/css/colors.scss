@@ -1,5 +1,6 @@
 @import 'mixins';
 
+// colors
 :root {
   --red: #f65866;
   --orange: #dd9046;
@@ -18,7 +19,6 @@
 @include dark-mode {
   --bg: #22272e;
   --bg-alt: var(--q-dark);
-  --bg-alt2: var(--q-dark);
   --fg: #adbac7;
   --fg-alt: #{$grey-6};
 

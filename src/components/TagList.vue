@@ -78,7 +78,7 @@ onMounted(() => {
 .tags-wrapper {
   @include flexify-inline(row, flex-start);
   flex-wrap: wrap;
-  gap: 0 var(--small-gap);
+  gap: 0 var(--gap-sm);
 
   text-overflow: ellipsis;
   position: relative;
@@ -90,7 +90,7 @@ onMounted(() => {
   &.inline {
     @include line-limit(1);
     .text-tag {
-      margin-right: var(--small-gap);
+      margin-right: var(--gap-sm);
     }
   }
 

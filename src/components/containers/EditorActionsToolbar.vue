@@ -43,7 +43,8 @@ onMounted(() => setTimeout(() => (inited.value = true), 100));
   @include flexify(row, flex-start);
   background: var(--bg-alt);
   overflow-x: auto;
-  gap: var(--default-gap);
+  gap: var(--gap-md);
+  /* padding: var(--block-padding-md); */
   width: 100%;
   height: var(--footer-height);
 

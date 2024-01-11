@@ -26,7 +26,7 @@ const copySrc = () => {
 <style lang="scss" scoped>
 .actions {
   @include flexify();
-  gap: var(--small-gap);
+  gap: var(--gap-sm);
 }
 .src-code-wrapper {
   position: relative;

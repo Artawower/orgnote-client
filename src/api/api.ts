@@ -1,14 +1,24 @@
 import { Command } from './command';
+import { CSSVariable, ThemeVariable } from './theme-variables';
 import { sdk } from 'src/boot/axios';
 import { Note } from 'src/models';
+import { NavigationFailure } from 'vue-router';
 
 export interface OrgNoteApi {
   [key: string]: unknown;
-  getExtension<T>(config: string): T;
+  getExtension?<T>(config: string): T;
 
+  system: {
+    reload: (params?: { verbose: boolean }) => Promise<void>;
+  };
   navigation: {
-    openNote: (id: string) => void;
-    editNote: (id: string) => void;
+    openNote: (id: string) => Promise<void | NavigationFailure>;
+    editNote: (id: string) => Promise<void | NavigationFailure>;
+  };
+  ui: {
+    applyTheme: (theme: { [key in ThemeVariable]: string | number }) => void;
+    applyStyles: (styles: { [key in CSSVariable]: string | number }) => void;
+    resetTheme: () => void;
   };
   interaction: {
     confirm: (title: string, message: string) => Promise<boolean>;

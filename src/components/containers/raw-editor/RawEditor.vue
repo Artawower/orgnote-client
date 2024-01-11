@@ -502,7 +502,7 @@ org-keyword-block {
   z-index: 1000;
   cursor: pointer;
   right: 16px;
-  top: var(--small-gap);
+  top: var(--gap-sm);
 
   &:hover {
     opacity: 1;

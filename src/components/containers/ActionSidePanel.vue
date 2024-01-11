@@ -107,7 +107,6 @@
         </q-item>
 
         <q-item
-          class="hidden"
           @click="closeSideBarForMobile"
           :to="{ name: RouteNames.Extensions }"
           clickable

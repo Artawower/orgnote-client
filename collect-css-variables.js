@@ -4,6 +4,7 @@
 // If for some reason the list is wrong, or incomplete, feel free to email the
 // creator directly
 
+const { program } = require('commander');
 const fs = require('fs');
 const path = require('path');
 
@@ -96,12 +97,70 @@ function createOrgModeDocument(fileVariableGroups) {
   return orgContent;
 }
 
+function generateTypes(groups) {
+  const cssVariables = new Set();
+  const themeVariables = new Set();
+
+  groups.forEach((group) => {
+    group.variableGroups.forEach((g) => {
+      g.variables.forEach((variable) => {
+        const [name] = variable.split(':');
+        const target =
+          g.groupName.toLowerCase() === 'colors'
+            ? themeVariables
+            : cssVariables;
+        target.add(toCamelCase(name.slice(2)));
+      });
+    });
+  });
+
+  const themeVariableEnumBody = Array.from(themeVariables).reduce(
+    (acc, variable) => {
+      return `${acc}\n\t${variable} = '${variable}',`;
+    },
+    ''
+  );
+
+  const cssVariableEnumBody = Array.from(cssVariables).reduce(
+    (acc, variable) => {
+      return `${acc}\n\t${variable} = '${variable}',`;
+    },
+    ''
+  );
+
+  return (
+    `export enum ThemeVariable {${themeVariableEnumBody}\n}` +
+    `\n\nexport enum CSSVariable {${cssVariableEnumBody}\n}`
+  );
+}
+
+function toCamelCase(s) {
+  return s.replace(/-./g, (x) => x[1].toUpperCase());
+}
+
+program
+  .name('Scss generator')
+  .description('CLI tool for generating types and docs from css variables')
+  .option('--docs')
+  .option('--types');
+
+program.parse(process.argv);
+
+const options = program.opts();
+
 const rootDir = './src';
 const scssFiles = findSCSSFiles(rootDir);
 const variableGroups = collectCSSVariables(scssFiles);
 
-const orgDoc = createOrgModeDocument(variableGroups);
-fs.writeFile('VARIABLES.org', orgDoc, 'utf8', (err) => {
-  if (err) throw err;
-  console.log('The Org mode document has been saved to VARIABLES.org.');
-});
+if (options.docs) {
+  const orgDoc = createOrgModeDocument(variableGroups);
+  fs.writeFile('VARIABLES.org', orgDoc, 'utf8', (err) => {
+    if (err) throw err;
+    console.log('The Org mode document has been saved to VARIABLES.org.');
+  });
+}
+
+if (options.types) {
+  const types = generateTypes(variableGroups);
+  console.log(types);
+}

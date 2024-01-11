@@ -1,8 +1,24 @@
+import { toKebabCase } from './case-converter';
+import { ThemeVariable } from 'src/api/theme-variables';
+
 export function getCssVar(varName: string): string {
   const root = document.body;
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const computedStyle = getComputedStyle(root);
   return computedStyle.getPropertyValue(normalizedName);
+}
+
+export function getCssTheme(variableNames: string[]): {
+  [key in ThemeVariable]?: string;
+} {
+  return variableNames.reduce<{
+    [key in ThemeVariable]?: string;
+  }>((acc, cur) => {
+    const variable = toKebabCase(cur);
+    const cssValue = getCssVar(variable);
+    acc[cur as ThemeVariable] = cssValue;
+    return acc;
+  }, {});
 }
 
 export function getNumericCssVar(varName: string): number {
@@ -24,4 +40,13 @@ export function getCssNumericProperty(
   const value = getCssProperty(element, propertyName);
   const n = value.replace(/[^\d\.]/g, '');
   return +n;
+}
+
+export function applyCSSVariables<T extends string>(variables: {
+  [key in T]?: string | number;
+}): void {
+  const body = document.querySelector('body');
+  Object.keys(variables).forEach((k) => {
+    body.style.setProperty(`--${toKebabCase(k)}`, `${variables[k as T]}`);
+  });
 }

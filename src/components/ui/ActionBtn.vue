@@ -1,25 +1,67 @@
 <template>
-  <q-icon
+  <button
+    v-if="contentSlotPassed"
     @click="clicked"
-    :name="fired ? activeIcon : icon"
+    class="action-btn text-btn"
+    :class="[
+      { fired, dark: $q.dark.isActive },
+      contentClass ?? '',
+      `size-${size}`,
+      theme ? `theme-${theme}` : '',
+    ]"
+  >
+    <q-icon
+      v-if="icon"
+      :name="fired && activeIcon ? activeIcon : icon"
+      size="1rem"
+    />
+    <slot />
+  </button>
+  <q-icon
+    v-else
+    @click="clicked"
+    :name="fired && activeIcon ? activeIcon : icon"
     size="1rem"
     class="action-btn"
-    :class="[{ fired, dark: $q.dark.isActive }, contentClass ?? '']"
+    :class="[
+      { fired, dark: $q.dark.isActive },
+      contentClass ?? '',
+      `size-${size}`,
+    ]"
   />
 </template>
 
 <script lang="ts" setup>
-import { Ref, ref, toRefs } from 'vue';
+import { Ref, computed, ref, toRefs, useSlots } from 'vue';
 
 const emits = defineEmits<{
   (e: 'click'): void;
 }>();
 
-const props = defineProps<{
-  icon: string;
-  activeIcon?: string;
-  contentClass?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    icon?: string;
+    activeIcon?: string;
+    contentClass?: string;
+    theme?:
+      | 'red'
+      | 'orange'
+      | 'green'
+      | 'teal'
+      | 'yellow'
+      | 'blue'
+      | 'dark-blue'
+      | 'magenta'
+      | 'violet'
+      | 'cyan'
+      | 'dark-cyan'
+      | 'white';
+    size?: 'sm' | 'md' | 'lg';
+  }>(),
+  {
+    size: 'md',
+  }
+);
 
 const { icon, activeIcon } = toRefs(props);
 
@@ -32,6 +74,9 @@ const showFired = () => {
   }, 1000);
 };
 
+const slots = useSlots();
+const contentSlotPassed = computed(() => !!slots.default);
+
 const clicked = () => {
   showFired();
   emits('click');
@@ -40,8 +85,8 @@ const clicked = () => {
 
 <style lang="scss">
 .action-btn {
-  width: var(--btn-action-size);
-  height: var(--btn-action-size);
+  width: var(--btn-action-md);
+  height: var(--btn-action-md);
   color: var(--btn-action-color);
   box-shadow: var(--btn-action-shadow);
   border: var(--btn-action-border);
@@ -59,6 +104,47 @@ const clicked = () => {
   &.fired {
     color: var(--btn-action-fire-color);
     border-color: var(--btn-action-fire-border-color);
+  }
+
+  .size-lg {
+    width: var(--btn-action-md);
+    height: var(--btn-action-md);
+  }
+}
+
+.text-btn {
+  @include flexify();
+
+  gap: var(--gap-sm);
+  width: auto;
+  height: calc(var(--btn-action-md) + var(--btn-action-padding) * 2);
+  font-size: var(--font-size-md);
+
+  &.size-lg {
+    height: calc(var(--btn-action-lg) + var(--btn-action-padding) * 2);
+    padding-left: calc(var(--btn-action-padding) * 2);
+    padding-right: calc(var(--btn-action-padding) * 2);
+  }
+
+  &.size-sm {
+    font-size: var(--font-size-sm);
+    height: calc(var(--btn-action-sm) + var(--btn-action-padding) * 2);
+  }
+}
+
+$colors: 'red', 'orange', 'green', 'teal', 'yellow', 'blue', 'dark-blue',
+  'magenta', 'violet', 'cyan', 'dark-cyan', 'white';
+
+@each $color in $colors {
+  .theme-#{$color} {
+    color: var(--#{$color});
+    border-color: var(--#{$color});
+    background: transparent;
+
+    &:hover {
+      color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
+      border-color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
+    }
   }
 }
 </style>

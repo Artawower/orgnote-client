@@ -220,7 +220,7 @@ const isFileOpened = computed(() => {
 <style lang="scss" scoped>
 .actions {
   @include flexify(row);
-  gap: var(--xs-gap);
+  gap: var(--gap-xs);
 }
 
 .file-name {

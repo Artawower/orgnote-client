@@ -164,4 +164,7 @@ export default {
   'no bookmarks yet': 'no bookmarks yet',
   'sponsors.appretiate':
     'I really appreciate your help, your donations allow me to maintain the necessary infrastructure as well as pay for subscriptions to publish apps on public app stores',
+  install: 'install',
+  uninstall: 'uninstall',
+  upload: 'upload',
 };

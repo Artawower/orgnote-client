@@ -23,6 +23,7 @@ export * from './orgnote-api.store';
 export * from './logger';
 export * from './recent-commands-store';
 export * from './notes-statistic';
+export * from './extensions';
 
 /*
  * If not building with SSR mode, you can

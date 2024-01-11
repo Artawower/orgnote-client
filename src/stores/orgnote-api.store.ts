@@ -2,9 +2,11 @@ import { useConfirmationModalStore } from './confirmation-modal';
 import { useCurrentNoteStore } from './current-note';
 import { useSettingsStore } from './settings';
 import { OrgNoteApi } from 'src/api';
-import { RouteNames } from 'src/router/routes';
-import { Router, useRouter } from 'vue-router';
+import { ThemeVariable } from 'src/api/theme-variables';
 import { sdk } from 'src/boot/axios';
+import { RouteNames } from 'src/router/routes';
+import { applyCSSVariables, getCssTheme } from 'src/tools';
+import { Router, useRouter } from 'vue-router';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -15,7 +17,19 @@ export const useOrgNoteApiStore = () => {
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
     currentNote: useCurrentNote(),
+    ui: useUI(),
     interaction,
+    system: useSystem(interaction),
+    commands: {
+      add: () => {
+        console.error('Unimplemented');
+      },
+    },
+    editor: {
+      widgets: {
+        add: () => console.error('Unimplemented'),
+      },
+    },
     configuration: () => settings.config,
     sdk: sdk,
   };
@@ -48,5 +62,35 @@ const useInteraction = (): OrgNoteApi['interaction'] => {
   const confirmationModalStore = useConfirmationModalStore();
   return {
     confirm: confirmationModalStore.confirm,
+  };
+};
+
+const useUI = (): OrgNoteApi['ui'] => {
+  const initialTheme = getCssTheme(Object.keys(ThemeVariable));
+
+  return {
+    applyTheme: (theme) => applyCSSVariables(theme),
+    applyStyles: (styles) => applyCSSVariables(styles),
+    resetTheme: () => applyCSSVariables(initialTheme),
+  };
+};
+
+const useSystem = (
+  interaction: OrgNoteApi['interaction']
+): OrgNoteApi['system'] => {
+  return {
+    reload: async (params?: { verbose: boolean }): Promise<void> => {
+      if (!params?.verbose) {
+        window.location.reload();
+        return;
+      }
+      const reload = await interaction.confirm(
+        'Reload required',
+        'This action require app reload. Are you sure?'
+      );
+      if (reload) {
+        window.location.reload();
+      }
+    },
   };
 };

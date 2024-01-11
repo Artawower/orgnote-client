@@ -1,5 +1,5 @@
-import Dexie from 'dexie';
 import { DbMigrations } from './migrator';
+import Dexie from 'dexie';
 
 export class BaseRepository {
   public static readonly migrations: DbMigrations;
