@@ -44,7 +44,6 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
     const ext = activeExtensions.value.find(
       (e) => e.manifest.name === extensionName
     );
-    console.log('✎: [line 37][extensions.ts] ext: ', ext);
     ext.module?.onUnmounted?.(apiStore.orgNoteApi);
 
     if (ext.manifest.category === 'theme') {
@@ -115,6 +114,12 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
     );
   });
 
+  const themes = computed(() => {
+    return extensions.value.filter(
+      ({ manifest }) => manifest.category === 'theme'
+    );
+  });
+
   return {
     extensions,
     activeExtensions,
@@ -127,5 +132,6 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
 
     filteredExtensions,
     searchQuery,
+    themes,
   };
 });

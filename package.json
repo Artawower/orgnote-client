@@ -70,7 +70,8 @@
     "vue": "^3.3.4",
     "vue-i18n": "9.4.1",
     "vue-router": "^4.0.0",
-    "vue3-easy-data-table": "1.5.47"
+    "vue3-easy-data-table": "1.5.47",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "5.0.1",
@@ -115,8 +116,13 @@
   },
   "jscpd": {
     "threshold": 1.5,
-    "reporters": ["html", "console"],
-    "format": ["typescript"],
+    "reporters": [
+      "html",
+      "console"
+    ],
+    "format": [
+      "typescript"
+    ],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -127,7 +133,10 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
+    "ignorePattern": [
+      "import.*from\\s*'.*'",
+      "export.*from\\s*'.*'"
+    ],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,

@@ -26,17 +26,11 @@ import { useExtensionsStore } from 'src/stores/extensions';
 import { uploadFiles } from 'src/tools';
 import { readExtension } from 'src/tools/read-extension';
 
-import { onBeforeMount, ref } from 'vue';
-
 import ExtensionPreview from 'src/components/containers/ExtensionPreview.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import SearchInput from 'src/components/ui/SearchInput.vue';
 
 const extensionsStore = useExtensionsStore();
-
-onBeforeMount(async () => {
-  extensionsStore.loadExtensions();
-});
 
 const uploadExtension = async () => {
   const uploadedExtensions = await uploadFiles({

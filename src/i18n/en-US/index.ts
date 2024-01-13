@@ -167,4 +167,6 @@ export default {
   install: 'install',
   uninstall: 'uninstall',
   upload: 'upload',
+  'search themes': 'search themes',
+  'use one of the downloaded themes': 'use one of the downloaded themes',
 };

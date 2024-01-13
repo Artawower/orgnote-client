@@ -128,6 +128,7 @@ const extensionsStore = useExtensionsStore();
 
 onBeforeMount(() => {
   extensionsStore.loadActiveExtensions();
+  extensionsStore.loadExtensions();
 });
 </script>
 

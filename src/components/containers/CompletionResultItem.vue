@@ -17,10 +17,10 @@
       ></q-icon>
     </div>
     <div class="text-bold flex flex-start gap-8 line-limit-1">
-      <span v-if="config.completion.showGroup">[{{ item.group }}]:&nbsp</span>
-      <span class="capitalize">{{
-        extractDynamicValue(item.title) ?? item.command
-      }}</span>
+      <div v-if="config.completion.showGroup">[{{ item.group }}]:&nbsp</div>
+      <div class="capitalize">
+        {{ extractDynamicValue(item.title) ?? item.command }}
+      </div>
     </div>
     <div>
       <span class="text-italic color-secondary line-limit-1">

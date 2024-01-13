@@ -38,3 +38,4 @@ export * from './clipboard';
 export * from './extract-dynamic-value';
 export * from './read-extension';
 export * from './case-converter';
+export * from './search-filter';

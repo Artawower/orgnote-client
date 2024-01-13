@@ -5,12 +5,14 @@ import { EditorState, Extension, Prec } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
-import { useDynamicComponent } from 'src/hooks';
 import {
   EmbeddedWidgetBuilder,
   InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
+} from 'src/api';
+import { useDynamicComponent } from 'src/hooks';
+import {
   editorMenuExtension,
   orgAutoInsertCommand,
   orgInitialFoldingExtension,

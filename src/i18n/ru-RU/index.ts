@@ -161,4 +161,6 @@ export default {
   install: 'установить',
   uninstall: 'удалить',
   upload: 'загрузить',
+  'search themes': 'поиск тем',
+  'use one of the downloaded themes': 'использовать одну из загруженных тем',
 };

@@ -89,7 +89,7 @@ export const useCompletionStore = defineStore('completion', () => {
   const searchWithDebounce = debounce(search, 100);
 
   const openCompletion = () => {
-    opened.value = true;
+    setTimeout(() => (opened.value = true));
   };
 
   const toggleCompletion = () => {

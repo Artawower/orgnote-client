@@ -1,12 +1,12 @@
 import { BaseOrgWidget } from './base-org-widget';
+import { Range } from '@codemirror/state';
+import { Decoration, EditorView } from '@codemirror/view';
+import { OrgNode } from 'org-mode-ast';
 import {
   EmbeddedWidget,
   EmbeddedWidgetBuilder,
   MultilineEmbeddedWidget,
-} from './widget.model';
-import { Range } from '@codemirror/state';
-import { Decoration, EditorView } from '@codemirror/view';
-import { OrgNode } from 'org-mode-ast';
+} from 'src/api';
 
 export class OrgMultilineWidget extends BaseOrgWidget {
   private readonly editIcon = `<svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

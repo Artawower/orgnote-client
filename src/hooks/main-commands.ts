@@ -1,12 +1,15 @@
-import { Command, CommandHandlerParams } from 'src/models';
+import { Command, CommandHandlerParams, OrgNoteApi } from 'src/api';
+import { ExtensionMeta } from 'src/api/extension';
 import {
   useCommandsStore,
   useCompletionStore,
+  useExtensionsStore,
   useModalStore,
+  useOrgNoteApiStore,
   useSearchStore,
 } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
-import { camelCaseToWords } from 'src/tools';
+import { camelCaseToWords, searchFilter } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import DebugPage from 'src/pages/DebugPage.vue';
@@ -26,7 +29,15 @@ export function useMainCommands() {
   const commandsStore = useCommandsStore();
 
   const routesCommands = getRoutesCommands();
-  const settingsCommands = getSettingsCommands();
+  const extensionStore = useExtensionsStore();
+
+  const { orgNoteApi } = useOrgNoteApiStore();
+
+  const settingsCommands = getSettingsCommands(
+    completionStore,
+    extensionStore,
+    orgNoteApi
+  );
   const modalStore = useModalStore();
 
   const keybindingCommands: Command[] = [
@@ -135,6 +146,10 @@ export function useMainCommands() {
         if (!completionStore.opened) {
           return;
         }
+        console.log(
+          '✎: [line 142][main-commands.ts] completionStore.selectedCandidate: ',
+          completionStore.selectedCandidate
+        );
         completionStore.executeCandidate(completionStore.selectedCandidate);
       },
     },
@@ -176,12 +191,57 @@ function getRoutesCommands(): Command[] {
 }
 
 // TODO: master right now this works only for boolean settings
-function getSettingsCommands(): Command[] {
+function getSettingsCommands(
+  completionStore: ReturnType<typeof useCompletionStore>,
+  extensionStore: ReturnType<typeof useExtensionsStore>,
+  orgNoteApi: OrgNoteApi
+): Command[] {
   const settingsStore = useSettingsStore();
   const generatedCommands = getNestedConfigCommands(settingsStore.config);
 
   return [
     ...generatedCommands,
+    {
+      command: 'select theme',
+      group: 'settings',
+      icon: 'palette',
+      description: 'use one of the downloaded themes',
+      handler: () => {
+        completionStore.initNewCompletion<ExtensionMeta>({
+          placeholder: 'search themes',
+          itemsGetter: (filter: string) => ({
+            result: extensionStore.themes
+              .filter((t) =>
+                searchFilter(
+                  filter,
+                  t.manifest.name,
+                  t.manifest.description,
+                  t.manifest.category
+                )
+              )
+              .map((t) => ({
+                icon: 'palette',
+                title: t.manifest.name,
+                description: t.manifest.description,
+                commandHandler: () => {
+                  orgNoteApi.ui.resetTheme();
+                  extensionStore.enableExtension(t.manifest.name);
+                },
+                data: t,
+                command: 'activate theme',
+              })),
+            total: extensionStore.themes.length,
+          }),
+        });
+        completionStore.openCompletion();
+      },
+    },
+    {
+      command: 'reset theme',
+      group: 'settings',
+      icon: 'palette',
+      handler: () => orgNoteApi.ui.resetTheme(),
+    },
     {
       command: 'toggle dark mode',
       group: 'settings',
