@@ -40,6 +40,7 @@ It's a proof of concept solution, in the future I have plan to migrate this repo
 
 * Connected links
 - [[https://github.com/Artawower/orgnote][Main repo]]
+- [[https://github.com/Artawower/orgnote/wiki][WIKI]] 
 - [[https://github.com/Artawower/orgnote-backend][Org Note backend]] 
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
 - [[https://quasar.dev/][Quasar]]  
