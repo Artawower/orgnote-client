@@ -75,3 +75,7 @@ body.standalone.action-pane-opened {
 .q-dialog__inner.no-pointer-events {
   pointer-events: all !important;
 }
+
+.q-icon {
+  color: var(--fg);
+}

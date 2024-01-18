@@ -45,8 +45,22 @@ export function getCssNumericProperty(
 export function applyCSSVariables<T extends string>(variables: {
   [key in T]?: string | number;
 }): void {
-  const body = document.querySelector('body');
+  const body = document.querySelector('body') as HTMLElement;
+  console.log('✎: [line 49][css-variables.ts] body: ', body);
   Object.keys(variables).forEach((k) => {
     body.style.setProperty(`--${toKebabCase(k)}`, `${variables[k as T]}`);
+  });
+}
+
+export function resetCSSVariables<T extends string>(variables: {
+  [key in T]?: string | number;
+}): void {
+  const body = document.querySelector('body') as HTMLElement;
+  Object.keys(variables).forEach((k) => {
+    const kebabedVarName = toKebabCase(k);
+    body.style.setProperty(
+      `--${kebabedVarName}`,
+      `var(--default-${kebabedVarName})`
+    );
   });
 }

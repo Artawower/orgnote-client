@@ -5,6 +5,7 @@ import { Note } from 'src/models';
 import { NavigationFailure } from 'vue-router';
 import { z } from 'zod';
 
+// TODO: feature/extensions thisnk about share stores instead of callbacks from orgnote-api.store.ts
 export interface OrgNoteApi {
   [key: string]: unknown;
   getExtension?<T>(config: string): T;
@@ -19,6 +20,9 @@ export interface OrgNoteApi {
   ui: {
     applyTheme: (theme: { [key in ThemeVariable]: string | number }) => void;
     applyStyles: (styles: { [key in CSSVariable]: string | number }) => void;
+    setThemeByMode: (themeName?: string) => void;
+    setDarkTheme: (themeName?: string) => void;
+    setLightTheme: (themeName?: string) => void;
     resetTheme: () => void;
   };
   interaction: {
@@ -59,8 +63,8 @@ export const orgnoteApiSchema = z.object({
   }),
   ui: z.object({
     theme: z.literal('light').or(z.literal('dark')),
-    darkTheme: z.string(),
-    lightTheme: z.string(),
+    darkThemeName: z.optional(z.string()),
+    lightThemeName: z.optional(z.string()),
   }),
 });
 

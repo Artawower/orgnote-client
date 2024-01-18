@@ -273,7 +273,7 @@ function getNestedConfigCommands(
           config[key] = !config[key];
         },
       });
-    } else if (typeof value === 'object') {
+    } else if (value && typeof value === 'object') {
       acc.push(
         ...getNestedConfigCommands(value as Record<string, unknown>, key)
       );

@@ -5,7 +5,7 @@ import { OrgNoteApi } from 'src/api';
 import { ThemeVariable } from 'src/api/theme-variables';
 import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
-import { applyCSSVariables, getCssTheme } from 'src/tools';
+import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
 import { Router, useRouter } from 'vue-router';
 
 export const useOrgNoteApiStore = () => {
@@ -17,7 +17,7 @@ export const useOrgNoteApiStore = () => {
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
     currentNote: useCurrentNote(),
-    ui: useUI(),
+    ui: useUI(settings),
     interaction,
     system: useSystem(interaction),
     commands: {
@@ -65,13 +65,21 @@ const useInteraction = (): OrgNoteApi['interaction'] => {
   };
 };
 
-const useUI = (): OrgNoteApi['ui'] => {
+const useUI = (
+  settingsStore: ReturnType<typeof useSettingsStore>
+): OrgNoteApi['ui'] => {
   const initialTheme = getCssTheme(Object.keys(ThemeVariable));
 
   return {
     applyTheme: (theme) => applyCSSVariables(theme),
+    setThemeByMode: async (themeName?: string) =>
+      settingsStore.setTheme(themeName),
+    setDarkTheme: async (themeName?: string) =>
+      settingsStore.setDarkTheme(themeName),
+    setLightTheme: async (themeName?: string) =>
+      settingsStore.setLightTheme(themeName),
     applyStyles: (styles) => applyCSSVariables(styles),
-    resetTheme: () => applyCSSVariables(initialTheme),
+    resetTheme: () => resetCSSVariables(initialTheme),
   };
 };
 

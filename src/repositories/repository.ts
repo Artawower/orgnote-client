@@ -2,7 +2,8 @@ import { DbMigrations } from './migrator';
 import Dexie from 'dexie';
 
 export class BaseRepository {
-  public static readonly migrations: DbMigrations;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static readonly migrations: DbMigrations<any>;
   public static readonly storeName: string;
 
   protected readonly dbName = 'orgnote';

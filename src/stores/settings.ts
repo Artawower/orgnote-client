@@ -1,3 +1,4 @@
+import { useExtensionsStore } from './extensions';
 import { defineStore } from 'pinia';
 import 'pinia-plugin-persistedstate';
 import { Dark } from 'quasar';
@@ -27,6 +28,11 @@ export const useSettingsStore = defineStore(
       completion: {
         showGroup: false,
         defaultCompletionLimit: 500,
+      },
+      ui: {
+        theme: 'light',
+        darkThemeName: null,
+        lightThemeName: null,
       },
     });
 
@@ -65,13 +71,34 @@ export const useSettingsStore = defineStore(
       showUserProfiles.value = !showUserProfiles.value;
     };
 
-    const setDarkMode = (mode: boolean | 'auto') => {
+    const setDarkMode = async (mode: boolean | 'auto'): Promise<void> => {
+      const extensionStore = useExtensionsStore();
       darkMode.value = mode;
+      await extensionStore.deactivateThemeExtension();
+
+      const themeNameKey = darkMode.value ? 'darkThemeName' : 'lightThemeName';
+      const themeName = config.ui[themeNameKey];
+      if (themeName) {
+        await extensionStore.activateExtension(themeName);
+      }
       updateDarkMode();
     };
 
     const updateDarkMode = () => {
       Dark.set(darkMode.value);
+    };
+
+    const setTheme = (themeName: string): void => {
+      const themeSwitcher = Dark.isActive ? setDarkTheme : setLightTheme;
+      themeSwitcher(themeName);
+    };
+
+    const setDarkTheme = (themeName: string): void => {
+      config.ui.darkThemeName = themeName;
+    };
+
+    const setLightTheme = async (themeName: string): Promise<void> => {
+      config.ui.lightThemeName = themeName;
     };
 
     updateDarkMode();
@@ -91,6 +118,10 @@ export const useSettingsStore = defineStore(
       setDarkMode,
       updateDarkMode,
       config,
+
+      setTheme,
+      setDarkTheme,
+      setLightTheme,
     };
   },
   { persist: { afterRestore: ({ store }) => store.updateDarkMode() } }

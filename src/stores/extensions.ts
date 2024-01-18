@@ -15,7 +15,7 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
   const activeExtensions = ref<ActiveExtension[]>([]);
   const extensionsLoaded = ref<boolean>(false);
   const searchQuery = ref<string>('');
-  const apiStore = useOrgNoteApiStore();
+  const { orgNoteApi } = useOrgNoteApiStore();
 
   const loadExtensions = async () => {
     extensions.value = await repositories.extensions.getMeta();
@@ -29,7 +29,7 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
     activeExtensions.value = await Promise.all(
       storedExtensions.map(async (ext) => {
         const module = await importExtension(ext.module);
-        module.onMounted(apiStore.orgNoteApi);
+        module.onMounted(orgNoteApi);
         return {
           active: true,
           manifest: ext.manifest,
@@ -41,33 +41,68 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
   };
 
   const disableExtension = async (extensionName: string) => {
+    const ext = await deactivateExtension(extensionName);
+    if (!ext) {
+      console.warn(`Extension ${extensionName} not found`);
+      return;
+    }
+    disableThemeMaybe(ext);
+  };
+
+  const deactivateExtension = async (
+    extensionName: string
+  ): Promise<ExtensionMeta> => {
     const ext = activeExtensions.value.find(
       (e) => e.manifest.name === extensionName
     );
-    ext.module?.onUnmounted?.(apiStore.orgNoteApi);
-
-    if (ext.manifest.category === 'theme') {
-      apiStore.orgNoteApi.ui.resetTheme();
-    }
-
+    ext.module?.onUnmounted?.(orgNoteApi);
     activeExtensions.value = activeExtensions.value.filter(
       (ext) => ext.manifest.name !== extensionName
     );
     await setExtensionActiveStatus(extensionName, false);
-    // Unload resources
+    return ext;
+  };
+
+  const disableThemeMaybe = (ext: ExtensionMeta): void => {
+    if (ext.manifest.category !== 'theme') {
+      return;
+    }
+    orgNoteApi.ui.resetTheme();
+    orgNoteApi.ui.setThemeByMode(null);
   };
 
   const enableExtension = async (extensionName: string) => {
+    const ext = await activateExtension(extensionName);
+    if (!ext) {
+      console.warn(`Extension ${extensionName} not found`);
+      return;
+    }
+    enableThemeMaybe(ext);
+  };
+
+  /*
+   * Just activate extensions without any side effects
+   */
+  const activateExtension = async (
+    extensionName: string
+  ): Promise<ExtensionMeta> => {
     const ext = await repositories.extensions.getExtension(extensionName);
     const module = await importExtension(ext.module);
-    module.onMounted(apiStore.orgNoteApi);
+    module.onMounted(orgNoteApi);
     activeExtensions.value.push({
       active: true,
       manifest: ext.manifest,
       module,
     });
     await setExtensionActiveStatus(extensionName, true);
-    // Load resources
+    return ext;
+  };
+
+  const enableThemeMaybe = (ext: ExtensionMeta): void => {
+    if (ext.manifest.category !== 'theme') {
+      return;
+    }
+    orgNoteApi.ui.setThemeByMode(ext.manifest.name);
   };
 
   const uploadExtension = async (ext: StoredExtension) => {
@@ -120,14 +155,28 @@ export const useExtensionsStore = defineStore('extensionStore', () => {
     );
   });
 
+  const deactivateThemeExtension = async (): Promise<void> => {
+    const themeExtension = activeExtensions.value.find(
+      (t) => t.manifest.category === 'theme'
+    );
+    if (!themeExtension) {
+      return;
+    }
+    orgNoteApi.ui.resetTheme();
+    await deactivateExtension(themeExtension.manifest.name);
+  };
+
   return {
     extensions,
     activeExtensions,
     loadExtensions,
+    activateExtension,
+    deactivateExtension,
     disableExtension,
     enableExtension,
     extensionsLoaded,
     loadActiveExtensions,
+    deactivateThemeExtension,
     uploadExtension,
 
     filteredExtensions,

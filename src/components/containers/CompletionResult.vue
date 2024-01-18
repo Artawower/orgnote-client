@@ -215,6 +215,14 @@ const completeSearchQuery = () => {
 .completion-input {
   height: var(--completion-input-height);
   position: relative;
+
+  input,
+  .q-icon {
+    color: var(--fg) !important;
+  }
+  input::placeholder {
+    color: var(--fg-alt) !important;
+  }
 }
 
 .input-overflow {
