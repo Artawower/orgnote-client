@@ -65,4 +65,8 @@ export class ExtensionRepository extends BaseRepository {
     const ext = await this.getExtensionBySource(source);
     return await this.store.delete(ext.manifest.name);
   }
+
+  public delete(extensionName: string): Promise<void> {
+    return this.store.delete(extensionName);
+  }
 }

@@ -12,22 +12,28 @@
       <div class="info">
         <h4 class="text-h4 title">
           {{ extension.manifest.name }} {{ extension.manifest.version }}
-          <action-btn
-            :icon="extension.active ? 'cancel' : 'download_for_offline'"
-            :theme="extension.active ? 'red' : 'magenta'"
-            @click="toggleExtensionStatus"
-            >{{
-              extension.active ? $t('uninstall') : $t('install')
-            }}</action-btn
-          >
+          <div class="actions">
+            <action-btn
+              icon="delete"
+              theme="red"
+              @click="extensionsStore.deleteExtension(extension)"
+              >{{ $t('delete') }}</action-btn
+            >
+            <action-btn
+              :icon="extension.active ? 'cancel' : 'download_for_offline'"
+              :theme="extension.active ? 'red' : 'magenta'"
+              @click="toggleExtensionStatus"
+              >{{ extension.active ? $t('disable') : $t('enable') }}</action-btn
+            >
+          </div>
         </h4>
         <div class="source">
           <span class="author">{{ extension.manifest.author }}</span>
           <a
             class="author link"
-            :href="extension.manifest.repo"
+            :href="extension.manifest.source"
             target="_blank"
-            >{{ extension.manifest.repo }}</a
+            >{{ extension.manifest.source }}</a
           >
         </div>
         <div class="description">{{ extension.manifest.description }}</div>
@@ -97,5 +103,11 @@ const toggleExtensionStatus = async () => {
   .icon {
     align-self: center;
   }
+}
+
+.actions {
+  @include flexify();
+
+  gap: var(--gap-md);
 }
 </style>

@@ -104,6 +104,10 @@ const clicked = () => {
   &.fired {
     color: var(--btn-action-fire-color);
     border-color: var(--btn-action-fire-border-color);
+
+    .q-icon {
+      color: var(--btn-action-fire-color);
+    }
   }
 
   .size-lg {
@@ -141,9 +145,17 @@ $colors: 'red', 'orange', 'green', 'teal', 'yellow', 'blue', 'dark-blue',
     border-color: var(--#{$color});
     background: transparent;
 
+    .q-icon {
+      color: var(--#{$color});
+    }
+
     &:hover {
       color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
       border-color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
+
+      .q-icon {
+        color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
+      }
     }
   }
 }

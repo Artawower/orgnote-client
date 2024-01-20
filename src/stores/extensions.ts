@@ -1,4 +1,5 @@
 import { useOrgNoteApiStore } from './orgnote-api.store';
+import { usePackageManagerStore } from './package-manager.store';
 import { defineStore } from 'pinia';
 import {
   ActiveExtension,
@@ -15,6 +16,7 @@ export const useExtensionsStore = defineStore('extension', () => {
   const activeExtensions = ref<ActiveExtension[]>([]);
   const extensionsLoaded = ref<boolean>(false);
   const searchQuery = ref<string>('');
+  const packageManager = usePackageManagerStore();
   const { orgNoteApi } = useOrgNoteApiStore();
 
   const loadExtensions = async () => {
@@ -40,6 +42,15 @@ export const useExtensionsStore = defineStore('extension', () => {
     extensionsLoaded.value = true;
   };
 
+  const deleteExtension = async (ext: ExtensionMeta) => {
+    await disableExtension(ext.manifest.name);
+    await repositories.extensions.delete(ext.manifest.name);
+    extensions.value = extensions.value.filter(
+      (e) => e.manifest.name !== ext.manifest.name
+    );
+    await packageManager.removeSource(ext.manifest.source);
+  };
+
   const disableExtension = async (extensionName: string) => {
     const ext = await deactivateExtension(extensionName);
     if (!ext) {
@@ -55,6 +66,9 @@ export const useExtensionsStore = defineStore('extension', () => {
     const ext = activeExtensions.value.find(
       (e) => e.manifest.name === extensionName
     );
+    if (!ext) {
+      return;
+    }
     ext.module?.onUnmounted?.(orgNoteApi);
     activeExtensions.value = activeExtensions.value.filter(
       (ext) => ext.manifest.name !== extensionName
@@ -178,6 +192,7 @@ export const useExtensionsStore = defineStore('extension', () => {
     loadActiveExtensions,
     deactivateThemeExtension,
     uploadExtension,
+    deleteExtension,
 
     filteredExtensions,
     searchQuery,

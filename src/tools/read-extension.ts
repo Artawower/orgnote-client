@@ -5,8 +5,13 @@ import {
 } from 'src/api/extension';
 
 export async function readExtension(file: File): Promise<StoredExtension> {
-  const rawContent = encodeURIComponent(await file.text());
-  console.log('✎: [line 5][read-extension.ts] rawContent: ', rawContent);
+  return await readExtensionFromString(await file.text());
+}
+
+export async function readExtensionFromString(
+  rawExt: string
+): Promise<StoredExtension> {
+  const rawContent = encodeURIComponent(rawExt);
 
   const module = `data:text/javascript,${rawContent}`;
 
@@ -14,9 +19,8 @@ export async function readExtension(file: File): Promise<StoredExtension> {
     default: Extension;
     manifest: ExtensionManifest;
   };
-  // TODO: master vlaidate extension by provided manifest.
-  console.log('✎: [line 10][read-extension.ts] m: ', m);
 
+  // TODO: master vlaidate extension by provided manifest.
   return {
     manifest: {
       ...m.manifest,

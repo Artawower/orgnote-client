@@ -944,7 +944,7 @@
   resolved "https://registry.npmjs.org/@babel/regjsgen/-/regjsgen-0.8.0.tgz"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.11.2", "@babel/runtime@^7.21.0", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.21.0", "@babel/runtime@^7.8.4":
   version "7.22.15"
   dependencies:
     regenerator-runtime "^0.14.0"
@@ -1472,6 +1472,81 @@
     fs-extra "^9.0.1"
     minimatch "^3.0.4"
     plist "^3.0.4"
+
+"@es-git/core@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/core/-/core-0.10.0.tgz"
+  integrity sha512-evBpDnjrJXci6TmQvpnx/sTUHCQEVikOreWxmBe+HdFZA5mHHbam5uh5egOiLyCEmJtE4MDiV91UuC0rTC1OEA==
+  dependencies:
+    "@es-git/mix" "^0.10.0"
+    text-encoding-utf-8 "^1.0.2"
+
+"@es-git/fetch-mixin@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/fetch-mixin/-/fetch-mixin-0.10.0.tgz"
+  integrity sha512-0zi8V70xc4r8CWJAIu3Bj/+mBibblMdWKpvg+HU1rftOgSVI213c75a3P++2SJCsxswPnwiGhuZRepmZuEBwsA==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    "@es-git/http-transport" "^0.10.0"
+
+"@es-git/http-transport@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/http-transport/-/http-transport-0.10.0.tgz"
+  integrity sha512-smF/vrJq07ivntemczxpguIwnFuVnUgmovm1JiCQ7oZPeKMbFjkm9r6iCPSV/J+58lN8czGfYeEvftybVT8yuA==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    "@es-git/packfile" "^0.10.0"
+
+"@es-git/idb-repo@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/idb-repo/-/idb-repo-0.10.0.tgz"
+  integrity sha512-niJOIl6tYjF3Phucmij1Dl7M/NnibfRBC394w5T+VmaLnSd/tIopyu4hOVZHSO0EOjKOvaDmKbU78VcgEAbmEA==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    idb "^2.0.3"
+
+"@es-git/load-as-mixin@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/load-as-mixin/-/load-as-mixin-0.10.0.tgz"
+  integrity sha512-ekVTAxcfroppMgjas1PLT8hDaw91krusV2DFXOn5adRMqhjn2HPQmiAX6P0c1Egtq+99QgZjxmRudzIS0MnmzQ==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    "@es-git/object-mixin" "^0.10.0"
+
+"@es-git/memory-repo@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/memory-repo/-/memory-repo-0.10.0.tgz"
+  integrity sha512-5DgZeQwDjSAZWagHZiWsKilUTYlDIo84m3mTaA7uASWGrLRDtc5xU7IoXlJ7ZA2qwiQPRimDe9BroAo4XpKvLg==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+
+"@es-git/mix@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/mix/-/mix-0.10.0.tgz"
+  integrity sha512-306y/wg20d2V7i0k4HASvmn0W4O8JvI2X9Wx67VjEGs/xgFaeo7mnc3gG9GvXdLxv0QGQ1CYtveZF8QTYcS4jg==
+
+"@es-git/object-mixin@^0.10.0", "@es-git/object-mixin@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/object-mixin/-/object-mixin-0.10.0.tgz"
+  integrity sha512-q1P2i6a0ZttRaZKHara461vGkoX3+raWcdzifMlH5+5qdFxp0fDKVIziGWPl2ZE90evwO69WyOzu9l7mLqNi2Q==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+
+"@es-git/packfile@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/packfile/-/packfile-0.10.0.tgz"
+  integrity sha512-Sk4irbhKP32K5QGN/cykpvisNCWpzHIU1sF+SKBitzfL6qmpSzuIfFbw/AXtjQkkocWcb5W7NWHi7LeKo2RVpw==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    pako "^1.0.5"
+
+"@es-git/walkers-mixin@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.npmjs.org/@es-git/walkers-mixin/-/walkers-mixin-0.10.0.tgz"
+  integrity sha512-BR2rFCs6hfcimB4MSijkDQOKfHtL/4hcVBs9XqRTZeA7aMA+PlrtR148uiibZV7qqoaS5r7OYhogS8u5kGxTqw==
+  dependencies:
+    "@es-git/core" "^0.10.0"
+    "@es-git/object-mixin" "^0.10.0"
 
 "@eslint/eslintrc@^1.3.0":
   version "1.4.1"
@@ -4816,6 +4891,11 @@ iconv-lite@0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
+idb@^2.0.3:
+  version "2.1.3"
+  resolved "https://registry.npmjs.org/idb/-/idb-2.1.3.tgz"
+  integrity sha512-1He6QAuavrD38HCiJasi4lEEK87Y22ldFuM+ZHkp433n4Fd5jXjWKutClYFp8w4mgx3zgrjnWxL8dpjMzcQ+WQ==
+
 idb@^7.0.1:
   version "7.1.1"
 
@@ -5091,10 +5171,10 @@ isexe@^2.0.0:
 isobject@^3.0.1:
   version "3.0.1"
 
-isomorphic-git@1.25.2:
-  version "1.25.2"
-  resolved "https://registry.npmjs.org/isomorphic-git/-/isomorphic-git-1.25.2.tgz"
-  integrity sha512-GHMZVujE76NpZ7Za0Kus/46J6Y7UZsY+xcHMLnFHqvcGbJzkXB1LQCzpYaRq+xQinWGdkcjBDQoE+8Tv3StPCg==
+isomorphic-git@1.25.1:
+  version "1.25.1"
+  resolved "https://registry.npmjs.org/isomorphic-git/-/isomorphic-git-1.25.1.tgz"
+  integrity sha512-1gJnJvW87mCPlwV1q8UBrqSE/AaFJltVmHRGignkSUgDvwK/7y2ijxGFoNHBp39mX07rffm3F915RWbJ5VVtqQ==
   dependencies:
     async-lock "^1.1.0"
     clean-git-ref "^2.0.1"
@@ -6182,7 +6262,7 @@ p-try@^1.0.0:
 p-try@^2.0.0:
   version "2.2.0"
 
-pako@^1.0.10:
+pako@^1.0.10, pako@^1.0.5:
   version "1.0.11"
   resolved "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
@@ -7309,6 +7389,11 @@ test-exclude@^6.0.0:
     "@istanbuljs/schema" "^0.1.2"
     glob "^7.1.4"
     minimatch "^3.0.4"
+
+text-encoding-utf-8@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/text-encoding-utf-8/-/text-encoding-utf-8-1.0.2.tgz"
+  integrity sha512-8bw4MY9WjdsD2aMtO0OzOCY3pXGYNx2d2FfHRVUKkiCPDWjKuOlhLVASS+pD7VkLTVjW268LYJHwsnPFlBpbAg==
 
 text-table@^0.2.0:
   version "0.2.0"
