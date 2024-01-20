@@ -21,7 +21,7 @@ export const manifest = {
   name: 'Atom One Dark Theme',
   apiVersion: '0.13.4',
   version: '0.0.1',
-  description: 'Package for pretty hedaline print!',
+  description: 'Atom One Dark theme for OrgNote!',
   keywords: ['ui', 'theme'], //
-  repo: 'https://github.com/artawower/orgnote',
+  repo: 'https://github.com/artawower/orgnote-atom-one-dark',
 };

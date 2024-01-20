@@ -11,16 +11,22 @@ import { debounce } from 'src/tools';
 
 import { computed, ref, watch } from 'vue';
 
+type CompletionResolveType = (arg: CompletionCandidate | string) => void;
+
 export const useCompletionStore = defineStore('completion', () => {
   const candidates = ref<CompletionCandidate[]>([]);
   const searchAutocompletions = ref<string[]>([]);
   const candidateSelectedByDirection = ref<number>();
   let onClicked: (candidate: CompletionCandidate<unknown>) => void;
+
   const filter = ref('');
   const opened = ref(false);
   const loading = ref(false);
   const total = ref<number>();
   const placeholder = ref<string>();
+  const completionMode = ref<'choice' | 'input'>();
+
+  let resolvePromise: CompletionResolveType;
 
   // TODO: create stack of candidates.
   const selectedCandidateIndex = ref<number | null>(null);
@@ -41,6 +47,7 @@ export const useCompletionStore = defineStore('completion', () => {
     ) => void;
     filter.value = configs.searchText ?? '';
     selectedCandidateIndex.value = 0;
+    completionMode.value = 'choice';
     search();
   };
 
@@ -70,6 +77,9 @@ export const useCompletionStore = defineStore('completion', () => {
   };
 
   const search = (limit?: number, offset = 0) => {
+    if (completionMode.value !== 'choice') {
+      return;
+    }
     const { config } = useSettingsStore();
     limit ??= config.completion.defaultCompletionLimit;
     selectedCandidateIndex.value = 0;
@@ -98,6 +108,7 @@ export const useCompletionStore = defineStore('completion', () => {
 
   const closeCompletion = () => {
     opened.value = false;
+    resolvePromise = null;
   };
 
   const focusCandidate = (index: number) => {
@@ -151,14 +162,32 @@ export const useCompletionStore = defineStore('completion', () => {
   };
 
   const keybindingStore = useKeybindingStore();
-  const executeCandidate = (item: CompletionCandidate) => {
+  const executeCandidate = (item?: CompletionCandidate) => {
+    if (completionMode.value === 'choice') {
+      handleChoice(item);
+    } else {
+      resolvePromise(filter.value);
+    }
+    closeCompletion();
+  };
+
+  const handleChoice = (item?: CompletionCandidate): void => {
     keybindingStore.executeCommand({
       command: item.command,
       commandHandler: item.commandHandler,
       data: item.data,
     });
     onClicked?.(item);
-    closeCompletion();
+  };
+
+  const readCompletion = async (prompt?: string): Promise<string> => {
+    completionMode.value = 'input';
+    placeholder.value = prompt;
+    opened.value = true;
+
+    return new Promise<string>((resolve) => {
+      resolvePromise = resolve as CompletionResolveType;
+    });
   };
 
   return {
@@ -183,5 +212,7 @@ export const useCompletionStore = defineStore('completion', () => {
     restoreLastCompletionSession,
     executeCandidate,
     searchAutocompletions,
+    completionMode,
+    readCompletion,
   };
 });

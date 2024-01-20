@@ -10,7 +10,8 @@ export interface ExtensionManifest {
   author?: string;
   description?: string;
   keywords?: string[];
-  repo: string;
+  // Repository url
+  source?: string;
   /* Default value is README.org */
   readmeFilePath?: string;
   /* WIP */

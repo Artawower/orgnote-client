@@ -41,6 +41,7 @@
     "@electron/remote": "2.0.12",
     "@highlightjs/vue-plugin": "2.1.0",
     "@hsorby/vue3-katex": "0.6.0-rc.3",
+    "@isomorphic-git/lightning-fs": "^4.6.0",
     "@lezer/javascript": "1.4.7",
     "@lezer/python": "1.1.8",
     "@quasar/extras": "^1.0.0",
@@ -52,6 +53,7 @@
     "editorjs-undo": "2.0.21",
     "force-graph": "1.42.13",
     "highlight.js": "11.6.0",
+    "isomorphic-git": "1.25.1",
     "katex": "0.15.3",
     "openapi-client-axios": "7.1.3",
     "org-mode-ast": "0.11.2",
@@ -116,13 +118,8 @@
   },
   "jscpd": {
     "threshold": 1.5,
-    "reporters": [
-      "html",
-      "console"
-    ],
-    "format": [
-      "typescript"
-    ],
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -133,10 +130,7 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": [
-      "import.*from\\s*'.*'",
-      "export.*from\\s*'.*'"
-    ],
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,

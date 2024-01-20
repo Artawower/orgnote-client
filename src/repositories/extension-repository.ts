@@ -9,7 +9,7 @@ export class ExtensionRepository extends BaseRepository {
   public static readonly migrations = migrator<StoredExtension>()
     .v(4)
     .indexes(
-      '++manifest.name, manifest.description, manifest.category, active, *manifest.keywords'
+      '++manifest.name, manifest.description, manifest.category, active, *manifest.keywords, manifest.source'
     )
     .build();
 
@@ -55,5 +55,14 @@ export class ExtensionRepository extends BaseRepository {
 
   public async getExtension(extensionName: string): Promise<StoredExtension> {
     return await this.store.get({ 'manifest.name': extensionName });
+  }
+
+  public async getExtensionBySource(source: string): Promise<StoredExtension> {
+    return await this.store.get({ 'manifest.source': source });
+  }
+
+  public async deleteBySource(source: string): Promise<void> {
+    const ext = await this.getExtensionBySource(source);
+    return await this.store.delete(ext.manifest.name);
   }
 }

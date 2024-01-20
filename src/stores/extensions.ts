@@ -10,7 +10,7 @@ import { importExtension } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
-export const useExtensionsStore = defineStore('extensionStore', () => {
+export const useExtensionsStore = defineStore('extension', () => {
   const extensions = ref<ExtensionMeta[]>([]);
   const activeExtensions = ref<ActiveExtension[]>([]);
   const extensionsLoaded = ref<boolean>(false);

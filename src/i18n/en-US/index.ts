@@ -169,4 +169,6 @@ export default {
   upload: 'upload',
   'search themes': 'search themes',
   'use one of the downloaded themes': 'use one of the downloaded themes',
+  'git URL': 'git URL',
+  'add from git': 'add from git',
 };

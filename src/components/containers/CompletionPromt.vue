@@ -9,7 +9,10 @@
     <div
       v-else
       class="completion-container"
-      :class="{ mobile: $q.screen.lt.sm }"
+      :class="{
+        mobile: $q.screen.lt.sm,
+        choice: completionStore.completionMode === 'choice',
+      }"
     >
       <completion-result />
     </div>
@@ -35,7 +38,8 @@ const viewStore = useViewStore();
   position: fixed;
   width: var(--completion-width);
   max-width: var(--completion-max-width);
-  height: 50%;
+  max-height: 50%;
+  height: auto;
   top: var(--completion-float-top);
   left: 50%;
   transform: translate(-50%);
@@ -60,6 +64,10 @@ const viewStore = useViewStore();
   q-list {
     flex: 1;
     overflow: auto;
+  }
+
+  &.choice {
+    height: 50%;
   }
 }
 </style>

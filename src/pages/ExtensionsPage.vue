@@ -6,6 +6,12 @@
         :autofocus="true"
         theme="heavy"
       />
+    </div>
+
+    <div class="actions">
+      <action-btn @click="addSource" icon="fab fa-git-alt" size="lg">
+        {{ $t('add from git') }}
+      </action-btn>
       <action-btn @click="uploadExtension" icon="upload" size="lg">
         {{ $t('upload') }}
       </action-btn>
@@ -22,7 +28,9 @@
 </template>
 
 <script lang="ts" setup>
+import { useCompletionStore } from 'src/stores';
 import { useExtensionsStore } from 'src/stores/extensions';
+import { usePackageManagerStore } from 'src/stores/package-manager.store';
 import { uploadFiles } from 'src/tools';
 import { readExtension } from 'src/tools/read-extension';
 
@@ -43,6 +51,14 @@ const uploadExtension = async () => {
 
   extensionsStore.uploadExtension(ext);
 };
+
+const completionStore = useCompletionStore();
+const packageManager = usePackageManagerStore();
+
+const addSource = async () => {
+  const url = await completionStore.readCompletion('git URL');
+  packageManager.addSource(url);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -53,8 +69,6 @@ const uploadExtension = async () => {
 
 <style lang="scss" scoped>
 .search-header {
-  @include flexify(row, center, flex-end);
-
   gap: var(--gap-md);
 
   @include mobile {
@@ -70,5 +84,12 @@ const uploadExtension = async () => {
 .q-page {
   max-width: var(--content-max-width);
   margin: auto;
+}
+
+.actions {
+  @include flexify(row, flex-end, center);
+
+  margin-top: var(--block-margin-md);
+  gap: var(--gap-md);
 }
 </style>

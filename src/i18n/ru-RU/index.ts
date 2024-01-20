@@ -163,4 +163,6 @@ export default {
   upload: 'загрузить',
   'search themes': 'поиск тем',
   'use one of the downloaded themes': 'использовать одну из загруженных тем',
+  'git URL': 'git URL',
+  'add from git': 'добавить из git',
 };
