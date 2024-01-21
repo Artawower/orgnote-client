@@ -11,7 +11,6 @@ import walkers from '@es-git/walkers-mixin';
 // import http from 'isomorphic-git/http/web';
 import { defineStore } from 'pinia';
 import { useNotifications } from 'src/hooks';
-import { repositories } from 'src/repositories';
 import { readExtensionFromString } from 'src/tools';
 
 import { ref } from 'vue';
@@ -21,6 +20,7 @@ export const usePackageManagerStore = defineStore(
   () => {
     const sources = ref<Set<string>>();
     const notifications = useNotifications();
+    const loading = ref(false);
 
     const addSource = async (source: string) => {
       const normalizedSource = source;
@@ -32,12 +32,6 @@ export const usePackageManagerStore = defineStore(
 
     const removeSource = async (source: string) => {
       sources.value?.delete(source);
-      const ext = await repositories.extensions.getExtensionBySource(source);
-      if (!ext) {
-        return;
-      }
-      await extensionStore.deactivateExtension(ext.manifest.name);
-      await repositories.extensions.deleteBySource(source);
     };
 
     const refreshSources = () => {
@@ -53,6 +47,7 @@ export const usePackageManagerStore = defineStore(
         notifications.error(sourceErrors);
         return;
       }
+      loading.value = true;
       // TODO: feature/extensions validate
       // const normalizedDirName = sourceNameRegexp
       //   .exec(source)?.[1]
@@ -64,7 +59,6 @@ export const usePackageManagerStore = defineStore(
       //   return;
       // }
       // const dir = `/${normalizedDirName}`;
-
       const Repo = mix(MemoryRepo)
         .with(object)
         .with(walkers)
@@ -77,12 +71,17 @@ export const usePackageManagerStore = defineStore(
         progress: (message) => console.log(message),
       });
       const hash = result[0].hash;
+      console.log('✎: [line 74][package-manager.store.ts] result: ', result);
 
       const { tree: treeHash } = await repo.loadCommit(hash);
 
-      const t = await repo.loadTree(treeHash);
+      let t = await repo.loadTree(treeHash);
+      if (t['dist']) {
+        t = await repo.loadTree(t['dist'].hash);
+      }
       if (!t['index.js']?.hash) {
         notifications.error('incorrect extension, no index.js file');
+        loading.value = false;
         return;
       }
 
@@ -102,6 +101,7 @@ export const usePackageManagerStore = defineStore(
       // });
 
       // const sourceCode = getExtensionSourceCode(fs, dir);
+      loading.value = false;
     };
 
     // const getExtensionSourceCode = async (fs: FS, dir: string) => {
@@ -121,6 +121,7 @@ export const usePackageManagerStore = defineStore(
       addSource,
       removeSource,
       refreshSources,
+      loading,
     };
   },
   { persist: true }

@@ -28,6 +28,17 @@
             class="cursor-pointer color-secondary"
           />
           <q-icon
+            v-if="
+              $q.platform.is.mobile &&
+              completionStore.completionMode === 'input'
+            "
+            @click="completionStore.executeCandidate"
+            flat
+            size="xs"
+            name="send"
+            class="cursor-pointer color-secondary"
+          />
+          <q-icon
             @click="completionStore.closeCompletion"
             flat
             name="close"
@@ -102,6 +113,6 @@ const autocompletion = computed(() => {
 .actions {
   @include flexify();
 
-  gap: var(--small-gap);
+  gap: var(--gap-sm);
 }
 </style>

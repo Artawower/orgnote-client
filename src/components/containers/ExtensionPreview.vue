@@ -96,12 +96,24 @@ const toggleExtensionStatus = async () => {
     width: 100%;
   }
 
+  @include mobile {
+    .title {
+      @include flexify(column, center, flex-start);
+      gap: var(--gap-md);
+    }
+  }
+
   .author {
     color: var(--blue);
   }
 
   .icon {
     align-self: center;
+
+    @include mobile {
+      padding-left: var(--block-padding-md);
+      padding-right: var(--block-padding-md);
+    }
   }
 }
 

@@ -116,6 +116,11 @@ export const useExtensionsStore = defineStore('extension', () => {
     if (ext.manifest.category !== 'theme') {
       return;
     }
+    const previousTheme = activeExtensions.value.find(
+      (e) =>
+        e.manifest.name !== ext.manifest.name && e.manifest.category === 'theme'
+    );
+    previousTheme && deactivateExtension(previousTheme.manifest.name);
     orgNoteApi.ui.setThemeByMode(ext.manifest.name);
   };
 

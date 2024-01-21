@@ -2,6 +2,7 @@
   <button
     v-if="contentSlotPassed"
     @click="clicked"
+    :disabled="loading"
     class="action-btn text-btn"
     :class="[
       { fired, dark: $q.dark.isActive },
@@ -11,8 +12,9 @@
     ]"
   >
     <q-icon
-      v-if="icon"
-      :name="fired && activeIcon ? activeIcon : icon"
+      :class="{ loading }"
+      v-if="currentIcon"
+      :name="currentIcon"
       size="1rem"
     />
     <slot />
@@ -20,11 +22,12 @@
   <q-icon
     v-else
     @click="clicked"
-    :name="fired && activeIcon ? activeIcon : icon"
+    :disabled="loading"
+    :name="currentIcon"
     size="1rem"
     class="action-btn"
     :class="[
-      { fired, dark: $q.dark.isActive },
+      { loading, fired, dark: $q.dark.isActive },
       contentClass ?? '',
       `size-${size}`,
     ]"
@@ -43,6 +46,7 @@ const props = withDefaults(
     icon?: string;
     activeIcon?: string;
     contentClass?: string;
+    loading?: boolean;
     theme?:
       | 'red'
       | 'orange'
@@ -63,7 +67,18 @@ const props = withDefaults(
   }
 );
 
-const { icon, activeIcon } = toRefs(props);
+const { icon, activeIcon, loading } = toRefs(props);
+
+const currentIcon = computed(() => {
+  fired && activeIcon ? activeIcon : icon;
+  if (loading.value) {
+    return 'sync';
+  }
+  if (activeIcon.value && fired.value) {
+    return activeIcon.value;
+  }
+  return icon.value;
+});
 
 let fired: Ref<boolean> = ref(false);
 
@@ -157,6 +172,20 @@ $colors: 'red', 'orange', 'green', 'teal', 'yellow', 'blue', 'dark-blue',
         color: color-mix(in srgb, var(--#{$color}) 70%, var(--white));
       }
     }
+  }
+}
+
+.q-icon.loading {
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(-359deg);
   }
 }
 </style>

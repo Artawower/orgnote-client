@@ -39,6 +39,19 @@ body {
   --code-font-size: 14px;
 }
 
+p,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input {
+  color: var(--fg);
+}
+
 .color-main {
   color: var(--fg);
 }

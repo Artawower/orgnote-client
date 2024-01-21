@@ -38,7 +38,6 @@ const viewStore = useViewStore();
   position: fixed;
   width: var(--completion-width);
   max-width: var(--completion-max-width);
-  max-height: 50%;
   height: auto;
   top: var(--completion-float-top);
   left: 50%;
@@ -51,23 +50,27 @@ const viewStore = useViewStore();
   z-index: 7000;
   margin-left: calc(var(--sidebar-width) / 2);
 
+  &.choice {
+    height: 50%;
+  }
+
   &.mobile {
-    top: 0;
+    top: unset;
+    bottom: 0;
     margin-left: 0;
-    height: calc(
-      var(--viewport-height) - var(--completion-container-margin) * 2
-    );
-    transform: translate(calc(-50% - var(--completion-container-margin)));
-    margin: var(--completion-container-margin);
+
+    &.choice {
+      margin: var(--completion-container-margin);
+      transform: translate(calc(-50% - var(--completion-container-margin)));
+      height: calc(
+        var(--viewport-height) - var(--completion-container-margin) * 2
+      );
+    }
   }
 
   q-list {
     flex: 1;
     overflow: auto;
-  }
-
-  &.choice {
-    height: 50%;
   }
 }
 </style>

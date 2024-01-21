@@ -9,10 +9,20 @@
     </div>
 
     <div class="actions">
-      <action-btn @click="addSource" icon="fab fa-git-alt" size="lg">
+      <action-btn
+        @click="addSource"
+        icon="fab fa-git-alt"
+        size="lg"
+        :loading="packageManager.loading"
+      >
         {{ $t('add from git') }}
       </action-btn>
-      <action-btn @click="uploadExtension" icon="upload" size="lg">
+      <action-btn
+        @click="uploadExtension"
+        icon="upload"
+        size="lg"
+        :loading="packageManager.loading"
+      >
         {{ $t('upload') }}
       </action-btn>
     </div>

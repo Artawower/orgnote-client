@@ -1,5 +1,5 @@
 <template>
-  <div class="flex column items-start justify-start fit no-wrap">
+  <div class="completion-results fit no-wrap">
     <prevent-ios-touch>
       <completion-input />
     </prevent-ios-touch>
@@ -34,9 +34,7 @@
     </q-virtual-scroll>
 
     <prevent-ios-touch v-if="completionMode === 'choice'">
-      <div
-        class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
-      >
+      <div class="completion-footer full-width q-px-md q-py-xs text-center">
         <span class="text-capitalize">{{ $t('items') }}</span
         >: {{ selectedIndex + 1 }}/{{ total }}
       </div>
@@ -104,8 +102,17 @@ useBodyActionPaneClass();
 </script>
 
 <style lang="scss" setup>
+.completion-results {
+  @include flexify(column, flex-start, flex-start);
+
+  @include mobile {
+    flex-direction: column-reverse;
+  }
+}
+
 .completion-footer {
-  background: var(--fg-alt);
+  background: var(--bg-alt);
+  color: var(--fg);
 }
 
 .completion-item {

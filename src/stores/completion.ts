@@ -108,6 +108,7 @@ export const useCompletionStore = defineStore('completion', () => {
 
   const closeCompletion = () => {
     opened.value = false;
+    filter.value = '';
     resolvePromise = null;
   };
 
