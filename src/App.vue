@@ -27,8 +27,6 @@ useLoggerStore().init();
 
 syncStore.markToSync();
 
-// TODO: tmp place for register potential plugins.
-// Will be moved into a separate file later.
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
 

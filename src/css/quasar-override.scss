@@ -26,6 +26,7 @@ body.standalone.action-pane-opened {
   box-shadow: var(--shadow-main);
   border: var(--border-main);
   z-index: 999999;
+  background: var(--bg);
 }
 
 .q-item.q-router-link--active,
@@ -63,8 +64,13 @@ body.standalone.action-pane-opened {
 .text-primary {
   color: var(--blue) !important;
 }
-.q-field--standout.q-field--dark.q-field--highlighted .q-field__native {
-  color: white;
+
+.q-field--standout.q-field--dark.q-field--highlighted .q-field__native,
+.q-field--dark .q-field__native,
+.q-field--dark .q-field__prefix,
+.q-field--dark .q-field__suffix,
+.q-field--dark .q-field__input {
+  color: var(--fg);
 }
 
 .q-list {
@@ -74,4 +80,8 @@ body.standalone.action-pane-opened {
 }
 .q-dialog__inner.no-pointer-events {
   pointer-events: all !important;
+}
+
+.q-icon {
+  color: var(--fg);
 }

@@ -1,14 +1,28 @@
 import { Command } from './command';
+import { CSSVariable, ThemeVariable } from './theme-variables';
 import { sdk } from 'src/boot/axios';
 import { Note } from 'src/models';
+import { NavigationFailure } from 'vue-router';
+import { z } from 'zod';
 
 export interface OrgNoteApi {
   [key: string]: unknown;
-  getExtension<T>(config: string): T;
+  getExtension?<T>(config: string): T;
 
+  system: {
+    reload: (params?: { verbose: boolean }) => Promise<void>;
+  };
   navigation: {
-    openNote: (id: string) => void;
-    editNote: (id: string) => void;
+    openNote: (id: string) => Promise<void | NavigationFailure>;
+    editNote: (id: string) => Promise<void | NavigationFailure>;
+  };
+  ui: {
+    applyTheme: (theme: { [key in ThemeVariable]: string | number }) => void;
+    applyStyles: (styles: { [key in CSSVariable]: string | number }) => void;
+    setThemeByMode: (themeName?: string) => void;
+    setDarkTheme: (themeName?: string) => void;
+    setLightTheme: (themeName?: string) => void;
+    resetTheme: () => void;
   };
   interaction: {
     confirm: (title: string, message: string) => Promise<boolean>;
@@ -33,18 +47,24 @@ export interface OrgNoteApi {
   sdk: typeof sdk;
 }
 
-// TODO: add config for runtime validation and command builders
-export interface OrgNoteConfig {
-  editor: {
-    showSpecialSymbols: boolean;
-    showPropertyDrawer: boolean;
-  };
-  common: {
-    developerMode: boolean;
-    maximumLogsCount: number;
-  };
-  completion: {
-    showGroup: boolean;
-    defaultCompletionLimit: number;
-  };
-}
+export const orgnoteApiSchema = z.object({
+  editor: z.object({
+    showSpecialSymbols: z.boolean(),
+    showPropertyDrawer: z.boolean(),
+  }),
+  common: z.object({
+    developerMode: z.boolean(),
+    maximumLogsCount: z.number(),
+  }),
+  completion: z.object({
+    showGroup: z.boolean(),
+    defaultCompletionLimit: z.number(),
+  }),
+  ui: z.object({
+    theme: z.literal('light').or(z.literal('dark')),
+    darkThemeName: z.optional(z.string()),
+    lightThemeName: z.optional(z.string()),
+  }),
+});
+
+export type OrgNoteConfig = z.infer<typeof orgnoteApiSchema>;

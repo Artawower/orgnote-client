@@ -70,4 +70,5 @@
         <splash src="res/screen/ios/Default@2x~ipad~anyany.png" />
         <splash src="res/screen/ios/Default@2x~ipad~comany.png" />
     </platform>
+    <allow-navigation href="http://10.10.110.47:9090" />
 </widget>

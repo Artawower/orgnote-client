@@ -26,7 +26,12 @@ export function useNotifications() {
     });
   };
 
+  const error = (message: string) => {
+    notify(message, true, 'error');
+  };
+
   return {
     notify,
+    error,
   };
 }

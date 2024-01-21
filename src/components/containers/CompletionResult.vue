@@ -1,45 +1,10 @@
 <template>
-  <div class="flex column items-start justify-start fit no-wrap">
+  <div class="completion-results fit no-wrap">
     <prevent-ios-touch>
-      <div class="q-px-md full-width completion-input">
-        <div v-if="autocompletion" class="input-overflow color-secondary">
-          {{ autocompletion }}
-        </div>
-        <q-input
-          class="completion-input"
-          v-model="filter"
-          ref="completionInput"
-          autofocus
-          @blur="closeCompletionOnBlur"
-          @keydown.tab.prevent.stop="completeSearchQuery"
-          borderless
-          :placeholder="$t(placeholder)"
-        >
-          <template v-slot:prepend>
-            <q-icon name="keyboard_arrow_right" />
-          </template>
-          <template v-slot:append>
-            <div class="actions">
-              <q-icon
-                v-if="$q.platform.is.mobile && autocompletion"
-                @click="completeSearchQuery"
-                flat
-                size="xs"
-                name="fas fa-wand-magic-sparkles"
-                class="cursor-pointer color-secondary"
-              />
-              <q-icon
-                @click="completionStore.closeCompletion"
-                flat
-                name="close"
-                class="cursor-pointer color-secondary"
-              />
-            </div>
-          </template>
-        </q-input>
-      </div>
+      <completion-input />
     </prevent-ios-touch>
     <q-virtual-scroll
+      v-if="completionMode === 'choice'"
       ref="scrollTarget"
       :items-size="total"
       :virtual-scroll-slice-size="config.completion.defaultCompletionLimit"
@@ -68,10 +33,8 @@
       </async-item-container>
     </q-virtual-scroll>
 
-    <prevent-ios-touch>
-      <div
-        class="completion-footer full-width q-px-md q-py-xs text-center color-reverse"
-      >
+    <prevent-ios-touch v-if="completionMode === 'choice'">
+      <div class="completion-footer full-width q-px-md q-py-xs text-center">
         <span class="text-capitalize">{{ $t('items') }}</span
         >: {{ selectedIndex + 1 }}/{{ total }}
       </div>
@@ -88,10 +51,11 @@ import { useCompletionStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import CompletionResultItem from './CompletionResultItem.vue';
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
+import CompletionInput from 'src/components/containers/CompletionInput.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
 
 const itemHeight = 70;
@@ -100,11 +64,10 @@ const scrollTarget = ref<QVirtualScroll | null>();
 const completionStore = useCompletionStore();
 const {
   candidates,
-  filter,
   selectedIndex,
   total,
   candidateSelectedByDirection,
-  placeholder,
+  completionMode,
 } = storeToRefs(completionStore);
 
 const completionInput = ref<HTMLInputElement | null>(null);
@@ -134,39 +97,22 @@ const ensureSelectedIndexVisible = () => {
 
 watch(() => candidateSelectedByDirection.value, ensureSelectedIndexVisible);
 
-const closeCompletionOnBlur = () => {
-  setTimeout(() => {
-    completionStore.closeCompletion();
-  }, 10);
-};
-
 const { config } = useSettingsStore();
 useBodyActionPaneClass();
-
-// TODO: add support for multiple autocompletion for each word by regexp
-const autocompletion = computed(() => {
-  if (!completionStore.searchAutocompletions || !filter.value) {
-    return null;
-  }
-
-  const matchedAutocompletion = completionStore.searchAutocompletions.find(
-    (ac) => ac.toLowerCase().includes(filter.value.toLowerCase())
-  );
-
-  return matchedAutocompletion;
-});
-
-const completeSearchQuery = () => {
-  if (!autocompletion.value) {
-    return;
-  }
-  filter.value = autocompletion.value;
-};
 </script>
 
 <style lang="scss" setup>
+.completion-results {
+  @include flexify(column, flex-start, flex-start);
+
+  @include mobile {
+    flex-direction: column-reverse;
+  }
+}
+
 .completion-footer {
-  background: var(--fg-alt);
+  background: var(--bg-alt);
+  color: var(--fg);
 }
 
 .completion-item {
@@ -210,25 +156,5 @@ const completeSearchQuery = () => {
 
 .completion-scroll {
   overflow: auto;
-}
-
-.completion-input {
-  height: var(--completion-input-height);
-  position: relative;
-}
-
-.input-overflow {
-  @include flexify(row, flex-start, center);
-
-  position: absolute;
-  top: -0.5px;
-  left: 52.5px;
-  height: 56px;
-}
-
-.actions {
-  @include flexify();
-
-  gap: var(--small-gap);
 }
 </style>

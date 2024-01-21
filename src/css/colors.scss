@@ -1,52 +1,85 @@
 @import 'mixins';
 
 :root {
-  --red: #f65866;
-  --orange: #dd9046;
-  --green: #8bcd5b;
-  --teal: #4db5bd;
-  --yellow: #ecbe7b;
-  --blue: #41a7fc;
-  --dark-blue: #1c4a6e;
-  --magenta: #ca9ee6;
-  --violet: #c75ae8;
-  --cyan: #34bfd0;
-  --dark-cyan: #5699af;
-  --white: #f8f9fc;
+  --default-red: #f65866;
+  --default-orange: #dd9046;
+  --default-green: #8bcd5b;
+  --default-teal: #4db5bd;
+  --default-yellow: #ecbe7b;
+  --default-blue: #41a7fc;
+  --default-dark-blue: #1c4a6e;
+  --default-magenta: #ca9ee6;
+  --default-violet: #c75ae8;
+  --default-cyan: #34bfd0;
+  --default-dark-cyan: #5699af;
+  --default-white: #f8f9fc;
+}
+
+// colors
+:root {
+  --red: var(--default-red);
+  --orange: var(--default-orange);
+  --green: var(--default-green);
+  --teal: var(--default-teal);
+  --yellow: var(--default-yellow);
+  --blue: var(--default-blue);
+  --dark-blue: dark-var(--default-blue);
+  --magenta: var(--default-magenta);
+  --violet: var(--default-violet);
+  --cyan: var(--default-cyan);
+  --dark-cyan: dark-var(--default-cyan);
+  --white: var(--default-white);
 }
 
 @include dark-mode {
-  --bg: #22272e;
-  --bg-alt: var(--q-dark);
-  --bg-alt2: var(--q-dark);
-  --fg: #adbac7;
-  --fg-alt: #{$grey-6};
+  --default-bg: #22272e;
+  --default-bg-alt: var(--q-dark);
+  --default-fg: #adbac7;
+  --default-fg-alt: #{$grey-6};
 
-  --base0: #{$grey-3};
-  --base1: #{$grey-10};
-  --base2: #1d1d1d;
-  --base3: #22272e;
-  --base4: #{$grey-9};
-  --base5: #{$grey-6};
-  --base6: #{$grey-1};
-  --base7: rgba(99, 110, 123, 0.4);
-  --base8: var(--blue);
+  --default-base0: #{$grey-3};
+  --default-base1: #{$grey-10};
+  --default-base2: #1d1d1d;
+  --default-base3: #22272e;
+  --default-base4: #{$grey-9};
+  --default-base5: #{$grey-6};
+  --default-base6: #{$grey-1};
+  --default-base7: rgba(99, 110, 123, 0.4);
+  --default-base8: var(--blue);
 }
 
 @include light-mode {
-  --bg: #fff;
-  --bg-alt: #fff;
-  --bg-alt2: #f8f9fc;
-  --fg: #34495e;
-  --fg-alt: #{$grey-5};
+  --default-bg: #fff;
+  --default-bg-alt: #fff;
+  --default-bg-alt2: #f8f9fc;
+  --default-fg: #34495e;
+  --default-fg-alt: #{$grey-5};
 
-  --base0: #{$grey-9};
-  --base1: #{$grey-1};
-  --base2: #{$blue-grey-4};
-  --base3: #22272e;
-  --base4: #{$grey-9};
-  --base5: #{$grey-6};
-  --base6: #{$grey-1};
-  --base7: rgba(175, 184, 193, 0.2);
-  --base8: var(--blue);
+  --default-base0: #{$grey-9};
+  --default-base1: #{$grey-1};
+  --default-base2: #{$blue-grey-4};
+  --default-base3: #22272e;
+  --default-base4: #{$grey-9};
+  --default-base5: #{$grey-6};
+  --default-base6: #{$grey-1};
+  --default-base7: rgba(175, 184, 193, 0.2);
+  --default-base8: var(--blue);
+}
+
+body {
+  --bg: var(--default-bg);
+  --bg-alt: var(--default-bg-alt);
+  --bg-alt2: var(--default-alt2);
+  --fg: var(--default-fg);
+  --fg-alt: var(--default-fg-alt);
+
+  --base0: var(--default-base0);
+  --base1: var(--default-base1);
+  --base2: var(--default-base2);
+  --base3: var(--default-base3);
+  --base4: var(--default-base4);
+  --base5: var(--default-base5);
+  --base6: var(--default-base6);
+  --base7: var(--default-base7);
+  --base8: var(--default-base8);
 }

@@ -1,15 +1,23 @@
 <template>
-  <input
-    ref="inputRef"
-    class="search-input"
-    name="search"
-    type="text"
-    autocomplete="off"
-    :autofocus="autofocus"
-    :value="props.modelValue"
-    @input="($event) => emits('update:modelValue', ($event.target as HTMLInputElement).value)"
-    :placeholder="$t(placeholder)"
-  />
+  <div class="search-wrapper">
+    <q-icon
+      name="search"
+      :size="theme === 'tiny' ? '1rem' : '1.6rem'"
+      class="magnifier"
+    />
+    <input
+      ref="inputRef"
+      class="search-input"
+      :class="theme"
+      name="search"
+      type="text"
+      autocomplete="off"
+      :autofocus="autofocus"
+      :value="props.modelValue"
+      @input="($event) => emits('update:modelValue', ($event.target as HTMLInputElement).value)"
+      :placeholder="$t(placeholder)"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -20,9 +28,11 @@ const props = withDefaults(
     modelValue: string;
     autofocus?: boolean;
     placeholder?: string;
+    theme?: 'heavy' | 'tiny';
   }>(),
   {
     placeholder: 'search',
+    theme: 'tiny',
   }
 );
 
@@ -41,6 +51,11 @@ onMounted(() => tryAutofocus());
 </script>
 
 <style lang="scss">
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .search-input {
   width: 100%;
   &:focus {
@@ -50,5 +65,24 @@ onMounted(() => tryAutofocus());
   background-color: transparent;
   border: none;
   color: var(--fg);
+  height: var(--input-height);
+  padding-left: 1.5rem;
+
+  &.heavy {
+    padding-left: 2rem;
+    border-bottom: 2px solid var(--fg-alt);
+    max-width: 100%;
+    height: var(--input-lg-height);
+    font-size: var(--font-size-lg);
+    font-weight: bold;
+  }
+}
+
+.magnifier {
+  position: absolute;
+  left: 0;
+  top: 52%;
+  transform: translateY(-50%);
+  color: var(--fg-alt);
 }
 </style>

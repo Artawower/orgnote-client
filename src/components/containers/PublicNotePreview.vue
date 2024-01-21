@@ -1,6 +1,6 @@
 <template>
   <article :style="{ height }">
-    <q-card v-if="notePreview" class="full-height" flat>
+    <q-card v-if="notePreview" class="full-height color-main" flat>
       <div
         class="q-px-sm"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"

@@ -33,7 +33,7 @@ withDefaults(
   @include flexify(row, flex-start, center);
   white-space: nowrap;
   color: var(--icon-btn-color);
-  gap: var(--small-gap);
+  gap: var(--gap-sm);
 
   &.hoverable:hover {
     color: var(--icon-btn-hover-color);

@@ -80,7 +80,9 @@ body {
   --btn-action-radius: 6px;
   --btn-action-fire-color: var(--green);
   --btn-action-fire-border-color: var(--green);
-  --btn-action-size: 20px;
+  --btn-action-md: 20px;
+  --btn-action-sm: 14px;
+  --btn-action-lg: 28px;
   --btn-action-color: var(--base5);
   --btn-action-bg: var(--bg);
 
@@ -129,9 +131,9 @@ body {
   --block-border-radius-sm: 6px;
   --item-default-radius: 8px;
   --search-icn-size: 44px;
-  --default-gap: 16px;
-  --small-gap: 8px;
-  --xs-gap: 4px;
+  --gap-md: 16px;
+  --gap-sm: 8px;
+  --gap-xs: 4px;
 
   // Src block
   --src-block-header-padding-y: 8px;
@@ -165,6 +167,10 @@ body {
   --graph-node-color: var(--fg-alt);
   --graph-edge-color: var(--fg-alt);
   --graph-active-color: var(--red);
+
+  // Inputs
+  --input-height: 28px;
+  --input-lg-height: 48px;
 }
 
 @include light-mode {
@@ -177,7 +183,7 @@ body {
     --block-padding-md: 8px;
     --footer-height: 56px;
     --page-padding: 14px;
-    --default-gap: 10px;
+    --gap-md: 10px;
     --file-item-height: 46px;
     --headerbar-height: 42px;
 

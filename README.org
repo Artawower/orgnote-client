@@ -69,3 +69,9 @@ bun run dev
 
 Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][style guide]] before contributing to avoid misunderstandings!
 I would also appreciate it if you would consider becoming my [[https://www.patreon.com/artawower][patron]]
+
+
+** Debug PWA
+#+BEGIN_SRC bash
+npm run build:pwa && docker compose -f docker-compose.pwa.yaml up
+#+END_SRC

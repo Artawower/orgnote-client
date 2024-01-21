@@ -6,7 +6,11 @@
       minHeight: 0,
     }"
   >
-    <file-uploader @uploaded="notesImportStore.uploadFiles">
+    <file-uploader
+      v-if="extensionsStore.extensionsLoaded"
+      class="main-content"
+      @uploaded="notesImportStore.uploadFiles"
+    >
       <the-header />
       <action-side-panel
         v-if="$q.screen.gt.xs || sidebarStore.opened"
@@ -33,6 +37,9 @@
       <completion-prompt />
       <ToolBar v-if="$q.screen.lt.sm" />
     </file-uploader>
+    <div v-else class="flex full-width full-height items-center justify-center">
+      <loader-spinner />
+    </div>
   </q-layout>
 </template>
 
@@ -44,14 +51,20 @@ import {
   useMainCommands,
 } from 'src/hooks';
 import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
-import { useSidebarStore, useSyncStore, useToolbarStore } from 'src/stores';
+import {
+  useExtensionsStore,
+  useSidebarStore,
+  useSyncStore,
+  useToolbarStore,
+} from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { debounce } from 'src/tools';
 
-import { computed } from 'vue';
+import { computed, onBeforeMount } from 'vue';
 
+import LoaderSpinner from 'src/components/LoaderSpinner.vue';
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
 import CompletionPrompt from 'src/components/containers/CompletionPromt.vue';
 import ConfirmationModal from 'src/components/containers/ConfirmationModal.vue';
@@ -109,6 +122,13 @@ onAppActive((active: boolean) => {
   if (active) {
     syncStore.sync();
   }
+});
+
+const extensionsStore = useExtensionsStore();
+
+onBeforeMount(() => {
+  extensionsStore.loadActiveExtensions();
+  extensionsStore.loadExtensions();
 });
 </script>
 

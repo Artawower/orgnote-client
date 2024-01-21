@@ -4,7 +4,7 @@
       <q-item
         v-if="user"
         clickable
-        class="column justify-center avatar-item"
+        class="column justify-center avatar-item color-main"
         @click="openProfile"
       >
         <q-avatar size="160px" class="q-mx-auto q-pt-xs">

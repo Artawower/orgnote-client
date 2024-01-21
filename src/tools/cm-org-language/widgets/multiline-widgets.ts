@@ -8,6 +8,7 @@ import { ViewUpdate } from '@codemirror/view';
 import { ChangedRange } from '@lezer/common';
 import { EditorView } from 'codemirror';
 import { OrgNode, walkTree } from 'org-mode-ast';
+import { EmbeddedWidgetBuilder, MultilineEmbeddedWidgets } from 'src/api';
 import { hasIntersection } from 'src/tools/has-intersection';
 
 export const orgMultilineWidgets = (

@@ -62,10 +62,10 @@ const executeCode = async () => {
   .actions {
     @include flexify();
     display: none !important;
-    gap: var(--small-gap);
+    gap: var(--gap-sm);
     position: absolute;
     right: 10px;
-    top: var(--small-gap);
+    top: var(--gap-sm);
     z-index: 1000;
   }
 

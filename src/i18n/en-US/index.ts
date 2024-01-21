@@ -164,4 +164,13 @@ export default {
   'no bookmarks yet': 'no bookmarks yet',
   'sponsors.appretiate':
     'I really appreciate your help, your donations allow me to maintain the necessary infrastructure as well as pay for subscriptions to publish apps on public app stores',
+  install: 'install',
+  uninstall: 'uninstall',
+  upload: 'upload',
+  'search themes': 'search themes',
+  'use one of the downloaded themes': 'use one of the downloaded themes',
+  'git URL': 'git URL',
+  'add from git': 'add from git',
+  enable: 'enable',
+  disable: 'disable',
 };

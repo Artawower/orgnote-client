@@ -14,7 +14,7 @@
       "tools/*": ["src/tools/*"],
       "stores/*": ["src/stores/*"]
     },
-    "lib": ["DOM", "DOM.iterator"]
+    "lib": ["DOM", "DOM.iterable"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

@@ -6,7 +6,8 @@
   "author": "OrgNote <app.orgnote@gmail.com>",
   "private": true,
   "scripts": {
-    "codegen:css-doc": "node collect-css-variables.js",
+    "codegen:css-doc": "node collect-css-variables.js --docs",
+    "codegen:css-types": "node collect-css-variables.js --types",
     "serve:ssr": "node dist/ssr/index.js",
     "dev:android": "quasar dev -m cordova -T android",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T android -- -d",
@@ -38,6 +39,12 @@
     "@editorjs/nested-list": "1.3.0",
     "@editorjs/underline": "1.1.0",
     "@electron/remote": "2.0.12",
+    "@es-git/fetch-mixin": "0.10.0",
+    "@es-git/idb-repo": "0.10.0",
+    "@es-git/load-as-mixin": "0.10.0",
+    "@es-git/memory-repo": "0.10.0",
+    "@es-git/object-mixin": "0.10.0",
+    "@es-git/walkers-mixin": "0.10.0",
     "@highlightjs/vue-plugin": "2.1.0",
     "@hsorby/vue3-katex": "0.6.0-rc.3",
     "@lezer/javascript": "1.4.7",
@@ -69,7 +76,8 @@
     "vue": "^3.3.4",
     "vue-i18n": "9.4.1",
     "vue-router": "^4.0.0",
-    "vue3-easy-data-table": "1.5.47"
+    "vue3-easy-data-table": "1.5.47",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "5.0.1",
@@ -84,6 +92,7 @@
     "@typescript-eslint/eslint-plugin": "5.31.0",
     "@typescript-eslint/parser": "5.31.0",
     "autoprefixer": "10.4.7",
+    "commander": "11.1.0",
     "electron": "27.0.3",
     "electron-builder": "24.3.0",
     "electron-packager": "17.1.1",
