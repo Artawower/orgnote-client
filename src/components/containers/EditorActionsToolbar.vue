@@ -44,7 +44,6 @@ onMounted(() => setTimeout(() => (inited.value = true), 100));
   background: var(--bg-alt);
   overflow-x: auto;
   gap: var(--gap-md);
-  /* padding: var(--block-padding-md); */
   width: 100%;
   height: var(--footer-height);
 

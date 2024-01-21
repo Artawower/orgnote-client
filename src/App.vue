@@ -27,8 +27,6 @@ useLoggerStore().init();
 
 syncStore.markToSync();
 
-// TODO: tmp place for register potential plugins.
-// Will be moved into a separate file later.
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
 
@@ -67,35 +65,4 @@ async function handleCordovaAuth(url: string) {
 
 const { orgNoteApi } = useOrgNoteApiStore();
 window.orgnote = orgNoteApi;
-
-// const smthLikeModule = `export default (api) => {
-//   console.log(api);
-//
-//   return {
-//     onMounted: () => {
-//       console.log('hello!2');
-//     },
-//     onBeforeMount: () => {
-//       console.log('hello!r3');
-//     },
-//   };
-// };
-// `;
-//
-// const module = `data:text/javascript,${smthLikeModule}`;
-//
-// import(module).then((m) => {
-//   const ext = m.default();
-//   console.log('✎: [line 74][App.vue] package from blob: ', ext);
-// });
-//
-// import('/public/plugins/plugin1/manifest.json').then((m) => {
-//   console.log('✎: [line 73][App.vue] m: ', m);
-//   console.log('✎: [line 73][App.vue] m: ', m.category);
-// });
-//
-// import('/public/plugins/plugin1/index.js').then((m) => {
-//   const ext = m.default();
-//   console.log('✎: [line 74][App.vue] package: ', ext);
-// });
 </script>

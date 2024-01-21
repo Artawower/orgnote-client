@@ -5,7 +5,6 @@ import { Note } from 'src/models';
 import { NavigationFailure } from 'vue-router';
 import { z } from 'zod';
 
-// TODO: feature/extensions thisnk about share stores instead of callbacks from orgnote-api.store.ts
 export interface OrgNoteApi {
   [key: string]: unknown;
   getExtension?<T>(config: string): T;

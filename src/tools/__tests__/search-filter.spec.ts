@@ -7,17 +7,20 @@ describe('search filter', () => {
     const res = searchFilter(searchQuery, val);
     expect(res).toBe(true);
   });
+
   it('Should not find the correct item', () => {
     const val = 'hello world';
     const searchQuery = 'hi!';
     const res = searchFilter(val, searchQuery);
     expect(res).toBe(false);
   });
+
   it("Should find the correct item when source string doesn't provided", () => {
     const searchQuery = '';
     const res = searchFilter(searchQuery, 'hey', '123');
     expect(res).toBe(true);
   });
+
   it("Should find the correct item when search strings don't provided", () => {
     const val = 'hello world';
     const res = searchFilter(null, val);

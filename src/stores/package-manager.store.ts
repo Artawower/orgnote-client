@@ -71,7 +71,6 @@ export const usePackageManagerStore = defineStore(
         progress: (message) => console.log(message),
       });
       const hash = result[0].hash;
-      console.log('✎: [line 74][package-manager.store.ts] result: ', result);
 
       const { tree: treeHash } = await repo.loadCommit(hash);
 

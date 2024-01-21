@@ -146,10 +146,6 @@ export function useMainCommands() {
         if (!completionStore.opened) {
           return;
         }
-        console.log(
-          '✎: [line 142][main-commands.ts] completionStore.selectedCandidate: ',
-          completionStore.selectedCandidate
-        );
         completionStore.executeCandidate(completionStore.selectedCandidate);
       },
     },
