@@ -1,33 +1,20 @@
 <template>
   <div :key="extension.manifest.name" class="extension">
     <div class="header">
-      <div class="icon">
-        <img
-          v-if="extension.manifest.icon"
-          :alt="'extension.manifest.name' + ' icon'"
-          :src="extension.manifest.icon"
-        />
-        <q-icon v-else name="extension" size="3rem"></q-icon>
-      </div>
       <div class="info">
         <h4 class="text-h4 title">
+          <img
+            v-if="extension.manifest.icon"
+            :alt="'extension.manifest.name' + ' icon'"
+            :src="extension.manifest.icon"
+          />
+          <q-icon v-else name="extension" size="2.5rem"></q-icon>
           {{ extension.manifest.name }} {{ extension.manifest.version }}
-          <div class="actions">
-            <action-btn
-              icon="delete"
-              theme="red"
-              @click="extensionsStore.deleteExtension(extension)"
-              >{{ $t('delete') }}</action-btn
-            >
-            <action-btn
-              :icon="extension.active ? 'cancel' : 'download_for_offline'"
-              :theme="extension.active ? 'red' : 'magenta'"
-              @click="toggleExtensionStatus"
-              >{{ extension.active ? $t('disable') : $t('enable') }}</action-btn
-            >
-          </div>
         </h4>
-        <div class="source">
+        <div
+          v-if="extension.manifest.author || extension.manifest.source"
+          class="source"
+        >
           <span class="author">{{ extension.manifest.author }}</span>
           <a
             class="author link"
@@ -37,6 +24,20 @@
           >
         </div>
         <div class="description">{{ extension.manifest.description }}</div>
+        <div class="actions">
+          <action-btn
+            icon="delete"
+            theme="red"
+            @click="extensionsStore.deleteExtension(extension)"
+            >{{ $t('delete') }}</action-btn
+          >
+          <action-btn
+            :icon="extension.active ? 'cancel' : 'download_for_offline'"
+            :theme="extension.active ? 'red' : 'magenta'"
+            @click="toggleExtensionStatus"
+            >{{ extension.active ? $t('disable') : $t('enable') }}</action-btn
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -78,28 +79,24 @@ const toggleExtensionStatus = async () => {
   }
 }
 .header {
-  @include flexify(row, flex-start, flex-start);
-
   gap: var(--gap-md);
 
   .info {
     @include flexify(column, flex-start, flex-start);
 
-    gap: var(--gap-xs);
+    gap: var(--gap-md);
     width: 100%;
   }
 
   .title {
     color: var(--magenta);
 
-    @include flexify(row, space-between);
+    @include flexify(row, flex-start, center);
+    gap: var(--gap-md);
     width: 100%;
-  }
 
-  @include mobile {
-    .title {
-      @include flexify(column, center, flex-start);
-      gap: var(--gap-md);
+    .q-icon {
+      color: var(--magenta);
     }
   }
 
