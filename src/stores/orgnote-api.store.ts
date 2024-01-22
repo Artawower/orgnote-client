@@ -70,6 +70,11 @@ const useUI = (
 ): OrgNoteApi['ui'] => {
   const initialTheme = getCssTheme(Object.keys(ThemeVariable));
 
+  const removeStyles = (scopeName: string) => {
+    const styleEl = document.getElementById(scopeName);
+    styleEl?.remove();
+  };
+
   return {
     applyTheme: (theme) => applyCSSVariables(theme),
     setThemeByMode: async (themeName?: string) =>
@@ -78,8 +83,16 @@ const useUI = (
       settingsStore.setDarkTheme(themeName),
     setLightTheme: async (themeName?: string) =>
       settingsStore.setLightTheme(themeName),
-    applyStyles: (styles) => applyCSSVariables(styles),
+    applyCssVariables: (styles) => applyCSSVariables(styles),
     resetTheme: () => resetCSSVariables(initialTheme),
+    applyStyles: (scopeName, styles) => {
+      removeStyles(scopeName);
+      const headerStyleEl = document.createElement('style');
+      headerStyleEl.setAttribute('id', scopeName);
+      headerStyleEl.innerHTML = styles;
+      document.head.appendChild(headerStyleEl);
+    },
+    removeStyles,
   };
 };
 

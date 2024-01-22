@@ -18,10 +18,14 @@ export interface OrgNoteApi {
   };
   ui: {
     applyTheme: (theme: { [key in ThemeVariable]: string | number }) => void;
-    applyStyles: (styles: { [key in CSSVariable]: string | number }) => void;
+    applyCssVariables: (styles: {
+      [key in CSSVariable]: string | number;
+    }) => void;
     setThemeByMode: (themeName?: string) => void;
     setDarkTheme: (themeName?: string) => void;
     setLightTheme: (themeName?: string) => void;
+    applyStyles: (scopeName: string, styles: string) => void;
+    removeStyles: (scopeName: string) => void;
     resetTheme: () => void;
   };
   interaction: {
