@@ -7,7 +7,7 @@ import {
 import { Subject } from 'rxjs';
 
 export class ClientWorkerConnection<
-  Actions
+  Actions extends { type: string }
 > extends BaseWorkerConnection<Actions> {
   public readonly error$: Subject<MessageEvent> = new Subject();
 

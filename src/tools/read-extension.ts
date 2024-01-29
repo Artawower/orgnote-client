@@ -15,7 +15,7 @@ export async function readExtensionFromString(
 
   const module = `data:text/javascript,${rawContent}`;
 
-  const m = (await import(module)) as {
+  const m = (await import(/* @vite-ignore */ module)) as {
     default: Extension;
     manifest: ExtensionManifest;
   };
@@ -34,7 +34,7 @@ export async function readExtensionFromString(
 export async function importExtension(content: string): Promise<Extension> {
   const module = `data:text/javascript,${content}`;
 
-  const m = (await import(module)) as {
+  const m = (await import(/* @vite-ignore */ module)) as {
     default: Extension;
     manifest: ExtensionManifest;
   };

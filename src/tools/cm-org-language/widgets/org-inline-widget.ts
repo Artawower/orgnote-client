@@ -1,8 +1,8 @@
 import { BaseOrgWidget } from './base-org-widget';
-import { EmbeddedWidget, InlineEmbeddedWidget } from './widget.model';
 import { Range } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
+import { EmbeddedWidget, InlineEmbeddedWidget } from 'src/api';
 
 export class OrgInlineWidget extends BaseOrgWidget {
   private widget: EmbeddedWidget;

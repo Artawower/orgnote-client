@@ -3,8 +3,8 @@
     class="editor-wrapper center-container"
     :class="{
       readonly,
-      'hide-special-symbols': !config?.showSpecialSymbols,
-      'show-property-drawer': config?.showPropertyDrawer,
+      'hide-special-symbols': !props.config?.showSpecialSymbols,
+      'show-property-drawer': props.config?.showPropertyDrawer,
     }"
   >
     <div id="editor" ref="editor"></div>

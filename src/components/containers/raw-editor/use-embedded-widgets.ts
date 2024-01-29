@@ -1,7 +1,5 @@
 import { srcBlockViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
-import { useDynamicComponent } from 'src/hooks';
-import { textToKebab } from 'src/tools';
 import {
   EmbeddedWidget,
   EmbeddedWidgetBuilder,
@@ -10,7 +8,9 @@ import {
   MultilineEmbeddedWidgets,
   WidgetBuilder,
   WidgetBuilderParams,
-} from 'src/tools/cm-org-language/widgets';
+} from 'src/api';
+import { useDynamicComponent } from 'src/hooks';
+import { textToKebab } from 'src/tools';
 import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 
 import { Component } from 'vue';

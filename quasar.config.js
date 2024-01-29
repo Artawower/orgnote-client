@@ -91,10 +91,13 @@ module.exports = configure(function (ctx) {
 
       vitePlugins: [
         [
-          // TODO: master check types
-          // checker({
-          //   typescript: true,
-          // }),
+          checker({
+            vueTsc: {
+              root: './',
+              tsconfigPath: './tsconfig.json',
+              path: './src',
+            }
+          }),
           '@intlify/vite-plugin-vue-i18n',
           {
             // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`

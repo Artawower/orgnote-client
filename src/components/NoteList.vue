@@ -27,7 +27,7 @@
               :show-author="!selectable"
               :selectable="selectable"
               :height="height"
-              @selected="(selected) => selectNote(note as Note, selected)"
+              @selected="(selected) => selectNote(item as Note, selected)"
             ></public-note-preview>
           </div>
         </template>

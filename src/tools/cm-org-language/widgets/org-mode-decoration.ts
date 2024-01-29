@@ -1,5 +1,4 @@
 import { OrgInlineWidget } from './org-inline-widget';
-import { InlineEmbeddedWidgets } from './widget.model';
 import { Range } from '@codemirror/state';
 import {
   Decoration,
@@ -9,6 +8,7 @@ import {
   ViewUpdate,
 } from '@codemirror/view';
 import { OrgNode, walkTree } from 'org-mode-ast';
+import { InlineEmbeddedWidgets } from 'src/api';
 
 class OrgModeDecorationPlugin {
   static init(

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Command } from 'src/models';
+import { Command } from 'src/api';
 
 import { ref } from 'vue';
 

@@ -69,6 +69,9 @@ export const orgnoteApiSchema = z.object({
     darkThemeName: z.optional(z.string()),
     lightThemeName: z.optional(z.string()),
   }),
+  extensions: z.object({
+    sources: z.array(z.string()),
+  }),
 });
 
 export type OrgNoteConfig = z.infer<typeof orgnoteApiSchema>;
