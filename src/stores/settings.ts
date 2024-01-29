@@ -34,6 +34,9 @@ export const useSettingsStore = defineStore(
         darkThemeName: null,
         lightThemeName: null,
       },
+      extensions: {
+        sources: ['https://github.com/Artawower/orgnote-extensions'],
+      },
     });
 
     const setLocale = (lc: string) => {

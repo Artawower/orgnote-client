@@ -1,7 +1,7 @@
 interface DecoratedFunction {
-  before: Function;
-  after: Function;
-  fn: Function;
+  before: () => void;
+  after: () => void;
+  fn: () => void;
 }
 
 // TODO: finish this black magic -_-
@@ -13,15 +13,15 @@ export function useWatcherHook() {
   const withScope = (scopeName: string) => {
     initScope(scopeName);
     return {
-      register: (funcName: string, fn: Function): void => {
+      register: (funcName: string, fn: () => void): void => {
         const before = () => {};
         const after = () => {};
-        const decoratedFn = () => {
-          before();
-          fn();
-          after();
+        const fns = {
+          before,
+          fn,
+          after,
         };
-        scopedFunctions[scopeName][funcName] = decoratedFn;
+        scopedFunctions[scopeName][funcName] = fns;
       },
     };
   };

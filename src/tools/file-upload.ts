@@ -8,8 +8,8 @@ export function uploadFiles(params?: {
   input.accept = params?.accept;
   input.style.width = '0';
   input.style.height = '0';
-  input.webkitdirectory = !!params?.multiple;
   input.directory = !!params?.multiple;
+  input.webkitdirectory = !!params?.multiple;
   document.body.appendChild(input);
 
   const abortController = new AbortController();

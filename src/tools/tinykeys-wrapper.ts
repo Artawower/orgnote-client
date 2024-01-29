@@ -1,4 +1,4 @@
-import tinykeys from 'tinykeys';
+import { tinykeys } from 'tinykeys';
 
 /*
  * This is solution for allowing enable/disable keybinding inside input fields

@@ -74,7 +74,7 @@ import {
   useFileManagerStore,
   useSidebarStore,
 } from 'src/stores';
-import { FlatTree, callKeyboard, convertFlatTreeToFileTree } from 'src/tools';
+import { FlatTree, convertFlatTreeToFileTree, revealKeyboard } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -106,7 +106,7 @@ const deleteFile = () => {
 const createFolder = async () => {
   await fileManagerStore.createFolder(props.fileNode);
   emits('expand', props.fileNode.id);
-  callKeyboard();
+  revealKeyboard();
 };
 
 const createFile = async () => {
@@ -139,7 +139,7 @@ const actionMenuRef = ref<QMenu>();
 const editName = () => {
   actionMenuRef.value?.hide();
   editMode.value = true;
-  callKeyboard();
+  revealKeyboard();
 };
 
 const confirmEdit = async () => {

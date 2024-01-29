@@ -18,7 +18,7 @@
 
 <script lang="ts" setup>
 import { EditorView } from 'codemirror';
-import { Command, CommandHandlerParams } from 'src/models';
+import { Command, CommandHandlerParams } from 'src/api';
 import { useCommandsStore } from 'src/stores';
 
 import { ref } from 'vue';

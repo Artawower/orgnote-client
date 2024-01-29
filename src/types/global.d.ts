@@ -21,6 +21,15 @@ declare global {
     };
   }
 
+  interface HTMLInputElement {
+    webkitdirectory: boolean;
+    directory: boolean;
+  }
+
+  interface NamedNodeMap {
+    autocomplete?: string;
+  }
+
   const device: {
     available: boolean;
     cordova: string;

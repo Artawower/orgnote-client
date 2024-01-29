@@ -1,6 +1,6 @@
-import { CommonEmbeddedWidget } from './widget.model';
 import { EditorView, WidgetType } from '@codemirror/view';
 import { OrgNode, walkTree } from 'org-mode-ast';
+import { CommonEmbeddedWidget } from 'src/api';
 
 export class BaseOrgWidget extends WidgetType {
   constructor(

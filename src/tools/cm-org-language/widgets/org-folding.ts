@@ -1,5 +1,4 @@
 import { OrgInlineWidget } from './org-inline-widget';
-import { InlineEmbeddedWidget } from './widget.model';
 import { foldEffect, unfoldEffect } from '@codemirror/language';
 import { Range, StateEffect, StateField } from '@codemirror/state';
 import {
@@ -9,6 +8,7 @@ import {
   ViewUpdate,
 } from '@codemirror/view';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
+import { InlineEmbeddedWidget } from 'src/api';
 
 const getFoldingWidgets = (
   getOrgNodeTree: () => OrgNode,

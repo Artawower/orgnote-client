@@ -4,7 +4,7 @@ import { interval, takeUntil } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
 export class WorkerConnection<
-  T = unknown
+  T extends { type: string; [key: string]: unknown }
 > extends BaseWorkerConnection<T> {
   public readonly id: string = uuid();
 
@@ -27,9 +27,9 @@ export class WorkerConnection<
       .subscribe(() => {
         const timeoutId = setTimeout(() => {
           this.closed$.next();
-          this.port.close();
+          // this.worker.close();
         }, this.keepAliveTimeout);
-        this.port.postMessage(new KeepAliveAction(timeoutId));
+        this.worker.postMessage(new KeepAliveAction(timeoutId));
       });
   }
 
