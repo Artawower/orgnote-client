@@ -1,5 +1,5 @@
 import { NodeType, OrgNode } from 'org-mode-ast';
-import { ViewUpdateSchema } from 'src/tools/cm-org-language/widgets';
+import { ViewUpdateSchema } from 'src/api';
 
 // orgNode is srcHeader node
 export const srcHeaderViewUpdater = (

@@ -1,7 +1,7 @@
 <template>
   <div class="completion-results fit no-wrap">
     <prevent-ios-touch>
-      <completion-input />
+      <completion-inp />
     </prevent-ios-touch>
     <q-virtual-scroll
       v-if="completionMode === 'choice'"
@@ -19,12 +19,10 @@
         :index="index"
         :height="itemHeight"
       >
-        <template
-          v-slot="{ item, index }: { item: CompletionCandidate, index: number }"
-        >
+        <template v-slot="{ item, index }">
           <keep-alive>
             <completion-result-item
-              :item="item"
+              :item="item as CompletionCandidate"
               :index="index"
               :selected="index === selectedIndex"
             />
@@ -55,7 +53,7 @@ import { onMounted, ref, watch } from 'vue';
 
 import CompletionResultItem from './CompletionResultItem.vue';
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
-import CompletionInput from 'src/components/containers/CompletionInput.vue';
+import CompletionInp from 'src/components/containers/CompletionInput.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
 
 const itemHeight = 70;

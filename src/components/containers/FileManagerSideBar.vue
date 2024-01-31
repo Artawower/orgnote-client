@@ -38,7 +38,7 @@
 import { QTree } from 'quasar';
 import { useFileManagerStore } from 'src/stores';
 import { useNotesImportStore } from 'src/stores/import-store';
-import { callKeyboard, uploadFiles } from 'src/tools';
+import { revealKeyboard, uploadFiles } from 'src/tools';
 
 import { ref, watch } from 'vue';
 
@@ -51,7 +51,7 @@ import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
 const fileManagerStore = useFileManagerStore();
 const createFolder = () => {
   fileManagerStore.createFolder();
-  callKeyboard();
+  revealKeyboard();
 };
 
 const search = ref<string>('');

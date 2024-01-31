@@ -68,10 +68,7 @@ const onDrop = async (e: DragEvent) => {
   emits('dropped');
   dragCount.value = 0;
   e.preventDefault();
-  // DEBUG: delete
-  console.time('File uploading');
   const extracedFileEntries = await extractFiles(e.dataTransfer?.items);
-  console.timeEnd('File uploading');
   emits('uploaded', extracedFileEntries);
 };
 
@@ -87,7 +84,6 @@ const dragLeave = (e: DragEvent) => {
 window.addEventListener(
   'dragover',
   function (e) {
-    e = e || event;
     e.preventDefault();
   },
   false
@@ -95,7 +91,6 @@ window.addEventListener(
 window.addEventListener(
   'drop',
   function (e) {
-    e = e || event;
     e.preventDefault();
   },
   false

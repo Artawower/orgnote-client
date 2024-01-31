@@ -74,11 +74,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       withMetaInfo(noteOrgData.value)
   );
 
-  // TODO: master fix type
   const note = computed(
     (): Note =>
       orgTree.value && {
-        content: orgTree.value,
+        content: orgTree.value.rawValue,
         id: orgTree.value.meta.id,
         filePath: filePath.value ?? [
           generateFileName(orgTree.value.meta.title),

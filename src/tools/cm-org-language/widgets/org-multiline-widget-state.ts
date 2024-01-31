@@ -1,8 +1,8 @@
 import { OrgMultilineWidget } from './org-multiline-widget';
-import { EmbeddedWidgetBuilder, MultilineEmbeddedWidget } from './widget.model';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
+import { EmbeddedWidgetBuilder, MultilineEmbeddedWidget } from 'src/api';
 
 export interface AddWidgetEffect {
   orgNode: OrgNode;

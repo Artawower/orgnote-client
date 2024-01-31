@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "strictNullChecks": false,
+    "skipLibCheck": true,
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
@@ -16,5 +17,6 @@
     },
     "lib": ["DOM", "DOM.iterable"]
   },
+  "exclude": ["node_modules", "./node_modules", "./node_modules/*", "dist"],
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }
