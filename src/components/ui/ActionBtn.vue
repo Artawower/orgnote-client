@@ -70,7 +70,6 @@ const props = withDefaults(
 const { icon, activeIcon, loading } = toRefs(props);
 
 const currentIcon = computed(() => {
-  fired && activeIcon ? activeIcon : icon;
   if (loading.value) {
     return 'sync';
   }

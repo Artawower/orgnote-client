@@ -31,7 +31,7 @@ export async function readExtensionFromString(
   };
 }
 
-export async function importExtension(content: string): Promise<Extension> {
+export async function compileExtension(content: string): Promise<Extension> {
   const module = `data:text/javascript,${content}`;
 
   const m = (await import(/* @vite-ignore */ module)) as {

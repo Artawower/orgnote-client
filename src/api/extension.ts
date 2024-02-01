@@ -6,19 +6,18 @@ export interface ExtensionManifest {
   version: string;
   category: 'theme' | 'extension' | 'language pack' | 'other';
   /* OrgNote api semver, 0.13.4 for example */
-  apiVersion: string;
+  apiVersion?: string;
   author?: string;
   description?: string;
   keywords?: string[];
   // Repository url
-  source?: string;
+  sourceType: 'git' | 'file';
   /* Default value is README.org */
   readmeFilePath?: string;
   /* WIP */
   permissions?: Array<'files' | 'personal info' | '*' | 'third party'>;
   reloadRequired?: boolean;
-  /* WIP */
-  git?: string;
+  sourceUrl?: string;
   sponsor?: string[];
   development?: boolean;
   icon?: string;
@@ -33,11 +32,12 @@ export interface Extension {
 
 export interface ExtensionMeta {
   manifest: ExtensionManifest;
+  uploaded?: boolean;
   active?: boolean;
 }
 
 export interface StoredExtension extends ExtensionMeta {
-  module: string;
+  module?: string;
 }
 
 export interface ActiveExtension extends ExtensionMeta {

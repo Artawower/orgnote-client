@@ -1,17 +1,17 @@
 import { NoteGraph } from 'src/models';
 
-export enum WorkerEventType {
+export enum GraphWorkerEvent {
   UpdateGraph = 'update graph',
   GraphUpdated = 'graph updated',
 }
 
-export class UpdateGraphAction {
-  public readonly type = WorkerEventType.UpdateGraph;
+export class UpdateGraph {
+  public readonly type = GraphWorkerEvent.UpdateGraph;
 }
 
-export class GraphUpdatedAction {
-  public readonly type = WorkerEventType.GraphUpdated;
+export class GraphUpdated {
+  public readonly type = GraphWorkerEvent.GraphUpdated;
   constructor(public readonly payload: NoteGraph) {}
 }
 
-export type WorkerAction = UpdateGraphAction | GraphUpdatedAction;
+export type GraphAction = UpdateGraph | GraphUpdated;

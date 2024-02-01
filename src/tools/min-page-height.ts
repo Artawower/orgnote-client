@@ -2,7 +2,7 @@ import { useQuasar } from 'quasar';
 
 export function resetPageMinHeight(): Record<string, string> {
   const $q = useQuasar();
-  if ($q.platform.is.desktop) {
+  if ($q && $q.platform.is.desktop) {
     return;
   }
   return {

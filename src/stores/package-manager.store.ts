@@ -10,16 +10,46 @@ import {
   IncorrectExtensionError,
   readExtensionFromString,
   readFileFromRepo,
+  refreshPackages,
 } from 'src/tools';
 
 import { ref } from 'vue';
+import { useSettingsStore } from './settings';
 
 export const usePackageManagerStore = defineStore(
   'package-manager',
   () => {
     const sources = ref<Set<string>>();
     const notifications = useNotifications();
+    const extensionStore = useExtensionsStore();
     const loading = ref(false);
+    const { config } = useSettingsStore();
+
+    const autoRefreshTimer = 1200000; // 20 minutes
+    // TODO: refactor/types return for production mode
+    // const initialRefreshDelay = 60000; // 60 seconds
+    console.log('REFRESH PACKAGE START');
+    const initialRefreshDelay = 3000; // 5 sec
+    const refreshSources = async () => {
+      if (!config.extensions.sources) {
+        return;
+      }
+      const packages = refreshPackages(config.extensions.sources);
+      for await (const p of packages) {
+        if (extensionStore.isExtensionExist(p.name)) {
+          continue;
+        }
+        await extensionStore.uploadExtension({
+          manifest: p,
+          uploaded: null,
+          module: null,
+        });
+      }
+      console.log('REFRESH PACKAGE END');
+    };
+
+    setTimeout(refreshSources, initialRefreshDelay);
+    setInterval(refreshSources, autoRefreshTimer);
 
     const addSource = async (source: string) => {
       const normalizedSource = source;
@@ -27,19 +57,14 @@ export const usePackageManagerStore = defineStore(
       await loadSource(normalizedSource);
     };
 
-    const extensionStore = useExtensionsStore();
-
     const removeSource = async (source: string) => {
       sources.value?.delete(source);
-    };
-
-    const refreshSources = () => {
-      // TODO: iterate over all source al pull content!
     };
 
     // const fs = new FS('extensions');
     // const sourceNameRegexp = /https:\/\/.+\/(.+\/.+)/;
     // const sourceNameRegexp = /git.+:(.+\/.+)/;
+    // TODO: master add loading status for each extension
     const loadSource = async (source: string) => {
       const sourceErrors = validatePackageSource(source);
       if (sourceErrors) {
@@ -94,8 +119,8 @@ export const usePackageManagerStore = defineStore(
       loading.value = false;
     };
 
-    const validatePackageSource = (source: string): string => {
-      if (!source.startsWith('http')) {
+    const validatePackageSource = (source?: string): string => {
+      if (!source?.startsWith('http')) {
         return 'Source must be git repository';
       }
     };

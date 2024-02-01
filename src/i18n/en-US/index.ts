@@ -173,4 +173,5 @@ export default {
   'add from git': 'add from git',
   enable: 'enable',
   disable: 'disable',
+  download: 'download',
 };

@@ -7,7 +7,7 @@ import {
   StoredExtension,
 } from 'src/api/extension';
 import { repositories } from 'src/repositories';
-import { importExtension } from 'src/tools';
+import { compileExtension } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
@@ -30,7 +30,7 @@ export const useExtensionsStore = defineStore('extension', () => {
 
     activeExtensions.value = await Promise.all(
       storedExtensions.map(async (ext) => {
-        const module = await importExtension(ext.module);
+        const module = await compileExtension(ext.module);
         module.onMounted(orgNoteApi);
         return {
           active: true,
@@ -45,10 +45,13 @@ export const useExtensionsStore = defineStore('extension', () => {
   const deleteExtension = async (ext: ExtensionMeta) => {
     await disableExtension(ext.manifest.name);
     await repositories.extensions.delete(ext.manifest.name);
-    extensions.value = extensions.value.filter(
-      (e) => e.manifest.name !== ext.manifest.name
-    );
-    await packageManager.removeSource(ext.manifest.source);
+    extensions.value = extensions.value.map((e) => {
+      if (e.manifest.name !== ext.manifest.name) {
+        return e;
+      }
+      return { ...e, uploaded: false };
+    });
+    await packageManager.removeSource(ext.manifest.sourceUrl);
   };
 
   const disableExtension = async (extensionName: string) => {
@@ -101,15 +104,20 @@ export const useExtensionsStore = defineStore('extension', () => {
     extensionName: string
   ): Promise<ExtensionMeta> => {
     const ext = await repositories.extensions.getExtension(extensionName);
-    const module = await importExtension(ext.module);
+    await importExtension(ext);
+    return ext;
+  };
+
+  const importExtension = async (ext: StoredExtension): Promise<void> => {
+    const module = await compileExtension(ext.module);
     module.onMounted(orgNoteApi);
     activeExtensions.value.push({
       active: true,
-      manifest: ext.manifest,
+      uploaded: true,
+      ...ext,
       module,
     });
-    await setExtensionActiveStatus(extensionName, true);
-    return ext;
+    await setExtensionActiveStatus(ext.manifest.name, true);
   };
 
   const enableThemeMaybe = (ext: ExtensionMeta): void => {
@@ -128,12 +136,11 @@ export const useExtensionsStore = defineStore('extension', () => {
     extensions.value = extensions.value.filter(
       (e) => e.manifest.name !== ext.manifest.name
     );
-
-    extensions.value.push({
-      active: false,
-      manifest: ext.manifest,
-    });
+    extensions.value.push(ext);
     await repositories.extensions.upsertExtensions([ext]);
+    if (ext.module) {
+      await importExtension(ext);
+    }
   };
 
   const setExtensionActiveStatus = async (
@@ -144,6 +151,7 @@ export const useExtensionsStore = defineStore('extension', () => {
     extensions.value = extensions.value.map((ext) => {
       if (ext.manifest.name === extensionName) {
         ext.active = status;
+        ext.uploaded = true;
       }
       return ext;
     });
@@ -185,6 +193,10 @@ export const useExtensionsStore = defineStore('extension', () => {
     await deactivateExtension(themeExtension.manifest.name);
   };
 
+  const isExtensionExist = (extensionName: string): boolean => {
+    return !!extensions.value.find((e) => e.manifest.name === extensionName);
+  };
+
   return {
     extensions,
     activeExtensions,
@@ -198,6 +210,7 @@ export const useExtensionsStore = defineStore('extension', () => {
     deactivateThemeExtension,
     uploadExtension,
     deleteExtension,
+    isExtensionExist,
 
     filteredExtensions,
     searchQuery,

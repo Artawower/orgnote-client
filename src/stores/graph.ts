@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { GraphNoteNode, NoteGraph } from 'src/models';
 import {
-  GraphUpdatedAction,
-  UpdateGraphAction,
-  WorkerEventType,
-  newGraphSwClient,
+  GraphUpdated,
+  UpdateGraph,
+  GraphWorkerEvent,
+  newGraphWorker,
 } from 'src/workers';
 
 import { computed, ref } from 'vue';
@@ -14,13 +14,13 @@ export const useGraphStore = defineStore('graph', () => {
   const loading = ref<boolean>(false);
   const error = ref<Error>(null);
 
-  const connection = newGraphSwClient();
+  const connection = newGraphWorker();
   const graphLinks = ref<{ [id: string]: string[] }>({});
 
   const rebuildGraph = () => {
-    connection.emit(new UpdateGraphAction());
+    connection.emit(new UpdateGraph());
     connection
-      .watchMessage<GraphUpdatedAction>(WorkerEventType.GraphUpdated)
+      .watchMessage<GraphUpdated>(GraphWorkerEvent.GraphUpdated)
       .subscribe((data) => {
         graph.value = data.payload;
         getGraphLinks();

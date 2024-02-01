@@ -12,26 +12,37 @@
           {{ extension.manifest.name }} {{ extension.manifest.version }}
         </h4>
         <div
-          v-if="extension.manifest.author || extension.manifest.source"
+          v-if="extension.manifest.author || extension.manifest.sourceUrl"
           class="source"
         >
           <span class="author">{{ extension.manifest.author }}</span>
           <a
             class="author link"
-            :href="extension.manifest.source"
+            :href="extension.manifest.sourceUrl"
             target="_blank"
-            >{{ extension.manifest.source }}</a
+            >{{ extension.manifest.sourceUrl }}</a
           >
         </div>
         <div class="description">{{ extension.manifest.description }}</div>
         <div class="actions">
           <action-btn
+            v-if="!extension.uploaded"
+            icon="delete"
+            theme="magenta"
+            :loading="packageManager.loading"
+            :disabled="packageManager.loading"
+            @click="packageManager.addSource(extension.manifest.sourceUrl)"
+            >{{ $t('download') }}</action-btn
+          >
+          <action-btn
+            v-if="extension.uploaded"
             icon="delete"
             theme="red"
             @click="extensionsStore.deleteExtension(extension)"
             >{{ $t('delete') }}</action-btn
           >
           <action-btn
+            v-if="extension.uploaded"
             :icon="extension.active ? 'cancel' : 'download_for_offline'"
             :theme="extension.active ? 'red' : 'magenta'"
             @click="toggleExtensionStatus"
@@ -48,6 +59,7 @@ import { ExtensionMeta } from 'src/api/extension';
 import { useExtensionsStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { usePackageManagerStore } from 'src/stores/package-manager.store';
 
 const props = defineProps<{
   extension: ExtensionMeta;
@@ -63,6 +75,8 @@ const toggleExtensionStatus = async () => {
   }
   await extensionsStore.enableExtension(props.extension.manifest.name);
 };
+
+const packageManager = usePackageManagerStore();
 </script>
 
 <style lang="scss" scoped>
