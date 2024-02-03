@@ -1,4 +1,4 @@
-import { ExtensionManifest } from 'src/api/extension';
+import { ExtensionManifest } from 'src/api';
 import { initGitTextFileLoader } from './git';
 
 const recipeDir = 'recipes';

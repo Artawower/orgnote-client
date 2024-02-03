@@ -15,7 +15,9 @@
           v-if="extension.manifest.author || extension.manifest.sourceUrl"
           class="source"
         >
-          <span class="author">{{ extension.manifest.author }}</span>
+          <span v-if="extension.manifest.author" class="author"
+            >[{{ extension.manifest.author }}]
+          </span>
           <a
             class="author link"
             :href="extension.manifest.sourceUrl"
@@ -55,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ExtensionMeta } from 'src/api/extension';
+import { ExtensionMeta } from 'src/api';
 import { useExtensionsStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';

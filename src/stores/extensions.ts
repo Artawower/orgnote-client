@@ -1,11 +1,7 @@
 import { useOrgNoteApiStore } from './orgnote-api.store';
 import { usePackageManagerStore } from './package-manager.store';
 import { defineStore } from 'pinia';
-import {
-  ActiveExtension,
-  ExtensionMeta,
-  StoredExtension,
-} from 'src/api/extension';
+import { ActiveExtension, ExtensionMeta, StoredExtension } from 'src/api';
 import { repositories } from 'src/repositories';
 import { compileExtension } from 'src/tools';
 

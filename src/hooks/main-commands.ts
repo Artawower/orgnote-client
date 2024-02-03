@@ -1,5 +1,9 @@
-import { Command, CommandHandlerParams, OrgNoteApi } from 'src/api';
-import { ExtensionMeta } from 'src/api/extension';
+import {
+  ExtensionMeta,
+  Command,
+  CommandHandlerParams,
+  OrgNoteApi,
+} from 'src/api';
 import {
   useCommandsStore,
   useCompletionStore,

@@ -6,7 +6,7 @@ import {
   CompletionCandidate,
   CompletionConfigs,
   CompletionSearchResult,
-} from 'src/api/completion';
+} from 'src/api';
 import { debounce } from 'src/tools';
 
 import { computed, ref, watch } from 'vue';

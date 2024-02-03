@@ -26,10 +26,8 @@ export const usePackageManagerStore = defineStore(
     const { config } = useSettingsStore();
 
     const autoRefreshTimer = 1200000; // 20 minutes
-    // TODO: refactor/types return for production mode
-    // const initialRefreshDelay = 60000; // 60 seconds
-    console.log('REFRESH PACKAGE START');
-    const initialRefreshDelay = 3000; // 5 sec
+    const initialRefreshDelay = 60000; // 60 seconds
+    // const initialRefreshDelay = 3000; // 5 sec
     const refreshSources = async () => {
       if (!config.extensions.sources) {
         return;
@@ -45,7 +43,6 @@ export const usePackageManagerStore = defineStore(
           module: null,
         });
       }
-      console.log('REFRESH PACKAGE END');
     };
 
     setTimeout(refreshSources, initialRefreshDelay);

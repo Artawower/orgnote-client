@@ -1,7 +1,7 @@
 import { migrator } from './migrator';
 import { BaseRepository } from './repository';
 import Dexie from 'dexie';
-import { ExtensionMeta, StoredExtension } from 'src/api/extension';
+import { ExtensionMeta, StoredExtension } from 'src/api';
 
 export class ExtensionRepository extends BaseRepository {
   public static storeName = 'extensions';

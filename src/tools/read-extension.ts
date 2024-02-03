@@ -1,8 +1,4 @@
-import {
-  Extension,
-  ExtensionManifest,
-  StoredExtension,
-} from 'src/api/extension';
+import { Extension, ExtensionManifest, StoredExtension } from 'src/api';
 
 export async function readExtension(file: File): Promise<StoredExtension> {
   return await readExtensionFromString(await file.text());

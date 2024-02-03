@@ -6,8 +6,6 @@
   "author": "OrgNote <app.orgnote@gmail.com>",
   "private": true,
   "scripts": {
-    "codegen:css-doc": "node collect-css-variables.js --docs",
-    "codegen:css-types": "node collect-css-variables.js --types",
     "serve:ssr": "node dist/ssr/index.js",
     "dev:android": "quasar dev -m cordova -T android",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T android -- -d",
@@ -26,7 +24,6 @@
     "build:android:sign": "bun run build:android && bun run sign:android",
     "build:android": "env-cmd -f ./.env.prod quasar build -m android",
     "build:ios": "env-cmd -f ./.env.prod quasar build -m ios",
-    "codegen:api": "openapi-generator-cli generate",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .prettierignore",
     "test": "bun test",
@@ -58,6 +55,7 @@
     "katex": "0.16.9",
     "openapi-client-axios": "7.5.4",
     "org-mode-ast": "0.11.2",
+    "orgnote-api": "0.0.12",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.33",
@@ -75,7 +73,6 @@
   },
   "devDependencies": {
     "@intlify/vite-plugin-vue-i18n": "6.0.3",
-    "@openapitools/openapi-generator-cli": "2.9.0",
     "@quasar/app-vite": "1.7.3",
     "@quasar/vite-plugin": "1.6.0",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
