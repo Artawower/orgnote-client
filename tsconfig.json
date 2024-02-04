@@ -4,6 +4,7 @@
     "baseUrl": "./",
     "strictNullChecks": false,
     "skipLibCheck": true,
+    "moduleResolution": "node",
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],

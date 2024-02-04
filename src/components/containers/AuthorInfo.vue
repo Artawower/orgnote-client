@@ -14,12 +14,12 @@
 </template>
 
 <script lang="ts" setup>
-import { models_PublicUser } from 'src/generated';
+import { ModelsPublicUser } from 'src/generated/api';
 import { toRef } from 'vue';
 
 const props = defineProps<{
   // TODO: master convert to camelCase.
-  author: models_PublicUser;
+  author: ModelsPublicUser;
 }>();
 
 const author = toRef(props, 'author');
