@@ -74,6 +74,7 @@ async function initRepo(source: string): Promise<[GitRepo, RefChange]> {
     .with(fetchMixin, fetch);
 
   const repo = new Repo();
+  // TODO: pas proxy from configs
   const url = 'https://corsproxy.io/?' + encodeURIComponent(source);
   const result = await repo.fetch(url, 'refs/heads/*:refs/heads/*');
   return [repo, result?.[0]];

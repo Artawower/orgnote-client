@@ -2,7 +2,7 @@
   <div @click="openProfile" class="row cursor-pointer flex-center">
     <div class="q-mr-md">
       <q-avatar size="24px" class="q-mx-auto">
-        <img :src="author.avatarUrl" />
+        <img :src="author.avatarUrl" alt="avatr url" />
       </q-avatar>
     </div>
     <div class="col">
@@ -18,7 +18,6 @@ import { ModelsPublicUser } from 'src/generated/api';
 import { toRef } from 'vue';
 
 const props = defineProps<{
-  // TODO: master convert to camelCase.
   author: ModelsPublicUser;
 }>();
 

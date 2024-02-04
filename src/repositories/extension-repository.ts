@@ -7,7 +7,7 @@ export class ExtensionRepository extends BaseRepository {
   public static storeName = 'extensions';
 
   public static readonly migrations = migrator<StoredExtension>()
-    .v(4)
+    .v(5)
     .indexes(
       '++manifest.name, manifest.description, manifest.category, active, *manifest.keywords, manifest.sourceUrl'
     )
