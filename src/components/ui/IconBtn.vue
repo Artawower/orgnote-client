@@ -39,4 +39,8 @@ withDefaults(
     color: var(--icon-btn-hover-color);
   }
 }
+
+.q-icon {
+  color: inherit;
+}
 </style>

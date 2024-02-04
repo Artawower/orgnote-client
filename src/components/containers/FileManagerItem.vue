@@ -29,7 +29,7 @@
         name="add_box"
         :hoverable="false"
       />
-      <icon-btn @click.stop name="o_more_vert">
+      <icon-btn @click.stop name="o_more_vert" class="">
         <template v-slot:menu>
           <q-menu ref="actionMenuRef" max-width="300px">
             <q-list>
@@ -229,7 +229,6 @@ const isFileOpened = computed(() => {
   overflow: hidden;
 
   padding: 0;
-  color: var(--fg);
   margin: 0;
   border: none;
   width: 100%;
@@ -272,7 +271,7 @@ const isFileOpened = computed(() => {
   &:hover:not(.edit-mode),
   &.active:not(.edit-mode) {
     background-color: var(--file-item-bg-hover);
-    color: var(--file-item-color-hover);
+    color: var(--file-item-color-hover) !important;
 
     input {
       color: var(--white);
@@ -286,7 +285,11 @@ const isFileOpened = computed(() => {
       display: flex;
     }
 
-    .icon-btn {
+    .icon-btn,
+    .file-name {
+      color: var(--file-item-color-hover) !important;
+    }
+    .q-icon {
       color: var(--file-item-color-hover) !important;
     }
   }
