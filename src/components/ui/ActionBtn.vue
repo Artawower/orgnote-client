@@ -187,4 +187,11 @@ $colors: 'red', 'orange', 'green', 'teal', 'yellow', 'blue', 'dark-blue',
     transform: rotate(-359deg);
   }
 }
+
+button,
+.q-icon {
+  &[disabled='false'] {
+    cursor: pointer !important;
+  }
+}
 </style>
