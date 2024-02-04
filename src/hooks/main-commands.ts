@@ -211,13 +211,15 @@ function getSettingsCommands(
           placeholder: 'search themes',
           itemsGetter: (filter: string) => ({
             result: extensionStore.themes
-              .filter((t) =>
-                searchFilter(
-                  filter,
-                  t.manifest.name,
-                  t.manifest.description,
-                  t.manifest.category
-                )
+              .filter(
+                (t) =>
+                  t.uploaded &&
+                  searchFilter(
+                    filter,
+                    t.manifest.name,
+                    t.manifest.description,
+                    t.manifest.category
+                  )
               )
               .map((t) => ({
                 icon: 'palette',
