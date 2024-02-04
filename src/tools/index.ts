@@ -40,3 +40,4 @@ export * from './read-extension';
 export * from './case-converter';
 export * from './search-filter';
 export * from './git';
+export * from './package-manager';

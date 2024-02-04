@@ -1,10 +1,10 @@
-import { WorkerAction } from './graph.actions';
+import { GraphAction } from './graph.actions';
 import { ClientWorkerConnection } from './worker/client-worker-connection';
 
-export const newGraphSwClient = () => {
+export const newGraphWorker = () => {
   const worker = new Worker(new URL('./graph.worker.ts', import.meta.url), {
     type: 'module',
   });
-  const client = new ClientWorkerConnection<WorkerAction>(worker);
+  const client = new ClientWorkerConnection<GraphAction>(worker);
   return client;
 };

@@ -31,7 +31,7 @@
       <extension-preview
         v-for="ext of extensionsStore.filteredExtensions"
         :extension="ext"
-        :key="ext.manifest.name"
+        :key="ext.manifest.name + ext.uploaded"
       />
     </div>
   </q-page>

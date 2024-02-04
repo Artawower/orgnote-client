@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-bun run codegen:css-doc
-git add VARIABLES.org
-
 
 bun install --package-lock-only && git add bun.lockb

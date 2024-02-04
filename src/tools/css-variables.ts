@@ -1,5 +1,5 @@
 import { toKebabCase } from './case-converter';
-import { ThemeVariable } from 'src/api/theme-variables';
+import { ThemeVariable } from 'src/api';
 
 export function getCssVar(varName: string): string {
   const root = document.body;

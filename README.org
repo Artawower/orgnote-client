@@ -41,7 +41,9 @@ It's a proof of concept solution, in the future I have plan to migrate this repo
 * Connected links
 - [[https://github.com/Artawower/orgnote][Main repo]]
 - [[https://github.com/Artawower/orgnote/wiki][WIKI]] 
-- [[https://github.com/Artawower/orgnote-backend][Org Note backend]] 
+- [[https://github.com/Artawower/orgnote-backend][Org Note backend]]
+- [[https://github.com/Artawower/orgnote-extensions][List of extensions and themes]]
+- [[https://github.com/Artawower/orgnote-api][Create your own plugin!]]
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
 - [[https://quasar.dev/][Quasar]]  
 - [[./VARIABLES.org][List of all css variables for theme tooling]] 

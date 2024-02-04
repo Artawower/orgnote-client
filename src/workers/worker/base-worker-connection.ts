@@ -3,7 +3,7 @@ import { Observable, Subject, filter } from 'rxjs';
 
 export class BaseWorkerConnection<
   Actions extends { type: string },
-  WorkerEventType extends string = string
+  WorkerEventType extends string = string,
 > {
   public readonly closed$: Subject<void> = new Subject();
   public readonly message$: Subject<WorkerAction | Actions> = new Subject();

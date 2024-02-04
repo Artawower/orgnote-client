@@ -1,8 +1,7 @@
 import { useConfirmationModalStore } from './confirmation-modal';
 import { useCurrentNoteStore } from './current-note';
 import { useSettingsStore } from './settings';
-import { OrgNoteApi } from 'src/api';
-import { ThemeVariable } from 'src/api/theme-variables';
+import { OrgNoteApi, ThemeVariable } from 'src/api';
 import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
 import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
@@ -54,7 +53,7 @@ const useNavigation = (router: Router) => {
 const useCurrentNote = (): OrgNoteApi['currentNote'] => {
   const currentNoteStore = useCurrentNoteStore();
   return {
-    getCurrentNote: () => currentNoteStore.currentNote,
+    get: () => currentNoteStore.currentNote,
   };
 };
 

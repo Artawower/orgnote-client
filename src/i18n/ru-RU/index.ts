@@ -167,4 +167,5 @@ export default {
   'add from git': 'добавить из git',
   enable: 'включить',
   disable: 'выключить',
+  download: 'загрузить',
 };

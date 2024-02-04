@@ -1,10 +1,6 @@
 /// <reference lib="webworker" />
 import { repositories } from '../repositories/orgnote-database';
-import {
-  GraphUpdatedAction,
-  WorkerAction,
-  WorkerEventType,
-} from './graph.actions';
+import { GraphUpdated, GraphAction, GraphWorkerEvent } from './graph.actions';
 import {
   GraphNoteNode,
   NoteGraph,
@@ -48,16 +44,16 @@ function buildGraph(notes: NotePreview[]): NoteGraph {
 async function updateGraph() {
   const notes = await repositories.notes.getNotePreviews();
   const graph = buildGraph(notes);
-  postMessage(new GraphUpdatedAction(graph));
+  postMessage(new GraphUpdated(graph));
 }
 
 const messageHandlers: {
-  [key in WorkerEventType]?: (payload: WorkerAction) => Promise<void>;
+  [key in GraphWorkerEvent]?: (payload: GraphAction) => Promise<void>;
 } = {
-  [WorkerEventType.UpdateGraph]: updateGraph,
+  [GraphWorkerEvent.UpdateGraph]: updateGraph,
 };
 
 onmessage = async (e) => {
-  const { data } = e as { data: WorkerAction };
+  const { data } = e as { data: GraphAction };
   await messageHandlers[data.type]?.(data);
 };
