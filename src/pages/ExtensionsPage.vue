@@ -1,44 +1,47 @@
 <template>
-  <q-page>
-    <div class="search-header">
-      <search-input
-        v-model="extensionsStore.searchQuery"
-        :autofocus="true"
-        theme="heavy"
-      />
-    </div>
+  <div class="scroll-container">
+    <q-page :style-fn="resetPageMinHeight" class="center-container">
+      <div class="search-header">
+        <search-input
+          v-model="extensionsStore.searchQuery"
+          :autofocus="true"
+          theme="heavy"
+        />
+      </div>
 
-    <div class="actions">
-      <action-btn
-        @click="addSource"
-        icon="fab fa-git-alt"
-        size="lg"
-        :loading="packageManager.loading"
-      >
-        {{ $t('add from git') }}
-      </action-btn>
-      <action-btn
-        @click="uploadExtension"
-        icon="upload"
-        size="lg"
-        :loading="packageManager.loading"
-      >
-        {{ $t('upload') }}
-      </action-btn>
-    </div>
+      <div class="actions">
+        <action-btn
+          @click="addSource"
+          icon="fab fa-git-alt"
+          size="lg"
+          :loading="packageManager.loading"
+        >
+          {{ $t('add from git') }}
+        </action-btn>
+        <action-btn
+          @click="uploadExtension"
+          icon="upload"
+          size="lg"
+          :loading="packageManager.loading"
+        >
+          {{ $t('upload') }}
+        </action-btn>
+      </div>
 
-    <div class="extensions">
-      <extension-preview
-        v-for="ext of extensionsStore.filteredExtensions"
-        :extension="ext"
-        :key="ext.manifest.name + ext.uploaded"
-      />
-    </div>
-  </q-page>
+      <div class="extensions">
+        <extension-preview
+          v-for="ext of extensionsStore.filteredExtensions"
+          :extension="ext"
+          :key="ext.manifest.name + ext.uploaded"
+        />
+      </div>
+    </q-page>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { useCompletionStore } from 'src/stores';
+import { resetPageMinHeight } from 'src/tools';
 import { useExtensionsStore } from 'src/stores/extensions';
 import { usePackageManagerStore } from 'src/stores/package-manager.store';
 import { uploadFiles } from 'src/tools';
@@ -92,8 +95,8 @@ const addSource = async () => {
 }
 
 .q-page {
-  max-width: var(--content-max-width);
-  margin: auto;
+  max-height: none;
+  height: auto;
 }
 
 .actions {
@@ -101,5 +104,11 @@ const addSource = async () => {
 
   margin-top: var(--block-margin-md);
   gap: var(--gap-md);
+}
+
+/* TODO: master move to common style */
+.scroll-container {
+  overflow: auto;
+  height: calc(100svh - var(--top-bar-height));
 }
 </style>
