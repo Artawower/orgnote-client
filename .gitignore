@@ -31,3 +31,5 @@ src-cordova/www
 .env.prod
 local/*
 build-local.sh
+
+org-note-release-signed.aab

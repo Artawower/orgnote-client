@@ -29,7 +29,8 @@
           v-if="
             $q.screen.lt.sm &&
             !toolbarStore.showToolbar &&
-            (keyboardOpened || $q.platform.is.desktop)
+            (keyboardOpened || $q.platform.is.desktop) &&
+            route.name === RouteNames.RawEditor
           "
         />
       </q-page-container>
@@ -75,6 +76,8 @@ import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import TheHeader from 'src/components/containers/TheHeader.vue';
 import ToolBar from 'src/components/containers/ToolBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
+import { useRoute } from 'vue-router';
+import { RouteNames } from 'src/router/routes';
 
 const sidebarStore = useSidebarStore();
 
@@ -130,6 +133,8 @@ onBeforeMount(() => {
   extensionsStore.loadActiveExtensions();
   extensionsStore.loadExtensions();
 });
+
+const route = useRoute();
 </script>
 
 <style lang="scss" scoped>
