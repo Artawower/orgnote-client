@@ -171,6 +171,9 @@ body {
   // Inputs
   --input-height: 28px;
   --input-lg-height: 48px;
+
+  // Device-specific options
+  --standalone-bottom-padding: 24px;
 }
 
 @include light-mode {

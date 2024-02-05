@@ -8,7 +8,7 @@
       class="completion-input"
       v-model="filter"
       ref="completionInput"
-      autofocus
+      :autofocus="true"
       @blur="closeCompletionOnBlur"
       @keydown.tab.prevent.stop="completeSearchQuery"
       borderless
@@ -53,6 +53,7 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { useCompletionStore } from 'src/stores';
+import { ref } from 'vue';
 
 import { computed } from 'vue';
 
@@ -83,6 +84,15 @@ const autocompletion = computed(() => {
   );
 
   return matchedAutocompletion;
+});
+
+const completionInput = ref<HTMLElement | null>(null);
+const focus = () => {
+  completionInput.value?.focus();
+};
+
+defineExpose({
+  focus,
 });
 </script>
 

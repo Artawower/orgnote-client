@@ -52,6 +52,6 @@ export class BaseOrgWidget extends WidgetType {
       event.stopPropagation();
       event.preventDefault();
     }
-    return !this.embeddedWidget.ignoreEvent;
+    return !!this.embeddedWidget.ignoreEvent;
   }
 }

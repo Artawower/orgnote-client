@@ -132,14 +132,15 @@ export class NoteRepository extends BaseRepository {
       searchText &&
       note.meta.description?.toLowerCase().includes(searchText?.toLowerCase());
 
-    const tagMatched = this.tagMatched(note, tags);
+    const tagMatched = !tags?.length || this.tagMatched(note, tags);
 
     const bookmarkedMatched =
       bookmarked == null || note.bookmarked === bookmarked;
 
-    const searchMatched = descriptionMatched || titleMatched || tagMatched;
+    const searchMatched = descriptionMatched || titleMatched;
 
-    const matched = (searchMatched || !searchText) && bookmarkedMatched;
+    const matched =
+      (searchMatched || !searchText) && bookmarkedMatched && tagMatched;
 
     return matched;
   }
