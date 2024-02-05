@@ -100,6 +100,12 @@ useBodyActionPaneClass();
 </script>
 
 <style lang="scss" setup>
+.standalone:not(.keyboard-opened) {
+  .completion-results {
+    padding-bottom: var(--standalone-bottom-padding);
+  }
+}
+
 .completion-results {
   @include flexify(column, flex-start, flex-start);
 

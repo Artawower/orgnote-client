@@ -12,6 +12,7 @@
       :class="{
         mobile: $q.screen.lt.sm,
         choice: completionStore.completionMode === 'choice',
+        pwa: $q.platform.is.ios && !$q.platform.is.cordova,
       }"
     >
       <completion-result />
@@ -55,11 +56,15 @@ const viewStore = useViewStore();
   }
 
   &.mobile {
-    top: unset;
-    bottom: 0;
     margin-left: 0;
 
+    &:not(.choice) {
+      height: var(--completion-input-height);
+      top: calc(var(--viewport-height) - var(--completion-input-height));
+    }
+
     &.choice {
+      top: 0;
       margin: var(--completion-container-margin);
       transform: translate(calc(-50% - var(--completion-container-margin)));
       height: calc(
