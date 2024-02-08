@@ -37,6 +37,9 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updated (/* reg */) {
+    if (!navigator.onLine) {
+      return;
+    }
     window.orgnote.interaction
       .confirm('new version available!', 'please, restart the app!')
       .then((res) => {

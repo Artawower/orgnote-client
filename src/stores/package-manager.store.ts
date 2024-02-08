@@ -26,7 +26,7 @@ export const usePackageManagerStore = defineStore(
     const { config } = useSettingsStore();
 
     const autoRefreshTimer = 1200000; // 20 minutes
-    const initialRefreshDelay = 60000; // 60 seconds
+    const initialRefreshDelay = 20000; // 20 seconds
     // const initialRefreshDelay = 3000; // 5 sec
     const refreshSources = async () => {
       if (!config.extensions.sources) {
