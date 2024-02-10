@@ -12,7 +12,7 @@
     "dev:ios": "quasar dev -m cordova -T ios",
     "dev:ios:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T ios -- --target=\"iPhone-15-Pro\"",
     "dev:electron": "quasar dev -m electron",
-    "dev:electron:remote": "env-cmd -f ./.env.prod && quasar dev -m electron",
+    "dev:electron:remote": "env-cmd -f ./.env.prod quasar dev -m electron",
     "dev": "env-cmd -f ./.env quasar dev",
     "dev:remote": "env-cmd -f ./.env.prod quasar dev",
     "build": "quasar build",
