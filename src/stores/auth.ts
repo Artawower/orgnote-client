@@ -64,7 +64,7 @@ export const useAuthStore = defineStore(
         return;
       }
 
-      if ($q.platform.is.electron) {
+      if ($q.platform.is.electron && electron) {
         const { redirectUrl } = await electron.auth(authUrl);
         router.push(redirectUrl);
         return;
