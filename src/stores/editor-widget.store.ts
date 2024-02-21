@@ -70,11 +70,14 @@ export const useEditorWidgetStore = defineStore('editor-widget', () => {
 
   const multilineExtensions = computed(() => widgetRegistry.value.multiline);
 
+  const inlineExtensions = computed(() => widgetRegistry.value.inline);
+
   return {
     widgetRegistry,
     dynamicComponent,
     createWidgetBuilder,
     multilineExtensions,
+    inlineExtensions,
     add,
   };
 });

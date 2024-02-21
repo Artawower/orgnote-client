@@ -9,141 +9,24 @@ import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoratio
 
 import { Component } from 'vue';
 
-import OrgCheckbox from 'src/components/OrgCheckbox.vue';
-import OrgDateTime from 'src/components/OrgDateTime.vue';
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
-import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
-import OrgInvisible from 'src/components/OrgInvisible.vue';
-import OrgLatexBlock from 'src/components/extensions/OrgLatexBlock.vue';
-import OrgLink from 'src/components/extensions/OrgLink.vue';
-import OrgListTag from 'src/components/OrgListTag.vue';
-import OrgPriority from 'src/components/OrgPriority.vue';
-import OrgRawLink from 'src/components/OrgRawLink.vue';
-import OrgTags from 'src/components/OrgTags.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import { useEditorWidgetStore } from 'src/stores/editor-widget.store';
 
 // TODO: master refactor 😭
 // what a peremptory bullshit
 export const useEmbeddedWidgets = () => {
-  const { createWidgetBuilder, dynamicComponent, multilineExtensions } =
-    useEditorWidgetStore();
+  const {
+    createWidgetBuilder,
+    dynamicComponent,
+    multilineExtensions,
+    inlineExtensions,
+  } = useEditorWidgetStore();
 
   const multilineEmbeddedWidgets: MultilineEmbeddedWidgets =
     multilineExtensions;
 
-  const inlineEmbeddedWidgets: InlineEmbeddedWidgets = {
-    [NodeType.TodoKeyword]: {
-      decorationType: 'mark',
-      classBuilder: (orgNode: OrgNode) =>
-        `org-keyword-${orgNode.value.toLowerCase()}`,
-    },
-    [NodeType.LatexFragment]: {
-      decorationType: 'replace',
-      widgetBuilder: createWidgetBuilder(OrgLatexBlock, {
-        container: 'span',
-        withHash: false,
-      }),
-    },
-    [NodeType.Entity]: {
-      decorationType: 'mark',
-      classBuilder: () => 'org-entity',
-    },
-    [NodeType.Indent]: {
-      decorationType: 'replace',
-      ignoreEditing: true,
-      widgetBuilder: createWidgetBuilder(OrgInvisible),
-    },
-    [NodeType.ListTag]: {
-      decorationType: 'replace',
-      ignoreEvent: true,
-      widgetBuilder: createWidgetBuilder(OrgListTag, {
-        container: 'span',
-        withHash: false,
-        inline: false,
-      }),
-    },
-    [NodeType.Date]: {
-      decorationType: 'replace',
-      ignoreEvent: true,
-      widgetBuilder: createWidgetBuilder(OrgDateTime),
-    },
-    [NodeType.TagList]: {
-      decorationType: 'replace',
-      ignoreEvent: true,
-      widgetBuilder: createWidgetBuilder(OrgTags, { container: 'span' }),
-    },
-    [NodeType.Text]: {
-      decorationType: 'replace',
-      satisfied: (orgNode: OrgNode) => {
-        const rawValue = orgNode.value.toLowerCase();
-        const notBlockKeyword =
-          rawValue.startsWith('#+') &&
-          !rawValue.startsWith('#+begin_') &&
-          !rawValue.startsWith('#+end_');
-
-        return orgNode.parent?.is(NodeType.Keyword) && notBlockKeyword;
-      },
-      widgetBuilder: createWidgetBuilder(OrgInvisible),
-    },
-    [NodeType.Operator]: {
-      decorationType: 'replace',
-      ignoreEvent: true,
-      satisfied: (orgNode: OrgNode) => {
-        const isListOperator =
-          orgNode.parent?.parent?.is(NodeType.ListItem) &&
-          !orgNode.parent.parent?.parent?.ordered &&
-          orgNode?.parent.isNot(NodeType.Section);
-        const satisfied = isListOperator;
-        return satisfied;
-      },
-      widgetBuilder: (params) => {
-        const operator = params.orgNode.rawValue.trim();
-        params.wrap.innerHTML = operator === '-' ? '•' : '◦';
-        params.wrap.classList.add('org-list-bullet');
-        return {
-          destroy: () => {
-            /* pass */
-          },
-        };
-      },
-    },
-    [NodeType.HorizontalRule]: {
-      decorationType: 'replace',
-      widgetBuilder: createWidgetBuilder(OrgHorizontalRule),
-    },
-    [NodeType.RawLink]: {
-      decorationType: 'replace',
-      ignoreEvent: true,
-      widgetBuilder: createWidgetBuilder(OrgRawLink),
-    },
-    [NodeType.Priority]: {
-      decorationType: 'replace',
-      widgetBuilder: createWidgetBuilder(OrgPriority),
-    },
-    [NodeType.Checkbox]: {
-      decorationType: 'replace',
-      widgetBuilder: createWidgetBuilder(OrgCheckbox),
-      ignoreEvent: true,
-    },
-    // [NodeType.BlockHeader]: {
-    //   decorationType: 'replace',
-    //   widgetBuilder: createWidgetBuilder(OrgBlockWrapper),
-    //   viewUpdater: srcHeaderViewUpdater,
-    //   ignoreEvent: true,
-    // },
-    // [NodeType.BlockFooter]: {
-    //   decorationType: 'replace',
-    //   widgetBuilder: createWidgetBuilder(OrgBlockWrapper),
-    //   ignoreEvent: true,
-    // },
-    [NodeType.Link]: {
-      decorationType: 'replace',
-      widgetBuilder: createWidgetBuilder(OrgLink),
-      ignoreEvent: true,
-      satisfied: (orgNode: OrgNode) => orgNode.meta.linkType !== 'image',
-    },
-  };
+  const inlineEmbeddedWidgets: InlineEmbeddedWidgets = inlineExtensions;
 
   const lineClasses: OrgLineClasses = {
     [NodeType.Headline]: (orgNode: OrgNode) =>

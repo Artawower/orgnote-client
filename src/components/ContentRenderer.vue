@@ -25,7 +25,7 @@ import OrgLink from 'src/components/extensions/OrgLink.vue';
 import NewLine from './OrgNewLine.vue';
 import OrgPlainList from './OrgPlainList.vue';
 import OrgQuoteBlock from 'src/components/extensions/OrgQuoteBlock.vue';
-import RawLink from './OrgRawLink.vue';
+import RawLink from 'src/components/extensions/OrgRawLink.vue';
 import OrgSrcBlock from 'src/components/extensions/OrgSrcBlock.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';

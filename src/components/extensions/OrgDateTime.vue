@@ -21,7 +21,7 @@ import { OrgNode } from 'org-mode-ast';
 
 import { computed, ref, watch } from 'vue';
 
-import DynamicTooltip from './ui/DynamicTooltip.vue';
+import DynamicTooltip from 'src/components/ui/DynamicTooltip.vue';
 
 const props = defineProps<{
   node: OrgNode;

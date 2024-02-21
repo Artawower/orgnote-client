@@ -23,6 +23,10 @@ import {
   srcBlockExtension,
   srcBlockExtensionManifest,
 } from './org-src-block.extension';
+import {
+  commonInlineMarkupExtension,
+  commonInlineMarkupExtensionManifest,
+} from './org-inline-markup.extension';
 
 export const BUILTIN_EXTENSIONS = {
   [tableExtensionManifest.name]: {
@@ -58,6 +62,11 @@ export const BUILTIN_EXTENSIONS = {
   [srcBlockExtensionManifest.name]: {
     manifest: srcBlockExtensionManifest,
     module: srcBlockExtension,
+    active: true,
+  },
+  [commonInlineMarkupExtensionManifest.name]: {
+    manifest: commonInlineMarkupExtensionManifest,
+    module: commonInlineMarkupExtension,
     active: true,
   },
 } as const;
