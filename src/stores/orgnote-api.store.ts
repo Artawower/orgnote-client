@@ -6,12 +6,14 @@ import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
 import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
 import { Router, useRouter } from 'vue-router';
+import { useEditorWidgetStore } from './editor-widget.store';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
 
   const settings = useSettingsStore();
   const interaction = useInteraction();
+  const { createWidgetBuilder, add } = useEditorWidgetStore();
 
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
@@ -26,7 +28,8 @@ export const useOrgNoteApiStore = () => {
     },
     editor: {
       widgets: {
-        add: () => console.error('Unimplemented'),
+        createWidgetBuilder,
+        add,
       },
     },
     configuration: () => settings.config,

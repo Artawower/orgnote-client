@@ -7,7 +7,7 @@
     }"
   >
     <file-uploader
-      v-if="extensionsStore.extensionsLoaded"
+      v-if="bootstrapped"
       class="main-content"
       @uploaded="notesImportStore.uploadFiles"
     >
@@ -49,6 +49,7 @@ import {
   onAppActive,
   onMobileViewportChanged,
   registerEditorCommands,
+  useBootstrap,
   useMainCommands,
 } from 'src/hooks';
 import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
@@ -128,6 +129,8 @@ onAppActive((active: boolean) => {
 });
 
 const extensionsStore = useExtensionsStore();
+
+const { bootstrapped } = useBootstrap();
 
 onBeforeMount(() => {
   extensionsStore.loadActiveExtensions();

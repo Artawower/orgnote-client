@@ -1,16 +1,10 @@
-import { srcBlockViewUpdater } from './src-view-updated';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import {
-  EmbeddedWidget,
   EmbeddedWidgetBuilder,
   InlineEmbeddedWidget,
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
-  WidgetBuilder,
-  WidgetBuilderParams,
 } from 'src/api';
-import { useDynamicComponent } from 'src/hooks';
-import { textToKebab } from 'src/tools';
 import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 
 import { Component } from 'vue';
@@ -19,84 +13,24 @@ import OrgCheckbox from 'src/components/OrgCheckbox.vue';
 import OrgDateTime from 'src/components/OrgDateTime.vue';
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
 import OrgHorizontalRule from 'src/components/OrgHorizontalRule.vue';
-import OrgHtmlBlock from 'src/components/OrgHtmlBlock.vue';
 import OrgInvisible from 'src/components/OrgInvisible.vue';
-import OrgLatexBlock from 'src/components/OrgLatexBlock.vue';
-import OrgLink from 'src/components/OrgLink.vue';
+import OrgLatexBlock from 'src/components/extensions/OrgLatexBlock.vue';
+import OrgLink from 'src/components/extensions/OrgLink.vue';
 import OrgListTag from 'src/components/OrgListTag.vue';
 import OrgPriority from 'src/components/OrgPriority.vue';
-import OrgPropertyDrawer from 'src/components/OrgPropertyDrawer.vue';
-import OrgQuoteBlock from 'src/components/OrgQuoteBlock.vue';
 import OrgRawLink from 'src/components/OrgRawLink.vue';
-import OrgSrcBlock from 'src/components/OrgSrcBlock.vue';
-import OrgTable from 'src/components/OrgTable.vue';
 import OrgTags from 'src/components/OrgTags.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useEditorWidgetStore } from 'src/stores/editor-widget.store';
 
 // TODO: master refactor 😭
 // what a peremptory bullshit
 export const useEmbeddedWidgets = () => {
-  const dynamicComponent = useDynamicComponent();
-  const createOrgEmbeddedWidget = (
-    cmp: Component,
-    props: { [key: string]: unknown } = {}
-  ): WidgetBuilder => {
-    return ({
-      wrap,
-      rootNodeSrc,
-      onUpdateFn,
-      orgNode,
-      editorView,
-      readonly,
-    }: WidgetBuilderParams): EmbeddedWidget => {
-      const normalizedOrgNodeType = textToKebab(orgNode.type.toLowerCase());
-      wrap.classList.add(`org-embedded-${normalizedOrgNodeType}`);
-      return dynamicComponent.mount(cmp, wrap, {
-        ...props,
-        node: orgNode,
-        editorView,
-        rootNodeSrc,
-        readonly,
-        onUpdate: (newVal: string) => {
-          onUpdateFn?.(newVal);
-        },
-      });
-    };
-  };
+  const { createWidgetBuilder, dynamicComponent, multilineExtensions } =
+    useEditorWidgetStore();
 
-  const multilineEmbeddedWidgets: MultilineEmbeddedWidgets = {
-    [NodeType.Table]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgTable),
-      ignoreEvent: true,
-    },
-    [NodeType.ExportBlock]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
-    },
-    [NodeType.LatexEnvironment]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock),
-    },
-    [NodeType.Link]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgLink),
-      satisfied: (orgNode: OrgNode) => {
-        return orgNode.meta.linkType == 'image';
-      },
-    },
-    [NodeType.HtmlBlock]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgHtmlBlock),
-    },
-    [NodeType.PropertyDrawer]: {
-      ignoreEvent: true,
-      suppressEdit: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgPropertyDrawer),
-    },
-    [NodeType.SrcBlock]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgSrcBlock),
-      viewUpdater: srcBlockViewUpdater,
-    },
-    [NodeType.QuoteBlock]: {
-      widgetBuilder: createOrgEmbeddedWidget(OrgQuoteBlock),
-    },
-  };
+  const multilineEmbeddedWidgets: MultilineEmbeddedWidgets =
+    multilineExtensions;
 
   const inlineEmbeddedWidgets: InlineEmbeddedWidgets = {
     [NodeType.TodoKeyword]: {
@@ -106,7 +40,7 @@ export const useEmbeddedWidgets = () => {
     },
     [NodeType.LatexFragment]: {
       decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgLatexBlock, {
+      widgetBuilder: createWidgetBuilder(OrgLatexBlock, {
         container: 'span',
         withHash: false,
       }),
@@ -118,12 +52,12 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Indent]: {
       decorationType: 'replace',
       ignoreEditing: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgInvisible),
+      widgetBuilder: createWidgetBuilder(OrgInvisible),
     },
     [NodeType.ListTag]: {
       decorationType: 'replace',
       ignoreEvent: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgListTag, {
+      widgetBuilder: createWidgetBuilder(OrgListTag, {
         container: 'span',
         withHash: false,
         inline: false,
@@ -132,12 +66,12 @@ export const useEmbeddedWidgets = () => {
     [NodeType.Date]: {
       decorationType: 'replace',
       ignoreEvent: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgDateTime),
+      widgetBuilder: createWidgetBuilder(OrgDateTime),
     },
     [NodeType.TagList]: {
       decorationType: 'replace',
       ignoreEvent: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgTags, { container: 'span' }),
+      widgetBuilder: createWidgetBuilder(OrgTags, { container: 'span' }),
     },
     [NodeType.Text]: {
       decorationType: 'replace',
@@ -150,7 +84,7 @@ export const useEmbeddedWidgets = () => {
 
         return orgNode.parent?.is(NodeType.Keyword) && notBlockKeyword;
       },
-      widgetBuilder: createOrgEmbeddedWidget(OrgInvisible),
+      widgetBuilder: createWidgetBuilder(OrgInvisible),
     },
     [NodeType.Operator]: {
       decorationType: 'replace',
@@ -176,36 +110,36 @@ export const useEmbeddedWidgets = () => {
     },
     [NodeType.HorizontalRule]: {
       decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgHorizontalRule),
+      widgetBuilder: createWidgetBuilder(OrgHorizontalRule),
     },
     [NodeType.RawLink]: {
       decorationType: 'replace',
       ignoreEvent: true,
-      widgetBuilder: createOrgEmbeddedWidget(OrgRawLink),
+      widgetBuilder: createWidgetBuilder(OrgRawLink),
     },
     [NodeType.Priority]: {
       decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgPriority),
+      widgetBuilder: createWidgetBuilder(OrgPriority),
     },
     [NodeType.Checkbox]: {
       decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgCheckbox),
+      widgetBuilder: createWidgetBuilder(OrgCheckbox),
       ignoreEvent: true,
     },
     // [NodeType.BlockHeader]: {
     //   decorationType: 'replace',
-    //   widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+    //   widgetBuilder: createWidgetBuilder(OrgBlockWrapper),
     //   viewUpdater: srcHeaderViewUpdater,
     //   ignoreEvent: true,
     // },
     // [NodeType.BlockFooter]: {
     //   decorationType: 'replace',
-    //   widgetBuilder: createOrgEmbeddedWidget(OrgBlockWrapper),
+    //   widgetBuilder: createWidgetBuilder(OrgBlockWrapper),
     //   ignoreEvent: true,
     // },
     [NodeType.Link]: {
       decorationType: 'replace',
-      widgetBuilder: createOrgEmbeddedWidget(OrgLink),
+      widgetBuilder: createWidgetBuilder(OrgLink),
       ignoreEvent: true,
       satisfied: (orgNode: OrgNode) => orgNode.meta.linkType !== 'image',
     },
@@ -311,11 +245,11 @@ export const useEmbeddedWidgets = () => {
   const foldWidget: InlineEmbeddedWidget = {
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createOrgEmbeddedWidget(OrgHeadlineOperator),
+    widgetBuilder: createWidgetBuilder(OrgHeadlineOperator),
   };
 
   return {
-    createOrgEmbeddedWidget,
+    createWidgetBuilder,
     multilineEmbeddedWidgets,
     inlineEmbeddedWidgets,
     lineClasses,
