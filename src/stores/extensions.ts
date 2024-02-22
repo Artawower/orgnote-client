@@ -17,16 +17,12 @@ export const useExtensionsStore = defineStore('extension', () => {
   const extensionsLoaded = ref<boolean>(false);
   const searchQuery = ref<string>('');
   const packageManager = usePackageManagerStore();
-  // TODO: feature/editor-widgets-api add busy status! When counter is more than 0 - app in the loading state.
-  // Think about external store for awaited important processes
-  // const busy = ref<number>();
   const { orgNoteApi } = useOrgNoteApiStore();
 
   const loadExtensions = async () => {
     extensionsLoaded.value = false;
     extensions.value = await repositories.extensions.getMeta();
     extensionsLoaded.value = true;
-    /* Load extensions from server side */
   };
 
   const loadActiveExtensions = async () => {
@@ -221,11 +217,6 @@ export const useExtensionsStore = defineStore('extension', () => {
       }
       const alreadyLoaded = extensions.value.find(
         (e) => e.manifest.name === extName
-      );
-      console.log(
-        '✎: [line 218][extensions.ts] extName: ',
-        extName,
-        alreadyLoaded
       );
       if (alreadyLoaded) {
         return;

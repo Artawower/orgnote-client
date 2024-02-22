@@ -21,7 +21,6 @@ import {
   orgMultilineWidgetField,
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
-import { OrgLineClasses } from 'src/tools/cm-org-language/widgets/line-decoration.model';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
 import {
   orgFolding,
@@ -29,6 +28,7 @@ import {
 } from 'src/tools/cm-org-language/widgets/org-folding';
 
 import EditorMenu from './EditorMenu.vue';
+import { OrgLineClasses } from 'orgnote-api';
 
 export function initEditorExtensions(params: {
   orgNodeGetter: () => OrgNode;

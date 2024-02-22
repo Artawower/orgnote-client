@@ -7,16 +7,16 @@ import {
   WidgetBuilderParams,
   EmbeddedWidget,
   WidgetBuilder,
+  OrgLineClasses,
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useDynamicComponent } from 'src/hooks';
 import { textToKebab } from 'src/tools';
-import { computed } from 'vue';
-import { shallowRef, Component } from 'vue';
+import { computed, shallowRef, Component } from 'vue';
 
 interface WidgetRegistry {
   [WidgetType.Multiline]: MultilineEmbeddedWidgets;
-  [WidgetType.LineClass]: Record<string, unknown>; // TODO: FIX
+  [WidgetType.LineClass]: OrgLineClasses; // TODO: FIX
   [WidgetType.Inline]: InlineEmbeddedWidgets;
 }
 
@@ -38,7 +38,7 @@ export const useEditorWidgetStore = defineStore('editor-widget', () => {
   const addWidget = (meta: WidgetMeta) => {
     const { type, nodeType, ...embeddedWidget } = meta;
 
-    widgetRegistry.value[type][nodeType] =
+    (widgetRegistry.value[type][nodeType] as WidgetRegistry[typeof type]) =
       embeddedWidget as WidgetRegistry[typeof type];
   };
 
@@ -72,12 +72,17 @@ export const useEditorWidgetStore = defineStore('editor-widget', () => {
 
   const inlineExtensions = computed(() => widgetRegistry.value.inline);
 
+  const lineClassesExtensions = computed(
+    () => widgetRegistry.value['line-class']
+  );
+
   return {
     widgetRegistry,
     dynamicComponent,
     createWidgetBuilder,
     multilineExtensions,
     inlineExtensions,
+    lineClassesExtensions,
     add,
   };
 });

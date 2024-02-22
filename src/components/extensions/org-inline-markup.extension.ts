@@ -3,8 +3,9 @@ import {
   ExtensionManifest,
   OrgNoteApi,
   WidgetType,
+  ast,
 } from 'orgnote-api';
-import { NodeType, OrgNode } from 'org-mode-ast';
+import { NodeType } from 'org-mode-ast';
 import OrgLatexBlock from './OrgLatexBlock.vue';
 import OrgInvisible from './OrgInvisible.vue';
 import OrgListTag from './OrgListTag.vue';
@@ -23,7 +24,7 @@ export const commonInlineMarkupExtension: Extension = {
         type: WidgetType.Inline,
         nodeType: NodeType.TodoKeyword,
         decorationType: 'mark',
-        classBuilder: (orgNode: OrgNode) =>
+        classBuilder: (orgNode: ast.OrgNode) =>
           `org-keyword-${orgNode.value.toLowerCase()}`,
       },
       {
@@ -79,7 +80,7 @@ export const commonInlineMarkupExtension: Extension = {
         type: WidgetType.Inline,
         nodeType: NodeType.Text,
         decorationType: 'replace',
-        satisfied: (orgNode: OrgNode) => {
+        satisfied: (orgNode: ast.OrgNode) => {
           const rawValue = orgNode.value.toLowerCase();
           const notBlockKeyword =
             rawValue.startsWith('#+') &&
@@ -95,7 +96,7 @@ export const commonInlineMarkupExtension: Extension = {
         nodeType: NodeType.Operator,
         decorationType: 'replace',
         ignoreEvent: true,
-        satisfied: (orgNode: OrgNode) => {
+        satisfied: (orgNode: ast.OrgNode) => {
           const isListOperator =
             orgNode.parent?.parent?.is(NodeType.ListItem) &&
             !orgNode.parent.parent?.parent?.ordered &&
@@ -147,7 +148,124 @@ export const commonInlineMarkupExtension: Extension = {
         decorationType: 'replace',
         widgetBuilder: api.editor.widgets.createWidgetBuilder(OrgLink),
         ignoreEvent: true,
-        satisfied: (orgNode: OrgNode) => orgNode.meta.linkType !== 'image',
+        satisfied: (orgNode: ast.OrgNode) => orgNode.meta.linkType !== 'image',
+      }
+    );
+
+    api.editor.widgets.add(
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.Headline,
+        class: (orgNode: ast.OrgNode) =>
+          `org-headline-line org-headline-${orgNode.level}`,
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.Keyword,
+        class: (orgNode: ast.OrgNode) =>
+          `org-keyword-line org-keyword-${orgNode.children.first.value
+            .trim()
+            .toLowerCase()
+            .slice(2, -1)}-line`,
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.NewLine,
+        class: (orgNode: ast.OrgNode) => {
+          if (orgNode?.parent?.is(NodeType.SrcBlock)) {
+            return 'org-src-block-line';
+          }
+          if (
+            orgNode.parent?.is(NodeType.Section) &&
+            orgNode.parent?.parent?.is(NodeType.ListItem) &&
+            !!orgNode.next
+          ) {
+            return 'org-list-item-section-line';
+          }
+          if (
+            orgNode.parent?.is(NodeType.QuoteBlock) &&
+            orgNode.next?.isNot(NodeType.BlockFooter)
+          ) {
+            return 'org-quote-block-line';
+          }
+          if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
+            return ' org-block-footer';
+          }
+        },
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.ListItem,
+        class: (orgNode: ast.OrgNode) =>
+          `org-list-item-line ${
+            orgNode.title?.children?.get(1)?.checked
+              ? 'org-list-item-checked'
+              : ''
+          } ${
+            orgNode.parent?.ordered
+              ? 'org-list-item-ordered-line'
+              : 'org-list-item-bullet-line'
+          }`,
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.Section,
+        class: (orgNode: ast.OrgNode) => {
+          if (orgNode.parent?.is(NodeType.ListItem)) {
+            return 'org-list-item-section-line';
+          }
+        },
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.HorizontalRule,
+        class: 'org-horizontal-rule-line',
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.Indent,
+        class: (orgNode: ast.OrgNode) => {
+          let lineClass = '';
+          if (orgNode.parent?.parent?.is(NodeType.SrcBlock)) {
+            lineClass += 'org-src-block-line';
+          }
+          if (orgNode.parent?.is(NodeType.BlockHeader)) {
+            lineClass += ' org-block-header';
+          }
+          if (orgNode.parent?.is(NodeType.BlockFooter)) {
+            lineClass += ' org-block-footer';
+          }
+          return lineClass;
+        },
+      },
+      {
+        type: WidgetType.LineClass,
+        nodeType: NodeType.Text,
+        class: (orgNode: ast.OrgNode) => {
+          let lineClass = '';
+          if (
+            orgNode?.parent?.parent?.is(NodeType.SrcBlock) ||
+            orgNode?.parent?.parent?.parent?.is(NodeType.SrcBlock)
+          ) {
+            lineClass += 'org-src-block-line';
+          }
+          if (orgNode?.parent?.parent?.is(NodeType.QuoteBlock)) {
+            lineClass += 'org-quote-block-line';
+          }
+          if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
+            lineClass += ' org-block-footer';
+          }
+          if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
+            lineClass += ' org-block-header';
+          }
+          if (
+            orgNode.parent?.is(NodeType.Section) &&
+            orgNode.parent?.parent?.is(NodeType.ListItem)
+          ) {
+            lineClass += ' org-list-item-section-line';
+          }
+          return lineClass;
+        },
       }
     );
   },
