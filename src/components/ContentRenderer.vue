@@ -20,17 +20,17 @@ import OrgBold from './OrgBold.vue';
 import OrgEntity from './OrgEntity.vue';
 import OrgHeadline from './OrgHeadline.vue';
 import OrgItalic from './OrgItalic.vue';
-import OrgLatexBlock from './OrgLatexBlock.vue';
-import OrgLink from './OrgLink.vue';
+import OrgLatexBlock from './extensions/OrgLatexBlock.vue';
+import OrgLink from 'src/components/extensions/OrgLink.vue';
 import NewLine from './OrgNewLine.vue';
 import OrgPlainList from './OrgPlainList.vue';
-import OrgQuoteBlock from './OrgQuoteBlock.vue';
-import RawLink from './OrgRawLink.vue';
-import OrgSrcBlock from './OrgSrcBlock.vue';
+import OrgQuoteBlock from 'src/components/extensions/OrgQuoteBlock.vue';
+import RawLink from 'src/components/extensions/OrgRawLink.vue';
+import OrgSrcBlock from 'src/components/extensions/OrgSrcBlock.vue';
 import OrgSrcBlockResult from './OrgSrcBlockResult.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 import OrgStrikeThrough from './OrgStrikeThrough.vue';
-import OrgTable from './OrgTable.vue';
+import OrgTable from 'src/components/extensions/OrgTable.vue';
 import OrgText from './OrgText.vue';
 
 const typedComponents: { [key in NodeType]?: Component } = {

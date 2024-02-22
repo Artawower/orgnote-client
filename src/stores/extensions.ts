@@ -2,6 +2,7 @@ import { useOrgNoteApiStore } from './orgnote-api.store';
 import { usePackageManagerStore } from './package-manager.store';
 import { defineStore } from 'pinia';
 import { ActiveExtension, ExtensionMeta, StoredExtension } from 'src/api';
+import { BUILTIN_EXTENSIONS } from 'src/components/extensions';
 import { repositories } from 'src/repositories';
 import { compileExtension } from 'src/tools';
 
@@ -9,15 +10,19 @@ import { computed, ref } from 'vue';
 
 export const useExtensionsStore = defineStore('extension', () => {
   const extensions = ref<ExtensionMeta[]>([]);
-  const activeExtensions = ref<ActiveExtension[]>([]);
+  const activeExtensions = ref<ActiveExtension[]>([
+    ...Object.values(BUILTIN_EXTENSIONS),
+  ]);
+  const activeExtensionsLoaded = ref<boolean>(false);
   const extensionsLoaded = ref<boolean>(false);
   const searchQuery = ref<string>('');
   const packageManager = usePackageManagerStore();
   const { orgNoteApi } = useOrgNoteApiStore();
 
   const loadExtensions = async () => {
+    extensionsLoaded.value = false;
     extensions.value = await repositories.extensions.getMeta();
-    /* Load extensions from server side */
+    extensionsLoaded.value = true;
   };
 
   const loadActiveExtensions = async () => {
@@ -25,17 +30,28 @@ export const useExtensionsStore = defineStore('extension', () => {
       await repositories.extensions.getActiveExtensions();
 
     activeExtensions.value = await Promise.all(
-      storedExtensions.map(async (ext) => {
-        const module = await compileExtension(ext.module);
-        module.onMounted(orgNoteApi);
-        return {
-          active: true,
-          manifest: ext.manifest,
-          module,
-        };
-      })
+      storedExtensions.map(async (ext) => await mountExtension(ext))
     );
-    extensionsLoaded.value = true;
+    activeExtensionsLoaded.value = true;
+  };
+
+  const mountExtension = async (
+    ext: StoredExtension
+  ): Promise<ActiveExtension> => {
+    const module = await getExtensionModule(ext);
+    module.onMounted(orgNoteApi);
+    return {
+      active: true,
+      manifest: ext.manifest,
+      module,
+    };
+  };
+
+  const getExtensionModule = async (ext: StoredExtension) => {
+    if (ext.manifest.sourceType === 'builtin') {
+      return BUILTIN_EXTENSIONS[ext.manifest.name].module;
+    }
+    return await compileExtension(ext.module);
   };
 
   const deleteExtension = async (ext: ExtensionMeta) => {
@@ -105,7 +121,7 @@ export const useExtensionsStore = defineStore('extension', () => {
   };
 
   const importExtension = async (ext: StoredExtension): Promise<void> => {
-    const module = await compileExtension(ext.module);
+    const module = await getExtensionModule(ext);
     module.onMounted(orgNoteApi);
     activeExtensions.value.push({
       active: true,
@@ -134,7 +150,7 @@ export const useExtensionsStore = defineStore('extension', () => {
     );
     extensions.value.push(ext);
     await repositories.extensions.upsertExtensions([ext]);
-    if (ext.module) {
+    if (ext.module || ext.manifest.sourceType === 'builtin') {
       await importExtension(ext);
     }
   };
@@ -193,6 +209,24 @@ export const useExtensionsStore = defineStore('extension', () => {
     return !!extensions.value.find((e) => e.manifest.name === extensionName);
   };
 
+  const initBuiltInExtensions = async () => {
+    Object.keys(BUILTIN_EXTENSIONS).forEach(async (extName) => {
+      const builtInExt = BUILTIN_EXTENSIONS[extName];
+      if (!builtInExt.active) {
+        return;
+      }
+      const alreadyLoaded = extensions.value.find(
+        (e) => e.manifest.name === extName
+      );
+      if (alreadyLoaded) {
+        return;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { module, ...extMeta } = builtInExt;
+      await uploadExtension(extMeta);
+    });
+  };
+
   return {
     extensions,
     activeExtensions,
@@ -201,12 +235,14 @@ export const useExtensionsStore = defineStore('extension', () => {
     deactivateExtension,
     disableExtension,
     enableExtension,
+    activeExtensionsLoaded,
     extensionsLoaded,
     loadActiveExtensions,
     deactivateThemeExtension,
     uploadExtension,
     deleteExtension,
     isExtensionExist,
+    initBuiltInExtensions,
 
     filteredExtensions,
     searchQuery,

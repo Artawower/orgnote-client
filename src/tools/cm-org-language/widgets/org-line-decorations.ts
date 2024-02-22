@@ -1,4 +1,3 @@
-import { OrgLineClasses } from './line-decoration.model';
 import { Range } from '@codemirror/state';
 import {
   Decoration,
@@ -7,6 +6,7 @@ import {
   ViewUpdate,
 } from '@codemirror/view';
 import { OrgNode, walkTree } from 'org-mode-ast';
+import { OrgLineClasses } from 'orgnote-api';
 
 export const orgLineDecoration = (
   getOrgNodeTree: () => OrgNode,
@@ -27,7 +27,7 @@ export const orgLineDecoration = (
         const lineDecorations: Range<Decoration>[] = [];
 
         walkTree(orgNode, (n: OrgNode) => {
-          const lineDecoration = orgLineClasses[n.type];
+          const lineDecoration = orgLineClasses[n.type]?.class;
           if (!lineDecoration) {
             return false;
           }

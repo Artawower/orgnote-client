@@ -19,7 +19,7 @@ import { OrgNode } from 'org-mode-ast';
 import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from './ContentRenderer.vue';
-import OrgLink from './OrgLink.vue';
+import OrgLink from 'src/components/extensions/OrgLink.vue';
 import OrgSrcInlineCode from './OrgSrcInlineCode.vue';
 
 const props = defineProps<{

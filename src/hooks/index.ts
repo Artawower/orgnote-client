@@ -8,3 +8,4 @@ export * from './use-org-file';
 export * from './on-app-active';
 export * from './body-action-pane-class';
 export * from './platform-size';
+export * from './bootstrap-hook';

@@ -28,7 +28,9 @@
         <div class="description">{{ extension.manifest.description }}</div>
         <div class="actions">
           <action-btn
-            v-if="!extension.uploaded"
+            v-if="
+              !extension.uploaded && extension.manifest.sourceType !== 'builtin'
+            "
             icon="delete"
             theme="magenta"
             :loading="packageManager.loading"
@@ -37,14 +39,18 @@
             >{{ $t('download') }}</action-btn
           >
           <action-btn
-            v-if="extension.uploaded"
+            v-if="
+              extension.uploaded && extension.manifest.sourceType !== 'builtin'
+            "
             icon="delete"
             theme="red"
             @click="extensionsStore.deleteExtension(extension)"
             >{{ $t('delete') }}</action-btn
           >
           <action-btn
-            v-if="extension.uploaded"
+            v-if="
+              extension.uploaded || extension.manifest.sourceType === 'builtin'
+            "
             :icon="extension.active ? 'cancel' : 'download_for_offline'"
             :theme="extension.active ? 'red' : 'magenta'"
             @click="toggleExtensionStatus"
