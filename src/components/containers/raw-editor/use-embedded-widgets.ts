@@ -9,7 +9,7 @@ import { Component } from 'vue';
 
 import OrgHeadlineOperator from 'src/components/OrgHeadlineOperator.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
-import { useEditorWidgetStore } from 'src/stores/editor-widget.store';
+import { useEditorStore } from 'src/stores/editor.store';
 import { OrgLineClasses } from 'orgnote-api';
 
 export const useEmbeddedWidgets = () => {
@@ -19,7 +19,7 @@ export const useEmbeddedWidgets = () => {
     multilineExtensions,
     inlineExtensions,
     lineClassesExtensions,
-  } = useEditorWidgetStore();
+  } = useEditorStore();
 
   const multilineEmbeddedWidgets: MultilineEmbeddedWidgets =
     multilineExtensions;

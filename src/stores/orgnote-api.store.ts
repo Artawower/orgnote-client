@@ -6,14 +6,15 @@ import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
 import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
 import { Router, useRouter } from 'vue-router';
-import { useEditorWidgetStore } from './editor-widget.store';
+import { useEditorStore } from './editor.store';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
 
   const settings = useSettingsStore();
   const interaction = useInteraction();
-  const { createWidgetBuilder, add } = useEditorWidgetStore();
+  const { createWidgetBuilder, addWidgets, addExtensions, removeExtensions } =
+    useEditorStore();
 
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
@@ -27,9 +28,13 @@ export const useOrgNoteApiStore = () => {
       },
     },
     editor: {
+      extensions: {
+        add: addExtensions,
+        remove: removeExtensions,
+      },
       widgets: {
         createWidgetBuilder,
-        add,
+        add: addWidgets,
       },
     },
     configuration: () => settings.config,

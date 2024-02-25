@@ -4,7 +4,7 @@
     :class="{
       readonly,
       'hide-special-symbols': !props.config?.showSpecialSymbols,
-      'show-property-drawer': props.config?.showPropertyDrawer,
+      'show-property-drawer': config?.showPropertyDrawer,
     }"
   >
     <div id="editor" ref="editor"></div>
@@ -20,6 +20,7 @@ import { EditorView, ViewUpdate } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
 import { OrgNoteConfig } from 'src/api';
 import { onMobileViewportChanged, useDynamicComponent } from 'src/hooks';
+import { useEditorStore } from 'src/stores';
 import { orgMode } from 'src/tools/cm-org-language';
 
 import { onMounted, ref, watch } from 'vue';
@@ -78,6 +79,7 @@ const setCursorPositionToTheEOF = () => {
     },
   });
 };
+const { extensions } = useEditorStore();
 // TODO: master refactor (important)
 const initEditor = () => {
   if (!props.modelValue) {
@@ -107,6 +109,7 @@ const initEditor = () => {
         lineClasses,
         multilineEmbeddedWidgets,
         readonly: props.readonly,
+        extensions,
         orgNodeGetter: () => orgNode,
         showSpecialSymbols: props.config?.showSpecialSymbols,
         foldWidget,

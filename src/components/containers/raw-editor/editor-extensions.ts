@@ -1,7 +1,7 @@
 import { basicOrgTheme } from './org-cm-theme';
 import { closeBrackets } from '@codemirror/autocomplete';
 import { bracketMatching, codeFolding } from '@codemirror/language';
-import { EditorState, Extension, Prec } from '@codemirror/state';
+import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
@@ -14,7 +14,6 @@ import {
 import { useDynamicComponent } from 'src/hooks';
 import {
   editorMenuExtension,
-  orgAutoInsertCommand,
   orgInitialFoldingExtension,
   orgInlineWidgets,
   orgLineDecoration,
@@ -28,7 +27,7 @@ import {
 } from 'src/tools/cm-org-language/widgets/org-folding';
 
 import EditorMenu from './EditorMenu.vue';
-import { OrgLineClasses } from 'orgnote-api';
+import { EditorExtension, OrgLineClasses } from 'orgnote-api';
 
 export function initEditorExtensions(params: {
   orgNodeGetter: () => OrgNode;
@@ -39,6 +38,7 @@ export function initEditorExtensions(params: {
   inlineEmbeddedWidgets: InlineEmbeddedWidgets;
   multilineEmbeddedWidgets: MultilineEmbeddedWidgets;
   lineClasses: OrgLineClasses;
+  extensions?: EditorExtension[];
   editorViewGetter: () => EditorView;
   foldWidget?: InlineEmbeddedWidget;
   editBadgeWidget?: EmbeddedWidgetBuilder;
@@ -64,14 +64,6 @@ export function initEditorExtensions(params: {
     EditorView.lineWrapping,
     EditorState.readOnly.of(params.readonly),
     orgInitialFoldingExtension(params.editorViewGetter, params.orgNodeGetter),
-    Prec.highest(
-      keymap.of([
-        {
-          key: 'Enter',
-          run: orgAutoInsertCommand(params.orgNodeGetter),
-        },
-      ])
-    ),
     keymap.of([
       {
         key: 'Escape',
@@ -111,9 +103,20 @@ export function initEditorExtensions(params: {
       ]
     : [];
 
+  const initedExtensions = params.extensions.map((ext) =>
+    ext({
+      orgNodeGetter: params.orgNodeGetter,
+      readonly: params.readonly,
+      showSpecialSymbols: params.showSpecialSymbols,
+      dynamicComponent: params.dynamicComponent,
+      editorViewGetter: params.editorViewGetter,
+    })
+  );
+
   return [
     ...baseExtensions,
     ...specialSymbolsExtensions,
     ...(params.additionalExtensions ?? []),
+    ...initedExtensions,
   ];
 }

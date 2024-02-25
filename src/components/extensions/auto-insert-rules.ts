@@ -1,7 +1,7 @@
 import { TransactionSpec } from '@codemirror/state';
 import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 
-export function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
+function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
   const orgOperatorRegexp = /(\- |\+ |\d+[\)\.]{1})/;
   if (!node.is(NodeType.Operator) || !node.rawValue.match(orgOperatorRegexp)) {
     return;
@@ -11,7 +11,7 @@ export function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
   };
 }
 
-export function newListItem(node: OrgNode): TransactionSpec {
+function newListItem(node: OrgNode): TransactionSpec {
   const parentListItem = findParent(node, (n) => {
     if (n.isNot(NodeType.Title)) {
       return false;

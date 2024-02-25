@@ -27,6 +27,10 @@ import {
   commonInlineMarkupExtension,
   commonInlineMarkupExtensionManifest,
 } from './org-inline-markup.extension';
+import {
+  autocompleteExtension,
+  autocompleteExtensionManifest,
+} from './org-auto-insert.extension';
 
 export const BUILTIN_EXTENSIONS = {
   [tableExtensionManifest.name]: {
@@ -67,6 +71,11 @@ export const BUILTIN_EXTENSIONS = {
   [commonInlineMarkupExtensionManifest.name]: {
     manifest: commonInlineMarkupExtensionManifest,
     module: commonInlineMarkupExtension,
+    active: true,
+  },
+  [autocompleteExtensionManifest.name]: {
+    manifest: autocompleteExtensionManifest,
+    module: autocompleteExtension,
     active: true,
   },
 } as const;
