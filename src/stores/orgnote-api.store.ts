@@ -23,9 +23,16 @@ export const useOrgNoteApiStore = () => {
     interaction,
     system: useSystem(interaction),
     commands: {
-      add: () => {
-        console.error('Unimplemented');
-      },
+      add: () => console.error('Add command is Unimplemented'),
+      remove: () => console.error('Remove command is Unimplemented'),
+      addCommandToSidebar: () =>
+        console.error('Add command to sidebar is Unimplemented'),
+      removeCommandFromSidebar: () =>
+        console.error('Remove command from sidebar is Unimplemented'),
+      addCommandToEditorPanel: () =>
+        console.error('Add command to editor panel is Unimplemented'),
+      removeCommandFromEditorPanel: () =>
+        console.error('Remove command from editor panel is Unimplemented'),
     },
     editor: {
       extensions: {

@@ -1,4 +1,4 @@
-import { OrgInlineWidget } from './org-inline-widget';
+import { OrgInlineWidget } from 'src/tools/cm-org-language/widgets/org-inline-widget';
 import { foldEffect, unfoldEffect } from '@codemirror/language';
 import { Range, StateEffect, StateField } from '@codemirror/state';
 import {
@@ -21,9 +21,10 @@ const getFoldingWidgets = (
   const rangeSet: Range<Decoration>[] = [];
   walkTree(orgNode, (n: OrgNode) => {
     if (
-      editorView.hasFocus &&
-      caretPosition >= n.start &&
-      caretPosition <= n.end
+      !n ||
+      (editorView.hasFocus &&
+        caretPosition >= n.start &&
+        caretPosition <= n.end)
     ) {
       return;
     }

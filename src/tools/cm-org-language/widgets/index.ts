@@ -4,4 +4,3 @@ export * from './org-multiline-widget';
 export * from './menu-extension';
 export * from './org-filter-property-edit';
 export * from './org-line-decorations';
-export * from './org-initial-folding';

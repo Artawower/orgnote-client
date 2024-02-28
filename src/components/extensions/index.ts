@@ -31,51 +31,41 @@ import {
   autocompleteExtension,
   autocompleteExtensionManifest,
 } from './org-auto-insert.extension';
+import {
+  foldingExtension,
+  foldingExtensionManifest,
+} from './org-code-folding.extension';
+import { Extension, ExtensionManifest } from 'orgnote-api';
+
+const registerActiveExtension = (
+  manifest: ExtensionManifest,
+  ext: Extension
+) => ({
+  [manifest.name]: {
+    manifest,
+    module: ext,
+    active: true,
+  },
+});
 
 export const BUILTIN_EXTENSIONS = {
-  [tableExtensionManifest.name]: {
-    manifest: tableExtensionManifest,
-    module: tableExtension,
-    active: true,
-  },
-  [latexBlockExtensionManifest.name]: {
-    manifest: latexBlockExtensionManifest,
-    module: latexBlockExtension,
-    active: true,
-  },
-  [imageExtensionManifest.name]: {
-    manifest: imageExtensionManifest,
-    module: imageExtension,
-    active: true,
-  },
-  [htmlBlockExtensionManifest.name]: {
-    manifest: htmlBlockExtensionManifest,
-    module: htmlBlockExtension,
-    active: true,
-  },
-  [propertyDrawerExtensionManifest.name]: {
-    manifest: propertyDrawerExtensionManifest,
-    module: propertyDrawerExtension,
-    active: true,
-  },
-  [quoteBlockExtensionManifest.name]: {
-    manifest: quoteBlockExtensionManifest,
-    module: quoteBlockExtension,
-    active: true,
-  },
-  [srcBlockExtensionManifest.name]: {
-    manifest: srcBlockExtensionManifest,
-    module: srcBlockExtension,
-    active: true,
-  },
-  [commonInlineMarkupExtensionManifest.name]: {
-    manifest: commonInlineMarkupExtensionManifest,
-    module: commonInlineMarkupExtension,
-    active: true,
-  },
-  [autocompleteExtensionManifest.name]: {
-    manifest: autocompleteExtensionManifest,
-    module: autocompleteExtension,
-    active: true,
-  },
+  ...registerActiveExtension(tableExtensionManifest, tableExtension),
+  ...registerActiveExtension(latexBlockExtensionManifest, latexBlockExtension),
+  ...registerActiveExtension(imageExtensionManifest, imageExtension),
+  ...registerActiveExtension(htmlBlockExtensionManifest, htmlBlockExtension),
+  ...registerActiveExtension(
+    propertyDrawerExtensionManifest,
+    propertyDrawerExtension
+  ),
+  ...registerActiveExtension(quoteBlockExtensionManifest, quoteBlockExtension),
+  ...registerActiveExtension(srcBlockExtensionManifest, srcBlockExtension),
+  ...registerActiveExtension(
+    commonInlineMarkupExtensionManifest,
+    commonInlineMarkupExtension
+  ),
+  ...registerActiveExtension(
+    autocompleteExtensionManifest,
+    autocompleteExtension
+  ),
+  ...registerActiveExtension(foldingExtensionManifest, foldingExtension),
 } as const;

@@ -1,6 +1,6 @@
 import { basicOrgTheme } from './org-cm-theme';
 import { closeBrackets } from '@codemirror/autocomplete';
-import { bracketMatching, codeFolding } from '@codemirror/language';
+import { bracketMatching } from '@codemirror/language';
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { minimalSetup } from 'codemirror';
@@ -14,17 +14,12 @@ import {
 import { useDynamicComponent } from 'src/hooks';
 import {
   editorMenuExtension,
-  orgInitialFoldingExtension,
   orgInlineWidgets,
   orgLineDecoration,
   orgMultilineWidgetField,
   readOnlyTransactionFilter,
 } from 'src/tools/cm-org-language/widgets';
 import { orgMultilineWidgets } from 'src/tools/cm-org-language/widgets/multiline-widgets';
-import {
-  orgFolding,
-  orgFoldingField,
-} from 'src/tools/cm-org-language/widgets/org-folding';
 
 import EditorMenu from './EditorMenu.vue';
 import { EditorExtension, OrgLineClasses } from 'orgnote-api';
@@ -48,7 +43,6 @@ export function initEditorExtensions(params: {
     minimalSetup,
     bracketMatching(),
     closeBrackets(),
-    codeFolding(),
     highlightActiveLine(),
     readOnlyTransactionFilter(params.orgNodeGetter),
     basicOrgTheme,
@@ -63,7 +57,6 @@ export function initEditorExtensions(params: {
     }),
     EditorView.lineWrapping,
     EditorState.readOnly.of(params.readonly),
-    orgInitialFoldingExtension(params.editorViewGetter, params.orgNodeGetter),
     keymap.of([
       {
         key: 'Escape',
@@ -74,17 +67,6 @@ export function initEditorExtensions(params: {
       },
     ]),
   ];
-
-  if (params.foldWidget) {
-    baseExtensions.push(
-      orgFolding(
-        params.orgNodeGetter,
-        params.editorViewGetter,
-        params.foldWidget
-      ),
-      orgFoldingField
-    );
-  }
 
   const specialSymbolsExtensions = !params.showSpecialSymbols
     ? [
@@ -110,6 +92,7 @@ export function initEditorExtensions(params: {
       showSpecialSymbols: params.showSpecialSymbols,
       dynamicComponent: params.dynamicComponent,
       editorViewGetter: params.editorViewGetter,
+      foldWidget: params.foldWidget,
     })
   );
 
