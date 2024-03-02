@@ -16,10 +16,12 @@
         size="sm"
       ></q-icon>
     </div>
-    <div class="text-bold flex flex-start gap-8 line-limit-1 color-main">
+    <div class="text-bold flex flex-start no-wrap gap-4 color-main">
       <div v-if="config.completion.showGroup">[{{ item.group }}]:&nbsp</div>
-      <div class="capitalize">
-        {{ extractDynamicValue(item.title) ?? item.command }}
+      <div class="line-limit-1">
+        <div class="capitalize">
+          {{ extractDynamicValue(item.title) ?? item.command }}
+        </div>
       </div>
     </div>
     <div>
