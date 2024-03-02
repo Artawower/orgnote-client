@@ -39,8 +39,17 @@ watch(
   () => rawDate.value,
   () => updateOrgDoc()
 );
+
 const updateOrgDoc = () => {
-  emits('update', `<${rawDate.value}>`);
+  const [openBracket, closeBracket] = getBrackets();
+  emits('update', `${openBracket}${rawDate.value}${closeBracket}`);
+};
+
+const getBrackets = (): [string, string] => {
+  return [
+    props.node.children.get(0).rawValue,
+    props.node.children.get(2).rawValue,
+  ];
 };
 
 const date = computed(() => new Date(rawDate.value.split(' ')[0]));
