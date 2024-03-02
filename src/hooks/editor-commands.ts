@@ -327,9 +327,7 @@ export const registerEditorCommands = () => {
         const weekDay = now.toLocaleDateString('default', {
           weekday: 'short',
         });
-        const template = `<${now.getFullYear()}-${
-          now.getMonth() + 1
-        }-${now.getDate()} ${weekDay}> `;
+        const template = `<${now.toISOString().split('T')[0]} ${weekDay}> `;
 
         insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
