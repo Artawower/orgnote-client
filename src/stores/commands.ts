@@ -46,6 +46,15 @@ export const useCommandsStore = defineStore('commands', () => {
     registerKeybindings(allCommands.value);
   };
 
+  const unregister = (...commands: Command[]) => {
+    allCommands.value = allCommands.value.filter((c) => !commands.includes(c));
+    registerKeybindings(allCommands.value);
+  };
+
+  const getCommand = (name: string) => {
+    return allCommands.value.find((c) => c.command === name);
+  };
+
   const getCommandsFromGroup = (group: CommandGroup): Command[] => {
     return allCommands.value.filter((c) => c.group === group);
   };
@@ -64,7 +73,7 @@ export const useCommandsStore = defineStore('commands', () => {
             group: c.group,
             icon: extractDynamicValue(c.icon) ?? 'settings',
             title: extractDynamicValue(c.title),
-          } as CompletionCandidate)
+          }) as CompletionCandidate
       );
 
     const itemsGetterFn = (filter: string) => {
@@ -94,6 +103,8 @@ export const useCommandsStore = defineStore('commands', () => {
 
   return {
     register,
+    unregister,
+    getCommand,
     activateGroup,
     getCommandsFromGroup,
     deactivateGroup,

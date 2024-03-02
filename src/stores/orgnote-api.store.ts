@@ -7,6 +7,7 @@ import { RouteNames } from 'src/router/routes';
 import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
 import { Router, useRouter } from 'vue-router';
 import { useEditorStore } from './editor.store';
+import { useCommandsStore } from './commands';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -16,6 +17,8 @@ export const useOrgNoteApiStore = () => {
   const { createWidgetBuilder, addWidgets, addExtensions, removeExtensions } =
     useEditorStore();
 
+  const commandsStore = useCommandsStore();
+
   const orgNoteApi: OrgNoteApi = {
     navigation: useNavigation(router),
     currentNote: useCurrentNote(),
@@ -23,8 +26,9 @@ export const useOrgNoteApiStore = () => {
     interaction,
     system: useSystem(interaction),
     commands: {
-      add: () => console.error('Add command is Unimplemented'),
-      remove: () => console.error('Remove command is Unimplemented'),
+      add: commandsStore.register,
+      remove: commandsStore.unregister,
+      get: commandsStore.getCommand,
       addCommandToSidebar: () =>
         console.error('Add command to sidebar is Unimplemented'),
       removeCommandFromSidebar: () =>
