@@ -50,7 +50,7 @@ export const srcBlockExtension: Extension = {
   onMounted: async (api: OrgNoteApi): Promise<void> => {
     api.editor.widgets.add({
       type: WidgetType.Multiline,
-      nodeType: NodeType.QuoteBlock,
+      nodeType: NodeType.SrcBlock,
       widgetBuilder: api.editor.widgets.createWidgetBuilder(OrgSrcBlock),
       viewUpdater,
     });
