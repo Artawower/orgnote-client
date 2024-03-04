@@ -39,12 +39,17 @@ export const useExtensionsStore = defineStore('extension', () => {
     ext: StoredExtension
   ): Promise<ActiveExtension> => {
     const module = await getExtensionModule(ext);
-    module.onMounted(orgNoteApi);
-    return {
-      active: true,
-      manifest: ext.manifest,
-      module,
-    };
+    try {
+      module.onMounted(orgNoteApi);
+      return {
+        active: true,
+        manifest: ext.manifest,
+        module,
+      };
+    } catch {
+      console.error('✎: [line 42][extensions.ts] ext: ', ext);
+      return;
+    }
   };
 
   const getExtensionModule = async (ext: StoredExtension) => {

@@ -15,6 +15,7 @@ import {
 
 import { ref } from 'vue';
 import { useSettingsStore } from './settings';
+import { StoredExtension } from 'orgnote-api';
 
 export const usePackageManagerStore = defineStore(
   'package-manager',
@@ -86,7 +87,7 @@ export const usePackageManagerStore = defineStore(
           'index.js',
           'dist/index.js',
         ]);
-        const ext = await readExtensionFromString(text);
+        const ext = normalizeExtension(await readExtensionFromString(text));
         await extensionStore.uploadExtension(ext);
       } catch (e) {
         loading.value = false;
@@ -114,6 +115,13 @@ export const usePackageManagerStore = defineStore(
       // });
 
       loading.value = false;
+    };
+
+    const normalizeExtension = (ext: StoredExtension): StoredExtension => {
+      if (ext.manifest.sourceType === 'builtin') {
+        ext.manifest.sourceType = 'git';
+      }
+      return ext;
     };
 
     const validatePackageSource = (source?: string): string => {
