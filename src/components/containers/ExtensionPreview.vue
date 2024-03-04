@@ -1,62 +1,71 @@
 <template>
   <div :key="extension.manifest.name" class="extension">
     <div class="header">
-      <div class="info">
-        <h4 class="text-h4 title">
-          <img
-            v-if="extension.manifest.icon"
-            :alt="'extension.manifest.name' + ' icon'"
-            :src="extension.manifest.icon"
-          />
-          <q-icon v-else name="extension" size="2.5rem"></q-icon>
+      <div class="icon">
+        <img
+          v-if="extension.manifest.icon"
+          :alt="'extension.manifest.name' + ' icon'"
+          :src="extension.manifest.icon"
+        />
+        <q-icon v-else name="extension" size="2.5rem"></q-icon>
+      </div>
+      <div class="title">
+        <h4 class="text-h4">
           {{ extension.manifest.name }} {{ extension.manifest.version }}
         </h4>
-        <div
-          v-if="extension.manifest.author || extension.manifest.sourceUrl"
-          class="source"
-        >
+        <div class="source-info">
           <span v-if="extension.manifest.author" class="author"
-            >[{{ extension.manifest.author }}]
+            >{{ extension.manifest.author }}&nbsp;
+          </span>
+          <span
+            v-if="extension.manifest.sourceType === 'builtin'"
+            class="builtin"
+            ><q-icon name="verified" class="builtin" /> {{ $t('built-in') }}
           </span>
           <a
+            v-if="extension.manifest.sourceUrl"
             class="author link"
             :href="extension.manifest.sourceUrl"
             target="_blank"
-            >{{ extension.manifest.sourceUrl }}</a
+            >{{ extractDomain(extension.manifest.sourceUrl) }}</a
           >
         </div>
-        <div class="description">{{ extension.manifest.description }}</div>
-        <div class="actions">
-          <action-btn
-            v-if="
-              !extension.uploaded && extension.manifest.sourceType !== 'builtin'
-            "
-            icon="delete"
-            theme="magenta"
-            :loading="packageManager.loading"
-            :disabled="packageManager.loading"
-            @click="packageManager.addSource(extension.manifest.sourceUrl)"
-            >{{ $t('download') }}</action-btn
-          >
-          <action-btn
-            v-if="
-              extension.uploaded && extension.manifest.sourceType !== 'builtin'
-            "
-            icon="delete"
-            theme="red"
-            @click="extensionsStore.deleteExtension(extension)"
-            >{{ $t('delete') }}</action-btn
-          >
-          <action-btn
-            v-if="
-              extension.uploaded || extension.manifest.sourceType === 'builtin'
-            "
-            :icon="extension.active ? 'cancel' : 'download_for_offline'"
-            :theme="extension.active ? 'red' : 'magenta'"
-            @click="toggleExtensionStatus"
-            >{{ extension.active ? $t('disable') : $t('enable') }}</action-btn
-          >
-        </div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="description">
+        {{ extension.manifest.description }}
+      </div>
+      <div class="actions">
+        <action-btn
+          v-if="
+            !extension.uploaded && extension.manifest.sourceType !== 'builtin'
+          "
+          icon="delete"
+          theme="magenta"
+          :loading="packageManager.loading"
+          :disabled="packageManager.loading"
+          @click="packageManager.addSource(extension.manifest.sourceUrl)"
+          >{{ $t('download') }}</action-btn
+        >
+        <action-btn
+          v-if="
+            extension.uploaded && extension.manifest.sourceType !== 'builtin'
+          "
+          icon="delete"
+          theme="red"
+          @click="extensionsStore.deleteExtension(extension)"
+          >{{ $t('delete') }}</action-btn
+        >
+        <action-btn
+          v-if="
+            extension.uploaded || extension.manifest.sourceType === 'builtin'
+          "
+          :icon="extension.active ? 'cancel' : 'download_for_offline'"
+          :theme="extension.active ? 'red' : 'magenta'"
+          @click="toggleExtensionStatus"
+          >{{ extension.active ? $t('disable') : $t('enable') }}</action-btn
+        >
       </div>
     </div>
   </div>
@@ -68,6 +77,7 @@ import { useExtensionsStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import { usePackageManagerStore } from 'src/stores/package-manager.store';
+import { extractDomain } from 'src/tools';
 
 const props = defineProps<{
   extension: ExtensionMeta;
@@ -101,39 +111,37 @@ const packageManager = usePackageManagerStore();
   }
 }
 .header {
+  @include flexify(row, flex-start, flex-start);
   gap: var(--gap-md);
+  width: 100%;
+  margin-bottom: var(--block-margin-md);
 
-  .info {
-    @include flexify(column, flex-start, flex-start);
-
-    gap: var(--gap-md);
-    width: 100%;
-  }
-
-  .title {
-    color: var(--magenta);
-
-    @include flexify(row, flex-start, center);
-    gap: var(--gap-md);
-    width: 100%;
-
+  .icon {
     .q-icon {
       color: var(--magenta);
     }
+    @include mobile {
+      padding-left: var(--block-padding-md);
+      padding-right: var(--block-padding-md);
+    }
+  }
+
+  .title {
+    @include flexify(column, flex-start, flex-start);
+    width: 100%;
   }
 
   .author {
     color: var(--blue);
   }
 
-  .icon {
-    align-self: center;
-
-    @include mobile {
-      padding-left: var(--block-padding-md);
-      padding-right: var(--block-padding-md);
-    }
+  .builtin {
+    color: var(--green);
   }
+}
+
+.body {
+  @include flexify(column, flex-start, flex-start, var(--gap-md));
 }
 
 .actions {

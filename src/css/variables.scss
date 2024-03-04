@@ -183,7 +183,7 @@ body {
 @include mobile {
   body.body--dark,
   body.body--light {
-    --block-padding-md: 8px;
+    --block-padding-md: 10px;
     --footer-height: 56px;
     --page-padding: 14px;
     --gap-md: 10px;

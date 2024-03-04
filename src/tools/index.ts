@@ -41,3 +41,4 @@ export * from './case-converter';
 export * from './search-filter';
 export * from './git';
 export * from './package-manager';
+export * from './extract-domain';

@@ -1,8 +1,14 @@
-@mixin flexify($direction: row, $justify: space-between, $align: center) {
+@mixin flexify(
+  $direction: row,
+  $justify: space-between,
+  $align: center,
+  $gap: 0px
+) {
   display: flex !important;
   flex-direction: $direction;
   justify-content: $justify;
   align-items: $align;
+  gap: $gap;
 }
 
 @mixin flexify-inline(
