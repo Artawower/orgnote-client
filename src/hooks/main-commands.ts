@@ -25,6 +25,8 @@ import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
 import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import { RouteNames } from 'src/router/routes';
+import SettingsPage from 'src/pages/SettingsPage.vue';
+import ProjectInfo from 'src/pages/ProjectInfo.vue';
 
 export enum COMMAND {
   openSearch = 'search',
@@ -381,12 +383,15 @@ function getNestedConfigCommands(
 function useDefaultCommands(): Command[] {
   const sidebarStore = useSidebarStore();
   const fileManagerStore = useFileManagerStore();
+  const modalStore = useModalStore();
 
   return [
     {
       command: 'toggle sidebar',
       group: 'global',
-      icon: 'menu',
+      icon: () => {
+        return sidebarStore.opened ? 'arrow_circle_left' : 'menu';
+      },
       description: 'toggle sidebar',
       handler: () => {
         sidebarStore.toggle();
@@ -405,6 +410,18 @@ function useDefaultCommands(): Command[] {
       command: 'create note',
       icon: 'o_add_box',
       handler: () => fileManagerStore.createFile(),
+    },
+    {
+      command: 'settings',
+      icon: 'settings',
+      description: 'open settings',
+      handler: () => modalStore.open(SettingsPage, { title: 'settings' }),
+    },
+    {
+      command: 'project info',
+      icon: 'o_info',
+      description: 'show project info',
+      handler: () => modalStore.open(ProjectInfo),
     },
   ];
 }

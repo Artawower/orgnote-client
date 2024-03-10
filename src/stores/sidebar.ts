@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import { VueComponent } from 'src/models';
 
 import { ref, shallowRef } from 'vue';
@@ -37,7 +38,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
   };
 
   const toggle = () => {
-    opened.value = !opened.value;
+    toggleWithFallback(FileManagerSideBar);
   };
 
   return {

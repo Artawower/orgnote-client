@@ -119,6 +119,9 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: 'settings',
       name: RouteNames.SettingsPage,
       component: () => import('pages/SettingsPage.vue'),
+      meta: {
+        icon: 'settings',
+      },
     },
     {
       path: '/:catchAll(.*)*',

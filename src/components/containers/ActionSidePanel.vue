@@ -30,42 +30,10 @@
       </q-list>
 
       <q-list class="side-panel-actions">
-        <q-item clickable @click="openProjectInfo">
-          <q-item-section avatar>
-            <q-icon name="o_info" />
-          </q-item-section>
-
-          <q-item-section class="text-capitalize">
-            {{ $t('project info') }}
-          </q-item-section>
-        </q-item>
-
-        <template v-if="!fullWidth">
-          <side-panel-items
-            :items="toolbarStore.systemActions"
-            @execute-action="executeActionHandler"
-          />
-        </template>
-
-        <q-item @click="openSettings" clickable>
-          <q-item-section avatar>
-            <q-icon name="settings" />
-          </q-item-section>
-
-          <q-item-section class="text-capitalize">
-            {{ $t('settings') }}
-          </q-item-section>
-        </q-item>
-
-        <q-item v-if="fullWidth" @click="closeSideBar" clickable>
-          <q-item-section avatar>
-            <q-icon name="arrow_circle_left" />
-          </q-item-section>
-
-          <q-item-section class="text-capitalize">
-            {{ $t('toggle sidebar') }}
-          </q-item-section>
-        </q-item>
+        <side-panel-items
+          :items="toolbarStore.systemActions"
+          @execute-action="executeActionHandler"
+        />
       </q-list>
     </q-scroll-area>
   </q-drawer>
@@ -89,7 +57,7 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { User } from 'src/models';
-import { useModalStore, useToolbarStore } from 'src/stores';
+import { useToolbarStore } from 'src/stores';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar } from 'src/tools';
 
@@ -105,18 +73,12 @@ import {
 import ActionPaneWrapper from 'src/components/ActionPaneWrapper.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
-import ProjectInfo from 'src/pages/ProjectInfo.vue';
-import SettingsPage from 'src/pages/SettingsPage.vue';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { CommandPreview } from 'orgnote-api';
 
 const props = defineProps<{
   user?: User;
   fullWidth?: boolean;
-}>();
-
-const emits = defineEmits<{
-  (e: 'opened', val: boolean): void;
 }>();
 
 const user = toRef(props, 'user');
@@ -126,16 +88,11 @@ const compositeOpened = ref(true);
 const sidebarStore = useSidebarStore();
 const { executeCommand } = useKeybindingStore();
 
-const closeSideBar = () => {
-  emits('opened', false);
-  sidebarStore.close();
-};
-
 const closeSideBarForMobile = () => {
   if (!fullWidth.value) {
     return;
   }
-  closeSideBar();
+  sidebarStore.close();
 };
 
 const windowWidth = ref(window.innerWidth);
@@ -165,13 +122,8 @@ const drawerWidth = computed(() => {
 const toolbarStore = useToolbarStore();
 
 const executeActionHandler = (cmd: CommandPreview) => {
-  closeSideBarForMobile();
   executeCommand(cmd);
 };
-
-const modalStore = useModalStore();
-const openSettings = () => modalStore.open(SettingsPage, { title: 'settings' });
-const openProjectInfo = () => modalStore.open(ProjectInfo);
 
 // NOTE: master strange behaviour of caret inside editor when it has focus
 const $q = useQuasar();
