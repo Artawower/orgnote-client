@@ -1,9 +1,10 @@
-import { ToolBarAction, useToolbarStore } from 'src/stores';
+import { Command } from 'orgnote-api';
+import { useToolbarStore } from 'src/stores';
 import { ref, onMounted, onUnmounted, Ref, watch } from 'vue';
 
 export const onChangeToolbarActions = (configs: {
-  setupMainAction?: () => ToolBarAction | null;
-  setupNewActions?: () => ToolBarAction[] | null;
+  setupMainAction?: () => Command | null;
+  setupNewActions?: () => Command[] | null;
   observe?: Ref<unknown>;
 }) => {
   const wasTriggered = ref<boolean>(false);

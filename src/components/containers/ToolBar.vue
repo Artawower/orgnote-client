@@ -3,11 +3,15 @@
     <div class="footer-wrapper fit flex rows justify-between items-center">
       <div
         v-for="action in toolbarStore.actions"
-        :key="action.name"
+        :key="action.command"
         class="flex toolbar-action justify-center items-center cursor-pointer"
-        @click="action.handler"
+        @click="executeCommand(action)"
       >
-        <q-icon class="color-main" :name="action.icon" size="md"></q-icon>
+        <q-icon
+          class="color-main"
+          :name="extractDynamicValue(action.icon)"
+          size="md"
+        ></q-icon>
       </div>
     </div>
   </q-footer>
@@ -15,8 +19,11 @@
 
 <script lang="ts" setup>
 import { useToolbarStore } from 'src/stores';
+import { useKeybindingStore } from 'src/stores/keybindings';
+import { extractDynamicValue } from 'src/tools';
 
 const toolbarStore = useToolbarStore();
+const { executeCommand } = useKeybindingStore();
 </script>
 
 <style lang="scss" scoped>

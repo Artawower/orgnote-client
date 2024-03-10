@@ -5,19 +5,26 @@ import {
   OrgNoteApi,
 } from 'src/api';
 import {
+  useAuthStore,
   useCommandsStore,
   useCompletionStore,
+  useCurrentNoteStore,
   useExtensionsStore,
+  useFileManagerStore,
   useModalStore,
+  useNoteEditorStore,
   useOrgNoteApiStore,
   useSearchStore,
+  useSidebarStore,
 } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords, searchFilter } from 'src/tools';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
+import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
+import { RouteNames } from 'src/router/routes';
 
 export enum COMMAND {
   openSearch = 'search',
@@ -34,6 +41,7 @@ export function useMainCommands() {
 
   const routesCommands = getRoutesCommands();
   const extensionStore = useExtensionsStore();
+  const defaultCommands = useDefaultCommands();
 
   const { orgNoteApi } = useOrgNoteApiStore();
 
@@ -49,6 +57,7 @@ export function useMainCommands() {
       command: COMMAND.toggleExecuteCommand,
       keySequence: 'Alt+KeyX',
       description: 'Toggle command executor',
+      icon: 'terminal',
       group: 'completion',
       allowOnInput: true,
       handler: (params?: CommandHandlerParams) => {
@@ -71,6 +80,7 @@ export function useMainCommands() {
       command: COMMAND.openSearch,
       keySequence: '/',
       description: 'search notes',
+      icon: 'search',
       group: 'search',
       handler: (params) => {
         searchStore.initCompletion();
@@ -160,7 +170,8 @@ export function useMainCommands() {
       ...routesCommands,
       ...settingsCommands,
       ...keybindingCommands,
-      ...dynamicKeybindings
+      ...dynamicKeybindings,
+      ...defaultCommands
     );
   };
 
@@ -171,6 +182,7 @@ export function useMainCommands() {
 
 function getRoutesCommands(): Command[] {
   const router = useRouter();
+  const authStore = useAuthStore();
   const routesCommands: Command[] = router
     .getRoutes()
     // TODO: master tmp hack for avoid routes with params. Adapt to user input.
@@ -181,12 +193,77 @@ function getRoutesCommands(): Command[] {
         r?.meta?.programmaticalNavigation !== false
     )
     .map((r) => ({
-      command: camelCaseToWords(r.name.toString()),
+      command: camelCaseToWords(r.name.toString()).toLocaleLowerCase(),
+      title: camelCaseToWords(r.name.toString()),
       description: `Open ${r.name.toString()}`,
       group: 'navigation',
-      icon: 'assistant_navigation',
+      icon: (r.meta?.icon as string) ?? 'assistant_navigation',
       handler: () => router.push({ name: r.name }),
     }));
+
+  const noteStore = useCurrentNoteStore();
+  const route = useRoute();
+
+  routesCommands.push(
+    {
+      command: 'graph',
+      title: 'Graph',
+      description: 'Open Graph',
+      group: 'navigation',
+      icon: 'hub',
+      handler: () =>
+        router.push({
+          name: RouteNames.UserGraph,
+          params: { userId: authStore.user.id },
+        }),
+    },
+    {
+      command: 'my notes',
+      title: 'My Notes',
+      description: 'Open My Notes',
+      group: 'navigation',
+      icon: 'home',
+      handler: () =>
+        router.push({
+          name: RouteNames.UserNotes,
+          params: { userId: authStore.user.id },
+        }),
+    },
+    {
+      command: 'edit mode',
+      group: 'editor',
+      icon: 'edit',
+      description: 'edit current note',
+      available: () => {
+        const isNoteDetailPage = route.name == RouteNames.NoteDetail;
+
+        return isNoteDetailPage && noteStore.currentNote?.isMy;
+      },
+      handler: () =>
+        router.push({
+          name: RouteNames.RawEditor,
+          params: { id: noteStore.currentNote?.id },
+        }),
+    },
+    {
+      command: 'view mode',
+      description: 'view current note',
+      icon: 'visibility',
+      available: () => {
+        const isNoteEditPage = [
+          RouteNames.EditNote,
+          RouteNames.RawEditor,
+        ].includes(route.name as RouteNames);
+        return isNoteEditPage;
+      },
+      handler: () => {
+        router.push({
+          name: RouteNames.NoteDetail,
+          params: { id: noteStore.currentNote?.id },
+        });
+      },
+    }
+  );
   return routesCommands;
 }
 
@@ -198,6 +275,9 @@ function getSettingsCommands(
 ): Command[] {
   const settingsStore = useSettingsStore();
   const generatedCommands = getNestedConfigCommands(settingsStore.config);
+  const noteEditorStore = useNoteEditorStore();
+
+  const route = useRoute();
 
   return [
     ...generatedCommands,
@@ -256,6 +336,20 @@ function getSettingsCommands(
         settingsStore.setDarkMode(!settingsStore.darkMode);
       },
     },
+    {
+      command: 'toggle debug',
+      group: 'editor',
+      icon: 'bug_report',
+      handler: () => noteEditorStore.toggleDebug(),
+      available: () => {
+        const isNoteEditPage = [
+          RouteNames.EditNote,
+          RouteNames.RawEditor,
+        ].includes(route.name as RouteNames);
+
+        return isNoteEditPage && settingsStore.config.common.developerMode;
+      },
+    },
   ];
 }
 
@@ -282,4 +376,35 @@ function getNestedConfigCommands(
     }
     return acc;
   }, []);
+}
+
+function useDefaultCommands(): Command[] {
+  const sidebarStore = useSidebarStore();
+  const fileManagerStore = useFileManagerStore();
+
+  return [
+    {
+      command: 'toggle sidebar',
+      group: 'global',
+      icon: 'menu',
+      description: 'toggle sidebar',
+      handler: () => {
+        sidebarStore.toggle();
+      },
+    },
+    {
+      command: 'toggle file manager',
+      group: 'global',
+      icon: 'folder',
+      description: 'toggle file manager',
+      handler: () => {
+        sidebarStore.toggleWithComponent(FileManagerSideBar);
+      },
+    },
+    {
+      command: 'create note',
+      icon: 'o_add_box',
+      handler: () => fileManagerStore.createFile(),
+    },
+  ];
 }
