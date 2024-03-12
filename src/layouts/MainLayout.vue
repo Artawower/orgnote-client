@@ -50,7 +50,7 @@ import {
   onMobileViewportChanged,
   registerEditorCommands,
   useBootstrap,
-  useMainCommands,
+  useCommands,
 } from 'src/hooks';
 import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
 import {
@@ -88,7 +88,7 @@ authStore.verifyUser();
 
 const { registerKeybindings } = useKeybindingStore();
 
-useMainCommands().register();
+useCommands().register();
 registerEditorCommands();
 registerNoteDetailCommands();
 

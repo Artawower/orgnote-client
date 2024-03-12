@@ -85,7 +85,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     commandHandler,
     data,
   }: {
-    command: string;
+    command?: string;
     commandHandler?: (data?: unknown) => void;
     data?: unknown;
   }) => {

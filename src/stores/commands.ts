@@ -42,7 +42,12 @@ export const useCommandsStore = defineStore('commands', () => {
   };
 
   const register = (...commands: Command[]) => {
-    allCommands.value.push(...commands);
+    allCommands.value.push(
+      ...commands.map((c) => ({
+        ...c,
+        available: c.available ?? (() => true),
+      }))
+    );
     registerKeybindings(allCommands.value);
   };
 
@@ -105,6 +110,7 @@ export const useCommandsStore = defineStore('commands', () => {
     register,
     unregister,
     getCommand,
+    commands: allCommands,
     activateGroup,
     getCommandsFromGroup,
     deactivateGroup,

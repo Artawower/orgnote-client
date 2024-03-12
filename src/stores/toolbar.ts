@@ -1,81 +1,55 @@
-import { useAuthStore } from './auth';
-import { useFileManagerStore } from './file-manager';
-import { useKeybindingStore } from './keybindings';
 import { defineStore } from 'pinia';
-import { COMMAND } from 'src/hooks';
-import { RouteNames } from 'src/router/routes';
-import { useRouter } from 'vue-router';
-
 import { computed, ref } from 'vue';
-
-// TODO: master potential API interface for extensions 😊
-export interface ToolBarAction {
-  name: string;
-  icon: string;
-  // Show in the sidebar when hidden from toolbar.
-  // In other words, always show it somewhere
-  permament?: boolean;
-  sidebarPosition?: 'top' | 'bottom';
-  handler: () => void;
-}
+import { shallowRef } from 'vue';
+import { Command, DefaultCommands as C } from 'orgnote-api';
+import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const useToolbarStore = defineStore('toolbarStore', () => {
-  const router = useRouter();
-  const { executeCommand } = useKeybindingStore();
-  const fileManagerStore = useFileManagerStore();
-  const invisibleActions = ref<{ [key: string]: ToolBarAction }>({});
-  const showToolbar = ref<boolean>(true);
+  const { orgNoteApi } = useOrgNoteApiStore();
+  const invisibleActions = ref<{ [key: string]: Command }>({});
 
-  const actionsStack = ref<ToolBarAction[][]>([
+  const showToolbar = ref<boolean>(true);
+  const toolbarActions = shallowRef<Command[]>(
     [
-      {
-        name: 'toggle sidebar',
-        icon: 'menu',
-        handler: () => executeCommand({ command: 'toggleActionSidePanel' }),
-      },
-      {
-        name: 'my notes',
-        icon: 'home',
-        sidebarPosition: 'top',
-        handler: () => {
-          const authStore = useAuthStore();
-          router.push({
-            name: RouteNames.UserNotes,
-            params: { userId: authStore.user.id },
-          });
-        },
-      },
-      {
-        name: 'create note',
-        permament: true,
-        sidebarPosition: 'top',
-        icon: 'o_add_box',
-        handler: () => fileManagerStore.createFile(),
-      },
-      {
-        name: 'search',
-        sidebarPosition: 'top',
-        icon: 'search',
-        handler: () => executeCommand({ command: COMMAND.openSearch }),
-      },
-      {
-        name: 'execute command',
-        sidebarPosition: 'bottom',
-        icon: 'terminal',
-        handler: () =>
-          executeCommand({ command: COMMAND.toggleExecuteCommand }),
-      },
+      orgNoteApi.commands.get(C.TOGGLE_FILE_MANAGER),
+      orgNoteApi.commands.get(C.OPEN_MY_NOTES),
+      orgNoteApi.commands.get(C.CREATE_NOTE),
+      orgNoteApi.commands.get(C.SEARCH),
+      orgNoteApi.commands.get(C.OPEN_DASHBOARD),
+      orgNoteApi.commands.get(C.OPEN_PUBLIC_NOTE_LIST),
+      orgNoteApi.commands.get(C.OPEN_NOTE_EDITOR),
+      orgNoteApi.commands.get(C.OPEN_NOTE_VIEWER),
+      orgNoteApi.commands.get(C.OPEN_GRAPH),
+      orgNoteApi.commands.get(C.OPEN_EXTENSIONS),
+      orgNoteApi.commands.get(C.TOGGLE_DEBUG_MODE),
+    ].filter((c: Command) => !!c)
+  );
+  const systemActions = shallowRef<Command[]>([
+    orgNoteApi.commands.get(C.SETTINGS),
+    orgNoteApi.commands.get(C.PROJECT_INFO),
+    orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
+  ]);
+
+  const visibleToolbarActions = computed(() =>
+    toolbarActions.value.filter((a) => a.available?.())
+  );
+
+  const actionsStack = ref<Command[][]>([
+    [
+      orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
+      orgNoteApi.commands.get(C.OPEN_MY_NOTES),
+      orgNoteApi.commands.get(C.CREATE_NOTE),
+      orgNoteApi.commands.get(C.SEARCH),
+      orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
     ],
   ]);
 
-  const setActions = (actions: ToolBarAction[]) => {
-    movePermanentActionsToSidebar();
+  const setActions = (actions: Command[]) => {
     actionsStack.value.push(actions);
   };
 
   const backToPreviousActions = () => {
     actionsStack.value.pop();
-    movePermanentActionsFromSidebar();
   };
 
   const actions = computed(
@@ -84,35 +58,19 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
 
   const allActions = computed(() => [...actions.value]);
 
-  const movePermanentActionsToSidebar = () => {
-    const permanentActions = actions.value.filter((action) => action.permament);
-    permanentActions.forEach((action) => {
-      invisibleActions.value[action.name] = action;
-    });
-  };
-
-  const movePermanentActionsFromSidebar = () => {
-    actions.value.forEach((action) => {
-      if (invisibleActions.value[action.name]) {
-        delete invisibleActions.value[action.name];
-      }
-    });
-  };
-
   const hiddenActions = computed(() => Object.values(invisibleActions.value));
 
-  const setAction = (action: ToolBarAction, index: number) => {
-    movePermanentActionsToSidebar();
+  const setAction = (action: Command, index: number) => {
     const newActions = [...actions.value];
     newActions[index] = action;
     actionsStack.value.push(newActions);
   };
 
-  const setMainAction = (action: ToolBarAction) => {
+  const setMainAction = (action: Command) => {
     setAction(action, 2);
   };
 
-  const setAdditionalAction = (action: ToolBarAction) => {
+  const setAdditionalAction = (action: Command) => {
     setAction(action, 1);
   };
 
@@ -125,5 +83,8 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     backToPreviousActions,
     setAdditionalAction,
     showToolbar,
+    toolbarActions,
+    systemActions,
+    visibleToolbarActions,
   };
 });

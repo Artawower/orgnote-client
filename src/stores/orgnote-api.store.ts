@@ -37,6 +37,7 @@ export const useOrgNoteApiStore = () => {
         console.error('Add command to editor panel is Unimplemented'),
       removeCommandFromEditorPanel: () =>
         console.error('Remove command from editor panel is Unimplemented'),
+      getAll: () => commandsStore.commands,
     },
     editor: {
       extensions: {

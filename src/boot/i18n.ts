@@ -10,6 +10,7 @@ export default boot(({ app }) => {
   const i18n = createI18n({
     locale: settingsStore.locale,
     legacy: false,
+    fallbackLocale: 'en',
     messages,
   });
 

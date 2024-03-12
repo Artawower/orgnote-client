@@ -62,6 +62,9 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
         }
         return true;
       },
+      meta: {
+        icon: 'extension',
+      },
     },
     {
       path: 'note-editor/:id?',
@@ -100,16 +103,25 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       path: '',
       name: RouteNames.Dashboard,
       component: () => import('pages/DashboardPage.vue'),
+      meta: {
+        icon: 'dashboard',
+      },
     },
     {
       path: 'feed',
       name: RouteNames.NoteList,
       component: () => import('pages/PublicNotesPage.vue'),
+      meta: {
+        icon: 'feed',
+      },
     },
     {
       path: 'settings',
       name: RouteNames.SettingsPage,
       component: () => import('pages/SettingsPage.vue'),
+      meta: {
+        icon: 'settings',
+      },
     },
     {
       path: '/:catchAll(.*)*',
