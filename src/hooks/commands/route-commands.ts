@@ -1,4 +1,4 @@
-import { Command } from 'orgnote-api';
+import { Command, DefaultCommands as C } from 'orgnote-api';
 import { RouteNames } from 'src/router/routes';
 import { useAuthStore, useCurrentNoteStore } from 'src/stores';
 import { camelCaseToWords } from 'src/tools';
@@ -30,7 +30,7 @@ export function getRoutesCommands(): Command[] {
 
   routesCommands.push(
     {
-      command: 'graph',
+      command: C.OPEN_GRAPH,
       title: 'Graph',
       description: 'Open Graph',
       group: 'navigation',
@@ -42,7 +42,7 @@ export function getRoutesCommands(): Command[] {
         }),
     },
     {
-      command: 'my notes',
+      command: C.OPEN_MY_NOTES,
       title: 'My Notes',
       description: 'Open My Notes',
       group: 'navigation',
@@ -54,7 +54,7 @@ export function getRoutesCommands(): Command[] {
         }),
     },
     {
-      command: 'edit mode',
+      command: C.OPEN_NOTE_EDITOR,
       group: 'editor',
       icon: 'edit',
       description: 'edit current note',
@@ -70,7 +70,7 @@ export function getRoutesCommands(): Command[] {
         }),
     },
     {
-      command: 'view mode',
+      command: C.OPEN_NOTE_VIEWER,
       description: 'view current note',
       icon: 'visibility',
       available: () => {

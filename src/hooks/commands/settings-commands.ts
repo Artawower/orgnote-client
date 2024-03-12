@@ -25,6 +25,7 @@ export function getSettingsCommands(): Command[] {
   return [
     ...generatedCommands,
     {
+      // TODO: refactor this comand
       command: DefaultCommands.SELECT_THEME,
       group: 'settings',
       icon: 'palette',

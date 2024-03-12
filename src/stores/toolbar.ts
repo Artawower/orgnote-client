@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { shallowRef } from 'vue';
-import { Command } from 'orgnote-api';
+import { Command, DefaultCommands as C } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const useToolbarStore = defineStore('toolbarStore', () => {
@@ -11,23 +11,23 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
   const showToolbar = ref<boolean>(true);
   const toolbarActions = shallowRef<Command[]>(
     [
-      orgNoteApi.commands.get('toggle file manager'),
-      orgNoteApi.commands.get('my notes'),
-      orgNoteApi.commands.get('create note'),
-      orgNoteApi.commands.get('search'),
-      orgNoteApi.commands.get('dashboard'),
-      orgNoteApi.commands.get('note list'),
-      orgNoteApi.commands.get('edit mode'),
-      orgNoteApi.commands.get('view mode'),
-      orgNoteApi.commands.get('graph'),
-      orgNoteApi.commands.get('extensions'),
-      orgNoteApi.commands.get('toggle debug'),
+      orgNoteApi.commands.get(C.TOGGLE_FILE_MANAGER),
+      orgNoteApi.commands.get(C.OPEN_MY_NOTES),
+      orgNoteApi.commands.get(C.CREATE_NOTE),
+      orgNoteApi.commands.get(C.SEARCH),
+      orgNoteApi.commands.get(C.OPEN_DASHBOARD),
+      orgNoteApi.commands.get(C.OPEN_PUBLIC_NOTE_LIST),
+      orgNoteApi.commands.get(C.OPEN_NOTE_EDITOR),
+      orgNoteApi.commands.get(C.OPEN_NOTE_VIEWER),
+      orgNoteApi.commands.get(C.OPEN_GRAPH),
+      orgNoteApi.commands.get(C.OPEN_EXTENSIONS),
+      orgNoteApi.commands.get(C.TOGGLE_DEBUG_MODE),
     ].filter((c: Command) => !!c)
   );
   const systemActions = shallowRef<Command[]>([
-    orgNoteApi.commands.get('settings'),
-    orgNoteApi.commands.get('project info'),
-    orgNoteApi.commands.get('toggle sidebar'),
+    orgNoteApi.commands.get(C.SETTINGS),
+    orgNoteApi.commands.get(C.PROJECT_INFO),
+    orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
   ]);
 
   const visibleToolbarActions = computed(() =>
@@ -36,11 +36,11 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
 
   const actionsStack = ref<Command[][]>([
     [
-      orgNoteApi.commands.get('toggle sidebar'),
-      orgNoteApi.commands.get('my notes'),
-      orgNoteApi.commands.get('create note'),
-      orgNoteApi.commands.get('search'),
-      orgNoteApi.commands.get('toggle commands'),
+      orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
+      orgNoteApi.commands.get(C.OPEN_MY_NOTES),
+      orgNoteApi.commands.get(C.CREATE_NOTE),
+      orgNoteApi.commands.get(C.SEARCH),
+      orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
     ],
   ]);
 
