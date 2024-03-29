@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { repositories } from 'src/boot/repositories';
+import { useEncryption } from 'src/hooks';
 import { Note } from 'src/models';
 
 import { ref } from 'vue';
@@ -32,10 +33,19 @@ export const useSyncStore = defineStore(
       runSyncTask();
     };
 
+    const { encrypt, decrypt } = useEncryption();
+
     const sync = async () => {
       cancelPreviousRequest();
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
+
+      const encryptedNotesFromLastSync = await Promise.all(
+        notesFromLastSync.map(async (n) => ({
+          ...n,
+          content: await decrypt(n.content),
+        }))
+      );
 
       const deletedNotesIds = (await repositories.notes.getDeletedNotes()).map(
         (n) => n.id
@@ -44,7 +54,7 @@ export const useSyncStore = defineStore(
       try {
         const rspns = await sdk.notes.notesSyncPost(
           {
-            notes: notesFromLastSync,
+            notes: encryptedNotesFromLastSync,
             deletedNotesIds,
             timestamp: lastSyncTime.value ?? new Date(0).toISOString(),
           },

@@ -80,11 +80,11 @@ a {
 }
 
 .bg-main {
-  background: var(--bg);
+  background: var(--bg) !important;
 }
 
 .bg-alt {
-  background: var(--bg-alt);
+  background: var(--bg-alt) !important;
 }
 
 @include electron {

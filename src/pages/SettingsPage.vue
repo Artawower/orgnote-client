@@ -12,6 +12,7 @@ import SubscriptionInfoPage from './SubscriptionInfoPage.vue';
 import { Tab } from 'src/components/ui/ComponentTabs.vue';
 import ComponentTabs from 'src/components/ui/ComponentTabs.vue';
 import ViewSettingsPage from 'src/pages/ViewSettingsPage.vue';
+import EncryptionSettingsPage from './EncryptionSettingsPage.vue';
 
 const authStore = useAuthStore();
 
@@ -36,6 +37,11 @@ const configTabs: Tab[] = [
     icon: 'workspace_premium',
     component: SubscriptionInfoPage,
     disabled: authStore.user.isAnonymous,
+  },
+  {
+    name: 'encryption',
+    icon: 'lock',
+    component: EncryptionSettingsPage,
   },
   {
     name: 'api',

@@ -174,4 +174,8 @@ export default {
   enable: 'enable',
   disable: 'disable',
   download: 'download',
+  'encryption settings': 'encryption settings',
+  'encryption password': 'encryption password',
+  'GPG private key': 'GPG private key',
+  'GPG public key': 'GPG public key',
 };

@@ -37,6 +37,9 @@ export const useSettingsStore = defineStore(
       extensions: {
         sources: ['https://github.com/Artawower/orgnote-extensions'],
       },
+      encryption: {
+        type: 'disabled',
+      },
     });
 
     const setLocale = (lc: string) => {

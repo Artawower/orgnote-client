@@ -168,4 +168,8 @@ export default {
   enable: 'включить',
   disable: 'выключить',
   download: 'загрузить',
+  'encryption settings': 'настройки шифрования',
+  'encryption password': 'пароль шифрования',
+  'GPG private key': 'GPG приватный ключ',
+  'GPG public key': 'GPG публичный ключ',
 };
