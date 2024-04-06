@@ -89,6 +89,8 @@ body.standalone.action-pane-opened {
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
+input:-webkit-autofill:selected,
+input:-internal-autofill-selected,
 input:-webkit-autofill:active {
   -webkit-background-clip: text;
   -webkit-text-fill-color: var(--fg);
@@ -103,4 +105,9 @@ input:-webkit-autofill:active {
 .q-field--standout.q-field--highlighted .q-field__append,
 .q-field--standout.q-field--highlighted .q-field__input {
   color: var(--fg);
+}
+
+.q-field__control:before,
+.q-field__control:after {
+  background: transparent !important;
 }

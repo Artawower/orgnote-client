@@ -96,6 +96,21 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     currentNote.value = { ...currentNote.value, ...note };
   };
 
+  const reloadCurrentNote = async (): Promise<void> => {
+    if (!currentNote.value) {
+      return;
+    }
+
+    const [note, orgTree] = await getNoteById(currentNote.value.id);
+
+    if (!note) {
+      return;
+    }
+
+    currentNote.value = note;
+    currentOrgTree.value = orgTree;
+  };
+
   return {
     currentNote,
     currentOrgTree,
@@ -103,5 +118,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     getNoteById,
     resetNote,
     updateCurrentNotePartially,
+    reloadCurrentNote,
   };
 });

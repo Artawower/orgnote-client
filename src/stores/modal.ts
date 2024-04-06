@@ -14,7 +14,10 @@ export const useModalStore = defineStore('modal', () => {
 
   const openedComponentStack = shallowRef<Modal[]>([]);
 
-  const open = (cmp: VueComponent, modalConfig?: ModalConfig) => {
+  const open = (
+    cmp: VueComponent,
+    modalConfig?: ModalConfig = { closable: true }
+  ) => {
     const alreadyOpenedIndex = openedComponentStack.value.findIndex(
       (c) => c.component === cmp
     );
@@ -23,6 +26,7 @@ export const useModalStore = defineStore('modal', () => {
         0,
         alreadyOpenedIndex + 1
       );
+      opened.value = true;
       return;
     }
 
@@ -30,7 +34,7 @@ export const useModalStore = defineStore('modal', () => {
       ...openedComponentStack.value,
       {
         component: cmp,
-        config: modalConfig || { closable: true },
+        config: modalConfig,
       },
     ];
     opened.value = true;

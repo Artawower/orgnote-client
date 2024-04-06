@@ -6,39 +6,43 @@
     }"
     :style-fn="resetPageMinHeight"
   >
-    <q-splitter
-      v-if="noteEditorStore.debug"
-      v-model="splitterSize"
-      :horizontal="$q.screen.lt.sm"
-      class="debug-splitter"
-    >
-      <template v-slot:before>
-        <div v-if="noteLoaded" class="q-pa-md">
-          <router-view />
-        </div>
-      </template>
-      <template v-slot:separator>
-        <q-avatar
-          color="primary"
-          text-color="white"
-          size="40px"
-          icon="drag_indicator"
-        />
-      </template>
-      <template v-slot:after>
-        <div class="debug q-pa-md">
-          <div class="common-info q-px-md">
-            Cursor: {{ noteEditorStore.cursorPosition }}
+    <encryption-required :note="currentNote">
+      <q-splitter
+        v-if="noteEditorStore.debug"
+        v-model="splitterSize"
+        :horizontal="$q.screen.lt.sm"
+        class="debug-splitter"
+      >
+        <template v-slot:before>
+          <div v-if="noteLoaded" class="q-pa-md">
+            <router-view />
           </div>
-          <div class="debug-tree q-py-sm q-px-md">
-            <note-debugger :cursor-position="noteEditorStore.cursorPosition" />
+        </template>
+        <template v-slot:separator>
+          <q-avatar
+            color="primary"
+            text-color="white"
+            size="40px"
+            icon="drag_indicator"
+          />
+        </template>
+        <template v-slot:after>
+          <div class="debug q-pa-md">
+            <div class="common-info q-px-md">
+              Cursor: {{ noteEditorStore.cursorPosition }}
+            </div>
+            <div class="debug-tree q-py-sm q-px-md">
+              <note-debugger
+                :cursor-position="noteEditorStore.cursorPosition"
+              />
+            </div>
           </div>
-        </div>
+        </template>
+      </q-splitter>
+      <template v-else>
+        <router-view></router-view>
       </template>
-    </q-splitter>
-    <template v-else>
-      <router-view></router-view>
-    </template>
+    </encryption-required>
   </q-page>
 </template>
 
@@ -57,6 +61,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import NoteDebugger from 'src/components/containers/NoteDebugger.vue';
+import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
 
 const route = useRoute();
 

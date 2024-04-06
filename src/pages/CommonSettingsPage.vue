@@ -58,7 +58,7 @@ const clearAllData = async () => {
 const forceResync = async () => {
   localStorage.removeItem('sync');
   await db.dropAll();
-  router.push(RouteNames.Home);
+  await router.push({ name: RouteNames.Home });
   window.location.reload();
 };
 

@@ -9,8 +9,79 @@ import {
   readMessage,
 } from 'openpgp';
 
+export class IncorrectOrMissingPrivateKeyPasswordError extends Error {}
+export class ImpossibleToDecryptWithProvidedKeysError extends Error {}
+
+const noPrivateKeyPassphraseProvidedErrorMsg =
+  'Error: Signing key is not decrypted.';
+const incorrectPrivateKeyPassphraseErrorMsg =
+  'Error decrypting private key: Incorrect key passphrase';
+const decryptionKeyIsNotDecryptedErrorMsg =
+  'Error decrypting message: Decryption key is not decrypted.';
+const corruptedPrivateKeyErrorMsg = 'Misformed armored text';
+
+const decriptionFailedErrorMsg =
+  'Error decrypting message: Session key decryption failed.';
+
 export function useEncryption() {
   const { config } = useSettingsStore();
+
+  const encrypt = async (text: string): Promise<string> => {
+    if (config.encryption.type === 'disabled') {
+      return text;
+    }
+    if (config.encryption.type === 'gpg') {
+      return await withCustomErrors(encryptViaKeys)(
+        text,
+        config.encryption.publicKey,
+        config.encryption.privateKey,
+        config.encryption.privateKeyPassphrase
+      );
+    }
+    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
+  };
+
+  const decrypt = async (data: string): Promise<string> => {
+    if (config.encryption.type === 'disabled') {
+      return data;
+    }
+    if (config.encryption.type === 'gpg') {
+      return await withCustomErrors(decryptViaKeys)(
+        data,
+        config.encryption.privateKey,
+        config.encryption.privateKeyPassphrase
+      );
+    }
+    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
+  };
+
+  const withCustomErrors = <P extends unknown[], T>(
+    fn: (...args: P) => Promise<T | never>
+  ) => {
+    return async (...args: P): Promise<T> => {
+      try {
+        return await fn(...args);
+      } catch (e: unknown) {
+        if (!(e instanceof Error)) {
+          throw e;
+        }
+        if (
+          [
+            noPrivateKeyPassphraseProvidedErrorMsg,
+            incorrectPrivateKeyPassphraseErrorMsg,
+            corruptedPrivateKeyErrorMsg,
+            decryptionKeyIsNotDecryptedErrorMsg,
+          ].includes(e.message)
+        ) {
+          throw new IncorrectOrMissingPrivateKeyPasswordError(e.message);
+        }
+        if (e.message === decriptionFailedErrorMsg) {
+          throw new ImpossibleToDecryptWithProvidedKeysError(e.message);
+        }
+        throw e;
+      }
+    };
+  };
 
   const encryptViaKeys = async (
     text: string,
@@ -69,34 +140,6 @@ export function useEncryption() {
     });
 
     return decryptedText.toString();
-  };
-
-  const encrypt = async (text: string): Promise<string> => {
-    if (config.encryption.type === 'disabled') {
-      return text;
-    }
-    if (config.encryption.type === 'gpg') {
-      return encryptViaKeys(
-        text,
-        config.encryption.publicKey,
-        config.encryption.privateKey
-      );
-    }
-    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
-  };
-
-  const decrypt = async (data: string): Promise<string> => {
-    if (config.encryption.type === 'disabled') {
-      return data;
-    }
-    if (config.encryption.type === 'gpg') {
-      return decryptViaKeys(
-        data,
-        config.encryption.privateKey,
-        config.encryption.privateKeyPassphrase
-      );
-    }
-    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
   };
 
   return {

@@ -10,6 +10,9 @@ import { useEncryption } from 'src/hooks';
 import { Note } from 'src/models';
 
 import { ref } from 'vue';
+import { parse, withMetaInfo } from 'org-mode-ast';
+import { useFileManagerStore } from './file-manager';
+import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -18,6 +21,8 @@ export const useSyncStore = defineStore(
 
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
+    const fileManagerStore = useFileManagerStore();
+
     let abortController: AbortController;
 
     // TODO: master add debounce with timeout and accumulation
@@ -40,18 +45,13 @@ export const useSyncStore = defineStore(
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
 
-      const encryptedNotesFromLastSync = await Promise.all(
-        notesFromLastSync.map(async (n) => ({
-          ...n,
-          content: await decrypt(n.content),
-        }))
-      );
-
-      const deletedNotesIds = (await repositories.notes.getDeletedNotes()).map(
-        (n) => n.id
-      );
-
       try {
+        const encryptedNotesFromLastSync =
+          await encryptNotes(notesFromLastSync);
+
+        const deletedNotesIds = (
+          await repositories.notes.getDeletedNotes()
+        ).map((n) => n.id);
         const rspns = await sdk.notes.notesSyncPost(
           {
             notes: encryptedNotesFromLastSync,
@@ -66,8 +66,9 @@ export const useSyncStore = defineStore(
         await notesStore.deleteNotes(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
-        await notesStore.upsertNotes(rspns.data.data.notes);
-        checkCurrentEditedNoteChanged(rspns.data.data.notes);
+        const decryptedNotes = await decryptNotes(rspns.data.data.notes);
+        await notesStore.upsertNotes(decryptedNotes);
+        checkCurrentEditedNoteChanged(decryptedNotes);
 
         await notesStore.loadTotal();
         if (!notesStore.total) {
@@ -75,15 +76,55 @@ export const useSyncStore = defineStore(
         }
 
         lastSyncTime.value = new Date().toISOString();
+        fileManagerStore.updateFileManager();
       } catch (e: unknown) {
-        if (
-          (e as AxiosError).response?.status === 401 ||
-          e instanceof CanceledError
-        ) {
-          return;
-        }
-        throw e;
+        handleSyncError(e as Error);
       }
+    };
+
+    const { handleError } = useEncryptionErrorHandler();
+    const handleSyncError = (e: Error) => {
+      if (
+        (e instanceof AxiosError && e.response?.status === 401) ||
+        e instanceof CanceledError
+      ) {
+        return;
+      }
+
+      handleError(e);
+      throw e;
+    };
+
+    const encryptNotes = async (notes: Note[]): Promise<Note[]> => {
+      return await Promise.all(
+        notes.map(async (n) => {
+          if (n.meta.published) {
+            return n;
+          }
+          return {
+            ...n,
+            content: await encrypt(n.content),
+            meta: {},
+          };
+        })
+      );
+    };
+
+    const decryptNotes = async (notes: Note[]): Promise<Note[]> => {
+      return await Promise.all(
+        notes.map(async (n) => {
+          if (n.meta.published) {
+            return n;
+          }
+          const content = await decrypt(n.content);
+          const { meta } = withMetaInfo(parse(content));
+          return {
+            ...n,
+            meta: meta as Note['meta'],
+            content: await decrypt(n.content),
+          };
+        })
+      );
     };
 
     const runSyncTask = debounce(sync, 5000);

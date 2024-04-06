@@ -43,3 +43,4 @@ export * from './git';
 export * from './package-manager';
 export * from './extract-domain';
 export * from './is-gpg-encrypted';
+export * from './generate-encryption-key';

@@ -47,6 +47,13 @@
       v-model="config.encryption.privateKeyPassphrase"
     >
     </q-input>
+    <q-btn
+      @click="generateNewGpgKeys"
+      flat
+      color="black"
+      class="full-width q-mt-md"
+      :label="$t('generate new GPG keys')"
+    />
   </template>
   <q-btn
     v-if="config.encryption.type !== 'disabled'"
@@ -59,14 +66,11 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  OrgNoteEncryption,
-  OrgNoteGpgEncryption,
-  OrgNotePasswordEncryption,
-} from 'orgnote-api';
+import { OrgNoteEncryption } from 'orgnote-api';
+import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue';
+import { useModalStore } from 'src/stores';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
-import { watch } from 'vue';
 
 const { config } = useSettingsStore();
 
@@ -77,30 +81,15 @@ const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
     { label: 'Password', value: 'password' },
   ];
 
-// TODO: master ask to encrypt everything to the server side.
-
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
   encryptionStore.decryptExistingNotes();
 };
 
-watch(
-  () => config.encryption.type,
-  () => {
-    if (
-      config.encryption.type === 'disabled' ||
-      config.encryption.type === 'password'
-    ) {
-      delete (config.encryption as unknown as OrgNoteGpgEncryption).privateKey;
-      delete (config.encryption as unknown as OrgNoteGpgEncryption).publicKey;
-    }
-    if (
-      config.encryption.type === 'disabled' ||
-      config.encryption.type === 'gpg'
-    ) {
-      delete (config.encryption as unknown as OrgNotePasswordEncryption)
-        .password;
-    }
-  }
-);
+const modalStore = useModalStore();
+const generateNewGpgKeys = async () => {
+  modalStore.open(EncryptionKeysForm, {
+    title: 'generate new GPG keys',
+  });
+};
 </script>

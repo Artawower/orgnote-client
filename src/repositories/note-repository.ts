@@ -233,7 +233,7 @@ export class NoteRepository extends BaseRepository {
     await this.store.toCollection().modify(modifyCallback);
   }
 
-  async getIds(filterCb = (n: Note) => true): Promise<string[]> {
+  async getIds(filterCb: (n: Note) => boolean = () => true): Promise<string[]> {
     const ids: string[] = [];
     return this.store
       .filter((n) => !n.deleted)
