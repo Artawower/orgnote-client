@@ -11,6 +11,7 @@ import {
 
 export class IncorrectOrMissingPrivateKeyPasswordError extends Error {}
 export class ImpossibleToDecryptWithProvidedKeysError extends Error {}
+export class IncorrectEncryptionPasswordError extends Error {}
 
 const noPrivateKeyPassphraseProvidedErrorMsg =
   'Error: Signing key is not decrypted.';
@@ -22,14 +23,13 @@ const corruptedPrivateKeyErrorMsg = 'Misformed armored text';
 
 const decriptionFailedErrorMsg =
   'Error decrypting message: Session key decryption failed.';
+const incorrectEncryptionPasswordErrorMsg =
+  'Error decrypting message: Modification detected.';
 
 export function useEncryption() {
   const { config } = useSettingsStore();
 
   const encrypt = async (text: string): Promise<string> => {
-    if (config.encryption.type === 'disabled') {
-      return text;
-    }
     if (config.encryption.type === 'gpg') {
       return await withCustomErrors(encryptViaKeys)(
         text,
@@ -38,13 +38,16 @@ export function useEncryption() {
         config.encryption.privateKeyPassphrase
       );
     }
-    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
+    if (config.encryption.type === 'password') {
+      return await withCustomErrors(encryptViaPassword)(
+        text,
+        config.encryption.password
+      );
+    }
+    return text;
   };
 
   const decrypt = async (data: string): Promise<string> => {
-    if (config.encryption.type === 'disabled') {
-      return data;
-    }
     if (config.encryption.type === 'gpg') {
       return await withCustomErrors(decryptViaKeys)(
         data,
@@ -52,7 +55,13 @@ export function useEncryption() {
         config.encryption.privateKeyPassphrase
       );
     }
-    throw new Error(`Unsupported encryption method: ${config.encryption.type}`);
+    if (config.encryption.type === 'password') {
+      return await withCustomErrors(decryptViaPassword)(
+        data,
+        config.encryption.password
+      );
+    }
+    return data;
   };
 
   const withCustomErrors = <P extends unknown[], T>(
@@ -78,9 +87,29 @@ export function useEncryption() {
         if (e.message === decriptionFailedErrorMsg) {
           throw new ImpossibleToDecryptWithProvidedKeysError(e.message);
         }
+        if (e.message === incorrectEncryptionPasswordErrorMsg) {
+          throw new IncorrectEncryptionPasswordError();
+        }
         throw e;
       }
     };
+  };
+
+  const encryptViaPassword = async (
+    text: string,
+    password: string
+  ): Promise<string> => {
+    const message = await createMessage({
+      text,
+    });
+
+    const encryptedMessage = await gpgEncrypt({
+      message,
+      format: 'armored',
+      passwords: [password],
+    });
+
+    return encryptedMessage.toString();
   };
 
   const encryptViaKeys = async (
@@ -114,6 +143,20 @@ export function useEncryption() {
     });
 
     return encryptedMessage.toString();
+  };
+
+  const decryptViaPassword = async (
+    data: string,
+    password: string
+  ): Promise<string> => {
+    const message = await readMessage({ armoredMessage: data });
+
+    const { data: decryptedText } = await gpgDecrypt({
+      message,
+      passwords: password,
+    });
+
+    return decryptedText.toString();
   };
 
   const decryptViaKeys = async (

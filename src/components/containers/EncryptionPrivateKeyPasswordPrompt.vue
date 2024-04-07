@@ -4,7 +4,11 @@
     <q-input
       class="fg-main q-mt-md"
       standout="bg-main"
-      v-model="(config.encryption as OrgNoteGpgEncryption).privateKeyPassphrase"
+      v-model="
+        (config.encryption as OrgNoteGpgEncryption & OrgNotePasswordEncryption)[
+          encryptionPasswordKey
+        ]
+      "
       :label="$t('encryption password')"
     />
     <q-card-actions align="right">
@@ -27,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import { OrgNoteGpgEncryption } from 'orgnote-api';
+import { OrgNoteGpgEncryption, OrgNotePasswordEncryption } from 'orgnote-api';
 import { useEncryptionStore, useModalStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 
@@ -43,6 +47,9 @@ const applyPasspharese = async () => {
   close();
   await encryptionStore.decryptExistingNotes();
 };
+
+const encryptionPasswordKey =
+  config.encryption.type === 'password' ? 'password' : 'privateKeyPassphrase';
 </script>
 
 <style lang="scss">

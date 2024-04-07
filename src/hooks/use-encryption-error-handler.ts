@@ -1,6 +1,7 @@
 import { useModalStore } from 'src/stores';
 import {
   ImpossibleToDecryptWithProvidedKeysError,
+  IncorrectEncryptionPasswordError,
   IncorrectOrMissingPrivateKeyPasswordError,
 } from './use-encryption';
 import EncryptionPrivateKeyPasswordPrompt from 'src/components/containers/EncryptionPrivateKeyPasswordPrompt.vue';
@@ -39,6 +40,12 @@ export function useEncryptionErrorHandler() {
         true,
         'error'
       );
+      return true;
+    }
+
+    if (e instanceof IncorrectEncryptionPasswordError) {
+      openModalForChangeEncryptionPassword();
+      notifications.notify('incorrect encryption password', true, 'error');
       return true;
     }
   };

@@ -16,7 +16,7 @@ export const useModalStore = defineStore('modal', () => {
 
   const open = (
     cmp: VueComponent,
-    modalConfig?: ModalConfig = { closable: true }
+    modalConfig: ModalConfig = { closable: true }
   ) => {
     const alreadyOpenedIndex = openedComponentStack.value.findIndex(
       (c) => c.component === cmp
