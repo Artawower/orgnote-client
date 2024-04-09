@@ -2,7 +2,7 @@
   <div class="modal-container">
     <q-btn
       class="close-btn color-secondary"
-      v-close-popup
+      @click="closeCurrentModal"
       icon="close"
       flat
       rounded
@@ -17,7 +17,12 @@
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { useModalStore } from 'src/stores';
+
+const modalStore = useModalStore();
+const closeCurrentModal = () => modalStore.close();
+</script>
 
 <style lang="scss" scoped>
 .modal-title {

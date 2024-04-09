@@ -168,4 +168,24 @@ export default {
   enable: 'включить',
   disable: 'выключить',
   download: 'загрузить',
+  'encryption settings': 'настройки шифрования',
+  'encryption password': 'пароль шифрования',
+  'GPG private key': 'GPG приватный ключ',
+  'GPG public key': 'GPG публичный ключ',
+  'correct decryption key is required':
+    'требуется корректный ключ дешифрования',
+  encryption: 'шифрование',
+  Dashboard: 'Панель управления',
+  'My Notes': 'Мои заметки',
+  Extensions: 'Расширения',
+  'private key passphrase (optional)': 'пароль приватного ключа (опционально)',
+  'generate new GPG keys': 'создать новые GPG ключи',
+  'encrypt and sync existing notes':
+    'зашифровать и синхронизировать существующие заметки',
+  generate: 'создать',
+  passphrase: 'пароль',
+  email: 'email',
+  username: 'имя пользователя',
+  'are you sure you want to generate new GPG keys? Your old keys will be lost.':
+    'вы уверены что хотите создать новые GPG ключи? Ваши старые ключи будут потеряны.',
 };

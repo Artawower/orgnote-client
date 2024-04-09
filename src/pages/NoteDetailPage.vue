@@ -1,16 +1,18 @@
 <template>
   <q-page class="height-auto" :style-fn="resetPageMinHeight">
-    <author-info
-      v-if="currentNote && !currentNote?.isMy"
-      :author="currentNote?.author"
-      class="q-pb-lg"
-    >
-      ></author-info
-    >
-    <note-detail
-      :note="currentNote"
-      :org-tree="currentOrgTree as OrgNode"
-    ></note-detail>
+    <encryption-required :note="currentNote">
+      <author-info
+        v-if="currentNote && !currentNote?.isMy"
+        :author="currentNote?.author"
+        class="q-pb-lg"
+      >
+        ></author-info
+      >
+      <note-detail
+        :note="currentNote"
+        :org-tree="currentOrgTree as OrgNode"
+      ></note-detail>
+    </encryption-required>
   </q-page>
 </template>
 
@@ -26,6 +28,7 @@ import { watch } from 'vue';
 
 import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
+import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
 
 const route = useRoute();
 
