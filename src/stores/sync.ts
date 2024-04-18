@@ -10,9 +10,9 @@ import { useEncryption } from 'src/hooks';
 import { Note } from 'src/models';
 
 import { ref } from 'vue';
-import { parse, withMetaInfo } from 'org-mode-ast';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
+import { HandlersCreatingNote } from 'orgnote-api/remote-api';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -38,7 +38,7 @@ export const useSyncStore = defineStore(
       runSyncTask();
     };
 
-    const { encrypt, decrypt } = useEncryption();
+    const { encryptNote, decryptNote } = useEncryption();
 
     const sync = async () => {
       cancelPreviousRequest();
@@ -54,7 +54,9 @@ export const useSyncStore = defineStore(
         ).map((n) => n.id);
         const rspns = await sdk.notes.notesSyncPost(
           {
-            notes: encryptedNotesFromLastSync,
+            // TODO: feat/encryption fix misstyping
+            notes:
+              encryptedNotesFromLastSync as unknown as HandlersCreatingNote[],
             deletedNotesIds,
             timestamp: lastSyncTime.value ?? new Date(0).toISOString(),
           },
@@ -67,6 +69,7 @@ export const useSyncStore = defineStore(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
         const decryptedNotes = await decryptNotes(rspns.data.data.notes);
+        console.log('✎: [line 72][sync.ts] decryptedNotes: ', decryptedNotes);
         await notesStore.upsertNotes(decryptedNotes);
         checkCurrentEditedNoteChanged(decryptedNotes);
 
@@ -96,35 +99,11 @@ export const useSyncStore = defineStore(
     };
 
     const encryptNotes = async (notes: Note[]): Promise<Note[]> => {
-      return await Promise.all(
-        notes.map(async (n) => {
-          if (n.meta.published) {
-            return n;
-          }
-          return {
-            ...n,
-            content: await encrypt(n.content),
-            meta: {},
-          };
-        })
-      );
+      return await Promise.all(notes.map(async (n) => encryptNote(n)));
     };
 
     const decryptNotes = async (notes: Note[]): Promise<Note[]> => {
-      return await Promise.all(
-        notes.map(async (n) => {
-          if (n.meta.published) {
-            return n;
-          }
-          const content = await decrypt(n.content);
-          const { meta } = withMetaInfo(parse(content));
-          return {
-            ...n,
-            meta: meta as Note['meta'],
-            content: await decrypt(n.content),
-          };
-        })
-      );
+      return await Promise.all(notes.map(async (n) => await decryptNote(n)));
     };
 
     const runSyncTask = debounce(sync, 5000);

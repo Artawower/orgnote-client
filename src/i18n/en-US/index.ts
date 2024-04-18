@@ -192,4 +192,7 @@ export default {
   username: 'username',
   'are you sure you want to generate new GPG keys? Your old keys will be lost.':
     'are you sure you want to generate new GPG keys? Your old keys will be lost.',
+  'missing or incorrect encryption password':
+    'missing or incorrect encryption password',
+  'incorrect encryption method': 'incorrect encryption method',
 };

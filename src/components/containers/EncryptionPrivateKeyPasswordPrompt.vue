@@ -49,7 +49,9 @@ const applyPasspharese = async () => {
 };
 
 const encryptionPasswordKey =
-  config.encryption.type === 'password' ? 'password' : 'privateKeyPassphrase';
+  config.encryption.type === 'gpgPassword'
+    ? 'gpgPassword'
+    : 'privateKeyPassphrase';
 </script>
 
 <style lang="scss">

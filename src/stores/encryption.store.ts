@@ -12,7 +12,7 @@ export const useEncryptionStore = defineStore('encryption', () => {
   // TODO: feat/encryption implement progress
   const encryptionProgress = ref<number>(null);
 
-  const { decrypt } = useEncryption();
+  const { decryptNote } = useEncryption();
   const notesStore = useNotesStore();
   const syncStore = useSyncStore();
   const currentNoteStore = useCurrentNoteStore();
@@ -23,7 +23,7 @@ export const useEncryptionStore = defineStore('encryption', () => {
     );
 
     for (const id of encryptedNoteIds) {
-      await decryptNote(id);
+      await decryptNoteById(id);
     }
 
     await notesStore.loadNotes();
@@ -33,11 +33,11 @@ export const useEncryptionStore = defineStore('encryption', () => {
 
   const { handleError } = useEncryptionErrorHandler();
 
-  const decryptNote = async (noteId: string) => {
+  const decryptNoteById = async (noteId: string) => {
     try {
       const note = await repositories.notes.getById(noteId);
-      note.content = await decrypt(note.content);
-      await repositories.notes.putNote(note);
+      const decryptedNote = await decryptNote(note);
+      await repositories.notes.putNote(decryptedNote);
     } catch (e) {
       handleError(e as Error);
     }

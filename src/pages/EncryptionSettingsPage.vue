@@ -15,7 +15,7 @@
     </q-select>
   </div>
 
-  <template v-if="config.encryption.type === 'password'">
+  <template v-if="config.encryption.type === 'gpgPassword'">
     <q-input
       class="fg-main q-mt-md"
       standout="bg-main"
@@ -23,7 +23,7 @@
       :label="$t('encryption password')"
     />
   </template>
-  <template v-else-if="config.encryption.type === 'gpg'">
+  <template v-else-if="config.encryption.type === 'gpgKeys'">
     <q-input
       class="q-mt-md"
       :label="$t('GPG public key')"
@@ -77,8 +77,8 @@ const { config } = useSettingsStore();
 const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
   [
     { label: 'Disabled', value: 'disabled' },
-    { label: 'GPG', value: 'gpg' },
-    { label: 'Password', value: 'password' },
+    { label: 'GPG', value: 'gpgKeys' },
+    { label: 'Password', value: 'gpgPassword' },
   ];
 
 const encryptionStore = useEncryptionStore();

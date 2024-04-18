@@ -188,4 +188,7 @@ export default {
   username: 'имя пользователя',
   'are you sure you want to generate new GPG keys? Your old keys will be lost.':
     'вы уверены что хотите создать новые GPG ключи? Ваши старые ключи будут потеряны.',
+  'missing or incorrect encryption password':
+    'отсутствует или неверный пароль шифрования',
+  'incorrect encryption method': 'неверный метод шифрования',
 };
