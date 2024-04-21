@@ -71,6 +71,7 @@ import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue
 import { useModalStore } from 'src/stores';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
+import { onBeforeUnmount } from 'vue';
 
 const { config } = useSettingsStore();
 
@@ -83,7 +84,8 @@ const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
 
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
-  encryptionStore.decryptExistingNotes();
+  // TODO: feat/encryption need to sync all notes, with updated time...
+  encryptionStore.changeEncryptionType();
 };
 
 const modalStore = useModalStore();
@@ -92,4 +94,13 @@ const generateNewGpgKeys = async () => {
     title: 'generate new GPG keys',
   });
 };
+
+const initialType = config.encryption.type;
+
+onBeforeUnmount(async () => {
+  const encryptionTypeChanged = config.encryption?.type !== initialType;
+  if (encryptionTypeChanged) {
+    await encryptExistingNotes();
+  }
+});
 </script>

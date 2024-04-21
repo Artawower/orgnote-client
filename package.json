@@ -55,7 +55,7 @@
     "katex": "0.16.9",
     "openapi-client-axios": "7.5.4",
     "org-mode-ast": "0.11.2",
-    "orgnote-api": "0.7.16",
+    "orgnote-api": "0.7.17",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.33",

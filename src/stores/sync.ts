@@ -69,7 +69,6 @@ export const useSyncStore = defineStore(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
         const decryptedNotes = await decryptNotes(rspns.data.data.notes);
-        console.log('✎: [line 72][sync.ts] decryptedNotes: ', decryptedNotes);
         await notesStore.upsertNotes(decryptedNotes);
         checkCurrentEditedNoteChanged(decryptedNotes);
 

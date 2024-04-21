@@ -17,7 +17,7 @@ export const useEncryptionStore = defineStore('encryption', () => {
   const syncStore = useSyncStore();
   const currentNoteStore = useCurrentNoteStore();
 
-  const decryptExistingNotes = async () => {
+  const changeEncryptionType = async () => {
     const encryptedNoteIds = await repositories.notes.getIds((n) =>
       isGpgEncrypted(n.content)
     );
@@ -27,8 +27,21 @@ export const useEncryptionStore = defineStore('encryption', () => {
     }
 
     await notesStore.loadNotes();
+    await updateEncryptedNotesDate();
     await syncStore.sync();
     await currentNoteStore.reloadCurrentNote();
+  };
+
+  const updateEncryptedNotesDate = async () => {
+    const encryptedNotes = await repositories.notes.getIds(
+      (n) => !n.meta.published
+    );
+    const notesUpdates = encryptedNotes.map((id) => ({
+      id,
+      changes: { updatedAt: new Date().toISOString() },
+    }));
+
+    await notesStore.bulkPathNotesLocally(notesUpdates);
   };
 
   const { handleError } = useEncryptionErrorHandler();
@@ -45,6 +58,6 @@ export const useEncryptionStore = defineStore('encryption', () => {
 
   return {
     encryptionProgress,
-    decryptExistingNotes,
+    changeEncryptionType,
   };
 });
