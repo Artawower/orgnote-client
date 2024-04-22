@@ -18,9 +18,9 @@ export const useGraphStore = defineStore('graph', () => {
   const graphLinks = ref<{ [id: string]: string[] }>({});
 
   const rebuildGraph = () => {
-    connection.emit(new UpdateGraph());
+    connection?.emit(new UpdateGraph());
     connection
-      .watchMessage<GraphUpdated>(GraphWorkerEvent.GraphUpdated)
+      ?.watchMessage<GraphUpdated>(GraphWorkerEvent.GraphUpdated)
       .subscribe((data) => {
         graph.value = data.payload;
         getGraphLinks();

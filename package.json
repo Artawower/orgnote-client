@@ -16,7 +16,7 @@
     "dev": "env-cmd -f ./.env quasar dev",
     "dev:remote": "env-cmd -f ./.env.prod quasar dev",
     "build": "quasar build",
-    "build:ssr": "./.env.prod bun run build -m ssr",
+    "build:ssr": "env-cmd -f ./.env bun run build -m ssr",
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
     "build:all": "bun run build:pwa && bun run build:android",
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",

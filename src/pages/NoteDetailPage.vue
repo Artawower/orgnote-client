@@ -29,6 +29,7 @@ import { watch } from 'vue';
 import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
 import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
+import { useMeta } from 'quasar';
 
 const route = useRoute();
 
@@ -45,4 +46,35 @@ watch(
   (id) => id && currentNoteStore.selectNoteById(route.params.id as string)
 );
 useDetailCommands();
+
+const setupMeta = () => {
+  if (!currentNote.value) {
+    return;
+  }
+
+  useMeta({
+    title: currentNote.value.meta.title,
+    meta: {
+      description: {
+        name: 'description',
+        content: currentNote.value.meta.description,
+      },
+      keywords: {
+        name: 'keywords',
+        content: currentNote.value.meta.fileTags?.join(', '),
+      },
+      ogTitle: {
+        property: 'og:title',
+        content: currentNote.value.meta.title,
+      },
+    },
+  });
+};
+
+watch(
+  () => currentNote.value,
+  () => {
+    setupMeta();
+  }
+);
 </script>
