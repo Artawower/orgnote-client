@@ -26,6 +26,7 @@ export * from './notes-statistic';
 export * from './extensions';
 export * from './editor.store';
 export * from './encryption.store';
+export * from './di.store';
 
 /*
  * If not building with SSR mode, you can

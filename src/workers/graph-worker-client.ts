@@ -1,12 +1,13 @@
+import { useDiStore } from 'src/stores';
 import { GraphAction } from './graph.actions';
 import { ClientWorkerConnection } from './worker/client-worker-connection';
+import { Pinia } from 'pinia';
 
-export const newGraphWorker = (): ClientWorkerConnection<GraphAction> => {
-  if (!process.env.SERVER) {
-    const worker = new Worker(new URL('./graph.worker.ts', import.meta.url), {
-      type: 'module',
-    });
-    const client = new ClientWorkerConnection<GraphAction>(worker);
-    return client;
+export const newGraphWorker = (
+  pinia?: Pinia
+): ClientWorkerConnection<GraphAction> => {
+  if (process.env.CLIENT) {
+    const di = useDiStore(pinia);
+    return di.graphWorker;
   }
 };
