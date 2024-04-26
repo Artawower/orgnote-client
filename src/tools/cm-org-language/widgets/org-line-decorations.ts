@@ -5,14 +5,14 @@ import {
   ViewPlugin,
   ViewUpdate,
 } from '@codemirror/view';
-import { OrgNode, walkTree } from 'org-mode-ast';
+import { NodeType, OrgNode, findParent, walkTree } from 'org-mode-ast';
 import { OrgLineClasses } from 'orgnote-api';
 
 export const orgLineDecoration = (
   getOrgNodeTree: () => OrgNode,
   orgLineClasses: OrgLineClasses
-) =>
-  ViewPlugin.fromClass(
+) => {
+  return ViewPlugin.fromClass(
     class {
       public decorations: DecorationSet = Decoration.none;
       private lastPosition: number;
@@ -36,22 +36,15 @@ export const orgLineDecoration = (
               ? lineDecoration(n)
               : lineDecoration;
 
-          // NOTE: this small hack needed to highlight lines inside nested src block.
-          // Cause nested src block is just a string with \n characters.
-          const linedValues = n.value?.split('\n');
-          let pos = n.start;
-          linedValues?.forEach((v) => {
-            lineDecorations.push(
-              Decoration.line({
-                class: lineClass,
-              }).range(pos, pos)
-            );
-            pos += v.length + 1;
-          });
-
-          if (linedValues) {
+          if (!lineClass) {
             return;
           }
+
+          this.applyLineDecorationsForSrcParentBLock(
+            lineDecorations,
+            n,
+            lineClass
+          );
 
           lineDecorations.push(
             Decoration.line({
@@ -60,7 +53,33 @@ export const orgLineDecoration = (
           );
         });
 
+        lineDecorations.sort((p, c) => p.from - c.from);
+
         this.decorations = Decoration.set(lineDecorations);
+      }
+
+      private applyLineDecorationsForSrcParentBLock(
+        lineDecorations: Range<Decoration>[],
+        node: OrgNode,
+        lineClass: string
+      ): void {
+        // NOTE: this small hack needed to highlight lines inside nested src block.
+        // Cause nested src block is just a string with \n characters.
+        const srcParent = findParent(node, (n) => n.is(NodeType.SrcBlock));
+        if (!srcParent) {
+          return;
+        }
+        const linedValues = node.value?.split('\n');
+        let pos = node.start;
+
+        linedValues?.forEach((v) => {
+          const lineDecoration = Decoration.line({
+            class: lineClass,
+          }).range(pos, pos);
+          pos += v.length + 1;
+
+          lineDecorations.push(lineDecoration);
+        });
       }
 
       public update(update: ViewUpdate): void {
@@ -79,3 +98,4 @@ export const orgLineDecoration = (
       decorations: (v) => v.decorations,
     }
   );
+};
