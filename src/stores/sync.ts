@@ -18,10 +18,11 @@ export const useSyncStore = defineStore(
   'sync',
   () => {
     const lastSyncTime = ref<string>();
-
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
     const fileManagerStore = useFileManagerStore();
+
+    const syncTimeTimeout = 5000;
 
     let abortController: AbortController;
 
@@ -54,7 +55,7 @@ export const useSyncStore = defineStore(
         ).map((n) => n.id);
         const rspns = await sdk.notes.notesSyncPost(
           {
-            // TODO: feat/encryption fix misstyping
+            // TODO: fix misstyping
             notes:
               encryptedNotesFromLastSync as unknown as HandlersCreatingNote[],
             deletedNotesIds,
@@ -105,7 +106,7 @@ export const useSyncStore = defineStore(
       return await Promise.all(notes.map(async (n) => await decryptNote(n)));
     };
 
-    const runSyncTask = debounce(sync, 5000);
+    const runSyncTask = debounce(sync, syncTimeTimeout);
 
     const cancelPreviousRequest = () => {
       abortController?.abort();
