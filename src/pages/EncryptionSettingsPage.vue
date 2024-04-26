@@ -84,7 +84,6 @@ const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
 
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
-  // TODO: feat/encryption need to sync all notes, with updated time...
   encryptionStore.changeEncryptionType();
 };
 
