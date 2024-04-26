@@ -9,35 +9,49 @@ import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
 
 export const useEncryptionStore = defineStore('encryption', () => {
-  // TODO: feat/encryption implement progress
+  // TODO: implement progress.
+  // Use progress store ?
   const encryptionProgress = ref<number>(null);
 
-  const { decrypt } = useEncryption();
+  const { decryptNote } = useEncryption();
   const notesStore = useNotesStore();
   const syncStore = useSyncStore();
   const currentNoteStore = useCurrentNoteStore();
 
-  const decryptExistingNotes = async () => {
+  const changeEncryptionType = async () => {
     const encryptedNoteIds = await repositories.notes.getIds((n) =>
       isGpgEncrypted(n.content)
     );
 
     for (const id of encryptedNoteIds) {
-      await decryptNote(id);
+      await decryptNoteById(id);
     }
 
     await notesStore.loadNotes();
+    await updateEncryptedNotesDate();
     await syncStore.sync();
     await currentNoteStore.reloadCurrentNote();
   };
 
+  const updateEncryptedNotesDate = async () => {
+    const encryptedNotes = await repositories.notes.getIds(
+      (n) => !n.meta.published
+    );
+    const notesUpdates = encryptedNotes.map((id) => ({
+      id,
+      changes: { updatedAt: new Date().toISOString() },
+    }));
+
+    await notesStore.bulkPathNotesLocally(notesUpdates);
+  };
+
   const { handleError } = useEncryptionErrorHandler();
 
-  const decryptNote = async (noteId: string) => {
+  const decryptNoteById = async (noteId: string) => {
     try {
       const note = await repositories.notes.getById(noteId);
-      note.content = await decrypt(note.content);
-      await repositories.notes.putNote(note);
+      const decryptedNote = await decryptNote(note);
+      await repositories.notes.putNote(decryptedNote);
     } catch (e) {
       handleError(e as Error);
     }
@@ -45,6 +59,6 @@ export const useEncryptionStore = defineStore('encryption', () => {
 
   return {
     encryptionProgress,
-    decryptExistingNotes,
+    changeEncryptionType,
   };
 });

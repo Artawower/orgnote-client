@@ -82,7 +82,7 @@ const createNewGpgKeys = async () => {
   settingsStore.config.encryption = {
     publicKey,
     privateKey,
-    type: 'gpg',
+    type: 'gpgKeys',
   };
 };
 </script>

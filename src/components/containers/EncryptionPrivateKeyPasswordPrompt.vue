@@ -45,11 +45,13 @@ const disableEncryption = async () => {
 const encryptionStore = useEncryptionStore();
 const applyPasspharese = async () => {
   close();
-  await encryptionStore.decryptExistingNotes();
+  await encryptionStore.changeEncryptionType();
 };
 
 const encryptionPasswordKey =
-  config.encryption.type === 'password' ? 'password' : 'privateKeyPassphrase';
+  config.encryption.type === 'gpgPassword'
+    ? 'gpgPassword'
+    : 'privateKeyPassphrase';
 </script>
 
 <style lang="scss">

@@ -15,7 +15,7 @@
     </q-select>
   </div>
 
-  <template v-if="config.encryption.type === 'password'">
+  <template v-if="config.encryption.type === 'gpgPassword'">
     <q-input
       class="fg-main q-mt-md"
       standout="bg-main"
@@ -23,7 +23,7 @@
       :label="$t('encryption password')"
     />
   </template>
-  <template v-else-if="config.encryption.type === 'gpg'">
+  <template v-else-if="config.encryption.type === 'gpgKeys'">
     <q-input
       class="q-mt-md"
       :label="$t('GPG public key')"
@@ -71,19 +71,20 @@ import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue
 import { useModalStore } from 'src/stores';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
+import { onBeforeUnmount } from 'vue';
 
 const { config } = useSettingsStore();
 
 const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
   [
     { label: 'Disabled', value: 'disabled' },
-    { label: 'GPG', value: 'gpg' },
-    { label: 'Password', value: 'password' },
+    { label: 'GPG', value: 'gpgKeys' },
+    { label: 'Password', value: 'gpgPassword' },
   ];
 
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
-  encryptionStore.decryptExistingNotes();
+  encryptionStore.changeEncryptionType();
 };
 
 const modalStore = useModalStore();
@@ -92,4 +93,13 @@ const generateNewGpgKeys = async () => {
     title: 'generate new GPG keys',
   });
 };
+
+const initialType = config.encryption.type;
+
+onBeforeUnmount(async () => {
+  const encryptionTypeChanged = config.encryption?.type !== initialType;
+  if (encryptionTypeChanged) {
+    await encryptExistingNotes();
+  }
+});
 </script>

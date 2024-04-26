@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Note } from 'src/models';
+import { Note, NotePreview } from 'src/models';
 import {
   useFileManagerStore,
   useNotesStatisticStore,
@@ -106,7 +106,7 @@ onBeforeMount(async () => {
   await notesStatisticStore.loadStatistic();
 });
 
-const toggleBookmark = async (note: Note) => {
+const toggleBookmark = async (note: Note | NotePreview) => {
   await notesStore.toggleBookmark(note);
   await notesStatisticStore.loadBookmarks();
 };

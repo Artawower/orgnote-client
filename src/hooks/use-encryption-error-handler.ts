@@ -1,12 +1,14 @@
 import { useModalStore } from 'src/stores';
+import EncryptionPrivateKeyPasswordPrompt from 'src/components/containers/EncryptionPrivateKeyPasswordPrompt.vue';
+import { useNotifications } from './notification';
+import SettingsPage from 'src/pages/SettingsPage.vue';
 import {
   ImpossibleToDecryptWithProvidedKeysError,
   IncorrectEncryptionPasswordError,
   IncorrectOrMissingPrivateKeyPasswordError,
-} from './use-encryption';
-import EncryptionPrivateKeyPasswordPrompt from 'src/components/containers/EncryptionPrivateKeyPasswordPrompt.vue';
-import { useNotifications } from './notification';
-import SettingsPage from 'src/pages/SettingsPage.vue';
+  NoKeysProvidedError,
+  NoPasswordProvidedError,
+} from 'orgnote-api/encryption';
 
 export function useEncryptionErrorHandler() {
   const modalStore = useModalStore();
@@ -46,6 +48,15 @@ export function useEncryptionErrorHandler() {
     if (e instanceof IncorrectEncryptionPasswordError) {
       openModalForChangeEncryptionPassword();
       notifications.notify('incorrect encryption password', true, 'error');
+      return true;
+    }
+
+    if (
+      e instanceof NoPasswordProvidedError ||
+      e instanceof NoKeysProvidedError
+    ) {
+      openModalForChangEncryptionKeys();
+      notifications.notify('incorrect encryption method', true, 'error');
       return true;
     }
   };
