@@ -14,41 +14,67 @@
 </template>
 
 <script lang="ts" setup>
+import { ModelsPublicNoteEncryptedEnum } from 'orgnote-api/remote-api';
 import { version } from '../../package.json';
 import { useQuasar } from 'quasar';
 
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
+import { useOrgNoteApiStore } from 'src/stores';
 
 const $q = useQuasar();
 
 const prettyQuasarPlatform = [
   ...Object.keys($q.platform.is).map(
     (key: string) =>
-      ` ${key}: ${$q.platform.is[key as keyof typeof $q.platform.is]}`
+      `  ${key}: ${$q.platform.is[key as keyof typeof $q.platform.is]}`
   ),
   ` standalone: ${!!window.navigator.standalone}`,
 ].join('\n');
 
+const { orgNoteApi } = useOrgNoteApiStore();
+
+const encryption = orgNoteApi.configuration().encryption;
+
+const getEncryptionData = () => {
+  if (
+    !encryption.type ||
+    encryption.type === ModelsPublicNoteEncryptedEnum.Disabled
+  ) {
+    return '';
+  }
+
+  if (encryption.type === ModelsPublicNoteEncryptedEnum.GpgPassword) {
+    return `\n  Password provided: ${!!encryption.password}`;
+  }
+
+  return `\n  Public key provided: ${!!encryption.publicKey}
+  Private key provided: ${!!encryption.privateKey}
+  Passphrase provided: ${!!encryption.privateKeyPassphrase}`;
+};
+
 const deviceSpecificInfo = $q.platform.is.cordova
   ? `\nDevice info:
- Model: ${device.model}
- Manufacturer: ${device.manufacturer}
- ${$q.platform.is.android ? 'SDK version: ' + device.sdkVersion : ''}
- Version: ${device.version}`
+  Model: ${device.model}
+  Manufacturer: ${device.manufacturer}
+  ${$q.platform.is.android ? 'SDK version: ' + device.sdkVersion : ''}
+  Version: ${device.version}`
   : '';
 
 const systemInfo = `OrgNote: ${version}
 Language: ${navigator.language}
 
 Screen:
- Screen resolution: ${screen.width}x${screen.height}
- Screen color depth: ${screen.colorDepth}
- Device pixel ratio: ${window.devicePixelRatio}
+  Screen resolution: ${screen.width}x${screen.height}
+  Screen color depth: ${screen.colorDepth}
+  Device pixel ratio: ${window.devicePixelRatio}
+
+Encryption:
+  Type: ${encryption.type}${getEncryptionData()}
 
 Env:
- API URL: ${process.env.API_URL}
- AUTH URL: ${process.env.AUTH_URL}
- MODE: ${process.env.NODE_ENV}
+  API URL: ${process.env.API_URL}
+  AUTH URL: ${process.env.AUTH_URL}
+  MODE: ${process.env.NODE_ENV}
 
 Quasar info:
 ${prettyQuasarPlatform}
