@@ -40,13 +40,7 @@ register(process.env.SERVICE_WORKER_FILE, {
     if (!navigator.onLine) {
       return;
     }
-    window.orgnote.interaction
-      .confirm('new version available!', 'please, restart the app!')
-      .then((res) => {
-        if (res) {
-          window.location.reload();
-        }
-      })
+    window.orgnote.system.setNewFilesAvailable(true);
   },
 
   offline () {

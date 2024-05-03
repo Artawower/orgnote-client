@@ -1,13 +1,9 @@
+import { Modal } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { ModalConfig } from 'src/api';
 import { VueComponent } from 'src/models';
 
 import { computed, ref, shallowRef } from 'vue';
-
-interface Modal {
-  config: ModalConfig;
-  component: VueComponent;
-}
 
 export const useModalStore = defineStore('modal', () => {
   const opened = ref<boolean>(false);

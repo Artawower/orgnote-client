@@ -3,6 +3,7 @@ import { boot } from 'quasar/wrappers';
 import {
   AuthApiFactory,
   NotesApiFactory,
+  SystemInfoApiFactory,
   TagsApiFactory,
 } from 'src/generated/api';
 import { initFilesApi } from 'src/patches/file-upload-patch';
@@ -36,6 +37,7 @@ axiosInstance.interceptors.request.use(
 const auth = AuthApiFactory(null, '', axiosInstance);
 const notes = NotesApiFactory(null, '', axiosInstance);
 const tags = TagsApiFactory(null, '', axiosInstance);
+const system = SystemInfoApiFactory(null, '', axiosInstance);
 const files = initFilesApi(axiosInstance);
 
 const sdk = {
@@ -43,6 +45,7 @@ const sdk = {
   notes,
   tags,
   files,
+  system,
 } as const;
 
 export default boot(({ app }) => {

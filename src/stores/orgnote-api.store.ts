@@ -8,6 +8,9 @@ import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
 import { Router, useRouter } from 'vue-router';
 import { useEditorStore } from './editor.store';
 import { useCommandsStore } from './commands';
+import { useSystemInfoStore } from './system-info';
+import { useModalStore } from './modal';
+import { Modal } from 'orgnote-api';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -94,6 +97,8 @@ const useUI = (
     styleEl?.remove();
   };
 
+  const modalStore = useModalStore();
+
   return {
     applyTheme: (theme) => applyCSSVariables(theme),
     setThemeByMode: async (themeName?: string) =>
@@ -112,12 +117,14 @@ const useUI = (
       document.head.appendChild(headerStyleEl);
     },
     removeStyles,
+    openModal: (modal: Modal) => modalStore.open(modal.component, modal.config),
   };
 };
 
 const useSystem = (
   interaction: OrgNoteApi['interaction']
 ): OrgNoteApi['system'] => {
+  const systemInfoStore = useSystemInfoStore();
   return {
     reload: async (params?: { verbose: boolean }): Promise<void> => {
       if (!params?.verbose) {
@@ -131,6 +138,12 @@ const useSystem = (
       if (reload) {
         window.location.reload();
       }
+    },
+    setNewFilesAvailable: (status?: boolean) => {
+      if (!status) {
+        return;
+      }
+      systemInfoStore.newFilesAvailable = status;
     },
   };
 };
