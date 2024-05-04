@@ -52,7 +52,12 @@ const viewStore = useViewStore();
   margin-left: calc(var(--sidebar-width) / 2);
 
   &.choice {
-    height: 50%;
+    @media (max-height: 600px) {
+      height: calc(100% - 2 * var(--completion-float-top));
+    }
+    @media (min-height: 600px) {
+      height: 50%;
+    }
   }
 
   &.mobile {

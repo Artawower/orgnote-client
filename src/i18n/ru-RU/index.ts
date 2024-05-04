@@ -191,4 +191,9 @@ export default {
   'missing or incorrect encryption password':
     'отсутствует или неверный пароль шифрования',
   'incorrect encryption method': 'неверный метод шифрования',
+  'upload public key': 'загрузить публичный ключ',
+  'upload private key': 'загрузить приватный ключ',
+  'new release available': 'доступна новая версия',
+  'install update': 'установить обновление',
+  'check details': 'посмотреть детали',
 };

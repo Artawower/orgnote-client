@@ -31,6 +31,13 @@
       v-model="config.encryption.publicKey"
       type="textarea"
     ></q-input>
+    <q-btn
+      @click="uploadPublicKey"
+      flat
+      color="black"
+      class="full-width"
+      :label="$t('upload public key')"
+    />
 
     <q-input
       class="q-mt-md"
@@ -39,6 +46,13 @@
       v-model="config.encryption.privateKey"
       type="textarea"
     ></q-input>
+    <q-btn
+      @click="uploadPrivateKey"
+      flat
+      color="black"
+      class="full-width"
+      :label="$t('upload private key')"
+    />
 
     <q-input
       :label="$t('private key passphrase (optional)')"
@@ -66,12 +80,13 @@
 </template>
 
 <script lang="ts" setup>
-import { OrgNoteEncryption } from 'orgnote-api';
+import { OrgNoteEncryption, OrgNoteGpgEncryption } from 'orgnote-api';
 import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue';
 import { useModalStore } from 'src/stores';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { onBeforeUnmount } from 'vue';
+import { uploadFile } from 'src/tools';
 
 const { config } = useSettingsStore();
 
@@ -84,7 +99,6 @@ const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
 
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
-  // TODO: feat/encryption need to sync all notes, with updated time...
   encryptionStore.changeEncryptionType();
 };
 
@@ -96,6 +110,18 @@ const generateNewGpgKeys = async () => {
 };
 
 const initialType = config.encryption.type;
+
+const uploadPrivateKey = async () => {
+  const uploadedPrivateKey = await uploadFile();
+  (config.encryption as OrgNoteGpgEncryption).privateKey =
+    await uploadedPrivateKey.text();
+};
+
+const uploadPublicKey = async () => {
+  const uploadedPublicKey = await uploadFile();
+  (config.encryption as OrgNoteGpgEncryption).publicKey =
+    await uploadedPublicKey.text();
+};
 
 onBeforeUnmount(async () => {
   const encryptionTypeChanged = config.encryption?.type !== initialType;

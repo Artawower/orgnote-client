@@ -55,7 +55,7 @@ const executeCode = async () => {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .src-code-wrapper {
   position: relative;
 
@@ -64,7 +64,6 @@ const executeCode = async () => {
     display: none !important;
     gap: var(--gap-sm);
     position: absolute;
-    right: 10px;
     top: var(--gap-sm);
     z-index: 1000;
   }

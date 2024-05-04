@@ -9,7 +9,8 @@ import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
 
 export const useEncryptionStore = defineStore('encryption', () => {
-  // TODO: feat/encryption implement progress
+  // TODO: implement progress.
+  // Use progress store ?
   const encryptionProgress = ref<number>(null);
 
   const { decryptNote } = useEncryption();

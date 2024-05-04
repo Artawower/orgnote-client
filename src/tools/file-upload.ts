@@ -1,7 +1,11 @@
-export function uploadFiles(params?: {
+export interface UploadParams {
   accept?: string;
+}
+
+export interface MultipleUploadParams extends UploadParams {
   multiple?: boolean;
-}): Promise<FileList> {
+}
+export function uploadFiles(params: MultipleUploadParams): Promise<FileList> {
   const input = document.createElement('input');
   input.type = 'file';
   input.multiple = !!params?.multiple;
@@ -31,4 +35,9 @@ export function uploadFiles(params?: {
 
   input.click();
   return fileUploadPromise;
+}
+
+export async function uploadFile(params: UploadParams = {}): Promise<File> {
+  const files = await uploadFiles({ ...params, multiple: false });
+  return files?.[0];
 }

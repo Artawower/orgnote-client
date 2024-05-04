@@ -33,6 +33,14 @@
   }
 }
 
+.active-danger {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--red);
+  }
+}
+
 .column-center {
   @include flexify(column, center, center);
 }

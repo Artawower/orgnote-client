@@ -14,8 +14,18 @@
       autocomplete="off"
       :autofocus="autofocus"
       :value="props.modelValue"
-      @input="($event) => emits('update:modelValue', ($event.target as HTMLInputElement).value)"
+      @input="
+        ($event) =>
+          emits('update:modelValue', ($event.target as HTMLInputElement).value)
+      "
       :placeholder="$t(placeholder)"
+    />
+    <q-icon
+      @click="resetSearch"
+      name="cancel"
+      role="button"
+      :size="theme === 'tiny' ? '1rem' : '1.6rem'"
+      class="reset-search active-danger"
     />
   </div>
 </template>
@@ -48,12 +58,19 @@ const tryAutofocus = () => {
 };
 
 onMounted(() => tryAutofocus());
+
+const resetSearch = () => {
+  emits('update:modelValue', '');
+  tryAutofocus();
+};
 </script>
 
 <style lang="scss">
 .search-wrapper {
   position: relative;
   width: 100%;
+
+  --top-icons-alignment: 52%;
 }
 
 .search-input {
@@ -81,8 +98,15 @@ onMounted(() => tryAutofocus());
 .magnifier {
   position: absolute;
   left: 0;
-  top: 52%;
+  top: var(--top-icons-alignment);
   transform: translateY(-50%);
   color: var(--fg-alt);
+}
+
+.reset-search {
+  position: absolute;
+  right: 0;
+  top: var(--top-icons-alignment);
+  transform: translateY(-50%);
 }
 </style>

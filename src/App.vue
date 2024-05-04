@@ -18,14 +18,19 @@ import {
   useLoggerStore,
   useSyncStore,
   useOrgNoteApiStore,
+  useSystemInfoStore,
 } from './stores';
 import { decodeAuthState, extractAuthQueryInfo } from './tools';
 
 const syncStore = useSyncStore();
 
+// TODO: master create bootstrap hook
 useLoggerStore().init();
 
 syncStore.markToSync();
+
+const systemStore = useSystemInfoStore();
+systemStore.loadNewReleaseInfo();
 
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);

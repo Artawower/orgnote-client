@@ -195,4 +195,9 @@ export default {
   'missing or incorrect encryption password':
     'missing or incorrect encryption password',
   'incorrect encryption method': 'incorrect encryption method',
+  'upload public key': 'upload public key',
+  'upload private key': 'upload private key',
+  'new release available': 'new release available',
+  'install update': 'install update',
+  'check details': 'check details',
 };
