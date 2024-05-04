@@ -25,6 +25,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
     ].filter((c: Command) => !!c)
   );
   const systemActions = shallowRef<Command[]>([
+    orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
     orgNoteApi.commands.get(C.SETTINGS),
     orgNoteApi.commands.get(C.PROJECT_INFO),
     orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
