@@ -29,7 +29,6 @@
         </div>
       </template>
     </dynamic-tooltip>
-    <!-- <q-tooltip @show="loadNote" class="text-inherit"> </q-tooltip> -->
   </span>
 </template>
 
@@ -67,7 +66,7 @@ const openNote = () => {
 };
 </script>
 
-<styles lang="scss" scoped>
+<style lang="scss" scoped>
 .note-preview-wrapper {
   max-width: var(--note-preview-link-max-width);
   width: var(--note-preview-link-max-width);
@@ -85,4 +84,4 @@ const openNote = () => {
 article {
   width: 100%;
 }
-</styles>
+</style>

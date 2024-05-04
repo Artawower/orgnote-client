@@ -8,13 +8,14 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-const { configure } = require('quasar/wrappers');
-const { checker } = require('vite-plugin-checker');
+import { configure } from 'quasar/wrappers';
+import { checker } from 'vite-plugin-checker';
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
-const path = require('path');
+import path from 'path';
+import { ESLint } from 'eslint';
 
-module.exports = configure(function (ctx) {
+export default configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -23,6 +24,7 @@ module.exports = configure(function (ctx) {
       // rawOptions = {},
       warnings: true,
       errors: true,
+      formatter: ESLint.Formatter,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
@@ -108,6 +110,14 @@ module.exports = configure(function (ctx) {
             // you need to set i18n resource including paths !
             include: path.resolve(__dirname, './src/i18n/**'),
           },
+          ['vite-plugin-checker', {
+            vueTsc: {
+              tsconfigPath: 'tsconfig.vue-tsc.json'
+            },
+            eslint: {
+              lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"'
+            }
+          }, { server: false }],
         ],
       ],
 
@@ -199,7 +209,7 @@ module.exports = configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
-      ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
+      pwaOfflineHtmlFilename: 'offline.html', // do NOT use index.html as name!
       // will mess up SSR
 
       // extendSSRWebserverConf (esbuildConf) {},

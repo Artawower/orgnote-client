@@ -16,8 +16,18 @@
       "tools/*": ["src/tools/*"],
       "stores/*": ["src/stores/*"]
     },
-    "lib": ["DOM", "DOM.iterable"]
+    "lib": ["es2021", "DOM", "DOM.iterable"]
   },
-  "exclude": ["node_modules", "./node_modules", "./node_modules/*", "dist"],
+  "exclude": [
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "./dist",
+    "./.quasar",
+    "./node_modules",
+    "./src-capacitor",
+    "./src-cordova",
+    "./quasar.config.*.temporary.compiled*"
+  ],
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

@@ -33,3 +33,4 @@ local/*
 build-local.sh
 
 org-note-release-signed.aab
+/quasar.config.*.temporary.compiled*

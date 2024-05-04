@@ -31,11 +31,11 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
       {
         denylist: [
-          /sw\.js$/,
-          /workbox-(.)*\.js$/,
           /index\.html$/,
           /api\/(.)*/,
           /builds\/(.)*/,
+          new RegExp(process.env.PWA_SERVICE_WORKER_REGEX),
+          /workbox-(.)*\.js$/
         ],
       }
     )

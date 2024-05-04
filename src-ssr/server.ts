@@ -11,6 +11,7 @@
  */
 import express from 'express'
 import compression from 'compression'
+import { ssrListen } from 'quasar/wrappers'
 
 /**
  * Create your webserver and return its instance.
@@ -42,14 +43,15 @@ export function create (/* { ... } */) {
  * For production, you can instead export your
  * handler for serverless use or whatever else fits your needs.
  */
-export async function listen ({ app, port, isReady }) {
-  await isReady()
-  return await app.listen(port, () => {
-    if (process.env.PROD) {
-      console.log('Server listening at port ' + port)
-    }
+export const listen = ssrListen(async ({ app, devHttpsApp, port, isReady }) => {
+    await isReady()
+   const server = devHttpsApp || app
+   return server.listen(port, () => {
+      if (process.env.PROD) {
+        console.log('Server listening at port ' + port)
+      }
+    })
   })
-}
 
 /**
  * Should close the server and free up any resources.

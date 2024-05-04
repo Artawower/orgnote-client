@@ -3,6 +3,9 @@ import { BrowserWindow, app } from 'electron';
 import { shell } from 'electron';
 import os from 'os';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+const currentDir = fileURLToPath(new URL('.', import.meta.url));
 
 require('@electron/remote/main').initialize();
 // needed in case process is undefined under Linux
@@ -29,7 +32,7 @@ function createWindow() {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    icon: path.resolve(__dirname, 'icons/icon.png'), // tray icon
+    icon: path.resolve(currentDir, 'icons/icon.png'),
     width: 1000,
     height: 600,
     useContentSize: true,
@@ -38,14 +41,24 @@ function createWindow() {
       sandbox: false,
       contextIsolation: true,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
-      preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
+      preload: path.resolve(
+        currentDir,
+        path.join(
+          process.env.QUASAR_ELECTRON_PRELOAD_FOLDER,
+          'electron-preload' + process.env.QUASAR_ELECTRON_PRELOAD_EXTENSION
+        )
+      ),
     },
   });
   require('@electron/remote/main').enable(mainWindow.webContents);
 
   openDevTools(mainWindow);
 
-  mainWindow.loadURL(process.env.APP_URL);
+  if (process.env.DEV) {
+    mainWindow.loadURL(process.env.APP_URL);
+  } else {
+    mainWindow.loadFile('index.html');
+  }
 
   // NOTE: master handle external links
   mainWindow.webContents.setWindowOpenHandler((details) => {
