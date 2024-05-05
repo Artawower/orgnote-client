@@ -17,9 +17,9 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
     return;
   }
 
-  const parentElementTopPadding = parseInt(
-    window.getComputedStyle(parentElement).paddingTop
-  );
+  const parentElementTopPadding = process.env.CLIENT
+    ? parseInt(window.getComputedStyle(parentElement).paddingTop)
+    : 0;
   const menuWidth = 30;
   const menuHeight = 24;
   const paddingTop = getCssNumericProperty(activeLineElement, 'padding-top');

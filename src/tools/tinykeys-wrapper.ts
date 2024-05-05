@@ -1,5 +1,3 @@
-import { tinykeys } from 'tinykeys';
-
 /*
  * This is solution for allowing enable/disable keybinding inside input fields
  * original solution: https://github.com/jamiebuilds/tinykeys/issues/17#issuecomment-1163109758
@@ -29,5 +27,7 @@ export default function hotkeys(
         ])
       )
     : bindings;
-  return tinykeys(target, wrappedBindings);
+  return process.env.CLIENT
+    ? window.tinykeys(target, wrappedBindings)
+    : () => {};
 }

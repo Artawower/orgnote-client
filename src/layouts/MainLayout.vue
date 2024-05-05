@@ -105,7 +105,11 @@ const notesImportStore = useNotesImportStore();
 
 const toolbarStore = useToolbarStore();
 
-const alignViaVirtualkeyboard = debounce(() => window.scrollTo(0, 0));
+const alignViaVirtualkeyboard = debounce(() => {
+  if (process.env.CLIENT) {
+    window.scrollTo(0, 0);
+  }
+});
 
 const { viewportHeight, keyboardOpened } = onMobileViewportChanged((info) => {
   toolbarStore.showToolbar = !info.keyboardOpened.value;

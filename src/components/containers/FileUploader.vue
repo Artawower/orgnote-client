@@ -44,24 +44,27 @@ const dragOnTarget = computed(() => dragCount.value > 0);
 const extractFiles = (
   items: DataTransferItemList
 ): Promise<FileSystemFileEntry[]> => {
-  return Array.from(items).reduce(async (asyncAcc, item) => {
-    const acc = await asyncAcc;
-    const entry = item.webkitGetAsEntry();
+  return Array.from(items).reduce(
+    async (asyncAcc, item) => {
+      const acc = await asyncAcc;
+      const entry = item.webkitGetAsEntry();
 
-    if (!entry) return acc;
+      if (!entry) return acc;
 
-    if (entry.isFile) {
-      acc.push(entry as FileSystemFileEntry);
+      if (entry.isFile) {
+        acc.push(entry as FileSystemFileEntry);
+        return acc;
+      }
+      const nestedFiles = await traverseDirectory(
+        entry as FileSystemDirectoryEntry,
+        props.accept
+      );
+
+      acc.push(...nestedFiles);
       return acc;
-    }
-    const nestedFiles = await traverseDirectory(
-      entry as FileSystemDirectoryEntry,
-      props.accept
-    );
-
-    acc.push(...nestedFiles);
-    return acc;
-  }, Promise.resolve([]) as Promise<FileSystemFileEntry[]>);
+    },
+    Promise.resolve([]) as Promise<FileSystemFileEntry[]>
+  );
 };
 
 const onDrop = async (e: DragEvent) => {
@@ -81,20 +84,22 @@ const dragLeave = (e: DragEvent) => {
   e.preventDefault();
 };
 
-window.addEventListener(
-  'dragover',
-  function (e) {
-    e.preventDefault();
-  },
-  false
-);
-window.addEventListener(
-  'drop',
-  function (e) {
-    e.preventDefault();
-  },
-  false
-);
+if (process.env.CLIENT) {
+  window.addEventListener(
+    'dragover',
+    function (e) {
+      e.preventDefault();
+    },
+    false
+  );
+  window.addEventListener(
+    'drop',
+    function (e) {
+      e.preventDefault();
+    },
+    false
+  );
+}
 </script>
 
 <style lang="scss" scoped>

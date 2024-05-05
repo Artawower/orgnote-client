@@ -40,7 +40,9 @@ register(process.env.SERVICE_WORKER_FILE, {
     if (!navigator.onLine) {
       return;
     }
-    window.orgnote.system.setNewFilesAvailable(true);
+    if (process.env.CLIENT) {
+      window.orgnote.system.setNewFilesAvailable(true);
+    }
   },
 
   offline () {

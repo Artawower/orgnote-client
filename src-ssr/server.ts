@@ -44,13 +44,13 @@ export function create (/* { ... } */) {
  * handler for serverless use or whatever else fits your needs.
  */
 export const listen = ssrListen(async ({ app, devHttpsApp, port, isReady }) => {
-    await isReady()
-   const server = devHttpsApp || app
-   return server.listen(port, () => {
-      if (process.env.PROD) {
-        console.log('Server listening at port ' + port)
-      }
-    })
+  await isReady()
+  const server = devHttpsApp || app
+  return server.listen(port, () => {
+    if (process.env.PROD) {
+      console.log('Server listening at port ' + port)
+    }
+  })
   })
 
 /**

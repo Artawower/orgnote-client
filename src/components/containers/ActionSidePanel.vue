@@ -95,9 +95,12 @@ const closeSideBarForMobile = () => {
   sidebarStore.close();
 };
 
-const windowWidth = ref(window.innerWidth);
+const windowWidth = ref(process.env.CLIENT ? window.innerWidth : 0);
 
 const setupWindowWidth = () => {
+  if (!process.env.CLIENT) {
+    return;
+  }
   windowWidth.value = window.innerWidth;
 };
 
@@ -109,8 +112,14 @@ const showSidebarForSmalDevice = () => {
 };
 
 onBeforeMount(() => showSidebarForSmalDevice());
-onMounted(() => window.addEventListener('resize', setupWindowWidth));
-onUnmounted(() => window.removeEventListener('resize', setupWindowWidth));
+onMounted(
+  () =>
+    process.env.CLIENT && window.addEventListener('resize', setupWindowWidth)
+);
+onUnmounted(
+  () =>
+    process.env.CLIENT && window.removeEventListener('resize', setupWindowWidth)
+);
 
 const drawerWidth = computed(() => {
   if (fullWidth.value) {

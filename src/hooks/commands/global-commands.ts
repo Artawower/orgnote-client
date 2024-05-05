@@ -20,6 +20,7 @@ export function getGlobalCommands(): Command[] {
       description: 'report bug',
       group: 'debug',
       handler: () =>
+        process.env.CLIENT &&
         window.open(
           'https://github.com/Artawower/orgnote-client/issues/new/choose',
           '_blank'

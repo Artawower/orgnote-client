@@ -54,6 +54,9 @@ export const useAuthStore = defineStore(
       environment?: string;
       redirectUrl?: string;
     }) => {
+      if (!process.env.CLIENT) {
+        return;
+      }
       const state: AuthState = { environment, redirectUrl };
       const authUrl = getAuthUrl(provider, state);
 

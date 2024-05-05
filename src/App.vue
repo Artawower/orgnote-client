@@ -23,11 +23,10 @@ import {
 import { decodeAuthState, extractAuthQueryInfo } from './tools';
 
 const syncStore = useSyncStore();
+syncStore.markToSync();
 
 // TODO: master create bootstrap hook
 useLoggerStore().init();
-
-syncStore.markToSync();
 
 const systemStore = useSystemInfoStore();
 systemStore.loadNewReleaseInfo();
@@ -58,16 +57,20 @@ async function handleCordovaAuth(url: string) {
 
   await authStore.authUser(personalInfo, searchParams.get('token'));
 
-  if (state.redirectUrl) {
+  if (process.env.CLIENT && state.redirectUrl) {
     window.location.assign(`/#${state.redirectUrl}`);
     return;
   }
 
   router.push({ name: RouteNames.Home });
 }
-(window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =
-  handleCordovaAuth.bind(this);
-
 const { orgNoteApi } = useOrgNoteApiStore();
-window.orgnote = orgNoteApi;
+
+if (process.env.CLIENT) {
+  (
+    window as unknown as { handleOpenURL: (arg0: string) => void }
+  ).handleOpenURL = handleCordovaAuth.bind(this);
+
+  window.orgnote = orgNoteApi;
+}
 </script>

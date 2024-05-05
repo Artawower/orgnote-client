@@ -61,6 +61,9 @@ const { config } = useSettingsStore();
 const mobileUrl = ref<string>();
 
 const setupUser = async () => {
+  if (!process.env.CLIENT) {
+    return;
+  }
   const isMobile = route.query.state !== 'desktop';
   if (config.common.developerMode) {
     await sleep(10000);

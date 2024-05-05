@@ -28,7 +28,7 @@ const prettyQuasarPlatform = [
     (key: string) =>
       `  ${key}: ${$q.platform.is[key as keyof typeof $q.platform.is]}`
   ),
-  ` standalone: ${!!window.navigator.standalone}`,
+  ` standalone: ${process.env.CLIENT && !!window.navigator.standalone}`,
 ].join('\n');
 
 const { orgNoteApi } = useOrgNoteApiStore();
@@ -66,7 +66,7 @@ Language: ${navigator.language}
 Screen:
   Screen resolution: ${screen.width}x${screen.height}
   Screen color depth: ${screen.colorDepth}
-  Device pixel ratio: ${window.devicePixelRatio}
+  Device pixel ratio: ${process.env.CLIENT && window.devicePixelRatio}
 
 Encryption:
   Type: ${encryption.type}${getEncryptionData()}

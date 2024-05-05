@@ -33,8 +33,15 @@ export default configure(function (ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'axios', 'katex', 'highlightjs', 'repositories',
-           { path: 'graph-worker', server: false }],
+    boot: [
+      'i18n',
+      'axios',
+      'katex',
+      'repositories',
+      { path: 'graph-worker', server: false },
+      { path: 'highlightjs', server: false },
+      { path: 'client-only-dependencies', server: false },
+    ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -77,7 +84,7 @@ export default configure(function (ctx) {
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
       // publicPath: '/',
-      analyze: true,
+      analyze: false,
       env: {
         API_URL: process.env.API_URL ?? '',
         AUTH_URL: process.env.AUTH_URL,
@@ -230,7 +237,7 @@ export default configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'injectManifest', // or 'injectManifest'
+      workboxMode: 'InjectManifest', // or 'injectManifest'
       injectPwaMetaTags: false,
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',

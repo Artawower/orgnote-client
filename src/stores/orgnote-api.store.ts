@@ -127,6 +127,9 @@ const useSystem = (
   const systemInfoStore = useSystemInfoStore();
   return {
     reload: async (params?: { verbose: boolean }): Promise<void> => {
+      if (!process.env.CLIENT) {
+        return;
+      }
       if (!params?.verbose) {
         window.location.reload();
         return;

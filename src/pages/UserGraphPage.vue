@@ -35,10 +35,12 @@ const goToRowDetail = (id: string) => {
 };
 
 const getGrpahHeight = () =>
-  window.innerHeight -
-  parseInt(
-    getComputedStyle(document.body).getPropertyValue('--top-bar-height')
-  );
+  process.env.CLIENT
+    ? window.innerHeight -
+      parseInt(
+        getComputedStyle(document.body).getPropertyValue('--top-bar-height')
+      )
+    : 1000;
 
 const findConnectedLinks = (
   nodeId: string,
@@ -59,7 +61,7 @@ const findConnectedLinks = (
   return foundedNodeIds;
 };
 
-const getGraphWidth = () => window.innerWidth;
+const getGraphWidth = () => (process.env.CLIENT ? window.innerWidth : 0);
 let activeNodeIds: string[] = [];
 let activeNodeId: string;
 
