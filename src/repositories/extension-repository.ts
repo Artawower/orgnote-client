@@ -1,9 +1,13 @@
+import { IExtensionRepository } from 'src/models';
 import { migrator } from './migrator';
 import { BaseRepository } from './repository';
 import Dexie from 'dexie';
 import { ExtensionMeta, StoredExtension } from 'src/api';
 
-export class ExtensionRepository extends BaseRepository {
+export class ExtensionRepository
+  extends BaseRepository
+  implements IExtensionRepository
+{
   public static storeName = 'extensions';
 
   public static readonly migrations = migrator<StoredExtension>()

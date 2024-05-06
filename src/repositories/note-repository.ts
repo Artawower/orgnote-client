@@ -2,14 +2,14 @@ import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
-import { Note, NotePreview } from 'src/models';
+import { INoteRepository, Note, NotePreview } from 'src/models';
 
 export interface FilePathInfo {
   filePath: string[];
   id: string;
 }
 
-export class NoteRepository extends BaseRepository {
+export class NoteRepository extends BaseRepository implements INoteRepository {
   public static storeName = 'notes';
 
   public static readonly migrations = migrator<Note>()

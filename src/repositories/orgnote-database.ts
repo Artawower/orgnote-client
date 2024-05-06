@@ -1,3 +1,4 @@
+import { Repositories } from 'src/models';
 import { Database } from './database';
 import { ExtensionRepository } from './extension-repository';
 import { FileManagerRepository } from './file-manager-repository';
@@ -11,9 +12,9 @@ export const db = new Database(
   ExtensionRepository
 );
 
-export const repositories = {
+export const repositories: Repositories = {
   notes: new NoteRepository(db),
   files: new FileRepository(db),
   fileManager: new FileManagerRepository(db),
   extensions: new ExtensionRepository(db),
-} as const;
+};

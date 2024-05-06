@@ -1,9 +1,11 @@
 import { ElectronApi } from '../../src-electron/electron-api';
 import { OrgNoteApi } from 'src/api';
+import { Repositories } from 'src/models';
 import { tinykeys } from 'tinykeys';
 
 declare global {
   const electron: ElectronApi;
+  let repositories: Repositories;
 
   interface Window {
     electron: ElectronApi;

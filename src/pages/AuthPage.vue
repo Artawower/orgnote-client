@@ -73,6 +73,7 @@ const setupUser = async () => {
     $q.platform.is.mobile &&
     isMobile &&
     !window.navigator.standalone &&
+    // TODO: feat/server-side-rendering remove this line
     !$q.platform.is.ios // Tmp disable opening mobile app for ios device
   ) {
     const mobileAppUrl = getMobileAppUrl(`auth/login${window.location.search}`);
