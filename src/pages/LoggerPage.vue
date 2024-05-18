@@ -23,10 +23,10 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { useLoggerStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
+import { useLoggerStore } from 'src/stores/logger';
 
 const loggerStore = useLoggerStore();
 const { prettyLogs } = storeToRefs(loggerStore);

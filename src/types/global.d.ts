@@ -5,7 +5,6 @@ import { tinykeys } from 'tinykeys';
 
 declare global {
   const electron: ElectronApi;
-  let repositories: Repositories;
 
   interface Window {
     electron: ElectronApi;

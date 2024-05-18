@@ -19,11 +19,11 @@
 <script lang="ts" setup>
 import { EditorView } from 'codemirror';
 import { Command, CommandHandlerParams } from 'src/api';
-import { useCommandsStore } from 'src/stores';
 
 import { ref } from 'vue';
 
 import SearchContainer from 'src/components/ui/SearchContainer.vue';
+import { useCommandsStore } from 'src/stores/commands';
 
 const props = defineProps<{
   editorView: EditorView;

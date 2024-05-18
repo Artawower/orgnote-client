@@ -31,9 +31,10 @@
 </template>
 
 <script lang="ts" setup>
-import { useOrgNoteApiStore, useSystemInfoStore } from 'src/stores';
 import { computed } from 'vue';
 import TheSeporator from 'src/components/ui/TheSeporator.vue';
+import { useSystemInfoStore } from 'src/stores/system-info';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const { newReleaseInfo } = useSystemInfoStore();
 

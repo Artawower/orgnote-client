@@ -3,8 +3,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useAuthStore } from 'src/stores';
-
 import ApiSettingsPage from './ApiSettingsPage.vue';
 import CommonSettingsPage from './CommonSettingsPage.vue';
 import KeybindingsPage from './KeybindingsPage.vue';
@@ -14,6 +12,7 @@ import ComponentTabs from 'src/components/ui/ComponentTabs.vue';
 import ViewSettingsPage from 'src/pages/ViewSettingsPage.vue';
 import EncryptionSettingsPage from './EncryptionSettingsPage.vue';
 import { onMounted } from 'vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const authStore = useAuthStore();
 

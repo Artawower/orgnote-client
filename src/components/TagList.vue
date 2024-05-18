@@ -34,8 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useSearchStore } from 'src/stores';
-
+import { useSearchStore } from 'src/stores/search';
 import { computed, onMounted, ref } from 'vue';
 
 const props = withDefaults(

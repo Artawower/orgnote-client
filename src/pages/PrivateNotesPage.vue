@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useSyncStore } from 'src/stores';
 import { resetPageMinHeight } from 'src/tools';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
@@ -46,6 +45,7 @@ import { computed, ref, watch } from 'vue';
 
 import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
+import { useSyncStore } from 'src/stores/sync';
 
 const notesStore = useNotesStore();
 

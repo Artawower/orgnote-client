@@ -29,16 +29,18 @@
 </template>
 
 <script lang="ts" setup>
-import { db } from 'src/boot/repositories';
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore, useOrgNoteApiStore } from 'src/stores';
 import { useRouter } from 'vue-router';
 
 import LanguageSwitcher from 'components/LanguageSwitcher.vue';
+import { db } from 'src/boot/repositories';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
+import { useAuthStore } from 'src/stores/auth';
 
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const router = useRouter();
+
 const clearAllData = async () => {
   const clear = await orgNoteApi.interaction.confirm(
     'clear all local data',

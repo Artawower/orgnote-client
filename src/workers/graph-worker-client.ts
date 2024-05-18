@@ -1,4 +1,4 @@
-import { useDiStore } from 'src/stores';
+import { useDiStore } from 'src/stores/di.store';
 import { GraphAction } from './graph.actions';
 import { ClientWorkerConnection } from './worker/client-worker-connection';
 import { Pinia } from 'pinia';

@@ -76,13 +76,12 @@
 </template>
 
 <script lang="ts" setup>
-import { useAuthStore } from 'src/stores';
-
 import { onBeforeMount, ref } from 'vue';
 
 import UsedSpace from 'src/components/containers/UsedSpace.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
 import EverythingFine from 'src/components/ui/EverythingFine.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const subscriptionKey = ref('');
 

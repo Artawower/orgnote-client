@@ -75,11 +75,6 @@
 
 <script lang="ts" setup>
 import { Note, NotePreview } from 'src/models';
-import {
-  useFileManagerStore,
-  useNotesStatisticStore,
-  useNotesStore,
-} from 'src/stores';
 
 import { onBeforeMount, ref } from 'vue';
 
@@ -88,6 +83,9 @@ import TagList from 'src/components/TagList.vue';
 import NoteRelativePath from 'src/components/containers/NoteRelativePath.vue';
 import NoData from 'src/components/ui/NoData.vue';
 import PrettyCard from 'src/components/ui/PrettyCard.vue';
+import { useNotesStore } from 'src/stores/notes';
+import { useFileManagerStore } from 'src/stores/file-manager';
+import { useNotesStatisticStore } from 'src/stores/notes-statistic';
 
 const notesStore = useNotesStore();
 

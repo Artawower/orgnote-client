@@ -78,7 +78,6 @@
 <script setup lang="ts">
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { useViewStore } from 'src/stores/view';
 import { useRouter } from 'vue-router';
@@ -90,6 +89,7 @@ import TagList from 'src/components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import ImageResolver from 'src/components/containers/ImageResolver.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const props = defineProps<{
   notePreview: Note | NotePreview;

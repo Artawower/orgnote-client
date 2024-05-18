@@ -44,6 +44,9 @@ const $q = useQuasar();
 const state = computed(() => decodeAuthState(route.query.state as string));
 
 onBeforeMount(async () => {
+  if (!process.env.CLIENT) {
+    return;
+  }
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
     authStore.auth({

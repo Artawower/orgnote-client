@@ -8,8 +8,7 @@ interface CombinedMigrations {
   };
 }
 
-export class Database<T extends typeof BaseRepository[]> extends Dexie {
-  private readonly currentVersion = 13;
+export class Database<T extends (typeof BaseRepository)[]> extends Dexie {
   constructor(...repositories: T) {
     super('orgnote');
     this.initSchema(repositories);
@@ -38,7 +37,7 @@ export class Database<T extends typeof BaseRepository[]> extends Dexie {
   }
 
   private getCombinedStoresSchema(
-    repositories: typeof BaseRepository[]
+    repositories: (typeof BaseRepository)[]
   ): CombinedMigrations {
     const combinedMigrations: CombinedMigrations = {};
 

@@ -2,13 +2,14 @@ import { useAuthStore } from './auth';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { repositories } from 'src/boot/repositories';
 import { ModelsPublicNote } from 'src/generated/api';
 import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
+import { useDiStore } from './di.store';
+import { repositories } from 'src/boot/repositories';
 
 type ParsedNote = { note: Note; orgTree: OrgNode };
 
@@ -22,6 +23,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
   const router = useRouter();
   const authStore = useAuthStore();
+  const di = useDiStore();
 
   // const selectNoteFromCache = async (noteId: string): Promise<ParsedNote> => {
   //   const foundParsedNote = noteCache.value.find((pn) => pn.note.id === noteId);
@@ -50,7 +52,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
 
     myNote.author = authStore.user;
     myNote.isMy = true;
-    await repositories.notes.touchNote(myNote.id);
+    repositories.notes.touchNote(myNote.id);
     return myNote;
   };
 

@@ -18,8 +18,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useToolbarStore } from 'src/stores';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { useToolbarStore } from 'src/stores/toolbar';
 import { extractDynamicValue } from 'src/tools';
 
 const toolbarStore = useToolbarStore();

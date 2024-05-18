@@ -19,7 +19,7 @@ import { version } from '../../package.json';
 import { useQuasar } from 'quasar';
 
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
-import { useOrgNoteApiStore } from 'src/stores';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const $q = useQuasar();
 

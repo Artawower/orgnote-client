@@ -52,7 +52,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { useCompletionStore } from 'src/stores';
+import { useCompletionStore } from 'src/stores/completion';
 import { ref } from 'vue';
 
 import { computed } from 'vue';

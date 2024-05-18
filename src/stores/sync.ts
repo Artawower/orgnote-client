@@ -5,7 +5,6 @@ import { AxiosError, CanceledError } from 'axios';
 import { defineStore } from 'pinia';
 import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
-import { repositories } from 'src/boot/repositories';
 import { useEncryption } from 'src/hooks';
 import { Note } from 'src/models';
 
@@ -13,6 +12,8 @@ import { ref } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote } from 'orgnote-api/remote-api';
+import { useDiStore } from './di.store';
+import { repositories } from 'src/boot/repositories';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -21,6 +22,7 @@ export const useSyncStore = defineStore(
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
     const fileManagerStore = useFileManagerStore();
+    const di = useDiStore();
 
     const syncTimeTimeout = 5000;
 

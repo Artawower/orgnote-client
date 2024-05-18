@@ -45,12 +45,12 @@
 <script lang="ts" setup>
 import { copyToClipboard } from 'quasar';
 import { ModelsAPIToken } from 'src/generated/api';
-import { useAuthStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 
 import { toRefs } from 'vue';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const settingsStore = useSettingsStore();
 const { tokens } = toRefs(settingsStore);

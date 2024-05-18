@@ -36,7 +36,6 @@
 
 <script lang="ts" setup>
 import { QTree } from 'quasar';
-import { useFileManagerStore } from 'src/stores';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { revealKeyboard, uploadFiles } from 'src/tools';
 
@@ -47,6 +46,7 @@ import HeaderBar from 'src/components/ui/HeaderBar.vue';
 import IconBtn from 'src/components/ui/IconBtn.vue';
 import SearchInput from 'src/components/ui/SearchInput.vue';
 import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
+import { useFileManagerStore } from 'src/stores/file-manager';
 
 const fileManagerStore = useFileManagerStore();
 const createFolder = () => {

@@ -68,18 +68,16 @@
 <script lang="ts" setup>
 import { QMenu, useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
-import {
-  useAuthStore,
-  useCurrentNoteStore,
-  useFileManagerStore,
-  useSidebarStore,
-} from 'src/stores';
 import { FlatTree, convertFlatTreeToFileTree, revealKeyboard } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
 import IconBtn from 'src/components/ui/IconBtn.vue';
+import { useAuthStore } from 'src/stores/auth';
+import { useSidebarStore } from 'src/stores/sidebar';
+import { useFileManagerStore } from 'src/stores/file-manager';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 
 const props = defineProps<{
   fileNode: FlatTree;

@@ -2,6 +2,9 @@ import { toKebabCase } from './case-converter';
 import { ThemeVariable } from 'src/api';
 
 export function getCssVar(varName: string): string {
+  if (!process.env.CLIENT) {
+    return '';
+  }
   const root = document.body;
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const computedStyle = getComputedStyle(root);

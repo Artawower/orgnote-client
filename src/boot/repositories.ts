@@ -1,9 +1,10 @@
 import { boot } from 'quasar/wrappers';
-import { db, repositories } from 'src/repositories';
+import { initOrgNoteRepositories } from 'src/repositories';
+
+const { repositories, db } = initOrgNoteRepositories();
 
 export default boot(({ app }) => {
-  app.config.globalProperties.$db = db;
   app.config.globalProperties.$repositories = repositories;
 });
 
-export { db, repositories };
+export { repositories, db };

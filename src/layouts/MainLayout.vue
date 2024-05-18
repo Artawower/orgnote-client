@@ -53,18 +53,12 @@ import {
   useCommands,
 } from 'src/hooks';
 import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
-import {
-  useExtensionsStore,
-  useSidebarStore,
-  useSyncStore,
-  useToolbarStore,
-} from 'src/stores';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { debounce } from 'src/tools';
 
-import { computed, onBeforeMount } from 'vue';
+import { computed, onBeforeMount, onMounted } from 'vue';
 
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';
@@ -79,6 +73,10 @@ import ToolBar from 'src/components/containers/ToolBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
 import { useRoute } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
+import { useSidebarStore } from 'src/stores/sidebar';
+import { useToolbarStore } from 'src/stores/toolbar';
+import { useSyncStore } from 'src/stores/sync';
+import { useExtensionsStore } from 'src/stores/extensions';
 
 const sidebarStore = useSidebarStore();
 
@@ -139,6 +137,12 @@ const { bootstrapped } = useBootstrap();
 onBeforeMount(() => {
   extensionsStore.loadActiveExtensions();
   extensionsStore.loadExtensions();
+});
+
+onMounted(() => {
+  if (process.env.CLIENT) {
+    document.body.style.height = viewportHeight.value + 'px';
+  }
 });
 
 const route = useRoute();

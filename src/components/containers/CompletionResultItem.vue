@@ -34,7 +34,7 @@
 
 <script lang="ts" setup>
 import { CompletionCandidate } from 'src/api';
-import { useCompletionStore } from 'src/stores';
+import { useCompletionStore } from 'src/stores/completion';
 import { useSettingsStore } from 'src/stores/settings';
 import { extractDynamicValue } from 'src/tools';
 

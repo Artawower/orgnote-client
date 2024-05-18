@@ -20,7 +20,7 @@ import { EditorView, ViewUpdate } from '@codemirror/view';
 import { OrgNode } from 'org-mode-ast';
 import { OrgNoteConfig } from 'src/api';
 import { onMobileViewportChanged, useDynamicComponent } from 'src/hooks';
-import { useEditorStore } from 'src/stores';
+import { useEditorStore } from 'src/stores/editor.store';
 import { orgMode } from 'src/tools/cm-org-language';
 
 import { onMounted, ref, watch } from 'vue';
@@ -150,6 +150,9 @@ watch(
 );
 
 const scrollIntoCurrentLine = () => {
+  if (!process.env.CLIENT) {
+    return;
+  }
   window.scroll(0, -1);
   editorView.dispatch({
     selection: {

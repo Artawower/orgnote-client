@@ -34,13 +34,14 @@
 
 <script lang="ts" setup>
 import { Note } from 'src/models';
-import { useCurrentNoteStore, useOrgNoteApiStore } from 'src/stores';
 
 import { ref } from 'vue';
 
 import DynamicTooltip from '../ui/DynamicTooltip.vue';
 import PublicNotePreview from './PublicNotePreview.vue';
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const props = defineProps<{
   id: string;

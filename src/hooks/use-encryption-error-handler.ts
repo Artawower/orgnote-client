@@ -1,4 +1,3 @@
-import { useModalStore } from 'src/stores';
 import EncryptionPrivateKeyPasswordPrompt from 'src/components/containers/EncryptionPrivateKeyPasswordPrompt.vue';
 import { useNotifications } from './notification';
 import SettingsPage from 'src/pages/SettingsPage.vue';
@@ -9,6 +8,7 @@ import {
   NoKeysProvidedError,
   NoPasswordProvidedError,
 } from 'orgnote-api/encryption';
+import { useModalStore } from 'src/stores/modal';
 
 export function useEncryptionErrorHandler() {
   const modalStore = useModalStore();

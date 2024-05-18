@@ -1,6 +1,7 @@
 import { Command, DefaultCommands as C } from 'orgnote-api';
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore, useCurrentNoteStore } from 'src/stores';
+import { useAuthStore } from 'src/stores/auth';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 import { camelCaseToWords } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
 

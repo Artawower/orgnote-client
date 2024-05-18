@@ -82,11 +82,11 @@
 <script lang="ts" setup>
 import { OrgNoteEncryption, OrgNoteGpgEncryption } from 'orgnote-api';
 import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue';
-import { useModalStore } from 'src/stores';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { onBeforeUnmount } from 'vue';
 import { uploadFile } from 'src/tools';
+import { useModalStore } from 'src/stores/modal';
 
 const { config } = useSettingsStore();
 

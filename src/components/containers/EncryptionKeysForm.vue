@@ -41,10 +41,11 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import TheBlock from '../ui/TheBlock.vue';
-import { useAuthStore, useModalStore } from 'src/stores';
 import { generateGpgKeys } from 'src/tools';
 import { useSettingsStore } from 'src/stores/settings';
 import { useConfirmationModalStore } from 'src/stores/confirmation-modal';
+import { useAuthStore } from 'src/stores/auth';
+import { useModalStore } from 'src/stores/modal';
 
 const authStore = useAuthStore();
 
@@ -86,5 +87,3 @@ const createNewGpgKeys = async () => {
   };
 };
 </script>
-
-<style lang="scss" scoped></style>

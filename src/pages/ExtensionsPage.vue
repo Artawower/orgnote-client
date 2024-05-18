@@ -40,7 +40,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useCompletionStore } from 'src/stores';
 import { resetPageMinHeight } from 'src/tools';
 import { useExtensionsStore } from 'src/stores/extensions';
 import { usePackageManagerStore } from 'src/stores/package-manager.store';
@@ -50,6 +49,7 @@ import { readExtension } from 'src/tools/read-extension';
 import ExtensionPreview from 'src/components/containers/ExtensionPreview.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import SearchInput from 'src/components/ui/SearchInput.vue';
+import { useCompletionStore } from 'src/stores/completion';
 
 const extensionsStore = useExtensionsStore();
 

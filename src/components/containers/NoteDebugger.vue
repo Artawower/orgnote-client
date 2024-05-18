@@ -4,7 +4,7 @@
 
 <script lang="ts" setup>
 import { OrgNode, walkTree } from 'org-mode-ast';
-import { useNoteEditorStore } from 'src/stores';
+import { useNoteEditorStore } from 'src/stores/note-editor';
 
 import { ref, watch } from 'vue';
 

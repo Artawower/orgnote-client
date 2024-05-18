@@ -1,9 +1,7 @@
 import { Command, CommandHandlerParams, DefaultCommands } from 'orgnote-api';
-import {
-  useCommandsStore,
-  useCompletionStore,
-  useSearchStore,
-} from 'src/stores';
+import { useCommandsStore } from 'src/stores/commands';
+import { useCompletionStore } from 'src/stores/completion';
+import { useSearchStore } from 'src/stores/search';
 
 export function getCompletionCommands(): Command[] {
   const completionStore = useCompletionStore();

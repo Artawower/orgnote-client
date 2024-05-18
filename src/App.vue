@@ -12,15 +12,13 @@ export default {
 import { useRouter } from 'vue-router';
 import { jsBabel } from './plugins/js-babel';
 import { RouteNames } from './router/routes';
-import {
-  useAuthStore,
-  useOrgBabelStore,
-  useLoggerStore,
-  useSyncStore,
-  useOrgNoteApiStore,
-  useSystemInfoStore,
-} from './stores';
+import { useAuthStore } from './stores/auth';
 import { decodeAuthState, extractAuthQueryInfo } from './tools';
+import { useSyncStore } from './stores/sync';
+import { useLoggerStore } from './stores/logger';
+import { useSystemInfoStore } from './stores/system-info';
+import { useOrgBabelStore } from './stores/org-babel';
+import { useOrgNoteApiStore } from './stores/orgnote-api.store';
 
 const syncStore = useSyncStore();
 syncStore.markToSync();
@@ -34,10 +32,9 @@ systemStore.loadNewReleaseInfo();
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
 
-if (window.navigator.standalone) {
+if (process.env.CLIENT && window.navigator.standalone) {
   document.body.classList.add('standalone');
 }
-
 const authStore = useAuthStore();
 
 const router = useRouter();

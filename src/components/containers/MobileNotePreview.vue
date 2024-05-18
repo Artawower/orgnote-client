@@ -20,11 +20,12 @@
 
 <script lang="ts" setup>
 import { Note } from 'src/models';
-import { useCurrentNoteStore, useOrgNoteApiStore } from 'src/stores';
 
 import { onBeforeMount, ref, watch } from 'vue';
 
 import PublicNotePreview from './PublicNotePreview.vue';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 
 const props = defineProps<{
   note?: Note;

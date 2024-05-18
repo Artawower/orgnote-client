@@ -53,7 +53,6 @@ import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
 import { useDetailCommands } from 'src/hooks/note-detail-commands';
 import { RouteNames } from 'src/router/routes';
-import { useCurrentNoteStore, useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -62,6 +61,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import NoteDebugger from 'src/components/containers/NoteDebugger.vue';
 import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useNotesStore } from 'src/stores/notes';
 
 const route = useRoute();
 

@@ -11,7 +11,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useFileStore, useOrgNoteApiStore } from 'src/stores';
+import { useFileStore } from 'src/stores/file';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { buildMediaFilePath, getFileName } from 'src/tools';
 
 import { computed, onBeforeMount, ref } from 'vue';

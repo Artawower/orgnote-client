@@ -1,4 +1,4 @@
-import { OrgBabel } from 'src/stores';
+import { OrgBabel } from 'src/stores/org-babel';
 
 export const jsBabel: OrgBabel = {
   languages: ['js', 'javascript'],

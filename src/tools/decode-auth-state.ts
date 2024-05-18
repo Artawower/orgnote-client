@@ -1,4 +1,4 @@
-import { AuthState } from 'src/stores';
+import { AuthState } from 'src/stores/auth';
 
 export function decodeAuthState(state: string): AuthState {
   if (!state) {

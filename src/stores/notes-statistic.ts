@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia';
 import { NotePreview } from 'src/models';
-import { repositories } from 'src/repositories';
 
 import { ref } from 'vue';
+import { useDiStore } from './di.store';
+import { repositories } from 'src/boot/repositories';
 
 export const useNotesStatisticStore = defineStore('notes-statistic', () => {
   const recentNotes = ref<NotePreview[]>([]);
@@ -10,6 +11,7 @@ export const useNotesStatisticStore = defineStore('notes-statistic', () => {
   const bookmarkedNotes = ref<NotePreview[]>([]);
 
   const maximumStatisticItems = 5;
+  const di = useDiStore();
 
   const loadStatistic = async () => {
     await loadPopularNotes();

@@ -1,6 +1,7 @@
 import { useCompletionStore } from './completion';
 import { defineStore } from 'pinia';
 import { Command, DEFAULT_KEYBINDING_GROUP } from 'src/api';
+import { mockServer } from 'src/tools';
 import hotkeys from 'src/tools/tinykeys-wrapper';
 
 import { computed, ref } from 'vue';
@@ -100,7 +101,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
   return {
     keybindingList,
     executeCommand,
-    registerKeybindings,
+    registerKeybindings: mockServer(registerKeybindings),
     deleteKeybinding,
     groupedKeybindings,
     uregisterKeybindings,

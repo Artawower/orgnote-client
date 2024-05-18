@@ -2,10 +2,13 @@ import { useAuthStore } from './auth';
 import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
-import { repositories } from 'src/boot/repositories';
 import { sleep, uploadFiles } from 'src/tools';
+import { useDiStore } from './di.store';
+import { repositories } from 'src/boot/repositories';
 
 export const useFileStore = defineStore('fileStore', () => {
+  const di = useDiStore();
+
   const saveFile = async (image: File) => {
     await repositories.files.save(image);
     preserveFiles();

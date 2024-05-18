@@ -3,10 +3,10 @@ import { usePackageManagerStore } from './package-manager.store';
 import { defineStore } from 'pinia';
 import { ActiveExtension, ExtensionMeta, StoredExtension } from 'src/api';
 import { BUILTIN_EXTENSIONS } from 'src/components/extensions';
-import { repositories } from 'src/repositories';
 import { compileExtension } from 'src/tools';
 
 import { computed, ref } from 'vue';
+import { repositories } from 'src/boot/repositories';
 
 export const useExtensionsStore = defineStore('extension', () => {
   const extensions = ref<ExtensionMeta[]>([]);

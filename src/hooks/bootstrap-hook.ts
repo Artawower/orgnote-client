@@ -1,4 +1,4 @@
-import { useExtensionsStore } from 'src/stores';
+import { useExtensionsStore } from 'src/stores/extensions';
 import { ref } from 'vue';
 import { onBeforeMount } from 'vue';
 

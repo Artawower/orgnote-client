@@ -17,12 +17,13 @@
 
 <script lang="ts" setup>
 import { Command } from 'src/api';
-import { useCommandsStore, useNoteEditorStore } from 'src/stores';
 import { extractDynamicValue } from 'src/tools';
 
 import { onMounted, ref } from 'vue';
 
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
+import { useNoteEditorStore } from 'src/stores/note-editor';
+import { useCommandsStore } from 'src/stores/commands';
 
 const noteEditorStore = useNoteEditorStore();
 const commandsStore = useCommandsStore();

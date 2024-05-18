@@ -114,10 +114,11 @@
 import { useNotifications, usePlatformSize } from 'src/hooks';
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useNotesStore, useSelectedNotesStore } from 'src/stores';
 import { useRouter } from 'vue-router';
 
 import { toRef } from 'vue';
+import { useSelectedNotesStore } from 'src/stores/selected-notes';
+import { useNotesStore } from 'src/stores/notes';
 
 const props = defineProps<{
   selectable?: boolean;

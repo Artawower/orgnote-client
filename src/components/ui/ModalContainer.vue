@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useModalStore } from 'src/stores';
+import { useModalStore } from 'src/stores/modal';
 
 const modalStore = useModalStore();
 const closeCurrentModal = () => modalStore.close();

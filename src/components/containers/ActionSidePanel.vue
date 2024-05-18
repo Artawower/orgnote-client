@@ -57,7 +57,6 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { User } from 'src/models';
-import { useToolbarStore } from 'src/stores';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar } from 'src/tools';
 
@@ -75,6 +74,7 @@ import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { CommandPreview } from 'orgnote-api';
+import { useToolbarStore } from 'src/stores/toolbar';
 
 const props = defineProps<{
   user?: User;
@@ -112,10 +112,9 @@ const showSidebarForSmalDevice = () => {
 };
 
 onBeforeMount(() => showSidebarForSmalDevice());
-onMounted(
-  () =>
-    process.env.CLIENT && window.addEventListener('resize', setupWindowWidth)
-);
+onMounted(() => {
+  process.env.CLIENT && window.addEventListener('resize', setupWindowWidth);
+});
 onUnmounted(
   () =>
     process.env.CLIENT && window.removeEventListener('resize', setupWindowWidth)

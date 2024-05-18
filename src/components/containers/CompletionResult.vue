@@ -45,7 +45,6 @@ import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
 import { CompletionCandidate } from 'src/api';
 import { useBodyActionPaneClass } from 'src/hooks';
-import { useCompletionStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
@@ -55,6 +54,7 @@ import CompletionResultItem from './CompletionResultItem.vue';
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 import CompletionInp from 'src/components/containers/CompletionInput.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
+import { useCompletionStore } from 'src/stores/completion';
 
 const itemHeight = 70;
 const scrollTarget = ref<QVirtualScroll | null>();
