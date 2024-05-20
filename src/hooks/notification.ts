@@ -1,4 +1,5 @@
 import { useQuasar } from 'quasar';
+import { mockServer } from 'src/tools';
 import { useI18n } from 'vue-i18n';
 
 type NotificationLevel = 'info' | 'error' | 'warning';
@@ -33,7 +34,7 @@ export function useNotifications() {
   };
 
   return {
-    notify,
+    notify: mockServer(notify),
     error,
   };
 }

@@ -8,19 +8,15 @@
       >
         ></author-info
       >
-      <note-detail
-        :note="currentNote"
-        :org-tree="currentOrgTree as OrgNode"
-      ></note-detail>
+      <note-detail :note="currentNote"></note-detail>
     </encryption-required>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { OrgNode } from 'org-mode-ast';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 import { storeToRefs } from 'pinia';
 import { useDetailCommands } from 'src/hooks/note-detail-commands';
-import { useCurrentNoteStore } from 'src/stores/current-note';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute } from 'vue-router';
 
@@ -29,52 +25,33 @@ import { watch } from 'vue';
 import AuthorInfo from 'components/containers/AuthorInfo.vue';
 import NoteDetail from 'src/components/containers/NoteDetail.vue';
 import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
-import { useMeta } from 'quasar';
+import { useCurrentNoteMeta } from 'src/hooks/current-note-meta';
+
+// defineOptions({
+//   preFetch: async ({ store, currentRoute }) => {
+//     const curNoteStore = useCurrentNoteStore(store);
+//
+//     if (currentRoute.params.id) {
+//       await curNoteStore.selectNoteById(currentRoute.params.id as string);
+//     }
+//   },
+// });
 
 const route = useRoute();
 
 const currentNoteStore = useCurrentNoteStore();
 
-const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
+const { currentNote } = storeToRefs(currentNoteStore);
 
 if (route.params.id) {
-  currentNoteStore.selectNoteById(route.params.id as string);
+  await currentNoteStore.selectNoteById(route.params.id as string);
 }
 
 watch(
   () => route.params.id,
   (id) => id && currentNoteStore.selectNoteById(route.params.id as string)
 );
+
 useDetailCommands();
-
-const setupMeta = () => {
-  if (!currentNote.value) {
-    return;
-  }
-
-  useMeta({
-    title: currentNote.value.meta.title,
-    meta: {
-      description: {
-        name: 'description',
-        content: currentNote.value.meta.description,
-      },
-      keywords: {
-        name: 'keywords',
-        content: currentNote.value.meta.fileTags?.join(', '),
-      },
-      ogTitle: {
-        property: 'og:title',
-        content: currentNote.value.meta.title,
-      },
-    },
-  });
-};
-
-watch(
-  () => currentNote.value,
-  () => {
-    setupMeta();
-  }
-);
+useCurrentNoteMeta();
 </script>

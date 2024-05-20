@@ -43,7 +43,7 @@ const initStoredMediaFile = async () => {
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const previewImg = computed(() => {
-  const folder = props.authorId ?? orgNoteApi.currentNote.get()?.author.id;
+  const folder = props.authorId ?? orgNoteApi.currentNote.get()?.author?.id;
   if (!folder) {
     return null;
   }

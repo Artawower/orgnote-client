@@ -4,7 +4,7 @@ import { onBeforeMount } from 'vue';
 
 export function useBootstrap() {
   const extensionsStore = useExtensionsStore();
-  const appReady = ref<boolean>(false);
+  const appReady = ref<boolean>(!process.env.CLIENT);
 
   onBeforeMount(async () => {
     await extensionsStore.loadActiveExtensions();

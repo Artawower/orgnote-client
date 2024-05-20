@@ -109,9 +109,6 @@ class InMemoryNoteRepository implements INoteRepository {
 
   async getById(id: string): Promise<Note> {
     const note = this.notes.find((n) => n.id === id);
-    if (!note) {
-      throw new Error(`Note with ID ${id} not found`);
-    }
     return note;
   }
 

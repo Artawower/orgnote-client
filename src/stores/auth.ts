@@ -11,6 +11,7 @@ import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
+import { mockServer } from 'src/tools';
 
 const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
@@ -26,9 +27,10 @@ export interface AuthState {
 export const useAuthStore = defineStore(
   'auth',
   () => {
+    const defaultProvider: OAuthProvider = 'github';
     const token = ref<string>();
     const user = ref<PersonalInfo>();
-    const provider = ref<OAuthProvider>('github');
+    const provider = ref<OAuthProvider>(defaultProvider);
     const $q = useQuasar();
     const notificaitons = useNotifications();
     const router = useRouter();
@@ -36,7 +38,7 @@ export const useAuthStore = defineStore(
     const authViaGithub = async (redirectUrl?: string) => {
       try {
         await auth({
-          provider: provider.value,
+          provider: provider.value ?? defaultProvider,
           redirectUrl,
         });
       } catch (e) {
@@ -163,7 +165,7 @@ export const useAuthStore = defineStore(
 
       authViaGithub,
       logout,
-      verifyUser,
+      verifyUser: mockServer(verifyUser),
       authUser,
       subscribe,
       removeUserAccount,

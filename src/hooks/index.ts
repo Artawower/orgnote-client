@@ -10,3 +10,5 @@ export * from './body-action-pane-class';
 export * from './platform-size';
 export * from './bootstrap-hook';
 export * from './use-encryption';
+export * from './app-meta';
+export * from './current-note-meta';

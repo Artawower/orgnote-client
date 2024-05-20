@@ -72,7 +72,7 @@ Encryption:
   Type: ${encryption.type}${getEncryptionData()}
 
 Env:
-  API URL: ${process.env.API_URL}
+  API URL: ${process.env.API_URL || ''}
   AUTH URL: ${process.env.AUTH_URL}
   MODE: ${process.env.NODE_ENV}
 

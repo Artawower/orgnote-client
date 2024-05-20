@@ -7,7 +7,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "serve:ssr": "env-cmd -f ./.env node ./dist/ssr/index.js",
+    "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
     "dev:android": "quasar dev -m cordova -T android",
     "dev:ssr": "quasar dev -m ssr",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T android -- -d",

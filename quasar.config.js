@@ -86,10 +86,8 @@ export default configure(function (ctx) {
       // publicPath: '/',
       analyze: false,
       env: {
-        API_URL: process.env.API_URL ?? '',
         AUTH_URL: process.env.AUTH_URL ?? '',
         VUE_ROUTER_MODE: 'history',
-        DISABLE_LOGGER: process.env.DISABLE_LOGGER ?? false,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
@@ -156,7 +154,8 @@ export default configure(function (ctx) {
       // https: true,
       // host: process.env.HOST || 'localhost',
       host: '0.0.0.0',
-      port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 3030,
+      // port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 3000,
+      port: 3000,
       open: {
         app: { name: 'google chrome' }
       },

@@ -6,41 +6,51 @@
       minHeight: 0,
     }"
   >
-    <file-uploader
-      v-if="bootstrapped"
-      class="main-content"
-      @uploaded="notesImportStore.uploadFiles"
-    >
-      <the-header />
-      <action-side-panel
-        v-if="$q.screen.gt.xs || sidebarStore.opened"
-        :full-width="$q.screen.lt.sm"
-        :user="user"
-      />
-      <q-page-container
-        class="height-max-dynamic"
-        v-touch-swipe.mouse.right="sidebarStore.open"
-        :class="{ 'with-composite-bar': $q.screen.gt.xs }"
-      >
-        <modal-window />
-        <confirmation-modal />
-        <router-view />
-        <editor-actions-toolbar
-          v-if="
-            $q.screen.lt.sm &&
-            !toolbarStore.showToolbar &&
-            (keyboardOpened || $q.platform.is.desktop) &&
-            route.name === RouteNames.RawEditor
-          "
-        />
-      </q-page-container>
-      <mini-buffer />
-      <completion-prompt />
-      <ToolBar v-if="$q.screen.lt.sm" />
-    </file-uploader>
-    <div v-else class="flex full-width full-height items-center justify-center">
-      <loader-spinner />
-    </div>
+    <Suspense>
+      <template #default>
+        <file-uploader
+          v-if="bootstrapped"
+          class="main-content"
+          @uploaded="notesImportStore.uploadFiles"
+        >
+          <the-header />
+          <action-side-panel
+            v-if="$q.screen.gt.xs || sidebarStore.opened"
+            :full-width="$q.screen.lt.sm"
+            :user="user"
+          />
+          <q-page-container
+            class="height-max-dynamic"
+            v-touch-swipe.mouse.right="sidebarStore.open"
+            :class="{ 'with-composite-bar': $q.screen.gt.xs }"
+          >
+            <modal-window />
+            <confirmation-modal />
+            <router-view />
+            <editor-actions-toolbar
+              v-if="
+                $q.screen.lt.sm &&
+                !toolbarStore.showToolbar &&
+                (keyboardOpened || $q.platform.is.desktop) &&
+                route.name === RouteNames.RawEditor
+              "
+            />
+          </q-page-container>
+          <mini-buffer />
+          <completion-prompt />
+          <ToolBar v-if="$q.screen.lt.sm" />
+        </file-uploader>
+        <div
+          v-else
+          class="flex full-width full-height items-center justify-center"
+        >
+          <loader-spinner />
+        </div>
+      </template>
+      <template #fallback>
+        <loader-spinner />
+      </template>
+    </Suspense>
   </q-layout>
 </template>
 
@@ -49,6 +59,7 @@ import {
   onAppActive,
   onMobileViewportChanged,
   registerEditorCommands,
+  useAppMeta,
   useBootstrap,
   useCommands,
 } from 'src/hooks';
@@ -56,7 +67,7 @@ import { registerNoteDetailCommands } from 'src/hooks/note-detail-commands';
 import { useAuthStore } from 'src/stores/auth';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { debounce } from 'src/tools';
+import { debounce, mockServer } from 'src/tools';
 
 import { computed, onBeforeMount, onMounted } from 'vue';
 
@@ -82,13 +93,15 @@ const sidebarStore = useSidebarStore();
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
-authStore.verifyUser();
+
+mockServer(authStore?.verifyUser)();
 
 const { registerKeybindings } = useKeybindingStore();
 
 useCommands().register();
 registerEditorCommands();
 registerNoteDetailCommands();
+useAppMeta();
 
 registerKeybindings([
   {

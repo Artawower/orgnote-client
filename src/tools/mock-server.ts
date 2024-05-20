@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const mockServer = <T extends (...params: any[]) => any>(
-  fn: T,
+  fn?: T,
   defaultValue?: ReturnType<T>
 ) => {
+  if (!fn) {
+    return () => {};
+  }
   return (...params: Parameters<T>): ReturnType<T> => {
     if (process.env.CLIENT) {
       return fn(...params);
