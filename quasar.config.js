@@ -221,7 +221,7 @@ module.exports = configure(function (ctx) {
     pwa: {
       workboxMode: 'injectManifest', // or 'injectManifest'
       injectPwaMetaTags: false,
-      swFilename: 'sw.js',
+      swFilename: 'service-worker.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: false,
       // extendGenerateSWOptions (cfg) {}
