@@ -6,10 +6,9 @@
       minHeight: 0,
     }"
   >
-    <Suspense>
+    <Suspense v-if="bootstrapped">
       <template #default>
         <file-uploader
-          v-if="bootstrapped"
           class="main-content"
           @uploaded="notesImportStore.uploadFiles"
         >
@@ -40,17 +39,12 @@
           <completion-prompt />
           <ToolBar v-if="$q.screen.lt.sm" />
         </file-uploader>
-        <div
-          v-else
-          class="flex full-width full-height items-center justify-center"
-        >
-          <loader-spinner />
-        </div>
       </template>
       <template #fallback>
         <loader-spinner />
       </template>
     </Suspense>
+    <page-loading v-else />
   </q-layout>
 </template>
 
@@ -82,6 +76,7 @@ import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import TheHeader from 'src/components/containers/TheHeader.vue';
 import ToolBar from 'src/components/containers/ToolBar.vue';
 import MiniBuffer from 'src/components/ui/MiniBuffer.vue';
+import PageLoading from 'src/pages/PageLoading.vue';
 import { useRoute } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useSidebarStore } from 'src/stores/sidebar';

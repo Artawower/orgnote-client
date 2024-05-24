@@ -13,6 +13,6 @@ import { mockServer } from 'src/tools';
  */
 export default store((/* { ssrContext } */) => {
   const pinia = createPinia();
-  mockServer(() => pinia.use(piniaPluginPersistedstate));
+  mockServer(() => pinia.use(piniaPluginPersistedstate))();
   return pinia;
 });

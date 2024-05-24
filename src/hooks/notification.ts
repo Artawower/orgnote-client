@@ -7,7 +7,6 @@ type NotificationLevel = 'info' | 'error' | 'warning';
 // TODO: create store for preserving history of notifications
 export function useNotifications() {
   const $q = useQuasar();
-  const locale = useI18n();
 
   const colors: { [key in NotificationLevel]: string } = {
     info: null,
@@ -20,6 +19,7 @@ export function useNotifications() {
     group = true,
     level: NotificationLevel = 'info'
   ) => {
+    const locale = useI18n();
     $q.notify({
       group,
       color: colors[level],

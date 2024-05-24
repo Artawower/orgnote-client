@@ -1,11 +1,13 @@
 <template>
-  <div class="chart-wrapper" ref="chartWrapper"></div>
-  <span>
-    <mobile-note-preview
-      :note-id="selectedNoteId"
-      @closed="resetSelectedNote"
-    />
-  </span>
+  <q-no-ssr>
+    <div class="chart-wrapper" ref="chartWrapper"></div>
+    <span>
+      <mobile-note-preview
+        :note-id="selectedNoteId"
+        @closed="resetSelectedNote"
+      />
+    </span>
+  </q-no-ssr>
 </template>
 
 <script lang="ts" setup>

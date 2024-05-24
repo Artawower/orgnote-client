@@ -27,12 +27,12 @@ export interface AuthState {
 export const useAuthStore = defineStore(
   'auth',
   () => {
+    const notificaitons = useNotifications();
     const defaultProvider: OAuthProvider = 'github';
     const token = ref<string>();
     const user = ref<PersonalInfo>();
     const provider = ref<OAuthProvider>(defaultProvider);
     const $q = useQuasar();
-    const notificaitons = useNotifications();
     const router = useRouter();
 
     const authViaGithub = async (redirectUrl?: string) => {
