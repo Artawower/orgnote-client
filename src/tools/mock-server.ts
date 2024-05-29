@@ -5,7 +5,7 @@ export const mockServer = <T extends (...params: any[]) => any>(
   defaultValue?: ReturnType<T>
 ) => {
   if (!fn) {
-    return () => {};
+    return (() => {}) as () => ReturnType<T>;
   }
   return (...params: Parameters<T>): ReturnType<T> => {
     if (process.env.CLIENT) {

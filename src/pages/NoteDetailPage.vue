@@ -27,16 +27,6 @@ import NoteDetail from 'src/components/containers/NoteDetail.vue';
 import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
 import { useCurrentNoteMeta } from 'src/hooks/current-note-meta';
 
-// defineOptions({
-//   preFetch: async ({ store, currentRoute }) => {
-//     const curNoteStore = useCurrentNoteStore(store);
-//
-//     if (currentRoute.params.id) {
-//       await curNoteStore.selectNoteById(currentRoute.params.id as string);
-//     }
-//   },
-// });
-
 const route = useRoute();
 
 const currentNoteStore = useCurrentNoteStore();

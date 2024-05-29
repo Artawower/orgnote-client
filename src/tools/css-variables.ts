@@ -1,15 +1,13 @@
 import { toKebabCase } from './case-converter';
 import { ThemeVariable } from 'src/api';
+import { mockServer } from './mock-server';
 
-export function getCssVar(varName: string): string {
-  if (!process.env.CLIENT) {
-    return '';
-  }
+export const getCssVar = mockServer((varName: string): string => {
   const root = document.body;
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const computedStyle = getComputedStyle(root);
   return computedStyle.getPropertyValue(normalizedName);
-}
+});
 
 export function getCssTheme(variableNames: string[]): {
   [key in ThemeVariable]?: string;

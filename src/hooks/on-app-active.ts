@@ -1,3 +1,4 @@
+import { mockServer } from 'src/tools';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 export const onAppActive = (callback?: (active?: boolean) => void) => {
@@ -8,13 +9,10 @@ export const onAppActive = (callback?: (active?: boolean) => void) => {
     callback?.(active.value);
   };
 
-  onMounted(
-    () => process.env.CLIENT && window.addEventListener('focus', focusListener)
-  );
+  onMounted(mockServer(() => window.addEventListener('focus', focusListener)));
 
   onBeforeUnmount(
-    () =>
-      process.env.CLIENT && window.removeEventListener('focus', focusListener)
+    mockServer(() => window.removeEventListener('focus', focusListener))
   );
 
   return {

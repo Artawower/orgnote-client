@@ -18,7 +18,7 @@ import { useQuasar } from 'quasar';
 import { GraphNoteNode } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useGraphStore } from 'src/stores/graph';
-import { getCssVar, hexToRgba, truncate } from 'src/tools';
+import { getCssVar, hexToRgba, mockServer, truncate } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { ref, watch } from 'vue';
@@ -36,13 +36,14 @@ const goToRowDetail = (id: string) => {
   router.push({ name: RouteNames.NoteDetail, params: { id } });
 };
 
-const getGrpahHeight = () =>
-  process.env.CLIENT
-    ? window.innerHeight -
-      parseInt(
-        getComputedStyle(document.body).getPropertyValue('--top-bar-height')
-      )
-    : 1000;
+const getGrpahHeight = mockServer(
+  (): number =>
+    window.innerHeight -
+    parseInt(
+      getComputedStyle(document.body).getPropertyValue('--top-bar-height')
+    ),
+  1000
+);
 
 const findConnectedLinks = (
   nodeId: string,
@@ -63,7 +64,7 @@ const findConnectedLinks = (
   return foundedNodeIds;
 };
 
-const getGraphWidth = () => (process.env.CLIENT ? window.innerWidth : 0);
+const getGraphWidth = mockServer(() => window.innerWidth, 0);
 let activeNodeIds: string[] = [];
 let activeNodeId: string;
 

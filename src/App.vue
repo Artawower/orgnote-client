@@ -13,7 +13,7 @@ import { useRouter } from 'vue-router';
 import { jsBabel } from './plugins/js-babel';
 import { RouteNames } from './router/routes';
 import { useAuthStore } from './stores/auth';
-import { decodeAuthState, extractAuthQueryInfo } from './tools';
+import { decodeAuthState, extractAuthQueryInfo, mockServer } from './tools';
 import { useSyncStore } from './stores/sync';
 import { useLoggerStore } from './stores/logger';
 import { useSystemInfoStore } from './stores/system-info';
@@ -63,11 +63,13 @@ async function handleCordovaAuth(url: string) {
 }
 const { orgNoteApi } = useOrgNoteApiStore();
 
-if (process.env.CLIENT) {
+const initPublicOrgNoteApi = () => {
   (
     window as unknown as { handleOpenURL: (arg0: string) => void }
   ).handleOpenURL = handleCordovaAuth.bind(this);
 
   window.orgnote = orgNoteApi;
-}
+};
+
+mockServer(initPublicOrgNoteApi)();
 </script>

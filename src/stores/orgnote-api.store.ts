@@ -4,7 +4,12 @@ import { useSettingsStore } from './settings';
 import { OrgNoteApi, ThemeVariable } from 'src/api';
 import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
-import { applyCSSVariables, getCssTheme, resetCSSVariables } from 'src/tools';
+import {
+  applyCSSVariables,
+  getCssTheme,
+  mockServer,
+  resetCSSVariables,
+} from 'src/tools';
 import { Router, useRouter } from 'vue-router';
 import { useEditorStore } from './editor.store';
 import { useCommandsStore } from './commands';
@@ -126,10 +131,7 @@ const useSystem = (
 ): OrgNoteApi['system'] => {
   const systemInfoStore = useSystemInfoStore();
   return {
-    reload: async (params?: { verbose: boolean }): Promise<void> => {
-      if (!process.env.CLIENT) {
-        return;
-      }
+    reload: mockServer(async (params?: { verbose: boolean }): Promise<void> => {
       if (!params?.verbose) {
         window.location.reload();
         return;
@@ -141,7 +143,7 @@ const useSystem = (
       if (reload) {
         window.location.reload();
       }
-    },
+    }),
     setNewFilesAvailable: (status?: boolean) => {
       if (!status) {
         return;

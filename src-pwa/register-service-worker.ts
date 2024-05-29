@@ -1,5 +1,6 @@
 import { register } from 'register-service-worker'
 import { OrgNoteApi } from '../src/api';
+import { mockServer } from '../src/tools/mock-server';
 
 declare global {
   interface Window {
@@ -40,9 +41,7 @@ register(process.env.SERVICE_WORKER_FILE, {
     if (!navigator.onLine) {
       return;
     }
-    if (process.env.CLIENT) {
-      window.orgnote.system.setNewFilesAvailable(true);
-    }
+    mockServer(window.orgnote.system.setNewFilesAvailable)(true);
   },
 
   offline () {

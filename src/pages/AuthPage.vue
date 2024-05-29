@@ -29,6 +29,7 @@ import {
   decodeAuthState,
   extractAuthQueryInfo,
   getMobileAppUrl,
+  mockServer,
   sleep,
 } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -43,10 +44,7 @@ const $q = useQuasar();
 
 const state = computed(() => decodeAuthState(route.query.state as string));
 
-onBeforeMount(async () => {
-  if (!process.env.CLIENT) {
-    return;
-  }
+const initProvider = mockServer(async () => {
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
     authStore.auth({
@@ -58,15 +56,16 @@ onBeforeMount(async () => {
   await setupUser();
 });
 
+onBeforeMount(async () => {
+  await initProvider();
+});
+
 const router = useRouter();
 const { config } = useSettingsStore();
 
 const mobileUrl = ref<string>();
 
 const setupUser = async () => {
-  if (!process.env.CLIENT) {
-    return;
-  }
   const isMobile = route.query.state !== 'desktop';
   if (config.common.developerMode) {
     await sleep(10000);
@@ -76,7 +75,6 @@ const setupUser = async () => {
     $q.platform.is.mobile &&
     isMobile &&
     !window.navigator.standalone &&
-    // TODO: feat/server-side-rendering remove this line
     !$q.platform.is.ios // Tmp disable opening mobile app for ios device
   ) {
     const mobileAppUrl = getMobileAppUrl(`auth/login${window.location.search}`);

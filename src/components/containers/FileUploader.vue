@@ -17,9 +17,8 @@
 
 <script lang="ts" setup>
 import { imageFileExtensions } from 'src/constants';
-import { traverseDirectory } from 'src/tools';
-
-import { computed, ref } from 'vue';
+import { mockServer, traverseDirectory } from 'src/tools';
+import { onBeforeUnmount, onBeforeMount, computed, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -84,22 +83,21 @@ const dragLeave = (e: DragEvent) => {
   e.preventDefault();
 };
 
-if (process.env.CLIENT) {
-  window.addEventListener(
-    'dragover',
-    function (e) {
-      e.preventDefault();
-    },
-    false
-  );
-  window.addEventListener(
-    'drop',
-    function (e) {
-      e.preventDefault();
-    },
-    false
-  );
-}
+const preventDefault = (e: DragEvent) => e.preventDefault();
+
+const preventDragAndDrop = () => {
+  window.addEventListener('dragover', preventDefault, false);
+  window.addEventListener('drop', preventDefault, false);
+};
+
+onBeforeMount(() => mockServer(preventDragAndDrop)());
+
+onBeforeUnmount(
+  mockServer(() => {
+    window.removeEventListener('dragover', preventDefault);
+    window.removeEventListener('drop', preventDefault);
+  })
+);
 </script>
 
 <style lang="scss" scoped>

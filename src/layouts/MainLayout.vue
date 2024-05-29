@@ -89,7 +89,7 @@ const sidebarStore = useSidebarStore();
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
-mockServer(authStore?.verifyUser)();
+authStore?.verifyUser();
 
 const { registerKeybindings } = useKeybindingStore();
 
@@ -111,11 +111,11 @@ const notesImportStore = useNotesImportStore();
 
 const toolbarStore = useToolbarStore();
 
-const alignViaVirtualkeyboard = debounce(() => {
-  if (process.env.CLIENT) {
+const alignViaVirtualkeyboard = debounce(
+  mockServer(() => {
     window.scrollTo(0, 0);
-  }
-});
+  })
+);
 
 const { viewportHeight, keyboardOpened } = onMobileViewportChanged((info) => {
   toolbarStore.showToolbar = !info.keyboardOpened.value;

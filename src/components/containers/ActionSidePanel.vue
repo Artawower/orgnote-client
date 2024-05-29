@@ -58,7 +58,7 @@
 import { useQuasar } from 'quasar';
 import { User } from 'src/models';
 import { useSidebarStore } from 'src/stores/sidebar';
-import { getNumericCssVar } from 'src/tools';
+import { getNumericCssVar, mockServer } from 'src/tools';
 
 import {
   computed,
@@ -97,12 +97,9 @@ const closeSideBarForMobile = () => {
 
 const windowWidth = ref(process.env.CLIENT ? window.innerWidth : 0);
 
-const setupWindowWidth = () => {
-  if (!process.env.CLIENT) {
-    return;
-  }
+const setupWindowWidth = mockServer(() => {
   windowWidth.value = window.innerWidth;
-};
+});
 
 const showSidebarForSmalDevice = () => {
   if (!fullWidth.value) {
@@ -112,12 +109,11 @@ const showSidebarForSmalDevice = () => {
 };
 
 onBeforeMount(() => showSidebarForSmalDevice());
-onMounted(() => {
-  process.env.CLIENT && window.addEventListener('resize', setupWindowWidth);
-});
+onMounted(
+  mockServer(() => window.addEventListener('resize', setupWindowWidth))
+);
 onUnmounted(
-  () =>
-    process.env.CLIENT && window.removeEventListener('resize', setupWindowWidth)
+  mockServer(() => window.removeEventListener('resize', setupWindowWidth))
 );
 
 const drawerWidth = computed(() => {

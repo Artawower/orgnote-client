@@ -47,41 +47,40 @@ export const useAuthStore = defineStore(
       }
     };
 
-    const auth = async ({
-      provider,
-      environment = 'desktop',
-      redirectUrl,
-    }: {
-      provider: string;
-      environment?: string;
-      redirectUrl?: string;
-    }) => {
-      if (!process.env.CLIENT) {
-        return;
+    const auth = mockServer(
+      async ({
+        provider,
+        environment = 'desktop',
+        redirectUrl,
+      }: {
+        provider: string;
+        environment?: string;
+        redirectUrl?: string;
+      }) => {
+        const state: AuthState = { environment, redirectUrl };
+        const authUrl = getAuthUrl(provider, state);
+
+        if ($q.platform.is.cordova) {
+          // TODO: master quick tmp solution.
+          // common OAuth for mobile and web
+          window.open(authUrl, '_system');
+          return;
+        }
+
+        if ($q.platform.is.electron && electron) {
+          const { redirectUrl } = await electron.auth(authUrl);
+          router.push(redirectUrl);
+          return;
+        }
+
+        const rspns = (
+          await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
+        ).data;
+        window.location.replace(rspns.data.redirectUrl);
+
+        return rspns;
       }
-      const state: AuthState = { environment, redirectUrl };
-      const authUrl = getAuthUrl(provider, state);
-
-      if ($q.platform.is.cordova) {
-        // TODO: master quick tmp solution.
-        // common OAuth for mobile and web
-        window.open(authUrl, '_system');
-        return;
-      }
-
-      if ($q.platform.is.electron && electron) {
-        const { redirectUrl } = await electron.auth(authUrl);
-        router.push(redirectUrl);
-        return;
-      }
-
-      const rspns = (
-        await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
-      ).data;
-      window.location.replace(rspns.data.redirectUrl);
-
-      return rspns;
-    };
+    );
 
     const getAuthUrl = (provider: string, state: AuthState): string => {
       const strState = encodeURIComponent(buildAuthState(state));

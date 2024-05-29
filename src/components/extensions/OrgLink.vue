@@ -47,8 +47,6 @@ const linkNameNode =
 const linkType = node.value.meta?.linkType;
 
 const orgLinkId = extractOrgLinkId(rawLink);
-// const wrapperComponent = linkType === 'id' ? NotePreviewLink : 'span';
-// console.log('✎: [line 52][changelog] NotePreviewLink: ', NotePreviewLink);
 const wrapperComponent =
   linkType === 'id'
     ? defineAsyncComponent(

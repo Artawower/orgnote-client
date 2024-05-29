@@ -21,6 +21,7 @@ import { OrgNode } from 'org-mode-ast';
 import { OrgNoteConfig } from 'src/api';
 import { onMobileViewportChanged, useDynamicComponent } from 'src/hooks';
 import { useEditorStore } from 'src/stores/editor.store';
+import { mockServer } from 'src/tools';
 import { orgMode } from 'src/tools/cm-org-language';
 
 import { onMounted, ref, watch } from 'vue';
@@ -149,10 +150,7 @@ watch(
   }
 );
 
-const scrollIntoCurrentLine = () => {
-  if (!process.env.CLIENT) {
-    return;
-  }
+const scrollIntoCurrentLine = mockServer(() => {
   window.scroll(0, -1);
   editorView.dispatch({
     selection: {
@@ -161,7 +159,7 @@ const scrollIntoCurrentLine = () => {
     },
     scrollIntoView: true,
   });
-};
+});
 
 onMounted(() => initEditor());
 
@@ -506,7 +504,6 @@ org-keyword-block {
   color: var(--fg-alt);
   opacity: 0;
   z-index: 1000;
-  cursor: pointer;
   right: 16px;
   top: var(--gap-sm);
 

@@ -1,6 +1,7 @@
 import { ExtensionMeta, Note, NotePreview, StoredExtension } from 'orgnote-api';
 import { FileTree, FilePathInfo } from 'src/repositories';
 
+// TODO: move to API package
 export interface IExtensionRepository {
   getMeta(): Promise<ExtensionMeta[]>;
   getActiveExtensions(): Promise<StoredExtension[]>;

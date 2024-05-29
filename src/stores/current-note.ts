@@ -11,7 +11,7 @@ import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { mockServer } from 'src/tools';
 
-type ParsedNote = { note: Note; orgTree: OrgNode };
+type ParsedNote = { note: Note; orgTree?: OrgNode };
 
 export const useCurrentNoteStore = defineStore('current-note', () => {
   const currentNote = ref<Note | null>(null);
@@ -77,9 +77,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return [];
     }
 
-    const orgTree = process.env.CLIENT
-      ? withMetaInfo(parse(publicNote.content))
-      : undefined;
+    const orgTree = mockServer(() => withMetaInfo(parse(publicNote.content)))();
 
     const parsedNote: ParsedNote = { note: publicNote, orgTree };
 
