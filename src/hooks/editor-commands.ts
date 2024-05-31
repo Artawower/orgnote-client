@@ -1,6 +1,6 @@
+import { EditorView } from '@codemirror/view';
 import { useNotifications } from './notification';
 import { redo, undo } from '@codemirror/commands';
-import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/api';
 import { useCommandsStore } from 'src/stores/commands';

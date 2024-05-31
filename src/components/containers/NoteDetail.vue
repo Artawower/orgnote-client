@@ -9,7 +9,6 @@
 </template>
 
 <script lang="ts" setup>
-import { EditorView } from 'codemirror';
 import { OrgNoteConfig } from 'src/api';
 import { Note } from 'src/models';
 
@@ -17,6 +16,7 @@ import { toRef } from 'vue';
 
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { useNoteEditorStore } from 'src/stores/note-editor';
+import { EditorView } from '@codemirror/view';
 
 const props = defineProps<{
   note?: Note;

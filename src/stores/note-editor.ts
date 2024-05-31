@@ -1,4 +1,3 @@
-import { EditorView } from 'codemirror';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
@@ -10,6 +9,7 @@ import { getOrgNodeValidationErrors } from 'src/tools/validators';
 import { computed, ref, shallowRef, toRaw } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useNotesStore } from './notes';
+import { EditorView } from '@codemirror/view';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();

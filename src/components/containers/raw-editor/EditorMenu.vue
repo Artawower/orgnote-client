@@ -17,13 +17,13 @@
 </template>
 
 <script lang="ts" setup>
-import { EditorView } from 'codemirror';
 import { Command, CommandHandlerParams } from 'src/api';
 
 import { ref } from 'vue';
 
 import SearchContainer from 'src/components/ui/SearchContainer.vue';
 import { useCommandsStore } from 'src/stores/commands';
+import { EditorView } from '@codemirror/view';
 
 const props = defineProps<{
   editorView: EditorView;

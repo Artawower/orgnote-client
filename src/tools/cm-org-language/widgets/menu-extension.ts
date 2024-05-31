@@ -1,5 +1,4 @@
-import { ViewUpdate } from '@codemirror/view';
-import { EditorView } from 'codemirror';
+import { EditorView, ViewUpdate } from '@codemirror/view';
 import { getCssNumericProperty, mockServer } from 'src/tools';
 
 const renderParentMenuContainer = (parent: HTMLElement | string) => {

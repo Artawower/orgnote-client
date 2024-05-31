@@ -1,5 +1,4 @@
 import { foldAll, unfoldAll } from '@codemirror/language';
-import { EditorView } from 'codemirror';
 import { Command, CommandGroup } from 'src/api';
 import { useRouter } from 'vue-router';
 
@@ -8,6 +7,7 @@ import { useCommandsStore } from 'src/stores/commands';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useNotesStore } from 'src/stores/notes';
+import { EditorView } from '@codemirror/view';
 
 const group: CommandGroup = 'note-detail';
 

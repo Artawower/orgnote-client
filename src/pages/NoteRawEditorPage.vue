@@ -17,11 +17,11 @@ export default { name: 'OrgWYSWYGEditorComponent' };
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { OrgNode } from 'org-mode-ast';
-import { EditorView } from 'codemirror';
 import { debounce } from 'src/tools';
 import { useSettingsStore } from 'src/stores/settings';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useToolbarStore } from 'src/stores/toolbar';
+import { EditorView } from '@codemirror/view';
 
 const noteEditorStore = useNoteEditorStore();
 const toolbarStore = useToolbarStore();

@@ -1,0 +1,19 @@
+FROM node:18-alpine3.19
+
+WORKDIR /app
+
+RUN ls
+RUN pwd
+COPY ./dist/ssr/package.json ./
+RUN npm i -g pm2@latest
+RUN npm install
+
+ENV DISABLE_LOGGER 1
+
+COPY ./dist/ssr ./
+
+EXPOSE 3000
+
+ENTRYPOINT ["pm2-runtime"]
+CMD ["index.js"]
+# CMD ["node", "index.js"]

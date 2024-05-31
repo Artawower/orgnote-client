@@ -6,13 +6,13 @@
 
 <script lang="ts" setup>
 import { foldEffect, foldedRanges, unfoldEffect } from '@codemirror/language';
-import { EditorView } from 'codemirror';
 import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 import { findOrgNode } from 'src/tools';
 
 import { ref, toRef } from 'vue';
 
 import GutterMarker from './ui/GutterMarker.vue';
+import { EditorView } from '@codemirror/view';
 
 const props = defineProps<{
   node: OrgNode;
@@ -24,7 +24,9 @@ const node = toRef(props, 'node');
 const getFoldedRanges = () => {
   const r = [];
 
-  const cur = foldedRanges(props.editorView.state).iter();
+  // TODO: feat/server-side-rendering fix
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cur = foldedRanges(props.editorView.state as any).iter();
   while (true) {
     if (!cur.value) {
       break;
