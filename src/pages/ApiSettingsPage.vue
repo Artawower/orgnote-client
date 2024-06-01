@@ -10,7 +10,7 @@
       stack-label
       class="token-field"
     >
-      <template v-slot:append>
+      <template #append>
         <div class="token-actions row">
           <q-btn
             @click="settingsStore.removeToken(token)"
@@ -25,7 +25,7 @@
           ></action-btn>
         </div>
       </template>
-      <template v-slot:control>
+      <template #control>
         <div class="self-center full-width no-outline" tabindex="0">
           {{ token.token }}
         </div>

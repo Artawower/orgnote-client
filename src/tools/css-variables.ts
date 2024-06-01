@@ -25,7 +25,7 @@ export function getCssTheme(variableNames: string[]): {
 export function getNumericCssVar(varName: string): number {
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const value = getCssVar(normalizedName);
-  const n = value.replace(/[^\d\.]/g, '');
+  const n = value.replace(/[^\d.]/g, '');
   return +n;
 }
 
@@ -39,7 +39,7 @@ export function getCssNumericProperty(
   propertyName: string
 ): number {
   const value = getCssProperty(element, propertyName);
-  const n = value.replace(/[^\d\.]/g, '');
+  const n = value.replace(/[^\d.]/g, '');
   return +n;
 }
 

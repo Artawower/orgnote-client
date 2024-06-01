@@ -1,9 +1,9 @@
 <template>
   <dynamic-tooltip position="bottom">
-    <template v-slot:content>
+    <template #content>
       <span class="org-date" :class="{ expired }"> {{ node.rawValue }} </span>
     </template>
-    <template v-slot:tooltip>
+    <template #tooltip>
       <q-date
         v-model="rawDate"
         landscape

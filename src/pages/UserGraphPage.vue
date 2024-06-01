@@ -53,7 +53,7 @@ const findConnectedLinks = (
     return foundedNodeIds;
   }
 
-  let unvisitedNode = graphStore.graphLinks[nodeId];
+  const unvisitedNode = graphStore.graphLinks[nodeId];
   foundedNodeIds.push(nodeId);
   if (unvisitedNode) {
     unvisitedNode.forEach((nodeId) => {

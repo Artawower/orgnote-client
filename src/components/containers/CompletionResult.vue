@@ -19,7 +19,7 @@
         :index="index"
         :height="itemHeight"
       >
-        <template v-slot="{ item, index }">
+        <template #default="{ item, index }">
           <keep-alive>
             <completion-result-item
               :item="item as CompletionCandidate"

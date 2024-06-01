@@ -79,7 +79,7 @@ const currentIcon = computed(() => {
   return icon.value;
 });
 
-let fired: Ref<boolean> = ref(false);
+const fired: Ref<boolean> = ref(false);
 
 const showFired = () => {
   fired.value = true;

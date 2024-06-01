@@ -30,9 +30,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          eslint: true
+        run: bun run lint
 
   build:
     name: Build
@@ -99,6 +97,25 @@ jobs:
       - name: Run tests
         run: bun test
 
+
+  push_client_image:
+    name: Push client image
+    runs-on: ubuntu-latest
+    needs: [build, build_ssr]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+            context: .
+            dockerfile: Dockerfile.ssr
+            push: true
+            tags: orgnote/client:latest
   release:
     name: Create release
     needs: [build, lint, tests, code-quality]

@@ -1,7 +1,7 @@
 <template>
   <div class="search-container">
     <header-bar>
-      <template v-slot:header>
+      <template #header>
         <div class="text-capitalize">
           <search-input v-model="search" :autofocus="autofocus" />
         </div>

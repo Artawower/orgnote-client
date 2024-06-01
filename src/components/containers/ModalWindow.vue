@@ -1,10 +1,10 @@
 <template>
   <q-dialog v-model="modalStore.opened" :maximized="$q.screen.lt.sm">
     <modal-container>
-      <template v-if="modalStore.title" v-slot:title>{{
+      <template v-if="modalStore.title" #title>{{
         $t(modalStore.title)
       }}</template>
-      <template v-slot:content>
+      <template #content>
         <component :is="modalStore.component" />
       </template>
     </modal-container>

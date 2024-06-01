@@ -8,7 +8,7 @@
     <div class="q-pa-md bg-main note-preview">
       <public-note-preview
         @click="openNote"
-        :notePreview="note"
+        :note-preview="note"
         :show-author="false"
         :height="200"
         :hide-footer="true"

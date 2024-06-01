@@ -226,7 +226,7 @@ export const useExtensionsStore = defineStore('extension', () => {
       if (alreadyLoaded) {
         return;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const { module, ...extMeta } = builtInExt;
       await uploadExtension(extMeta);
     });

@@ -14,10 +14,10 @@
       borderless
       :placeholder="$t(placeholder)"
     >
-      <template v-slot:prepend>
+      <template #prepend>
         <q-icon name="keyboard_arrow_right" />
       </template>
-      <template v-slot:append>
+      <template #append>
         <div class="actions">
           <q-icon
             v-if="$q.platform.is.mobile && autocompletion"

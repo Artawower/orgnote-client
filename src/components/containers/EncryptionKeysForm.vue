@@ -20,7 +20,7 @@
         class="fg-main q-mt-md"
         standout="bg-main"
         type="password"
-        autoComplete="new-password"
+        auto-complete="new-password"
         v-model="params.passphrase"
         :label="$t('passphrase')"
       />

@@ -1,6 +1,6 @@
 <template>
   <q class="org-quote">
-    <p v-for="(n, i) in node?.children" v-bind:key="i">
+    <p v-for="(n, i) in node?.children" :key="i">
       <content-renderer :node="n"></content-renderer>
     </p>
   </q>

@@ -1,10 +1,10 @@
 <template>
   <span class="preview-link">
     <dynamic-tooltip position="bottom" @show="loadNote">
-      <template v-slot:content>
+      <template #content>
         <slot />
       </template>
-      <template v-slot:tooltip>
+      <template #tooltip>
         <div class="note-preview-wrapper">
           <div
             class="preview-link-not-found flex items-center justify-center fit"
@@ -18,7 +18,7 @@
                 class="q-pa-md"
                 @click="openNote"
                 v-else
-                :notePreview="note"
+                :note-preview="note"
                 :show-author="false"
                 :height="200"
                 :hide-footer="true"

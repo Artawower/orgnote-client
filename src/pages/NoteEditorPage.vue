@@ -13,12 +13,12 @@
         :horizontal="$q.screen.lt.sm"
         class="debug-splitter"
       >
-        <template v-slot:before>
+        <template #before>
           <div v-if="noteLoaded" class="q-pa-md">
             <router-view />
           </div>
         </template>
-        <template v-slot:separator>
+        <template #separator>
           <q-avatar
             color="primary"
             text-color="white"
@@ -26,7 +26,7 @@
             icon="drag_indicator"
           />
         </template>
-        <template v-slot:after>
+        <template #after>
           <div class="debug q-pa-md">
             <div class="common-info q-px-md">
               Cursor: {{ noteEditorStore.cursorPosition }}

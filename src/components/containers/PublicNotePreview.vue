@@ -32,7 +32,7 @@
             </div>
             <file-path
               v-if="notePreview.filePath"
-              :filePath="notePreview.filePath"
+              :file-path="notePreview.filePath"
               class="q-py-xs"
             ></file-path>
             <div class="text-caption rft description">
@@ -53,7 +53,7 @@
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
           <image-resolver
-            :authorId="notePreview.author?.id ?? authStore.user?.id"
+            :author-id="notePreview.author?.id ?? authStore.user?.id"
             width="112px"
             height="112px"
             v-if="previewImage"

@@ -42,6 +42,7 @@ export const useSearchStore = defineStore('search', () => {
       offset: number
     ) =>
       new Promise<CompletionSearchResult<NotePreview>>(
+        // eslint-disable-next-line no-async-promise-executor
         async (resolve, reject) => {
           try {
             const { searchQuery, tags, scope } = exctractSearchInfo(filter);

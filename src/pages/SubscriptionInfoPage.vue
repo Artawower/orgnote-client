@@ -19,7 +19,7 @@
         v-model="subscriptionKey"
         :label="$t('subscription key')"
       >
-        <template v-slot:append>
+        <template #append>
           <q-btn
             @click="authStore.subscribe(subscriptionKey)"
             :disable="!subscriptionKey.length"

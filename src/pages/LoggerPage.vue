@@ -9,7 +9,7 @@
     </div>
     <div class="system-info">
       <code-block :code="prettyLogs">
-        <template v-slot:actions>
+        <template #actions>
           <action-btn
             @click="loggerStore.clearLogs"
             icon="o_delete_forever"

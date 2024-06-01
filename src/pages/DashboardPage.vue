@@ -37,7 +37,7 @@
             :notes="notesStatisticStore.bookmarkedNotes"
             empty-text="no bookmarks yet"
             before-action-icon="o_cancel"
-            @beforeActionIcon="toggleBookmark"
+            @before-action-icon="toggleBookmark"
           />
         </div>
       </pretty-card>

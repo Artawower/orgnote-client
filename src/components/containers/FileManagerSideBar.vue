@@ -1,12 +1,12 @@
 <template>
   <sidebar-wrapper>
     <header-bar>
-      <template v-slot:header>
+      <template #header>
         <div class="text-capitalize">
           <search-input v-model="search" placeholder="files" />
         </div>
       </template>
-      <template v-slot:actions>
+      <template #actions>
         <icon-btn @click="importFiles" name="cloud_upload" />
         <icon-btn
           @click="toggleExpanding"
@@ -27,7 +27,7 @@
       label-key="name"
       class="q-mt-md"
     >
-      <template v-slot:default-header="prop">
+      <template #default-header="prop">
         <file-manager-item :file-node="prop.node" @expand="expand" />
       </template>
     </q-tree>

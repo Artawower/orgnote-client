@@ -27,6 +27,8 @@
     "./node_modules",
     "./src-capacitor",
     "./src-cordova",
+    "./src-pwa",
+    "./src-ssr",
     "./quasar.config.*.temporary.compiled*"
   ],
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]

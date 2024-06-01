@@ -15,7 +15,7 @@
       emit-value
       map-options
     >
-      <template v-slot:selected>
+      <template #selected>
         <span v-if="(settings.darkMode as any) === 'auto'">System</span>
         <span v-else-if="settings.darkMode">Dark mode</span>
         <span v-else>Light mode</span>

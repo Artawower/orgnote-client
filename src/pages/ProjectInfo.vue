@@ -1,7 +1,7 @@
 <template>
   <div class="project-info">
     <component-tabs :tabs="tabs">
-      <template v-slot:custom-tabs>
+      <template #custom-tabs>
         <q-item
           href="https://github.com/Artawower/orgnote/wiki/General"
           target="_blank"
