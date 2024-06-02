@@ -1,13 +1,11 @@
 import { Command, ExtensionMeta, DefaultCommands } from 'orgnote-api';
 import SettingsPage from 'src/pages/SettingsPage.vue';
 import { RouteNames } from 'src/router/routes';
-import {
-  useCompletionStore,
-  useExtensionsStore,
-  useModalStore,
-  useNoteEditorStore,
-  useOrgNoteApiStore,
-} from 'src/stores';
+import { useCompletionStore } from 'src/stores/completion';
+import { useExtensionsStore } from 'src/stores/extensions';
+import { useModalStore } from 'src/stores/modal';
+import { useNoteEditorStore } from 'src/stores/note-editor';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords, searchFilter } from 'src/tools';
 import { useRoute } from 'vue-router';

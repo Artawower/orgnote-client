@@ -2,11 +2,11 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useNotesStore } from './notes';
 import { useEncryption } from 'src/hooks';
-import { repositories } from 'src/repositories';
 import { isGpgEncrypted } from 'src/tools/is-gpg-encrypted';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
+import { repositories } from 'src/boot/repositories';
 
 export const useEncryptionStore = defineStore('encryption', () => {
   // TODO: implement progress.

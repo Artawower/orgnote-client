@@ -59,11 +59,11 @@
 <script lang="ts" setup>
 import { version } from '../../../package.json';
 import { storeToRefs } from 'pinia';
-import { useAuthStore } from 'src/stores';
 
 import DownloadLinks from 'components/DownloadLinks.vue';
 import LoginButtons from 'components/LoginButtons.vue';
 import RandomQuote from 'components/containers/RandomQuote.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const authStore = useAuthStore();
 

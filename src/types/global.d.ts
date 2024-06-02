@@ -1,11 +1,15 @@
 import { ElectronApi } from '../../src-electron/electron-api';
 import { OrgNoteApi } from 'src/api';
+import { Repositories } from 'src/models';
+import { tinykeys } from 'tinykeys';
 
 declare global {
   const electron: ElectronApi;
+
   interface Window {
     electron: ElectronApi;
     orgnote: OrgNoteApi;
+    tinykeys: typeof tinykeys;
   }
 
   interface Navigator {
@@ -17,6 +21,7 @@ declare global {
 
   interface CordovaPlugins {
     clipboard: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       copy: (payload: any, onSuccess?: () => void, onFail?: () => void) => void;
     };
   }

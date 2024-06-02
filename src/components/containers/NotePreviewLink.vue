@@ -1,10 +1,10 @@
 <template>
   <span class="preview-link">
     <dynamic-tooltip position="bottom" @show="loadNote">
-      <template v-slot:content>
+      <template #content>
         <slot />
       </template>
-      <template v-slot:tooltip>
+      <template #tooltip>
         <div class="note-preview-wrapper">
           <div
             class="preview-link-not-found flex items-center justify-center fit"
@@ -18,7 +18,7 @@
                 class="q-pa-md"
                 @click="openNote"
                 v-else
-                :notePreview="note"
+                :note-preview="note"
                 :show-author="false"
                 :height="200"
                 :hide-footer="true"
@@ -29,19 +29,19 @@
         </div>
       </template>
     </dynamic-tooltip>
-    <!-- <q-tooltip @show="loadNote" class="text-inherit"> </q-tooltip> -->
   </span>
 </template>
 
 <script lang="ts" setup>
 import { Note } from 'src/models';
-import { useCurrentNoteStore, useOrgNoteApiStore } from 'src/stores';
 
 import { ref } from 'vue';
 
 import DynamicTooltip from '../ui/DynamicTooltip.vue';
 import PublicNotePreview from './PublicNotePreview.vue';
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const props = defineProps<{
   id: string;
@@ -67,7 +67,7 @@ const openNote = () => {
 };
 </script>
 
-<styles lang="scss" scoped>
+<style lang="scss" scoped>
 .note-preview-wrapper {
   max-width: var(--note-preview-link-max-width);
   width: var(--note-preview-link-max-width);
@@ -85,4 +85,4 @@ const openNote = () => {
 article {
   width: 100%;
 }
-</styles>
+</style>

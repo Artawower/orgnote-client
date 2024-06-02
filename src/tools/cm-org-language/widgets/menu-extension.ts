@@ -1,6 +1,5 @@
-import { ViewUpdate } from '@codemirror/view';
-import { EditorView } from 'codemirror';
-import { getCssNumericProperty } from 'src/tools';
+import { EditorView, ViewUpdate } from '@codemirror/view';
+import { getCssNumericProperty, mockServer } from 'src/tools';
 
 const renderParentMenuContainer = (parent: HTMLElement | string) => {
   const activeLineElement = document.querySelector('.cm-activeLine');
@@ -17,9 +16,11 @@ const renderParentMenuContainer = (parent: HTMLElement | string) => {
     return;
   }
 
-  const parentElementTopPadding = parseInt(
-    window.getComputedStyle(parentElement).paddingTop
-  );
+  const parentElementTopPadding = mockServer(
+    () => parseInt(window.getComputedStyle(parentElement).paddingTop),
+    0
+  )();
+
   const menuWidth = 30;
   const menuHeight = 24;
   const paddingTop = getCssNumericProperty(activeLineElement, 'padding-top');

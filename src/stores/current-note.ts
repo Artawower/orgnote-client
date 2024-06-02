@@ -2,15 +2,16 @@ import { useAuthStore } from './auth';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { repositories } from 'src/boot/repositories';
 import { ModelsPublicNote } from 'src/generated/api';
 import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
+import { repositories } from 'src/boot/repositories';
+import { mockServer } from 'src/tools';
 
-type ParsedNote = { note: Note; orgTree: OrgNode };
+type ParsedNote = { note: Note; orgTree?: OrgNode };
 
 export const useCurrentNoteStore = defineStore('current-note', () => {
   const currentNote = ref<Note | null>(null);
@@ -21,7 +22,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   const cacheSize = 10;
 
   const router = useRouter();
-  const authStore = useAuthStore();
 
   // const selectNoteFromCache = async (noteId: string): Promise<ParsedNote> => {
   //   const foundParsedNote = noteCache.value.find((pn) => pn.note.id === noteId);
@@ -32,10 +32,14 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     noteId: string
   ): Promise<ModelsPublicNote> => {
     try {
-      return (await sdk.notes.notesIdGet(noteId)).data.data;
+      const note = (await sdk.notes.notesIdGet(noteId)).data.data;
+      return note;
     } catch (e: unknown) {
       // TODO: master handle error here [low]
-      console.log('🦄: [line 41][current-note.ts] [35me: ', e);
+      console.log(
+        '🦄: [line 41][current-note.ts] unable to load note [35me: ',
+        e
+      );
     }
   };
 
@@ -48,10 +52,17 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return;
     }
 
+    mockServer(() => touchNoteByAuthor(myNote));
+
+    return myNote;
+  };
+
+  const touchNoteByAuthor = (myNote: ModelsPublicNote): void => {
+    const authStore = useAuthStore();
+
     myNote.author = authStore.user;
     myNote.isMy = true;
-    await repositories.notes.touchNote(myNote.id);
-    return myNote;
+    repositories.notes.touchNote(myNote.id);
   };
 
   const cacheNote = (parsedNote: ParsedNote) => {
@@ -66,7 +77,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return [];
     }
 
-    const orgTree = withMetaInfo(parse(publicNote.content));
+    const orgTree = mockServer(() => withMetaInfo(parse(publicNote.content)))();
 
     const parsedNote: ParsedNote = { note: publicNote, orgTree };
 

@@ -8,6 +8,7 @@ import { useNotifications } from 'src/hooks';
 import {
   ExtensionNotFoundError,
   IncorrectExtensionError,
+  mockServer,
   readExtensionFromString,
   readFileFromRepo,
   refreshPackages,
@@ -46,8 +47,10 @@ export const usePackageManagerStore = defineStore(
       }
     };
 
-    setTimeout(refreshSources, initialRefreshDelay);
-    setInterval(refreshSources, autoRefreshTimer);
+    const safeRefreshSources = mockServer(refreshSources);
+
+    setTimeout(safeRefreshSources, initialRefreshDelay);
+    setInterval(safeRefreshSources, autoRefreshTimer);
 
     const addSource = async (source: string) => {
       const normalizedSource = source;

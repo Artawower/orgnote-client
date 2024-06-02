@@ -30,12 +30,12 @@
         :hoverable="false"
       />
       <icon-btn @click.stop name="o_more_vert" class="">
-        <template v-slot:menu>
+        <template #menu>
           <q-menu ref="actionMenuRef" max-width="300px">
             <q-list>
               <q-item clickable @click.stop.prevent="editName">
                 <icon-btn name="edit" size="xs" :hoverable="false">
-                  <template v-slot:append>
+                  <template #append>
                     {{ $t('edit note') }}
                   </template>
                 </icon-btn>
@@ -47,12 +47,12 @@
                 v-close-popup
               >
                 <icon-btn name="note_add" size="xs" :hoverable="false">
-                  <template v-slot:append>{{ $t('create folder') }}</template>
+                  <template #append>{{ $t('create folder') }}</template>
                 </icon-btn>
               </q-item>
               <q-item clickable @click.stop.prevent="deleteFile" v-close-popup>
                 <icon-btn name="delete" size="xs" :hoverable="false">
-                  <template v-slot:append>
+                  <template #append>
                     {{ $t('delete') }}
                   </template>
                 </icon-btn>
@@ -68,18 +68,16 @@
 <script lang="ts" setup>
 import { QMenu, useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
-import {
-  useAuthStore,
-  useCurrentNoteStore,
-  useFileManagerStore,
-  useSidebarStore,
-} from 'src/stores';
 import { FlatTree, convertFlatTreeToFileTree, revealKeyboard } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { computed, onMounted, ref, watch } from 'vue';
 
 import IconBtn from 'src/components/ui/IconBtn.vue';
+import { useAuthStore } from 'src/stores/auth';
+import { useSidebarStore } from 'src/stores/sidebar';
+import { useFileManagerStore } from 'src/stores/file-manager';
+import { useCurrentNoteStore } from 'src/stores/current-note';
 
 const props = defineProps<{
   fileNode: FlatTree;

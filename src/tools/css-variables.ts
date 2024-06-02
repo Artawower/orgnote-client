@@ -1,12 +1,13 @@
 import { toKebabCase } from './case-converter';
 import { ThemeVariable } from 'src/api';
+import { mockServer } from './mock-server';
 
-export function getCssVar(varName: string): string {
+export const getCssVar = mockServer((varName: string): string => {
   const root = document.body;
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const computedStyle = getComputedStyle(root);
   return computedStyle.getPropertyValue(normalizedName);
-}
+});
 
 export function getCssTheme(variableNames: string[]): {
   [key in ThemeVariable]?: string;
@@ -24,7 +25,7 @@ export function getCssTheme(variableNames: string[]): {
 export function getNumericCssVar(varName: string): number {
   const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
   const value = getCssVar(normalizedName);
-  const n = value.replace(/[^\d\.]/g, '');
+  const n = value.replace(/[^\d.]/g, '');
   return +n;
 }
 
@@ -38,7 +39,7 @@ export function getCssNumericProperty(
   propertyName: string
 ): number {
   const value = getCssProperty(element, propertyName);
-  const n = value.replace(/[^\d\.]/g, '');
+  const n = value.replace(/[^\d.]/g, '');
   return +n;
 }
 

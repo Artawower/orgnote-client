@@ -20,7 +20,7 @@
       style="max-height: cacl(100svh - 66px)"
     >
       <async-item-container :items-list="notes" :index="index" :height="height">
-        <template v-slot="{ item }">
+        <template #default="{ item }">
           <div :class="{ fit: !tileView, 'col-4': tileView }">
             <public-note-preview
               :note-preview="item as NotePreview"

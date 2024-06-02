@@ -22,10 +22,10 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { useCompletionStore } from 'src/stores';
 import { useViewStore } from 'src/stores/view';
 
 import CompletionResult from './CompletionResult.vue';
+import { useCompletionStore } from 'src/stores/completion';
 
 const completionStore = useCompletionStore();
 

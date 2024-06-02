@@ -36,7 +36,7 @@ const supportedLanguages: LanguageName[] = [
 
 supportedLanguages.forEach((lang) => loadLanguage(lang));
 
-export const editorLanguages: { [langName: string]: Parser } = {
+export const editorLanguages = {
   'web-mode': langs.vue().language.parser,
   java: langs.java().language.parser,
   'c++': langs.cpp().language.parser,
@@ -70,4 +70,4 @@ export const editorLanguages: { [langName: string]: Parser } = {
   python: langs.python().language.parser,
   angular: langs.angular().language.parser,
   vue: langs.vue().language.parser,
-};
+} as unknown as { [langName: string]: Parser };

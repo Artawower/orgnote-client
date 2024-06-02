@@ -27,9 +27,9 @@ dist-ssr
 org-note-release.keystore
 
 src-cordova/www
-.env
-.env.prod
+.env*
 local/*
 build-local.sh
 
 org-note-release-signed.aab
+/quasar.config.*.temporary.compiled*

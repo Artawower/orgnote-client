@@ -32,7 +32,8 @@
 
 <script lang="ts" setup>
 import { OrgNoteGpgEncryption, OrgNotePasswordEncryption } from 'orgnote-api';
-import { useEncryptionStore, useModalStore } from 'src/stores';
+import { useEncryptionStore } from 'src/stores/encryption.store';
+import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
 
 const { config } = useSettingsStore();

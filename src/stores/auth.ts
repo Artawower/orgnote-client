@@ -11,6 +11,7 @@ import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
+import { mockServer } from 'src/tools';
 
 const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
@@ -26,17 +27,18 @@ export interface AuthState {
 export const useAuthStore = defineStore(
   'auth',
   () => {
+    const notificaitons = useNotifications();
+    const defaultProvider: OAuthProvider = 'github';
     const token = ref<string>();
     const user = ref<PersonalInfo>();
-    const provider = ref<OAuthProvider>('github');
+    const provider = ref<OAuthProvider>(defaultProvider);
     const $q = useQuasar();
-    const notificaitons = useNotifications();
     const router = useRouter();
 
     const authViaGithub = async (redirectUrl?: string) => {
       try {
         await auth({
-          provider: provider.value,
+          provider: provider.value ?? defaultProvider,
           redirectUrl,
         });
       } catch (e) {
@@ -45,38 +47,40 @@ export const useAuthStore = defineStore(
       }
     };
 
-    const auth = async ({
-      provider,
-      environment = 'desktop',
-      redirectUrl,
-    }: {
-      provider: string;
-      environment?: string;
-      redirectUrl?: string;
-    }) => {
-      const state: AuthState = { environment, redirectUrl };
-      const authUrl = getAuthUrl(provider, state);
+    const auth = mockServer(
+      async ({
+        provider,
+        environment = 'desktop',
+        redirectUrl,
+      }: {
+        provider: string;
+        environment?: string;
+        redirectUrl?: string;
+      }) => {
+        const state: AuthState = { environment, redirectUrl };
+        const authUrl = getAuthUrl(provider, state);
 
-      if ($q.platform.is.cordova) {
-        // TODO: master quick tmp solution.
-        // common OAuth for mobile and web
-        window.open(authUrl, '_system');
-        return;
+        if ($q.platform.is.cordova) {
+          // TODO: master quick tmp solution.
+          // common OAuth for mobile and web
+          window.open(authUrl, '_system');
+          return;
+        }
+
+        if ($q.platform.is.electron && electron) {
+          const { redirectUrl } = await electron.auth(authUrl);
+          router.push(redirectUrl);
+          return;
+        }
+
+        const rspns = (
+          await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
+        ).data;
+        window.location.replace(rspns.data.redirectUrl);
+
+        return rspns;
       }
-
-      if ($q.platform.is.electron && electron) {
-        const { redirectUrl } = await electron.auth(authUrl);
-        router.push(redirectUrl);
-        return;
-      }
-
-      const rspns = (
-        await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
-      ).data;
-      window.location.replace(rspns.data.redirectUrl);
-
-      return rspns;
-    };
+    );
 
     const getAuthUrl = (provider: string, state: AuthState): string => {
       const strState = encodeURIComponent(buildAuthState(state));
@@ -160,7 +164,7 @@ export const useAuthStore = defineStore(
 
       authViaGithub,
       logout,
-      verifyUser,
+      verifyUser: mockServer(verifyUser),
       authUser,
       subscribe,
       removeUserAccount,

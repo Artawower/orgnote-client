@@ -1,6 +1,7 @@
 #!/bin/bash
 
-bun run build:pwa
+# Build ssr and pwa.
+bun run build:ssr
 
 # This build are unused cause releases are done by github actions
 # mkdir -p ./dist/build

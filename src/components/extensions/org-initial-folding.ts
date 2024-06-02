@@ -1,6 +1,6 @@
 import { foldEffect } from '@codemirror/language';
 import { StateEffect } from '@codemirror/state';
-import { EditorView } from 'codemirror';
+import { EditorView } from '@codemirror/view';
 import { NodeType, OrgNode, walkTree } from 'org-mode-ast';
 
 export const orgInitialFoldingExtension = (

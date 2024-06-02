@@ -3,14 +3,20 @@ import { computed, ref } from 'vue';
 import { shallowRef } from 'vue';
 import { Command, DefaultCommands as C } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
+import { useCommandsStore } from './commands';
+import { watch } from 'vue';
+import { onMounted } from 'vue';
 
 export const useToolbarStore = defineStore('toolbarStore', () => {
   const { orgNoteApi } = useOrgNoteApiStore();
   const invisibleActions = ref<{ [key: string]: Command }>({});
 
   const showToolbar = ref<boolean>(true);
-  const toolbarActions = shallowRef<Command[]>(
-    [
+  const toolbarActions = shallowRef<Command[]>([]);
+  const systemActions = shallowRef<Command[]>();
+
+  const initToolbarActions = () => {
+    toolbarActions.value = [
       orgNoteApi.commands.get(C.TOGGLE_FILE_MANAGER),
       orgNoteApi.commands.get(C.OPEN_MY_NOTES),
       orgNoteApi.commands.get(C.CREATE_NOTE),
@@ -22,14 +28,32 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
       orgNoteApi.commands.get(C.OPEN_GRAPH),
       orgNoteApi.commands.get(C.OPEN_EXTENSIONS),
       orgNoteApi.commands.get(C.TOGGLE_DEBUG_MODE),
-    ].filter((c: Command) => !!c)
+    ].filter((c: Command) => !!c);
+  };
+
+  const initSystemActions = () => {
+    systemActions.value = [
+      orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
+      orgNoteApi.commands.get(C.SETTINGS),
+      orgNoteApi.commands.get(C.PROJECT_INFO),
+      orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
+    ].filter((c: Command) => !!c);
+  };
+
+  const commandStore = useCommandsStore();
+
+  watch(
+    () => commandStore.commands.length,
+    () => {
+      initToolbarActions();
+      initSystemActions();
+    }
   );
-  const systemActions = shallowRef<Command[]>([
-    orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
-    orgNoteApi.commands.get(C.SETTINGS),
-    orgNoteApi.commands.get(C.PROJECT_INFO),
-    orgNoteApi.commands.get(C.TOGGLE_SIDEBAR),
-  ]);
+
+  onMounted(() => {
+    initToolbarActions();
+    initSystemActions();
+  });
 
   const visibleToolbarActions = computed(() =>
     toolbarActions.value.filter((a) => a.available?.())
@@ -42,7 +66,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
       orgNoteApi.commands.get(C.CREATE_NOTE),
       orgNoteApi.commands.get(C.SEARCH),
       orgNoteApi.commands.get(C.TOGGLE_COMMANDS),
-    ],
+    ].filter((c: Command) => !!c),
   ]);
 
   const setActions = (actions: Command[]) => {

@@ -3,7 +3,7 @@ import { useRecentCommandsStore } from './recent-commands-store';
 import { defineStore } from 'pinia';
 import { Command, CommandGroup, CompletionCandidate } from 'src/api';
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { extractDynamicValue } from 'src/tools';
+import { extractDynamicValue, mockServer } from 'src/tools';
 
 import { computed, ref } from 'vue';
 
@@ -42,6 +42,9 @@ export const useCommandsStore = defineStore('commands', () => {
   };
 
   const register = (...commands: Command[]) => {
+    if (!commands.length) {
+      return;
+    }
     allCommands.value.push(
       ...commands.map((c) => ({
         ...c,
@@ -107,8 +110,8 @@ export const useCommandsStore = defineStore('commands', () => {
   };
 
   return {
-    register,
-    unregister,
+    register: mockServer(register),
+    unregister: mockServer(unregister),
     getCommand,
     commands: allCommands,
     activateGroup,

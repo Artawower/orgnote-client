@@ -8,7 +8,7 @@
         @blur="applyKeyChanging"
         label="key"
       >
-        <template v-slot:prepend>
+        <template #prepend>
           <q-icon
             class="pointer color-danger"
             size="sm"

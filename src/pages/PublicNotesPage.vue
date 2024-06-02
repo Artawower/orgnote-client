@@ -19,13 +19,13 @@
 </template>
 
 <script lang="ts" setup>
-import { usePublicNotesStore } from 'src/stores';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute } from 'vue-router';
 
 import { computed, ref } from 'vue';
 
 import NoteList from 'components/NoteList.vue';
+import { usePublicNotesStore } from 'src/stores/public-notes';
 
 const publicNotesStore = usePublicNotesStore();
 

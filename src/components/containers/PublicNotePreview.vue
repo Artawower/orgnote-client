@@ -32,7 +32,7 @@
             </div>
             <file-path
               v-if="notePreview.filePath"
-              :filePath="notePreview.filePath"
+              :file-path="notePreview.filePath"
               class="q-py-xs"
             ></file-path>
             <div class="text-caption rft description">
@@ -53,7 +53,7 @@
           class="flex col-3 flex-start q-pa-none q-pt-sm justify-end img-preview-section"
         >
           <image-resolver
-            :authorId="notePreview.author?.id ?? authStore.user?.id"
+            :author-id="notePreview.author?.id ?? authStore.user?.id"
             width="112px"
             height="112px"
             v-if="previewImage"
@@ -78,7 +78,6 @@
 <script setup lang="ts">
 import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { useViewStore } from 'src/stores/view';
 import { useRouter } from 'vue-router';
@@ -90,6 +89,7 @@ import TagList from 'src/components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import ImageResolver from 'src/components/containers/ImageResolver.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const props = defineProps<{
   notePreview: Note | NotePreview;

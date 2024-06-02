@@ -9,7 +9,7 @@
     </div>
     <div class="system-info">
       <code-block :code="prettyLogs">
-        <template v-slot:actions>
+        <template #actions>
           <action-btn
             @click="loggerStore.clearLogs"
             icon="o_delete_forever"
@@ -23,10 +23,10 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { useLoggerStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
+import { useLoggerStore } from 'src/stores/logger';
 
 const loggerStore = useLoggerStore();
 const { prettyLogs } = storeToRefs(loggerStore);

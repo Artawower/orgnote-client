@@ -1,6 +1,7 @@
 import { BaseRepository } from './repository';
 import { migrator } from './migrator';
 import Dexie from 'dexie';
+import { IFileRepository } from 'src/models';
 
 // NOTE: dirty hack for safari. Without it safari doesn't create name key
 interface MediaFile {
@@ -8,7 +9,7 @@ interface MediaFile {
   file: File;
 }
 
-export class FileRepository extends BaseRepository {
+export class FileRepository extends BaseRepository implements IFileRepository {
   public static storeName = 'files';
 
   public static readonly migrations = migrator()

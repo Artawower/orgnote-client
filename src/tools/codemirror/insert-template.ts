@@ -1,4 +1,4 @@
-import { EditorView } from 'codemirror';
+import { EditorView } from '@codemirror/view';
 
 export function insertTemplate(params: {
   editorView: EditorView;

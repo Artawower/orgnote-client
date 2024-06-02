@@ -3,11 +3,10 @@ import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
 import ProjectInfo from 'src/pages/ProjectInfo.vue';
-import {
-  useFileManagerStore,
-  useModalStore,
-  useSidebarStore,
-} from 'src/stores';
+import { useFileManagerStore } from 'src/stores/file-manager';
+import { useModalStore } from 'src/stores/modal';
+import { useSidebarStore } from 'src/stores/sidebar';
+import { mockServer } from 'src/tools';
 
 export function getGlobalCommands(): Command[] {
   const modalStore = useModalStore();
@@ -19,11 +18,13 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.REPORT_BUG,
       description: 'report bug',
       group: 'debug',
-      handler: () =>
+      handler: mockServer(() =>
+        // TODO: remove hardcode
         window.open(
           'https://github.com/Artawower/orgnote-client/issues/new/choose',
           '_blank'
-        ),
+        )
+      ),
     },
     {
       command: DefaultCommands.OPEN_DEBUG_INFO,

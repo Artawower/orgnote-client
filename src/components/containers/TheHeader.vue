@@ -33,5 +33,6 @@
 </template>
 
 <script lang="ts" setup>
-const { close, minimize, toggleMaximize } = window.electron ?? {};
+const { close, minimize, toggleMaximize } =
+  (process.env.CLIENT && window.electron) ?? {};
 </script>

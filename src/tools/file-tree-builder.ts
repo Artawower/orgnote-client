@@ -1,4 +1,4 @@
-import {
+import type {
   FileNode,
   FileNodeInfo,
   FilePathInfo,

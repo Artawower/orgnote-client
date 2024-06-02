@@ -5,6 +5,7 @@ import { ref, watch } from 'vue';
 import { version } from '../../package.json';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 import NewReleaseInfo from 'src/components/containers/NewReleaseInfo.vue';
+import { mockServer } from 'src/tools';
 
 export const useSystemInfoStore = defineStore('system-info', () => {
   const newReleaseInfo = ref<ModelsOrgNoteClientUpdateInfo>(null);
@@ -36,7 +37,7 @@ export const useSystemInfoStore = defineStore('system-info', () => {
   };
 
   return {
-    loadNewReleaseInfo,
+    loadNewReleaseInfo: mockServer(loadNewReleaseInfo),
     newReleaseInfo,
     newFilesAvailable,
   };

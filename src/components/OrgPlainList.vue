@@ -1,6 +1,6 @@
 <template>
   <component :is="parentListTag">
-    <li v-for="(c, i) in node.children" v-bind:key="i">
+    <li v-for="(c, i) in node.children" :key="i">
       <content-renderer v-if="c.title" :node="c.title"></content-renderer>
       <content-renderer v-if="c.section" :node="c.section"></content-renderer>
     </li>

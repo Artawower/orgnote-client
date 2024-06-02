@@ -1,15 +1,13 @@
+import { EditorView } from '@codemirror/view';
 import { useNotifications } from './notification';
 import { redo, undo } from '@codemirror/commands';
-import { EditorView } from 'codemirror';
 import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/api';
-import {
-  useCommandsStore,
-  useCompletionStore,
-  useFileStore,
-  useNoteEditorStore,
-  useSearchStore,
-} from 'src/stores';
+import { useCommandsStore } from 'src/stores/commands';
+import { useCompletionStore } from 'src/stores/completion';
+import { useFileStore } from 'src/stores/file';
+import { useNoteEditorStore } from 'src/stores/note-editor';
+import { useSearchStore } from 'src/stores/search';
 import { insertTemplate, isUrl } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';

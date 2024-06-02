@@ -3,7 +3,6 @@ import { closeBrackets } from '@codemirror/autocomplete';
 import { bracketMatching } from '@codemirror/language';
 import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
-import { minimalSetup } from 'codemirror';
 import { OrgNode } from 'org-mode-ast';
 import {
   EmbeddedWidgetBuilder,
@@ -40,7 +39,6 @@ export function initEditorExtensions(params: {
 }): Extension[] {
   const baseExtensions = [
     orgMultilineWidgetField,
-    minimalSetup,
     bracketMatching(),
     closeBrackets(),
     highlightActiveLine(),

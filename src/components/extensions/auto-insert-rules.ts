@@ -2,7 +2,7 @@ import { TransactionSpec } from '@codemirror/state';
 import { NodeType, OrgNode, findParent } from 'org-mode-ast';
 
 function newLineAfterEmptyBullet(node: OrgNode): TransactionSpec {
-  const orgOperatorRegexp = /(\- |\+ |\d+[\)\.]{1})/;
+  const orgOperatorRegexp = /(- |\+ |\d+[).]{1})/;
   if (!node.is(NodeType.Operator) || !node.rawValue.match(orgOperatorRegexp)) {
     return;
   }
@@ -35,7 +35,7 @@ function newListItem(node: OrgNode): TransactionSpec {
     ? '[ ] '
     : '';
 
-  const isNumberList = operator.match(/\d+[\)\.]{1}/);
+  const isNumberList = operator.match(/\d+[).]{1}/);
   const newOperator = isNumberList
     ? +operator.slice(0, -1) + 1 + operator.slice(-1)
     : operator;

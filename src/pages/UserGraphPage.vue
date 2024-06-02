@@ -1,11 +1,13 @@
 <template>
-  <div class="chart-wrapper" ref="chartWrapper"></div>
-  <span>
-    <mobile-note-preview
-      :note-id="selectedNoteId"
-      @closed="resetSelectedNote"
-    />
-  </span>
+  <q-no-ssr>
+    <div class="chart-wrapper" ref="chartWrapper"></div>
+    <span>
+      <mobile-note-preview
+        :note-id="selectedNoteId"
+        @closed="resetSelectedNote"
+      />
+    </span>
+  </q-no-ssr>
 </template>
 
 <script lang="ts" setup>
@@ -16,7 +18,7 @@ import { useQuasar } from 'quasar';
 import { GraphNoteNode } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useGraphStore } from 'src/stores/graph';
-import { getCssVar, hexToRgba, truncate } from 'src/tools';
+import { getCssVar, hexToRgba, mockServer, truncate } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { ref, watch } from 'vue';
@@ -34,11 +36,14 @@ const goToRowDetail = (id: string) => {
   router.push({ name: RouteNames.NoteDetail, params: { id } });
 };
 
-const getGrpahHeight = () =>
-  window.innerHeight -
-  parseInt(
-    getComputedStyle(document.body).getPropertyValue('--top-bar-height')
-  );
+const getGrpahHeight = mockServer(
+  (): number =>
+    window.innerHeight -
+    parseInt(
+      getComputedStyle(document.body).getPropertyValue('--top-bar-height')
+    ),
+  1000
+);
 
 const findConnectedLinks = (
   nodeId: string,
@@ -48,7 +53,7 @@ const findConnectedLinks = (
     return foundedNodeIds;
   }
 
-  let unvisitedNode = graphStore.graphLinks[nodeId];
+  const unvisitedNode = graphStore.graphLinks[nodeId];
   foundedNodeIds.push(nodeId);
   if (unvisitedNode) {
     unvisitedNode.forEach((nodeId) => {
@@ -59,7 +64,7 @@ const findConnectedLinks = (
   return foundedNodeIds;
 };
 
-const getGraphWidth = () => window.innerWidth;
+const getGraphWidth = mockServer(() => window.innerWidth, 0);
 let activeNodeIds: string[] = [];
 let activeNodeId: string;
 

@@ -42,7 +42,6 @@
 
 <script lang="ts" setup>
 import { RouteNames } from 'src/router/routes';
-import { useAuthStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { sleep } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -50,6 +49,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { computed, onBeforeMount, ref } from 'vue';
 
 import LoginButtons from 'src/components/LoginButtons.vue';
+import { useAuthStore } from 'src/stores/auth';
 
 const initialKey = ref('');
 const key = ref('');

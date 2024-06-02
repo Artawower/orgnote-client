@@ -10,7 +10,9 @@ interface ViewportInfo {
 export function onMobileViewportChanged(cb?: (info: ViewportInfo) => void) {
   const $q = useQuasar();
   const electronOffset = $q.platform.is.electron ? 32 : 0;
-  const viewportHeight = ref<number>(window.innerHeight - electronOffset);
+  const viewportHeight = ref<number>(
+    process.env.CLIENT ? window.innerHeight - electronOffset : 0
+  );
   const keyboardOpened = ref<boolean>(false);
 
   const viewportInfo: ViewportInfo = {
@@ -18,7 +20,7 @@ export function onMobileViewportChanged(cb?: (info: ViewportInfo) => void) {
     keyboardOpened,
   };
 
-  if (!$q.platform.is.mobile || !window.visualViewport) {
+  if (!process.env.CLIENT || !$q.platform.is.mobile || !window.visualViewport) {
     return viewportInfo;
   }
 

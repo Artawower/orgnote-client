@@ -13,12 +13,12 @@
         :horizontal="$q.screen.lt.sm"
         class="debug-splitter"
       >
-        <template v-slot:before>
+        <template #before>
           <div v-if="noteLoaded" class="q-pa-md">
             <router-view />
           </div>
         </template>
-        <template v-slot:separator>
+        <template #separator>
           <q-avatar
             color="primary"
             text-color="white"
@@ -26,7 +26,7 @@
             icon="drag_indicator"
           />
         </template>
-        <template v-slot:after>
+        <template #after>
           <div class="debug q-pa-md">
             <div class="common-info q-px-md">
               Cursor: {{ noteEditorStore.cursorPosition }}
@@ -53,7 +53,6 @@ import { useQuasar } from 'quasar';
 import { useEditorCommands } from 'src/hooks';
 import { useDetailCommands } from 'src/hooks/note-detail-commands';
 import { RouteNames } from 'src/router/routes';
-import { useCurrentNoteStore, useNotesStore } from 'src/stores';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { resetPageMinHeight } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -62,6 +61,8 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 import NoteDebugger from 'src/components/containers/NoteDebugger.vue';
 import EncryptionRequired from 'src/components/containers/EncryptionRequred.vue';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useNotesStore } from 'src/stores/notes';
 
 const route = useRoute();
 

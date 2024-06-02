@@ -73,9 +73,9 @@
 
 <script lang="ts" setup>
 import { ExtensionMeta } from 'src/api';
-import { useExtensionsStore } from 'src/stores';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useExtensionsStore } from 'src/stores/extensions';
 import { usePackageManagerStore } from 'src/stores/package-manager.store';
 import { extractDomain } from 'src/tools';
 

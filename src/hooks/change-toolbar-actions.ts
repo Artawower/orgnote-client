@@ -1,5 +1,5 @@
 import { Command } from 'orgnote-api';
-import { useToolbarStore } from 'src/stores';
+import { useToolbarStore } from 'src/stores/toolbar';
 import { ref, onMounted, onUnmounted, Ref, watch } from 'vue';
 
 export const onChangeToolbarActions = (configs: {

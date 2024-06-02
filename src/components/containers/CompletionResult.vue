@@ -11,7 +11,7 @@
       :virtual-scroll-item-size="itemHeight"
       :items-fn="getPagedResult"
       v-slot="{ index }"
-      :scroll-target="scrollTarget as unknown as Element"
+      scroll-target="scrollTarget"
       class="completion-scroll full-width flex-1"
     >
       <async-item-container
@@ -19,7 +19,7 @@
         :index="index"
         :height="itemHeight"
       >
-        <template v-slot="{ item, index }">
+        <template #default="{ item, index }">
           <keep-alive>
             <completion-result-item
               :item="item as CompletionCandidate"
@@ -45,7 +45,6 @@ import { storeToRefs } from 'pinia';
 import { QVirtualScroll } from 'quasar';
 import { CompletionCandidate } from 'src/api';
 import { useBodyActionPaneClass } from 'src/hooks';
-import { useCompletionStore } from 'src/stores';
 import { useSettingsStore } from 'src/stores/settings';
 import { compareElemPositions, debounce } from 'src/tools';
 
@@ -55,6 +54,7 @@ import CompletionResultItem from './CompletionResultItem.vue';
 import AsyncItemContainer from 'src/components/AsyncItemContainer.vue';
 import CompletionInp from 'src/components/containers/CompletionInput.vue';
 import PreventIosTouch from 'src/components/ui/PreventIosTouch.vue';
+import { useCompletionStore } from 'src/stores/completion';
 
 const itemHeight = 70;
 const scrollTarget = ref<QVirtualScroll | null>();

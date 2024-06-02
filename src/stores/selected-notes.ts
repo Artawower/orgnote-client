@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { useNotesStore } from '.';
+import { useNotesStore } from './notes';
 
 export const useSelectedNotesStore = defineStore('selected-notes', () => {
   const selectedNotesIds = ref<Set<string>>(new Set());

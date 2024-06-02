@@ -57,9 +57,8 @@
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
 import { User } from 'src/models';
-import { useToolbarStore } from 'src/stores';
 import { useSidebarStore } from 'src/stores/sidebar';
-import { getNumericCssVar } from 'src/tools';
+import { getNumericCssVar, mockServer } from 'src/tools';
 
 import {
   computed,
@@ -75,6 +74,7 @@ import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { CommandPreview } from 'orgnote-api';
+import { useToolbarStore } from 'src/stores/toolbar';
 
 const props = defineProps<{
   user?: User;
@@ -95,11 +95,11 @@ const closeSideBarForMobile = () => {
   sidebarStore.close();
 };
 
-const windowWidth = ref(window.innerWidth);
+const windowWidth = ref(process.env.CLIENT ? window.innerWidth : 0);
 
-const setupWindowWidth = () => {
+const setupWindowWidth = mockServer(() => {
   windowWidth.value = window.innerWidth;
-};
+});
 
 const showSidebarForSmalDevice = () => {
   if (!fullWidth.value) {
@@ -109,8 +109,12 @@ const showSidebarForSmalDevice = () => {
 };
 
 onBeforeMount(() => showSidebarForSmalDevice());
-onMounted(() => window.addEventListener('resize', setupWindowWidth));
-onUnmounted(() => window.removeEventListener('resize', setupWindowWidth));
+onMounted(
+  mockServer(() => window.addEventListener('resize', setupWindowWidth))
+);
+onUnmounted(
+  mockServer(() => window.removeEventListener('resize', setupWindowWidth))
+);
 
 const drawerWidth = computed(() => {
   if (fullWidth.value) {

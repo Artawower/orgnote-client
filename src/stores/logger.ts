@@ -17,7 +17,7 @@ export const useLoggerStore = defineStore(
     const { config } = useSettingsStore();
 
     const init = () => {
-      if (process.env.DISABLE_LOGGER) {
+      if (!process.env.CLIENT || process.env.DISABLE_LOGGER) {
         return;
       }
       const availableModes: (keyof Pick<

@@ -20,6 +20,16 @@ export enum RouteNames {
   ActivationPage = 'ActivationPage',
   LoggerPage = 'LoggerPage',
 }
+
+function clientOnly(
+  route: RouteRecordRaw['component']
+): RouteRecordRaw['component'] {
+  if (process.env.CLIENT) {
+    return route;
+  }
+  return () => import('pages/PageLoading.vue');
+}
+
 export const AUTH_PAGE_ROUTE: RouteRecordRaw = {
   path: 'auth/login/:initialProvider?',
   name: RouteNames.AuthPage,
@@ -54,8 +64,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: 'extensions',
       name: RouteNames.Extensions,
-      component: () => import('pages/ExtensionsPage.vue'),
+      component: clientOnly(() => import('pages/ExtensionsPage.vue')),
       beforeEnter: () => {
+        if (!process.env.CLIENT) {
+          return;
+        }
         const authStore = useAuthStore();
         if (!authStore.user) {
           return { name: RouteNames.NoteList };
@@ -92,7 +105,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: ':userId/graph',
       name: RouteNames.UserGraph,
-      component: () => import('pages/UserGraphPage.vue'),
+      component: clientOnly(() => import('pages/UserGraphPage.vue')),
     },
     {
       path: ':userId',
@@ -102,7 +115,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: '',
       name: RouteNames.Dashboard,
-      component: () => import('pages/DashboardPage.vue'),
+      component: clientOnly(() => import('pages/DashboardPage.vue')),
       meta: {
         icon: 'dashboard',
       },
@@ -118,7 +131,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
     {
       path: 'settings',
       name: RouteNames.SettingsPage,
-      component: () => import('pages/SettingsPage.vue'),
+      component: clientOnly(() => import('pages/SettingsPage.vue')),
       meta: {
         icon: 'settings',
       },

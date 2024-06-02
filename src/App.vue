@@ -12,22 +12,19 @@ export default {
 import { useRouter } from 'vue-router';
 import { jsBabel } from './plugins/js-babel';
 import { RouteNames } from './router/routes';
-import {
-  useAuthStore,
-  useOrgBabelStore,
-  useLoggerStore,
-  useSyncStore,
-  useOrgNoteApiStore,
-  useSystemInfoStore,
-} from './stores';
-import { decodeAuthState, extractAuthQueryInfo } from './tools';
+import { useAuthStore } from './stores/auth';
+import { decodeAuthState, extractAuthQueryInfo, mockServer } from './tools';
+import { useSyncStore } from './stores/sync';
+import { useLoggerStore } from './stores/logger';
+import { useSystemInfoStore } from './stores/system-info';
+import { useOrgBabelStore } from './stores/org-babel';
+import { useOrgNoteApiStore } from './stores/orgnote-api.store';
 
 const syncStore = useSyncStore();
+syncStore.markToSync();
 
 // TODO: master create bootstrap hook
 useLoggerStore().init();
-
-syncStore.markToSync();
 
 const systemStore = useSystemInfoStore();
 systemStore.loadNewReleaseInfo();
@@ -35,10 +32,9 @@ systemStore.loadNewReleaseInfo();
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
 
-if (window.navigator.standalone) {
+if (process.env.CLIENT && window.navigator.standalone) {
   document.body.classList.add('standalone');
 }
-
 const authStore = useAuthStore();
 
 const router = useRouter();
@@ -58,16 +54,22 @@ async function handleCordovaAuth(url: string) {
 
   await authStore.authUser(personalInfo, searchParams.get('token'));
 
-  if (state.redirectUrl) {
+  if (process.env.CLIENT && state.redirectUrl) {
     window.location.assign(`/#${state.redirectUrl}`);
     return;
   }
 
   router.push({ name: RouteNames.Home });
 }
-(window as unknown as { handleOpenURL: (arg0: string) => void }).handleOpenURL =
-  handleCordovaAuth.bind(this);
-
 const { orgNoteApi } = useOrgNoteApiStore();
-window.orgnote = orgNoteApi;
+
+const initPublicOrgNoteApi = () => {
+  (
+    window as unknown as { handleOpenURL: (arg0: string) => void }
+  ).handleOpenURL = handleCordovaAuth.bind(this);
+
+  window.orgnote = orgNoteApi;
+};
+
+mockServer(initPublicOrgNoteApi)();
 </script>

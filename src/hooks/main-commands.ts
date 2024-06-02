@@ -1,5 +1,4 @@
-import { useCommandsStore } from 'src/stores';
-
+import { useCommandsStore } from 'src/stores/commands';
 import {
   getCompletionCommands,
   getGlobalCommands,

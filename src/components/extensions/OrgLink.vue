@@ -22,7 +22,7 @@ import { defineComponent, toRef } from 'vue';
 
 import ContentRenderer from 'src/components/ContentRenderer.vue';
 import ImageResolver from 'src/components/containers/ImageResolver.vue';
-import NotePreviewLink from 'src/components/containers/NotePreviewLink.vue';
+import { defineAsyncComponent } from 'vue';
 
 defineComponent({
   ContentRenderer,
@@ -47,7 +47,12 @@ const linkNameNode =
 const linkType = node.value.meta?.linkType;
 
 const orgLinkId = extractOrgLinkId(rawLink);
-const wrapperComponent = linkType === 'id' ? NotePreviewLink : 'span';
+const wrapperComponent =
+  linkType === 'id'
+    ? defineAsyncComponent(
+        () => import('src/components/containers/NotePreviewLink.vue')
+      )
+    : 'span';
 </script>
 
 <style lang="scss" scoped>

@@ -1,8 +1,7 @@
 import { useNoteCreatorStore } from './note-creator';
 import { useNotesStore } from './notes';
 import { defineStore } from 'pinia';
-import { repositories } from 'src/boot/repositories';
-import { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
+import type { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
 import {
   addFileToTree,
   buildFileTree,
@@ -17,6 +16,8 @@ import {
 import { v4 } from 'uuid';
 
 import { computed, onMounted, ref } from 'vue';
+import { useDiStore } from './di.store';
+import { repositories } from 'src/boot/repositories';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -24,6 +25,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTree = ref<FileTree>();
   const editedFileItem = ref<FileNode | null>();
   const expandedNodes = ref<string[]>([]);
+  const di = useDiStore();
 
   repositories.fileManager.getAll().then((fm) => {
     fileTree.value = fm || {};

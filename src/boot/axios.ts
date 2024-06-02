@@ -15,6 +15,7 @@ declare module '@vue/runtime-core' {
   }
 }
 
+const baseURL = process.env.API_URL || '/v1';
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
 // If any client changes this (global) instance, it might be a
@@ -22,9 +23,10 @@ declare module '@vue/runtime-core' {
 // "export default () => {}" function below (which runs individually
 // for each client)
 const axiosInstance = axios.create({
-  baseURL: `${process.env.API_URL || '/v1'}`,
+  baseURL,
   timeout: +process.env.REQUEST_TIMEOUT || 15000,
 });
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();

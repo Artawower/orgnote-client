@@ -1,10 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
+    <% if (!ctx.mode.ssr) { %>
     <title><%= productName %></title>
+    <% } %>
 
     <meta charset="utf-8" />
+    <% if (!ctx.mode.ssr) { %>
     <meta name="description" content="<%= productDescription %>" />
+    <% } %>
+
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="theme-color" content="#fff" />

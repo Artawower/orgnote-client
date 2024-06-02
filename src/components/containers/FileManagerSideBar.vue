@@ -1,12 +1,12 @@
 <template>
   <sidebar-wrapper>
     <header-bar>
-      <template v-slot:header>
+      <template #header>
         <div class="text-capitalize">
           <search-input v-model="search" placeholder="files" />
         </div>
       </template>
-      <template v-slot:actions>
+      <template #actions>
         <icon-btn @click="importFiles" name="cloud_upload" />
         <icon-btn
           @click="toggleExpanding"
@@ -27,7 +27,7 @@
       label-key="name"
       class="q-mt-md"
     >
-      <template v-slot:default-header="prop">
+      <template #default-header="prop">
         <file-manager-item :file-node="prop.node" @expand="expand" />
       </template>
     </q-tree>
@@ -36,7 +36,6 @@
 
 <script lang="ts" setup>
 import { QTree } from 'quasar';
-import { useFileManagerStore } from 'src/stores';
 import { useNotesImportStore } from 'src/stores/import-store';
 import { revealKeyboard, uploadFiles } from 'src/tools';
 
@@ -47,6 +46,7 @@ import HeaderBar from 'src/components/ui/HeaderBar.vue';
 import IconBtn from 'src/components/ui/IconBtn.vue';
 import SearchInput from 'src/components/ui/SearchInput.vue';
 import SidebarWrapper from 'src/components/ui/SidebarWrapper.vue';
+import { useFileManagerStore } from 'src/stores/file-manager';
 
 const fileManagerStore = useFileManagerStore();
 const createFolder = () => {

@@ -17,9 +17,8 @@
 
 <script lang="ts" setup>
 import { imageFileExtensions } from 'src/constants';
-import { traverseDirectory } from 'src/tools';
-
-import { computed, ref } from 'vue';
+import { mockServer, traverseDirectory } from 'src/tools';
+import { onBeforeUnmount, onBeforeMount, computed, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -44,24 +43,27 @@ const dragOnTarget = computed(() => dragCount.value > 0);
 const extractFiles = (
   items: DataTransferItemList
 ): Promise<FileSystemFileEntry[]> => {
-  return Array.from(items).reduce(async (asyncAcc, item) => {
-    const acc = await asyncAcc;
-    const entry = item.webkitGetAsEntry();
+  return Array.from(items).reduce(
+    async (asyncAcc, item) => {
+      const acc = await asyncAcc;
+      const entry = item.webkitGetAsEntry();
 
-    if (!entry) return acc;
+      if (!entry) return acc;
 
-    if (entry.isFile) {
-      acc.push(entry as FileSystemFileEntry);
+      if (entry.isFile) {
+        acc.push(entry as FileSystemFileEntry);
+        return acc;
+      }
+      const nestedFiles = await traverseDirectory(
+        entry as FileSystemDirectoryEntry,
+        props.accept
+      );
+
+      acc.push(...nestedFiles);
       return acc;
-    }
-    const nestedFiles = await traverseDirectory(
-      entry as FileSystemDirectoryEntry,
-      props.accept
-    );
-
-    acc.push(...nestedFiles);
-    return acc;
-  }, Promise.resolve([]) as Promise<FileSystemFileEntry[]>);
+    },
+    Promise.resolve([]) as Promise<FileSystemFileEntry[]>
+  );
 };
 
 const onDrop = async (e: DragEvent) => {
@@ -81,19 +83,20 @@ const dragLeave = (e: DragEvent) => {
   e.preventDefault();
 };
 
-window.addEventListener(
-  'dragover',
-  function (e) {
-    e.preventDefault();
-  },
-  false
-);
-window.addEventListener(
-  'drop',
-  function (e) {
-    e.preventDefault();
-  },
-  false
+const preventDefault = (e: DragEvent) => e.preventDefault();
+
+const preventDragAndDrop = () => {
+  window.addEventListener('dragover', preventDefault, false);
+  window.addEventListener('drop', preventDefault, false);
+};
+
+onBeforeMount(() => mockServer(preventDragAndDrop)());
+
+onBeforeUnmount(
+  mockServer(() => {
+    window.removeEventListener('dragover', preventDefault);
+    window.removeEventListener('drop', preventDefault);
+  })
 );
 </script>
 

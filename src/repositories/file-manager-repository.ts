@@ -1,3 +1,4 @@
+import { IFileManagerRepository } from 'src/models';
 import { migrator } from './migrator';
 import { BaseRepository } from './repository';
 import Dexie from 'dexie';
@@ -22,7 +23,10 @@ export interface FileTree {
   [key: string]: FileNode;
 }
 
-export class FileManagerRepository extends BaseRepository {
+export class FileManagerRepository
+  extends BaseRepository
+  implements IFileManagerRepository
+{
   public static storeName = 'file-manager';
 
   public static readonly migrations = migrator<FileTree>()

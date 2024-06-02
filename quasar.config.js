@@ -8,13 +8,14 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-const { configure } = require('quasar/wrappers');
-const { checker } = require('vite-plugin-checker');
+import { configure } from 'quasar/wrappers';
+import { checker } from 'vite-plugin-checker';
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
-const path = require('path');
+import path from 'path';
+import { ESLint } from 'eslint';
 
-module.exports = configure(function (ctx) {
+export default configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -23,15 +24,24 @@ module.exports = configure(function (ctx) {
       // rawOptions = {},
       warnings: true,
       errors: true,
+      formatter: ESLint.Formatter,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
-    // preFetch: true,
+    preFetch: true,
 
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['i18n', 'axios', 'katex', 'highlightjs', 'repositories'],
+    boot: [
+      'i18n',
+      'axios',
+      'katex',
+      'repositories',
+      { path: 'graph-worker', server: false },
+      { path: 'highlightjs', server: false },
+      { path: 'client-only-dependencies', server: false },
+    ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -74,12 +84,10 @@ module.exports = configure(function (ctx) {
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
       // publicPath: '/',
-      analyze: true,
+      analyze: false,
       env: {
-        API_URL: process.env.API_URL ?? '',
-        AUTH_URL: process.env.AUTH_URL,
+        AUTH_URL: process.env.AUTH_URL ?? '',
         VUE_ROUTER_MODE: 'history',
-        DISABLE_LOGGER: process.env.DISABLE_LOGGER,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
@@ -107,6 +115,14 @@ module.exports = configure(function (ctx) {
             // you need to set i18n resource including paths !
             include: path.resolve(__dirname, './src/i18n/**'),
           },
+          ['vite-plugin-checker', {
+            vueTsc: {
+              tsconfigPath: 'tsconfig.vue-tsc.json'
+            },
+            eslint: {
+              lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"'
+            }
+          }, { server: false }],
         ],
       ],
 
@@ -138,7 +154,8 @@ module.exports = configure(function (ctx) {
       // https: true,
       // host: process.env.HOST || 'localhost',
       host: '0.0.0.0',
-      port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 9090,
+      // port: ctx.mode.spa ? 3200 : ctx.mode.pwa ? 9010 : 3000,
+      port: 3000,
       open: {
         app: { name: 'google chrome' }
       },
@@ -177,6 +194,7 @@ module.exports = configure(function (ctx) {
       plugins: [
         'Notify',
         'Loading',
+        'Meta',
       ],
     },
 
@@ -198,7 +216,7 @@ module.exports = configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
-      // ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
+      pwaOfflineHtmlFilename: 'offline.html', // do NOT use index.html as name!
       // will mess up SSR
 
       // extendSSRWebserverConf (esbuildConf) {},
@@ -219,9 +237,9 @@ module.exports = configure(function (ctx) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'injectManifest', // or 'injectManifest'
+      workboxMode: 'InjectManifest', // or 'injectManifest'
       injectPwaMetaTags: false,
-      swFilename: 'service-worker.js',
+      swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: false,
       // extendGenerateSWOptions (cfg) {}

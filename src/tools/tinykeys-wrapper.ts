@@ -1,9 +1,9 @@
-import { tinykeys } from 'tinykeys';
-
 /*
  * This is solution for allowing enable/disable keybinding inside input fields
  * original solution: https://github.com/jamiebuilds/tinykeys/issues/17#issuecomment-1163109758
  */
+
+import { mockServer } from './mock-server';
 
 function isEventTargetInputOrTextArea(target: Window | HTMLElement) {
   if (target === null) return false;
@@ -12,7 +12,7 @@ function isEventTargetInputOrTextArea(target: Window | HTMLElement) {
   return isContentEditable || ['input', 'textarea'].includes(targetElementName);
 }
 
-export default function hotkeys(
+function _hotkeys(
   target: Window | HTMLElement,
   bindings: { [key: string]: (arg?: KeyboardEvent) => unknown },
   disableOnInputs = true
@@ -29,5 +29,7 @@ export default function hotkeys(
         ])
       )
     : bindings;
-  return tinykeys(target, wrappedBindings);
+  return window.tinykeys(target, wrappedBindings);
 }
+
+export const hotkeys = mockServer(_hotkeys);

@@ -12,7 +12,7 @@ export class BaseOrgWidget extends WidgetType {
     super();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   public toDOM(_view: EditorView): HTMLElement {
     throw new Error('Method not implemented.');
   }

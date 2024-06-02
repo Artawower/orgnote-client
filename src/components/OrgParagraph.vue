@@ -1,6 +1,6 @@
 <template>
   <p class="org-paragraph">
-    <template v-for="(n, i) in node.children" v-bind:key="i">
+    <template v-for="(n, i) in node.children" :key="i">
       <org-link v-if="n.type === 'link'" :node="n"></org-link>
       <org-src-inline-code
         v-else-if="n.type === 'verbatim'"

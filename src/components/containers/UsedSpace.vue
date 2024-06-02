@@ -25,7 +25,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { useAuthStore } from 'src/stores';
+import { useAuthStore } from 'src/stores/auth';
 import { bytesToMegobytes } from 'src/tools';
 
 import { computed } from 'vue';

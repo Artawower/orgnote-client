@@ -28,12 +28,12 @@
 import { OrgComponentProps } from './org-component-props';
 import { NodeType } from 'org-mode-ast';
 import { useNotifications } from 'src/hooks';
-import { useOrgBabelStore } from 'src/stores';
 import { findActualOrgNode } from 'src/tools';
 
 import { computed } from 'vue';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useOrgBabelStore } from 'src/stores/org-babel';
 
 const props = defineProps<OrgComponentProps>();
 

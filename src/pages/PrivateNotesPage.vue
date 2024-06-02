@@ -10,11 +10,11 @@
         :notes="notesStore.notes"
         :scroll-target="scrollTarget"
       ></note-list>
-      <mode-line v-if="isModeLineVisible" :tabMode="false">
-        <template v-slot:left>
+      <mode-line v-if="isModeLineVisible" :tab-mode="false">
+        <template #left>
           <q-checkbox
             style="margin-left: -3px"
-            :modelValue="selectedNotesStore.isAllNotesSelected"
+            :model-value="selectedNotesStore.isAllNotesSelected"
             size="sm"
             @update:model-value="selectedNotesStore.toggleBulkNotesSelection"
           ></q-checkbox>
@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useSyncStore } from 'src/stores';
 import { resetPageMinHeight } from 'src/tools';
 import { useNotesStore } from 'stores/notes';
 import { useSelectedNotesStore } from 'stores/selected-notes';
@@ -46,6 +45,7 @@ import { computed, ref, watch } from 'vue';
 
 import NoteList from 'components/NoteList.vue';
 import ModeLine from 'components/ui/ModeLine.vue';
+import { useSyncStore } from 'src/stores/sync';
 
 const notesStore = useNotesStore();
 

@@ -14,12 +14,12 @@
 <script setup lang="ts">
 import { OrgComponentProps } from 'src/components/org-component-props';
 import { useNotifications } from 'src/hooks';
-import { useOrgBabelStore } from 'src/stores';
 import { copyToClipboard, findActualOrgNode } from 'src/tools';
 
 import { computed, toRef } from 'vue';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useOrgBabelStore } from 'src/stores/org-babel';
 
 const props = defineProps<OrgComponentProps>();
 const emits = defineEmits<{

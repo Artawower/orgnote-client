@@ -29,6 +29,7 @@ import {
   decodeAuthState,
   extractAuthQueryInfo,
   getMobileAppUrl,
+  mockServer,
   sleep,
 } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -43,7 +44,7 @@ const $q = useQuasar();
 
 const state = computed(() => decodeAuthState(route.query.state as string));
 
-onBeforeMount(async () => {
+const initProvider = mockServer(async () => {
   const initialProvider = route.params.initialProvider as string;
   if (initialProvider) {
     authStore.auth({
@@ -53,6 +54,10 @@ onBeforeMount(async () => {
     return;
   }
   await setupUser();
+});
+
+onBeforeMount(async () => {
+  await initProvider();
 });
 
 const router = useRouter();

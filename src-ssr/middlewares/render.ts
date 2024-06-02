@@ -16,6 +16,9 @@ export default ssrMiddleware(({ app, resolve, render, serve }) => {
         res.send(html)
       })
       .catch(err => {
+        if (!process.env.DISABLE_LOGGER) {
+          console.log('✎: [line 19][render.ts] err: ', err);
+        }
         // oops, we had an error while rendering the page
 
         // we were told to redirect to another URL
