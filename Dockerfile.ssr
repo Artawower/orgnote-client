@@ -16,4 +16,3 @@ EXPOSE 3000
 
 ENTRYPOINT ["pm2-runtime"]
 CMD ["index.js"]
-# CMD ["node", "index.js"]

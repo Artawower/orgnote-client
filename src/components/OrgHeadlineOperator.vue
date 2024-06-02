@@ -24,7 +24,6 @@ const node = toRef(props, 'node');
 const getFoldedRanges = () => {
   const r = [];
 
-  // TODO: feat/server-side-rendering fix
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cur = foldedRanges(props.editorView.state as any).iter();
   while (true) {

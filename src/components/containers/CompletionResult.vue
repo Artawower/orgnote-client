@@ -11,7 +11,7 @@
       :virtual-scroll-item-size="itemHeight"
       :items-fn="getPagedResult"
       v-slot="{ index }"
-      :scroll-target="scrollTarget as unknown as Element"
+      scroll-target="scrollTarget"
       class="completion-scroll full-width flex-1"
     >
       <async-item-container

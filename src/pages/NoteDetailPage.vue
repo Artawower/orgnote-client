@@ -2,7 +2,7 @@
   <q-page class="height-auto" :style-fn="resetPageMinHeight">
     <encryption-required :note="currentNote">
       <author-info
-        v-if="currentNote && !currentNote?.isMy"
+        v-if="currentNote?.author && currentNote && !currentNote?.isMy"
         :author="currentNote?.author"
         class="q-pb-lg"
       >

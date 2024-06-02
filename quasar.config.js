@@ -154,7 +154,7 @@ export default configure(function (ctx) {
       // https: true,
       // host: process.env.HOST || 'localhost',
       host: '0.0.0.0',
-      // port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 3000,
+      // port: ctx.mode.spa ? 3200 : ctx.mode.pwa ? 9010 : 3000,
       port: 3000,
       open: {
         app: { name: 'google chrome' }
