@@ -13,6 +13,7 @@ import { checker } from 'vite-plugin-checker';
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
 import path from 'path';
+import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
 
 export default configure(function (ctx) {
@@ -34,9 +35,9 @@ export default configure(function (ctx) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      'i18n',
+      { path: 'i18n', server: false },
       'axios',
-      'katex',
+      { path: 'katex', server: false },
       'repositories',
       { path: 'graph-worker', server: false },
       { path: 'highlightjs', server: false },
@@ -109,11 +110,17 @@ export default configure(function (ctx) {
           }),
           '@intlify/vite-plugin-vue-i18n',
           {
-            // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
-            // compositionOnly: false,
+          // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
+          // compositionOnly: false,
 
-            // you need to set i18n resource including paths !
-            include: path.resolve(__dirname, './src/i18n/**'),
+          // if you want to use named tokens in your Vue I18n messages, such as 'Hello {name}',
+          // you need to set `runtimeOnly: false`
+          // runtimeOnly: false,
+
+          ssr: ctx.modeName === 'ssr',
+
+          // you need to set i18n resource including paths !
+          include: [ fileURLToPath(new URL('./src/i18n', import.meta.url)) ],
           },
           ['vite-plugin-checker', {
             vueTsc: {
