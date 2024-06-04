@@ -70,6 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [tests, lint, code-quality, check_commit]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    environment: deploy
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
@@ -80,6 +81,13 @@ jobs:
         run: |
           bun install --frozen-lockfile
           bun add global @quasar/cli
+      - name: Init environment
+        run: |
+          cat <<EOT > .env.prod
+          DEUBG=true
+          API_URL=${{ secrets.API_URL }}
+          AUTH_URL=${{ secrets.AUTH_URL }}
+          EOT
       - name: Build ssr
         run: bun run build -m ssr
       - name: Login to Docker Hub
@@ -90,10 +98,12 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-            context: .
-            file: Dockerfile.ssr
-            push: true
-            tags: orgnote/client:latest
+          context: .
+          file: Dockerfile.ssr
+          push: true
+          tags: orgnote/client:latest
+      - name: Print env
+        run: printenv
   release:
     name: Create release
     needs: [push_client_image]

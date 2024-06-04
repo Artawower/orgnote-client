@@ -16,7 +16,6 @@ import {
 import { v4 } from 'uuid';
 
 import { computed, onMounted, ref } from 'vue';
-import { useDiStore } from './di.store';
 import { repositories } from 'src/boot/repositories';
 
 // TODO: master temporary solution. Need to use decorator and update only
@@ -25,7 +24,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTree = ref<FileTree>();
   const editedFileItem = ref<FileNode | null>();
   const expandedNodes = ref<string[]>([]);
-  const di = useDiStore();
 
   repositories.fileManager.getAll().then((fm) => {
     fileTree.value = fm || {};

@@ -86,7 +86,7 @@ class InMemoryFileManagerRepository implements IFileManagerRepository {
 class InMemoryNoteRepository implements INoteRepository {
   private notes: Note[] = [];
 
-  async getNotesAfterUpdateTime(_updatedTime?: string): Promise<Note[]> {
+  async getNotesAfterUpdateTime(): Promise<Note[]> {
     return [];
   }
 
@@ -112,13 +112,7 @@ class InMemoryNoteRepository implements INoteRepository {
     return note;
   }
 
-  async getNotePreviews(_options?: {
-    limit?: number;
-    offset?: number;
-    searchText?: string;
-    tags?: string[];
-    bookmarked?: boolean;
-  }): Promise<NotePreview[]> {
+  async getNotePreviews(): Promise<NotePreview[]> {
     // Implement according to options
     return [];
   }
@@ -127,7 +121,7 @@ class InMemoryNoteRepository implements INoteRepository {
     this.notes = this.notes.filter((note) => !noteIds.includes(note.id));
   }
 
-  async markAsDeleted(_noteIds: string[]): Promise<void> {}
+  async markAsDeleted(): Promise<void> {}
 
   async bulkPartialUpdate(
     updates: { id: string; changes: Partial<Note> }[]
@@ -140,7 +134,7 @@ class InMemoryNoteRepository implements INoteRepository {
     });
   }
 
-  async count(searchText?: string, tags?: string[]): Promise<number> {
+  async count(): Promise<number> {
     // Implement according to searchText and tags
     return this.notes.length;
   }
@@ -150,7 +144,7 @@ class InMemoryNoteRepository implements INoteRepository {
     return [];
   }
 
-  async touchNote(noteId: string): Promise<void> {}
+  async touchNote(): Promise<void> {}
 
   async getTagsStatistic(): Promise<{ tag: string; count: number }[]> {
     // Implement
@@ -171,9 +165,7 @@ class InMemoryNoteRepository implements INoteRepository {
     }
   }
 
-  async modify(
-    modifyCallback: (note: Note, ref: { value: Note }) => void
-  ): Promise<void> {
+  async modify(): Promise<void> {
     // Implement according to callback
   }
 

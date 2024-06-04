@@ -10,7 +10,6 @@ import { exctractSearchInfo } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
-import { useDiStore } from './di.store';
 import { repositories } from 'src/boot/repositories';
 
 export const useSearchStore = defineStore('search', () => {
@@ -26,7 +25,6 @@ export const useSearchStore = defineStore('search', () => {
   const offset = ref<number>(0);
   const bookmarkScope = '@bookmark';
   const searchAutocompletions = ref<string[]>([bookmarkScope]);
-  const di = useDiStore();
 
   // const notesStore = useNotesStore();
 

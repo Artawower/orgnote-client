@@ -35,7 +35,8 @@ export default configure(function (ctx) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      { path: 'i18n', server: false },
+      'i18n',
+      // { path: 'i18n' },
       'axios',
       { path: 'katex', server: false },
       'repositories',
@@ -66,13 +67,7 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: [
-          'es2019',
-          'edge88',
-          'firefox78',
-          'chrome87',
-          'safari13.1',
-        ],
+        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16',
       },
 
@@ -101,35 +96,32 @@ export default configure(function (ctx) {
 
       vitePlugins: [
         [
-          checker({
-            vueTsc: {
-              root: './',
-              tsconfigPath: './tsconfig.json',
-              path: './src',
-            }
-          }),
-          '@intlify/vite-plugin-vue-i18n',
+          '@intlify/unplugin-vue-i18n/vite',
           {
-          // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
-          // compositionOnly: false,
+            // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
+            // compositionOnly: false,
 
-          // if you want to use named tokens in your Vue I18n messages, such as 'Hello {name}',
-          // you need to set `runtimeOnly: false`
-          // runtimeOnly: false,
+            // if you want to use named tokens in your Vue I18n messages, such as 'Hello {name}',
+            // you need to set `runtimeOnly: false`
+            // runtimeOnly: false,
 
-          ssr: ctx.modeName === 'ssr',
+            ssr: ctx.modeName === 'ssr',
 
-          // you need to set i18n resource including paths !
-          include: [ fileURLToPath(new URL('./src/i18n', import.meta.url)) ],
+            // you need to set i18n resource including paths !
+            include: [fileURLToPath(new URL('./src/i18n', import.meta.url))],
           },
-          ['vite-plugin-checker', {
+        ],
+        [
+          'vite-plugin-checker',
+          {
             vueTsc: {
-              tsconfigPath: 'tsconfig.vue-tsc.json'
+              tsconfigPath: 'tsconfig.vue-tsc.json',
             },
             eslint: {
-              lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"'
-            }
-          }, { server: false }],
+              lintCommand: 'eslint "./**/*.{js,ts,mjs,cjs,vue}"',
+            },
+          },
+          { server: false },
         ],
       ],
 
@@ -155,7 +147,6 @@ export default configure(function (ctx) {
         '@': path.resolve(__dirname, './src'),
       },
     },
-
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true,
@@ -164,7 +155,7 @@ export default configure(function (ctx) {
       // port: ctx.mode.spa ? 3200 : ctx.mode.pwa ? 9010 : 3000,
       port: 3000,
       open: {
-        app: { name: 'google chrome' }
+        app: { name: 'google chrome' },
       },
       // TODO: master additional proxy to stage
       proxy: {
@@ -198,11 +189,7 @@ export default configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: [
-        'Notify',
-        'Loading',
-        'Meta',
-      ],
+      plugins: ['Notify', 'Loading', 'Meta'],
     },
 
     // animations: 'all', // --- includes all animations
@@ -256,7 +243,7 @@ export default configure(function (ctx) {
       metaVariables: {
         appleMobileWebAppStatusBarStyle: 'black-translucent',
         appleMobileWebAppCapable: 'yes',
-        msapplicationTileColor: 'red'
+        msapplicationTileColor: 'red',
       },
     },
 

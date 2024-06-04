@@ -9,7 +9,6 @@ import { Note, NotePreview, NotesFilter } from 'src/models';
 import { toDeepRaw } from 'src/tools';
 
 import { ref } from 'vue';
-import { useDiStore } from './di.store';
 import { repositories } from 'src/boot/repositories';
 
 export const DEFAULT_LIMIT = 20;
@@ -29,7 +28,6 @@ export const useNotesStore = defineStore('notes', () => {
   const fileManagerStore = useFileManagerStore();
   const graphStore = useGraphStore();
   const currentNoteStore = useCurrentNoteStore();
-  const di = useDiStore();
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
