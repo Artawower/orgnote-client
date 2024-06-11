@@ -12,7 +12,7 @@
       :class="{
         mobile: $q.screen.lt.sm,
         choice: completionStore.completionMode === 'choice',
-        pwa: $q.platform.is.ios && !$q.platform.is.cordova,
+        pwa: $q.platform.is.ios && !$q.platform.is.nativeMobile,
       }"
     >
       <completion-result />

@@ -11,7 +11,7 @@
         {{ $t('this message appears because developer mode is enabled') }}
       </div>
       <div>Route state: {{ route.query.state }}</div>
-      <div>Is native app: {{ !!$q.platform.is.cordova }}</div>
+      <div>Is native app: {{ !!$q.platform.is.nativeMobile }}</div>
       <div>Is mobile: {{ !!$q.platform.is.mobile }}</div>
     </div>
     <h3>
@@ -71,7 +71,7 @@ const setupUser = async () => {
     await sleep(10000);
   }
   if (
-    !$q.platform.is.cordova &&
+    !$q.platform.is.nativeMobile &&
     $q.platform.is.mobile &&
     isMobile &&
     !window.navigator.standalone &&

@@ -52,7 +52,7 @@ const getEncryptionData = () => {
   Passphrase provided: ${!!encryption.privateKeyPassphrase}`;
 };
 
-const deviceSpecificInfo = $q.platform.is.cordova
+const deviceSpecificInfo = $q.platform.is.nativeMobile
   ? `\nDevice info:
   Model: ${device.model}
   Manufacturer: ${device.manufacturer}
