@@ -1,3 +1,4 @@
+// NOTE: right now quasar doesn't work with eslint 9+ version. This file will not apply any rules to the code.
 //@ts-check
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';

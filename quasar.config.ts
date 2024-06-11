@@ -10,6 +10,7 @@
 
 import { configure } from 'quasar/wrappers';
 import { checker } from 'vite-plugin-checker';
+import tsconfigPaths from 'vite-tsconfig-paths';
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
 import path from 'path';
@@ -113,6 +114,7 @@ export default configure(function (ctx) {
         ],
         [
           'vite-plugin-checker',
+          'vite-tsconfig-paths',
           {
             vueTsc: {
               tsconfigPath: 'tsconfig.vue-tsc.json',
@@ -145,6 +147,15 @@ export default configure(function (ctx) {
       // },
       alias: {
         '@': path.resolve(__dirname, './src'),
+        src: path.resolve(__dirname, './src'),
+        components: path.resolve(__dirname, './src/components'),
+        layouts: path.resolve(__dirname, './src/layouts'),
+        pages: path.resolve(__dirname, './src/pages'),
+        assets: path.resolve(__dirname, './src/assets'),
+        boot: path.resolve(__dirname, './src/boot'),
+        composables: path.resolve(__dirname, './src/composables'),
+        tools: path.resolve(__dirname, './src/tools'),
+        stores: path.resolve(__dirname, './src/stores'),
       },
     },
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
