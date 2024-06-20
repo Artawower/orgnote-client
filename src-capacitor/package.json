@@ -1,0 +1,14 @@
+{
+  "name": "orgnote-client",
+  "version": "0.18.0",
+  "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
+  "author": "OrgNote <app.orgnote@gmail.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^6.1.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/splash-screen": "6.0.0"
+  }
+}

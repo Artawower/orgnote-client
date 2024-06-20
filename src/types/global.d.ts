@@ -18,13 +18,6 @@ declare global {
     };
   }
 
-  interface CordovaPlugins {
-    clipboard: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      copy: (payload: any, onSuccess?: () => void, onFail?: () => void) => void;
-    };
-  }
-
   interface HTMLInputElement {
     webkitdirectory: boolean;
     directory: boolean;
