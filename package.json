@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
-    "dev:android": "quasar dev -m capacitor -T android",
+    "dev:android": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android",
     "dev:ssr": "env-cmd -f ./.env.ssr quasar dev -m ssr",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android -- -d",
     "dev:ios": "quasar dev -m capacitor -T ios",
@@ -78,6 +78,7 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "@capacitor/app": "6.0.0",
     "@happy-dom/global-registrator": "14.12.0",
     "@intlify/unplugin-vue-i18n": "2.0.0",
     "@quasar/app-vite": "^2.0.0-beta.12",

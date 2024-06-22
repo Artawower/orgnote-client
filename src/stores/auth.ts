@@ -64,6 +64,7 @@ export const useAuthStore = defineStore(
           // TODO: master quick tmp solution.
           // common OAuth for mobile and web
           window.open(authUrl, '_system');
+          console.log('✎: [line 67][auth.ts] authUrl: ', authUrl);
           return;
         }
 
