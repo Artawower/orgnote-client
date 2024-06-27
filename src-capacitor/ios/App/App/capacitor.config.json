@@ -22,6 +22,7 @@
 	},
 	"packageClassList": [
 		"AppPlugin",
+		"DevicePlugin",
 		"FilesystemPlugin",
 		"SplashScreenPlugin",
 		"FileOpenerPlugin",

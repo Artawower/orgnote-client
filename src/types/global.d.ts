@@ -26,18 +26,4 @@ declare global {
   interface NamedNodeMap {
     autocomplete?: string;
   }
-
-  const device: {
-    available: boolean;
-    cordova: string;
-    isVirtual: boolean;
-    isiOSAppOnMac: boolean;
-    manufacturer: string;
-    model: string;
-    platform: string;
-    sdkVersion: string;
-    serial: string;
-    uuid: string;
-    version: string;
-  };
 }

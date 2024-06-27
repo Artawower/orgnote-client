@@ -8,7 +8,7 @@
       }}
     </div>
     <div class="system-info">
-      <code-block :code="systemInfo" />
+      <code-block v-if="systemInfo" :code="systemInfo" />
     </div>
   </div>
 </template>
@@ -20,6 +20,8 @@ import { useQuasar } from 'quasar';
 
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
+import { Device } from '@capacitor/device';
+import { computedAsync } from '@vueuse/core';
 
 const $q = useQuasar();
 
@@ -52,15 +54,20 @@ const getEncryptionData = () => {
   Passphrase provided: ${!!encryption.privateKeyPassphrase}`;
 };
 
-const deviceSpecificInfo = $q.platform.is.nativeMobile
-  ? `\nDevice info:
-  Model: ${device.model}
-  Manufacturer: ${device.manufacturer}
-  ${$q.platform.is.android ? 'SDK version: ' + device.sdkVersion : ''}
-  Version: ${device.version}`
-  : '';
+const getDeviceSpecificInfo = async () => {
+  if (!$q.platform.is.nativeMobile) {
+    return '';
+  }
+  const info = await Device.getInfo();
+  return `\nDevice info:
+  Model: ${info.model}
+  Manufacturer: ${info.manufacturer}
+  ${$q.platform.is.android ? 'SDK version: ' + info.androidSDKVersion : ''}
+  Version: ${info.osVersion}`;
+};
 
-const systemInfo = `OrgNote: ${version}
+const systemInfo = computedAsync(
+  async () => `OrgNote: ${version}
 Language: ${navigator.language}
 
 Screen:
@@ -78,7 +85,8 @@ Env:
 
 Quasar info:
 ${prettyQuasarPlatform}
-${deviceSpecificInfo}`;
+${await getDeviceSpecificInfo()}`
+);
 </script>
 
 <style lang="scss" scoped>
