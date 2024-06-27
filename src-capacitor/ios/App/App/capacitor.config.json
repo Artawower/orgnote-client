@@ -4,7 +4,7 @@
 	"webDir": "www",
 	"plugins": {
 		"SplashScreen": {
-			"launchShowDuration": 0,
+			"launchShowDuration": 500,
 			"launchAutoHide": true,
 			"launchFadeOutDuration": 500,
 			"backgroundColor": "#9356E8",
@@ -22,6 +22,9 @@
 	},
 	"packageClassList": [
 		"AppPlugin",
-		"SplashScreenPlugin"
+		"FilesystemPlugin",
+		"SplashScreenPlugin",
+		"FileOpenerPlugin",
+		"FolderPickerPlugin"
 	]
 }
