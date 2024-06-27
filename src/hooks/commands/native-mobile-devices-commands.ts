@@ -1,5 +1,6 @@
 import { Command } from 'orgnote-api';
 import { useQuasar } from 'quasar';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 export function getMobileDevicesCommands(): Command[] {
   const $q = useQuasar();
@@ -7,13 +8,18 @@ export function getMobileDevicesCommands(): Command[] {
     return [];
   }
 
+  const { orgNoteApi } = useOrgNoteApiStore();
+
   const commands: Command[] = [
-    // TODO: master real path
     {
       command: 'select file path',
       description: 'select file path',
       available: () => $q.platform.is.mobile,
-      handler: async () => {},
+      icon: 'folder_open',
+      group: 'mobile',
+      handler: async () => {
+        return orgNoteApi.fileSystem.readPath();
+      },
     },
   ];
 

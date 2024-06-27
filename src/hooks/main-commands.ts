@@ -14,6 +14,10 @@ export function useCommands() {
   const globalCommands = getGlobalCommands();
   const completionCommands = getCompletionCommands();
   const mobileDevicesCommands = getMobileDevicesCommands();
+  console.log(
+    '✎: [line 17][MOBILE COMMANDS] getMobileDevicesCommands,mobileDevicesCommands: ',
+    mobileDevicesCommands
+  );
 
   const register = () => {
     commandsStore.register(
