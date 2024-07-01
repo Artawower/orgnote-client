@@ -3,14 +3,22 @@ import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue
 import { VueComponent } from 'src/models';
 
 import { ref, shallowRef } from 'vue';
+import { useSettingsStore } from './settings';
 
 export const useSidebarStore = defineStore('sidebar', () => {
   const opened = ref(false);
 
   const component = shallowRef<VueComponent>(null);
+  const { setupStatusBar } = useSettingsStore();
 
-  const close = () => (opened.value = false);
-  const open = () => (opened.value = true);
+  const close = () => {
+    setupStatusBar('--bg');
+    opened.value = false;
+  };
+  const open = () => {
+    opened.value = true;
+    setupStatusBar('--bg-alt');
+  };
 
   const openComponent = (cmp: VueComponent) => {
     opened.value = true;

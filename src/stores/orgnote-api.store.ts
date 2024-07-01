@@ -16,6 +16,7 @@ import { useCommandsStore } from './commands';
 import { useSystemInfoStore } from './system-info';
 import { useModalStore } from './modal';
 import { Modal } from 'orgnote-api';
+import { FolderPicker } from 'capacitor-folder-picker';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -55,6 +56,12 @@ export const useOrgNoteApiStore = () => {
       widgets: {
         createWidgetBuilder,
         add: addWidgets,
+      },
+    },
+    fileSystem: {
+      readPath: async () => {
+        const res = await FolderPicker.chooseFolder();
+        return res.value;
       },
     },
     configuration: () => settings.config,

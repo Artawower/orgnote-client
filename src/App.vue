@@ -19,6 +19,7 @@ import { useLoggerStore } from './stores/logger';
 import { useSystemInfoStore } from './stores/system-info';
 import { useOrgBabelStore } from './stores/org-babel';
 import { useOrgNoteApiStore } from './stores/orgnote-api.store';
+import { App, URLOpenListenerEvent } from '@capacitor/app';
 
 const syncStore = useSyncStore();
 syncStore.markToSync();
@@ -40,8 +41,8 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 // TODO: master move to external method.
-async function handleCordovaAuth(url: string) {
-  const urlParams = url.split('?')?.[1];
+async function handleCordovaAuth(event: URLOpenListenerEvent) {
+  const urlParams = event.url.split('?')?.[1];
   if (!urlParams) {
     return;
   }
@@ -61,15 +62,12 @@ async function handleCordovaAuth(url: string) {
 
   router.push({ name: RouteNames.Home });
 }
+
 const { orgNoteApi } = useOrgNoteApiStore();
 
-const initPublicOrgNoteApi = () => {
-  (
-    window as unknown as { handleOpenURL: (arg0: string) => void }
-  ).handleOpenURL = handleCordovaAuth.bind(this);
+mockServer(() => App.addListener('appUrlOpen', handleCordovaAuth))();
 
-  window.orgnote = orgNoteApi;
-};
+const initPublicOrgNoteApi = () => (window.orgnote = orgNoteApi);
 
 mockServer(initPublicOrgNoteApi)();
 </script>
