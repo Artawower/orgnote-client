@@ -95,6 +95,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Override capacitor dependency
+        uses: sergeysova/jq-action@v2
+        id: keywords
+        with:
+          cmd: "jq '. + {overrides: {\"capacitor-folder-picker\": {\"@capacitor/core\": \"6.1.0\"}}}' ./dist/ssr/package.json > ./dist/ssr/tmp.json && mv -f ./dist/ssr/tmp.json ./dist/ssr/package.json"
+          multiline: true
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:

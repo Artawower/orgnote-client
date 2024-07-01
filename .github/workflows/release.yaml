@@ -1,6 +1,8 @@
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    
 
 jobs:
   release:
@@ -16,7 +18,6 @@ jobs:
         run: |
           bun install --frozen-lockfile
           bun add global @quasar/cli
-          npm install -g cordova
           npm install -g @quasar/cli
       - name: Init environment
         run: |
@@ -30,35 +31,34 @@ jobs:
           AUTH_URL=${{ secrets.AUTH_URL }}
           EOT
 
-      - name: Build
-        run: bun run build:android
-      - name: Download bundletool
-        run: |
-          curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/download/1.15.1/bundletool-all-1.15.1.jar
       - name: Setup java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '11'
+          java-version: '17'
+
+      - name: Setup android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build
+        run: bun run build:android:aab
+
       - name: Build android apk release
         run: |
+          echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
           version=${{ github.event.release.tag_name }}
           mkdir -p ./dist/build
-          java -jar bundletool.jar build-apks \
-              --mode=universal \
-              --bundle=./dist/cordova/android/bundle/release/app-release.aab \
-              --output=./dist/pwa/builds/orgnote.apks \
-              --ks=./org-note-release.keystore \
-              --ks-pass=pass:${{ secrets.STOREPASS }} \
-              --ks-key-alias=sb
-          unzip -p ./dist/pwa/builds/orgnote.apks universal.apk > ./dist/pwa/builds/orgnote-$version.apk
+          cd ./dist/capacitor/android/apk/release
+          /usr/local/lib/android/sdk/build-tools/34.0.0/zipalign -v 4 app-release-unsigned.apk orgnote-${{ github.event.release.tag_name }}.apk
+          /usr/local/lib/android/sdk/build-tools/34.0.0/apksigner sign --ks ../../../../../org-note-release.keystore --ks-pass pass:${{ secrets.STOREPASS }} --ks-key-alias sb orgnote-${{ github.event.release.tag_name }}.apk
+
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/pwa/builds/orgnote-${{ github.event.release.tag_name }}.apk
+          asset_path: ./dist/capacitor/android/apk/release/orgnote-${{ github.event.release.tag_name }}.apk
           asset_name: orgnote-${{ github.event.release.tag_name }}.apk
           asset_content_type: application/octet-stream
 

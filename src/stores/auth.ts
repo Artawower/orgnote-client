@@ -60,7 +60,7 @@ export const useAuthStore = defineStore(
         const state: AuthState = { environment, redirectUrl };
         const authUrl = getAuthUrl(provider, state);
 
-        if ($q.platform.is.cordova) {
+        if ($q.platform.is.nativeMobile) {
           // TODO: master quick tmp solution.
           // common OAuth for mobile and web
           window.open(authUrl, '_system');

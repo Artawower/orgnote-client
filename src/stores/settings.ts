@@ -5,8 +5,11 @@ import { Dark } from 'quasar';
 import { OrgNoteConfig } from 'src/api';
 import { sdk } from 'src/boot/axios';
 import { ModelsAPIToken } from 'src/generated/api';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 import { reactive, ref } from 'vue';
+import { getCssVar } from 'src/tools';
+import { mockMobile } from 'src/tools/mock-mobile';
 
 export const useSettingsStore = defineStore(
   'settings',
@@ -92,7 +95,15 @@ export const useSettingsStore = defineStore(
 
     const updateDarkMode = () => {
       Dark.set(darkMode.value);
+      setupStatusBar();
     };
+
+    const setupStatusBar = mockMobile((bgColor?: string) => {
+      const backgroundColor = getCssVar(bgColor ?? '--bg');
+      const style = darkMode.value ? Style.Dark : Style.Light;
+      StatusBar.setBackgroundColor({ color: backgroundColor });
+      StatusBar.setStyle({ style });
+    });
 
     const setTheme = (themeName: string): void => {
       const themeSwitcher = Dark.isActive ? setDarkTheme : setLightTheme;
@@ -128,6 +139,7 @@ export const useSettingsStore = defineStore(
       setTheme,
       setDarkTheme,
       setLightTheme,
+      setupStatusBar,
     };
   },
   { persist: { afterRestore: ({ store }) => store.updateDarkMode() } }
