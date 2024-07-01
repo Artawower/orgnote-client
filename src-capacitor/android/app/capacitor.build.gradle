@@ -13,6 +13,7 @@ dependencies {
     implementation project(':capacitor-device')
     implementation project(':capacitor-filesystem')
     implementation project(':capacitor-splash-screen')
+    implementation project(':capacitor-status-bar')
     implementation project(':capawesome-team-capacitor-file-opener')
     implementation project(':capacitor-folder-picker')
 

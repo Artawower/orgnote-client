@@ -25,6 +25,7 @@
 		"DevicePlugin",
 		"FilesystemPlugin",
 		"SplashScreenPlugin",
+		"StatusBarPlugin",
 		"FileOpenerPlugin",
 		"FolderPickerPlugin"
 	]

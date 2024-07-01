@@ -41,6 +41,7 @@
     "@capacitor/filesystem": "6.0.0",
     "@capacitor/ios": "6.1.0",
     "@capacitor/splash-screen": "6.0.0",
+    "@capacitor/status-bar": "6.0.0",
     "@codemirror/autocomplete": "6.16.1",
     "@codemirror/commands": "6.5.0",
     "@codemirror/language": "6.10.1",
