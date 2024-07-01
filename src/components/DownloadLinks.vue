@@ -1,7 +1,7 @@
 <template>
   <div class="download-links">
     <a
-      v-if="!$q.platform.is.cordova && !$q.platform.is.ios"
+      v-if="!$q.platform.is.nativeMobile && !$q.platform.is.ios"
       :href="apkUrl"
       target="_blank"
     >

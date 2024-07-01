@@ -1,19 +1,4 @@
 FROM alvrme/alpine-android:android-33-jdk11-v2023.06.10
-# FROM alvrme/alpine-android:android-30-jdk11-v2023.09.10
-
-# TODO
-# ARG USER=ponny
-# ENV HOME /home/$USER
-# ENV ANDROID_SDK_ROOT "/opt/sdk"
-# ENV ANDROID_HOME ${ANDROID_SDK_ROOT}
-
-# RUN apk add --update sudo
-
-# RUN adduser -D $USER \
-#         && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER \
-#         && chmod 0440 /etc/sudoers.d/$USER
-
-
 
 # Gradle
 RUN apk add --update --no-cache \ 
@@ -24,8 +9,7 @@ RUN apk add --update --no-cache \
 RUN npm install -g bun && \
     npm install -g @quasar/cli && \
     npm install -g @vue/cli && \
-    npm install -g @vue/cli-init && \
-    npm install -g cordova
+    npm install -g @vue/cli-init
 
 RUN bun --version
 

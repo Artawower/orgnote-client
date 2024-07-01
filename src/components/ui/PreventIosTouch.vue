@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="$q.platform.is.mobile && !$q.platform.is.cordova"
+    v-if="$q.platform.is.mobile && !$q.platform.is.nativeMobile"
     @touchmove.stop="touchMove"
     @touchstart.stop="touchStart"
     class="prevent-touch"
@@ -32,7 +32,7 @@ const touchMove = (e: TouchEvent) => {
     Math.abs(e.changedTouches[0].clientY - startY) >
     Math.abs(e.changedTouches[0].clientX - startX);
 
-  if (isVertical && $q.platform.is.ios && !$q.platform.is.cordova) {
+  if (isVertical && $q.platform.is.ios && !$q.platform.is.nativeMobile) {
     e.preventDefault();
     return;
   }

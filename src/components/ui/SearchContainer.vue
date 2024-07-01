@@ -19,7 +19,7 @@
           <q-icon size="md" :name="extractDynamicValue(cmd.icon)"></q-icon>
         </div>
         <div class="title text-capitalize">{{ $t(cmd.command) }}</div>
-        <div class="description text-capitalize">
+        <div v-if="cmd.description" class="description text-capitalize">
           {{ $t(cmd.description) }}
         </div>
       </div>

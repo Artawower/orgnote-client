@@ -21,6 +21,7 @@
       :placeholder="$t(placeholder)"
     />
     <q-icon
+      v-if="resetable"
       @click="resetSearch"
       name="cancel"
       role="button"
@@ -39,10 +40,12 @@ const props = withDefaults(
     autofocus?: boolean;
     placeholder?: string;
     theme?: 'heavy' | 'tiny';
+    resetable?: boolean;
   }>(),
   {
     placeholder: 'search',
     theme: 'tiny',
+    resetable: false,
   }
 );
 

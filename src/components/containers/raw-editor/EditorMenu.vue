@@ -12,6 +12,7 @@
       :autofocus="true"
       :items="editorInsertItems"
       :handler-wrapper="onItemClicked"
+      :resetable="true"
     />
   </div>
 </template>

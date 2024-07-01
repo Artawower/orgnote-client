@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -8,12 +8,12 @@
   "type": "module",
   "scripts": {
     "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
-    "dev:android": "quasar dev -m cordova -T android",
+    "dev:android": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android",
     "dev:ssr": "env-cmd -f ./.env.ssr quasar dev -m ssr",
-    "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T android -- -d",
-    "dev:ios": "quasar dev -m cordova -T ios",
-    "dev:ios:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T ios -- --target=\"iPhone-15-Pro\"",
-    "dev:ios-tablet:remote": "env-cmd -f ./.env.prod quasar dev -m cordova -T ios -- --target=\"iPad-10th-generation\"",
+    "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android -- -d",
+    "dev:ios": "quasar dev -m capacitor -T ios",
+    "dev:ios:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T ios -- --target=\"iPhone-15-Pro\"",
+    "dev:ios-tablet:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T ios -- --target=\"iPad-10th-generation\"",
     "dev:electron": "quasar dev -m electron",
     "dev:electron:remote": "env-cmd -f ./.env.prod quasar dev -m electron",
     "dev": "env-cmd -f ./.env quasar dev",
@@ -21,12 +21,15 @@
     "build": "quasar build",
     "build:ssr": "env-cmd -f ./.env.prod bun run build -m ssr",
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
-    "build:all": "bun run build:pwa && bun run build:android",
+    "build:all": "bun run build:pwa && bun run build:android:aab",
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",
-    "sign:android": "jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore org-note-release.keystore -signedjar org-note-release-signed.aab ./dist/cordova/android/bundle/release/app-release.aab sb",
-    "build:android:sign": "bun run build:android && bun run sign:android",
-    "build:android": "env-cmd -f ./.env.prod quasar build -m android",
-    "build:ios": "env-cmd -f ./.env.prod quasar build -m ios",
+    "build:android:aab": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
+    "build:android:apk": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
+    "build:android:aab:sign": "bun run build:android:aab && bun run sign:android:aab",
+    "build:android:apk:sign": "bun run build:android:aab && ./sign-apk.sh",
+    "sign:android:apk": "jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore org-note-release.keystore -signedjar org-note-release-signed.apk ./dist/capacitor/android/apk/release/app-release-unsigned.apk sb",
+    "sign:android:aab": "jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore org-note-release.keystore -signedjar org-note-release-signed.aab ./dist/capacitor/android/bundle/release/app-release.aab sb",
+    "build:ios": "env-cmd -f ./.env.prod quasar build -m capacitor -T ios",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .prettierignore",
     "test": "bun test",
@@ -34,6 +37,11 @@
     "report:duplicates": "jscpd ./src"
   },
   "dependencies": {
+    "@capacitor/device": "6.0.0",
+    "@capacitor/filesystem": "6.0.0",
+    "@capacitor/ios": "6.1.0",
+    "@capacitor/splash-screen": "6.0.0",
+    "@capacitor/status-bar": "6.0.0",
     "@codemirror/autocomplete": "6.16.1",
     "@codemirror/commands": "6.5.0",
     "@codemirror/language": "6.10.1",
@@ -52,7 +60,9 @@
     "@quasar/extras": "^1.16.9",
     "@sotaproject/strikethrough": "1.0.1",
     "@uiw/codemirror-extensions-langs": "4.22.1",
+    "@vueuse/core": "10.11.0",
     "axios": "1.6.7",
+    "capacitor-folder-picker": "0.0.2",
     "dexie": "4.0.7",
     "force-graph": "1.43.5",
     "highlight.js": "11.9.0",
@@ -77,6 +87,7 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "@capacitor/app": "6.0.0",
     "@happy-dom/global-registrator": "14.12.0",
     "@intlify/unplugin-vue-i18n": "2.0.0",
     "@quasar/app-vite": "^2.0.0-beta.12",
@@ -114,6 +125,11 @@
     "workbox-precaching": "7.1.0",
     "workbox-routing": "7.1.0",
     "workbox-strategies": "7.1.0"
+  },
+  "overrides": {
+    "capacitor-folder-picker": {
+      "@capacitor/core": "6.1.0"
+    }
   },
   "engines": {
     "bun": ">= 1.0.2"
