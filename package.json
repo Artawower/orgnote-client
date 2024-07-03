@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -37,6 +37,7 @@
     "report:duplicates": "jscpd ./src"
   },
   "dependencies": {
+    "@capacitor/app": "6.0.0",
     "@capacitor/device": "6.0.0",
     "@capacitor/filesystem": "6.0.0",
     "@capacitor/ios": "6.1.0",
@@ -87,7 +88,6 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "@capacitor/app": "6.0.0",
     "@happy-dom/global-registrator": "14.12.0",
     "@intlify/unplugin-vue-i18n": "2.0.0",
     "@quasar/app-vite": "^2.0.0-beta.12",
