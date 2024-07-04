@@ -147,6 +147,10 @@ export const useNotesStore = defineStore('notes', () => {
     notes.value = [];
   };
 
+  const clearNotes = async () => {
+    return await repositories.notes.clear();
+  };
+
   return {
     notes,
     selectedNote,
@@ -165,5 +169,6 @@ export const useNotesStore = defineStore('notes', () => {
     bulkPathNotesLocally,
     toggleBookmark,
     resetCache,
+    clearNotes,
   };
 });

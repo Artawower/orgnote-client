@@ -10,6 +10,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { reactive, ref } from 'vue';
 import { getCssVar } from 'src/tools';
 import { mockMobile } from 'src/tools/mock-mobile';
+import { DEFAULT_CONFIG } from 'src/constants/default-config.constant';
+import { deepAssign } from 'src/tools/deep-assign';
+import clone from 'rfdc';
 
 export const useSettingsStore = defineStore(
   'settings',
@@ -19,31 +22,7 @@ export const useSettingsStore = defineStore(
     const locale = ref<string>('en-US');
     const darkMode = ref<boolean | 'auto'>('auto');
 
-    const config = reactive<OrgNoteConfig>({
-      editor: {
-        showSpecialSymbols: false,
-        showPropertyDrawer: true,
-      },
-      common: {
-        developerMode: false,
-        maximumLogsCount: 1000,
-      },
-      completion: {
-        showGroup: false,
-        defaultCompletionLimit: 500,
-      },
-      ui: {
-        theme: 'light',
-        darkThemeName: null,
-        lightThemeName: null,
-      },
-      extensions: {
-        sources: ['https://github.com/Artawower/orgnote-extensions'],
-      },
-      encryption: {
-        type: 'disabled',
-      },
-    });
+    const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
 
     const setLocale = (lc: string) => {
       locale.value = lc;
@@ -59,6 +38,7 @@ export const useSettingsStore = defineStore(
 
     const reset = () => {
       tokens.value = [];
+      clearConfig();
     };
 
     const removeToken = async (token: ModelsAPIToken) => {
@@ -118,6 +98,10 @@ export const useSettingsStore = defineStore(
       config.ui.lightThemeName = themeName;
     };
 
+    const clearConfig = () => {
+      deepAssign(config, { ...DEFAULT_CONFIG });
+    };
+
     updateDarkMode();
 
     return {
@@ -140,6 +124,7 @@ export const useSettingsStore = defineStore(
       setDarkTheme,
       setLightTheme,
       setupStatusBar,
+      clearConfig,
     };
   },
   { persist: { afterRestore: ({ store }) => store.updateDarkMode() } }

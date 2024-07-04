@@ -241,4 +241,8 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
       .each((n) => ids.push(n.id))
       .then(() => ids);
   }
+
+  async clear(): Promise<void> {
+    await this.store.clear();
+  }
 }

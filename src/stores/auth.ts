@@ -12,6 +12,7 @@ import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
 import { mockServer } from 'src/tools';
+import { useNotesStore } from './notes';
 
 const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
@@ -34,6 +35,7 @@ export const useAuthStore = defineStore(
     const provider = ref<OAuthProvider>(defaultProvider);
     const $q = useQuasar();
     const router = useRouter();
+    const notesStore = useNotesStore();
 
     const authViaGithub = async (redirectUrl?: string) => {
       try {
@@ -98,6 +100,7 @@ export const useAuthStore = defineStore(
 
     const logout = async () => {
       const settingsStore = useSettingsStore();
+      await notesStore.clearNotes();
       settingsStore.reset();
       resetAuthInfo();
       router.push({ name: RouteNames.Home });

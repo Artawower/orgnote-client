@@ -55,6 +55,7 @@ export interface INoteRepository {
     modifyCallback: (note: Note, ref: { value: Note }) => void
   ): Promise<void>;
   getIds(filterCb?: (n: Note) => boolean): Promise<string[]>;
+  clear(): Promise<void>;
 }
 
 export interface Repositories {
