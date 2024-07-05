@@ -1,4 +1,4 @@
-import { Note, NotePreview } from 'src/models';
+import { Note, NotePreview } from 'orgnote-api';
 
 export function convertNoteToNotePreview(note: Note): NotePreview {
   return {
@@ -9,5 +9,6 @@ export function convertNoteToNotePreview(note: Note): NotePreview {
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
     bookmarked: note.bookmarked,
+    encrypted: note.encrypted,
   };
 }

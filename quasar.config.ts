@@ -83,6 +83,7 @@ export default configure(function (ctx) {
       // publicPath: '/',
       analyze: false,
       env: {
+        // API_URL: 'https://org-note.com/api/v1',
         AUTH_URL: process.env.AUTH_URL ?? '',
         VUE_ROUTER_MODE: 'history',
       },

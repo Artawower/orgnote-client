@@ -1,8 +1,9 @@
+import { Note, NotePreview } from 'orgnote-api';
 import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
-import { INoteRepository, Note, NotePreview } from 'src/models';
+import { INoteRepository } from 'src/models';
 
 export interface FilePathInfo {
   filePath: string[];
@@ -22,6 +23,11 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
       '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt'
     )
     .upgrade((n) => (n.touchedAt = new Date().toISOString()))
+    .v(6)
+    .indexes(
+      '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt'
+    )
+    .upgrade((n) => (n.encryptionType = n.encryptionType))
     .build();
 
   get store(): Dexie.Table<Note, string> {

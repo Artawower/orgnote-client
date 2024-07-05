@@ -1,6 +1,11 @@
 <template>
   <article :style="{ height }">
-    <q-card v-if="notePreview" class="full-height color-main" flat>
+    <encrypted-note-card
+      v-if="notePreview.encrypted"
+      :noteName="notePreview.filePath.slice(-1)[0]"
+      @click="openNoteDetail(notePreview)"
+    />
+    <q-card v-else-if="notePreview" class="full-height color-main" flat>
       <div
         class="q-px-sm"
         v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
@@ -28,7 +33,10 @@
               {{ notePreview.meta.category }}
             </div>
             <div class="text-h4 text-weight-bold pointer">
-              {{ notePreview.meta.title }}
+              {{
+                extractDynamicValue(notePreview.meta.title) ||
+                notePreview.filePath.slice(-1)[0]
+              }}
             </div>
             <file-path
               v-if="notePreview.filePath"
@@ -76,7 +84,6 @@
 </template>
 
 <script setup lang="ts">
-import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useSettingsStore } from 'src/stores/settings';
 import { useViewStore } from 'src/stores/view';
@@ -89,7 +96,10 @@ import TagList from 'src/components/TagList.vue';
 import AuthorInfo from 'src/components/containers/AuthorInfo.vue';
 import FilePath from 'src/components/containers/FilePath.vue';
 import ImageResolver from 'src/components/containers/ImageResolver.vue';
+import EncryptedNoteCard from 'src/components/ui/EncryptedNoteCard.vue';
+import { extractDynamicValue } from 'src/tools';
 import { useAuthStore } from 'src/stores/auth';
+import { Note, NotePreview } from 'orgnote-api';
 
 const props = defineProps<{
   notePreview: Note | NotePreview;

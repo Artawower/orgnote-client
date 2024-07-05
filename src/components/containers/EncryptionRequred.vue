@@ -14,10 +14,8 @@
 
 <script lang="ts" setup>
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { DefaultCommands } from 'orgnote-api';
-import { Note } from 'src/models';
+import { DefaultCommands, Note, isGpgEncrypted } from 'orgnote-api';
 import { computed } from 'vue';
-import { isGpgEncrypted } from 'src/tools';
 
 const { executeCommand } = useKeybindingStore();
 

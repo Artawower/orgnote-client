@@ -125,10 +125,15 @@ export const useSyncStore = defineStore(
       }
     };
 
+    const reset = () => {
+      lastSyncTime.value = null;
+    };
+
     return {
       markToSync,
       sync,
       lastSyncTime,
+      reset,
     };
   },
   { persist: true }

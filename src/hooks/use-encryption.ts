@@ -3,7 +3,7 @@ import {
   encryptNote as _encryptNote,
   decryptNote as _decryptNote,
 } from 'orgnote-api/encryption';
-import { Note } from 'src/models';
+import { Note } from 'orgnote-api';
 
 export function useEncryption() {
   const { config } = useSettingsStore();

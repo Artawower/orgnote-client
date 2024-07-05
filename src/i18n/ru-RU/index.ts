@@ -196,4 +196,7 @@ export default {
   'new release available': 'доступна новая версия',
   'install update': 'установить обновление',
   'check details': 'посмотреть детали',
+  'is encrypted': 'заширована',
+  'please, configure encryption settings for decrypt note':
+    'пожалуйста, настройте параметры шифрования для деширования заметки',
 };

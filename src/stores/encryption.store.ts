@@ -2,11 +2,11 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useNotesStore } from './notes';
 import { useEncryption } from 'src/hooks';
-import { isGpgEncrypted } from 'src/tools/is-gpg-encrypted';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
 import { repositories } from 'src/boot/repositories';
+import { isGpgEncrypted } from 'orgnote-api';
 
 export const useEncryptionStore = defineStore('encryption', () => {
   // TODO: implement progress.
@@ -48,8 +48,8 @@ export const useEncryptionStore = defineStore('encryption', () => {
   const { handleError } = useEncryptionErrorHandler();
 
   const decryptNoteById = async (noteId: string) => {
+    const note = await repositories.notes.getById(noteId);
     try {
-      const note = await repositories.notes.getById(noteId);
       const decryptedNote = await decryptNote(note);
       await repositories.notes.putNote(decryptedNote);
     } catch (e) {

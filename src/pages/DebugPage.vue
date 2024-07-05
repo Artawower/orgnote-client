@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ModelsPublicNoteEncryptedEnum } from 'orgnote-api/remote-api';
+import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 import { version } from '../../package.json';
 import { useQuasar } from 'quasar';
 
@@ -40,12 +40,12 @@ const encryption = orgNoteApi.configuration().encryption;
 const getEncryptionData = () => {
   if (
     !encryption.type ||
-    encryption.type === ModelsPublicNoteEncryptedEnum.Disabled
+    encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled
   ) {
     return '';
   }
 
-  if (encryption.type === ModelsPublicNoteEncryptedEnum.GpgPassword) {
+  if (encryption.type === ModelsPublicNoteEncryptionTypeEnum.GpgPassword) {
     return `\n  Password provided: ${!!encryption.password}`;
   }
 

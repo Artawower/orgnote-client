@@ -20,13 +20,13 @@
       <div v-if="config.completion.showGroup">[{{ item.group }}]:&nbsp</div>
       <div class="line-limit-1">
         <div class="capitalize">
-          {{ extractDynamicValue(item.title) ?? item.command }}
+          {{ extractDynamicValue(item.title) || item.command }}
         </div>
       </div>
     </div>
     <div>
       <span class="text-italic color-secondary line-limit-1">
-        {{ item.description }}
+        {{ extractDynamicValue(item.description) }}
       </span>
     </div>
   </q-item>

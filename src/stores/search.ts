@@ -11,6 +11,7 @@ import { useRouter } from 'vue-router';
 
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { useI18n } from 'vue-i18n';
 
 export const useSearchStore = defineStore('search', () => {
   // TODO: master adapt for public search
@@ -25,6 +26,7 @@ export const useSearchStore = defineStore('search', () => {
   const offset = ref<number>(0);
   const bookmarkScope = '@bookmark';
   const searchAutocompletions = ref<string[]>([bookmarkScope]);
+  const $t = useI18n().t;
 
   // const notesStore = useNotesStore();
 
@@ -58,10 +60,19 @@ export const useSearchStore = defineStore('search', () => {
             const completionCandidates: CompletionCandidate<NotePreview>[] =
               notes.map((d) => ({
                 command: d.meta.title,
-                icon: 'description',
-                description: `${d.meta.description ?? ''} \n${
-                  d.meta.fileTags?.map((t) => `#${t}`).join(' ') ?? ''
-                }`,
+                title: () =>
+                  d.encrypted
+                    ? `${d.filePath.slice(-1)[0]} ` + $t('is encrypted')
+                    : d.meta.title || d.filePath.slice(-1)[0],
+                icon: () => (d.encrypted ? 'sym_o_encrypted' : 'description'),
+                description: () =>
+                  d.encrypted
+                    ? $t(
+                        'please, configure encryption settings for decrypt note'
+                      )
+                    : `${d.meta.description ?? ''} \n${
+                        d.meta.fileTags?.map((t) => `#${t}`).join(' ') ?? ''
+                      }`,
                 group: 'Notes',
                 data: d,
                 commandHandler:

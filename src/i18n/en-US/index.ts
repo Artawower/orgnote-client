@@ -200,4 +200,7 @@ export default {
   'new release available': 'new release available',
   'install update': 'install update',
   'check details': 'check details',
+  'is encrypted': 'is encrypted',
+  'please, configure encryption settings for decrypt note':
+    'please, configure encryption settings for decrypt note',
 };

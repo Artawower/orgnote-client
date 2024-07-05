@@ -102,6 +102,7 @@ export const useAuthStore = defineStore(
       const settingsStore = useSettingsStore();
       await notesStore.clearNotes();
       settingsStore.reset();
+      syncStore.reset();
       resetAuthInfo();
       router.push({ name: RouteNames.Home });
       await sdk.auth.authLogoutGet();
