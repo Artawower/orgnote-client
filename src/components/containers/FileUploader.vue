@@ -75,13 +75,25 @@ const onDrop = async (e: DragEvent) => {
 };
 
 const dragOver = (e: DragEvent) => {
+  if (!isFileDragged(e)) {
+    return;
+  }
   dragCount.value += 1;
   e.preventDefault();
 };
 const dragLeave = (e: DragEvent) => {
+  if (!isFileDragged(e)) {
+    return;
+  }
   dragCount.value -= 1;
   e.preventDefault();
 };
+
+const isFileDragged = (e: DragEvent) =>
+  e.dataTransfer.types &&
+  (e.dataTransfer.types.indexOf
+    ? e.dataTransfer.types.indexOf('Files') != -1
+    : e.dataTransfer.types.includes('Files'));
 
 const preventDefault = (e: DragEvent) => e.preventDefault();
 

@@ -28,7 +28,11 @@
       class="q-mt-md"
     >
       <template #default-header="prop">
-        <file-manager-item :file-node="prop.node" @expand="expand" />
+        <file-manager-item
+          draggable="true"
+          :file-node="prop.node"
+          @expand="expand"
+        />
       </template>
     </q-tree>
   </sidebar-wrapper>

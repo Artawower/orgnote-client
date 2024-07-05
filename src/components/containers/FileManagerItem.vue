@@ -17,6 +17,7 @@
         autofocus
         :readonly="!editMode"
         class="file-name"
+        :class="{ unselectable: !editMode }"
         @focusout="stopEdit"
         @keydown.stop.enter="confirmEdit"
         @keydown.escape="stopEdit"
