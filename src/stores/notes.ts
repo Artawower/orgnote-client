@@ -5,11 +5,11 @@ import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
 import { HandlersCreatingNote } from 'src/generated/api';
-import { Note, NotePreview, NotesFilter } from 'src/models';
 import { toDeepRaw } from 'src/tools';
 
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { NotePreview, NotesFilter, Note } from 'orgnote-api';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;

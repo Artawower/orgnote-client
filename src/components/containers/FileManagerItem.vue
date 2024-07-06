@@ -2,10 +2,17 @@
   <div
     @click="openNote"
     class="file-item q-py-xs q-px-sm full-width cursor-pointer"
+    draggable="true"
+    @dragstart="(e) => dragStart(e, fileNode)"
+    @drop.prevent="onDrop"
+    @dragenter.prevent="dragOver"
+    @dragleave.prevent="dragLeave"
     :class="{
       'edit-mode': editMode,
       active: isFileOpened,
       desktop: $q.platform.is.desktop,
+      folder: !isFile,
+      'drag-in-progress': dragInProgress,
     }"
   >
     <div class="file-info">
@@ -79,6 +86,7 @@ import { useAuthStore } from 'src/stores/auth';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useDragStatus } from 'src/hooks/drag-status';
 
 const props = defineProps<{
   fileNode: FlatTree;
@@ -110,6 +118,21 @@ const createFolder = async () => {
 
 const createFile = async () => {
   await fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
+  emits('expand', props.fileNode.id);
+};
+
+const { dragLeave, dragOver, dragStart, dragInProgress, reset } =
+  useDragStatus('browser');
+
+const onDrop = async (e: DragEvent) => {
+  const sourceFileItem: FlatTree = JSON.parse(e.dataTransfer.getData('text'));
+  const path = props.fileNode.filePath;
+  if (props.fileNode.type === 'folder') {
+    path.push(props.fileNode.name);
+  }
+  path.push(sourceFileItem.name);
+  await fileManagerStore.moveFile(sourceFileItem.id, path);
+  reset();
   emits('expand', props.fileNode.id);
 };
 
@@ -267,6 +290,7 @@ const isFileOpened = computed(() => {
     color: var(--fg-alt);
   }
 
+  &.drag-in-progress,
   &:hover:not(.edit-mode),
   &.active:not(.edit-mode) {
     background-color: var(--file-item-bg-hover);

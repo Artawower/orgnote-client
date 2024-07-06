@@ -29,7 +29,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     fileTree.value = fm || {};
   });
 
-  const updateFileManagerWithDebounce = debounce(async () => {
+  const syncFiles = async () => {
     const notesPathsInfo = await repositories.notes.getFilePaths();
     const filesBasedTree = buildFileTree(notesPathsInfo);
     fileTree.value = mergeFilesTrees(fileTree.value, filesBasedTree);
@@ -38,7 +38,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
       return;
     }
     await repositories.fileManager.upsert(toDeepRaw(fileTree.value));
-  }, 300);
+  };
+
+  const updateFileManagerWithDebounce = debounce(syncFiles, 300);
 
   const updateFileManager = async () => {
     updateFileManagerWithDebounce();
@@ -117,6 +119,17 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     await storePersistently();
   };
 
+  const moveFile = async (noteId: string, filePath: string[]) => {
+    await notesStore.bulkPathNotesLocally([
+      {
+        id: noteId,
+        changes: { filePath },
+      },
+    ]);
+    await storePersistently();
+    syncFiles();
+  };
+
   const storePersistently = async () =>
     await repositories.fileManager.upsert(toDeepRaw(fileTree.value));
 
@@ -133,5 +146,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     editedFileItem,
     stopEdit,
     expandedNodes,
+    moveFile,
   };
 });

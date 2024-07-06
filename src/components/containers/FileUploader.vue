@@ -4,9 +4,9 @@
     @dragenter.prevent="dragOver"
     @dragleave.prevent="dragLeave"
     class="file-uploader"
-    :class="{ 'drag-target': dragOnTarget }"
+    :class="{ 'drag-target': dragInProgress }"
   >
-    <div v-if="dragOnTarget" class="upload-overlay fit q-p-xl">
+    <div v-if="dragInProgress" class="upload-overlay fit q-p-xl">
       <div class="uploader-info fit flex justify-center items-center text-h1">
         {{ $t('Drag&drop your notes here!') }}
       </div>
@@ -17,8 +17,9 @@
 
 <script lang="ts" setup>
 import { imageFileExtensions } from 'src/constants';
+import { useDragStatus } from 'src/hooks/drag-status';
 import { mockServer, traverseDirectory } from 'src/tools';
-import { onBeforeUnmount, onBeforeMount, computed, ref } from 'vue';
+import { onBeforeUnmount, onBeforeMount } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -35,10 +36,6 @@ const emits = defineEmits<{
   (e: 'uploaded', files: FileSystemFileEntry[]): void;
   (e: 'dropped'): void;
 }>();
-
-const dragCount = ref<number>(0);
-
-const dragOnTarget = computed(() => dragCount.value > 0);
 
 const extractFiles = (
   items: DataTransferItemList
@@ -66,34 +63,15 @@ const extractFiles = (
   );
 };
 
+const { reset, dragLeave, dragOver, dragInProgress } = useDragStatus('files');
+
 const onDrop = async (e: DragEvent) => {
   emits('dropped');
-  dragCount.value = 0;
+  reset();
   e.preventDefault();
   const extracedFileEntries = await extractFiles(e.dataTransfer?.items);
   emits('uploaded', extracedFileEntries);
 };
-
-const dragOver = (e: DragEvent) => {
-  if (!isFileDragged(e)) {
-    return;
-  }
-  dragCount.value += 1;
-  e.preventDefault();
-};
-const dragLeave = (e: DragEvent) => {
-  if (!isFileDragged(e)) {
-    return;
-  }
-  dragCount.value -= 1;
-  e.preventDefault();
-};
-
-const isFileDragged = (e: DragEvent) =>
-  e.dataTransfer.types &&
-  (e.dataTransfer.types.indexOf
-    ? e.dataTransfer.types.indexOf('Files') != -1
-    : e.dataTransfer.types.includes('Files'));
 
 const preventDefault = (e: DragEvent) => e.preventDefault();
 
