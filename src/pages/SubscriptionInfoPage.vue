@@ -62,12 +62,9 @@
             }}
           </li>
           <li class="capitalize">
-            <a
-              href="https://www.patreon.com/artawower"
-              target="_blank"
-              class="link"
-              >{{ $t('subscribe to my patreon') }}</a
-            >
+            <a :href="PATREON_LINK" target="_blank" class="link">{{
+              $t('subscribe to my patreon')
+            }}</a>
           </li>
         </ul>
       </div>
@@ -82,6 +79,7 @@ import UsedSpace from 'src/components/containers/UsedSpace.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
 import EverythingFine from 'src/components/ui/EverythingFine.vue';
 import { useAuthStore } from 'src/stores/auth';
+import { PATREON_LINK } from 'src/constants/external-links.contant';
 
 const subscriptionKey = ref('');
 

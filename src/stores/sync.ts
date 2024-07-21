@@ -6,13 +6,13 @@ import { defineStore } from 'pinia';
 import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useEncryption } from 'src/hooks';
-import { Note } from 'src/models';
 
 import { ref } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote } from 'orgnote-api/remote-api';
 import { repositories } from 'src/boot/repositories';
+import { Note } from 'orgnote-api/models';
 
 export const useSyncStore = defineStore(
   'sync',

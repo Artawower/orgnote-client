@@ -199,4 +199,12 @@ export default {
   'is encrypted': 'заширована',
   'please, configure encryption settings for decrypt note':
     'пожалуйста, настройте параметры шифрования для деширования заметки',
+  'this functionality is only available to registered users with an active subscription.':
+    'эта функциональность доступна только зарегистрированным пользователям с активной подпиской.',
+  'this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted.':
+    'эта функция полностью очистит локальный кэш и перезагрузит все заметки из внешнего источника. Важно: несохраненные заметки будут удалены.',
+  'be careful, all local data will be purged, unsaved notes will be lost':
+    'будьте осторожны, все локальные данные будут удалены, несохраненные заметки будут потеряны',
+  'deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered.':
+    'удаление аккаунта — это необратимая операция. Мы не храним ваши данные после удаления и поэтому их нельзя восстановить.',
 };

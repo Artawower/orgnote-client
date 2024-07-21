@@ -1,3 +1,7 @@
+.page {
+  padding: var(--block-padding-md);
+}
+
 .page-container {
   max-width: var(--content-max-width);
   margin: auto;

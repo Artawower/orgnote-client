@@ -34,6 +34,7 @@
 @include dark-mode {
   --default-bg: #22272e;
   --default-bg-alt: var(--q-dark);
+  --default-bg-alt2: var(--q-dark);
   --default-fg: #adbac7;
   --default-fg-alt: #{$grey-6};
 
@@ -69,7 +70,7 @@
 body {
   --bg: var(--default-bg);
   --bg-alt: var(--default-bg-alt);
-  --bg-alt2: var(--default-alt2);
+  --bg-alt2: var(--default-bg-alt2);
   --fg: var(--default-fg);
   --fg-alt: var(--default-fg-alt);
 

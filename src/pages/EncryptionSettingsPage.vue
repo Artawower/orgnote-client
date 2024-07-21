@@ -1,4 +1,6 @@
 <template>
+  <navigation-header />
+
   <h4 class="text-h5 q-pb-lg text-capitalize">
     {{ $t('encryption settings') }}
   </h4>
@@ -87,6 +89,7 @@ import { useSettingsStore } from 'src/stores/settings';
 import { onBeforeUnmount } from 'vue';
 import { uploadFile } from 'src/tools';
 import { useModalStore } from 'src/stores/modal';
+import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 
 const { config } = useSettingsStore();
 

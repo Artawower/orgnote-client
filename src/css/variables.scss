@@ -59,6 +59,7 @@ body {
 
   // Menu
   --menu-padding: 8px;
+  --menu-item-height: 50px;
 
   // File uploader
   --file-uploader-border-width: 4px;
@@ -115,6 +116,7 @@ body {
   // Icon button
   --icon-btn-color: var(--fg);
   --icon-btn-hover-color: var(--base8);
+  --icon-border-radius: var(--block-border-radius-sm);
 
   // Modal
   --modal-max-height: 94svh;
@@ -127,7 +129,9 @@ body {
   --block-padding-lg: 32px;
   --block-margin-md: 16px;
   --block-margin-sm: 8px;
-  --block-border-radius-md: 16px;
+  --block-margin-xs: 8px;
+  --block-border-radius-lg: 16px;
+  --block-border-radius-md: 10px;
   --block-border-radius-sm: 6px;
   --item-default-radius: 8px;
   --search-icn-size: 44px;

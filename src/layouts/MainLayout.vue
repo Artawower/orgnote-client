@@ -83,6 +83,7 @@ import { useSidebarStore } from 'src/stores/sidebar';
 import { useToolbarStore } from 'src/stores/toolbar';
 import { useSyncStore } from 'src/stores/sync';
 import { useExtensionsStore } from 'src/stores/extensions';
+import { useNavBarStore } from 'src/stores/nav-bar.store';
 
 const sidebarStore = useSidebarStore();
 
@@ -97,6 +98,7 @@ useCommands().register();
 registerEditorCommands();
 registerNoteDetailCommands();
 useAppMeta();
+useNavBarStore();
 
 registerKeybindings([
   {

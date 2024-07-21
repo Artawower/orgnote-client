@@ -34,6 +34,7 @@
   </div>
 </template>
 
+<!-- TODO: deprecated feat/mobile-file-sync  -->
 <script lang="ts">
 export interface Tab {
   name: string;
