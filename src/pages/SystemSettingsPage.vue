@@ -1,40 +1,31 @@
 <template>
   <navigation-header />
-  <menu-group :group-config="clearAllDataConfig" />
+
+  <menu-group :items="clearAllDataMenuItems" />
   <settings-description
-    :text="
-      $t(
-        'be careful, all local data will be purged, unsaved notes will be lost'
-      )
-    "
+    text="be careful, all local data will be purged, unsaved notes will be lost"
   />
-  <menu-group :group-config="removeAccountConfig" />
+  <menu-group :items="removeAccountMenuItems" />
   <settings-description
-    :text="
-      $t(
-        'deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered.'
-      )
-    "
+    text="deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered."
   />
 </template>
 
 <script lang="ts" setup>
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
-import MenuGroup, { MenuGroupConfig } from 'src/components/ui/MenuGroup.vue';
+import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
-import { useI18n } from 'vue-i18n';
 import { db } from 'src/boot/repositories';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'src/tools';
 import { useAuthStore } from 'src/stores/auth';
+import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
 
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const router = useRouter();
-
-const { t } = useI18n();
 
 const clearAllData = async () => {
   const clear = await orgNoteApi.interaction.confirm(
@@ -54,16 +45,13 @@ const clearAllData = async () => {
 
 const authStore = useAuthStore();
 
-const clearAllDataConfig: MenuGroupConfig = {
-  items: [
-    {
-      label: t('clear all local data'),
-      handler: clearAllData,
-      color: getCssVar('red'),
-      disableNarrow: true,
-    },
-  ],
-};
+const clearAllDataMenuItems: MenuButtonProps[] = [
+  {
+    label: 'clear all local data',
+    handler: clearAllData,
+    color: getCssVar('red'),
+  },
+];
 
 const removeAccount = async () => {
   const confirmed = await orgNoteApi.interaction.confirm(
@@ -77,17 +65,14 @@ const removeAccount = async () => {
   await authStore.removeUserAccount();
 };
 
-const removeAccountConfig: MenuGroupConfig = {
-  items: [
-    {
-      label: t('remove account'),
-      handler: removeAccount,
-      disabled: !authStore.user || authStore.user?.isAnonymous,
-      color: getCssVar('red'),
-      disableNarrow: true,
-    },
-  ],
-};
+const removeAccountMenuItems: MenuButtonProps[] = [
+  {
+    label: 'remove account',
+    handler: removeAccount,
+    disabled: !authStore.user || authStore.user?.isAnonymous,
+    color: getCssVar('red'),
+  },
+];
 </script>
 
 <style lang="scss" scoped>

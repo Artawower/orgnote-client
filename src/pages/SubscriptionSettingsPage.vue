@@ -1,5 +1,6 @@
 <template>
   <div class="full-width">
+    <navigation-header />
     <template v-if="authStore.user.active">
       <everything-fine
         class="q-pb-md"
@@ -78,6 +79,7 @@ import { onBeforeMount, ref } from 'vue';
 import UsedSpace from 'src/components/containers/UsedSpace.vue';
 import CodeBlock from 'src/components/ui/CodeBlock.vue';
 import EverythingFine from 'src/components/ui/EverythingFine.vue';
+import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 import { useAuthStore } from 'src/stores/auth';
 import { PATREON_LINK } from 'src/constants/external-links.contant';
 

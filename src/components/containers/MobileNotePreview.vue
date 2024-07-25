@@ -1,10 +1,5 @@
 <template>
-  <q-dialog
-    v-model="dialog"
-    position="bottom"
-    :no-focus="false"
-    @hide="emits('closed')"
-  >
+  <system-dialog v-model="dialog" @closed="emits('closed')">
     <div class="q-pa-md bg-main note-preview">
       <public-note-preview
         @click="openNote"
@@ -15,17 +10,16 @@
         :full-height="true"
       />
     </div>
-  </q-dialog>
+  </system-dialog>
 </template>
 
 <script lang="ts" setup>
-import { Note } from 'src/models';
-
 import { onBeforeMount, ref, watch } from 'vue';
-
 import PublicNotePreview from './PublicNotePreview.vue';
+import SystemDialog from 'src/components/ui/SystemDialog.vue';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useCurrentNoteStore } from 'src/stores/current-note';
+import { Note } from 'orgnote-api';
 
 const props = defineProps<{
   note?: Note;
@@ -75,8 +69,6 @@ const openNote = () => orgNoteApi.navigation.editNote(note.value.id);
 
 <style lang="scss" scoped>
 .note-preview {
-  padding-bottom: calc(
-    var(--block-padding-md) + var(--device-padding-bottom)
-  );
+  padding-bottom: calc(var(--block-padding-md) + var(--device-padding-bottom));
 }
 </style>

@@ -178,6 +178,11 @@ body {
 
   // Device-specific options
   --standalone-bottom-padding: 24px;
+
+  // Toggle button
+  // --toggle-button-width: 40px;
+  // --toggle-button-height: 20px;
+  --toggle-button-scale: 0.45;
 }
 
 @include light-mode {

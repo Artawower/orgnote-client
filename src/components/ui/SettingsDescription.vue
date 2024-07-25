@@ -1,13 +1,15 @@
 <template>
   <div class="description capitalize">
-    <template v-if="text">{{ text }}</template>
+    <template v-if="text">{{
+      title ? $t(text).toUpperCase() : $t(text)
+    }}</template>
 
     <slot v-else />
   </div>
 </template>
 
 <script lang="ts" setup>
-defineProps<{ text?: string }>();
+defineProps<{ text?: string; title?: boolean }>();
 </script>
 
 <style lang="scss" scoped>

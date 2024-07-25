@@ -29,6 +29,7 @@
 import { storeToRefs } from 'pinia';
 import { useSettingsStore } from 'src/stores/settings';
 
+// TODO: feat/settings delete
 import DynamicConfigBuilder from 'src/components/containers/DynamicConfigBuilder.vue';
 
 const settingsStore = useSettingsStore();

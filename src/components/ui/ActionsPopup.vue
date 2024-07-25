@@ -1,16 +1,16 @@
 <template>
   <div class="popup-overlay" ref="menuGroupRef">
-    <menu-group @handled="emits('close')" :group-config="popupMenuGroup" />
+    <menu-group @handled="emits('close')" v-bind="popupMenuGroup" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import MenuGroup, { MenuGroupConfig } from './MenuGroup.vue';
+import MenuGroup, { MenuGroupProps } from './MenuGroup.vue';
 import { onClickOutside } from '@vueuse/core';
 
 defineProps<{
-  popupMenuGroup?: MenuGroupConfig;
+  popupMenuGroup?: MenuGroupProps;
 }>();
 
 const emits = defineEmits<{

@@ -13,11 +13,13 @@ export enum RouteNames {
   EditNote = 'EditNote',
   SettingsPage = 'SettingsPage',
   SystemSettings = 'SystemSettings',
+  ExtensionsSettings = 'ExtensionsSettings',
   LanguageSettings = 'LanguageSettings',
   InterfaceSettings = 'InterfaceSettings',
   KeybindingSettings = 'KeybindingSettings',
   DeveloperSettings = 'DeveloperSettings',
   EncryptionSettings = 'EncryptionSettings',
+  SubscriptionSettings = 'SubscriptionSettings',
   ApiSettings = 'ApiSettings',
   SynchronisationSettings = 'SynchronisationSettings',
   Extensions = 'Extensions',
@@ -105,11 +107,27 @@ const settingsPages: RouteRecordRaw[] = [
     },
   },
   {
+    path: 'extensions-settings',
+    name: RouteNames.ExtensionsSettings,
+    component: clientOnly(() => import('pages/ExtensionsSettingsPage.vue')),
+    meta: {
+      title: 'extensions',
+    },
+  },
+  {
     path: 'encryption-settings',
     name: RouteNames.EncryptionSettings,
     component: clientOnly(() => import('pages/EncryptionSettingsPage.vue')),
     meta: {
       title: 'encryption',
+    },
+  },
+  {
+    path: 'subscription-settings',
+    name: RouteNames.SubscriptionSettings,
+    component: clientOnly(() => import('pages/SubscriptionSettingsPage.vue')),
+    meta: {
+      title: 'subscription',
     },
   },
   {
@@ -130,6 +148,14 @@ const settingsPages: RouteRecordRaw[] = [
       title: 'api',
     },
   },
+  ...(Platform.is.desktop
+    ? [
+        {
+          path: '',
+          redirect: { name: RouteNames.SystemSettings },
+        },
+      ]
+    : []),
 ];
 
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {

@@ -12,6 +12,7 @@
   />
 </template>
 
+<!-- TODO: feat/settings delete  -->
 <script setup lang="ts">
 import { watch } from 'vue';
 import { useSettingsStore } from 'src/stores/settings';

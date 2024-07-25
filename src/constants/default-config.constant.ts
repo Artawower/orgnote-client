@@ -1,11 +1,12 @@
 import { OrgNoteConfig } from 'orgnote-api';
+import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {
     showSpecialSymbols: false,
     showPropertyDrawer: true,
   },
-  common: {
+  developer: {
     developerMode: false,
     maximumLogsCount: 1000,
   },
@@ -14,6 +15,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     defaultCompletionLimit: 500,
   },
   ui: {
+    showUserProfiles: true,
     theme: 'light',
     darkThemeName: null,
     lightThemeName: null,
@@ -23,5 +25,19 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   },
   encryption: {
     type: 'disabled',
+  },
+};
+
+export type ConfigScheme = Record<
+  string,
+  {
+    values?: Array<string | number | boolean>;
+    type?: MenuButtonProps['type'];
+  }
+>;
+
+export const AVAILABLE_CONFIG_SCHEME: ConfigScheme = {
+  theme: {
+    values: ['light', 'dark'],
   },
 };

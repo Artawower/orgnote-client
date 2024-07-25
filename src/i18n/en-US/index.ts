@@ -205,4 +205,13 @@ export default {
     'please, configure encryption settings for decrypt note',
   'this functionality is only available to registered users with an active subscription.':
     'this functionality is only available to registered users with an active subscription.',
+  system: 'system',
+  language: 'language',
+  interface: 'interface',
+  synchronisation: 'synchronisation',
+  developer: 'developer',
+  'source code': 'source code',
+  API: 'API',
+  WIKI: 'WIKI',
+  sponsor: 'sponsor',
 };

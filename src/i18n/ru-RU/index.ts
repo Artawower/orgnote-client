@@ -207,4 +207,13 @@ export default {
     'будьте осторожны, все локальные данные будут удалены, несохраненные заметки будут потеряны',
   'deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered.':
     'удаление аккаунта — это необратимая операция. Мы не храним ваши данные после удаления и поэтому их нельзя восстановить.',
+  system: 'система',
+  language: 'язык',
+  interface: 'интерфейс',
+  synchronisation: 'синхронизация',
+  developer: 'разработка',
+  'source code': 'исходный код',
+  API: 'API',
+  WIKI: 'WIKI',
+  sponsor: 'спонсировать',
 };

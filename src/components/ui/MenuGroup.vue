@@ -1,21 +1,29 @@
 <template>
-  <div class="menu-group" :class="groupConfig.border ? 'bordered' : ''">
-    <div v-if="groupConfig.title" class="title">{{ groupConfig.title }}</div>
+  <settings-description
+    v-if="title"
+    class="title"
+    :title="true"
+    :text="title"
+  />
+  <div class="menu-group" :class="border ? 'bordered' : ''">
     <div class="items">
       <menu-group-button
         @click="handleItem(item)"
-        v-for="(item, i) of groupConfig.items"
+        v-for="(item, i) of items"
         v-bind:key="item.label"
         :label="item.label"
         :icon="item.icon"
         :icon-background-color="item.iconBackgroundColor"
-        :disable-narrow="item.disableNarrow"
-        :active="item.active"
+        :narrow="item.narrow"
         :disabled="item.disabled"
         :round-borders="getBorderRadiusType(i)"
         :color="item.color"
         :action-icon="item.actionIcon"
         :active-action-icon="item.activeActionIcon"
+        :selected="type === 'select' && item.value === props.modelValue"
+        :type="item.type"
+        :reactive-path="item.reactivePath"
+        :reactive-key="item.reactiveKey"
       >
         <template
           v-if="$q.platform.is.desktop && item.popupMenuGroup?.items?.length"
@@ -44,58 +52,53 @@ import ActionsPopup from './ActionsPopup.vue';
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import ActionBtn from './ActionBtn.vue';
+import SettingsDescription from './SettingsDescription.vue';
 
-export interface MenuItem {
-  label: string;
-  icon?: string;
-  iconBackgroundColor?: string;
-  color?: string;
-  handler?: () => void;
-  disableNarrow?: boolean;
-  disabled?: boolean;
-  active?: boolean;
-  popupMenuGroup?: MenuGroupConfig;
-  actionIcon?: string;
-  activeActionIcon?: string;
-}
-
-export interface MenuGroupConfig {
+export interface MenuGroupProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selectCompareFunction?: (val1: any, val2: any) => boolean;
   title?: string;
   border?: boolean;
-  items: MenuItem[];
+  type?: 'select';
+  items: MenuButtonProps[];
+  modelValue?: unknown;
 }
 </script>
 
 <script lang="ts" setup>
-import MenuGroupButton from './MenuGroupButton.vue';
+import MenuGroupButton, { MenuButtonProps } from './MenuGroupButton.vue';
 
-const props = defineProps<{
-  groupConfig: MenuGroupConfig;
-}>();
+const props = defineProps<MenuGroupProps>();
 
 const emits = defineEmits<{
-  (e: 'handled', item: MenuItem): void;
+  (e: 'handled', item: MenuButtonProps): void;
+  (e: 'update:modelValue', val: unknown): void;
+  (e: 'selected', val: unknown): void;
 }>();
 
-const popupMenuGroup = ref<MenuGroupConfig>(null);
+const popupMenuGroup = ref<MenuGroupProps>(null);
 
 const getBorderRadiusType = (index: number): 'top' | 'bottom' | 'full' => {
-  if (props.groupConfig.items.length == 1) {
+  if (props.items.length == 1) {
     return 'full';
   }
   if (index == 0) {
     return 'top';
   }
-  if (index == props.groupConfig.items.length - 1) {
+  if (index == props.items.length - 1) {
     return 'bottom';
   }
 };
 
 const $q = useQuasar();
 
-const handleItem = (item: MenuItem) => {
+const handleItem = (item: MenuButtonProps) => {
   if (item.disabled) {
     return;
+  }
+  if (props.type === 'select') {
+    emits('update:modelValue', item.value);
+    emits('selected', item.value);
   }
   if (item.handler) {
     item.handler();

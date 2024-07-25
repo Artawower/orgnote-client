@@ -1,3 +1,7 @@
-<template>keybindings</template>
+<template>
+  <navigation-header />
+</template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+</script>
