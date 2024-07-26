@@ -38,7 +38,6 @@
 
 <script setup lang="ts">
 import { QVirtualScroll } from 'quasar';
-import { Note, NotePreview } from 'src/models';
 import { useViewStore } from 'src/stores/view';
 import { debounce } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
@@ -47,6 +46,7 @@ import { computed, defineComponent, onMounted, ref, toRef, watch } from 'vue';
 
 import AsyncItemContainer from './AsyncItemContainer.vue';
 import PublicNotePreview from './containers/PublicNotePreview.vue';
+import { Note, NotePreview } from 'orgnote-api';
 
 defineComponent({
   PublicNotePreview,

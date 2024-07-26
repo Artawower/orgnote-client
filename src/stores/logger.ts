@@ -25,7 +25,7 @@ export const useLoggerStore = defineStore(
         'info' | 'log' | 'warn' | 'error' | 'debug'
       >)[] = ['info', 'warn', 'log', 'error'];
 
-      if (config.common.developerMode) {
+      if (config.developer.developerMode) {
         availableModes.push('debug');
       }
 
@@ -72,7 +72,7 @@ export const useLoggerStore = defineStore(
     };
 
     const removeOldLogs = () => {
-      if (storedLogs.value.length > config.common.maximumLogsCount) {
+      if (storedLogs.value.length > config.developer.maximumLogsCount) {
         storedLogs.value = storedLogs.value.slice(1);
       }
     };

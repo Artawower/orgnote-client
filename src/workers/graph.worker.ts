@@ -1,12 +1,8 @@
 /// <reference lib="webworker" />
 import { GraphUpdated, GraphAction, GraphWorkerEvent } from './graph.actions';
-import {
-  GraphNoteNode,
-  NoteGraph,
-  NoteGraphLink,
-  NotePreview,
-} from 'src/models';
+import { GraphNoteNode, NoteGraph, NoteGraphLink } from 'src/models';
 import { repositories } from 'src/boot/repositories';
+import { NotePreview } from 'orgnote-api';
 
 function buildGraph(notes: NotePreview[]): NoteGraph {
   const links: NoteGraphLink[] = [];

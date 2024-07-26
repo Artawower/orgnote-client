@@ -1,6 +1,6 @@
+import { Note, NotesFilter } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { Note, NotesFilter } from 'src/models';
 import { ref } from 'vue';
 
 // TODO: master common pagination

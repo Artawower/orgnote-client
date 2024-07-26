@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import { NotePreview } from 'src/models';
 
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { NotePreview } from 'orgnote-api';
 
 export const useNotesStatisticStore = defineStore('notes-statistic', () => {
   const recentNotes = ref<NotePreview[]>([]);

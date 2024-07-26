@@ -1,4 +1,3 @@
-export * from './note.model';
 export * from './public.model';
 export * from './auth-provider.model';
 export * from './user.model';

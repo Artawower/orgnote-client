@@ -107,6 +107,10 @@ class InMemoryNoteRepository implements INoteRepository {
     }
   }
 
+  async clear(): Promise<void> {
+    this.notes = [];
+  }
+
   async getById(id: string): Promise<Note> {
     const note = this.notes.find((n) => n.id === id);
     return note;

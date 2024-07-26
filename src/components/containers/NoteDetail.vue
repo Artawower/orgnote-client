@@ -10,13 +10,13 @@
 
 <script lang="ts" setup>
 import { OrgNoteConfig } from 'src/api';
-import { Note } from 'src/models';
 
 import { toRef } from 'vue';
 
 import RawEditor from 'src/components/containers/raw-editor/RawEditor.vue';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { EditorView } from '@codemirror/view';
+import { Note } from 'orgnote-api';
 
 const props = defineProps<{
   note?: Note;

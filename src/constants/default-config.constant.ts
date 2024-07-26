@@ -10,6 +10,9 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     developerMode: false,
     maximumLogsCount: 1000,
   },
+  system: {
+    language: 'en-US',
+  },
   completion: {
     showGroup: false,
     defaultCompletionLimit: 500,

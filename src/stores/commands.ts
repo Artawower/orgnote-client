@@ -88,7 +88,9 @@ export const useCommandsStore = defineStore('commands', () => {
       const filteredCandidates = candidates.filter(
         (c) =>
           c.command.toLowerCase().includes(filter.toLowerCase()) ||
-          c.description?.toLowerCase().includes(filter.toLowerCase()) ||
+          extractDynamicValue(c.description)
+            ?.toLowerCase()
+            .includes(filter.toLowerCase()) ||
           c.group?.toLowerCase().includes(filter.toLowerCase())
       );
       return {

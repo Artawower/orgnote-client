@@ -1,9 +1,9 @@
+import { Note } from 'orgnote-api';
 import { useAuthStore } from './auth';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
-import { Note } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { getFileNameWithoutExtension, getInitialNoteTemplate } from 'src/tools';
 import { v4 } from 'uuid';

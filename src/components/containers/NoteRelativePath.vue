@@ -23,10 +23,10 @@
 </template>
 
 <script lang="ts" setup>
-import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 
 import NoData from 'src/components/ui/NoData.vue';
+import { Note, NotePreview } from 'orgnote-api';
 
 defineProps<{
   notes?: (NotePreview | Note)[];

@@ -2,7 +2,6 @@ import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
 import { useNotifications } from 'src/hooks';
-import { Note } from 'src/models';
 import { generateFileName, getFileNameFromText } from 'src/tools';
 import { getOrgNodeValidationErrors } from 'src/tools/validators';
 
@@ -10,6 +9,7 @@ import { computed, ref, shallowRef, toRaw } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useNotesStore } from './notes';
 import { EditorView } from '@codemirror/view';
+import { Note } from 'orgnote-api';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();

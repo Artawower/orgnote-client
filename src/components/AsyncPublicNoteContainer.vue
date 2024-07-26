@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Note, NotePreview } from 'src/models';
+import { Note, NotePreview } from 'orgnote-api';
 import { computed, toRef } from 'vue';
 
 const props = defineProps<{

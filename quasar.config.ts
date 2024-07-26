@@ -9,8 +9,6 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 import { configure } from 'quasar/wrappers';
-import { checker } from 'vite-plugin-checker';
-import tsconfigPaths from 'vite-tsconfig-paths';
 // TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
 // const { SlatePlugin } = require('slate-vue');
 import path from 'path';
@@ -115,7 +113,6 @@ export default configure(function (ctx) {
         ],
         [
           'vite-plugin-checker',
-          'vite-tsconfig-paths',
           {
             vueTsc: {
               tsconfigPath: 'tsconfig.vue-tsc.json',
@@ -268,6 +265,7 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: false,
+      version: '0.19.3',
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron

@@ -33,7 +33,7 @@ const props = withDefaults(
 );
 
 const emits = defineEmits<{
-  (e: 'uploaded', files: FileSystemFileEntry[]): void;
+  (e: 'uploaded', files: FileEntry[] | FileList): void;
   (e: 'dropped'): void;
 }>();
 
@@ -70,7 +70,7 @@ const onDrop = async (e: DragEvent) => {
   reset();
   e.preventDefault();
   const extracedFileEntries = await extractFiles(e.dataTransfer?.items);
-  emits('uploaded', extracedFileEntries);
+  emits('uploaded', extracedFileEntries as FileEntry[]);
 };
 
 const preventDefault = (e: DragEvent) => e.preventDefault();

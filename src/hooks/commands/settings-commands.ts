@@ -7,7 +7,6 @@ import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords, searchFilter } from 'src/tools';
 import { useRoute, useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
 
 export function getSettingsCommands(): Command[] {
   const settingsStore = useSettingsStore();
@@ -15,7 +14,6 @@ export function getSettingsCommands(): Command[] {
   const noteEditorStore = useNoteEditorStore();
   const completionStore = useCompletionStore();
   const extensionStore = useExtensionsStore();
-  const $q = useQuasar();
   const { orgNoteApi } = useOrgNoteApiStore();
   const route = useRoute();
   const router = useRouter();
@@ -75,7 +73,9 @@ export function getSettingsCommands(): Command[] {
           ? 'switch to light theme'
           : 'switch to dark theme',
       handler: () => {
-        settingsStore.setDarkMode(!settingsStore.darkMode);
+        settingsStore.config.ui.theme = settingsStore.darkMode
+          ? 'light'
+          : 'dark';
       },
     },
     {
@@ -89,7 +89,7 @@ export function getSettingsCommands(): Command[] {
           RouteNames.RawEditor,
         ].includes(route.name as RouteNames);
 
-        return isNoteEditPage && settingsStore.config.common.developerMode;
+        return isNoteEditPage && settingsStore.config.developer.developerMode;
       },
     },
     {

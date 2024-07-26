@@ -5,7 +5,7 @@
     </h2>
     <div
       class="color-secondary q-pt-lg q-pl-lg"
-      v-if="config.common.developerMode"
+      v-if="config.developer.developerMode"
     >
       <div class="capitalize">
         {{ $t('this message appears because developer mode is enabled') }}
@@ -67,7 +67,7 @@ const mobileUrl = ref<string>();
 
 const setupUser = async () => {
   const isMobile = route.query.state !== 'desktop';
-  if (config.common.developerMode) {
+  if (config.developer.developerMode) {
     await sleep(10000);
   }
   if (
