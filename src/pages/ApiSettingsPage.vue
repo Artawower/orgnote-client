@@ -21,7 +21,7 @@ import { useAuthStore } from 'src/stores/auth';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import { watch } from 'vue';
 import { getCssVar } from 'src/tools';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 const settingsStore = useSettingsStore();
 const { tokens } = toRefs(settingsStore);
@@ -33,33 +33,31 @@ const copyToken = (token: ModelsAPIToken) => {
   copyToClipboard(token.token);
 };
 
-const apiMenuItems = ref<MenuButtonProps[]>([]);
+const apiMenuItems = ref<MenuItemProps[]>([]);
 
 const initMenuitems = () => {
-  const items: MenuButtonProps[] = tokens.value.map<MenuButtonProps>(
-    (token) => ({
-      label: token.token,
-      action: () => copyToken(token),
-      popupMenuGroup: {
-        border: true,
-        items: [
-          {
-            label: 'copy',
-            color: getCssVar('blue'),
-            handler: () => copyToken(token),
-            actionIcon: 'content_copy',
-            activeActionIcon: 'done',
-          },
-          {
-            label: 'delete',
-            color: getCssVar('red'),
-            handler: () => settingsStore.removeToken(token),
-            actionIcon: 'delete',
-          },
-        ],
-      },
-    })
-  );
+  const items: MenuItemProps[] = tokens.value.map<MenuItemProps>((token) => ({
+    label: token.token,
+    action: () => copyToken(token),
+    popupMenuGroup: {
+      border: true,
+      items: [
+        {
+          label: 'copy',
+          color: getCssVar('blue'),
+          handler: () => copyToken(token),
+          actionIcon: 'content_copy',
+          activeActionIcon: 'done',
+        },
+        {
+          label: 'delete',
+          color: getCssVar('red'),
+          handler: () => settingsStore.removeToken(token),
+          actionIcon: 'delete',
+        },
+      ],
+    },
+  }));
 
   apiMenuItems.value = [
     ...items,

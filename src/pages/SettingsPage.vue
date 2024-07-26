@@ -24,10 +24,10 @@ import {
 } from 'src/constants/external-links.contant';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 const router = useRouter();
-const commonSettingsItems: MenuButtonProps[] = [
+const commonSettingsItems: MenuItemProps[] = [
   {
     label: 'system',
     iconBackgroundColor: getCssVar('base5'),
@@ -75,7 +75,7 @@ mockDesktop(() => {
   });
 })();
 
-const developerModeSettings: MenuButtonProps[] = [
+const developerModeSettings: MenuItemProps[] = [
   {
     label: 'developer',
     icon: 'sym_o_terminal',
@@ -106,7 +106,7 @@ const developerModeSettings: MenuButtonProps[] = [
   },
 ];
 
-const externalResourcesItems: MenuButtonProps[] = [
+const externalResourcesItems: MenuItemProps[] = [
   {
     label: 'source code',
     icon: 'fa-brands fa-github-alt',

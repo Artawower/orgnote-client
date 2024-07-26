@@ -1,4 +1,4 @@
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 import { toSentence } from './case-converter';
 import { ConfigScheme } from 'src/constants/default-config.constant';
 
@@ -12,7 +12,7 @@ export function buildMenuItems<
     excludeKeys?: Array<keyof TData>;
     includeKeys?: Array<keyof TData>;
   }
-): MenuButtonProps[] {
+): MenuItemProps[] {
   return Object.keys(settings).reduce((acc, key) => {
     const excludedKeys = config?.excludeKeys?.includes(key);
     const notIncludedKeys =
@@ -31,7 +31,7 @@ export function buildMenuItems<
     const isMultipleItems = defaultConfig instanceof Array;
 
     if (!isMultipleItems) {
-      const menuButtonProps: Partial<MenuButtonProps> = {
+      const menuButtonProps: Partial<MenuItemProps> = {
         label: toSentence(key),
         reactiveKey: key,
         reactivePath: settings,
@@ -42,7 +42,7 @@ export function buildMenuItems<
     }
 
     defaultConfig.forEach((c) => {
-      const menuButtonProps: Partial<MenuButtonProps> = {
+      const menuButtonProps: Partial<MenuItemProps> = {
         label: c as string,
         reactiveKey: key,
         reactivePath: settings,
@@ -57,7 +57,7 @@ export function buildMenuItems<
 
 function getMenuTypeByValue(
   value: string | Array<unknown> | number | boolean
-): MenuButtonProps['type'] {
+): MenuItemProps['type'] {
   if (typeof value === 'boolean') {
     return 'toggle';
   }

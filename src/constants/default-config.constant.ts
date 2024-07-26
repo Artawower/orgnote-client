@@ -1,5 +1,5 @@
 import { OrgNoteConfig } from 'orgnote-api';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {
@@ -35,7 +35,7 @@ export type ConfigScheme = Record<
   string,
   {
     values?: Array<string | number | boolean>;
-    type?: MenuButtonProps['type'];
+    type?: MenuItemProps['type'];
   }
 >;
 

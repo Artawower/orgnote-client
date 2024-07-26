@@ -21,7 +21,7 @@ import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 import { getCssVar } from 'src/tools';
 import { useAuthStore } from 'src/stores/auth';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 const { orgNoteApi } = useOrgNoteApiStore();
 
@@ -45,7 +45,7 @@ const clearAllData = async () => {
 
 const authStore = useAuthStore();
 
-const clearAllDataMenuItems: MenuButtonProps[] = [
+const clearAllDataMenuItems: MenuItemProps[] = [
   {
     label: 'clear all local data',
     handler: clearAllData,
@@ -65,7 +65,7 @@ const removeAccount = async () => {
   await authStore.removeUserAccount();
 };
 
-const removeAccountMenuItems: MenuButtonProps[] = [
+const removeAccountMenuItems: MenuItemProps[] = [
   {
     label: 'remove account',
     handler: removeAccount,

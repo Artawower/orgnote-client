@@ -60,18 +60,18 @@ export interface MenuGroupProps {
   title?: string;
   border?: boolean;
   type?: 'select';
-  items: MenuButtonProps[];
+  items: MenuItemProps[];
   modelValue?: unknown;
 }
 </script>
 
 <script lang="ts" setup>
-import MenuGroupButton, { MenuButtonProps } from './MenuGroupButton.vue';
+import MenuGroupButton, { MenuItemProps } from './MenuItem.vue';
 
 const props = defineProps<MenuGroupProps>();
 
 const emits = defineEmits<{
-  (e: 'handled', item: MenuButtonProps): void;
+  (e: 'handled', item: MenuItemProps): void;
   (e: 'update:modelValue', val: unknown): void;
   (e: 'selected', val: unknown): void;
 }>();
@@ -92,7 +92,7 @@ const getBorderRadiusType = (index: number): 'top' | 'bottom' | 'full' => {
 
 const $q = useQuasar();
 
-const handleItem = (item: MenuButtonProps) => {
+const handleItem = (item: MenuItemProps) => {
   if (item.disabled) {
     return;
   }

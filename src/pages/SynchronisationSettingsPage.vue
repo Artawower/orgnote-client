@@ -21,7 +21,7 @@ import { useAuthStore } from 'src/stores/auth';
 import { RouteNames } from 'src/router/routes';
 import { getCssVar } from 'src/tools/css-variables';
 import { useI18n } from 'vue-i18n';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -35,7 +35,7 @@ const forceResync = async () => {
   window.location.reload();
 };
 
-const forceSyncItems: MenuButtonProps[] = [
+const forceSyncItems: MenuItemProps[] = [
   {
     label: t('force sync'),
     disabled: authStore.user?.isAnonymous,

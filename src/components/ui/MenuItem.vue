@@ -82,7 +82,7 @@ export interface WithReactivePath {
   reactiveKey?: string;
 }
 
-interface MenuButtonPropsBase<TData = unknown> {
+interface MenuItemPropsBase<TData = unknown> {
   label: string;
   icon?: string;
   iconBackgroundColor?: string;
@@ -98,7 +98,7 @@ interface MenuButtonPropsBase<TData = unknown> {
   activeActionIcon?: string;
 }
 
-export type MenuButtonProps<TData = unknown> = MenuButtonPropsBase &
+export type MenuItemProps<TData = unknown> = MenuItemPropsBase &
   WithValue<TData> &
   WithReactivePath;
 
@@ -106,7 +106,7 @@ const props = withDefaults(
   defineProps<
     {
       roundBorders: 'top' | 'bottom' | 'full' | 'none';
-    } & MenuButtonProps
+    } & MenuItemProps
   >(),
   {
     type: 'action',

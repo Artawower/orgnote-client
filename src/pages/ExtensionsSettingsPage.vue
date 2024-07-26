@@ -7,7 +7,7 @@
 <script lang="ts" setup>
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
-import { MenuButtonProps } from 'src/components/ui/MenuGroupButton.vue';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
-const extensionsSettingsItems: MenuButtonProps[] = [];
+const extensionsSettingsItems: MenuItemProps[] = [];
 </script>
