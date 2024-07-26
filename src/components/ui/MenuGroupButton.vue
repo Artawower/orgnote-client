@@ -4,6 +4,7 @@
     v-bind:key="label"
     role="button"
     class="item"
+    ref="menuItemRef"
     :class="roundBorders"
   >
     <div
@@ -22,7 +23,14 @@
         {{ $t(label) }}
       </div>
     </div>
-    <div class="right-icons">
+    <input
+      v-if="editMode"
+      v-model="reactivePath[reactiveKey]"
+      :type="editMode"
+      ref="editInputRef"
+      name="editMode"
+    />
+    <div v-else class="right-icons">
       <div class="slot-actions">
         <slot name="right-actions" />
       </div>
@@ -51,18 +59,18 @@
         <div class="input-value">{{ reactivePath[reactiveKey] ?? value }}</div>
       </template>
     </div>
-    <system-dialog v-model="editDialogOpened" @closed="closeEditDialog">
-      <h1>hello</h1>
-    </system-dialog>
+    <!-- <system-dialog v-model="editDialogOpened" @closed="closeEditDialog">
+         <h1>hello</h1>
+         </system-dialog> -->
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { MenuGroupProps } from './MenuGroup.vue';
 import RoundedIcon from './RoundedIcon.vue';
 import ToggleButton from './ToggleButton.vue';
-import SystemDialog from './SystemDialog.vue';
+import { onClickOutside } from '@vueuse/core';
 
 // TODO: feat/settings rename file
 export interface WithValue<TData = unknown> {
@@ -125,34 +133,27 @@ const selectValue = (): boolean => {
   return true;
 };
 
-const editableData = ref<{
-  value: unknown;
-}>();
+const menuItemRef = ref<HTMLElement | null>(null);
 
-const editDialogOpened = computed({
-  get: () => !!editableData.value,
-  set: (value) => {
-    console.log('[line 135]: value', value);
-    if (!value) {
-      editableData.value = undefined;
-    }
-  },
+onClickOutside(menuItemRef, () => {
+  editMode.value = null;
 });
 
-const closeEditDialog = () => {
-  editDialogOpened.value = false;
-  console.log('[line 144]: CLOSE');
-};
-
+const editInputRef = ref<HTMLInputElement | null>(null);
+const editMode = ref<'text' | 'number'>(null);
 const editValue = (): boolean => {
   if (!['text', 'number'].includes(props.type)) {
     return;
   }
-
-  editableData.value = {
-    value: props.reactivePath[props.reactiveKey],
-  };
+  editMode.value = props.type as 'text' | 'number';
 };
+
+watch(
+  () => editInputRef.value,
+  (value) => {
+    value?.focus();
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -163,7 +164,7 @@ const editValue = (): boolean => {
 }
 
 .item {
-  @include flexify(row, space-between, center);
+  @include flexify(row, space-between, center, var(--gap-md));
   cursor: pointer;
   height: var(--menu-item-height);
   padding: var(--block-padding-sm);
@@ -220,5 +221,28 @@ const editValue = (): boolean => {
 .input-value {
   color: var(--fg-alt);
   padding-right: var(--block-padding-md);
+}
+
+input {
+  flex: 1;
+  text-align: right;
+  margin-right: var(--block-padding-md);
+  color: var(--fg);
+  border: none;
+  background: transparent;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  &[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 </style>

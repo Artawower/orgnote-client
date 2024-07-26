@@ -87,6 +87,7 @@ module.exports = {
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'vue/no-v-text-v-html-on-component': 'off',
+    'vue/no-mutating-props': 'off',
     'vue/no-parsing-error': 'off',
   },
 }

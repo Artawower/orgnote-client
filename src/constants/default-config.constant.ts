@@ -43,4 +43,10 @@ export const AVAILABLE_CONFIG_SCHEME: ConfigScheme = {
   theme: {
     values: ['light', 'dark'],
   },
+  defaultCompletionLimit: {
+    type: 'number',
+  },
+  maximumLogsCount: {
+    type: 'number',
+  },
 };

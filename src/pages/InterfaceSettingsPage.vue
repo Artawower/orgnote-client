@@ -29,6 +29,9 @@ const themeGroupMenu = buildMenuItems(config.ui, {
 });
 
 const completionGroupMenu: MenuButtonProps[] = buildMenuItems(
-  config.completion
+  config.completion,
+  {
+    configScheme: AVAILABLE_CONFIG_SCHEME,
+  }
 );
 </script>
