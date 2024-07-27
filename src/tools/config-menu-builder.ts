@@ -24,10 +24,7 @@ export function buildMenuItems<
 
     const itemConfig = config?.configScheme?.[key];
     const defaultConfig = itemConfig?.values;
-    console.log(
-      '✎: [line 25][config-menu-builder.ts] defaultConfig: ',
-      defaultConfig
-    );
+
     const isMultipleItems = defaultConfig instanceof Array;
 
     if (!isMultipleItems) {

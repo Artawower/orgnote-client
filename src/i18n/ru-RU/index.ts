@@ -216,4 +216,6 @@ export default {
   API: 'API',
   WIKI: 'WIKI',
   sponsor: 'спонсировать',
+  'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.':
+    'будьте осторожны, старые ключи шифрования будут потеряны. Сторонним клиентам придется обновить ключи шифрования',
 };

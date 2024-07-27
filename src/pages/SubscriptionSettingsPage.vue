@@ -1,6 +1,6 @@
 <template>
-  <div class="full-width">
-    <navigation-header />
+  <navigation-header />
+  <div class="full-width content">
     <template v-if="authStore.user.active">
       <everything-fine
         class="q-pb-md"
@@ -98,5 +98,9 @@ onBeforeMount(() => {
 
 .reference {
   padding-top: var(--block-padding-md);
+}
+
+.content {
+  padding: var(--block-padding-md);
 }
 </style>

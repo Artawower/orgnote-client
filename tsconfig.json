@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": "./",
     "strictNullChecks": false,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
     "skipLibCheck": true,
     "moduleResolution": "node",
     "paths": {

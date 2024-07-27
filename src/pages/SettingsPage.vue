@@ -131,8 +131,8 @@ const externalResourcesItems: MenuItemProps[] = [
 <style lang="scss" scoped>
 .settings-page {
   @include flexify(row, center, flex-start);
+  height: 100%;
   width: 100%;
-  height: calc(100% - var(--sidebar-width));
 }
 
 @include desktop {
@@ -146,6 +146,10 @@ const externalResourcesItems: MenuItemProps[] = [
 }
 
 @include mobile {
+  .settings-page {
+    height: calc(100% - var(--sidebar-width));
+  }
+
   .settings-menu {
     width: 100%;
   }
@@ -153,6 +157,8 @@ const externalResourcesItems: MenuItemProps[] = [
 
 .content {
   width: 100%;
+  height: 100%;
+  overflow: auto;
   padding: var(--block-padding-md);
   padding-left: 0;
 }

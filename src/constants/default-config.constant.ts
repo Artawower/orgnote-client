@@ -1,4 +1,5 @@
 import { OrgNoteConfig } from 'orgnote-api';
+import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
@@ -48,5 +49,12 @@ export const AVAILABLE_CONFIG_SCHEME: ConfigScheme = {
   },
   maximumLogsCount: {
     type: 'number',
+  },
+  type: {
+    values: [
+      ModelsPublicNoteEncryptionTypeEnum.GpgKeys,
+      ModelsPublicNoteEncryptionTypeEnum.GpgPassword,
+      ModelsPublicNoteEncryptionTypeEnum.Disabled,
+    ],
   },
 };

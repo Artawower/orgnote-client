@@ -98,6 +98,7 @@
     "@types/uuid": "9.0.8",
     "@typescript-eslint/eslint-plugin": "7.17.0",
     "@typescript-eslint/parser": "7.17.0",
+    "@vitejs/plugin-vue-jsx": "4.0.0",
     "autoprefixer": "10.4.19",
     "commander": "12.1.0",
     "electron": "28.2.0",

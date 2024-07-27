@@ -3,11 +3,7 @@
 
   <menu-group :items="forceSyncItems" />
   <settings-description
-    :text="
-      $t(
-        'this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted.'
-      )
-    "
+    text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
   />
 </template>
 

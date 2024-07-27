@@ -109,9 +109,20 @@ const settingsPages: RouteRecordRaw[] = [
   {
     path: 'extensions-settings',
     name: RouteNames.ExtensionsSettings,
+    beforeEnter: () => {
+      if (!process.env.CLIENT) {
+        return;
+      }
+      const authStore = useAuthStore();
+      if (!authStore.user) {
+        return { name: RouteNames.NoteList };
+      }
+      return true;
+    },
     component: clientOnly(() => import('pages/ExtensionsSettingsPage.vue')),
     meta: {
       title: 'extensions',
+      icon: 'extension',
     },
   },
   {
@@ -165,24 +176,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   children: [
     AUTH_PAGE_ROUTE,
     ACTIVATION_PAGE,
-    {
-      path: 'extensions',
-      name: RouteNames.Extensions,
-      component: clientOnly(() => import('pages/ExtensionsPage.vue')),
-      beforeEnter: () => {
-        if (!process.env.CLIENT) {
-          return;
-        }
-        const authStore = useAuthStore();
-        if (!authStore.user) {
-          return { name: RouteNames.NoteList };
-        }
-        return true;
-      },
-      meta: {
-        icon: 'extension',
-      },
-    },
     {
       path: 'note-editor/:id?',
       name: RouteNames.EditNote,

@@ -5,7 +5,12 @@
     role="button"
     class="item"
     ref="menuItemRef"
-    :class="roundBorders"
+    :class="[
+      roundBorders,
+      {
+        large: type === 'textarea',
+      },
+    ]"
   >
     <div
       class="info"
@@ -19,19 +24,32 @@
         :name="icon"
         :backgroundColor="iconBackgroundColor"
       />
-      <div class="label capitalize" :style="{ color: color }">
-        {{ $t(label) }}
+      <div
+        v-if="$slots.label ?? label"
+        class="label capitalize"
+        :style="{ color: color }"
+      >
+        <slot name="label" :value="value" :data="data">
+          {{ $t(label) }}
+        </slot>
       </div>
     </div>
+    <textarea
+      v-if="type === 'textarea'"
+      v-model="modelValue as string"
+      ref="editInputRef"
+      :placeholder="label ? $t(label) : null"
+      name="edit mode"
+    ></textarea>
     <input
-      v-if="editMode"
-      v-model="reactivePath[reactiveKey]"
+      v-else-if="editMode"
+      v-model="modelValue"
       :type="editMode"
       ref="editInputRef"
-      name="editMode"
+      name="edit mode"
     />
     <div v-else class="right-icons">
-      <div class="slot-actions">
+      <div v-if="$slots['right-actions']" class="slot-actions">
         <slot name="right-actions" />
       </div>
       <q-icon
@@ -56,12 +74,9 @@
         <toggle-button v-else v-model="reactivePath[reactiveKey] as boolean" />
       </template>
       <template v-if="type === 'text' || type === 'number'">
-        <div class="input-value">{{ reactivePath[reactiveKey] ?? value }}</div>
+        <div class="input-value">{{ modelValue }}</div>
       </template>
     </div>
-    <!-- <system-dialog v-model="editDialogOpened" @closed="closeEditDialog">
-         <h1>hello</h1>
-         </system-dialog> -->
   </div>
 </template>
 
@@ -72,7 +87,6 @@ import RoundedIcon from './RoundedIcon.vue';
 import ToggleButton from './ToggleButton.vue';
 import { onClickOutside } from '@vueuse/core';
 
-// TODO: feat/settings rename file
 export interface WithValue<TData = unknown> {
   value?: TData;
 }
@@ -82,13 +96,21 @@ export interface WithReactivePath {
   reactiveKey?: string;
 }
 
-interface MenuItemPropsBase<TData = unknown> {
-  label: string;
+interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
+  label?: string;
   icon?: string;
   iconBackgroundColor?: string;
-  value?: TData;
+  value?: TValue;
+  data?: TData;
   selected?: boolean;
-  type?: 'action' | 'toggle' | 'text' | 'number' | 'select' | 'multiple-select';
+  type?:
+    | 'action'
+    | 'toggle'
+    | 'text'
+    | 'number'
+    | 'select'
+    | 'multiple-select'
+    | 'textarea';
   color?: string;
   handler?: () => void;
   narrow?: boolean;
@@ -96,6 +118,7 @@ interface MenuItemPropsBase<TData = unknown> {
   popupMenuGroup?: MenuGroupProps;
   actionIcon?: string;
   activeActionIcon?: string;
+  info?: string;
 }
 
 export type MenuItemProps<TData = unknown> = MenuItemPropsBase &
@@ -136,16 +159,23 @@ const selectValue = (): boolean => {
 const menuItemRef = ref<HTMLElement | null>(null);
 
 onClickOutside(menuItemRef, () => {
-  editMode.value = null;
+  if (['number', 'text'].includes(props.type)) {
+    editMode.value = null;
+  }
 });
 
+const editableTypes = ['text', 'number', 'textarea'];
+type EditableType = (typeof editableTypes)[number];
+
 const editInputRef = ref<HTMLInputElement | null>(null);
-const editMode = ref<'text' | 'number'>(null);
+const editMode = ref<EditableType>(
+  props.type === 'textarea' ? 'textarea' : null
+);
 const editValue = (): boolean => {
-  if (!['text', 'number'].includes(props.type)) {
+  if (!editableTypes.includes(props.type)) {
     return;
   }
-  editMode.value = props.type as 'text' | 'number';
+  editMode.value = props.type as EditableType;
 };
 
 watch(
@@ -154,12 +184,34 @@ watch(
     value?.focus();
   }
 );
+
+const modelValue = ref<unknown>(
+  props.reactivePath?.[props.reactiveKey] || props.value
+);
+
+watch(
+  () => modelValue.value,
+  (value) => {
+    if (props.reactivePath) {
+      props.reactivePath[props.reactiveKey] = value;
+    }
+  }
+);
+
+watch(
+  () => props.reactivePath,
+  () => {
+    if (!props.reactivePath) {
+      return;
+    }
+    modelValue.value = props.reactivePath?.[props.reactiveKey];
+  }
+);
 </script>
 
 <style lang="scss" scoped>
 .slot-actions {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  padding-right: var(--block-padding-md);
   display: none !important;
 }
 
@@ -168,6 +220,11 @@ watch(
   cursor: pointer;
   height: var(--menu-item-height);
   padding: var(--block-padding-sm);
+
+  &.large {
+    height: auto;
+    max-height: var(--menu-item-max-height);
+  }
 
   &.full {
     border-radius: var(--block-border-radius-md);
@@ -223,26 +280,25 @@ watch(
   padding-right: var(--block-padding-md);
 }
 
-input {
+input,
+textarea {
   flex: 1;
-  text-align: right;
   margin-right: var(--block-padding-md);
   color: var(--fg);
   border: none;
   background: transparent;
 
-  &:focus {
-    outline: none;
-  }
+  @include reset-input();
+}
 
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
+input {
+  text-align: right;
+}
 
-  /* Firefox */
-  &[type='number'] {
-    -moz-appearance: textfield;
-  }
+textarea {
+  width: 100%;
+  height: calc(var(--menu-item-max-height) - 2 * var(--block-padding-sm));
+  max-height: calc(var(--menu-item-max-height) - 2 * var(--block-padding-sm));
+  min-height: var(--menu-item-height);
 }
 </style>

@@ -32,7 +32,6 @@
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
-import LanguageSwitcher from 'components/LanguageSwitcher.vue';
 import { db } from 'src/boot/repositories';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useAuthStore } from 'src/stores/auth';

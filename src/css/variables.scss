@@ -60,6 +60,7 @@ body {
   // Menu
   --menu-padding: 8px;
   --menu-item-height: 50px;
+  --menu-item-max-height: 200px;
 
   // File uploader
   --file-uploader-border-width: 4px;
@@ -180,8 +181,6 @@ body {
   --standalone-bottom-padding: 24px;
 
   // Toggle button
-  // --toggle-button-width: 40px;
-  // --toggle-button-height: 20px;
   --toggle-button-scale: 0.45;
 }
 

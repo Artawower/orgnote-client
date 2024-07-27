@@ -7,7 +7,7 @@
   />
   <div class="menu-group" :class="border ? 'bordered' : ''">
     <div class="items">
-      <menu-group-button
+      <menu-item
         @click="handleItem(item)"
         v-for="(item, i) of items"
         v-bind:key="item.label"
@@ -24,6 +24,8 @@
         :type="item.type"
         :reactive-path="item.reactivePath"
         :reactive-key="item.reactiveKey"
+        :value="item.value"
+        :data="item.data"
       >
         <template
           v-if="$q.platform.is.desktop && item.popupMenuGroup?.items?.length"
@@ -37,7 +39,14 @@
             :active-icon="popupItem.activeActionIcon"
           />
         </template>
-      </menu-group-button>
+        <template
+          v-for="(slot, index) of Object.keys($slots)"
+          :key="index"
+          v-slot:[slot]
+        >
+          <slot :name="slot" :value="item.value" :data="item.data"></slot>
+        </template>
+      </menu-item>
     </div>
   </div>
   <actions-popup
@@ -66,7 +75,7 @@ export interface MenuGroupProps {
 </script>
 
 <script lang="ts" setup>
-import MenuGroupButton, { MenuItemProps } from './MenuItem.vue';
+import MenuItem, { MenuItemProps } from './MenuItem.vue';
 
 const props = defineProps<MenuGroupProps>();
 
