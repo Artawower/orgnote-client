@@ -189,19 +189,27 @@ const modelValue = ref<unknown>(
   props.reactivePath?.[props.reactiveKey] || props.value
 );
 
+const isReactiveModel = computed(
+  () => !!props.reactivePath && !!props.reactiveKey
+);
+
 watch(
   () => modelValue.value,
   (value) => {
-    if (props.reactivePath) {
+    if (isReactiveModel.value) {
       props.reactivePath[props.reactiveKey] = value;
     }
   }
 );
 
 watch(
-  () => props.reactivePath,
+  () => [
+    props.reactivePath,
+    props.reactiveKey,
+    props.reactivePath?.[props.reactiveKey],
+  ],
   () => {
-    if (!props.reactivePath) {
+    if (!isReactiveModel.value) {
       return;
     }
     modelValue.value = props.reactivePath?.[props.reactiveKey];

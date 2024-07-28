@@ -42,7 +42,7 @@ export type ConfigScheme = Record<
 
 export const AVAILABLE_CONFIG_SCHEME: ConfigScheme = {
   theme: {
-    values: ['light', 'dark'],
+    values: ['light', 'dark', 'auto'],
   },
   defaultCompletionLimit: {
     type: 'number',

@@ -50,6 +50,8 @@ import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
 import { buildMenuItems } from 'src/tools/config-menu-builder';
 import { AVAILABLE_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { watch } from 'vue';
+import { toRef } from '@vueuse/core';
 
 const { config } = useSettingsStore();
 

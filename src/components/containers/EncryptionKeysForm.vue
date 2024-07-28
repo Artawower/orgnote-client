@@ -46,6 +46,7 @@ import { useSettingsStore } from 'src/stores/settings';
 import { useConfirmationModalStore } from 'src/stores/confirmation-modal';
 import { useAuthStore } from 'src/stores/auth';
 import { useModalStore } from 'src/stores/modal';
+import { OrgNoteGpgEncryption } from 'orgnote-api';
 
 const authStore = useAuthStore();
 
@@ -58,7 +59,7 @@ const params = ref<{
   email: authStore.user.email,
 });
 
-const settingsStore = useSettingsStore();
+const { config } = useSettingsStore();
 const confirmationModalStore = useConfirmationModalStore();
 const modalStore = useModalStore();
 
@@ -80,10 +81,8 @@ const createNewGpgKeys = async () => {
     passphrase: params.value.passphrase,
   });
 
-  settingsStore.config.encryption = {
-    publicKey,
-    privateKey,
-    type: 'gpgKeys',
-  };
+  config.encryption.type = 'gpgKeys';
+  (config.encryption as OrgNoteGpgEncryption).publicKey = publicKey;
+  (config.encryption as OrgNoteGpgEncryption).privateKey = privateKey;
 };
 </script>
