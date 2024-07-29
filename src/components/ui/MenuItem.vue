@@ -1,16 +1,11 @@
 <template>
-  <div
+  <card-wrapper
     @click="handleClick"
     v-bind:key="label"
     role="button"
-    class="item"
     ref="menuItemRef"
-    :class="[
-      roundBorders,
-      {
-        large: type === 'textarea',
-      },
-    ]"
+    :round-borders="roundBorders"
+    :size="type === 'textarea' ? 'large' : 'small'"
   >
     <div
       class="info"
@@ -77,7 +72,7 @@
         <div class="input-value">{{ modelValue }}</div>
       </template>
     </div>
-  </div>
+  </card-wrapper>
 </template>
 
 <script lang="ts" setup>
@@ -85,7 +80,9 @@ import { computed, ref, watch } from 'vue';
 import { MenuGroupProps } from './MenuGroup.vue';
 import RoundedIcon from './RoundedIcon.vue';
 import ToggleButton from './ToggleButton.vue';
+import CardWrapper from './CardWrapper.vue';
 import { onClickOutside } from '@vueuse/core';
+import { CardWrapperProps } from './CardWrapper.vue';
 
 export interface WithValue<TData = unknown> {
   value?: TData;
@@ -128,7 +125,7 @@ export type MenuItemProps<TData = unknown> = MenuItemPropsBase &
 const props = withDefaults(
   defineProps<
     {
-      roundBorders: 'top' | 'bottom' | 'full' | 'none';
+      roundBorders: CardWrapperProps['roundBorders'];
     } & MenuItemProps
   >(),
   {
@@ -223,39 +220,6 @@ watch(
   display: none !important;
 }
 
-.item {
-  @include flexify(row, space-between, center, var(--gap-md));
-  cursor: pointer;
-  height: var(--menu-item-height);
-  padding: var(--block-padding-sm);
-
-  &.large {
-    height: auto;
-    max-height: var(--menu-item-max-height);
-  }
-
-  &.full {
-    border-radius: var(--block-border-radius-md);
-  }
-
-  &.top {
-    border-top-left-radius: var(--block-border-radius-md);
-    border-top-right-radius: var(--block-border-radius-md);
-  }
-
-  &.bottom {
-    border-bottom-left-radius: var(--block-border-radius-md);
-    border-bottom-right-radius: var(--block-border-radius-md);
-  }
-
-  &:hover {
-    background-color: var(--base7);
-
-    .slot-actions {
-      display: flex !important;
-    }
-  }
-}
 .info {
   @include flexify(row, flex-start, center);
 

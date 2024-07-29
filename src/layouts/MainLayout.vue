@@ -82,7 +82,6 @@ import { RouteNames } from 'src/router/routes';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { useToolbarStore } from 'src/stores/toolbar';
 import { useSyncStore } from 'src/stores/sync';
-import { useExtensionsStore } from 'src/stores/extensions';
 import { useNavBarStore } from 'src/stores/nav-bar.store';
 
 const sidebarStore = useSidebarStore();
@@ -140,14 +139,7 @@ onAppActive((active: boolean) => {
   }
 });
 
-const extensionsStore = useExtensionsStore();
-
 const { bootstrapped } = useBootstrap();
-
-onBeforeMount(() => {
-  extensionsStore.loadActiveExtensions();
-  extensionsStore.loadExtensions();
-});
 
 onMounted(() => {
   if (process.env.CLIENT) {

@@ -81,7 +81,7 @@
     "tinykeys": "2.1.0",
     "uuid": "9.0.1",
     "vue": "3.4.15",
-    "vue-i18n": "9.13.1",
+    "vue-i18n": "9.2.2",
     "vue-router": "4.2.5",
     "vue3-easy-data-table": "1.5.47",
     "zod": "3.23.8"
