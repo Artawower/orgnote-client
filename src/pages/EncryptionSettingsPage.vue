@@ -25,7 +25,7 @@
       />
 
       <menu-group title="Encrypt existing notes" :items="gpgNewKeysMenuItems" />
-      <settings-description
+      <the-description
         text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
       />
     </template>
@@ -46,7 +46,7 @@ import { getCssVar, uploadFile } from 'src/tools';
 import { useModalStore } from 'src/stores/modal';
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
-import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
 import { buildMenuItems } from 'src/tools/config-menu-builder';
 import { AVAILABLE_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';

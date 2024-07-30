@@ -2,7 +2,7 @@
   <navigation-header />
 
   <menu-group :items="forceSyncItems" />
-  <settings-description
+  <the-description
     text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
   />
 </template>
@@ -10,7 +10,7 @@
 <script lang="ts" setup>
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
-import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
 import { db } from 'src/boot/repositories';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from 'src/stores/auth';

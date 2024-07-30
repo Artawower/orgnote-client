@@ -141,8 +141,8 @@ export default {
   'sign up for beta testing': 'зарегистрируйтесь для бета-тестирования',
   'active testers will receive a key in the release version':
     'активные тестировщики получат ключ в релизной версии',
-  'you are an open-source developer, write to app.orgnote@gmail.com':
-    'вы разработчик с открытым исходным кодом, пишите на app.orgnote@gmail.com',
+  'you are an open-source developer, write to':
+    'вы разработчик с открытым исходным кодом, пишите на',
   'try to set up your own server for synchronization (unfortunately instructions are in progress)':
     'попробуйте настроить свой сервер для синхронизации (к сожалению, инструкции в процессе)',
   'subscribe to my patreon': 'подпишитесь на мой патреон',
@@ -218,4 +218,6 @@ export default {
   sponsor: 'спонсировать',
   'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.':
     'будьте осторожны, старые ключи шифрования будут потеряны. Сторонним клиентам придется обновить ключи шифрования',
+  activate: 'активировать',
+  'copied to clipboard': 'скопировано в буфер обмена',
 };

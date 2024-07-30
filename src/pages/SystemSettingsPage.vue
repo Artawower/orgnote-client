@@ -2,11 +2,11 @@
   <navigation-header />
 
   <menu-group :items="clearAllDataMenuItems" />
-  <settings-description
+  <the-description
     text="be careful, all local data will be purged, unsaved notes will be lost"
   />
   <menu-group :items="removeAccountMenuItems" />
-  <settings-description
+  <the-description
     text="deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered."
   />
 </template>
@@ -14,7 +14,7 @@
 <script lang="ts" setup>
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
-import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
 import { db } from 'src/boot/repositories';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { RouteNames } from 'src/router/routes';

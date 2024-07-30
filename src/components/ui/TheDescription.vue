@@ -1,10 +1,10 @@
 <template>
   <div class="description capitalize">
-    <template v-if="text">{{
-      title ? $t(text).toUpperCase() : $t(text)
-    }}</template>
-
-    <slot v-else />
+    <slot>
+      <template v-if="text"
+        >{{ title ? $t(text).toUpperCase() : $t(text) }}
+      </template>
+    </slot>
   </div>
 </template>
 

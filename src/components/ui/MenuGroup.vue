@@ -1,31 +1,14 @@
 <template>
-  <settings-description
-    v-if="title"
-    class="title"
-    :title="true"
-    :text="title"
-  />
+  <the-description v-if="title" class="title" :title="true" :text="title" />
   <div class="menu-group" :class="border ? 'bordered' : ''">
     <div class="items">
       <menu-item
         @click="handleItem(item)"
         v-for="(item, i) of items"
         v-bind:key="item.label"
-        :label="item.label"
-        :icon="item.icon"
-        :icon-background-color="item.iconBackgroundColor"
-        :narrow="item.narrow"
-        :disabled="item.disabled"
-        :round-borders="getBorderRadiusType(i)"
-        :color="item.color"
-        :action-icon="item.actionIcon"
-        :active-action-icon="item.activeActionIcon"
+        v-bind="item"
         :selected="type === 'select' && item.value === props.modelValue"
-        :type="item.type"
-        :reactive-path="item.reactivePath"
-        :reactive-key="item.reactiveKey"
-        :value="item.value"
-        :data="item.data"
+        :round-borders="getBorderRadiusType(i)"
       >
         <template
           v-if="$q.platform.is.desktop && item.popupMenuGroup?.items?.length"
@@ -58,10 +41,10 @@
 
 <script lang="ts">
 import ActionsPopup from './ActionsPopup.vue';
-import { ref } from 'vue';
+import { ref, toValue } from 'vue';
 import { useQuasar } from 'quasar';
 import ActionBtn from './ActionBtn.vue';
-import SettingsDescription from './SettingsDescription.vue';
+import TheDescription from './TheDescription.vue';
 
 export interface MenuGroupProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,7 +85,7 @@ const getBorderRadiusType = (index: number): 'top' | 'bottom' | 'full' => {
 const $q = useQuasar();
 
 const handleItem = (item: MenuItemProps) => {
-  if (item.disabled) {
+  if (toValue(item.disabled)) {
     return;
   }
   if (props.type === 'select') {
@@ -112,7 +95,8 @@ const handleItem = (item: MenuItemProps) => {
   if (item.handler) {
     item.handler();
   } else if (item.popupMenuGroup && $q.platform.is.mobile) {
-    popupMenuGroup.value = item.popupMenuGroup;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    popupMenuGroup.value = item.popupMenuGroup as any;
   }
   emits('handled', item);
 };

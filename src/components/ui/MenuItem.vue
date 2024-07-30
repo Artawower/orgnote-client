@@ -6,13 +6,11 @@
     ref="menuItemRef"
     :round-borders="roundBorders"
     :size="type === 'textarea' ? 'large' : 'small'"
+    :class="{
+      disabled: toValue(disabled),
+    }"
   >
-    <div
-      class="info"
-      :class="{
-        disabled: disabled,
-      }"
-    >
+    <div class="info">
       <rounded-icon
         v-if="icon"
         size="sm"
@@ -20,7 +18,7 @@
         :backgroundColor="iconBackgroundColor"
       />
       <div
-        v-if="$slots.label ?? label"
+        v-if="type !== 'input' && ($slots.label ?? label)"
         class="label capitalize"
         :style="{ color: color }"
       >
@@ -37,9 +35,11 @@
       name="edit mode"
     ></textarea>
     <input
-      v-else-if="editMode"
+      v-else-if="editMode || type === 'input'"
       v-model="modelValue"
+      :class="{ 'text-right': type !== 'input' }"
       :type="editMode"
+      :placeholder="type === 'input' ? $t(label) : null"
       ref="editInputRef"
       name="edit mode"
     />
@@ -71,6 +71,11 @@
       <template v-if="type === 'text' || type === 'number'">
         <div class="input-value">{{ modelValue }}</div>
       </template>
+      <action-btn
+        v-if="actionBtn"
+        v-bind="props.actionBtn"
+        ref="actionBtnRef"
+      />
     </div>
   </card-wrapper>
 </template>
@@ -81,8 +86,13 @@ import { MenuGroupProps } from './MenuGroup.vue';
 import RoundedIcon from './RoundedIcon.vue';
 import ToggleButton from './ToggleButton.vue';
 import CardWrapper from './CardWrapper.vue';
+import ActionBtn from './ActionBtn.vue';
 import { onClickOutside } from '@vueuse/core';
 import { CardWrapperProps } from './CardWrapper.vue';
+import { ActionBtnProps } from './ActionBtn.vue';
+import { toValue } from 'vue';
+import { RefLikeObject } from 'src/models/ref-like.model';
+import { onMounted } from 'vue';
 
 export interface WithValue<TData = unknown> {
   value?: TData;
@@ -96,6 +106,8 @@ export interface WithReactivePath {
 interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
   label?: string;
   icon?: string;
+  actionBtn?: ActionBtnProps;
+  autofocus?: boolean;
   iconBackgroundColor?: string;
   value?: TValue;
   data?: TData;
@@ -104,6 +116,7 @@ interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
     | 'action'
     | 'toggle'
     | 'text'
+    | 'input'
     | 'number'
     | 'select'
     | 'multiple-select'
@@ -111,7 +124,7 @@ interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
   color?: string;
   handler?: () => void;
   narrow?: boolean;
-  disabled?: boolean;
+  disabled?: RefLikeObject<boolean>;
   popupMenuGroup?: MenuGroupProps;
   actionIcon?: string;
   activeActionIcon?: string;
@@ -140,8 +153,13 @@ const isSelectable = computed(
     props.reactivePath?.[props?.reactiveKey] === props.label
 );
 
+const actionBtnRef = ref<typeof ActionBtn | null>();
+
 const handleClick = () => {
   selectValue() ?? editValue();
+  if (props.actionBtn) {
+    actionBtnRef.value?.showFired();
+  }
 };
 
 const selectValue = (): boolean => {
@@ -212,6 +230,13 @@ watch(
     modelValue.value = props.reactivePath?.[props.reactiveKey];
   }
 );
+
+onMounted(() => {
+  if (props.autofocus) {
+    editInputRef.value?.focus();
+    console.log('[line 236]: AUTOFOC', editInputRef.value);
+  }
+});
 </script>
 
 <style lang="scss" scoped>
@@ -264,7 +289,9 @@ textarea {
 }
 
 input {
-  text-align: right;
+  &.text-right {
+    text-align: right;
+  }
 }
 
 textarea {

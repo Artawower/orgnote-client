@@ -12,14 +12,17 @@
 import { copyToClipboard } from 'src/tools';
 
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
+import { useNotifications } from 'src/hooks';
 
 const props = defineProps<{
   code: string;
 }>();
 
+const notifictions = useNotifications();
+
 const copySrc = () => {
-  console.log('[line 21]: copy src');
   copyToClipboard(props.code);
+  notifictions.notify('copied to clipboard');
 };
 </script>
 

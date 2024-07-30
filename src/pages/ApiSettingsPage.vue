@@ -1,7 +1,7 @@
 <template>
   <navigation-header />
   <div class="full-width">
-    <settings-description
+    <the-description
       text="this functionality is only available to registered users with an active subscription."
     />
     <menu-group :items="apiMenuItems" />
@@ -13,9 +13,9 @@ import { copyToClipboard } from 'quasar';
 import { ModelsAPIToken } from 'src/generated/api';
 import { useSettingsStore } from 'src/stores/settings';
 import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
-import SettingsDescription from 'src/components/ui/SettingsDescription.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
 
-import { ref, toRefs } from 'vue';
+import { computed, ref, toRefs } from 'vue';
 
 import { useAuthStore } from 'src/stores/auth';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
@@ -65,7 +65,7 @@ const initMenuitems = () => {
       label: 'Create new token',
       handler: () => settingsStore.createNewToken(),
       color: getCssVar('blue'),
-      disabled: !authStore.user.active,
+      disabled: computed(() => !authStore.user.active),
     },
   ];
 };

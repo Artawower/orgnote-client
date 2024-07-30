@@ -34,6 +34,29 @@
   />
 </template>
 
+<script lang="ts">
+export interface ActionBtnProps {
+  icon?: string;
+  activeIcon?: string;
+  contentClass?: string;
+  loading?: boolean;
+  theme?:
+    | 'red'
+    | 'orange'
+    | 'green'
+    | 'teal'
+    | 'yellow'
+    | 'blue'
+    | 'dark-blue'
+    | 'magenta'
+    | 'violet'
+    | 'cyan'
+    | 'dark-cyan'
+    | 'white';
+  size?: 'sm' | 'md' | 'lg';
+}
+</script>
+
 <script lang="ts" setup>
 import { Ref, computed, ref, toRefs, useSlots } from 'vue';
 
@@ -41,31 +64,9 @@ const emits = defineEmits<{
   (e: 'click'): void;
 }>();
 
-const props = withDefaults(
-  defineProps<{
-    icon?: string;
-    activeIcon?: string;
-    contentClass?: string;
-    loading?: boolean;
-    theme?:
-      | 'red'
-      | 'orange'
-      | 'green'
-      | 'teal'
-      | 'yellow'
-      | 'blue'
-      | 'dark-blue'
-      | 'magenta'
-      | 'violet'
-      | 'cyan'
-      | 'dark-cyan'
-      | 'white';
-    size?: 'sm' | 'md' | 'lg';
-  }>(),
-  {
-    size: 'md',
-  }
-);
+const props = withDefaults(defineProps<ActionBtnProps>(), {
+  size: 'md',
+});
 
 const { icon, activeIcon, loading } = toRefs(props);
 
@@ -95,6 +96,10 @@ const clicked = () => {
   showFired();
   emits('click');
 };
+
+defineExpose({
+  showFired,
+});
 </script>
 
 <style lang="scss">
