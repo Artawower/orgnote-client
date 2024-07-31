@@ -1,56 +1,50 @@
 <template>
-  <div class="page">
-    <navigation-header />
-
-    <div class="content">
-      <q-page :style-fn="resetPageMinHeight" class="center-container">
-        <div class="search-header">
-          <search-input
-            v-model="extensionsStore.searchQuery"
-            :autofocus="true"
-            theme="heavy"
-          />
-        </div>
-
-        <div class="actions">
-          <action-btn
-            @click="addSource"
-            icon="fab fa-git-alt"
-            size="lg"
-            :loading="packageManager.loading"
-          >
-            {{ $t('add from git') }}
-          </action-btn>
-          <action-btn
-            @click="uploadExtension"
-            icon="upload"
-            size="lg"
-            :loading="packageManager.loading"
-          >
-            {{ $t('upload') }}
-          </action-btn>
-        </div>
-
-        <div class="extensions">
-          <extension-preview
-            v-for="ext of extensionsStore.filteredExtensions"
-            :extension="ext"
-            :key="ext.manifest.name + ext.uploaded"
-          />
-        </div>
-      </q-page>
+  <navigation-page>
+    <div class="search-header">
+      <search-input
+        v-model="extensionsStore.searchQuery"
+        :autofocus="true"
+        theme="heavy"
+      />
     </div>
-  </div>
+
+    <div class="actions">
+      <action-btn
+        @click="addSource"
+        icon="fab fa-git-alt"
+        size="lg"
+        :loading="packageManager.loading"
+      >
+        {{ $t('add from git') }}
+      </action-btn>
+      <action-btn
+        @click="uploadExtension"
+        icon="upload"
+        size="lg"
+        :loading="packageManager.loading"
+      >
+        {{ $t('upload') }}
+      </action-btn>
+    </div>
+
+    <div class="extensions">
+      <extension-preview
+        v-for="ext of extensionsStore.filteredExtensions"
+        :extension="ext"
+        :key="ext.manifest.name + ext.uploaded"
+      />
+    </div>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
-import { resetPageMinHeight } from 'src/tools';
 import { useExtensionsStore } from 'src/stores/extensions';
 import { usePackageManagerStore } from 'src/stores/package-manager.store';
 import { uploadFile } from 'src/tools';
 import { readExtension } from 'src/tools/read-extension';
 
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
+
 import ExtensionPreview from 'src/components/containers/ExtensionPreview.vue';
 import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import SearchInput from 'src/components/ui/SearchInput.vue';
@@ -85,6 +79,7 @@ const addSource = async () => {
 
 <style lang="scss" scoped>
 .search-header {
+  width: 100%;
   gap: var(--gap-md);
 
   @include mobile {
@@ -95,11 +90,6 @@ const addSource = async () => {
 
 .extensions {
   padding-top: var(--block-padding-md);
-}
-
-.q-page {
-  max-height: none;
-  height: auto;
 }
 
 .actions {

@@ -1,10 +1,12 @@
 <template>
-  <div class="settings-page page">
+  <div class="settings-page">
     <div class="settings-menu">
       <navigation-header v-if="$q.platform.is.mobile" />
-      <menu-group :items="commonSettingsItems" />
-      <menu-group :items="developerModeSettings" />
-      <menu-group :items="externalResourcesItems" />
+      <div class="menu-items">
+        <menu-group :items="commonSettingsItems" />
+        <menu-group :items="developerModeSettings" />
+        <menu-group :items="externalResourcesItems" />
+      </div>
     </div>
     <div v-if="$q.platform.is.desktop" class="content">
       <router-view />
@@ -134,9 +136,6 @@ const externalResourcesItems: MenuItemProps[] = [
 }
 
 @include desktop {
-  .settings-page {
-    height: 100%;
-  }
   .settings-menu {
     min-width: 300px;
     padding: var(--block-padding-md);
@@ -144,10 +143,6 @@ const externalResourcesItems: MenuItemProps[] = [
 }
 
 @include mobile {
-  .settings-page {
-    height: calc(100% - var(--sidebar-width));
-  }
-
   .settings-menu {
     width: 100%;
   }
@@ -159,5 +154,13 @@ const externalResourcesItems: MenuItemProps[] = [
   overflow: auto;
   padding: var(--block-padding-md);
   padding-left: 0;
+}
+
+.menu-items {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--block-padding-md);
+  padding: var(--block-padding-md);
 }
 </style>

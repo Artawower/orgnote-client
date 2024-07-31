@@ -33,7 +33,7 @@
     </div>
   </div>
   <actions-popup
-    v-if="popupMenuGroup"
+    v-model="actionsPopup"
     @close="closePopup"
     :popup-menu-group="popupMenuGroup"
   />
@@ -70,6 +70,7 @@ const emits = defineEmits<{
 }>();
 
 const popupMenuGroup = ref<MenuGroupProps>(null);
+const actionsPopup = ref(false);
 
 const getBorderRadiusType = (index: number): 'top' | 'bottom' | 'full' => {
   if (props.items.length == 1) {
@@ -98,11 +99,13 @@ const handleItem = (item: MenuItemProps) => {
   } else if (item.popupMenuGroup && $q.platform.is.mobile) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     popupMenuGroup.value = item.popupMenuGroup as any;
+    actionsPopup.value = true;
   }
   emits('handled', item);
 };
 
 const closePopup = () => {
+  actionsPopup.value = false;
   popupMenuGroup.value = null;
 };
 </script>
@@ -111,9 +114,8 @@ const closePopup = () => {
 .menu-group {
   box-sizing: border-box;
   border-radius: var(--block-border-radius-md);
-  /* width: 100%; */
+  width: 100%;
   background: var(--bg-alt2, --bg-alt);
-  margin: var(--block-margin-xs);
 
   &.bordered {
     border: var(--border-main);

@@ -1,20 +1,17 @@
 <template>
-  <div class="page">
-    <navigation-header />
-    <div class="full-width">
-      <the-description
-        text="this functionality is only available to registered users with an active subscription."
-      />
-      <menu-group :items="apiMenuItems" />
-    </div>
-  </div>
+  <navigation-page>
+    <the-description
+      text="this functionality is only available to registered users with an active subscription."
+    />
+    <menu-group :items="apiMenuItems" />
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
 import { copyToClipboard } from 'quasar';
 import { ModelsAPIToken } from 'src/generated/api';
 import { useSettingsStore } from 'src/stores/settings';
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import TheDescription from 'src/components/ui/TheDescription.vue';
 
 import { computed, ref, toRefs } from 'vue';
@@ -42,7 +39,6 @@ const initMenuitems = () => {
     label: token.token,
     action: () => copyToken(token),
     popupMenuGroup: {
-      border: true,
       items: [
         {
           label: 'copy',

@@ -1,44 +1,37 @@
 <template>
-  <div class="page">
-    <navigation-header />
+  <navigation-page>
+    <menu-group title="encryption type" :items="encryptionMenuItems" />
+    <menu-group
+      v-if="config.encryption.type === 'gpgPassword'"
+      title="credentials"
+      :items="passwordEncryptionMenuItems"
+    />
 
-    <div class="full-width content">
-      <menu-group title="encryption type" :items="encryptionMenuItems" />
+    <template v-if="config.encryption.type === 'gpgKeys'">
       <menu-group
-        v-if="config.encryption.type === 'gpgPassword'"
-        title="credentials"
-        :items="passwordEncryptionMenuItems"
+        title="GPG public key"
+        :items="gpgEncryptionPublicKeyMenuItems"
+      />
+      <menu-group
+        title="GPG private key"
+        :items="gpgEncryptionPrivateKeyMenuItems"
       />
 
-      <template v-if="config.encryption.type === 'gpgKeys'">
-        <menu-group
-          title="GPG public key"
-          :items="gpgEncryptionPublicKeyMenuItems"
-        />
-        <menu-group
-          title="GPG private key"
-          :items="gpgEncryptionPrivateKeyMenuItems"
-        />
+      <menu-group
+        title="GPG private key"
+        :items="gpgEncryptionPrivateKeyPassphraseMenuItems"
+      />
 
-        <menu-group
-          title="GPG private key"
-          :items="gpgEncryptionPrivateKeyPassphraseMenuItems"
-        />
+      <menu-group title="Encrypt existing notes" :items="gpgNewKeysMenuItems" />
+      <the-description
+        text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
+      />
+    </template>
 
-        <menu-group
-          title="Encrypt existing notes"
-          :items="gpgNewKeysMenuItems"
-        />
-        <the-description
-          text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
-        />
-      </template>
-
-      <template v-if="config.encryption.type !== 'disabled'">
-        <menu-group :items="encryptionActionsMenuitems" />
-      </template>
-    </div>
-  </div>
+    <template v-if="config.encryption.type !== 'disabled'">
+      <menu-group :items="encryptionActionsMenuitems" />
+    </template>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
@@ -49,14 +42,12 @@ import { useSettingsStore } from 'src/stores/settings';
 import { onBeforeUnmount } from 'vue';
 import { getCssVar, uploadFile } from 'src/tools';
 import { useModalStore } from 'src/stores/modal';
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import TheDescription from 'src/components/ui/TheDescription.vue';
 import { buildMenuItems } from 'src/tools/config-menu-builder';
 import { AVAILABLE_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
-import { watch } from 'vue';
-import { toRef } from '@vueuse/core';
 
 const { config } = useSettingsStore();
 

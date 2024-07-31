@@ -1,6 +1,5 @@
 <template>
-  <navigation-header />
-  <div class="full-width content">
+  <navigation-page>
     <template v-if="authStore.user.active">
       <everything-fine
         class="q-pb-md"
@@ -58,7 +57,7 @@
         </the-description>
       </div>
     </template>
-  </div>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
@@ -66,7 +65,7 @@ import { computed, onBeforeMount, ref } from 'vue';
 
 import UsedSpace from 'src/components/containers/UsedSpace.vue';
 import EverythingFine from 'src/components/ui/EverythingFine.vue';
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import TheDescription from 'src/components/ui/TheDescription.vue';
 import { useAuthStore } from 'src/stores/auth';
@@ -112,6 +111,7 @@ const subscriptionInputMenuitems: MenuItemProps[] = [
 <style lang="scss" scoped>
 .used-space {
   margin-top: var(--block-margin-md);
+  width: 100%;
 }
 
 .reference {

@@ -1,16 +1,14 @@
 <template>
-  <div class="page">
-    <navigation-header />
-
+  <navigation-page>
     <menu-group :items="forceSyncItems" />
     <the-description
       text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
     />
-  </div>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import TheDescription from 'src/components/ui/TheDescription.vue';
 import { db } from 'src/boot/repositories';

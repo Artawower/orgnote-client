@@ -30,14 +30,12 @@ onClickOutside(contentRef, () => {
 <style lang="scss">
 .dialog-content {
   box-sizing: border-box;
-  padding: var(--block-padding-md);
+  /* padding: var(--block-padding-md); */
 }
 
 @include mobile {
   .dialog-content {
-    padding-bottom: calc(
-      var(--block-padding-md) + var(--device-padding-bottom)
-    );
+    padding-bottom: var(--device-padding-bottom);
   }
 }
 

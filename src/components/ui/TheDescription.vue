@@ -16,6 +16,5 @@ defineProps<{ text?: string; title?: boolean }>();
 .description {
   color: var(--fg-alt);
   font-size: var(--font-size-sm);
-  margin: var(--block-margin-md);
 }
 </style>
