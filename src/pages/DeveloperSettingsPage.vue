@@ -1,7 +1,9 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <menu-group title="developer" :items="developerGroupMenu" />
+    <menu-group title="developer" :items="developerGroupMenu" />
+  </div>
 </template>
 
 <script lang="ts" setup>

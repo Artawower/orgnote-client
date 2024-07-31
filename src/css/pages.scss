@@ -1,5 +1,14 @@
 .page {
-  padding: var(--block-padding-md);
+  overflow: auto;
+  height: 100%;
+
+  @include desktop {
+    padding: var(--block-padding-md);
+  }
+
+  @include mobile {
+    padding-bottom: cacl(var(--footer-height) + 20px);
+  }
 }
 
 .page-container {

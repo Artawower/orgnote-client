@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-page">
+  <div class="settings-page page">
     <div class="settings-menu">
       <navigation-header v-if="$q.platform.is.mobile" />
       <menu-group :items="commonSettingsItems" />
@@ -131,8 +131,6 @@ const externalResourcesItems: MenuItemProps[] = [
 <style lang="scss" scoped>
 .settings-page {
   @include flexify(row, center, flex-start);
-  height: 100%;
-  width: 100%;
 }
 
 @include desktop {

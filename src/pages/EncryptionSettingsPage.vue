@@ -1,38 +1,43 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <div class="full-width content">
-    <menu-group title="encryption type" :items="encryptionMenuItems" />
-    <menu-group
-      v-if="config.encryption.type === 'gpgPassword'"
-      title="credentials"
-      :items="passwordEncryptionMenuItems"
-    />
-
-    <template v-if="config.encryption.type === 'gpgKeys'">
+    <div class="full-width content">
+      <menu-group title="encryption type" :items="encryptionMenuItems" />
       <menu-group
-        title="GPG public key"
-        :items="gpgEncryptionPublicKeyMenuItems"
-      />
-      <menu-group
-        title="GPG private key"
-        :items="gpgEncryptionPrivateKeyMenuItems"
+        v-if="config.encryption.type === 'gpgPassword'"
+        title="credentials"
+        :items="passwordEncryptionMenuItems"
       />
 
-      <menu-group
-        title="GPG private key"
-        :items="gpgEncryptionPrivateKeyPassphraseMenuItems"
-      />
+      <template v-if="config.encryption.type === 'gpgKeys'">
+        <menu-group
+          title="GPG public key"
+          :items="gpgEncryptionPublicKeyMenuItems"
+        />
+        <menu-group
+          title="GPG private key"
+          :items="gpgEncryptionPrivateKeyMenuItems"
+        />
 
-      <menu-group title="Encrypt existing notes" :items="gpgNewKeysMenuItems" />
-      <the-description
-        text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
-      />
-    </template>
+        <menu-group
+          title="GPG private key"
+          :items="gpgEncryptionPrivateKeyPassphraseMenuItems"
+        />
 
-    <template v-if="config.encryption.type !== 'disabled'">
-      <menu-group :items="encryptionActionsMenuitems" />
-    </template>
+        <menu-group
+          title="Encrypt existing notes"
+          :items="gpgNewKeysMenuItems"
+        />
+        <the-description
+          text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
+        />
+      </template>
+
+      <template v-if="config.encryption.type !== 'disabled'">
+        <menu-group :items="encryptionActionsMenuitems" />
+      </template>
+    </div>
   </div>
 </template>
 

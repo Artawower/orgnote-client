@@ -50,6 +50,7 @@ export interface MenuGroupProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectCompareFunction?: (val1: any, val2: any) => boolean;
   title?: string;
+  icon?: string;
   border?: boolean;
   type?: 'select';
   items: MenuItemProps[];

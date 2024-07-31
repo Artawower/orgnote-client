@@ -1,10 +1,12 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <menu-group :items="forceSyncItems" />
-  <the-description
-    text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
-  />
+    <menu-group :items="forceSyncItems" />
+    <the-description
+      text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>

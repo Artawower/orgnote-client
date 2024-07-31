@@ -1,43 +1,45 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <div class="content">
-    <q-page :style-fn="resetPageMinHeight" class="center-container">
-      <div class="search-header">
-        <search-input
-          v-model="extensionsStore.searchQuery"
-          :autofocus="true"
-          theme="heavy"
-        />
-      </div>
+    <div class="content">
+      <q-page :style-fn="resetPageMinHeight" class="center-container">
+        <div class="search-header">
+          <search-input
+            v-model="extensionsStore.searchQuery"
+            :autofocus="true"
+            theme="heavy"
+          />
+        </div>
 
-      <div class="actions">
-        <action-btn
-          @click="addSource"
-          icon="fab fa-git-alt"
-          size="lg"
-          :loading="packageManager.loading"
-        >
-          {{ $t('add from git') }}
-        </action-btn>
-        <action-btn
-          @click="uploadExtension"
-          icon="upload"
-          size="lg"
-          :loading="packageManager.loading"
-        >
-          {{ $t('upload') }}
-        </action-btn>
-      </div>
+        <div class="actions">
+          <action-btn
+            @click="addSource"
+            icon="fab fa-git-alt"
+            size="lg"
+            :loading="packageManager.loading"
+          >
+            {{ $t('add from git') }}
+          </action-btn>
+          <action-btn
+            @click="uploadExtension"
+            icon="upload"
+            size="lg"
+            :loading="packageManager.loading"
+          >
+            {{ $t('upload') }}
+          </action-btn>
+        </div>
 
-      <div class="extensions">
-        <extension-preview
-          v-for="ext of extensionsStore.filteredExtensions"
-          :extension="ext"
-          :key="ext.manifest.name + ext.uploaded"
-        />
-      </div>
-    </q-page>
+        <div class="extensions">
+          <extension-preview
+            v-for="ext of extensionsStore.filteredExtensions"
+            :extension="ext"
+            :key="ext.manifest.name + ext.uploaded"
+          />
+        </div>
+      </q-page>
+    </div>
   </div>
 </template>
 

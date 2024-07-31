@@ -1,9 +1,11 @@
 <template>
-  <navigation-header />
-  <menu-group title="common" :items="commonGroupMenu" />
-  <menu-group title="theme" :items="themeGroupMenu" />
-  <menu-group title="editor" :items="editorGroupMenu" />
-  <menu-group title="completion" :items="completionGroupMenu" />
+  <div class="page">
+    <navigation-header />
+    <menu-group title="common" :items="commonGroupMenu" />
+    <menu-group title="theme" :items="themeGroupMenu" />
+    <menu-group title="editor" :items="editorGroupMenu" />
+    <menu-group title="completion" :items="completionGroupMenu" />
+  </div>
 </template>
 
 <script lang="ts" setup>

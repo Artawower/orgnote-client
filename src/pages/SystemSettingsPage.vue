@@ -1,14 +1,16 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <menu-group :items="clearAllDataMenuItems" />
-  <the-description
-    text="be careful, all local data will be purged, unsaved notes will be lost"
-  />
-  <menu-group :items="removeAccountMenuItems" />
-  <the-description
-    text="deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered."
-  />
+    <menu-group :items="clearAllDataMenuItems" />
+    <the-description
+      text="be careful, all local data will be purged, unsaved notes will be lost"
+    />
+    <menu-group :items="removeAccountMenuItems" />
+    <the-description
+      text="deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered."
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>

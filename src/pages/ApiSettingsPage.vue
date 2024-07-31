@@ -1,10 +1,12 @@
 <template>
-  <navigation-header />
-  <div class="full-width">
-    <the-description
-      text="this functionality is only available to registered users with an active subscription."
-    />
-    <menu-group :items="apiMenuItems" />
+  <div class="page">
+    <navigation-header />
+    <div class="full-width">
+      <the-description
+        text="this functionality is only available to registered users with an active subscription."
+      />
+      <menu-group :items="apiMenuItems" />
+    </div>
   </div>
 </template>
 

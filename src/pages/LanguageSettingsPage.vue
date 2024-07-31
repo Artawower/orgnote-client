@@ -1,13 +1,15 @@
 <template>
-  <navigation-header />
+  <div class="page">
+    <navigation-header />
 
-  <menu-group
-    :items="languageMenuItems"
-    title="pick language"
-    :select-compare-function="langEqual"
-    type="select"
-    v-model="settingsStore.locale"
-  />
+    <menu-group
+      :items="languageMenuItems"
+      title="pick language"
+      :select-compare-function="langEqual"
+      type="select"
+      v-model="settingsStore.locale"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>

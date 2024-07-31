@@ -88,3 +88,9 @@
     -moz-appearance: textfield;
   }
 }
+
+@mixin sticky-header {
+  position: sticky;
+  top: -1px;
+  z-index: 1000;
+}
