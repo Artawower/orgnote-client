@@ -11,7 +11,7 @@ function buildGraph(notes: NotePreview[]): NoteGraph {
   }>((acc, n) => {
     acc[n.id] = {
       id: n.id,
-      title: n.meta.title,
+      title: n.encrypted ? n.filePath.slice(-1).join('') : n.meta.title,
       weight: 1,
     };
     return acc;
