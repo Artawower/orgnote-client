@@ -24,10 +24,12 @@ const languageMenuItems: MenuItemProps[] = [
   {
     label: 'English',
     value: 'en-US',
+    type: 'select',
   },
   {
     label: 'Russian',
     value: 'ru-RU',
+    type: 'select',
   },
 ];
 

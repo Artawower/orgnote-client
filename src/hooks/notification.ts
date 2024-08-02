@@ -7,7 +7,7 @@ type NotificationLevel = 'info' | 'error' | 'warning';
 // TODO: create store for preserving history of notifications
 export function useNotifications() {
   const $q = useQuasar();
-  // const locale = useI18n();
+  const locale = useI18n();
 
   const colors: { [key in NotificationLevel]: string } = {
     info: null,
@@ -25,7 +25,7 @@ export function useNotifications() {
       color: colors[level],
       message,
       position: $q.platform.is.mobile ? 'bottom' : 'bottom-right',
-      // closeBtn: locale.t('close'),
+      closeBtn: locale.t('close'),
     });
   };
 

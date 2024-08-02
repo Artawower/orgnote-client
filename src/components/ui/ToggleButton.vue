@@ -1,5 +1,5 @@
 <template>
-  <div class="switch__container">
+  <div @click.prevent class="switch__container">
     <input
       :id="id"
       class="switch switch--flat"

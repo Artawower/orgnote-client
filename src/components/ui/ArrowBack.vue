@@ -1,7 +1,7 @@
 <template>
   <q-btn
     @click="returnBack"
-    size="md"
+    size="sm"
     class="color-blue"
     flat
     color="blue"

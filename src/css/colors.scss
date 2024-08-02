@@ -50,8 +50,8 @@
 }
 
 @include light-mode {
-  --default-bg: #fff;
-  --default-bg-alt: #fff;
+  --default-bg: #ffffff;
+  --default-bg-alt: #ffffff;
   --default-bg-alt2: #f8f9fc;
   --default-fg: #34495e;
   --default-fg-alt: #{$grey-5};

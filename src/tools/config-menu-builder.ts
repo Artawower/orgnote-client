@@ -2,54 +2,76 @@ import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 import { toSentence } from './case-converter';
 import { ConfigScheme } from 'src/constants/default-config.constant';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function buildMenuItems<
-  TData extends Record<string, string | number | boolean | Array<unknown>>,
->(
+type MenuItemValue = string | number | boolean | Array<unknown>;
+
+export interface MenuItemBuildConfig<TData = Record<string, unknown>> {
+  configScheme?: ConfigScheme;
+  excludeKeys?: Array<keyof TData>;
+  includeKeys?: Array<keyof TData>;
+}
+
+export function buildMenuItems<TData extends Record<string, MenuItemValue>>(
   settings: TData,
-  config?: {
-    configScheme?: ConfigScheme;
-    excludeKeys?: Array<keyof TData>;
-    includeKeys?: Array<keyof TData>;
-  }
+  config?: MenuItemBuildConfig
 ): MenuItemProps[] {
   return Object.keys(settings).reduce((acc, key) => {
-    const excludedKeys = config?.excludeKeys?.includes(key);
-    const notIncludedKeys =
-      config?.includeKeys && !config.includeKeys.includes(key);
-    if (excludedKeys || notIncludedKeys) {
+    if (isMenuItemKeyExcluded(key, config)) {
       return acc;
     }
-    const item = settings[key];
 
+    const item = settings[key];
     const itemConfig = config?.configScheme?.[key];
     const defaultConfig = itemConfig?.values;
 
     const isMultipleItems = defaultConfig instanceof Array;
 
     if (!isMultipleItems) {
-      const menuButtonProps: Partial<MenuItemProps> = {
-        label: toSentence(key),
-        reactiveKey: key,
-        reactivePath: settings,
-        type: itemConfig?.type ?? getMenuTypeByValue(item),
-      };
-      acc.push(menuButtonProps);
+      acc.push(createMenuItemProps({ key, settings, itemConfig, item }));
       return acc;
     }
 
     defaultConfig.forEach((c) => {
-      const menuButtonProps: Partial<MenuItemProps> = {
-        label: c as string,
-        reactiveKey: key,
-        reactivePath: settings,
-        type: 'select',
-      };
-      acc.push(menuButtonProps);
+      const label = c as string;
+      acc.push(
+        createMenuItemProps({
+          key,
+          settings,
+          itemConfig,
+          item,
+          label,
+          type: 'select',
+        })
+      );
     });
 
     return acc;
   }, []);
+}
+
+function isMenuItemKeyExcluded(key: string, config: MenuItemBuildConfig) {
+  const excludedKeys = config?.excludeKeys?.includes(key);
+  const notIncludedKeys =
+    config?.includeKeys && !config.includeKeys.includes(key);
+  return excludedKeys || notIncludedKeys;
+}
+
+function createMenuItemProps<
+  TData extends Record<string, MenuItemValue>,
+>(params: {
+  key: string;
+  settings: TData;
+  itemConfig: ConfigScheme[string];
+  item: MenuItemValue;
+  label?: string;
+  type?: MenuItemProps['type'];
+}): Partial<MenuItemProps> {
+  return {
+    label: params.label ?? toSentence(params.key),
+    reactiveKey: params.key,
+    reactivePath: params.settings,
+    type:
+      params.type ?? params.itemConfig?.type ?? getMenuTypeByValue(params.item),
+  };
 }
 
 function getMenuTypeByValue(

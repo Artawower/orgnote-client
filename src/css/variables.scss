@@ -148,7 +148,6 @@ body {
   --src-block-margin-y: 16px;
 
   // Editor
-  --page-padding: 16px 56px;
   --editor-line-height: 1.8;
   --editor-headline-line-height: 1.2;
   --editor-default-line-height: 28.8px;
@@ -161,6 +160,10 @@ body {
   --editor-fold-placeholder-color: var(--fg);
   --editor-active-line-bg-color: transparent;
   --editor-caret-color: var(--fg);
+
+  // Page
+  --page-padding: 16px 56px;
+  --page-max-width: 1024px;
 
   // List
   --org-list-item-bullet-margin-left: 20px;

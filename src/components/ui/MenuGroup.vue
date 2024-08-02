@@ -46,9 +46,8 @@ import { useQuasar } from 'quasar';
 import ActionBtn from './ActionBtn.vue';
 import TheDescription from './TheDescription.vue';
 
-export interface MenuGroupProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectCompareFunction?: (val1: any, val2: any) => boolean;
+export interface MenuGroupProps<TValue = unknown> {
+  selectCompareFunction?: (val1: TValue, val2: TValue) => boolean;
   title?: string;
   icon?: string;
   border?: boolean;
@@ -58,10 +57,10 @@ export interface MenuGroupProps {
 }
 </script>
 
-<script lang="ts" setup>
+<script lang="ts" setup generic="T = unknown">
 import MenuItem, { MenuItemProps } from './MenuItem.vue';
 
-const props = defineProps<MenuGroupProps>();
+const props = defineProps<MenuGroupProps<T>>();
 
 const emits = defineEmits<{
   (e: 'handled', item: MenuItemProps): void;
@@ -90,18 +89,50 @@ const handleItem = (item: MenuItemProps) => {
   if (toValue(item.disabled)) {
     return;
   }
-  if (props.type === 'select') {
-    emits('update:modelValue', item.value);
-    emits('selected', item.value);
-  }
-  if (item.handler) {
-    item.handler();
-  } else if (item.popupMenuGroup && $q.platform.is.mobile) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    popupMenuGroup.value = item.popupMenuGroup as any;
-    actionsPopup.value = true;
-  }
+  handleSelectItem(item) ||
+    handleActionItem(item) ||
+    handleMenuPopup(item) ||
+    handleToggleItem(item);
   emits('handled', item);
+};
+
+const handleSelectItem = (item: MenuItemProps): boolean => {
+  if (item.type !== 'select') {
+    return;
+  }
+  emits('update:modelValue', item.value);
+  emits('selected', item.value);
+  return true;
+};
+
+const handleActionItem = (item: MenuItemProps): boolean => {
+  if (!item.handler) {
+    return;
+  }
+  item.handler();
+  return true;
+};
+
+const handleMenuPopup = (item: MenuItemProps) => {
+  if (!item.popupMenuGroup || !$q.platform.is.mobile) {
+    return;
+  }
+  popupMenuGroup.value = item.popupMenuGroup;
+  actionsPopup.value = true;
+  return true;
+};
+
+const handleToggleItem = (item: MenuItemProps) => {
+  if (item.type !== 'toggle') {
+    return;
+  }
+  if (item.value !== undefined) {
+    item.value = !item.value;
+  }
+  const val = item?.reactivePath[item?.reactiveKey];
+  if (val !== undefined) {
+    item.reactivePath[item.reactiveKey] = !val;
+  }
 };
 
 const closePopup = () => {

@@ -35,7 +35,6 @@ export default configure(function (ctx) {
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
       'i18n',
-      // { path: 'i18n' },
       'axios',
       { path: 'katex', server: false },
       'repositories',
@@ -66,8 +65,8 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
-        node: 'node16',
+        browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
+        node: 'node20',
       },
 
       // vueRouterMode: 'hash', // available values: 'hash', 'history'
@@ -125,24 +124,6 @@ export default configure(function (ctx) {
         ],
       ],
 
-      // build: {
-      //   chainWebpack: (chain) => {
-      //     chain.module
-      //       .rule('i18n-resource')
-      //       .test(/\.(json5?|ya?ml)$/)
-      //       .include.add(path.resolve(__dirname, './src/i18n'))
-      //       .end()
-      //       .type('javascript/auto')
-      //       .use('i18n-resource')
-      //       .loader('@intlify/vue-i18n-loader');
-      //     chain.module
-      //       .rule('i18n')
-      //       .resourceQuery(/blockType=i18n/)
-      //       .type('javascript/auto')
-      //       .use('i18n')
-      //       .loader('@intlify/vue-i18n-loader');
-      //   },
-      // },
       alias: {
         '@': path.resolve(__dirname, './src'),
         src: path.resolve(__dirname, './src'),

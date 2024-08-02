@@ -89,6 +89,7 @@ const addSource = async () => {
 }
 
 .extensions {
+  width: 100%;
   padding-top: var(--block-padding-md);
 }
 

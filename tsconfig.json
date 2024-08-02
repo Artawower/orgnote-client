@@ -3,10 +3,9 @@
   "compilerOptions": {
     "baseUrl": "./",
     "strictNullChecks": false,
-    "jsx": "preserve",
-    "jsxImportSource": "vue",
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "module": "es2022",
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],
@@ -18,7 +17,7 @@
       "tools/*": ["src/tools/*"],
       "stores/*": ["src/stores/*"]
     },
-    "lib": ["es2021", "DOM", "DOM.iterable"]
+    "lib": ["es2022", "es2021", "DOM", "DOM.iterable"]
   },
   "exclude": [
     "node_modules",

@@ -1,5 +1,6 @@
 import { OrgNoteConfig } from 'orgnote-api';
 import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
+import { Platform } from 'quasar';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
@@ -18,6 +19,9 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     showGroup: false,
     defaultCompletionLimit: 500,
   },
+  synchronization: {
+    type: 'api',
+  },
   ui: {
     showUserProfiles: true,
     theme: 'light',
@@ -32,6 +36,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   },
 };
 
+// TODO: feat/settings move to orgnote api
 export type ConfigScheme = Record<
   string,
   {
@@ -40,21 +45,37 @@ export type ConfigScheme = Record<
   }
 >;
 
-export const AVAILABLE_CONFIG_SCHEME: ConfigScheme = {
+export const UI_CONFIG_SCHEME: ConfigScheme = {
   theme: {
     values: ['light', 'dark', 'auto'],
   },
-  defaultCompletionLimit: {
-    type: 'number',
-  },
-  maximumLogsCount: {
-    type: 'number',
-  },
+};
+
+export const ENCRYPTION_CONFIG_SCHEME: ConfigScheme = {
   type: {
     values: [
       ModelsPublicNoteEncryptionTypeEnum.GpgKeys,
       ModelsPublicNoteEncryptionTypeEnum.GpgPassword,
       ModelsPublicNoteEncryptionTypeEnum.Disabled,
     ],
+  },
+};
+
+export const COMPLETION_CONFIG_SCHEME: ConfigScheme = {
+  defaultCompletionLimit: {
+    type: 'number',
+  },
+};
+
+export const DEVELOPER_CONFIG_SCHEME: ConfigScheme = {
+  maximumLogsCount: {
+    type: 'number',
+  },
+};
+
+export const SYNCHRONIZATION_CONFIG_SCHEME: ConfigScheme = {
+  type: {
+    type: 'select',
+    values: ['none', 'api', ...(Platform.is.mobile ? ['filesystem'] : [])],
   },
 };

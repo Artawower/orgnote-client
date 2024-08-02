@@ -1,6 +1,8 @@
 .page {
   overflow: auto;
   height: 100%;
+  max-width: var(--page-max-width);
+  margin: auto;
 
   @include desktop {
     padding: var(--block-padding-md);
