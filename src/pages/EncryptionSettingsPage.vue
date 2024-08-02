@@ -46,8 +46,8 @@ import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import TheDescription from 'src/components/ui/TheDescription.vue';
 import { buildMenuItems } from 'src/tools/config-menu-builder';
-import { AVAILABLE_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { ENCRYPTION_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 
 const { config } = useSettingsStore();
 
@@ -85,7 +85,7 @@ onBeforeUnmount(async () => {
 });
 
 const encryptionMenuItems: MenuItemProps[] = buildMenuItems(config.encryption, {
-  configScheme: AVAILABLE_CONFIG_SCHEME,
+  configScheme: ENCRYPTION_CONFIG_SCHEME,
   includeKeys: ['type'],
 });
 

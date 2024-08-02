@@ -218,4 +218,5 @@ export default {
     'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.',
   activate: 'activate',
   'copied to clipboard': 'copied to clipboard',
+  'synchronization type': 'synchronization type',
 };

@@ -1,21 +1,22 @@
 <template>
-  <navigation-header />
-  <menu-group
-    v-for="g of keybindingsMenuGgroups"
-    v-bind:key="g.title"
-    v-bind="g"
-  >
-    <template #label="{ data }">
-      <i>{{ (data as Command).description ?? (data as Command).command }}</i>
-    </template>
-  </menu-group>
+  <navigation-page>
+    <menu-group
+      v-for="g of keybindingsMenuGgroups"
+      v-bind:key="g.title"
+      v-bind="g"
+    >
+      <template #label="{ data }">
+        <i>{{ (data as Command).description ?? (data as Command).command }}</i>
+      </template>
+    </menu-group>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
 import { Command } from 'orgnote-api';
 import MenuGroup, { MenuGroupProps } from 'src/components/ui/MenuGroup.vue';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
-import NavigationHeader from 'src/components/ui/NavigationHeader.vue';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
 import { useKeybindingStore } from 'src/stores/keybindings';
 
 const keybindingStore = useKeybindingStore();

@@ -32,7 +32,6 @@ onClickOutside(menuGroupRef, () => {
 
 <style lang="scss">
 .popup-overlay {
-  /* background: var(--bg-alt); */
   padding: var(--block-margin-md);
 }
 </style>

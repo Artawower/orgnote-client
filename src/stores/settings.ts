@@ -88,10 +88,10 @@ export const useSettingsStore = defineStore(
       setupStatusBar();
     };
 
-    const setupStatusBar = mockMobile((bgColor?: string) => {
-      const backgroundColor = getCssVar(bgColor ?? '--bg');
+    const setupStatusBar = mockMobile(async (bgColor?: string) => {
+      const backgroundColor = getCssVar(bgColor ?? 'bg');
       const style = config.ui.theme === 'dark' ? Style.Dark : Style.Light;
-      StatusBar.setBackgroundColor({ color: backgroundColor });
+      await StatusBar.setBackgroundColor({ color: backgroundColor });
       StatusBar.setStyle({ style });
     });
 

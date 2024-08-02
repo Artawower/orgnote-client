@@ -58,7 +58,6 @@
         name="sym_o_check"
         size="sm"
       />
-      <!-- eslint-disable vue/no-mutating-props -->
       <template v-if="type === 'toggle'">
         <template v-if="!reactivePath">
           <toggle-button
@@ -68,7 +67,7 @@
         </template>
         <toggle-button v-else v-model="reactivePath[reactiveKey] as boolean" />
       </template>
-      <template v-if="type === 'text' || type === 'number'">
+      <template v-if="showValue">
         <div class="input-value">{{ modelValue }}</div>
       </template>
       <action-btn
@@ -81,7 +80,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, toValue } from 'vue';
 import { MenuGroupProps } from './MenuGroup.vue';
 import RoundedIcon from './RoundedIcon.vue';
 import ToggleButton from './ToggleButton.vue';
@@ -90,17 +89,15 @@ import ActionBtn from './ActionBtn.vue';
 import { onClickOutside } from '@vueuse/core';
 import { CardWrapperProps } from './CardWrapper.vue';
 import { ActionBtnProps } from './ActionBtn.vue';
-import { toValue } from 'vue';
 import { RefLikeObject } from 'src/models/ref-like.model';
-import { onMounted } from 'vue';
 
 export interface WithValue<TData = unknown> {
   value?: TData;
 }
 
-export interface WithReactivePath {
-  reactivePath?: Record<string, unknown>;
-  reactiveKey?: string;
+export interface WithReactivePath<T = Record<string, unknown>> {
+  reactivePath?: T;
+  reactiveKey?: keyof T;
 }
 
 interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
@@ -120,7 +117,8 @@ interface MenuItemPropsBase<TValue = unknown, TData = unknown> {
     | 'number'
     | 'select'
     | 'multiple-select'
-    | 'textarea';
+    | 'textarea'
+    | 'readonly';
   color?: string;
   handler?: () => void;
   narrow?: boolean;
@@ -163,7 +161,7 @@ const handleClick = () => {
 };
 
 const selectValue = (): boolean => {
-  if (props.type !== 'select') {
+  if (props.type !== 'select' || !isReactiveModel.value) {
     return;
   }
   // eslint-disable-next-line vue/no-mutating-props
@@ -173,12 +171,6 @@ const selectValue = (): boolean => {
 
 const menuItemRef = ref<HTMLElement | null>(null);
 
-onClickOutside(menuItemRef, () => {
-  if (['number', 'text'].includes(props.type)) {
-    editMode.value = null;
-  }
-});
-
 const editableTypes = ['text', 'number', 'textarea'];
 type EditableType = (typeof editableTypes)[number];
 
@@ -186,6 +178,13 @@ const editInputRef = ref<HTMLInputElement | null>(null);
 const editMode = ref<EditableType>(
   props.type === 'textarea' ? 'textarea' : null
 );
+
+onClickOutside(menuItemRef, () => {
+  if (['number', 'text'].includes(props.type)) {
+    editMode.value = null;
+  }
+});
+
 const editValue = (): boolean => {
   if (!editableTypes.includes(props.type)) {
     return;
@@ -202,6 +201,10 @@ watch(
 
 const modelValue = ref<unknown>(
   props.reactivePath?.[props.reactiveKey] || props.value
+);
+
+const showValue = computed(() =>
+  ['number', 'text', 'readonly'].includes(props.type)
 );
 
 const isReactiveModel = computed(
@@ -234,7 +237,6 @@ watch(
 onMounted(() => {
   if (props.autofocus) {
     editInputRef.value?.focus();
-    console.log('[line 236]: AUTOFOC', editInputRef.value);
   }
 });
 </script>
@@ -256,6 +258,7 @@ onMounted(() => {
 
 .right-icons {
   @include flexify(row, flex-end, center);
+  overflow: hidden;
 }
 
 .label {
@@ -275,6 +278,12 @@ onMounted(() => {
 .input-value {
   color: var(--fg-alt);
   padding-right: var(--block-padding-md);
+
+  direction: rtl;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 input,

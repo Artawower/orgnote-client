@@ -138,7 +138,6 @@ const externalResourcesItems: MenuItemProps[] = [
 @include desktop {
   .settings-menu {
     min-width: 300px;
-    padding: var(--block-padding-md);
   }
 }
 

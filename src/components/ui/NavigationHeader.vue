@@ -16,22 +16,19 @@
 <script lang="ts" setup>
 import { useNavBarStore } from 'src/stores/nav-bar.store';
 import ArrowBack from './ArrowBack.vue';
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
 const navBarStore = useNavBarStore();
 
 const navigationHeaderRef = ref<HTMLElement | null>(null);
 const observer = new IntersectionObserver(
   ([e]) => {
-    console.log('[line 26]: e', e);
     e.target.classList.toggle('pinned', e.intersectionRatio < 1);
   },
   { threshold: [1] }
 );
 
-onMounted(() => {
-  observer.observe(navigationHeaderRef.value);
-});
+onMounted(() => observer.observe(navigationHeaderRef.value));
+onBeforeUnmount(() => observer.unobserve(navigationHeaderRef.value));
 </script>
 
 <style lang="scss">

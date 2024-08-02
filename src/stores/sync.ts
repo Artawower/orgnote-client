@@ -11,8 +11,10 @@ import { ref } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote } from 'orgnote-api/remote-api';
-import { repositories } from 'src/boot/repositories';
+import { db, repositories } from 'src/boot/repositories';
 import { Note } from 'orgnote-api/models';
+import { useRouter } from 'vue-router';
+import { RouteNames } from 'src/router/routes';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -85,6 +87,16 @@ export const useSyncStore = defineStore(
       }
     };
 
+    const router = useRouter();
+
+    // TODO: move logic to command
+    const forceResync = async () => {
+      localStorage.removeItem('sync');
+      await db.dropAll();
+      await router.push({ name: RouteNames.Home });
+      window.location.reload();
+    };
+
     const { handleError } = useEncryptionErrorHandler();
     const handleSyncError = (e: Error) => {
       if (
@@ -132,6 +144,7 @@ export const useSyncStore = defineStore(
     return {
       markToSync,
       sync,
+      forceResync,
       lastSyncTime,
       reset,
     };
