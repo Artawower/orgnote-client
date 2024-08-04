@@ -4,6 +4,7 @@ import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
 import { INoteRepository } from 'src/models';
+import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 
 export interface FilePathInfo {
   filePath: string[];
@@ -27,7 +28,11 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
     .indexes(
       '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt'
     )
-    .upgrade((n) => (n.encryptionType = n.encryptionType))
+    .upgrade(
+      (n) =>
+        (n.encryptionType =
+          n.encrypted as unknown as ModelsPublicNoteEncryptionTypeEnum)
+    )
     .build();
 
   get store(): Dexie.Table<Note, string> {

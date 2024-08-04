@@ -1,101 +1,55 @@
 <template>
-  <h4 class="text-h5 q-pb-lg text-capitalize">
-    {{ $t('encryption settings') }}
-  </h4>
-
-  <div class="full-width">
-    <q-select
-      standout="bg-main"
-      v-model="config.encryption.type"
-      :options="encryptionOptions"
-      label="Encryption type"
-      emit-value
-      map-options
-    >
-    </q-select>
-  </div>
-
-  <template v-if="config.encryption.type === 'gpgPassword'">
-    <q-input
-      class="fg-main q-mt-md"
-      standout="bg-main"
-      v-model="config.encryption.password"
-      :label="$t('encryption password')"
-    />
-  </template>
-  <template v-else-if="config.encryption.type === 'gpgKeys'">
-    <q-input
-      class="q-mt-md"
-      :label="$t('GPG public key')"
-      standout="bg-main"
-      v-model="config.encryption.publicKey"
-      type="textarea"
-    ></q-input>
-    <q-btn
-      @click="uploadPublicKey"
-      flat
-      color="black"
-      class="full-width"
-      :label="$t('upload public key')"
+  <navigation-page>
+    <menu-group title="encryption type" :items="encryptionMenuItems" />
+    <menu-group
+      v-if="config.encryption.type === 'gpgPassword'"
+      title="credentials"
+      :items="passwordEncryptionMenuItems"
     />
 
-    <q-input
-      class="q-mt-md"
-      :label="$t('GPG private key')"
-      standout="bg-main color-main"
-      v-model="config.encryption.privateKey"
-      type="textarea"
-    ></q-input>
-    <q-btn
-      @click="uploadPrivateKey"
-      flat
-      color="black"
-      class="full-width"
-      :label="$t('upload private key')"
-    />
+    <template v-if="config.encryption.type === 'gpgKeys'">
+      <menu-group
+        title="GPG public key"
+        :items="gpgEncryptionPublicKeyMenuItems"
+      />
+      <menu-group
+        title="GPG private key"
+        :items="gpgEncryptionPrivateKeyMenuItems"
+      />
 
-    <q-input
-      :label="$t('private key passphrase (optional)')"
-      class="q-mt-md"
-      standout="bg-main"
-      v-model="config.encryption.privateKeyPassphrase"
-    >
-    </q-input>
-    <q-btn
-      @click="generateNewGpgKeys"
-      flat
-      color="black"
-      class="full-width q-mt-md"
-      :label="$t('generate new GPG keys')"
-    />
-  </template>
-  <q-btn
-    v-if="config.encryption.type !== 'disabled'"
-    @click="encryptExistingNotes"
-    flat
-    color="black"
-    class="full-width q-mt-md"
-    :label="$t('encrypt and sync existing notes')"
-  />
+      <menu-group
+        title="GPG private key"
+        :items="gpgEncryptionPrivateKeyPassphraseMenuItems"
+      />
+
+      <menu-group title="Encrypt existing notes" :items="gpgNewKeysMenuItems" />
+      <the-description
+        text="be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys."
+      />
+    </template>
+
+    <template v-if="config.encryption.type !== 'disabled'">
+      <menu-group :items="encryptionActionsMenuitems" />
+    </template>
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
-import { OrgNoteEncryption, OrgNoteGpgEncryption } from 'orgnote-api';
+import { OrgNoteGpgEncryption } from 'orgnote-api';
 import EncryptionKeysForm from 'src/components/containers/EncryptionKeysForm.vue';
 import { useEncryptionStore } from 'src/stores/encryption.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { onBeforeUnmount } from 'vue';
-import { uploadFile } from 'src/tools';
+import { getCssVar, uploadFile } from 'src/tools';
 import { useModalStore } from 'src/stores/modal';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
+import MenuGroup from 'src/components/ui/MenuGroup.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
+import { buildMenuItems } from 'src/tools/config-menu-builder';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { ENCRYPTION_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 
 const { config } = useSettingsStore();
-
-const encryptionOptions: { label: string; value: OrgNoteEncryption['type'] }[] =
-  [
-    { label: 'Disabled', value: 'disabled' },
-    { label: 'GPG', value: 'gpgKeys' },
-    { label: 'Password', value: 'gpgPassword' },
-  ];
 
 const encryptionStore = useEncryptionStore();
 const encryptExistingNotes = async () => {
@@ -129,4 +83,73 @@ onBeforeUnmount(async () => {
     await encryptExistingNotes();
   }
 });
+
+const encryptionMenuItems: MenuItemProps[] = buildMenuItems(config.encryption, {
+  configScheme: ENCRYPTION_CONFIG_SCHEME,
+  includeKeys: ['type'],
+});
+
+const passwordEncryptionMenuItems: MenuItemProps[] = [
+  {
+    reactivePath: config.encryption,
+    reactiveKey: 'password',
+    label: 'encryption password',
+    type: 'text',
+  },
+];
+
+const gpgEncryptionPublicKeyMenuItems: MenuItemProps[] = [
+  {
+    type: 'textarea',
+    reactivePath: config.encryption,
+    reactiveKey: 'publicKey',
+  },
+  {
+    label: 'upload public key',
+    type: 'action',
+    handler: uploadPublicKey,
+    color: getCssVar('blue'),
+  },
+];
+
+const gpgEncryptionPrivateKeyMenuItems: MenuItemProps[] = [
+  {
+    type: 'textarea',
+    reactivePath: config.encryption,
+    reactiveKey: 'privateKey',
+  },
+  {
+    label: 'upload private key',
+    type: 'action',
+    handler: uploadPrivateKey,
+    color: getCssVar('blue'),
+  },
+];
+
+const encryptionActionsMenuitems: MenuItemProps[] = [
+  {
+    label: 'encrypt and sync existing notes',
+    color: getCssVar('red'),
+    handler: encryptExistingNotes,
+  },
+];
+
+const gpgEncryptionPrivateKeyPassphraseMenuItems: MenuItemProps[] = [
+  {
+    label: 'private key passphrase (optional)',
+    type: 'text',
+    reactivePath: config.encryption,
+    reactiveKey: 'privateKeyPassphrase',
+  },
+];
+
+const gpgNewKeysMenuItems: MenuItemProps[] = [
+  {
+    label: 'generate new GPG keys',
+    color: getCssVar('red'),
+    handler: generateNewGpgKeys,
+  },
+];
 </script>
+
+<style lang="scss"></style>

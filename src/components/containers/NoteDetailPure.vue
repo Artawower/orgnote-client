@@ -21,7 +21,6 @@
 // NOTE: this is old version of note detail. Without using codemirror.
 // Return to this implementation for SSR support.
 import { OrgNode } from 'org-mode-ast';
-import { Note } from 'src/models';
 
 import { toRef } from 'vue';
 
@@ -30,6 +29,7 @@ import NoteFooter from 'components/NoteFooter.vue';
 import TagList from 'components/TagList.vue';
 import FilePath from 'components/containers/FilePath.vue';
 import ImageResolver from 'components/containers/ImageResolver.vue';
+import { Note } from 'orgnote-api';
 
 const props = defineProps<{
   note?: Note;

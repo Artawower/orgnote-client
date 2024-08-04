@@ -4,8 +4,8 @@ import {
   CandidateGetterFn,
   CompletionCandidate,
   CompletionSearchResult,
+  NotePreview,
 } from 'src/api';
-import { NotePreview } from 'src/models';
 import { exctractSearchInfo } from 'src/tools';
 import { useRouter } from 'vue-router';
 

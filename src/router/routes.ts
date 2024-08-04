@@ -1,3 +1,4 @@
+import { Platform } from 'quasar';
 import { useAuthStore } from 'src/stores/auth';
 import { RouteRecordRaw } from 'vue-router';
 
@@ -11,6 +12,16 @@ export enum RouteNames {
   UserGraph = 'UserGraph',
   EditNote = 'EditNote',
   SettingsPage = 'SettingsPage',
+  SystemSettings = 'SystemSettings',
+  ExtensionsSettings = 'ExtensionsSettings',
+  LanguageSettings = 'LanguageSettings',
+  InterfaceSettings = 'InterfaceSettings',
+  KeybindingSettings = 'KeybindingSettings',
+  DeveloperSettings = 'DeveloperSettings',
+  EncryptionSettings = 'EncryptionSettings',
+  SubscriptionSettings = 'SubscriptionSettings',
+  ApiSettings = 'ApiSettings',
+  SynchronisationSettings = 'SynchronisationSettings',
   Extensions = 'Extensions',
   Keybindings = 'Keybindings',
   RawEditor = 'Raw editor',
@@ -54,6 +65,110 @@ export const ACTIVATION_PAGE: RouteRecordRaw = {
   },
 };
 
+const settingsPages: RouteRecordRaw[] = [
+  {
+    path: 'system-settings',
+    name: RouteNames.SystemSettings,
+    component: clientOnly(() => import('pages/SystemSettingsPage.vue')),
+    meta: {
+      title: 'system',
+    },
+  },
+  {
+    path: 'language-settings',
+    name: RouteNames.LanguageSettings,
+    component: clientOnly(() => import('pages/LanguageSettingsPage.vue')),
+    meta: {
+      title: 'language',
+    },
+  },
+  {
+    path: 'interface-settings',
+    name: RouteNames.InterfaceSettings,
+    component: clientOnly(() => import('pages/InterfaceSettingsPage.vue')),
+    meta: {
+      title: 'interface',
+    },
+  },
+  {
+    path: 'keybinding-settings',
+    name: RouteNames.KeybindingSettings,
+    component: clientOnly(() => import('pages/KeybindingSettingsPage.vue')),
+    meta: {
+      title: 'keybindings',
+    },
+  },
+  {
+    path: 'developer-settings',
+    name: RouteNames.DeveloperSettings,
+    component: clientOnly(() => import('pages/DeveloperSettingsPage.vue')),
+    meta: {
+      title: 'developer',
+    },
+  },
+  {
+    path: 'extensions-settings',
+    name: RouteNames.ExtensionsSettings,
+    beforeEnter: () => {
+      if (!process.env.CLIENT) {
+        return;
+      }
+      const authStore = useAuthStore();
+      if (!authStore.user) {
+        return { name: RouteNames.NoteList };
+      }
+      return true;
+    },
+    component: clientOnly(() => import('pages/ExtensionsSettingsPage.vue')),
+    meta: {
+      title: 'extensions',
+      icon: 'extension',
+    },
+  },
+  {
+    path: 'encryption-settings',
+    name: RouteNames.EncryptionSettings,
+    component: clientOnly(() => import('pages/EncryptionSettingsPage.vue')),
+    meta: {
+      title: 'encryption',
+    },
+  },
+  {
+    path: 'subscription-settings',
+    name: RouteNames.SubscriptionSettings,
+    component: clientOnly(() => import('pages/SubscriptionSettingsPage.vue')),
+    meta: {
+      title: 'subscription',
+    },
+  },
+  {
+    path: 'synchronisation-settings',
+    name: RouteNames.SynchronisationSettings,
+    component: clientOnly(
+      () => import('pages/SynchronisationSettingsPage.vue')
+    ),
+    meta: {
+      title: 'synchronisation',
+    },
+  },
+  {
+    path: 'api-settings',
+    name: RouteNames.ApiSettings,
+    component: clientOnly(() => import('pages/ApiSettingsPage.vue')),
+    meta: {
+      title: 'api',
+    },
+  },
+  ...(Platform.is.desktop
+    ? [
+        {
+          path: '',
+          redirect: { name: RouteNames.SystemSettings },
+        },
+      ]
+    : []),
+];
+
 export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   path: '/',
   component: () => import('layouts/MainLayout.vue'),
@@ -61,24 +176,6 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
   children: [
     AUTH_PAGE_ROUTE,
     ACTIVATION_PAGE,
-    {
-      path: 'extensions',
-      name: RouteNames.Extensions,
-      component: clientOnly(() => import('pages/ExtensionsPage.vue')),
-      beforeEnter: () => {
-        if (!process.env.CLIENT) {
-          return;
-        }
-        const authStore = useAuthStore();
-        if (!authStore.user) {
-          return { name: RouteNames.NoteList };
-        }
-        return true;
-      },
-      meta: {
-        icon: 'extension',
-      },
-    },
     {
       path: 'note-editor/:id?',
       name: RouteNames.EditNote,
@@ -134,8 +231,11 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       component: clientOnly(() => import('pages/SettingsPage.vue')),
       meta: {
         icon: 'settings',
+        title: 'settings',
       },
+      children: Platform.is.desktop ? settingsPages : [],
     },
+    ...(Platform.is.mobile ? settingsPages : []),
     {
       path: '/:catchAll(.*)*',
       name: RouteNames.NotFound,

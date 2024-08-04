@@ -1,56 +1,26 @@
 <template>
-  <div class="full-width">
-    <h5 class="text-h5 q-pb-lg">API {{ $t('keys') }}</h5>
-    <q-field
-      v-for="token in tokens"
-      :key="token?.id"
-      color="teal"
-      outlined
-      :label="$t('key')"
-      stack-label
-      class="token-field"
-    >
-      <template #append>
-        <div class="token-actions row">
-          <q-btn
-            @click="settingsStore.removeToken(token)"
-            icon="delete"
-            class="btn-flat delete-btn q-mr-xs"
-          >
-          </q-btn>
-          <action-btn
-            icon="content_copy"
-            active-icon="done"
-            @click="copyToken(token)"
-          ></action-btn>
-        </div>
-      </template>
-      <template #control>
-        <div class="self-center full-width no-outline" tabindex="0">
-          {{ token.token }}
-        </div>
-      </template>
-    </q-field>
-    <q-btn
-      @click="settingsStore.createNewToken"
-      :disable="!authStore.user.active"
-      flat
-      color="black"
-      class="full-width"
-      :label="$t('Create new token')"
+  <navigation-page>
+    <the-description
+      text="this functionality is only available to registered users with an active subscription."
     />
-  </div>
+    <menu-group :items="apiMenuItems" />
+  </navigation-page>
 </template>
 
 <script lang="ts" setup>
 import { copyToClipboard } from 'quasar';
 import { ModelsAPIToken } from 'src/generated/api';
 import { useSettingsStore } from 'src/stores/settings';
+import NavigationPage from 'src/components/ui/NavigationPage.vue';
+import TheDescription from 'src/components/ui/TheDescription.vue';
 
-import { toRefs } from 'vue';
+import { computed, ref, toRefs } from 'vue';
 
-import ActionBtn from 'src/components/ui/ActionBtn.vue';
 import { useAuthStore } from 'src/stores/auth';
+import MenuGroup from 'src/components/ui/MenuGroup.vue';
+import { watch } from 'vue';
+import { getCssVar } from 'src/tools';
+import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 
 const settingsStore = useSettingsStore();
 const { tokens } = toRefs(settingsStore);
@@ -61,6 +31,46 @@ const authStore = useAuthStore();
 const copyToken = (token: ModelsAPIToken) => {
   copyToClipboard(token.token);
 };
+
+const apiMenuItems = ref<MenuItemProps[]>([]);
+
+const initMenuitems = () => {
+  const items: MenuItemProps[] = tokens.value.map<MenuItemProps>((token) => ({
+    label: token.token,
+    action: () => copyToken(token),
+    popupMenuGroup: {
+      items: [
+        {
+          label: 'copy',
+          color: getCssVar('blue'),
+          handler: () => copyToken(token),
+          actionIcon: 'content_copy',
+          activeActionIcon: 'done',
+        },
+        {
+          label: 'delete',
+          color: getCssVar('red'),
+          handler: () => settingsStore.removeToken(token),
+          actionIcon: 'delete',
+        },
+      ],
+    },
+  }));
+
+  apiMenuItems.value = [
+    ...items,
+    {
+      label: 'Create new token',
+      handler: () => settingsStore.createNewToken(),
+      color: getCssVar('blue'),
+      disabled: computed(() => !authStore.user.active),
+    },
+  ];
+};
+
+watch(() => tokens.value, initMenuitems);
+
+initMenuitems();
 </script>
 
 <style lang="scss">

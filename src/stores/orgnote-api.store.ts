@@ -61,7 +61,7 @@ export const useOrgNoteApiStore = () => {
     fileSystem: {
       readPath: async () => {
         const res = await FolderPicker.chooseFolder();
-        return res.value;
+        return res.path;
       },
     },
     configuration: () => settings.config,

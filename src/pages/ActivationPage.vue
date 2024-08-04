@@ -82,7 +82,7 @@ const activate = async () => {
     return;
   }
   await authStore.subscribe(key.value, email.value);
-  if (config.common.developerMode) {
+  if (config.developer.developerMode) {
     await sleep(10000);
   }
   router.push({ name: RouteNames.Home });

@@ -7,26 +7,36 @@ import { sdk } from 'src/boot/axios';
 import { ModelsAPIToken } from 'src/generated/api';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { getCssVar } from 'src/tools';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { DEFAULT_CONFIG } from 'src/constants/default-config.constant';
 import { deepAssign } from 'src/tools/deep-assign';
 import clone from 'rfdc';
+import { useI18n } from 'vue-i18n';
 
 export const useSettingsStore = defineStore(
   'settings',
   () => {
     const tokens = ref<ModelsAPIToken[]>([]);
-    const showUserProfiles = ref<boolean>(true);
     const locale = ref<string>('en-US');
-    const darkMode = ref<boolean | 'auto'>('auto');
+
+    const loc = useI18n({ useScope: 'global' }).locale;
+    loc.value = locale.value;
 
     const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
 
     const setLocale = (lc: string) => {
       locale.value = lc;
     };
+
+    watch(
+      () => locale.value,
+      (val) => {
+        console.log('✎: [line 38][settings.ts] val: ', val);
+        loc.value = val;
+      }
+    );
     const setTokens = (newTokens: ModelsAPIToken[]) => {
       tokens.value = newTokens;
     };
@@ -56,16 +66,16 @@ export const useSettingsStore = defineStore(
         // TODO: master  real error handling
       }
     };
-    const toggleProfileVisibility = () => {
-      showUserProfiles.value = !showUserProfiles.value;
-    };
-
-    const setDarkMode = async (mode: boolean | 'auto'): Promise<void> => {
+    const setDarkMode = async (
+      mode: OrgNoteConfig['ui']['theme']
+    ): Promise<void> => {
       const extensionStore = useExtensionsStore();
-      darkMode.value = mode;
+      config.ui.theme = mode;
+      // console.log('[line 74]: SETTTT!');
       await extensionStore.deactivateThemeExtension();
 
-      const themeNameKey = darkMode.value ? 'darkThemeName' : 'lightThemeName';
+      const themeNameKey =
+        config.ui.theme === 'dark' ? 'darkThemeName' : 'lightThemeName';
       const themeName = config.ui[themeNameKey];
       if (themeName) {
         await extensionStore.activateExtension(themeName);
@@ -74,14 +84,14 @@ export const useSettingsStore = defineStore(
     };
 
     const updateDarkMode = () => {
-      Dark.set(darkMode.value);
+      Dark.set(config.ui.theme === 'dark');
       setupStatusBar();
     };
 
-    const setupStatusBar = mockMobile((bgColor?: string) => {
-      const backgroundColor = getCssVar(bgColor ?? '--bg');
-      const style = darkMode.value ? Style.Dark : Style.Light;
-      StatusBar.setBackgroundColor({ color: backgroundColor });
+    const setupStatusBar = mockMobile(async (bgColor?: string) => {
+      const backgroundColor = getCssVar(bgColor ?? 'bg');
+      const style = config.ui.theme === 'dark' ? Style.Dark : Style.Light;
+      await StatusBar.setBackgroundColor({ color: backgroundColor });
       StatusBar.setStyle({ style });
     });
 
@@ -104,9 +114,20 @@ export const useSettingsStore = defineStore(
 
     updateDarkMode();
 
+    const darkMode = computed(() => config.ui.theme === 'dark');
+
+    watch(
+      () => config.ui.theme,
+      (curr, prev) => {
+        if (prev === curr) {
+          return;
+        }
+        setDarkMode(curr);
+      }
+    );
+
     return {
       tokens,
-      showUserProfiles,
       locale,
       darkMode,
       setLocale,
@@ -115,7 +136,6 @@ export const useSettingsStore = defineStore(
       reset,
       removeToken,
       getApiTokens,
-      toggleProfileVisibility,
       setDarkMode,
       updateDarkMode,
       config,

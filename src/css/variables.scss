@@ -59,6 +59,8 @@ body {
 
   // Menu
   --menu-padding: 8px;
+  --menu-item-height: 50px;
+  --menu-item-max-height: 200px;
 
   // File uploader
   --file-uploader-border-width: 4px;
@@ -115,6 +117,7 @@ body {
   // Icon button
   --icon-btn-color: var(--fg);
   --icon-btn-hover-color: var(--base8);
+  --icon-border-radius: var(--block-border-radius-sm);
 
   // Modal
   --modal-max-height: 94svh;
@@ -127,7 +130,9 @@ body {
   --block-padding-lg: 32px;
   --block-margin-md: 16px;
   --block-margin-sm: 8px;
-  --block-border-radius-md: 16px;
+  --block-margin-xs: 8px;
+  --block-border-radius-lg: 16px;
+  --block-border-radius-md: 10px;
   --block-border-radius-sm: 6px;
   --item-default-radius: 8px;
   --search-icn-size: 44px;
@@ -143,7 +148,6 @@ body {
   --src-block-margin-y: 16px;
 
   // Editor
-  --page-padding: 16px 56px;
   --editor-line-height: 1.8;
   --editor-headline-line-height: 1.2;
   --editor-default-line-height: 28.8px;
@@ -156,6 +160,10 @@ body {
   --editor-fold-placeholder-color: var(--fg);
   --editor-active-line-bg-color: transparent;
   --editor-caret-color: var(--fg);
+
+  // Page
+  --page-padding: 16px 56px;
+  --page-max-width: 1024px;
 
   // List
   --org-list-item-bullet-margin-left: 20px;
@@ -174,6 +182,9 @@ body {
 
   // Device-specific options
   --standalone-bottom-padding: 24px;
+
+  // Toggle button
+  --toggle-button-scale: 0.45;
 }
 
 @include light-mode {
@@ -200,6 +211,7 @@ body {
 body {
   // Border
   --border-main: 1px solid var(--fg-alt);
+  --border-secondary: 1px solid var(--base7);
 }
 
 body.standalone {

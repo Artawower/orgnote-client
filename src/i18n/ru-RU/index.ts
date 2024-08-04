@@ -141,8 +141,8 @@ export default {
   'sign up for beta testing': 'зарегистрируйтесь для бета-тестирования',
   'active testers will receive a key in the release version':
     'активные тестировщики получат ключ в релизной версии',
-  'you are an open-source developer, write to app.orgnote@gmail.com':
-    'вы разработчик с открытым исходным кодом, пишите на app.orgnote@gmail.com',
+  'you are an open-source developer, write to':
+    'вы разработчик с открытым исходным кодом, пишите на',
   'try to set up your own server for synchronization (unfortunately instructions are in progress)':
     'попробуйте настроить свой сервер для синхронизации (к сожалению, инструкции в процессе)',
   'subscribe to my patreon': 'подпишитесь на мой патреон',
@@ -199,4 +199,26 @@ export default {
   'is encrypted': 'заширована',
   'please, configure encryption settings for decrypt note':
     'пожалуйста, настройте параметры шифрования для деширования заметки',
+  'this functionality is only available to registered users with an active subscription.':
+    'эта функциональность доступна только зарегистрированным пользователям с активной подпиской.',
+  'this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted.':
+    'эта функция полностью очистит локальный кэш и перезагрузит все заметки из внешнего источника. Важно: несохраненные заметки будут удалены.',
+  'be careful, all local data will be purged, unsaved notes will be lost':
+    'будьте осторожны, все локальные данные будут удалены, несохраненные заметки будут потеряны',
+  'deleting an account is an irreversible operation. We do not store your data after deletion and therefore it cannot be recovered.':
+    'удаление аккаунта — это необратимая операция. Мы не храним ваши данные после удаления и поэтому их нельзя восстановить.',
+  system: 'система',
+  language: 'язык',
+  interface: 'интерфейс',
+  synchronisation: 'синхронизация',
+  developer: 'разработка',
+  'source code': 'исходный код',
+  API: 'API',
+  WIKI: 'WIKI',
+  sponsor: 'спонсировать',
+  'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.':
+    'будьте осторожны, старые ключи шифрования будут потеряны. Сторонним клиентам придется обновить ключи шифрования',
+  activate: 'активировать',
+  'copied to clipboard': 'скопировано в буфер обмена',
+  'synchronization type': 'тип синхронизации',
 };

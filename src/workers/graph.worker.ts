@@ -1,12 +1,8 @@
 /// <reference lib="webworker" />
 import { GraphUpdated, GraphAction, GraphWorkerEvent } from './graph.actions';
-import {
-  GraphNoteNode,
-  NoteGraph,
-  NoteGraphLink,
-  NotePreview,
-} from 'src/models';
+import { GraphNoteNode, NoteGraph, NoteGraphLink } from 'src/models';
 import { repositories } from 'src/boot/repositories';
+import { NotePreview } from 'orgnote-api';
 
 function buildGraph(notes: NotePreview[]): NoteGraph {
   const links: NoteGraphLink[] = [];
@@ -15,7 +11,7 @@ function buildGraph(notes: NotePreview[]): NoteGraph {
   }>((acc, n) => {
     acc[n.id] = {
       id: n.id,
-      title: n.meta.title,
+      title: n.encrypted ? n.filePath.slice(-1).join('') : n.meta.title,
       weight: 1,
     };
     return acc;

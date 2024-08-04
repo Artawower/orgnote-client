@@ -5,3 +5,10 @@ export function toCamelCase(text: string): string {
 export function toKebabCase(text: string): string {
   return text.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
 }
+
+export function toSentence(text: string): string {
+  return text
+    .split(/(?=[A-Z])/)
+    .join(' ')
+    .toLowerCase();
+}

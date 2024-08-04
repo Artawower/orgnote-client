@@ -1,14 +1,12 @@
 import { Command, ExtensionMeta, DefaultCommands } from 'orgnote-api';
-import SettingsPage from 'src/pages/SettingsPage.vue';
 import { RouteNames } from 'src/router/routes';
 import { useCompletionStore } from 'src/stores/completion';
 import { useExtensionsStore } from 'src/stores/extensions';
-import { useModalStore } from 'src/stores/modal';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords, searchFilter } from 'src/tools';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 export function getSettingsCommands(): Command[] {
   const settingsStore = useSettingsStore();
@@ -16,9 +14,9 @@ export function getSettingsCommands(): Command[] {
   const noteEditorStore = useNoteEditorStore();
   const completionStore = useCompletionStore();
   const extensionStore = useExtensionsStore();
-  const modalStore = useModalStore();
   const { orgNoteApi } = useOrgNoteApiStore();
   const route = useRoute();
+  const router = useRouter();
 
   return [
     ...generatedCommands,
@@ -75,7 +73,9 @@ export function getSettingsCommands(): Command[] {
           ? 'switch to light theme'
           : 'switch to dark theme',
       handler: () => {
-        settingsStore.setDarkMode(!settingsStore.darkMode);
+        settingsStore.config.ui.theme = settingsStore.darkMode
+          ? 'light'
+          : 'dark';
       },
     },
     {
@@ -89,7 +89,7 @@ export function getSettingsCommands(): Command[] {
           RouteNames.RawEditor,
         ].includes(route.name as RouteNames);
 
-        return isNoteEditPage && settingsStore.config.common.developerMode;
+        return isNoteEditPage && settingsStore.config.developer.developerMode;
       },
     },
     {
@@ -97,7 +97,7 @@ export function getSettingsCommands(): Command[] {
       icon: 'settings',
       group: 'global',
       description: 'open settings',
-      handler: () => modalStore.open(SettingsPage, { title: 'settings' }),
+      handler: () => router.push({ name: RouteNames.SettingsPage }),
     },
   ];
 }

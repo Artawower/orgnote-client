@@ -145,8 +145,8 @@ export default {
   'sign up for beta testing': 'sign up for beta testing',
   'active testers will receive a key in the release version':
     'active testers will receive a key in the release version',
-  'you are an open-source developer, write to app.orgnote@gmail.com':
-    'you are an open-source developer, write to app.orgnote@gmail.com',
+  'you are an open-source developer, write to':
+    'you are an open-source developer, write to',
   'try to set up your own server for synchronization (unfortunately instructions are in progress)':
     'try to set up your own server for synchronization (unfortunately instructions are in progress)',
   'subscribe to my patreon': 'subscribe to my patreon',
@@ -203,4 +203,20 @@ export default {
   'is encrypted': 'is encrypted',
   'please, configure encryption settings for decrypt note':
     'please, configure encryption settings for decrypt note',
+  'this functionality is only available to registered users with an active subscription.':
+    'this functionality is only available to registered users with an active subscription.',
+  system: 'system',
+  language: 'language',
+  interface: 'interface',
+  synchronisation: 'synchronisation',
+  developer: 'developer',
+  'source code': 'source code',
+  API: 'API',
+  WIKI: 'WIKI',
+  sponsor: 'sponsor',
+  'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.':
+    'be careful, the old encryption keys will be lost. Third-party clients will need to update encryption keys.',
+  activate: 'activate',
+  'copied to clipboard': 'copied to clipboard',
+  'synchronization type': 'synchronization type',
 };

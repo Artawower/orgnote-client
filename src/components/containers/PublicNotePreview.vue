@@ -8,7 +8,11 @@
     <q-card v-else-if="notePreview" class="full-height color-main" flat>
       <div
         class="q-px-sm"
-        v-if="(notePreview as Note)?.author && showUserProfiles && showAuthor"
+        v-if="
+          (notePreview as Note)?.author &&
+          settingsStore.config.ui.showUserProfiles &&
+          showAuthor
+        "
       >
         <author-info :author="(notePreview as Note).author"></author-info>
       </div>
@@ -45,7 +49,7 @@
             ></file-path>
             <div class="text-caption rft description">
               <span
-                v-if="settingsStore.config.common.developerMode"
+                v-if="settingsStore.config.developer.developerMode"
                 class="italic color-secondary"
               >
                 [{{ new Date(notePreview.updatedAt).toLocaleString() }}]
@@ -126,8 +130,6 @@ const viewStore = useViewStore();
 const isTile = computed(() => viewStore.tile);
 
 const settingsStore = useSettingsStore();
-
-const { showUserProfiles } = toRefs(settingsStore);
 
 const previewImage = ref(notePreview.value?.meta.images?.[0]);
 watch(

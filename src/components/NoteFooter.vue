@@ -112,13 +112,13 @@
 
 <script lang="ts" setup>
 import { useNotifications, usePlatformSize } from 'src/hooks';
-import { Note, NotePreview } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
 import { toRef } from 'vue';
 import { useSelectedNotesStore } from 'src/stores/selected-notes';
 import { useNotesStore } from 'src/stores/notes';
+import { Note, NotePreview } from 'orgnote-api';
 
 const props = defineProps<{
   selectable?: boolean;

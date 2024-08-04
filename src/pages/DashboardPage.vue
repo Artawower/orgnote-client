@@ -74,8 +74,6 @@
 </template>
 
 <script lang="ts" setup>
-import { Note, NotePreview } from 'src/models';
-
 import { onBeforeMount, ref } from 'vue';
 
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
@@ -86,6 +84,7 @@ import PrettyCard from 'src/components/ui/PrettyCard.vue';
 import { useNotesStore } from 'src/stores/notes';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useNotesStatisticStore } from 'src/stores/notes-statistic';
+import { Note, NotePreview } from 'orgnote-api';
 
 const notesStore = useNotesStore();
 

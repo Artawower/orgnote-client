@@ -18,7 +18,7 @@ export class FileRepository extends BaseRepository implements IFileRepository {
     .build();
 
   get store(): Dexie.Table<MediaFile, string> {
-    return this.db.table(FileRepository.storeName);
+    return this.db.table<MediaFile, string>(FileRepository.storeName);
   }
 
   async save(file: File): Promise<void> {

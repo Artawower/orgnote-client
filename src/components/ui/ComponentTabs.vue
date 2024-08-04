@@ -34,6 +34,7 @@
   </div>
 </template>
 
+<!-- TODO: deprecated delete. Change in others files to menu group  -->
 <script lang="ts">
 export interface Tab {
   name: string;

@@ -1,9 +1,9 @@
 <template>
   <template v-if="user?.active">
-    <p class="font-main color-secondary">
+    <the-description>
       {{ $t('used space') }}({{ bytesToMegobytes(user.usedSpace) }} /
       {{ bytesToMegobytes(user.spaceLimit) }} Mb):
-    </p>
+    </the-description>
     <q-linear-progress
       stripe
       rounded
@@ -27,8 +27,9 @@
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from 'src/stores/auth';
 import { bytesToMegobytes } from 'src/tools';
-
 import { computed } from 'vue';
+
+import TheDescription from '../ui/TheDescription.vue';
 
 const authStore = useAuthStore();
 
