@@ -26,6 +26,7 @@ const getFoldedRanges = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cur = foldedRanges(props.editorView.state as any).iter();
+  /* eslint-disable no-constant-condition */
   while (true) {
     if (!cur.value) {
       break;

@@ -5,7 +5,6 @@
     "strictNullChecks": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
-    "module": "es2022",
     "paths": {
       "src/*": ["src/*"],
       "app/*": ["*"],

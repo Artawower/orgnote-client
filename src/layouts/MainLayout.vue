@@ -63,7 +63,7 @@ import { useNotesImportStore } from 'src/stores/import-store';
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { debounce, mockServer } from 'src/tools';
 
-import { computed, onBeforeMount, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 
 import LoaderSpinner from 'src/components/LoaderSpinner.vue';
 import ActionSidePanel from 'src/components/containers/ActionSidePanel.vue';

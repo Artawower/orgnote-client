@@ -33,7 +33,7 @@
     </div>
   </div>
   <actions-popup
-    v-model="actionsPopup"
+    v-model="actionsPopupOpened"
     @close="closePopup"
     :popup-menu-group="popupMenuGroup"
   />
@@ -69,7 +69,7 @@ const emits = defineEmits<{
 }>();
 
 const popupMenuGroup = ref<MenuGroupProps>(null);
-const actionsPopup = ref(false);
+const actionsPopupOpened = ref(false);
 
 const getBorderRadiusType = (index: number): 'top' | 'bottom' | 'full' => {
   if (props.items.length == 1) {
@@ -118,7 +118,7 @@ const handleMenuPopup = (item: MenuItemProps) => {
     return;
   }
   popupMenuGroup.value = item.popupMenuGroup;
-  actionsPopup.value = true;
+  actionsPopupOpened.value = true;
   return true;
 };
 
@@ -136,7 +136,7 @@ const handleToggleItem = (item: MenuItemProps) => {
 };
 
 const closePopup = () => {
-  actionsPopup.value = false;
+  actionsPopupOpened.value = false;
   popupMenuGroup.value = null;
 };
 </script>

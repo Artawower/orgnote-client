@@ -215,6 +215,7 @@ watch(
   () => modelValue.value,
   (value) => {
     if (isReactiveModel.value) {
+      // eslint-disable-next-line vue/no-mutating-props
       props.reactivePath[props.reactiveKey] = value;
     }
   }
