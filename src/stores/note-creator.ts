@@ -8,6 +8,7 @@ import { RouteNames } from 'src/router/routes';
 import { getFileNameWithoutExtension, getInitialNoteTemplate } from 'src/tools';
 import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
+import { useSettingsStore } from './settings';
 
 export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   // TODO: master template list for plugins.
@@ -24,6 +25,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   const notesStore = useNotesStore();
   const router = useRouter();
   const authStore = useAuthStore();
+  const { config } = useSettingsStore();
 
   const create = async (id?: string, filePath?: string[]) => {
     id ??= v4();
@@ -42,6 +44,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       author: { id: authStore.user.id },
       touchedAt: new Date().toISOString(),
       meta: parsedNote.meta as ModelsNoteMeta,
+      encryptionType: config.encryption.type,
     });
     await notesStore.upsertNotesLocally([note]);
     router.push({

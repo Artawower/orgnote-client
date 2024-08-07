@@ -7,7 +7,7 @@ import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useEncryption } from 'src/hooks';
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote } from 'orgnote-api/remote-api';
@@ -15,6 +15,7 @@ import { db, repositories } from 'src/boot/repositories';
 import { Note } from 'orgnote-api/models';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
+import { useSettingsStore } from './settings';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -43,7 +44,24 @@ export const useSyncStore = defineStore(
 
     const { encryptNote, decryptNote } = useEncryption();
 
+    const { config } = useSettingsStore();
+
+    watch(
+      () => config.synchronization.type,
+      () => sync()
+    );
+
     const sync = async () => {
+      if (config.synchronization.type === 'none') {
+        return;
+      }
+      if (config.synchronization.type === 'filesystem') {
+        return;
+      }
+      await syncViaApi();
+    };
+
+    const syncViaApi = async () => {
       cancelPreviousRequest();
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);

@@ -13,7 +13,8 @@ export function useEncryption() {
   };
 
   const decryptNote = async (note: Note): Promise<Note> => {
-    return await _decryptNote(note, config.encryption);
+    const res = await _decryptNote(note, config.encryption);
+    return res;
   };
 
   return {

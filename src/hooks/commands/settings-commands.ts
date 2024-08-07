@@ -97,7 +97,7 @@ export function getSettingsCommands(): Command[] {
       icon: 'settings',
       group: 'global',
       description: 'open settings',
-      handler: () => router.push({ name: RouteNames.SettingsPage }),
+      handler: () => router.push({ name: RouteNames.SystemSettings }),
     },
   ];
 }

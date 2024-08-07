@@ -120,6 +120,5 @@ export const useCommandsStore = defineStore('commands', () => {
     getCommandsFromGroup,
     deactivateGroup,
     initCompletion,
-    currentGroups,
   };
 });

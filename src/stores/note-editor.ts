@@ -10,6 +10,7 @@ import { useFileManagerStore } from './file-manager';
 import { useNotesStore } from './notes';
 import { EditorView } from '@codemirror/view';
 import { Note } from 'orgnote-api';
+import { useCurrentNoteStore } from './current-note';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();
@@ -22,6 +23,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const editorView = shallowRef<EditorView>(null);
 
   const fileManagerStore = useFileManagerStore();
+  const { getNoteById } = useCurrentNoteStore();
   // TODO: master persistent value should be done via indexed db.
   const saveNoteData = (text: string, orgNode: OrgNode) => {
     if (setNoteContent(text, orgNode)) {
@@ -89,8 +91,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
 
   const upsertNote = async () => {
     const now = new Date().toISOString();
+    const [previousNote] = await getNoteById(orgTree.value.meta.id);
     await notesStore.upsertNotesLocally([
       {
+        ...previousNote,
         content: lastSavedText.value,
         id: orgTree.value.meta.id,
         createdAt: createdTime.value ?? now,

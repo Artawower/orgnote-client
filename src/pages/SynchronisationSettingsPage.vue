@@ -7,6 +7,7 @@
       :items="pathPickItems"
     />
     <the-description
+      v-if="config.synchronization.type === 'filesystem'"
       text="this functionality in development right now. It's not possible to sync notes with the filesystem yet."
     />
     <menu-group :items="forceSyncItems" />
@@ -38,16 +39,20 @@ const dirSyncAvailable = computed(
 );
 
 const syncStore = useSyncStore();
+const { config } = useSettingsStore();
+
 const forceSyncItems: MenuItemProps[] = [
   {
     label: 'force sync',
-    disabled: authStore.user?.isAnonymous,
+    disabled: computed(
+      () =>
+        authStore.user?.isAnonymous || config.synchronization.type === 'none'
+    ),
     handler: () => syncStore.forceResync(),
     color: getCssVar('blue'),
   },
 ];
 
-const { config } = useSettingsStore();
 const syncTypeItems: MenuItemProps[] = buildMenuItems(config.synchronization, {
   configScheme: SYNCHRONIZATION_CONFIG_SCHEME,
   excludeKeys: ['path'],
