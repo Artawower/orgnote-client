@@ -159,7 +159,7 @@ const settingsPages: RouteRecordRaw[] = [
       title: 'api',
     },
   },
-  ...(Platform.is.desktop
+  ...(process.env.CLIENT && Platform.is.desktop
     ? [
         {
           path: '',
@@ -233,9 +233,9 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
         icon: 'settings',
         title: 'settings',
       },
-      children: Platform.is.desktop ? settingsPages : [],
+      children: process.env.CLIENT && Platform.is.desktop ? settingsPages : [],
     },
-    ...(Platform.is.mobile ? settingsPages : []),
+    ...(process.env.client && Platform.is.mobile ? settingsPages : []),
     {
       path: '/:catchAll(.*)*',
       name: RouteNames.NotFound,

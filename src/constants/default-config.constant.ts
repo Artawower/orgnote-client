@@ -76,6 +76,11 @@ export const DEVELOPER_CONFIG_SCHEME: ConfigScheme = {
 export const SYNCHRONIZATION_CONFIG_SCHEME: ConfigScheme = {
   type: {
     type: 'select',
-    values: ['none', 'api', ...(Platform.is.mobile ? ['filesystem'] : [])],
+    values: [
+      'none',
+      'api',
+      // TODO: make function for dynamic array values depends on the environment
+      ...(process.env.CIENT && Platform.is.mobile ? ['filesystem'] : []),
+    ],
   },
 };
