@@ -6,6 +6,7 @@ import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { camelCaseToWords, searchFilter } from 'src/tools';
+import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 import { useRoute, useRouter } from 'vue-router';
 
 export function getSettingsCommands(): Command[] {
@@ -97,7 +98,13 @@ export function getSettingsCommands(): Command[] {
       icon: 'settings',
       group: 'global',
       description: 'open settings',
-      handler: () => router.push({ name: RouteNames.SystemSettings }),
+      handler: () =>
+        router.push({
+          name: platformSpecificValue({
+            data: RouteNames.SystemSettings,
+            mobile: RouteNames.SettingsPage,
+          }),
+        }),
     },
   ];
 }

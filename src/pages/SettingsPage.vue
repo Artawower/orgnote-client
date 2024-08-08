@@ -161,5 +161,7 @@ const externalResourcesItems: MenuItemProps[] = [
   flex-direction: column;
   gap: var(--block-padding-md);
   padding: var(--block-padding-md);
+
+  @include mobile-footer-padding;
 }
 </style>

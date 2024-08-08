@@ -8,9 +8,7 @@
     padding: var(--block-padding-md);
   }
 
-  @include mobile {
-    padding-bottom: cacl(var(--footer-height) + 20px);
-  }
+  @include mobile-footer-padding();
 }
 
 // TODO: remove

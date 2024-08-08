@@ -235,7 +235,7 @@ export const MAIN_PAGE_ROUTE: RouteRecordRaw = {
       },
       children: process.env.CLIENT && Platform.is.desktop ? settingsPages : [],
     },
-    ...(process.env.client && Platform.is.mobile ? settingsPages : []),
+    ...(process.env.CLIENT && Platform.is.mobile ? settingsPages : []),
     {
       path: '/:catchAll(.*)*',
       name: RouteNames.NotFound,

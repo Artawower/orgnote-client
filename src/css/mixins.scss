@@ -94,3 +94,9 @@
   top: -1px;
   z-index: 1000;
 }
+
+@mixin mobile-footer-padding($offset: 0px) {
+  @include mobile {
+    padding-bottom: calc(var(--footer-height) + #{$offset});
+  }
+}
