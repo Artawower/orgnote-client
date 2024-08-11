@@ -151,6 +151,13 @@ export const useNotesStore = defineStore('notes', () => {
     return await repositories.notes.clear();
   };
 
+  const removeAllNotes = async () => {
+    // TODO: master global loader here. Block the app!
+    await sdk.notes.allNotesDelete();
+    await repositories.notes.clear();
+    await fileManagerStore.updateFileManager();
+  };
+
   return {
     notes,
     selectedNote,
@@ -170,5 +177,6 @@ export const useNotesStore = defineStore('notes', () => {
     toggleBookmark,
     resetCache,
     clearNotes,
+    removeAllNotes,
   };
 });

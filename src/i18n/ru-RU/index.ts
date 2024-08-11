@@ -221,4 +221,7 @@ export default {
   activate: 'активировать',
   'copied to clipboard': 'скопировано в буфер обмена',
   'synchronization type': 'тип синхронизации',
+  'delete all notes': 'удалить все заметки',
+  'are you sure you want to delete all notes?':
+    'вы уверены что хотите удалить все заметки?',
 };

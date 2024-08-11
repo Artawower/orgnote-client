@@ -219,4 +219,7 @@ export default {
   activate: 'activate',
   'copied to clipboard': 'copied to clipboard',
   'synchronization type': 'synchronization type',
+  'delete all notes': 'delete all notes',
+  'are you sure you want to delete all notes?':
+    'are you sure you want to delete all notes?',
 };

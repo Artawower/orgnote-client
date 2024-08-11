@@ -22,18 +22,21 @@ import { useRouter } from 'vue-router';
 import { getCssVar } from 'src/tools';
 import { useAuthStore } from 'src/stores/auth';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { useSettingsStore } from 'src/stores/settings';
+import { computed } from 'vue';
+import { useNotesStore } from 'src/stores/notes';
 
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const router = useRouter();
 
-const clearAllData = async () => {
-  const clear = await orgNoteApi.interaction.confirm(
+const confirmDeleteLocalNotes = async () => {
+  const confirmed = await orgNoteApi.interaction.confirm(
     'clear all local data',
     'are you sure you want to delete all data?'
   );
 
-  if (!clear) {
+  if (!confirmed) {
     return;
   }
 
@@ -43,12 +46,35 @@ const clearAllData = async () => {
   window.location.reload();
 };
 
+const notesStore = useNotesStore();
+
+const clearLocalAndRemoteNotes = async () => {
+  const confirmed = await orgNoteApi.interaction.confirm(
+    'delete all notes',
+    'are you sure you want to delete all notes?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  await notesStore.removeAllNotes();
+};
+
 const authStore = useAuthStore();
+
+const { config } = useSettingsStore();
 
 const clearAllDataMenuItems: MenuItemProps[] = [
   {
     label: 'clear all local data',
-    handler: clearAllData,
+    handler: confirmDeleteLocalNotes,
+    color: getCssVar('red'),
+  },
+  {
+    label: 'delete all notes',
+    disabled: computed(() => config.synchronization.type === 'none'),
+    handler: clearLocalAndRemoteNotes,
     color: getCssVar('red'),
   },
 ];
