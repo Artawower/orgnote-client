@@ -11,7 +11,6 @@
 </template>
 
 <script lang="ts" setup>
-import { onClickOutside } from '@vueuse/core';
 import { ref } from 'vue';
 
 const model = defineModel<boolean>();
@@ -21,10 +20,6 @@ const emits = defineEmits<{
 }>();
 
 const contentRef = ref<HTMLElement | null>(null);
-
-onClickOutside(contentRef, () => {
-  emits('closed');
-});
 </script>
 
 <style lang="scss">
