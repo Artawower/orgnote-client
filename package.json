@@ -7,6 +7,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 120,120 -m capacitor -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8",
     "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
     "dev:android": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android",
     "dev:ssr": "env-cmd -f ./.env.ssr quasar dev -m ssr",
