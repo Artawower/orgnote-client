@@ -32,8 +32,10 @@ export const readOrgFile = async (
       ? file.webkitRelativePath || file.name
       : entry.fullPath;
 
+  const filePath = path.split('/').filter((p) => !!p);
+
   return {
-    filePath: path.slice(1).split('/'),
+    filePath,
     content: fileText,
   };
 };

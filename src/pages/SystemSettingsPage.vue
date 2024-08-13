@@ -73,7 +73,10 @@ const clearAllDataMenuItems: MenuItemProps[] = [
   },
   {
     label: 'delete all notes',
-    disabled: computed(() => config.synchronization.type === 'none'),
+    disabled: computed(
+      () =>
+        config.synchronization.type === 'none' || authStore.user?.isAnonymous
+    ),
     handler: clearLocalAndRemoteNotes,
     color: getCssVar('red'),
   },
