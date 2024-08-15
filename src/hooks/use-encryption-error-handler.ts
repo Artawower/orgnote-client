@@ -1,6 +1,5 @@
 import EncryptionPrivateKeyPasswordPrompt from 'src/components/containers/EncryptionPrivateKeyPasswordPrompt.vue';
 import { useNotifications } from './notification';
-import SettingsPage from 'src/pages/SettingsPage.vue';
 import {
   ImpossibleToDecryptWithProvidedKeysError,
   IncorrectEncryptionPasswordError,
@@ -9,19 +8,21 @@ import {
   NoPasswordProvidedError,
 } from 'orgnote-api/encryption';
 import { useModalStore } from 'src/stores/modal';
+import { useRouter } from 'vue-router';
+import { RouteNames } from 'src/router/routes';
 
 export function useEncryptionErrorHandler() {
   const modalStore = useModalStore();
   const notifications = useNotifications();
+  const router = useRouter();
 
   const openModalForChangeEncryptionPassword = () =>
     modalStore.open(EncryptionPrivateKeyPasswordPrompt, {
       title: 'Missing or incorrect encryption password',
     });
 
-  const openModalForChangEncryptionKeys = () => {
-    // TODO: open from orgnote api
-    modalStore.open(SettingsPage, { title: 'settings' });
+  const openEcnryptionSettingsForChangingKeys = () => {
+    router.push({ name: RouteNames.EncryptionSettings });
   };
 
   const handleError = (e: Error): boolean => {
@@ -36,7 +37,7 @@ export function useEncryptionErrorHandler() {
     }
 
     if (e instanceof ImpossibleToDecryptWithProvidedKeysError) {
-      openModalForChangEncryptionKeys();
+      openEcnryptionSettingsForChangingKeys();
       notifications.notify(
         'impossible to decrypt with provided keys',
         true,
@@ -55,7 +56,7 @@ export function useEncryptionErrorHandler() {
       e instanceof NoPasswordProvidedError ||
       e instanceof NoKeysProvidedError
     ) {
-      openModalForChangEncryptionKeys();
+      openEcnryptionSettingsForChangingKeys();
       notifications.notify('incorrect encryption method', true, 'error');
       return true;
     }

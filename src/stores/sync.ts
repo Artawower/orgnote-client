@@ -125,7 +125,6 @@ export const useSyncStore = defineStore(
       }
 
       handleError(e);
-      throw e;
     };
 
     const encryptNotes = async (notes: Note[]): Promise<Note[]> => {
@@ -133,7 +132,11 @@ export const useSyncStore = defineStore(
     };
 
     const decryptNotes = async (notes: Note[]): Promise<Note[]> => {
-      return await Promise.all(notes.map(async (n) => await decryptNote(n)));
+      return await Promise.all(
+        notes.map(async (n) => {
+          return await decryptNote(n);
+        })
+      );
     };
 
     const runSyncTask = debounce(sync, syncTimeTimeout);
