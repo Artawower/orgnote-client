@@ -151,8 +151,6 @@ const externalResourcesItems: MenuItemProps[] = [
   width: 100%;
   height: 100%;
   overflow: auto;
-  padding: var(--block-padding-md);
-  padding-left: 0;
 }
 
 .menu-items {
