@@ -1,5 +1,4 @@
 import { useOrgNoteApiStore } from './orgnote-api.store';
-import { usePackageManagerStore } from './package-manager.store';
 import { defineStore } from 'pinia';
 import { ActiveExtension, ExtensionMeta, StoredExtension } from 'src/api';
 import { BUILTIN_EXTENSIONS } from 'src/components/extensions';
@@ -16,7 +15,6 @@ export const useExtensionsStore = defineStore('extension', () => {
   const activeExtensionsLoaded = ref<boolean>(false);
   const extensionsLoaded = ref<boolean>(false);
   const searchQuery = ref<string>('');
-  const packageManager = usePackageManagerStore();
   const { orgNoteApi } = useOrgNoteApiStore();
 
   const loadExtensions = async () => {
@@ -68,7 +66,6 @@ export const useExtensionsStore = defineStore('extension', () => {
       }
       return { ...e, uploaded: false };
     });
-    await packageManager.removeSource(ext.manifest.sourceUrl);
   };
 
   const disableExtension = async (extensionName: string) => {

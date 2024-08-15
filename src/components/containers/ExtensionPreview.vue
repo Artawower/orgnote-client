@@ -54,7 +54,7 @@
           "
           icon="delete"
           theme="red"
-          @click="extensionsStore.deleteExtension(extension)"
+          @click="deleteExtension(extension)"
           >{{ $t('delete') }}</action-btn
         >
         <action-btn
@@ -95,6 +95,11 @@ const toggleExtensionStatus = async () => {
 };
 
 const packageManager = usePackageManagerStore();
+
+const deleteExtension = async (ext: ExtensionMeta) => {
+  await extensionsStore.deleteExtension(ext);
+  await packageManager.removeSource(ext.manifest.sourceUrl);
+};
 </script>
 
 <style lang="scss" scoped>
