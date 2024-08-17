@@ -46,6 +46,7 @@ jobs:
       - name: Build android apk release
         run: |
           echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
+          ./setup-minimal-android-version.sh
           version=${{ github.event.release.tag_name }}
           mkdir -p ./dist/build
           cd ./dist/capacitor/android/apk/release
