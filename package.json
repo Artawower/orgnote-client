@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.21.3",
+  "version": "0.21.4",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -9,7 +9,7 @@
   "scripts": {
     "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 120,120 -m capacitor -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8",
     "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
-    "dev:android": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android",
+    "dev:android": " env-cmd -f ./.env.prod quasar dev -m capacitor -T android",
     "dev:ssr": "env-cmd -f ./.env.ssr quasar dev -m ssr",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android -- -d",
     "dev:ios": "quasar dev -m capacitor -T ios",
@@ -24,8 +24,8 @@
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
     "build:all": "bun run build:pwa && bun run build:android:aab",
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",
-    "build:android:aab": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
-    "build:android:apk": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
+    "build:android:aab": "./sync-capaticor-version.sh && env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
+    "build:android:apk": "./sync-capaticor-version.sh && env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
     "build:android:aab:sign": "bun run build:android:aab && ./sign-aab.sh",
     "build:android:apk:sign": "bun run build:android:aab && ./sign-apk.sh",
     "build:ios": "env-cmd -f ./.env.prod quasar build -m capacitor -T ios",
