@@ -2,7 +2,6 @@ import { useAuthStore } from './auth';
 import { OrgNode, parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { sdk } from 'src/boot/axios';
-import { ModelsPublicNote } from 'src/generated/api';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
@@ -10,13 +9,16 @@ import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { mockServer } from 'src/tools';
 import { Note } from 'orgnote-api';
+import { useFileSystem } from 'src/hooks/file-system';
 
 type ParsedNote = { note: Note; orgTree?: OrgNode };
 
 export const useCurrentNoteStore = defineStore('current-note', () => {
   const currentNote = ref<Note | null>(null);
+  const noteText = ref<string | null>(null);
   const noteCache = ref<ParsedNote[]>([]);
   const currentOrgTree = ref<OrgNode | null>(null);
+  const { readTextFile } = useFileSystem();
 
   // TODO: master add to configuration file.
   const cacheSize = 10;
@@ -28,9 +30,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   //   return foundParsedNote as ParsedNote;
   // };
 
-  const selectPublicNote = async (
-    noteId: string
-  ): Promise<ModelsPublicNote> => {
+  const selectPublicNote = async (noteId: string): Promise<Note> => {
     try {
       const note = (await sdk.notes.notesIdGet(noteId)).data.data;
       return note;
@@ -43,10 +43,8 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     }
   };
 
-  const selectMyNote = async (noteId: string): Promise<ModelsPublicNote> => {
-    const myNote = (await repositories.notes.getById(
-      noteId
-    )) as ModelsPublicNote;
+  const selectMyNote = async (noteId: string): Promise<Note> => {
+    const myNote = (await repositories.notes.getById(noteId)) as Note;
 
     if (!myNote) {
       return;
@@ -57,7 +55,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     return myNote;
   };
 
-  const touchNoteByAuthor = (myNote: ModelsPublicNote): void => {
+  const touchNoteByAuthor = (myNote: Note): void => {
     const authStore = useAuthStore();
 
     myNote.author = authStore.user;
@@ -77,7 +75,8 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return [];
     }
 
-    const orgTree = mockServer(() => withMetaInfo(parse(publicNote.content)))();
+    const noteText = await readTextFile(publicNote.filePath);
+    const orgTree = mockServer(() => withMetaInfo(parse(noteText)))();
 
     const parsedNote: ParsedNote = { note: publicNote, orgTree };
 
@@ -87,15 +86,25 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   };
 
   const selectNoteById = async (noteId: string): Promise<void> => {
-    currentNote.value = null;
+    resetNote();
 
     [currentNote.value, currentOrgTree.value] = await getNoteById(noteId);
     if (!currentNote.value) {
       router.push({ name: RouteNames.NotFound });
     }
+
+    try {
+      noteText.value = await readTextFile(currentNote.value.filePath);
+    } catch (e) {
+      console.warn('[line 104]: select note by id: read file from fs', e);
+      router.push({ name: RouteNames.NotFound });
+    }
   };
 
-  const resetNote = (): void => (currentNote.value = null);
+  const resetNote = (): void => {
+    currentNote.value = null;
+    noteText.value = null;
+  };
 
   const updateCurrentNotePartially = async (
     note: Partial<Note>
@@ -118,12 +127,20 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return;
     }
 
+    try {
+      noteText.value = await readTextFile(note.filePath);
+    } catch (e) {
+      console.warn('[line 136]: reload current note: read file from fs', e);
+      return;
+    }
     currentNote.value = note;
     currentOrgTree.value = orgTree;
   };
 
   return {
+    // TODO: refactor -> selectedNote
     currentNote,
+    noteText,
     currentOrgTree,
     selectNoteById,
     getNoteById,
