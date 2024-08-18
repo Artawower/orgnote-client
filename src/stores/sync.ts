@@ -16,6 +16,7 @@ import { Note } from 'orgnote-api/models';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useSettingsStore } from './settings';
+import { useFileSystem } from 'src/hooks/file-system';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -91,7 +92,7 @@ export const useSyncStore = defineStore(
         );
         const decryptedNotes = await decryptNotes(rspns.data.data.notes);
         await notesStore.upsertNotes(decryptedNotes);
-        checkCurrentEditedNoteChanged(decryptedNotes);
+        await checkCurrentEditedNoteChanged(decryptedNotes);
 
         await notesStore.loadTotal();
         if (!notesStore.total) {
@@ -128,13 +129,21 @@ export const useSyncStore = defineStore(
     };
 
     const encryptNotes = async (notes: Note[]): Promise<Note[]> => {
-      return await Promise.all(notes.map(async (n) => encryptNote(n)));
+      return await Promise.all(
+        notes.map(async (n) => {
+          const noteText = await readTextFile(n.filePath);
+          const [encryptedNote] = await encryptNote(n, noteText);
+          return encryptedNote;
+        })
+      );
     };
 
     const decryptNotes = async (notes: Note[]): Promise<Note[]> => {
       return await Promise.all(
         notes.map(async (n) => {
-          return await decryptNote(n);
+          const noteText = await readTextFile(n.filePath);
+          const [decryptedNote] = await decryptNote(n, noteText);
+          return decryptedNote;
         })
       );
     };
@@ -147,13 +156,15 @@ export const useSyncStore = defineStore(
     };
 
     const noteEditorStore = useNoteEditorStore();
-    const checkCurrentEditedNoteChanged = (updatedNotes: Note[]) => {
+    const { readTextFile } = useFileSystem();
+
+    const checkCurrentEditedNoteChanged = async (updatedNotes: Note[]) => {
       const noteUpdated = updatedNotes.find(
         (un) => un.id === noteEditorStore.noteOrgData?.meta.id
       );
       if (noteUpdated) {
         noteEditorStore.setFilePath(noteUpdated.filePath);
-        noteEditorStore.setNoteText(noteUpdated.content);
+        noteEditorStore.setNoteText(await readTextFile(noteUpdated.filePath));
         noteEditorStore.setCreatedTime(noteUpdated.createdAt);
       }
     };

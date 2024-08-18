@@ -11,6 +11,7 @@ import { useNotesStore } from './notes';
 import { EditorView } from '@codemirror/view';
 import { Note } from 'orgnote-api';
 import { useCurrentNoteStore } from './current-note';
+import { useFileSystem } from 'src/hooks/file-system';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();
@@ -21,6 +22,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
   const editorView = shallowRef<EditorView>(null);
+  const { writeTextFile } = useFileSystem();
 
   const fileManagerStore = useFileManagerStore();
   const { getNoteById } = useCurrentNoteStore();
@@ -80,7 +82,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const note = computed(
     (): Note =>
       orgTree.value && {
-        content: orgTree.value.rawValue,
         id: orgTree.value.meta.id,
         filePath: filePath.value ?? [
           generateFileName(orgTree.value.meta.title),
@@ -92,10 +93,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const upsertNote = async () => {
     const now = new Date().toISOString();
     const [previousNote] = await getNoteById(orgTree.value.meta.id);
+    await writeTextFile(previousNote.filePath, lastSavedText.value);
     await notesStore.upsertNotesLocally([
       {
         ...previousNote,
-        content: lastSavedText.value,
         id: orgTree.value.meta.id,
         createdAt: createdTime.value ?? now,
         isMy: true,

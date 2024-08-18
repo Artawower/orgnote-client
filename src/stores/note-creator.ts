@@ -37,7 +37,6 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
     );
     const parsedNote = withMetaInfo(parse(content));
     const note = initNote({
-      content,
       id,
       filePath,
       isMy: true,
