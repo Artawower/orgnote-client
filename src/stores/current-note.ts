@@ -75,14 +75,19 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
       return [];
     }
 
-    const noteText = await readTextFile(publicNote.filePath);
-    const orgTree = mockServer(() => withMetaInfo(parse(noteText)))();
+    try {
+      const noteText = readTextFile(publicNote.filePath);
+      const orgTree = mockServer(() => withMetaInfo(parse(noteText)))();
 
-    const parsedNote: ParsedNote = { note: publicNote, orgTree };
+      const parsedNote: ParsedNote = { note: publicNote, orgTree };
 
-    cacheNote(parsedNote);
+      cacheNote(parsedNote);
 
-    return [publicNote, orgTree];
+      return [publicNote, orgTree];
+    } catch (e) {
+      console.warn('[line 98]: get note by id: read file from fs', e);
+      return [];
+    }
   };
 
   const selectNoteById = async (noteId: string): Promise<void> => {
@@ -94,7 +99,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     }
 
     try {
-      noteText.value = await readTextFile(currentNote.value.filePath);
+      noteText.value = readTextFile(currentNote.value.filePath);
     } catch (e) {
       console.warn('[line 104]: select note by id: read file from fs', e);
       router.push({ name: RouteNames.NotFound });

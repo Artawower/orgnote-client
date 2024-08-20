@@ -23,6 +23,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const cursorPosition = ref<number>(0);
   const editorView = shallowRef<EditorView>(null);
   const { writeTextFile } = useFileSystem();
+  const fileSystem = useFileSystem();
 
   const fileManagerStore = useFileManagerStore();
   const { getNoteById } = useCurrentNoteStore();
@@ -43,13 +44,21 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       orgNode.meta.title !== noteOrgData.value?.meta.title;
 
     if (titleChanged) {
-      const newName = `${getFileNameFromText(orgNode.meta.title)}.org`;
-      fileManagerStore.updateFileManager();
-      filePath.value.splice(-1, 1, newName);
+      tryRenameFile(orgNode);
     }
     noteText.value = text;
     noteOrgData.value = orgNode;
     return true;
+  };
+
+  const tryRenameFile = (orgNode: OrgNode): void => {
+    const newName = `${getFileNameFromText(orgNode.meta.title)}.org`;
+    if (fileSystem.isFileExist(filePath.value.slice(0, -1), newName)) {
+      return;
+    }
+    fileSystem.rename(filePath.value, newName);
+    fileManagerStore.updateFileManager();
+    filePath.value.splice(-1, 1, newName);
   };
 
   const setNoteTree = (orgNode: OrgNode) => {
@@ -93,7 +102,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const upsertNote = async () => {
     const now = new Date().toISOString();
     const [previousNote] = await getNoteById(orgTree.value.meta.id);
-    await writeTextFile(previousNote.filePath, lastSavedText.value);
+    writeTextFile(filePath.value, lastSavedText.value);
     await notesStore.upsertNotesLocally([
       {
         ...previousNote,

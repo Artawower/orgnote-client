@@ -211,6 +211,7 @@ export const renameFileInTree = (
   return [tree, extractFilePathInfo(node[newName]?.children)];
 };
 
+// TODO: feat/native-file-sync check
 export const convertFlatTreeToFileTree = (flatTree: FlatTree): FileNode => {
   const newNode: FileNode = {
     name: flatTree.name,

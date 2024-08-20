@@ -1,6 +1,6 @@
 <template>
   <q-page class="height-auto" :style-fn="resetPageMinHeight">
-    <encryption-required :note="currentNote">
+    <encryption-required :note-text="noteText">
       <author-info
         v-if="currentNote?.author && currentNote && !currentNote?.isMy"
         :author="currentNote?.author"
