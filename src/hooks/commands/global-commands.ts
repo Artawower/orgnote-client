@@ -3,15 +3,15 @@ import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
 import ProjectInfo from 'src/pages/ProjectInfo.vue';
-import { useFileManagerStore } from 'src/stores/file-manager';
 import { useModalStore } from 'src/stores/modal';
+import { useNoteCreatorStore } from 'src/stores/note-creator';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { mockServer } from 'src/tools';
 
 export function getGlobalCommands(): Command[] {
   const modalStore = useModalStore();
   const sidebarStore = useSidebarStore();
-  const fileManagerStore = useFileManagerStore();
+  const noteCreatorStore = useNoteCreatorStore();
 
   const commands: Command[] = [
     {
@@ -69,7 +69,7 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.CREATE_NOTE,
       group: 'global',
       icon: 'o_add_box',
-      handler: () => fileManagerStore.createFile(),
+      handler: () => noteCreatorStore.create(),
     },
     {
       command: DefaultCommands.PROJECT_INFO,

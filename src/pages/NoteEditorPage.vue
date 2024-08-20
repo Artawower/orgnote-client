@@ -6,7 +6,7 @@
     }"
     :style-fn="resetPageMinHeight"
   >
-    <encryption-required :note="currentNote">
+    <encryption-required :note-text="noteText">
       <q-splitter
         v-if="noteEditorStore.debug"
         v-model="splitterSize"
@@ -74,7 +74,7 @@ const currentNoteStore = useCurrentNoteStore();
 currentNoteStore.resetNote();
 currentNoteStore.selectNoteById(noteId);
 
-const { currentNote, currentOrgTree } = storeToRefs(currentNoteStore);
+const { currentNote, currentOrgTree, noteText } = storeToRefs(currentNoteStore);
 
 const splitterSize = ref<number>(50);
 

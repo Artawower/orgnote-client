@@ -1,5 +1,5 @@
 <template>
-  <note-detail :note="note" :org-tree="orgTree"></note-detail>
+  <note-detail :note-text="noteText" />
 </template>
 
 <script lang="ts" setup>
@@ -10,5 +10,5 @@ import NoteDetail from 'src/components/containers/NoteDetail.vue';
 
 const noteEditorStore = useNoteEditorStore();
 
-const { note, orgTree } = storeToRefs(noteEditorStore);
+const { noteText } = storeToRefs(noteEditorStore);
 </script>

@@ -3,11 +3,17 @@ import { useFileStore } from './file';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
+import { useFileSystem } from 'src/hooks/file-system';
 import { RouteNames } from 'src/router/routes';
 import { isOrgFile, readExtension, readFile, readOrgFile } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 export const useNotesImportStore = defineStore('importStore', () => {
+  const notesStore = useNotesStore();
+  const extensionStore = useExtensionsStore();
+  const router = useRouter();
+  const { writeTextFile } = useFileSystem();
+
   const handleFile = async (file: FileEntry | File) => {
     if (isOrgFile(file.name)) {
       handleOrgFile(file);
@@ -18,10 +24,6 @@ export const useNotesImportStore = defineStore('importStore', () => {
     }
     handleMediaFile(file);
   };
-
-  const notesStore = useNotesStore();
-  const extensionStore = useExtensionsStore();
-  const router = useRouter();
 
   const handleExtensionFile = async (
     file: File | FileEntry
@@ -51,9 +53,9 @@ export const useNotesImportStore = defineStore('importStore', () => {
     }
 
     const now = new Date().toISOString();
+    writeTextFile(orgInfo.filePath, orgInfo.content);
     notesStore.upsertNotesLocally([
       {
-        content: orgInfo.content,
         id: orgTree.meta.id,
         createdAt: now,
         updatedAt: now,

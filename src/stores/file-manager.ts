@@ -1,4 +1,3 @@
-import { useNoteCreatorStore } from './note-creator';
 import { useNotesStore } from './notes';
 import { defineStore } from 'pinia';
 import type { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
@@ -8,7 +7,6 @@ import {
   convertFileTreeToFlatTree,
   debounce,
   deletePathFromTree,
-  getUniqueFileName,
   mergeFilesTrees,
   renameFileInTree,
   toDeepRaw,
@@ -17,6 +15,7 @@ import { v4 } from 'uuid';
 
 import { computed, onMounted, ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
+import { useFileSystem } from 'src/hooks/file-system';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -24,6 +23,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTree = ref<FileTree>();
   const editedFileItem = ref<FileNode | null>();
   const expandedNodes = ref<string[]>([]);
+  const fileSystem = useFileSystem();
 
   repositories.fileManager.getAll().then((fm) => {
     fileTree.value = fm || {};
@@ -62,30 +62,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     await storePersistently();
   };
 
-  const noteCreatorStore = useNoteCreatorStore();
-
-  const createFile = async (parentFileNode?: FileNode) => {
-    const children = parentFileNode?.children ?? fileTree.value;
-    const noteName = getUniqueFileName(children);
-    const id = v4();
-
-    const fileName = `${noteName}.org`;
-    const filePath = parentFileNode
-      ? [...(parentFileNode?.filePath ?? []), parentFileNode.name, fileName]
-      : [fileName];
-
-    const newFile: FileNode = {
-      name: fileName,
-      filePath,
-      id,
-      type: 'file',
-    };
-    fileTree.value = addFileToTree(fileTree.value, newFile);
-    editedFileItem.value = newFile;
-    await noteCreatorStore.create(id, newFile.filePath);
-    // await storePersistently();
-  };
-
   const stopEdit = () => {
     editedFileItem.value = null;
   };
@@ -95,7 +71,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   });
 
   const notesStore = useNotesStore();
+
   const deleteFile = async (fileNode: FileNodeInfo) => {
+    fileSystem.deleteFile([...fileNode.filePath, fileNode.name]);
     const [updatedFileTree, deletedFileIds] = deletePathFromTree(
       fileTree.value,
       fileNode
@@ -105,6 +83,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   };
 
   const renameFile = async (fileNode: FileNode, newName: string) => {
+    fileSystem.rename([...fileNode.filePath, fileNode.name], newName);
     const [updatedTree, filePaths] = renameFileInTree(
       fileTree.value,
       fileNode,
@@ -138,7 +117,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   return {
     fileTree,
     fileManager,
-    createFile,
     renameFile,
     deleteFile,
     updateFileManager,
