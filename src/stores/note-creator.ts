@@ -5,10 +5,15 @@ import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
 import { RouteNames } from 'src/router/routes';
-import { getFileNameWithoutExtension, getInitialNoteTemplate } from 'src/tools';
+import {
+  getFileNameWithoutExtension,
+  getInitialNoteTemplate,
+  getUniqueFileName,
+} from 'src/tools';
 import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './settings';
+import { useFileSystem } from 'src/hooks/file-system';
 
 export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   // TODO: master template list for plugins.
@@ -25,16 +30,33 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   const notesStore = useNotesStore();
   const router = useRouter();
   const authStore = useAuthStore();
+  const fileSystem = useFileSystem();
   const { config } = useSettingsStore();
 
-  const create = async (id?: string, filePath?: string[]) => {
+  const create = async ({
+    id,
+    fileName,
+    filePath = [],
+  }: {
+    id?: string;
+    fileName?: string;
+    filePath?: string[];
+  } = {}) => {
     id ??= v4();
-    filePath ??= ['Untitled.org'];
+
+    const existingFileNames = fileSystem.getFilesInDir(filePath);
+    const uniqueFileName = getUniqueFileName(
+      existingFileNames,
+      '.org',
+      fileName
+    );
+    filePath = [...filePath, uniqueFileName];
     const noteName = filePath[filePath.length - 1];
     const content = getInitialNoteTemplate(
       id,
       getFileNameWithoutExtension(noteName)
     );
+    fileSystem.writeTextFile(filePath, content);
     const parsedNote = withMetaInfo(parse(content));
     const note = initNote({
       id,

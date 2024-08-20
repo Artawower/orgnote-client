@@ -87,6 +87,7 @@ import { useSidebarStore } from 'src/stores/sidebar';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useDragStatus } from 'src/hooks/drag-status';
+import { useNoteCreatorStore } from 'src/stores/note-creator';
 
 const props = defineProps<{
   fileNode: FlatTree;
@@ -117,7 +118,9 @@ const createFolder = async () => {
 };
 
 const createFile = async () => {
-  await fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
+  await noteCreatorStore.create({
+    filePath: props.fileNode.filePath,
+  });
   emits('expand', props.fileNode.id);
 };
 
@@ -152,6 +155,7 @@ const openNote = () => {
 };
 
 const fileManagerStore = useFileManagerStore();
+const noteCreatorStore = useNoteCreatorStore();
 
 const editMode = ref(false);
 const fileNameInput = ref<HTMLInputElement | null>();

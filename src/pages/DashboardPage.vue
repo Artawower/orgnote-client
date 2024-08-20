@@ -82,19 +82,19 @@ import NoteRelativePath from 'src/components/containers/NoteRelativePath.vue';
 import NoData from 'src/components/ui/NoData.vue';
 import PrettyCard from 'src/components/ui/PrettyCard.vue';
 import { useNotesStore } from 'src/stores/notes';
-import { useFileManagerStore } from 'src/stores/file-manager';
 import { useNotesStatisticStore } from 'src/stores/notes-statistic';
 import { Note, NotePreview } from 'orgnote-api';
+import { useNoteCreatorStore } from 'src/stores/note-creator';
 
 const notesStore = useNotesStore();
 
-const fileManagerStore = useFileManagerStore();
 notesStore.loadTotal();
+const noteCreatorStore = useNoteCreatorStore();
 
 const creating = ref<boolean>();
 const createNote = async () => {
   creating.value = true;
-  await fileManagerStore.createFile();
+  await noteCreatorStore.create();
 };
 
 const notesStatisticStore = useNotesStatisticStore();

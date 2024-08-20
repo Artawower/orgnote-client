@@ -39,6 +39,7 @@ export default configure(function (ctx) {
       { path: 'katex', server: false },
       'repositories',
       { path: 'graph-worker', server: false },
+      { path: 'file-system', server: false },
       { path: 'highlightjs', server: false },
       { path: 'client-only-dependencies', server: false },
     ],
