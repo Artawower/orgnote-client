@@ -246,7 +246,7 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: false,
-      version: '0.21.7',
+      version: '0.21.8',
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
