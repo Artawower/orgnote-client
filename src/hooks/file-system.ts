@@ -1,7 +1,10 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
-import fs from '@zenfs/core';
+import { Filesystem } from '@capacitor/filesystem';
+import { FileInfo, FileSystem } from 'src/file-system/file-system.model';
+import { browserFs } from 'src/file-system/browser-fs';
+import { mobileFs } from 'src/file-system/mobile-fs';
 
 const userFsPrefix = '/user';
 
@@ -14,9 +17,9 @@ export async function configureFileSystem() {
 }
 
 export function useFileSystem() {
-  const currentFs = platformSpecificValue({
-    mobile: fs,
-    desktop: fs,
+  const currentFs = platformSpecificValue<FileSystem>({
+    mobile: mobileFs,
+    desktop: browserFs,
   });
 
   const normalizePath = (path: string | string[]): string => {
@@ -35,35 +38,45 @@ export function useFileSystem() {
     return `${userFsPrefix}/${path}`;
   };
 
-  const readTextFile = (path: string | string[]): string => {
-    return currentFs.readFileSync(normalizePath(path)).toString();
+  const readTextFile = async (path: string | string[]): Promise<string> => {
+    return (await currentFs.readFile(normalizePath(path))).toString();
   };
 
-  const writeTextFile = (path: string | string[], content: string) => {
+  const writeTextFile = async (path: string | string[], content: string) => {
     const realPath = normalizePath(path);
-    return currentFs.writeFileSync(realPath, content, 'utf8');
+    return await currentFs.writeFile(realPath, content, 'utf8');
   };
 
-  const getFilesInDir = (path: string | string[] = '/'): string[] => {
-    return currentFs.readdirSync(normalizePath(path));
+  const getFilesInDir = async (
+    path: string | string[] = '/'
+  ): Promise<FileInfo[]> => {
+    return currentFs.readDir(normalizePath(path));
   };
 
-  const rename = (path: string | string[], newPath: string | string[]) => {
-    return currentFs.renameSync(normalizePath(path), normalizePath(newPath));
+  const rename = async (
+    path: string | string[],
+    newPath: string | string[]
+  ): Promise<void> => {
+    return currentFs.rename(normalizePath(path), normalizePath(newPath));
   };
 
-  const isFileExist = (path: string | string[], fileName: string): boolean => {
-    const files = getFilesInDir(path);
-    return files.includes(fileName);
+  const isFileExist = async (
+    path: string | string[],
+    fileName: string
+  ): Promise<boolean> => {
+    Filesystem.writeFile;
+    const files = await getFilesInDir(path);
+    return files.some((fn) => fn.name === fileName);
   };
 
   const deleteFile = (path: string | string[]) => {
-    return currentFs.unlinkSync(normalizePath(path));
+    return currentFs.deleteFile(normalizePath(path));
   };
 
+  // TODO: feat/native-file-sync call when clear storage.
   const removeAllFiles = () => {
-    currentFs.rmdirSync(userFsPrefix);
-    currentFs.mkdirSync(userFsPrefix);
+    currentFs.rmdir(userFsPrefix);
+    currentFs.mkdir(userFsPrefix);
   };
 
   return {
@@ -73,5 +86,6 @@ export function useFileSystem() {
     rename,
     isFileExist,
     deleteFile,
+    removeAllFiles,
   };
 }

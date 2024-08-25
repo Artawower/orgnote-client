@@ -131,7 +131,7 @@ export const useSyncStore = defineStore(
     const encryptNotes = async (notes: Note[]): Promise<Note[]> => {
       return await Promise.all(
         notes.map(async (n) => {
-          const noteText = readTextFile(n.filePath);
+          const noteText = await readTextFile(n.filePath);
           const [encryptedNote] = await encryptNote(n, noteText);
           return encryptedNote;
         })
@@ -141,7 +141,7 @@ export const useSyncStore = defineStore(
     const decryptNotes = async (notes: Note[]): Promise<Note[]> => {
       return await Promise.all(
         notes.map(async (n) => {
-          const noteText = readTextFile(n.filePath);
+          const noteText = await readTextFile(n.filePath);
           const [decryptedNote] = await decryptNote(n, noteText);
           return decryptedNote;
         })
@@ -164,7 +164,7 @@ export const useSyncStore = defineStore(
       );
       if (noteUpdated) {
         noteEditorStore.setFilePath(noteUpdated.filePath);
-        noteEditorStore.setNoteText(readTextFile(noteUpdated.filePath));
+        noteEditorStore.setNoteText(await readTextFile(noteUpdated.filePath));
         noteEditorStore.setCreatedTime(noteUpdated.createdAt);
       }
     };
