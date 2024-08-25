@@ -44,7 +44,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   } = {}) => {
     id ??= v4();
 
-    const existingFileNames = fileSystem.getFilesInDir(filePath);
+    const existingFileNames = await getFileNamesInDir(fileName);
     const uniqueFileName = getUniqueFileName(
       existingFileNames,
       '.org',
@@ -56,7 +56,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       id,
       getFileNameWithoutExtension(noteName)
     );
-    fileSystem.writeTextFile(filePath, content);
+    await fileSystem.writeTextFile(filePath, content);
     const parsedNote = withMetaInfo(parse(content));
     const note = initNote({
       id,
@@ -72,6 +72,11 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       name: RouteNames.EditNote,
       params: { id: note.id },
     });
+  };
+
+  const getFileNamesInDir = async (dirPath: string): Promise<string[]> => {
+    const existingFiles = await fileSystem.getFilesInDir(dirPath);
+    return existingFiles.map((fi) => fi.name);
   };
 
   return {
