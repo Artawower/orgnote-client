@@ -6,6 +6,5 @@ declare module 'pinia' {
   export interface PiniaCustomProperties {
     router: Router;
     readonly graphWorker: WorkerConnection;
-    readonly fs: ReturnType<useFileSystem>;
   }
 }

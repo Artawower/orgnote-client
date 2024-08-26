@@ -8,6 +8,7 @@ export interface FileInfo {
   uri?: string;
 }
 
+// TODO: to orgnote api
 export interface FileSystem {
   readFile: (path: string) => Promise<string>;
   writeFile: (
@@ -20,4 +21,6 @@ export interface FileSystem {
   deleteFile: (path: string) => Promise<void>;
   rmdir: (path: string) => Promise<void>;
   mkdir: (path: string) => Promise<void>;
+  isDirExist: (path: string) => Promise<boolean>;
+  isFileExist: (path: string) => Promise<boolean>;
 }

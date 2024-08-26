@@ -1,4 +1,3 @@
-import { promisify } from 'es6-promisify';
 import { FileInfo, FileSystem } from './file-system.model';
 import fs, { Dirent, Stats } from '@zenfs/core';
 
@@ -20,39 +19,22 @@ const writeFile: FileSystem['writeFile'] = async (
   content: string,
   encoding?: string
 ) => {
-  return await new Promise<void>((resolve, reject) => {
-    fs.writeFile(path, content, encoding as BufferEncoding, (err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve();
-    });
-  });
+  return await fs.promises.writeFile(path, content, encoding as BufferEncoding);
 };
 
 const rename: FileSystem['rename'] = async (
   oldPath: string,
   newPath: string
 ) => {
-  await promisify(fs.rename)(oldPath, newPath);
+  return await fs.promises.rename(oldPath, newPath);
 };
 
 const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
-  await promisify(fs.unlink)(path);
+  return await fs.promises.unlink(path);
 };
 
 const readDir: FileSystem['readDir'] = async (path: string) => {
-  const files = await new Promise<Dirent[]>((resolve, reject) => {
-    fs.readdir(path, { withFileTypes: true }, (err, files) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(files);
-    });
-  });
-
+  const files = await fs.promises.readdir(path, { withFileTypes: true });
   return files.map(mapFileInfo);
 };
 
@@ -69,11 +51,19 @@ const mapFileInfo = (dirent: Dirent): FileInfo => {
 };
 
 const rmdir: FileSystem['rmdir'] = async (path: string) => {
-  await promisify(fs.rmdir)(path);
+  return await fs.promises.rm(path, { recursive: true, force: true });
 };
 
 const mkdir: FileSystem['mkdir'] = async (path: string) => {
-  await promisify(fs.mkdir)(path, null);
+  await fs.promises.mkdir(path, { recursive: true });
+};
+
+const isDirExist: FileSystem['isDirExist'] = async (path: string) => {
+  return (await fs.promises.stat(path)).isDirectory();
+};
+
+const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
+  return (await fs.promises.stat(path)).isFile();
 };
 
 export const browserFs: FileSystem = {
@@ -84,4 +74,6 @@ export const browserFs: FileSystem = {
   readDir,
   rmdir,
   mkdir,
+  isDirExist,
+  isFileExist,
 };
