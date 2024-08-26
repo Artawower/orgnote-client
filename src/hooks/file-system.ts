@@ -1,17 +1,26 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
-import { Filesystem } from '@capacitor/filesystem';
 import { FileInfo, FileSystem } from 'src/file-system/file-system.model';
 import { browserFs } from 'src/file-system/browser-fs';
 import { mobileFs } from 'src/file-system/mobile-fs';
-
-const userFsPrefix = '/user';
+import { useSettingsStore } from 'src/stores/settings';
+import { getFileDirPath } from 'src/tools/get-file-dir-path';
+import {
+  BROWSER_INDEXEDBB_FS_NAME,
+  DEFAULT_NOTE_DIR,
+} from 'src/constants/default-note-dir.constant';
+import { Platform } from 'quasar';
+import { mockDesktop } from 'src/tools/mock-desktop';
+import { mockMobile } from 'src/tools/mock-mobile';
 
 export async function configureFileSystem() {
+  if (!Platform.is.desktop) {
+    return;
+  }
   await configure({
     mounts: {
-      [userFsPrefix]: IndexedDB,
+      [`/${DEFAULT_NOTE_DIR}`]: IndexedDB,
     },
   });
 }
@@ -22,9 +31,11 @@ export function useFileSystem() {
     desktop: browserFs,
   });
 
+  const { config } = useSettingsStore();
+
   const normalizePath = (path: string | string[]): string => {
     const stringPath = getRealPath(path);
-    return useUserFsFolder(stringPath);
+    return getUserFilePath(stringPath);
   };
 
   const getRealPath = (path: string | string[]): string => {
@@ -34,8 +45,9 @@ export function useFileSystem() {
     return path;
   };
 
-  const useUserFsFolder = (path: string): string => {
-    return `${userFsPrefix}/${path}`;
+  const getUserFilePath = (path: string): string => {
+    const browserFsPrefix = platformSpecificValue({ desktop: '/', data: '' });
+    return `${browserFsPrefix}${config.vault.path}/${path}`;
   };
 
   const readTextFile = async (path: string | string[]): Promise<string> => {
@@ -43,6 +55,7 @@ export function useFileSystem() {
   };
 
   const writeTextFile = async (path: string | string[], content: string) => {
+    await initFolderForFile(path);
     const realPath = normalizePath(path);
     return await currentFs.writeFile(realPath, content, 'utf8');
   };
@@ -50,6 +63,7 @@ export function useFileSystem() {
   const getFilesInDir = async (
     path: string | string[] = '/'
   ): Promise<FileInfo[]> => {
+    await initFolderForFile(path);
     return currentFs.readDir(normalizePath(path));
   };
 
@@ -57,26 +71,40 @@ export function useFileSystem() {
     path: string | string[],
     newPath: string | string[]
   ): Promise<void> => {
+    await initFolderForFile(path);
     return currentFs.rename(normalizePath(path), normalizePath(newPath));
   };
 
-  const isFileExist = async (
-    path: string | string[],
-    fileName: string
-  ): Promise<boolean> => {
-    Filesystem.writeFile;
-    const files = await getFilesInDir(path);
-    return files.some((fn) => fn.name === fileName);
+  const isFileExist = async (path: string | string[]): Promise<boolean> => {
+    return await currentFs.isFileExist(normalizePath(path));
   };
 
-  const deleteFile = (path: string | string[]) => {
-    return currentFs.deleteFile(normalizePath(path));
+  const deleteFile = async (path: string | string[]) => {
+    await initFolderForFile(path);
+    return await currentFs.deleteFile(normalizePath(path));
   };
 
-  // TODO: feat/native-file-sync call when clear storage.
-  const removeAllFiles = () => {
-    currentFs.rmdir(userFsPrefix);
-    currentFs.mkdir(userFsPrefix);
+  const removeAllFiles = async () => {
+    await initFolderForFile(config.vault.path);
+
+    await mockMobile(async () => await currentFs.rmdir(config.vault.path))();
+
+    mockDesktop(() => {
+      indexedDB.deleteDatabase(BROWSER_INDEXEDBB_FS_NAME);
+    })();
+  };
+
+  const initFolderForFile = async (
+    filePath: string | string[]
+  ): Promise<void> => {
+    const realPath = normalizePath(filePath);
+    const dirPath = getFileDirPath(realPath);
+
+    const isDirExist = await currentFs.isDirExist(dirPath);
+    if (isDirExist) {
+      return;
+    }
+    await currentFs.mkdir(dirPath);
   };
 
   return {

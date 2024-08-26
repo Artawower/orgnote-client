@@ -25,10 +25,13 @@ import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 import { useSettingsStore } from 'src/stores/settings';
 import { computed } from 'vue';
 import { useNotesStore } from 'src/stores/notes';
+import { useFileSystem } from 'src/hooks/file-system';
 
 const { orgNoteApi } = useOrgNoteApiStore();
 
 const router = useRouter();
+
+const fileSystem = useFileSystem();
 
 const confirmDeleteLocalNotes = async () => {
   // TODO: command
@@ -44,6 +47,7 @@ const confirmDeleteLocalNotes = async () => {
   await router.push({ name: RouteNames.Home });
   localStorage.clear();
   await db.dropAll();
+  await fileSystem.removeAllFiles();
   window.location.reload();
 };
 

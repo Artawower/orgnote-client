@@ -1,15 +1,14 @@
 <template>
   <navigation-page>
     <menu-group title="synchronization type" :items="syncTypeItems" />
-    <menu-group
-      title="vault path"
-      v-if="dirSyncAvailable"
-      :items="pathPickItems"
-    />
-    <the-description
-      v-if="config.synchronization.type === 'filesystem'"
-      text="this functionality in development right now. It's not possible to sync notes with the filesystem yet."
-    />
+
+    <template v-if="$q.platform.is.mobile">
+      <menu-group title="vault path" :items="pathPickItems" />
+      <the-description
+        text="this functionality in development right now. It's not possible to sync notes with the filesystem yet."
+      />
+    </template>
+
     <menu-group :items="forceSyncItems" />
     <the-description
       text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
@@ -33,10 +32,6 @@ import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSyncStore } from 'src/stores/sync';
 
 const authStore = useAuthStore();
-
-const dirSyncAvailable = computed(
-  () => $q.platform.is.mobile && config.synchronization.type === 'filesystem'
-);
 
 const syncStore = useSyncStore();
 const { config } = useSettingsStore();
@@ -63,7 +58,7 @@ const { orgNoteApi } = useOrgNoteApiStore();
 const pathPickItems: MenuItemProps[] = [
   {
     label: 'path',
-    reactivePath: config.synchronization,
+    reactivePath: config.vault,
     reactiveKey: 'path',
     type: 'readonly',
   },
@@ -73,7 +68,7 @@ const pathPickItems: MenuItemProps[] = [
     color: getCssVar('blue'),
     handler: async () => {
       const path = await orgNoteApi.fileSystem.readPath();
-      config.synchronization.path = path;
+      config.vault.path = path;
     },
   },
 ];

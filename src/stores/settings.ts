@@ -71,7 +71,6 @@ export const useSettingsStore = defineStore(
     ): Promise<void> => {
       const extensionStore = useExtensionsStore();
       config.ui.theme = mode;
-      // console.log('[line 74]: SETTTT!');
       await extensionStore.deactivateThemeExtension();
 
       const themeNameKey =
@@ -83,9 +82,9 @@ export const useSettingsStore = defineStore(
       updateDarkMode();
     };
 
-    const updateDarkMode = () => {
+    const updateDarkMode = async () => {
       Dark.set(config.ui.theme === 'dark');
-      setupStatusBar();
+      await setupStatusBar();
     };
 
     const setupStatusBar = mockMobile(async (bgColor?: string) => {

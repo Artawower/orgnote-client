@@ -53,12 +53,12 @@ export const useSyncStore = defineStore(
     );
 
     const sync = async () => {
-      if (config.synchronization.type === 'none') {
+      const syncDisabled = config.synchronization.type === 'none';
+
+      if (syncDisabled) {
         return;
       }
-      if (config.synchronization.type === 'filesystem') {
-        return;
-      }
+
       await syncViaApi();
     };
 

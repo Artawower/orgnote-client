@@ -50,6 +50,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       '.org',
       fileName
     );
+
     filePath = [...filePath, uniqueFileName];
     const noteName = filePath[filePath.length - 1];
     const content = getInitialNoteTemplate(
