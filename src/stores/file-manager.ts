@@ -15,7 +15,7 @@ import { v4 } from 'uuid';
 
 import { computed, onMounted, ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 // TODO: master temporary solution. Need to use decorator and update only
 // changed paths for preventing iteration over all notes. Check time.
@@ -23,7 +23,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTree = ref<FileTree>();
   const editedFileItem = ref<FileNode | null>();
   const expandedNodes = ref<string[]>([]);
-  const fileSystem = useFileSystem();
+  const fileSystem = useFileSystemStore();
 
   repositories.fileManager.getAll().then((fm) => {
     fileTree.value = fm || {};

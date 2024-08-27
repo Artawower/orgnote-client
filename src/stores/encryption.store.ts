@@ -7,7 +7,7 @@ import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
 import { repositories } from 'src/boot/repositories';
 import { isGpgEncrypted } from 'orgnote-api';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useEncryptionStore = defineStore('encryption', () => {
   // TODO: implement progress.
@@ -18,7 +18,7 @@ export const useEncryptionStore = defineStore('encryption', () => {
   const notesStore = useNotesStore();
   const syncStore = useSyncStore();
   const currentNoteStore = useCurrentNoteStore();
-  const { readTextFile } = useFileSystem();
+  const { readTextFile } = useFileSystemStore();
 
   const changeEncryptionType = async () => {
     const notesIds = await repositories.notes.getIds(() => true);

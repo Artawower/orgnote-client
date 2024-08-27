@@ -3,7 +3,7 @@ import { useFileStore } from './file';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 import { RouteNames } from 'src/router/routes';
 import { isOrgFile, readExtension, readFile, readOrgFile } from 'src/tools';
 import { useRouter } from 'vue-router';
@@ -12,7 +12,7 @@ export const useNotesImportStore = defineStore('importStore', () => {
   const notesStore = useNotesStore();
   const extensionStore = useExtensionsStore();
   const router = useRouter();
-  const { writeTextFile } = useFileSystem();
+  const { writeTextFile } = useFileSystemStore();
 
   const handleFile = async (file: FileEntry | File) => {
     if (isOrgFile(file.name)) {

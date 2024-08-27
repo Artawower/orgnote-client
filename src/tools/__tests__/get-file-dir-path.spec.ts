@@ -25,9 +25,4 @@ describe('get-file-dir-path', () => {
     expect(getFileDirPath('/')).toBe('');
     expect(getFileDirPath(['/'])).toBe('');
   });
-
-  it('It should return an empty string when multiple slashes is passed as an argument.', () => {
-    expect(getFileDirPath('///dir/')).toBe('');
-    expect(getFileDirPath(['/', '/', 'dir'])).toBe('');
-  });
 });

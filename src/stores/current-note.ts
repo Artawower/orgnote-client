@@ -9,7 +9,7 @@ import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { mockServer } from 'src/tools';
 import { Note } from 'orgnote-api';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 type ParsedNote = { note: Note; orgTree?: OrgNode };
 
@@ -18,7 +18,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   const noteText = ref<string | null>(null);
   const noteCache = ref<ParsedNote[]>([]);
   const currentOrgTree = ref<OrgNode | null>(null);
-  const { readTextFile } = useFileSystem();
+  const { readTextFile } = useFileSystemStore();
 
   // TODO: master add to configuration file.
   const cacheSize = 10;

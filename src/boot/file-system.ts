@@ -1,5 +1,5 @@
 import { boot } from 'quasar/wrappers';
-import { configureFileSystem } from 'src/hooks/file-system';
+import { configureFileSystem } from 'src/stores/file-system.store';
 
 export default boot(async () => {
   await configureFileSystem();
