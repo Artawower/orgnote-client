@@ -11,7 +11,7 @@ import { useNotesStore } from './notes';
 import { EditorView } from '@codemirror/view';
 import { Note } from 'orgnote-api';
 import { useCurrentNoteStore } from './current-note';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();
@@ -22,8 +22,8 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
   const editorView = shallowRef<EditorView>(null);
-  const { writeTextFile } = useFileSystem();
-  const fileSystem = useFileSystem();
+  const { writeTextFile } = useFileSystemStore();
+  const fileSystem = useFileSystemStore();
 
   const fileManagerStore = useFileManagerStore();
   const { getNoteById } = useCurrentNoteStore();
@@ -55,8 +55,9 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   };
 
   const tryRenameFile = async (orgNode: OrgNode): Promise<void> => {
-    const newName = `${getFileNameFromText(orgNode.meta.title)}.org`;
-    const newFilePath = `${filePath.value.slice(0, -1)}/${newName}`;
+    const fileDir = filePath.value.slice(0, -1).join('/');
+    const newName = `${fileDir.length ? '/' : ''}${getFileNameFromText(orgNode.meta.title)}.org`;
+    const newFilePath = `${fileDir}${newName}`;
 
     if (await fileSystem.isFileExist(newFilePath)) {
       return;

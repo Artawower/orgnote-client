@@ -16,7 +16,7 @@ import { Note } from 'orgnote-api/models';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useSettingsStore } from './settings';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useSyncStore = defineStore(
   'sync',
@@ -156,7 +156,7 @@ export const useSyncStore = defineStore(
     };
 
     const noteEditorStore = useNoteEditorStore();
-    const { readTextFile } = useFileSystem();
+    const { readTextFile } = useFileSystemStore();
 
     const checkCurrentEditedNoteChanged = async (updatedNotes: Note[]) => {
       const noteUpdated = updatedNotes.find(

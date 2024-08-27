@@ -10,28 +10,25 @@ import {
   BROWSER_INDEXEDBB_FS_NAME,
   DEFAULT_NOTE_DIR,
 } from 'src/constants/default-note-dir.constant';
-import { Platform } from 'quasar';
 import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
+import { defineStore } from 'pinia';
 
-export async function configureFileSystem() {
-  if (!Platform.is.desktop) {
-    return;
-  }
+export const configureFileSystem = mockDesktop(async () => {
   await configure({
     mounts: {
       [`/${DEFAULT_NOTE_DIR}`]: IndexedDB,
     },
   });
-}
+});
 
-export function useFileSystem() {
+export const useFileSystemStore = defineStore('file-system', () => {
+  const { config } = useSettingsStore();
+
   const currentFs = platformSpecificValue<FileSystem>({
     mobile: mobileFs,
     desktop: browserFs,
   });
-
-  const { config } = useSettingsStore();
 
   const normalizePath = (path: string | string[]): string => {
     const stringPath = getRealPath(path);
@@ -76,6 +73,12 @@ export function useFileSystem() {
   };
 
   const isFileExist = async (path: string | string[]): Promise<boolean> => {
+    console.log(
+      '[line 76][FILE SYSTEMS]: norm path',
+      path,
+      normalizePath(path)
+    );
+
     return await currentFs.isFileExist(normalizePath(path));
   };
 
@@ -116,4 +119,4 @@ export function useFileSystem() {
     deleteFile,
     removeAllFiles,
   };
-}
+});

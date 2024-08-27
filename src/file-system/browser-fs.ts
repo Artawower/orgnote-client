@@ -1,6 +1,12 @@
 import { FileInfo, FileSystem } from './file-system.model';
 import fs, { Dirent, Stats } from '@zenfs/core';
 
+const FILE_NOTE_FOUND_ERROR_CODE = 'ENOENT';
+
+interface BrowserFsError {
+  code: string;
+}
+
 const readFile: FileSystem['readFile'] = async (path: string) => {
   const data = await new Promise<string>((resolve, reject) => {
     fs.readFile(path, (err, data) => {
@@ -59,11 +65,25 @@ const mkdir: FileSystem['mkdir'] = async (path: string) => {
 };
 
 const isDirExist: FileSystem['isDirExist'] = async (path: string) => {
-  return (await fs.promises.stat(path)).isDirectory();
+  try {
+    return (await fs.promises.stat(path)).isDirectory();
+  } catch (e) {
+    if ((e as BrowserFsError).code === FILE_NOTE_FOUND_ERROR_CODE) {
+      return false;
+    }
+    throw e;
+  }
 };
 
 const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
-  return (await fs.promises.stat(path)).isFile();
+  try {
+    return (await fs.promises.stat(path)).isFile();
+  } catch (e) {
+    if ((e as BrowserFsError).code === FILE_NOTE_FOUND_ERROR_CODE) {
+      return false;
+    }
+    throw e;
+  }
 };
 
 export const browserFs: FileSystem = {

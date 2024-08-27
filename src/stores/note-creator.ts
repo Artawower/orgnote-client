@@ -13,7 +13,7 @@ import {
 import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './settings';
-import { useFileSystem } from 'src/hooks/file-system';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   // TODO: master template list for plugins.
@@ -30,7 +30,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   const notesStore = useNotesStore();
   const router = useRouter();
   const authStore = useAuthStore();
-  const fileSystem = useFileSystem();
+  const fileSystem = useFileSystemStore();
   const { config } = useSettingsStore();
 
   const create = async ({
