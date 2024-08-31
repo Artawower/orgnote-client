@@ -222,4 +222,7 @@ export default {
   'delete all notes': 'delete all notes',
   'are you sure you want to delete all notes?':
     'are you sure you want to delete all notes?',
+  'unsaved changes': 'unsaved changes',
+  'are you sure you want to leave the page?':
+    'are you sure you want to leave the page?',
 };

@@ -5,8 +5,9 @@ import {
   encrypt as _encrypt,
   decrypt as _decrypt,
 } from 'orgnote-api/encryption';
-import { Note } from 'orgnote-api';
+import { Note, OrgNoteEncryption } from 'orgnote-api';
 
+// TODO: feat/native-file-sync store cause use config
 export function useEncryption() {
   const { config } = useSettingsStore();
 
@@ -25,12 +26,18 @@ export function useEncryption() {
     return res;
   };
 
-  const encrypt = async (text: string): Promise<string> => {
-    return await _encrypt(text, config.encryption);
+  const encrypt = async (
+    text: string,
+    encryptionConfig?: OrgNoteEncryption
+  ): Promise<string> => {
+    return await _encrypt(text, encryptionConfig ?? config.encryption);
   };
 
-  const decrypt = async (text: string): Promise<string> => {
-    return await _decrypt(text, config.encryption);
+  const decrypt = async (
+    text: string,
+    encryptionConfig?: OrgNoteEncryption
+  ): Promise<string> => {
+    return await _decrypt(text, encryptionConfig ?? config.encryption);
   };
 
   return {

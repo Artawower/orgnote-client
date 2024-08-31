@@ -13,6 +13,8 @@ import {
 import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
+import { useEncryption } from 'src/hooks';
+import { OrgNoteEncryption } from 'orgnote-api';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -24,6 +26,7 @@ export const configureFileSystem = mockDesktop(async () => {
 
 export const useFileSystemStore = defineStore('file-system', () => {
   const { config } = useSettingsStore();
+  const { decrypt, encrypt } = useEncryption();
 
   const currentFs = platformSpecificValue<FileSystem>({
     mobile: mobileFs,
@@ -47,14 +50,25 @@ export const useFileSystemStore = defineStore('file-system', () => {
     return `${browserFsPrefix}${config.vault.path}/${path}`;
   };
 
-  const readTextFile = async (path: string | string[]): Promise<string> => {
-    return (await currentFs.readFile(normalizePath(path))).toString();
+  // TODO: feat/native-file-sync remove decryption layer, move to note detail store
+  const readTextFile = async (
+    path: string | string[],
+    encryptionConfig?: OrgNoteEncryption
+  ): Promise<string> => {
+    const text = (await currentFs.readFile(normalizePath(path))).toString();
+    const decryptedText = await decrypt(text, encryptionConfig);
+    return decryptedText;
   };
 
-  const writeTextFile = async (path: string | string[], content: string) => {
+  const writeTextFile = async (
+    path: string | string[],
+    content: string,
+    encryptionConfig?: OrgNoteEncryption
+  ) => {
     await initFolderForFile(path);
     const realPath = normalizePath(path);
-    return await currentFs.writeFile(realPath, content, 'utf8');
+    const encryptedContent = await encrypt(content, encryptionConfig);
+    return await currentFs.writeFile(realPath, encryptedContent, 'utf8');
   };
 
   const getFilesInDir = async (

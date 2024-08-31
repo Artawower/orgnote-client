@@ -7,7 +7,7 @@ import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useEncryption } from 'src/hooks';
 
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote } from 'orgnote-api/remote-api';
@@ -30,16 +30,14 @@ export const useSyncStore = defineStore(
 
     let abortController: AbortController;
 
+    const inactiveUser = computed(
+      () =>
+        !authStore.user || authStore.user.isAnonymous || !authStore.user.active
+    );
+
     // TODO: master add debounce with timeout and accumulation
     // Use websockets instead
     const markToSync = async () => {
-      if (
-        !authStore.user ||
-        authStore.user.isAnonymous ||
-        !authStore.user.active
-      ) {
-        return;
-      }
       runSyncTask();
     };
 
@@ -55,7 +53,7 @@ export const useSyncStore = defineStore(
     const sync = async () => {
       const syncDisabled = config.synchronization.type === 'none';
 
-      if (syncDisabled) {
+      if (syncDisabled || inactiveUser.value) {
         return;
       }
 
