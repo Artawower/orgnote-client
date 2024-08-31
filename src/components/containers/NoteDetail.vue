@@ -1,7 +1,7 @@
 <template>
   <raw-editor
     v-if="noteText"
-    :value="noteText"
+    :modelValue="noteText"
     :readonly="true"
     :config="readonlyConfig"
     @init="setEditorView"

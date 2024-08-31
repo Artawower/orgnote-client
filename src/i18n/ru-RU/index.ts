@@ -1,3 +1,4 @@
+// TODO: migrate to contants.
 export default {
   failed: 'Неудача',
   success: 'Успешно выполнено.',
@@ -224,4 +225,7 @@ export default {
   'delete all notes': 'удалить все заметки',
   'are you sure you want to delete all notes?':
     'вы уверены что хотите удалить все заметки?',
+  'unsaved changes': 'не сохраненные изменения',
+  'are you sure you want to leave the page?':
+    'вы уверены что хотите покинуть страницу?',
 };
