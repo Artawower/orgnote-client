@@ -10,10 +10,13 @@ export interface FileInfo {
 
 // TODO: to orgnote api
 export interface FileSystem {
-  readFile: (path: string) => Promise<string>;
+  readFile: <T extends 'utf8'>(
+    path: string,
+    encoding: T
+  ) => Promise<T extends 'utf8' ? string : Uint8Array>;
   writeFile: (
     path: string,
-    content: string,
+    content: string | Uint8Array,
     encoding?: BufferEncoding
   ) => Promise<void>;
   readDir: (path: string) => Promise<FileInfo[]>;

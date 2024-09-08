@@ -7,7 +7,6 @@ import { is } from 'quasar';
 import { repositories } from 'src/boot/repositories';
 import { useFileSystemStore } from './file-system.store';
 import { useAppLockerStore } from './app-locker.store';
-import { useNoteDetailStore } from './note-detail.store';
 import { useNotesStore } from './notes';
 import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
@@ -144,9 +143,12 @@ export const useNoteEncryptionTasksStore = defineStore(
       await completeEncryptionMigrations();
     };
 
-    const { getNoteContent, updateNoteContent } = useNoteDetailStore();
+    const { getNoteContent, updateNoteContent } = useCurrentNoteStore();
     const reencryptNoteById = async (noteId: string) => {
       const noteContent = await getNoteContent(noteId);
+      if (isGpgEncrypted(noteContent)) {
+        return;
+      }
       await updateNoteContent(noteId, noteContent, newEncryption.data);
     };
 

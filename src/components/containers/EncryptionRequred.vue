@@ -16,6 +16,8 @@
 import { useKeybindingStore } from 'src/stores/keybindings';
 import { DefaultCommands, isGpgEncrypted } from 'orgnote-api';
 import { computed } from 'vue';
+import { RouteNames } from 'src/router/routes';
+import { convertRouterNameToCommand } from 'src/tools/route-name-to-command.tool';
 
 const { executeCommand } = useKeybindingStore();
 
@@ -24,7 +26,9 @@ const props = defineProps<{
 }>();
 
 const openSettings = () => {
-  executeCommand({ command: DefaultCommands.SETTINGS });
+  executeCommand({
+    command: convertRouterNameToCommand(RouteNames.EncryptionSettings),
+  });
 };
 
 const isCurrentNoteEncrypted = computed(() => isGpgEncrypted(props.noteText));

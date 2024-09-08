@@ -14,7 +14,7 @@ import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
-import { OrgNoteEncryption } from 'orgnote-api';
+import { isOrgGpgFile, OrgNoteEncryption } from 'orgnote-api';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -50,25 +50,44 @@ export const useFileSystemStore = defineStore('file-system', () => {
     return `${browserFsPrefix}${config.vault.path}/${path}`;
   };
 
-  // TODO: feat/native-file-sync remove decryption layer, move to note detail store
   const readTextFile = async (
     path: string | string[],
     encryptionConfig?: OrgNoteEncryption
   ): Promise<string> => {
-    const text = (await currentFs.readFile(normalizePath(path))).toString();
-    const decryptedText = await decrypt(text, encryptionConfig);
-    return decryptedText;
+    console.log('[line 57][REENCRYPTION]: files in dir', await getFilesInDir());
+    const normalizedPath = normalizePath(path);
+    const isEncrypted = isOrgGpgFile(normalizedPath);
+    const format = isEncrypted ? undefined : 'utf8';
+
+    const content = await currentFs.readFile(normalizedPath, format);
+    encryptionConfig ??= config.encryption;
+
+    const text = isEncrypted
+      ? await decrypt(content, 'utf8', encryptionConfig)
+      : content;
+    return text;
   };
 
-  const writeTextFile = async (
+  /*
+   * Write file, if file is text and file name is *.org.gpg encrypt it
+   */
+  const writeFile = async (
     path: string | string[],
-    content: string,
+    content: string | Uint8Array,
     encryptionConfig?: OrgNoteEncryption
   ) => {
+    // console.log('✎: [line 77][file-system.store.ts] content: ', content, path);
     await initFolderForFile(path);
     const realPath = normalizePath(path);
-    const encryptedContent = await encrypt(content, encryptionConfig);
-    return await currentFs.writeFile(realPath, encryptedContent, 'utf8');
+    encryptionConfig ??= config.encryption;
+    const isEncrypted = isOrgGpgFile(realPath);
+    console.log('✎: [line 84][FILE WEIRD] write, realPath: ', realPath);
+    const writeContent =
+      isEncrypted && typeof content === 'string'
+        ? await encrypt(content, 'binary', encryptionConfig)
+        : content;
+    const format = isEncrypted ? 'binary' : 'utf8';
+    return await currentFs.writeFile(realPath, writeContent, format);
   };
 
   const getFilesInDir = async (
@@ -82,6 +101,7 @@ export const useFileSystemStore = defineStore('file-system', () => {
     path: string | string[],
     newPath: string | string[]
   ): Promise<void> => {
+    console.log('[line 104][FILE WEIRD]: rename', path, newPath);
     await initFolderForFile(path);
     return currentFs.rename(normalizePath(path), normalizePath(newPath));
   };
@@ -126,7 +146,7 @@ export const useFileSystemStore = defineStore('file-system', () => {
 
   return {
     readTextFile,
-    writeTextFile,
+    writeFile,
     getFilesInDir,
     rename,
     isFileExist,
