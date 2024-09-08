@@ -7,22 +7,36 @@ interface BrowserFsError {
   code: string;
 }
 
-const readFile: FileSystem['readFile'] = async (path: string) => {
-  const data = await new Promise<string>((resolve, reject) => {
-    fs.readFile(path, (err, data) => {
-      if (err) {
-        reject(err);
-        return;
+const readFile: FileSystem['readFile'] = async <T extends 'utf8'>(
+  path: string,
+  encoding?: T
+) => {
+  const data = await new Promise<T extends 'utf8' ? string : Uint8Array>(
+    (resolve, reject) => {
+      if (encoding) {
+        fs.readFile(path, { encoding }, (err, data) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(data as T extends 'utf8' ? string : Uint8Array);
+        });
       }
-      resolve(data.toString());
-    });
-  });
+      fs.readFile(path, (err, data) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(data as T extends 'utf8' ? string : Uint8Array);
+      });
+    }
+  );
   return data;
 };
 
 const writeFile: FileSystem['writeFile'] = async (
   path: string,
-  content: string,
+  content: string | Uint8Array,
   encoding?: string
 ) => {
   return await fs.promises.writeFile(path, content, encoding as BufferEncoding);

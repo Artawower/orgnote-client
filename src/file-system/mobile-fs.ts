@@ -9,29 +9,36 @@ import { FileInfo, FileSystem } from './file-system.model';
 const FILE_NOT_FOUND_ERR = 'File does not exist';
 const DIRECTORY_NOT_FOUND_ERR = 'Directory does not exist';
 
-const readFile: FileSystem['readFile'] = async (path: string) => {
+const readFile: FileSystem['readFile'] = async <T extends 'utf8'>(
+  path: string,
+  encoding?: T
+): Promise<T extends 'utf8' ? string : Uint8Array> => {
   const data = (
     await Filesystem.readFile({
       directory: Directory.Documents,
       path,
-      encoding: Encoding.UTF8,
+      encoding: encoding as unknown as Encoding,
     })
   ).data;
+
   if (typeof data === 'string') {
-    return data;
+    return data as T extends 'utf8' ? string : Uint8Array;
   }
-  return await data.text();
+
+  const res = await data.arrayBuffer().then((buffer) => new Uint8Array(buffer));
+  return res as T extends 'utf8' ? string : Uint8Array;
 };
 
 const writeFile: FileSystem['writeFile'] = async (
   path: string,
-  content: string,
+  content: string | Uint8Array,
   encoding: BufferEncoding
 ) => {
+  const data = typeof content === 'string' ? content : new Blob([content]);
   await Filesystem.writeFile({
     path,
     directory: Directory.Documents,
-    data: content,
+    data,
     encoding: encoding as unknown as Encoding,
   });
 };

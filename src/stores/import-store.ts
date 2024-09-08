@@ -12,7 +12,7 @@ export const useNotesImportStore = defineStore('importStore', () => {
   const notesStore = useNotesStore();
   const extensionStore = useExtensionsStore();
   const router = useRouter();
-  const { writeTextFile } = useFileSystemStore();
+  const { writeFile: writeTextFile } = useFileSystemStore();
 
   const handleFile = async (file: FileEntry | File) => {
     if (isOrgFile(file.name)) {

@@ -8,8 +8,9 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { mockServer } from 'src/tools';
-import { Note } from 'orgnote-api';
+import { Note, OrgNoteEncryption } from 'orgnote-api';
 import { useFileSystemStore } from 'src/stores/file-system.store';
+import { ModelsPublicNote } from 'orgnote-api/remote-api';
 
 type ParsedNote = { note: Note; orgTree?: OrgNode };
 
@@ -18,7 +19,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   const noteText = ref<string | null>(null);
   const noteCache = ref<ParsedNote[]>([]);
   const currentOrgTree = ref<OrgNode | null>(null);
-  const { readTextFile } = useFileSystemStore();
+  const { readTextFile, writeFile: writeTextFile } = useFileSystemStore();
 
   // TODO: master add to configuration file.
   const cacheSize = 10;
@@ -30,7 +31,9 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   //   return foundParsedNote as ParsedNote;
   // };
 
-  const selectPublicNote = async (noteId: string): Promise<Note> => {
+  const selectPublicNote = async (
+    noteId: string
+  ): Promise<ModelsPublicNote> => {
     try {
       const note = (await sdk.notes.notesIdGet(noteId)).data.data;
       return note;
@@ -67,23 +70,27 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     noteCache.value = [parsedNote, ...noteCache.value].slice(0, cacheSize);
   };
 
-  const getNoteById = async (noteId: string): Promise<[Note?, OrgNode?]> => {
-    const publicNote =
+  const getNoteById = async (
+    noteId: string
+  ): Promise<[Note?, OrgNode?, string?]> => {
+    const note =
       (await selectMyNote(noteId)) ?? (await selectPublicNote(noteId));
 
-    if (!publicNote) {
+    if (!note) {
       return [];
     }
 
     try {
-      const noteText = await readTextFile(publicNote.filePath);
+      const noteText =
+        (note as ModelsPublicNote).content ??
+        (await readTextFile(note.filePath));
       const orgTree = mockServer(() => withMetaInfo(parse(noteText)))();
 
-      const parsedNote: ParsedNote = { note: publicNote, orgTree };
+      const parsedNote: ParsedNote = { note, orgTree };
 
       cacheNote(parsedNote);
 
-      return [publicNote, orgTree];
+      return [note, orgTree, noteText];
     } catch (e) {
       console.warn('[line 98]: get note by id: read file from fs', e);
       return [];
@@ -93,17 +100,13 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
   const selectNoteById = async (noteId: string): Promise<void> => {
     resetNote();
 
-    [currentNote.value, currentOrgTree.value] = await getNoteById(noteId);
+    let text: string;
+    [currentNote.value, currentOrgTree.value, text] = await getNoteById(noteId);
     if (!currentNote.value) {
       router.push({ name: RouteNames.NotFound });
     }
 
-    try {
-      noteText.value = await readTextFile(currentNote.value.filePath);
-    } catch (e) {
-      console.warn('[line 104]: select note by id: read file from fs', e);
-      router.push({ name: RouteNames.NotFound });
-    }
+    noteText.value = text;
   };
 
   const resetNote = (): void => {
@@ -142,8 +145,26 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     currentOrgTree.value = orgTree;
   };
 
+  const getNoteContent = async (
+    noteId: string,
+    encryptionConfig?: OrgNoteEncryption
+  ): Promise<string> => {
+    const noteInfo = await repositories.notes.getById(noteId);
+    const noteContent = await readTextFile(noteInfo.filePath, encryptionConfig);
+    return noteContent;
+  };
+
+  const updateNoteContent = async (
+    noteId: string,
+    content: string,
+    encryptionConfig?: OrgNoteEncryption
+  ) => {
+    const noteInfo = await repositories.notes.getById(noteId);
+    await writeTextFile(noteInfo.filePath, content, encryptionConfig);
+  };
+
   return {
-    // TODO: refactor -> selectedNote
+    // TODO: refactor -> noteDetail
     currentNote,
     noteText,
     currentOrgTree,
@@ -152,5 +173,7 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     resetNote,
     updateCurrentNotePartially,
     reloadCurrentNote,
+    getNoteContent,
+    updateNoteContent,
   };
 });

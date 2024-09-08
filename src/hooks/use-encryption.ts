@@ -5,7 +5,13 @@ import {
   encrypt as _encrypt,
   decrypt as _decrypt,
 } from 'orgnote-api/encryption';
-import { Note, OrgNoteEncryption } from 'orgnote-api';
+import {
+  BaseOrgNoteDecryption,
+  BaseOrgNoteEncryption,
+  Note,
+  OrgNoteEncryption,
+  armor,
+} from 'orgnote-api';
 
 // TODO: feat/native-file-sync store cause use config
 export function useEncryption() {
@@ -15,29 +21,53 @@ export function useEncryption() {
     note: Note,
     noteText: string
   ): Promise<[Note, string]> => {
-    return await _encryptNote(note, noteText, config.encryption);
+    return await _encryptNote(note, {
+      content: noteText,
+      ...config.encryption,
+    });
   };
 
   const decryptNote = async (
     note: Note,
     noteText: string
   ): Promise<[Note, string]> => {
-    const res = await _decryptNote(note, noteText, config.encryption);
+    const res = await _decryptNote(note, {
+      content: noteText,
+      ...config.encryption,
+    });
     return res;
   };
 
   const encrypt = async (
     text: string,
+    format: BaseOrgNoteEncryption['format'] = 'binary',
     encryptionConfig?: OrgNoteEncryption
   ): Promise<string> => {
-    return await _encrypt(text, encryptionConfig ?? config.encryption);
+    encryptionConfig ??= config.encryption;
+    return await _encrypt({
+      content: text,
+      format,
+      ...encryptionConfig,
+    });
   };
 
   const decrypt = async (
-    text: string,
+    content: string | Uint8Array,
+    format: BaseOrgNoteDecryption['format'] = 'utf8',
     encryptionConfig?: OrgNoteEncryption
   ): Promise<string> => {
-    return await _decrypt(text, encryptionConfig ?? config.encryption);
+    encryptionConfig ??= config.encryption;
+    console.trace(
+      '✎: [line 60][use-encryption.ts] encryptionConfig: ',
+      encryptionConfig,
+      content
+    );
+    const text = typeof content === 'string' ? content : armor(content);
+    return await _decrypt({
+      content: text,
+      format,
+      ...encryptionConfig,
+    });
   };
 
   return {

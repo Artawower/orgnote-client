@@ -57,7 +57,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
       id,
       getFileNameWithoutExtension(noteName)
     );
-    await fileSystem.writeTextFile(filePath, content);
+    await fileSystem.writeFile(filePath, content);
     const parsedNote = withMetaInfo(parse(content));
     const note = initNote({
       id,

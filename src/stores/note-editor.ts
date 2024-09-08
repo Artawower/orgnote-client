@@ -22,7 +22,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
   const editorView = shallowRef<EditorView>(null);
-  const { writeTextFile } = useFileSystemStore();
+  const { writeFile: writeTextFile } = useFileSystemStore();
   const fileSystem = useFileSystemStore();
 
   const fileManagerStore = useFileManagerStore();
@@ -46,6 +46,11 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       noteOrgData.value &&
       orgNode.meta.title !== noteOrgData.value?.meta.title;
 
+    console.log(
+      '✎: [line 49][note-editor.ts] titleChanged: ',
+      titleChanged,
+      filePath.value
+    );
     if (titleChanged) {
       await tryRenameFile(orgNode);
     }
@@ -64,6 +69,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     }
     await fileSystem.rename(filePath.value, newName);
     filePath.value.splice(-1, 1, newName);
+    console.log('✎: [line 68][FILE WEIRD] filePath.value: ', filePath.value);
+    console.log(
+      '[line 68][FILE WEIRD]: FILE NAME CHANGED, update file manager!'
+    );
     fileManagerStore.updateFileManager();
   };
 
