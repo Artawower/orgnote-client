@@ -1,7 +1,6 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
-import { FileInfo, FileSystem } from 'src/file-system/file-system.model';
 import { browserFs } from 'src/file-system/browser-fs';
 import { mobileFs } from 'src/file-system/mobile-fs';
 import { useSettingsStore } from 'src/stores/settings';
@@ -14,12 +13,17 @@ import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
-import { isOrgGpgFile, OrgNoteEncryption } from 'orgnote-api';
+import {
+  FileSystem,
+  FileInfo,
+  isOrgGpgFile,
+  OrgNoteEncryption,
+} from 'orgnote-api';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
     mounts: {
-      [`/${DEFAULT_NOTE_DIR}`]: IndexedDB,
+      [`${DEFAULT_NOTE_DIR}`]: IndexedDB,
     },
   });
 });
@@ -34,20 +38,19 @@ export const useFileSystemStore = defineStore('file-system', () => {
   });
 
   const normalizePath = (path: string | string[]): string => {
-    const stringPath = getRealPath(path);
+    // TODO: feat/native-file-sync import from orgnote-api
+    // const stringPath = getStringPath(path);
+    const stringPath = typeof path === 'string' ? path : path.join('/');
     return getUserFilePath(stringPath);
   };
 
-  const getRealPath = (path: string | string[]): string => {
-    if (Array.isArray(path)) {
-      return `${path.join('/')}`;
-    }
-    return path;
+  const getUserFilePath = (path: string): string => {
+    return `${getRootDir()}/${path}`;
   };
 
-  const getUserFilePath = (path: string): string => {
+  const getRootDir = () => {
     const browserFsPrefix = platformSpecificValue({ desktop: '/', data: '' });
-    return `${browserFsPrefix}${config.vault.path}/${path}`;
+    return `${browserFsPrefix}${config.vault.path}`;
   };
 
   const readTextFile = async (
@@ -144,6 +147,23 @@ export const useFileSystemStore = defineStore('file-system', () => {
     await currentFs.mkdir(dirPath);
   };
 
+  const mkdir = async (path: string | string[]): Promise<void> => {
+    await currentFs.mkdir(normalizePath(path));
+  };
+
+  const rmdir = async (path: string | string[]): Promise<void> => {
+    await currentFs.rmdir(normalizePath(path));
+  };
+
+  const fileInfo = async (path: string | string[]): Promise<FileInfo> => {
+    return await currentFs.fileInfo(normalizePath(path));
+  };
+
+  const readDir = async (path: string | string[]) => {
+    const res = await currentFs.readDir(normalizePath(path));
+    return res;
+  };
+
   return {
     readTextFile,
     writeFile,
@@ -152,5 +172,14 @@ export const useFileSystemStore = defineStore('file-system', () => {
     isFileExist,
     deleteFile,
     removeAllFiles,
+    mkdir,
+    rmdir,
+    fileInfo,
+    getRootDir,
+    readDir,
   };
 });
+
+export const FILE_SYSTEM_MUTATION_ACTIONS: Array<
+  keyof ReturnType<typeof useFileSystemStore>
+> = ['writeFile', 'rename', 'deleteFile', 'removeAllFiles', 'mkdir', 'rmdir'];

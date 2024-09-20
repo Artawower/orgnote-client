@@ -5,7 +5,7 @@ import { sdk } from 'src/boot/axios';
 import { RouteNames } from 'src/router/routes';
 import { useRouter } from 'vue-router';
 
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { repositories } from 'src/boot/repositories';
 import { mockServer } from 'src/tools';
 import { Note, OrgNoteEncryption } from 'orgnote-api';
@@ -154,6 +154,11 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     return noteContent;
   };
 
+  const getByFilePath = async (filePath: string[]): Promise<Note> => {
+    const note = await repositories.notes.getByPath(toRaw(filePath));
+    return note;
+  };
+
   const updateNoteContent = async (
     noteId: string,
     content: string,
@@ -175,5 +180,6 @@ export const useCurrentNoteStore = defineStore('current-note', () => {
     reloadCurrentNote,
     getNoteContent,
     updateNoteContent,
+    getByFilePath,
   };
 });

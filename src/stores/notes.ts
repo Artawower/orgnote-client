@@ -1,5 +1,4 @@
 import { useCurrentNoteStore } from './current-note';
-import { useFileManagerStore } from './file-manager';
 import { useGraphStore } from './graph';
 import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
@@ -9,7 +8,21 @@ import { toDeepRaw } from 'src/tools';
 
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
-import { NotePreview, NotesFilter, Note } from 'orgnote-api';
+import {
+  NotePreview,
+  NotesFilter,
+  Note,
+  findNoteFilesDiff,
+  StoredNoteInfo,
+  NoteChange,
+  orgnodeToNote,
+} from 'orgnote-api';
+import {
+  FILE_SYSTEM_MUTATION_ACTIONS,
+  useFileSystemStore,
+} from './file-system.store';
+import { parse, withMetaInfo } from 'org-mode-ast';
+import { onMounted } from 'vue';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -22,12 +35,24 @@ export const useNotesStore = defineStore('notes', () => {
     offset: DEFAULT_OFFSET,
   });
   const total = ref<number>(0);
-  const selectedNote = ref<Note>();
 
   const syncStore = useSyncStore();
-  const fileManagerStore = useFileManagerStore();
   const graphStore = useGraphStore();
   const currentNoteStore = useCurrentNoteStore();
+  const fileSystemStore = useFileSystemStore();
+
+  onMounted(() => {
+    watchFileSystemChanges();
+  });
+
+  const watchFileSystemChanges = () => {
+    fileSystemStore.$onAction(({ after, name }) => {
+      if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
+        return;
+      }
+      after(() => syncWithFs());
+    });
+  };
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -40,13 +65,11 @@ export const useNotesStore = defineStore('notes', () => {
   const deleteNotes = async (noteIds: string[]) => {
     await repositories.notes.deleteNotes(noteIds);
     notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
-    await fileManagerStore.updateFileManager();
     await loadNotes();
   };
 
   const markAsDeleted = async (noteIds: string[]) => {
     await repositories.notes.markAsDeleted(noteIds);
-    await fileManagerStore.updateFileManager();
     await syncStore.markToSync();
   };
 
@@ -58,7 +81,6 @@ export const useNotesStore = defineStore('notes', () => {
   const upsertNotesLocally = async (notes: Note[]) => {
     await upsertNotes(notes);
     await syncStore.markToSync();
-    await fileManagerStore.updateFileManager();
     graphStore.rebuildGraph();
   };
 
@@ -155,12 +177,44 @@ export const useNotesStore = defineStore('notes', () => {
     // TODO: master global loader here. Block the app!
     await sdk.notes.allNotesDelete();
     await repositories.notes.clear();
-    await fileManagerStore.updateFileManager();
+  };
+
+  // TODO: feat/native-file-sync debounce
+  const syncWithFs = async () => {
+    const cachedNotesFromLatestSync =
+      (await repositories.notes.getNotesAfterUpdateTime()) as StoredNoteInfo[];
+
+    const noteFilesDiff = await findNoteFilesDiff({
+      fileInfo: fileSystemStore.fileInfo,
+      dirPath: '/',
+      // TODO: feat/native-file-sync correct types.
+      storedNotesInfo: cachedNotesFromLatestSync,
+      readDir: fileSystemStore.readDir,
+    });
+
+    await deleteNotes(noteFilesDiff.deleted.map((d) => d.id));
+    await updateNotesCache([
+      ...noteFilesDiff.created,
+      ...noteFilesDiff.updated,
+    ]);
+  };
+
+  const updateNotesCache = async (noteChanges: NoteChange[]) => {
+    for (const nc of noteChanges) {
+      await updateNoteCache(nc.filePath);
+    }
+  };
+
+  const updateNoteCache = async (filePath: string): Promise<void> => {
+    const noteContent = await fileSystemStore.readTextFile(filePath);
+    const fileInfo = await fileSystemStore.fileInfo(filePath);
+    const parsedNote = withMetaInfo(parse(noteContent));
+    const note = orgnodeToNote(parsedNote, fileInfo);
+    await upsertNotes([note]);
   };
 
   return {
     notes,
-    selectedNote,
     total,
     filters,
     markAsDeleted,
@@ -178,5 +232,6 @@ export const useNotesStore = defineStore('notes', () => {
     resetCache,
     clearNotes,
     removeAllNotes,
+    syncWithFs,
   };
 });

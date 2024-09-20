@@ -33,6 +33,10 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
         (n.encryptionType =
           n.encrypted as unknown as ModelsPublicNoteEncryptionTypeEnum)
     )
+    .v(7)
+    .indexes(
+      '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt, filePath'
+    )
     .build();
 
   get store(): Dexie.Table<Note, string> {
@@ -74,6 +78,10 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
 
   async getById(id: string): Promise<Note> {
     return this.store.get({ id });
+  }
+
+  async getByPath(filePath: string[]): Promise<Note> {
+    return this.store.get({ filePath });
   }
 
   async getNotePreviews(
