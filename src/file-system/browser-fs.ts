@@ -1,5 +1,5 @@
-import { FileInfo, FileSystem } from './file-system.model';
-import fs, { Dirent, Stats } from '@zenfs/core';
+import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
+import fs, { Stats } from '@zenfs/core';
 
 const FILE_NOTE_FOUND_ERROR_CODE = 'ENOENT';
 
@@ -55,14 +55,16 @@ const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
 
 const readDir: FileSystem['readDir'] = async (path: string) => {
   const files = await fs.promises.readdir(path, { withFileTypes: true });
-  return files.map(mapFileInfo);
+  return files.map((dirent) =>
+    mapFileInfo((dirent as unknown as { stats: Stats }).stats, dirent.path)
+  );
 };
 
-const mapFileInfo = (dirent: Dirent): FileInfo => {
-  const stats = (dirent as unknown as { stats: Stats }).stats;
+const mapFileInfo = (stats: Stats, path: string): FileInfo => {
   return {
-    name: dirent.name,
-    type: dirent.isFile() ? 'file' : 'directory',
+    path,
+    name: getFileName(path),
+    type: stats.isFile() ? 'file' : 'directory',
     size: stats.size,
     atime: stats.atimeMs,
     mtime: stats.mtimeMs,
@@ -100,8 +102,15 @@ const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
   }
 };
 
+const fileInfo: FileSystem['fileInfo'] = async (path: string) => {
+  const stats = await fs.promises.stat(path);
+
+  return mapFileInfo(stats, path);
+};
+
 export const browserFs: FileSystem = {
   readFile,
+  fileInfo,
   writeFile,
   rename,
   deleteFile,

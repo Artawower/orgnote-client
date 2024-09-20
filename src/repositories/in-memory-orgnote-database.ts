@@ -1,12 +1,10 @@
 import { StoredExtension, ExtensionMeta, Note, NotePreview } from 'orgnote-api';
 import {
   IExtensionRepository,
-  IFileManagerRepository,
   IFileRepository,
   INoteRepository,
   Repositories,
 } from 'src/models';
-import { FileTree } from './file-manager-repository';
 import { FilePathInfo } from './note-repository';
 
 class InMemoryExtensionRepository implements IExtensionRepository {
@@ -71,18 +69,6 @@ class InMemoryExtensionRepository implements IExtensionRepository {
   }
 }
 
-class InMemoryFileManagerRepository implements IFileManagerRepository {
-  private fileTree: FileTree = {};
-
-  async getAll(): Promise<FileTree> {
-    return this.fileTree;
-  }
-
-  async upsert(fileTree: FileTree): Promise<void> {
-    this.fileTree = fileTree;
-  }
-}
-
 class InMemoryNoteRepository implements INoteRepository {
   private notes: Note[] = [];
 
@@ -126,6 +112,10 @@ class InMemoryNoteRepository implements INoteRepository {
   }
 
   async markAsDeleted(): Promise<void> {}
+
+  async getByPath(_path: string[]): Promise<Note> {
+    return;
+  }
 
   async bulkPartialUpdate(
     updates: { id: string; changes: Partial<Note> }[]
@@ -212,7 +202,6 @@ class InMemoryFileRepository implements IFileRepository {
 export function initInMemoryOrgNoteRepositories(): Repositories {
   const inMemoryRepositories = {
     notes: new InMemoryNoteRepository(),
-    fileManager: new InMemoryFileManagerRepository(),
     files: new InMemoryFileRepository(),
     extensions: new InMemoryExtensionRepository(),
   };

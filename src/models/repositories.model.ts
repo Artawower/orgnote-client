@@ -1,5 +1,5 @@
 import { ExtensionMeta, Note, NotePreview, StoredExtension } from 'orgnote-api';
-import { FileTree, FilePathInfo } from 'src/repositories';
+import { FilePathInfo } from 'src/repositories';
 
 // TODO: move to API package
 export interface IExtensionRepository {
@@ -15,11 +15,6 @@ export interface IExtensionRepository {
   delete(extensionName: string): Promise<void>;
 }
 
-export interface IFileManagerRepository {
-  getAll(): Promise<FileTree>;
-  upsert(fileTree: FileTree): Promise<void>;
-}
-
 export interface IFileRepository {
   save(file: File): Promise<void>;
   deleteByName(name: string): Promise<void>;
@@ -33,6 +28,7 @@ export interface INoteRepository {
   saveNotes(notes: Note[]): Promise<void>;
   putNote(note: Note): Promise<void>;
   getById(id: string): Promise<Note>;
+  getByPath(path: string[]): Promise<Note>;
   getNotePreviews(options?: {
     limit?: number;
     offset?: number;
@@ -60,7 +56,6 @@ export interface INoteRepository {
 
 export interface Repositories {
   notes: INoteRepository;
-  fileManager: IFileManagerRepository;
   files: IFileRepository;
   extensions: IExtensionRepository;
 }

@@ -10,7 +10,7 @@ export const mockMobile = <T extends (...params: any[]) => any>(
     return (() => defaultValue) as () => ReturnType<T> | Promise<ReturnType<T>>;
   }
   return async (...params: Parameters<T>): Promise<ReturnType<T>> => {
-    if (Platform.is.nativeMobile) {
+    if (process.env.CLIENT && Platform.is.nativeMobile) {
       return await fn(...params);
     }
     return defaultValue;

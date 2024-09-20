@@ -30,7 +30,7 @@ export function useEncryption() {
   const decryptNote = async (
     note: Note,
     noteText: string
-  ): Promise<[Note, string]> => {
+  ): Promise<[Note, string | Uint8Array]> => {
     const res = await _decryptNote(note, {
       content: noteText,
       ...config.encryption,

@@ -1,4 +1,7 @@
-import { ModelsPublicUser, ModelsUserPersonalInfo } from 'src/generated/api';
+import {
+  ModelsPublicUser,
+  ModelsUserPersonalInfo,
+} from 'orgnote-api/remote-api';
 
 export interface User extends ModelsPublicUser {
   isAnonymous?: boolean;

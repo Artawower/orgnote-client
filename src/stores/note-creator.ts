@@ -1,15 +1,11 @@
-import { Note } from 'orgnote-api';
+import { Note, getFileNameWithoutExtension } from 'orgnote-api';
 import { useAuthStore } from './auth';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
 import { ModelsNoteMeta } from 'src/generated/api';
 import { RouteNames } from 'src/router/routes';
-import {
-  getFileNameWithoutExtension,
-  getInitialNoteTemplate,
-  getUniqueFileName,
-} from 'src/tools';
+import { getInitialNoteTemplate, getUniqueFileName } from 'src/tools';
 import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
 import { useSettingsStore } from './settings';

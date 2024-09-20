@@ -3,8 +3,9 @@ import {
   Encoding,
   FileInfo as CapacitorFileInfo,
   Directory,
+  StatResult,
 } from '@capacitor/filesystem';
-import { FileInfo, FileSystem } from './file-system.model';
+import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
 
 const FILE_NOT_FOUND_ERR = 'File does not exist';
 const DIRECTORY_NOT_FOUND_ERR = 'Directory does not exist';
@@ -68,11 +69,15 @@ const readDir: FileSystem['readDir'] = async (path: string) => {
     path,
   });
 
-  return res.files.map(mapFileInfo);
+  return res.files.map((f) => mapFileInfo(f, `${path}/${f.name}`));
 };
 
-const mapFileInfo = (file: CapacitorFileInfo): FileInfo => ({
-  name: file.name,
+const mapFileInfo = (
+  file: CapacitorFileInfo | StatResult,
+  path: string
+): FileInfo => ({
+  path,
+  name: getFileName(path),
   type: file.type,
   size: file.size,
   mtime: file.mtime,
@@ -125,7 +130,16 @@ const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
   }
 };
 
+const fileInfo: FileSystem['fileInfo'] = async (path: string) => {
+  const stat = await Filesystem.stat({
+    directory: Directory.Documents,
+    path,
+  });
+  return mapFileInfo(stat, path);
+};
+
 export const mobileFs: FileSystem = {
+  fileInfo,
   readFile,
   writeFile,
   rename,
