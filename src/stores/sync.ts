@@ -8,7 +8,6 @@ import { sdk } from 'src/boot/axios';
 import { useEncryption } from 'src/hooks';
 
 import { computed, ref, watch } from 'vue';
-import { useFileManagerStore } from './file-manager';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote, ModelsPublicNote } from 'orgnote-api/remote-api';
 import { db, repositories } from 'src/boot/repositories';
@@ -26,7 +25,6 @@ export const useSyncStore = defineStore(
     const lastSyncTime = ref<string>();
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
-    const fileManagerStore = useFileManagerStore();
 
     const syncTimeTimeout = 5000;
 
@@ -87,6 +85,10 @@ export const useSyncStore = defineStore(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
         await upsertNotes(rspns.data.data.notes);
+        console.log(
+          '✎: [line 90][sync.ts] rspns.data.data.notes: ',
+          rspns.data.data.notes
+        );
         await checkCurrentEditedNoteChanged(rspns.data.data.notes);
         console.log(
           '[line 90][FILE WEIRD]: ',
@@ -99,7 +101,6 @@ export const useSyncStore = defineStore(
         }
 
         lastSyncTime.value = new Date().toISOString();
-        fileManagerStore.updateFileManager();
       } catch (e: unknown) {
         handleSyncError(e as Error);
       }
@@ -183,6 +184,7 @@ export const useSyncStore = defineStore(
         await writeTextFile(newNote.filePath, noteContent, {
           type: 'disabled',
         });
+        // TODO: feat/native-file-sync call method for set atime, mtime, ctime
         await notesStore.upsertNotes([newNote]);
       }
     };
