@@ -174,6 +174,10 @@ const editName = () => {
 };
 
 const confirmEdit = async () => {
+  const isRoot = !props.fileNode.filePath.length;
+  if (isRoot) {
+    return;
+  }
   editMode.value = false;
   const currentFileDir = getParentDir(props.fileNode.filePath);
   const newPath = join(currentFileDir, fileName.value);

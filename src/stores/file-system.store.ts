@@ -38,11 +38,14 @@ export const useFileSystemStore = defineStore('file-system', () => {
   };
 
   const getUserFilePath = (path: string): string => {
-    return `${getRootDir()}/${path}`;
+    return `${getRootDir()}${path}`;
   };
 
   const getRootDir = () => {
-    const browserFsPrefix = platformSpecificValue({ desktop: '/', data: '' });
+    const browserFsPrefix = platformSpecificValue({
+      desktop: '/',
+      data: 'org-notes',
+    });
     return `${browserFsPrefix}${config.vault.path}`;
   };
 
