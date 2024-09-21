@@ -102,6 +102,17 @@ const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
   }
 };
 
+const utimeSync: FileSystem['utimeSync'] = async (
+  path: string,
+  atime?: string | number | Date,
+  mtime?: string | number | Date
+) => {
+  const fi = await fileInfo(path);
+  atime ??= fi.atime;
+  mtime ??= fi.mtime;
+  await fs.promises.utimes(path, atime, mtime);
+};
+
 const fileInfo: FileSystem['fileInfo'] = async (path: string) => {
   const stats = await fs.promises.stat(path);
 
@@ -119,4 +130,5 @@ export const browserFs: FileSystem = {
   mkdir,
   isDirExist,
   isFileExist,
+  utimeSync,
 };

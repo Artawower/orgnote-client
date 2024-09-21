@@ -2,6 +2,7 @@ import { useAppLockerStore } from 'src/stores/app-locker.store';
 import { useExtensionsStore } from 'src/stores/extensions';
 import { useNoteEncryptionTasksStore } from 'src/stores/note-encryption-tasks.store';
 import { useNotesStore } from 'src/stores/notes';
+import { useSyncStore } from 'src/stores/sync';
 import { ref } from 'vue';
 import { onBeforeMount } from 'vue';
 
@@ -12,6 +13,7 @@ export function useBootstrap() {
   const notesStore = useNotesStore();
   useNoteEncryptionTasksStore();
   useAppLockerStore();
+  useSyncStore();
 
   onBeforeMount(async () => {
     await extensionsStore.loadActiveExtensions();
