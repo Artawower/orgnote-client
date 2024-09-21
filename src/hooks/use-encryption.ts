@@ -57,11 +57,6 @@ export function useEncryption() {
     encryptionConfig?: OrgNoteEncryption
   ): Promise<string> => {
     encryptionConfig ??= config.encryption;
-    console.trace(
-      '✎: [line 60][use-encryption.ts] encryptionConfig: ',
-      encryptionConfig,
-      content
-    );
     const text = typeof content === 'string' ? content : armor(content);
     return await _decrypt({
       content: text,

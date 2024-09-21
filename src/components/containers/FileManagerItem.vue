@@ -90,7 +90,7 @@ import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useDragStatus } from 'src/hooks/drag-status';
 import { useNoteCreatorStore } from 'src/stores/note-creator';
 import { FileTree } from 'src/models/file-tree.model';
-import { getStringPath } from 'orgnote-api';
+import { getParentDir, getStringPath, join } from 'orgnote-api';
 import { useFileSystemStore } from 'src/stores/file-system.store';
 
 const props = defineProps<{
@@ -175,7 +175,9 @@ const editName = () => {
 
 const confirmEdit = async () => {
   editMode.value = false;
-  await fileSystemStore.rename(props.fileNode.filePath, fileName.value);
+  const currentFileDir = getParentDir(props.fileNode.filePath);
+  const newPath = join(currentFileDir, fileName.value);
+  await fileSystemStore.rename(props.fileNode.filePath, newPath);
   fileManagerStore.stopEdit();
 };
 

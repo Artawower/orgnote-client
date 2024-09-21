@@ -18,7 +18,7 @@ export function getMobileDevicesCommands(): Command[] {
       icon: 'folder_open',
       group: 'mobile',
       handler: async () => {
-        return orgNoteApi.fileSystem.readPath();
+        // TODO: open file manager here with native mobile os view
       },
     },
   ];

@@ -67,8 +67,9 @@ const pathPickItems: MenuItemProps[] = [
     type: 'action',
     color: getCssVar('blue'),
     handler: async () => {
-      const path = await orgNoteApi.fileSystem.readPath();
-      config.vault.path = path;
+      // TODO: feat/native-file-sync from file manager
+      // const path = await orgNoteApi.fileSystem.readPath();
+      // config.vault.path = path;
     },
   },
 ];

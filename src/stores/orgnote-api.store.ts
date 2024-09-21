@@ -17,6 +17,7 @@ import { useSystemInfoStore } from './system-info';
 import { useModalStore } from './modal';
 import { Modal } from 'orgnote-api';
 import { FolderPicker } from 'capacitor-folder-picker';
+import { useFileSystem } from 'src/hooks/use-file-system';
 
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
@@ -34,6 +35,7 @@ export const useOrgNoteApiStore = () => {
     ui: useUI(settings),
     interaction,
     system: useSystem(interaction),
+    useFileSystem,
     commands: {
       add: commandsStore.register,
       remove: commandsStore.unregister,

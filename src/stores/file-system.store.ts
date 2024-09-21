@@ -19,6 +19,7 @@ import {
   isOrgGpgFile,
   OrgNoteEncryption,
 } from 'orgnote-api';
+import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -32,10 +33,9 @@ export const useFileSystemStore = defineStore('file-system', () => {
   const { config } = useSettingsStore();
   const { decrypt, encrypt } = useEncryption();
 
-  const currentFs = platformSpecificValue<FileSystem>({
-    mobile: mobileFs,
-    desktop: browserFs,
-  });
+  const { orgNoteApi } = useOrgNoteApiStore();
+
+  const currentFs = orgNoteApi.useFileSystem();
 
   const normalizePath = (path: string | string[]): string => {
     // TODO: feat/native-file-sync import from orgnote-api

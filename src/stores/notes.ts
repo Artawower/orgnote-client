@@ -16,6 +16,7 @@ import {
   StoredNoteInfo,
   NoteChange,
   orgnodeToNote,
+  isGpgEncrypted,
 } from 'orgnote-api';
 import {
   FILE_SYSTEM_MUTATION_ACTIONS,
@@ -207,6 +208,9 @@ export const useNotesStore = defineStore('notes', () => {
 
   const updateNoteCache = async (filePath: string): Promise<void> => {
     const noteContent = await fileSystemStore.readTextFile(filePath);
+    if (isGpgEncrypted(noteContent)) {
+      return;
+    }
     const fileInfo = await fileSystemStore.fileInfo(filePath);
     const parsedNote = withMetaInfo(parse(noteContent));
     const note = orgnodeToNote(parsedNote, fileInfo);
