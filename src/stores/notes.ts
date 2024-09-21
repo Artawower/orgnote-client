@@ -17,6 +17,7 @@ import {
   NoteChange,
   orgnodeToNote,
   isGpgEncrypted,
+  splitPath,
 } from 'orgnote-api';
 import {
   FILE_SYSTEM_MUTATION_ACTIONS,
@@ -24,6 +25,7 @@ import {
 } from './file-system.store';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { onMounted } from 'vue';
+import { v4 } from 'uuid';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -41,6 +43,7 @@ export const useNotesStore = defineStore('notes', () => {
   const graphStore = useGraphStore();
   const currentNoteStore = useCurrentNoteStore();
   const fileSystemStore = useFileSystemStore();
+  const notesStore = useNotesStore();
 
   onMounted(() => {
     watchFileSystemChanges();
@@ -51,7 +54,7 @@ export const useNotesStore = defineStore('notes', () => {
       if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
         return;
       }
-      after(() => syncWithFs());
+      after(() => notesStore.syncWithFs());
     });
   };
 
@@ -71,7 +74,6 @@ export const useNotesStore = defineStore('notes', () => {
 
   const markAsDeleted = async (noteIds: string[]) => {
     await repositories.notes.markAsDeleted(noteIds);
-    await syncStore.markToSync();
   };
 
   const upsertNotes = async (notes: Note[]) => {
@@ -193,7 +195,7 @@ export const useNotesStore = defineStore('notes', () => {
       readDir: fileSystemStore.readDir,
     });
 
-    await deleteNotes(noteFilesDiff.deleted.map((d) => d.id));
+    await markAsDeleted(noteFilesDiff.deleted.map((d) => d.id));
     await updateNotesCache([
       ...noteFilesDiff.created,
       ...noteFilesDiff.updated,
@@ -207,14 +209,34 @@ export const useNotesStore = defineStore('notes', () => {
   };
 
   const updateNoteCache = async (filePath: string): Promise<void> => {
+    const note = await getUpdatedNoteByFilePath(filePath);
+    const updatedAt = new Date().toISOString();
+    // NOTE: This apporach mark note as unsynced for remote API
+    // cause file moving does not update utime
+    note.updatedAt = updatedAt;
+    note.touchedAt = updatedAt;
+
+    await upsertNotes([note]);
+  };
+
+  const getUpdatedNoteByFilePath = async (filePath: string): Promise<Note> => {
     const noteContent = await fileSystemStore.readTextFile(filePath);
+
     if (isGpgEncrypted(noteContent)) {
-      return;
+      const note: Note = {
+        id: v4(),
+        filePath: splitPath(filePath),
+        meta: {},
+        isMy: true,
+      };
+
+      return note;
     }
+
     const fileInfo = await fileSystemStore.fileInfo(filePath);
     const parsedNote = withMetaInfo(parse(noteContent));
     const note = orgnodeToNote(parsedNote, fileInfo);
-    await upsertNotes([note]);
+    return note;
   };
 
   return {

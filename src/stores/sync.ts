@@ -11,22 +11,27 @@ import { computed, ref, watch } from 'vue';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 import { HandlersCreatingNote, ModelsPublicNote } from 'orgnote-api/remote-api';
 import { db, repositories } from 'src/boot/repositories';
-import { Note } from 'orgnote-api/models';
+import type { Note, SyncStore } from 'orgnote-api/models';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useSettingsStore } from './settings';
-import { useFileSystemStore } from 'src/stores/file-system.store';
+import {
+  FILE_SYSTEM_MUTATION_ACTIONS,
+  useFileSystemStore,
+} from 'src/stores/file-system.store';
 import { isOrgGpgFile, unarmor } from 'orgnote-api';
 import { readFromStream } from 'src/tools/read-from-stream.tool';
+import { onMounted } from 'vue';
 
-export const useSyncStore = defineStore(
+export const useSyncStore = defineStore<string, SyncStore>(
   'sync',
-  () => {
+  (): SyncStore => {
     const lastSyncTime = ref<string>();
     const notesStore = useNotesStore();
     const authStore = useAuthStore();
+    const fileSystemStore = useFileSystemStore();
 
-    const syncTimeTimeout = 5000;
+    const syncTimeTimeout = 2000;
 
     let abortController: AbortController;
 
@@ -34,6 +39,22 @@ export const useSyncStore = defineStore(
       () =>
         !authStore.user || authStore.user.isAnonymous || !authStore.user.active
     );
+
+    onMounted(() => {
+      watchNoteCacheChanged();
+    });
+
+    // TODO: feat/native-file-sync register custom hook!
+    const watchNoteCacheChanged = () => {
+      notesStore.$onAction(({ after, name }) => {
+        if (name !== 'syncWithFs') {
+          return;
+        }
+        after(() => {
+          markToSync();
+        });
+      });
+    };
 
     // TODO: master add debounce with timeout and accumulation
     // Use websockets instead
@@ -60,7 +81,6 @@ export const useSyncStore = defineStore(
       await syncViaApi();
     };
 
-    const fileSystemStore = useFileSystemStore();
     const syncViaApi = async () => {
       cancelPreviousRequest();
       const notes = await getNotesFromLastSync();

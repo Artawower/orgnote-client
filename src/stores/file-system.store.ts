@@ -1,8 +1,6 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
-import { browserFs } from 'src/file-system/browser-fs';
-import { mobileFs } from 'src/file-system/mobile-fs';
 import { useSettingsStore } from 'src/stores/settings';
 import { getFileDirPath } from 'src/tools/get-file-dir-path';
 import {
@@ -13,12 +11,7 @@ import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
-import {
-  FileSystem,
-  FileInfo,
-  isOrgGpgFile,
-  OrgNoteEncryption,
-} from 'orgnote-api';
+import { FileInfo, isOrgGpgFile, OrgNoteEncryption } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const configureFileSystem = mockDesktop(async () => {
@@ -35,7 +28,7 @@ export const useFileSystemStore = defineStore('file-system', () => {
 
   const { orgNoteApi } = useOrgNoteApiStore();
 
-  const currentFs = orgNoteApi.useFileSystem();
+  const currentFs = orgNoteApi.core.useFileSystem();
 
   const normalizePath = (path: string | string[]): string => {
     // TODO: feat/native-file-sync import from orgnote-api

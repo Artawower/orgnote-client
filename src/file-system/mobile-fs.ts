@@ -130,6 +130,14 @@ const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
   }
 };
 
+const utimeSync: FileSystem['utimeSync'] = async (
+  path: string,
+  atime?: string | number | Date,
+  mtime?: string | number | Date
+) => {
+  // Mobile file system does not have API for update ctime and atime unfortunately.
+};
+
 const fileInfo: FileSystem['fileInfo'] = async (path: string) => {
   const stat = await Filesystem.stat({
     directory: Directory.Documents,
@@ -149,4 +157,5 @@ export const mobileFs: FileSystem = {
   mkdir,
   isDirExist,
   isFileExist,
+  utimeSync,
 };
