@@ -10,6 +10,7 @@ import { FileTree } from 'src/models/file-tree.model';
 import { v4 } from 'uuid';
 import { SortType } from 'src/models/sort-type.model';
 import { FileInfo } from 'orgnote-api';
+import { useSettingsStore } from './settings';
 
 export const useFileManagerStore = defineStore('file-manager', () => {
   const fileTrees = ref<FileTree[]>([]);
@@ -33,8 +34,10 @@ export const useFileManagerStore = defineStore('file-manager', () => {
     });
   };
 
+  const { config } = useSettingsStore();
+
   const syncFiles = async () => {
-    const files = await fileSystem.getFilesInDir();
+    const files = await fileSystem.getFilesInDir(config.vault.path);
     fileTrees.value = sortFileTrees(await extractFiles(files));
   };
 

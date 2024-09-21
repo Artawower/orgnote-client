@@ -64,7 +64,6 @@
     "@zenfs/core": "0.16.4",
     "@zenfs/dom": "0.2.14",
     "axios": "1.7.3",
-    "capacitor-folder-picker": "0.0.2",
     "dexie": "4.0.7",
     "force-graph": "1.43.5",
     "highlight.js": "11.9.0",
@@ -132,23 +131,13 @@
     "workbox-routing": "7.1.0",
     "workbox-strategies": "7.1.0"
   },
-  "overrides": {
-    "capacitor-folder-picker": {
-      "@capacitor/core": "6.1.0"
-    }
-  },
   "engines": {
     "bun": ">= 1.0.2"
   },
   "jscpd": {
     "threshold": 1.5,
-    "reporters": [
-      "html",
-      "console"
-    ],
-    "format": [
-      "typescript"
-    ],
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -159,10 +148,7 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": [
-      "import.*from\\s*'.*'",
-      "export.*from\\s*'.*'"
-    ],
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,
