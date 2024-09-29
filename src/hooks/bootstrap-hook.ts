@@ -1,10 +1,11 @@
 import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
 import { useAppLockerStore } from 'src/stores/app-locker.store';
 import { useExtensionsStore } from 'src/stores/extensions';
+import { useFileManagerStore } from 'src/stores/file-manager';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 import { useNoteEncryptionTasksStore } from 'src/stores/note-encryption-tasks.store';
 import { useNotesStore } from 'src/stores/notes';
 import { useSyncStore } from 'src/stores/sync';
-import { mockAndroid } from 'src/tools/mock-mobile';
 import { ref } from 'vue';
 import { onBeforeMount } from 'vue';
 
@@ -13,16 +14,21 @@ export function useBootstrap() {
 
   const extensionsStore = useExtensionsStore();
   const notesStore = useNotesStore();
+
   useNoteEncryptionTasksStore();
   useAppLockerStore();
   useSyncStore();
+
+  const fileSystemStore = useFileSystemStore();
+  const fileManagerStore = useFileManagerStore();
 
   onBeforeMount(async () => {
     await extensionsStore.loadActiveExtensions();
     await extensionsStore.loadExtensions();
     await extensionsStore.initBuiltInExtensions();
-    await mockAndroid(AndroidFileSystemPermission.requestAccess)();
+    await fileSystemStore.initFileSystem();
     await notesStore.syncWithFs();
+    fileManagerStore.updateFileManager();
     appReady.value = true;
   });
 

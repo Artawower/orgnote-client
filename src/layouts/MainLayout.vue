@@ -24,8 +24,6 @@
               v-touch-swipe.mouse.right="sidebarStore.open"
               :class="{ 'with-composite-bar': $q.screen.gt.xs }"
             >
-              <modal-window />
-              <confirmation-modal />
               <router-view />
               <editor-actions-toolbar
                 v-if="
@@ -46,6 +44,9 @@
         </template>
       </Suspense>
       <page-loading v-else />
+      <modal-window />
+
+      <confirmation-modal />
     </q-layout>
   </app-locker>
 </template>

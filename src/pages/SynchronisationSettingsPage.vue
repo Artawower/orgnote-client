@@ -13,6 +13,15 @@
     <the-description
       text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
     />
+
+    <template v-if="$q.platform.is.android">
+      <menu-group :items="androidPermissionsItems" />
+      <the-description
+        v-if="!fileSystemStore.hasAccess"
+        type="warning"
+        text="there is no access to the file system! The app can’t read external notes."
+      />
+    </template>
   </navigation-page>
 </template>
 
@@ -30,11 +39,14 @@ import { computed } from 'vue';
 import { useQuasar } from 'quasar';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSyncStore } from 'src/stores/sync';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 const authStore = useAuthStore();
 
 const syncStore = useSyncStore();
 const { config } = useSettingsStore();
+
+const fileSystemStore = useFileSystemStore();
 
 const forceSyncItems: MenuItemProps[] = [
   {
@@ -74,5 +86,12 @@ const pathPickItems: MenuItemProps[] = [
   },
 ];
 
+const androidPermissionsItems: MenuItemProps[] = [
+  {
+    label: 'open persmissions',
+    handler: fileSystemStore.openPermissions,
+    color: getCssVar('blue'),
+  },
+];
 const $q = useQuasar();
 </script>
