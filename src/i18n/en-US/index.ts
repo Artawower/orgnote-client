@@ -225,4 +225,9 @@ export default {
   'unsaved changes': 'unsaved changes',
   'are you sure you want to leave the page?':
     'are you sure you want to leave the page?',
+  'file system access': 'file system access',
+  'to synchronize existing notes, we need access to the file system':
+    'To synchronize existing notes, we need access to the file system',
+  'there is no access to the file system! The app can’t read external notes.':
+    'there is no access to the file system! The app can’t read external notes.',
 };

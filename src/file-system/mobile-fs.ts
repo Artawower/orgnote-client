@@ -61,7 +61,6 @@ const rename: FileSystem['rename'] = async (
 const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
   await Filesystem.deleteFile({
     directory: Directory.Documents,
-
     path,
   });
 };

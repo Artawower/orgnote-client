@@ -30,20 +30,32 @@ public class FileSystemPermission extends Plugin {
    return;
   }
 
-   Intent intent = new Intent();
-  intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-  Uri uri = Uri.fromParts("package", this.getActivity().getPackageName(), null);
-  intent.setData(uri);
-  this.getActivity().startActivity(intent);
+  this.openPermissionsSettings();
 
-  ret.put("access", Environment.isExternalStorageManager());
+  ret.put("hasAccess", Environment.isExternalStorageManager());
   call.resolve(ret);
  }
 
  @PluginMethod()
  public void hasAccess(PluginCall call) {
   JSObject ret = new JSObject();
-  ret.put("access", Environment.isExternalStorageManager());
+  ret.put("hasAccess", Environment.isExternalStorageManager());
   call.resolve(ret);
+ }
+
+ @PluginMethod()
+ public void openAccess(PluginCall call) {
+  this.openPermissionsSettings();
+  JSObject ret = new JSObject();
+  ret.put("hasAccess", Environment.isExternalStorageManager());
+  call.resolve(ret);
+ }
+
+ public void openPermissionsSettings() {
+  Intent intent = new Intent();
+  intent.setAction(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+  Uri uri = Uri.fromParts("package", this.getActivity().getPackageName(), null);
+  intent.setData(uri);
+  this.getActivity().startActivity(intent);
  }
 }

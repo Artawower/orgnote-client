@@ -3,16 +3,15 @@ import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
 import { useSettingsStore } from 'src/stores/settings';
 import { getFileDirPath } from 'src/tools/get-file-dir-path';
-import {
-  BROWSER_INDEXEDBB_FS_NAME,
-  DEFAULT_NOTE_DIR,
-} from 'src/constants/default-note-dir.constant';
+import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/default-note-dir.constant';
 import { mockDesktop } from 'src/tools/mock-desktop';
-import { mockMobile } from 'src/tools/mock-mobile';
+import { mockAndroid, mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
 import { FileInfo, isOrgGpgFile, join, OrgNoteEncryption } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
+import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
+import { ref } from 'vue';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -22,168 +21,202 @@ export const configureFileSystem = mockDesktop(async () => {
   });
 });
 
-export const useFileSystemStore = defineStore('file-system', () => {
-  const { config } = useSettingsStore();
-  const { decrypt, encrypt } = useEncryption();
+export const useFileSystemStore = defineStore(
+  'file-system',
+  () => {
+    const hasAccess = ref<boolean>(false);
+    const accessRequests = ref<boolean>(false);
+    const { config } = useSettingsStore();
+    const { decrypt, encrypt } = useEncryption();
 
-  const { orgNoteApi } = useOrgNoteApiStore();
+    const { orgNoteApi } = useOrgNoteApiStore();
 
-  const currentFs = orgNoteApi.core.useFileSystem();
+    const currentFs = orgNoteApi.core.useFileSystem();
 
-  const normalizePath = (path: string | string[]): string => {
-    // TODO: feat/native-file-sync import from orgnote-api
-    // const stringPath = getStringPath(path);
-    const stringPath = typeof path === 'string' ? path : join(...path);
-    return getUserFilePath(stringPath);
-  };
+    const normalizePath = (path: string | string[]): string => {
+      // TODO: feat/native-file-sync import from orgnote-api
+      // const stringPath = getStringPath(path);
+      const stringPath = typeof path === 'string' ? path : join(...path);
+      return getUserFilePath(stringPath);
+    };
 
-  const getUserFilePath = (path: string): string => {
-    path = path ? `/${path}` : '';
-    return `${getRootDir()}${path}`;
-  };
+    const getUserFilePath = (path: string): string => {
+      path = path ? `/${path}` : '';
+      return `${getRootDir()}${path}`;
+    };
 
-  const getRootDir = () => {
-    const fsPrefix = platformSpecificValue({
-      desktop: '/',
-      // TODO: feat/native-file-sync use vault here
-      // data: 'org-notes',
-      data: config.vault.path,
-    });
-    return `${fsPrefix}`;
-  };
+    const getRootDir = () => {
+      const fsPrefix = platformSpecificValue({
+        desktop: '/',
+        // TODO: feat/native-file-sync use vault here
+        // data: 'org-notes',
+        data: config.vault.path,
+      });
+      return `${fsPrefix}`;
+    };
 
-  const readTextFile = async (
-    path: string | string[],
-    encryptionConfig?: OrgNoteEncryption
-  ): Promise<string> => {
-    const normalizedPath = normalizePath(path);
-    const isEncrypted = isOrgGpgFile(normalizedPath);
-    const format = isEncrypted ? undefined : 'utf8';
+    const readTextFile = async (
+      path: string | string[],
+      encryptionConfig?: OrgNoteEncryption
+    ): Promise<string> => {
+      const normalizedPath = normalizePath(path);
+      const isEncrypted = isOrgGpgFile(normalizedPath);
+      const format = isEncrypted ? undefined : 'utf8';
 
-    const content = await currentFs.readFile(normalizedPath, format);
-    encryptionConfig ??= config.encryption;
+      const content = await currentFs.readFile(normalizedPath, format);
+      encryptionConfig ??= config.encryption;
 
-    const text = isEncrypted
-      ? await decrypt(content, 'utf8', encryptionConfig)
-      : content;
-    return text;
-  };
-
-  /*
-   * Write file, if file is text and file name is *.org.gpg encrypt it
-   */
-  const writeFile = async (
-    path: string | string[],
-    content: string | Uint8Array,
-    encryptionConfig?: OrgNoteEncryption
-  ) => {
-    await initFolderForFile(path);
-    const realPath = normalizePath(path);
-    encryptionConfig ??= config.encryption;
-    const isEncrypted = isOrgGpgFile(realPath);
-    const writeContent =
-      isEncrypted && typeof content === 'string'
-        ? await encrypt(content, 'binary', encryptionConfig)
+      const text = isEncrypted
+        ? await decrypt(content, 'utf8', encryptionConfig)
         : content;
-    const format = isEncrypted ? 'binary' : 'utf8';
-    return await currentFs.writeFile(realPath, writeContent, format);
-  };
+      return text;
+    };
 
-  const rename = async (
-    path: string | string[],
-    newPath: string | string[]
-  ): Promise<void> => {
-    await initFolderForFile(path);
-    return currentFs.rename(normalizePath(path), normalizePath(newPath));
-  };
+    /*
+     * Write file, if file is text and file name is *.org.gpg encrypt it
+     */
+    const writeFile = async (
+      path: string | string[],
+      content: string | Uint8Array,
+      encryptionConfig?: OrgNoteEncryption
+    ) => {
+      await initFolderForFile(path);
+      const realPath = normalizePath(path);
+      encryptionConfig ??= config.encryption;
+      const isEncrypted = isOrgGpgFile(realPath);
+      const writeContent =
+        isEncrypted && typeof content === 'string'
+          ? await encrypt(content, 'binary', encryptionConfig)
+          : content;
+      const format = isEncrypted ? 'binary' : 'utf8';
+      return await currentFs.writeFile(realPath, writeContent, format);
+    };
 
-  const isFileExist = async (path: string | string[]): Promise<boolean> => {
-    return await currentFs.isFileExist(normalizePath(path));
-  };
+    const rename = async (
+      path: string | string[],
+      newPath: string | string[]
+    ): Promise<void> => {
+      await initFolderForFile(path);
+      return currentFs.rename(normalizePath(path), normalizePath(newPath));
+    };
 
-  const deleteFile = async (path: string | string[]) => {
-    await initFolderForFile(path);
-    return await currentFs.deleteFile(normalizePath(path));
-  };
+    const isFileExist = async (path: string | string[]): Promise<boolean> => {
+      return await currentFs.isFileExist(normalizePath(path));
+    };
 
-  const removeAllFiles = async () => {
-    await initFolderForFile(config.vault.path);
+    const deleteFile = async (path: string | string[]) => {
+      await initFolderForFile(path);
+      return await currentFs.deleteFile(normalizePath(path));
+    };
 
-    await mockMobile(async () => await currentFs.rmdir(config.vault.path))();
+    const removeAllFiles = async () => {
+      await initFolderForFile(config.vault.path);
 
-    mockDesktop(() => {
-      indexedDB.deleteDatabase(BROWSER_INDEXEDBB_FS_NAME);
-    })();
-  };
+      await mockMobile(async () => await currentFs.rmdir(config.vault.path))();
 
-  const initFolderForFile = async (
-    filePath: string | string[],
-    isDir = false
-  ): Promise<void> => {
-    const realPath = normalizePath(filePath);
-    const dirPath = isDir ? realPath : getFileDirPath(realPath) || '/';
-    const isDirExist = await currentFs.isDirExist(dirPath);
-    if (isDirExist) {
-      return;
-    }
-    await currentFs.mkdir(dirPath);
-  };
+      mockDesktop(() => {
+        indexedDB.deleteDatabase(BROWSER_INDEXEDBB_FS_NAME);
+      })();
+    };
 
-  const mkdir = async (path: string | string[]): Promise<void> => {
-    await currentFs.mkdir(normalizePath(path));
-  };
+    const initFolderForFile = async (
+      filePath: string | string[],
+      isDir = false
+    ): Promise<void> => {
+      const realPath = normalizePath(filePath);
+      const dirPath = isDir ? realPath : getFileDirPath(realPath) || '/';
+      const isDirExist = await currentFs.isDirExist(dirPath);
+      if (isDirExist) {
+        return;
+      }
+      await currentFs.mkdir(dirPath);
+    };
 
-  const rmdir = async (path: string | string[]): Promise<void> => {
-    await currentFs.rmdir(normalizePath(path));
-  };
+    const mkdir = async (path: string | string[]): Promise<void> => {
+      await currentFs.mkdir(normalizePath(path));
+    };
 
-  const fileInfo = async (path: string | string[]): Promise<FileInfo> => {
-    const fileInfo = await currentFs.fileInfo(normalizePath(path));
+    const rmdir = async (path: string | string[]): Promise<void> => {
+      await currentFs.rmdir(normalizePath(path));
+    };
 
-    fileInfo.path = platformSpecificValue({
-      data: (path: string) => path,
-      mobile: (path: string) => normalizeMobilePath(path),
-    })(fileInfo.path);
+    const fileInfo = async (path: string | string[]): Promise<FileInfo> => {
+      const fileInfo = await currentFs.fileInfo(normalizePath(path));
 
-    return fileInfo;
-  };
+      fileInfo.path = platformSpecificValue({
+        data: (path: string) => path,
+        mobile: (path: string) => normalizeMobilePath(path),
+      })(fileInfo.path);
 
-  const readDir = async (path: string | string[] = '') => {
-    await initFolderForFile(path, true);
-    const res = await currentFs.readDir(normalizePath(path));
-    const normalizedPaths = normalizeFilePaths(res);
-    return normalizedPaths;
-  };
+      return fileInfo;
+    };
 
-  const normalizeFilePaths = (paths: FileInfo[]): FileInfo[] => {
-    return platformSpecificValue({
-      data: (infos: FileInfo[]) => infos,
-      mobile: (infos: FileInfo[]) =>
-        infos.map((p) => ({
-          ...p,
-          path: normalizeMobilePath(p.path),
-        })),
-    })(paths);
-  };
+    const readDir = async (path: string | string[] = '') => {
+      await initFolderForFile(path, true);
+      const res = await currentFs.readDir(normalizePath(path));
+      const normalizedPaths = normalizeFilePaths(res);
+      return normalizedPaths;
+    };
 
-  const normalizeMobilePath = (path: string): string => {
-    return path.replace(config.vault.path + '/', '');
-  };
+    const normalizeFilePaths = (paths: FileInfo[]): FileInfo[] => {
+      return platformSpecificValue({
+        data: (infos: FileInfo[]) => infos,
+        mobile: (infos: FileInfo[]) =>
+          infos.map((p) => ({
+            ...p,
+            path: normalizeMobilePath(p.path),
+          })),
+      })(paths);
+    };
 
-  return {
-    readTextFile,
-    writeFile,
-    rename,
-    isFileExist,
-    deleteFile,
-    removeAllFiles,
-    mkdir,
-    rmdir,
-    fileInfo,
-    getRootDir,
-    readDir,
-  };
-});
+    const normalizeMobilePath = (path: string): string => {
+      return path.replace(config.vault.path + '/', '');
+    };
+
+    const initFileSystem = async () => {
+      await mockAndroid(initAndroidFileSystem)();
+    };
+
+    const initAndroidFileSystem = async () => {
+      hasAccess.value = (
+        await AndroidFileSystemPermission.hasAccess()
+      ).hasAccess;
+      if (hasAccess.value) {
+        return;
+      }
+
+      const giveAccess = await orgNoteApi.interaction.confirm(
+        'file system access',
+        'to synchronize existing notes, we need access to the file system'
+      );
+    };
+
+    const openPermissions = async () => {
+      hasAccess.value = (
+        await AndroidFileSystemPermission.openAccess()
+      ).hasAccess;
+    };
+
+    return {
+      readTextFile,
+      writeFile,
+      rename,
+      isFileExist,
+      deleteFile,
+      removeAllFiles,
+      mkdir,
+      rmdir,
+      fileInfo,
+      getRootDir,
+      readDir,
+
+      initFileSystem,
+      hasAccess,
+      openPermissions,
+    };
+  },
+  { persist: true }
+);
 
 export const FILE_SYSTEM_MUTATION_ACTIONS: Array<
   keyof ReturnType<typeof useFileSystemStore>

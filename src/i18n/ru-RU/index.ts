@@ -228,4 +228,9 @@ export default {
   'unsaved changes': 'не сохраненные изменения',
   'are you sure you want to leave the page?':
     'вы уверены что хотите покинуть страницу?',
+  'file system access': 'доступ к файловой системе',
+  'to synchronize existing notes, we need access to the file system':
+    'для синхронизации существующих заметок нам необходим доступ к файловой системе',
+  'there is no access to the file system! The app can’t read external notes.':
+    'нет доступа к файловой системе! Приложение не сможет прочитать внешние заметки.',
 };
