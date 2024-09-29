@@ -14,7 +14,7 @@
 
 <script lang="ts" setup>
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { DefaultCommands, isGpgEncrypted } from 'orgnote-api';
+import { isGpgEncrypted } from 'orgnote-api';
 import { computed } from 'vue';
 import { RouteNames } from 'src/router/routes';
 import { convertRouterNameToCommand } from 'src/tools/route-name-to-command.tool';

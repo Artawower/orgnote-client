@@ -1,4 +1,4 @@
-import { PersonalInfo } from 'src/models';
+import { PersonalInfo } from 'orgnote-api';
 
 export function extractAuthQueryInfo(
   query: Record<string, string>

@@ -16,9 +16,9 @@
       </template>
     </header-bar>
     <q-tree
-      :nodes="fileManagerStore.fileTrees"
+      :nodes="fileManagerStore.fileTree"
       :filter="search"
-      :key="fileManagerStore.fileTrees.length"
+      :key="fileManagerStore.fileTree.length"
       v-model:expanded="fileManagerStore.expandedNodes"
       no-transition
       ref="qTreeRef"

@@ -5,14 +5,13 @@ import { defineStore } from 'pinia';
 import { useQuasar } from 'quasar';
 import { sdk } from 'src/boot/axios';
 import { useNotifications } from 'src/hooks';
-import { OAuthProvider, PersonalInfo } from 'src/models';
 import { RouteNames } from 'src/router/routes';
 import { v4 } from 'uuid';
 import { useRouter } from 'vue-router';
-
 import { ref } from 'vue';
 import { mockServer } from 'src/tools';
 import { useNotesStore } from './notes';
+import { AuthStore, OAuthProvider, PersonalInfo } from 'orgnote-api';
 
 const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
@@ -25,9 +24,9 @@ export interface AuthState {
   redirectUrl?: string;
 }
 
-export const useAuthStore = defineStore(
+export const useAuthStore = defineStore<string, AuthStore>(
   'auth',
-  () => {
+  (): AuthStore => {
     const notificaitons = useNotifications();
     const defaultProvider: OAuthProvider = 'github';
     const token = ref<string>();
@@ -79,8 +78,6 @@ export const useAuthStore = defineStore(
           await sdk.auth.authProviderLoginGet(provider, buildAuthState(state))
         ).data;
         window.location.replace(rspns.data.redirectUrl);
-
-        return rspns;
       }
     );
 
@@ -99,6 +96,7 @@ export const useAuthStore = defineStore(
     };
 
     const logout = async () => {
+      // TODO: make as a command!
       const settingsStore = useSettingsStore();
       await notesStore.clearNotes();
       settingsStore.reset();

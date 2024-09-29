@@ -1,4 +1,4 @@
-import { Repositories } from 'src/models';
+import { Repositories } from 'orgnote-api';
 import { Database } from './database';
 import { ExtensionRepository } from './extension-repository';
 import { FileRepository } from './file-repository';

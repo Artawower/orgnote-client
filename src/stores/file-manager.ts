@@ -6,151 +6,155 @@ import {
   FILE_SYSTEM_MUTATION_ACTIONS,
   useFileSystemStore,
 } from 'src/stores/file-system.store';
-import { FileTree } from 'src/models/file-tree.model';
 import { v4 } from 'uuid';
 import { SortType } from 'src/models/sort-type.model';
-import { FileInfo } from 'orgnote-api';
-import { useSettingsStore } from './settings';
+import { FileInfo, FileManagerStore, FileNode } from 'orgnote-api';
 
-export const useFileManagerStore = defineStore('file-manager', () => {
-  const fileTrees = ref<FileTree[]>([]);
-  const editedFileItem = ref<FileTree | null>();
-  const expandedNodes = ref<string[]>([]);
-  const fileSystem = useFileSystemStore();
+export const useFileManagerStore = defineStore<string, FileManagerStore>(
+  'file-manager',
+  () => {
+    const fileTree = ref<FileNode[]>([]);
+    const editedFileItem = ref<FileNode | null>();
+    const expandedNodes = ref<string[]>([]);
+    const fileSystemStore = useFileSystemStore();
 
-  onMounted(async () => {
-    watchFileSystemChanges();
-    updateFileManager();
-  });
+    onMounted(async () => {
+      watchFileSystemChanges();
+      updateFileManager();
+    });
 
-  const watchFileSystemChanges = () => {
-    fileSystem.$onAction(({ after, name }) => {
-      if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
+    const watchFileSystemChanges = () => {
+      fileSystemStore.$onAction(({ after, name }) => {
+        if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
+          return;
+        }
+        after(() => {
+          updateFileManager();
+        });
+      });
+    };
+
+    const syncFiles = async () => {
+      const files = await fileSystemStore.readDir();
+      console.log('✎: [line 39][file-manager.ts] files: ', files);
+      fileTree.value = sortFileNodes(await extractFiles(files));
+    };
+
+    const extractFiles = async (
+      files: FileInfo[],
+      parentDir: string[] = []
+    ): Promise<FileNode[]> => {
+      const fileTrees: FileNode[] = [];
+
+      for (const f of files) {
+        fileTrees.push(await createFileNode(f, parentDir));
+      }
+
+      return fileTrees;
+    };
+
+    const sortFileNodes = (
+      fileTrees: FileNode[],
+      { directory = 'asc' }: { directory?: SortType } = {}
+    ): FileNode[] => {
+      const compare = (a: FileNode, b: FileNode) => {
+        if (a.type === 'directory' && b.type !== 'directory') return -1;
+        if (a.type !== 'directory' && b.type === 'directory') return 1;
+        if (directory === 'asc') return a.name.localeCompare(b.name);
+        return b.name.localeCompare(a.name);
+      };
+
+      return [...fileTrees].sort(compare).map((fileTree) => ({
+        ...fileTree,
+        children: fileTree.children
+          ? sortFileNodes(fileTree.children, { directory })
+          : undefined,
+      }));
+    };
+
+    const createFileNode = async (
+      file: FileInfo,
+      parentPath: string[] = []
+    ): Promise<FileNode> => {
+      const filePath = [...parentPath, file.name];
+      const children =
+        file.type === 'directory'
+          ? await extractFiles(await fileSystemStore.readDir(filePath), [
+              ...parentPath,
+              file.name,
+            ])
+          : undefined;
+
+      return {
+        id: file.name,
+        type: file.type,
+        name: file.name,
+        filePath,
+        children,
+      };
+    };
+
+    const updateFileManager = debounce(syncFiles, 50);
+
+    const createFolder = async (name = 'Untitled') => {
+      const filePath: string[] = [];
+
+      const newItem: FileNode = {
+        name: name,
+        filePath,
+        id: v4(),
+        type: 'directory',
+        children: [],
+      };
+      editedFileItem.value = newItem;
+      await fileSystemStore.mkdir(`${filePath}${name}`);
+
+      fileTree.value = [newItem, ...fileTree.value];
+    };
+
+    const stopEdit = () => {
+      editedFileItem.value = null;
+    };
+
+    const deleteFile = async (fileTree: FileNode) => {
+      const deletePath = [...fileTree.filePath];
+      if (fileTree.type === 'directory') {
+        await fileSystemStore.rmdir(deletePath);
         return;
       }
-      after(() => {
-        updateFileManager();
-      });
-    });
-  };
-
-  const { config } = useSettingsStore();
-
-  const syncFiles = async () => {
-    const files = await fileSystem.getFilesInDir(config.vault.path);
-    fileTrees.value = sortFileTrees(await extractFiles(files));
-  };
-
-  const extractFiles = async (
-    files: FileInfo[],
-    parentDir: string[] = []
-  ): Promise<FileTree[]> => {
-    const fileTrees: FileTree[] = [];
-
-    for (const f of files) {
-      fileTrees.push(await createFileTree(f, parentDir));
-    }
-
-    return fileTrees;
-  };
-
-  const sortFileTrees = (
-    fileTrees: FileTree[],
-    { directory = 'asc' }: { directory?: SortType } = {}
-  ): FileTree[] => {
-    const compare = (a: FileTree, b: FileTree) => {
-      if (a.type === 'directory' && b.type !== 'directory') return -1;
-      if (a.type !== 'directory' && b.type === 'directory') return 1;
-      if (directory === 'asc') return a.name.localeCompare(b.name);
-      return b.name.localeCompare(a.name);
+      await fileSystemStore.deleteFile(deletePath);
     };
 
-    return [...fileTrees].sort(compare).map((fileTree) => ({
-      ...fileTree,
-      children: fileTree.children
-        ? sortFileTrees(fileTree.children, { directory })
-        : undefined,
-    }));
-  };
+    const renameFile = async (fileTree: FileNode, newName: string) => {
+      const newFilePath = [...fileTree.filePath.slice(0, -1), newName];
+      await fileSystemStore.rename(fileTree.filePath, newFilePath);
+    };
 
-  const createFileTree = async (
-    file: FileInfo,
-    parentPath: string[] = []
-  ): Promise<FileTree> => {
-    const children =
-      file.type === 'directory'
-        ? await extractFiles(await fileSystem.getFilesInDir(file.name), [
-            ...parentPath,
-            file.name,
-          ])
-        : undefined;
+    const getPathsFromDir = (fileTree: FileNode): string[][] => {
+      const filePaths: string[][] = [];
+
+      if (fileTree.type === 'file') {
+        filePaths.push(fileTree.filePath);
+      }
+
+      for (const child of fileTree?.children) {
+        filePaths.push(...getPathsFromDir(child));
+      }
+
+      return filePaths;
+    };
+
+    onMounted(() => updateFileManager());
 
     return {
-      id: file.name,
-      type: file.type,
-      name: file.name,
-      filePath: [...parentPath, file.name],
-      children,
+      fileTree,
+      renameFile,
+      deleteFile,
+      updateFileManager,
+      createFolder,
+      editedFileItem,
+      stopEdit,
+      expandedNodes,
     };
-  };
-
-  const updateFileManager = debounce(syncFiles, 50);
-
-  const createFolder = async () => {
-    const initialName = 'Untitled';
-    const filePath: string[] = [];
-
-    const newItem: FileTree = {
-      name: initialName,
-      filePath,
-      id: v4(),
-      type: 'directory',
-      children: [],
-    };
-    editedFileItem.value = newItem;
-    await fileSystem.mkdir(`${filePath}${initialName}`);
-
-    fileTrees.value = [newItem, ...fileTrees.value];
-  };
-
-  const stopEdit = () => {
-    editedFileItem.value = null;
-  };
-
-  const deleteFile = async (fileTree: FileTree) => {
-    const deletePath = [...fileTree.filePath];
-    await fileSystem.deleteFile(deletePath);
-  };
-
-  const renameFile = async (fileTree: FileTree, newName: string) => {
-    const newFilePath = [...fileTree.filePath.slice(0, -1), newName];
-    await fileSystem.rename(fileTree.filePath, newFilePath);
-  };
-
-  const getPathsFromDir = (fileTree: FileTree): string[][] => {
-    const filePaths: string[][] = [];
-
-    if (fileTree.type === 'file') {
-      filePaths.push(fileTree.filePath);
-    }
-
-    for (const child of fileTree?.children) {
-      filePaths.push(...getPathsFromDir(child));
-    }
-
-    return filePaths;
-  };
-
-  onMounted(() => updateFileManager());
-
-  return {
-    fileTrees,
-    renameFile,
-    deleteFile,
-    updateFileManager,
-    createFolder,
-    editedFileItem,
-    stopEdit,
-    expandedNodes,
-  };
-});
+  }
+);
