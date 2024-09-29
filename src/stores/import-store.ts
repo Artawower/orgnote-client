@@ -1,5 +1,4 @@
 import { useExtensionsStore } from './extensions';
-import { useFileStore } from './file';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { defineStore } from 'pinia';
@@ -7,12 +6,16 @@ import { useFileSystemStore } from 'src/stores/file-system.store';
 import { RouteNames } from 'src/router/routes';
 import { isOrgFile, readExtension, readFile, readOrgFile } from 'src/tools';
 import { useRouter } from 'vue-router';
+import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const useNotesImportStore = defineStore('importStore', () => {
   const notesStore = useNotesStore();
   const extensionStore = useExtensionsStore();
   const router = useRouter();
   const { writeFile: writeTextFile } = useFileSystemStore();
+
+  const { orgNoteApi } = useOrgNoteApiStore();
+  const filesStore = orgNoteApi.core.useSyncStore();
 
   const handleFile = async (file: FileEntry | File) => {
     if (isOrgFile(file.name)) {
@@ -66,13 +69,12 @@ export const useNotesImportStore = defineStore('importStore', () => {
     ]);
   };
 
-  const fileStore = useFileStore();
-
   const handleMediaFile = async (file: File | FileEntry) => {
     if (!(file instanceof File)) {
       file = await readFile(file);
     }
-    await fileStore.saveFile(file);
+    // TODO: feat/native-file-sync import does not work
+    // await filesStore.saveFile(file);
   };
 
   const uploadFiles = async (files: FileEntry[] | FileList) => {

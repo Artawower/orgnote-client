@@ -3,13 +3,11 @@ import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
-import { INoteRepository } from 'src/models';
+import {
+  FilePathInfo,
+  NoteRepository as INoteRepository,
+} from 'orgnote-api/models';
 import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
-
-export interface FilePathInfo {
-  filePath: string[];
-  id: string;
-}
 
 export class NoteRepository extends BaseRepository implements INoteRepository {
   public static storeName = 'notes';

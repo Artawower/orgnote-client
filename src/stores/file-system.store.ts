@@ -11,13 +11,13 @@ import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
-import { FileInfo, isOrgGpgFile, OrgNoteEncryption } from 'orgnote-api';
+import { FileInfo, isOrgGpgFile, join, OrgNoteEncryption } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
     mounts: {
-      [`${DEFAULT_NOTE_DIR}`]: IndexedDB,
+      ['/']: IndexedDB,
     },
   });
 });
@@ -33,27 +33,29 @@ export const useFileSystemStore = defineStore('file-system', () => {
   const normalizePath = (path: string | string[]): string => {
     // TODO: feat/native-file-sync import from orgnote-api
     // const stringPath = getStringPath(path);
-    const stringPath = typeof path === 'string' ? path : path.join('/');
+    const stringPath = typeof path === 'string' ? path : join(...path);
     return getUserFilePath(stringPath);
   };
 
   const getUserFilePath = (path: string): string => {
+    path = path ? `/${path}` : '';
     return `${getRootDir()}${path}`;
   };
 
   const getRootDir = () => {
-    const browserFsPrefix = platformSpecificValue({
+    const fsPrefix = platformSpecificValue({
       desktop: '/',
-      data: 'org-notes',
+      // TODO: feat/native-file-sync use vault here
+      // data: 'org-notes',
+      data: config.vault.path,
     });
-    return `${browserFsPrefix}${config.vault.path}`;
+    return `${fsPrefix}`;
   };
 
   const readTextFile = async (
     path: string | string[],
     encryptionConfig?: OrgNoteEncryption
   ): Promise<string> => {
-    console.log('[line 57][REENCRYPTION]: files in dir', await getFilesInDir());
     const normalizedPath = normalizePath(path);
     const isEncrypted = isOrgGpgFile(normalizedPath);
     const format = isEncrypted ? undefined : 'utf8';
@@ -75,12 +77,10 @@ export const useFileSystemStore = defineStore('file-system', () => {
     content: string | Uint8Array,
     encryptionConfig?: OrgNoteEncryption
   ) => {
-    // console.log('✎: [line 77][file-system.store.ts] content: ', content, path);
     await initFolderForFile(path);
     const realPath = normalizePath(path);
     encryptionConfig ??= config.encryption;
     const isEncrypted = isOrgGpgFile(realPath);
-    console.log('✎: [line 84][FILE WEIRD] write, realPath: ', realPath);
     const writeContent =
       isEncrypted && typeof content === 'string'
         ? await encrypt(content, 'binary', encryptionConfig)
@@ -89,29 +89,15 @@ export const useFileSystemStore = defineStore('file-system', () => {
     return await currentFs.writeFile(realPath, writeContent, format);
   };
 
-  const getFilesInDir = async (
-    path: string | string[] = '/'
-  ): Promise<FileInfo[]> => {
-    await initFolderForFile(path);
-    return currentFs.readDir(normalizePath(path));
-  };
-
   const rename = async (
     path: string | string[],
     newPath: string | string[]
   ): Promise<void> => {
-    console.log('[line 104][FILE WEIRD]: rename', path, newPath);
     await initFolderForFile(path);
     return currentFs.rename(normalizePath(path), normalizePath(newPath));
   };
 
   const isFileExist = async (path: string | string[]): Promise<boolean> => {
-    console.log(
-      '[line 76][FILE SYSTEMS]: norm path',
-      path,
-      normalizePath(path)
-    );
-
     return await currentFs.isFileExist(normalizePath(path));
   };
 
@@ -131,11 +117,11 @@ export const useFileSystemStore = defineStore('file-system', () => {
   };
 
   const initFolderForFile = async (
-    filePath: string | string[]
+    filePath: string | string[],
+    isDir = false
   ): Promise<void> => {
     const realPath = normalizePath(filePath);
-    const dirPath = getFileDirPath(realPath);
-
+    const dirPath = isDir ? realPath : getFileDirPath(realPath) || '/';
     const isDirExist = await currentFs.isDirExist(dirPath);
     if (isDirExist) {
       return;
@@ -152,18 +138,41 @@ export const useFileSystemStore = defineStore('file-system', () => {
   };
 
   const fileInfo = async (path: string | string[]): Promise<FileInfo> => {
-    return await currentFs.fileInfo(normalizePath(path));
+    const fileInfo = await currentFs.fileInfo(normalizePath(path));
+
+    fileInfo.path = platformSpecificValue({
+      data: (path: string) => path,
+      mobile: (path: string) => normalizeMobilePath(path),
+    })(fileInfo.path);
+
+    return fileInfo;
   };
 
-  const readDir = async (path: string | string[]) => {
+  const readDir = async (path: string | string[] = '') => {
+    await initFolderForFile(path, true);
     const res = await currentFs.readDir(normalizePath(path));
-    return res;
+    const normalizedPaths = normalizeFilePaths(res);
+    return normalizedPaths;
+  };
+
+  const normalizeFilePaths = (paths: FileInfo[]): FileInfo[] => {
+    return platformSpecificValue({
+      data: (infos: FileInfo[]) => infos,
+      mobile: (infos: FileInfo[]) =>
+        infos.map((p) => ({
+          ...p,
+          path: normalizeMobilePath(p.path),
+        })),
+    })(paths);
+  };
+
+  const normalizeMobilePath = (path: string): string => {
+    return path.replace(config.vault.path + '/', '');
   };
 
   return {
     readTextFile,
     writeFile,
-    getFilesInDir,
     rename,
     isFileExist,
     deleteFile,

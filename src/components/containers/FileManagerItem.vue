@@ -1,6 +1,6 @@
 <template>
   <div
-    @click="openNote"
+    @click="openFile"
     class="file-item q-py-xs q-px-sm full-width cursor-pointer"
     draggable="true"
     @dragstart="(e) => dragStart(e, fileNode)"
@@ -89,12 +89,12 @@ import { useFileManagerStore } from 'src/stores/file-manager';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useDragStatus } from 'src/hooks/drag-status';
 import { useNoteCreatorStore } from 'src/stores/note-creator';
-import { FileTree } from 'src/models/file-tree.model';
-import { getParentDir, getStringPath, join } from 'orgnote-api';
+import { FileNode, getParentDir, getStringPath, join } from 'orgnote-api';
 import { useFileSystemStore } from 'src/stores/file-system.store';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const props = defineProps<{
-  fileNode: FileTree;
+  fileNode: FileNode;
 }>();
 
 const emits = defineEmits<{
@@ -104,6 +104,9 @@ const emits = defineEmits<{
 const fileName = ref(props.fileNode.name);
 const isFile = props.fileNode.type === 'file';
 const authStore = useAuthStore();
+
+const { orgNoteApi } = useOrgNoteApiStore();
+const fileOpenerStore = orgNoteApi.core.useFileOpenerStore();
 
 const deleteFile = () => {
   if (isFileOpened.value) {
@@ -132,7 +135,7 @@ const { dragLeave, dragOver, dragStart, dragInProgress, reset } =
   useDragStatus('browser');
 
 const onDrop = async (e: DragEvent) => {
-  const sourceFileItem: FileTree = JSON.parse(e.dataTransfer.getData('text'));
+  const sourceFileItem: FileNode = JSON.parse(e.dataTransfer.getData('text'));
   const path = props.fileNode.filePath;
   const targetInfo = await fileSystemStore.fileInfo(path);
   const dirPath = targetInfo.type === 'file' ? path.slice(0, -1) : path;
@@ -144,16 +147,12 @@ const onDrop = async (e: DragEvent) => {
 
 const router = useRouter();
 const sidebarStore = useSidebarStore();
-const openNote = async () => {
+const openFile = async () => {
   if (editMode.value) {
     return;
   }
   if (props.fileNode.type === 'file') {
-    const note = await currentNoteStore.getByFilePath(props.fileNode.filePath);
-    router.push({
-      name: RouteNames.RawEditor,
-      params: { id: note.id },
-    });
+    await fileOpenerStore.openFile(props.fileNode.filePath);
     sidebarStore.close();
   }
 };

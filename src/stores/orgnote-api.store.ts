@@ -18,6 +18,10 @@ import { useModalStore } from './modal';
 import { Modal } from 'orgnote-api';
 import { useFileSystem } from 'src/hooks/use-file-system';
 import { useSyncStore } from './sync';
+import { useFilesStore } from './files';
+import { useFileOpenerStore } from './file-opener.store';
+import { useFileManagerStore } from './file-manager';
+import { useAuthStore } from './auth';
 
 // TODO: feat/native-file-sync move to the bootstrap hook
 export const useOrgNoteApiStore = () => {
@@ -63,6 +67,10 @@ export const useOrgNoteApiStore = () => {
     core: {
       useFileSystem,
       useSyncStore,
+      useFilesStore,
+      useFileOpenerStore,
+      useFileManagerStore,
+      useAuthStore,
     },
     configuration: () => settings.config,
     sdk: sdk,

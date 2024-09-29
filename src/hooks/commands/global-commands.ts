@@ -5,6 +5,8 @@ import LoggerPage from 'src/pages/LoggerPage.vue';
 import ProjectInfo from 'src/pages/ProjectInfo.vue';
 import { useModalStore } from 'src/stores/modal';
 import { useNoteCreatorStore } from 'src/stores/note-creator';
+import { useNotesStore } from 'src/stores/notes';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { mockServer } from 'src/tools';
 
@@ -12,6 +14,10 @@ export function getGlobalCommands(): Command[] {
   const modalStore = useModalStore();
   const sidebarStore = useSidebarStore();
   const noteCreatorStore = useNoteCreatorStore();
+  const notesStore = useNotesStore();
+
+  const { orgNoteApi } = useOrgNoteApiStore();
+  const fileManagerStore = orgNoteApi.core.useFileManagerStore();
 
   const commands: Command[] = [
     {
@@ -77,6 +83,16 @@ export function getGlobalCommands(): Command[] {
       description: 'show project info',
       group: 'global',
       handler: () => modalStore.open(ProjectInfo),
+    },
+    {
+      command: DefaultCommands.SYNC_FILES,
+      icon: 'sync',
+      description: 'sync files',
+      group: 'global',
+      handler: () => {
+        notesStore.syncWithFs();
+        fileManagerStore.updateFileManager();
+      },
     },
   ];
 

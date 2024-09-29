@@ -10,10 +10,13 @@ import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
 const FILE_NOT_FOUND_ERR = 'File does not exist';
 const DIRECTORY_NOT_FOUND_ERR = 'Directory does not exist';
 
-const readFile: FileSystem['readFile'] = async <T extends 'utf8'>(
+const readFile: FileSystem['readFile'] = async <
+  T extends 'utf8' | 'binary' = 'utf8',
+  R = T extends 'utf8' ? string : Uint8Array,
+>(
   path: string,
   encoding?: T
-): Promise<T extends 'utf8' ? string : Uint8Array> => {
+): Promise<R> => {
   const data = (
     await Filesystem.readFile({
       directory: Directory.Documents,
@@ -23,11 +26,11 @@ const readFile: FileSystem['readFile'] = async <T extends 'utf8'>(
   ).data;
 
   if (typeof data === 'string') {
-    return data as T extends 'utf8' ? string : Uint8Array;
+    return data as R;
   }
 
   const res = await data.arrayBuffer().then((buffer) => new Uint8Array(buffer));
-  return res as T extends 'utf8' ? string : Uint8Array;
+  return res as R;
 };
 
 const writeFile: FileSystem['writeFile'] = async (
@@ -131,9 +134,9 @@ const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
 };
 
 const utimeSync: FileSystem['utimeSync'] = async (
-  path: string,
-  atime?: string | number | Date,
-  mtime?: string | number | Date
+  _path: string,
+  _atime?: string | number | Date,
+  _mtime?: string | number | Date
 ) => {
   // Mobile file system does not have API for update ctime and atime unfortunately.
 };

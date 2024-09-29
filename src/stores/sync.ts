@@ -5,7 +5,6 @@ import { AxiosError, CanceledError } from 'axios';
 import { defineStore } from 'pinia';
 import { debounce } from 'quasar';
 import { sdk } from 'src/boot/axios';
-import { useEncryption } from 'src/hooks';
 
 import { computed, ref, watch } from 'vue';
 import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
@@ -15,10 +14,7 @@ import type { Note, SyncStore } from 'orgnote-api/models';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { useSettingsStore } from './settings';
-import {
-  FILE_SYSTEM_MUTATION_ACTIONS,
-  useFileSystemStore,
-} from 'src/stores/file-system.store';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 import { isOrgGpgFile, unarmor } from 'orgnote-api';
 import { readFromStream } from 'src/tools/read-from-stream.tool';
 import { onMounted } from 'vue';
@@ -62,8 +58,6 @@ export const useSyncStore = defineStore<string, SyncStore>(
       runSyncTask();
     };
 
-    const { decryptNote } = useEncryption();
-
     const { config } = useSettingsStore();
 
     watch(
@@ -105,15 +99,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
         await upsertNotes(rspns.data.data.notes);
-        console.log(
-          '✎: [line 90][sync.ts] rspns.data.data.notes: ',
-          rspns.data.data.notes
-        );
         await checkCurrentEditedNoteChanged(rspns.data.data.notes);
-        console.log(
-          '[line 90][FILE WEIRD]: ',
-          await fileSystemStore.getFilesInDir()
-        );
 
         await notesStore.loadTotal();
         if (!notesStore.total) {
@@ -129,10 +115,6 @@ export const useSyncStore = defineStore<string, SyncStore>(
     const getNotesFromLastSync = async (): Promise<HandlersCreatingNote[]> => {
       const notesFromLastSync =
         await repositories.notes.getNotesAfterUpdateTime(lastSyncTime.value);
-      console.log(
-        '✎: [line 67][REENCRYPTION] notesFromLastSync: ',
-        notesFromLastSync
-      );
       return mapNotesToCreatingNotes(notesFromLastSync);
     };
 
@@ -187,7 +169,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
     };
 
     const noteEditorStore = useNoteEditorStore();
-    const { readTextFile, writeFile: writeTextFile } = useFileSystemStore();
+    const { readTextFile, writeFile } = useFileSystemStore();
 
     const upsertNotes = async (notes: ModelsPublicNote[]): Promise<void> => {
       for (const note of notes) {
@@ -201,9 +183,13 @@ export const useSyncStore = defineStore<string, SyncStore>(
           ? readFromStream(await unarmor(content))
           : content;
 
-        await writeTextFile(newNote.filePath, noteContent, {
+        await writeFile(newNote.filePath, noteContent, {
           type: 'disabled',
         });
+        console.log(
+          '✎: [line 201][UPLOAD FILE] newNote.filePath: ',
+          newNote.filePath
+        );
         // TODO: feat/native-file-sync call method for set atime, mtime, ctime
         await notesStore.upsertNotes([newNote]);
       }

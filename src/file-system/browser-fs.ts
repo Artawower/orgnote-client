@@ -7,37 +7,39 @@ interface BrowserFsError {
   code: string;
 }
 
-const readFile: FileSystem['readFile'] = async <T extends 'utf8'>(
+const readFile: FileSystem['readFile'] = async <
+  T extends 'utf8' | 'binary' = 'utf8',
+  R = T extends 'utf8' ? string : Uint8Array,
+>(
   path: string,
   encoding?: T
-) => {
-  const data = await new Promise<T extends 'utf8' ? string : Uint8Array>(
-    (resolve, reject) => {
-      if (encoding) {
-        fs.readFile(path, { encoding }, (err, data) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(data as T extends 'utf8' ? string : Uint8Array);
-        });
-      }
-      fs.readFile(path, (err, data) => {
+): Promise<R> => {
+  encoding = encoding === 'binary' ? undefined : encoding;
+  const data = await new Promise<R>((resolve, reject) => {
+    if (encoding) {
+      fs.readFile(path, { encoding }, (err, data) => {
         if (err) {
           reject(err);
           return;
         }
-        resolve(data as T extends 'utf8' ? string : Uint8Array);
+        resolve(data as R);
       });
     }
-  );
+    fs.readFile(path, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(data as R);
+    });
+  });
   return data;
 };
 
 const writeFile: FileSystem['writeFile'] = async (
   path: string,
   content: string | Uint8Array,
-  encoding?: string
+  encoding: string
 ) => {
   return await fs.promises.writeFile(path, content, encoding as BufferEncoding);
 };

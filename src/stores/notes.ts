@@ -189,7 +189,7 @@ export const useNotesStore = defineStore('notes', () => {
 
     const noteFilesDiff = await findNoteFilesDiff({
       fileInfo: fileSystemStore.fileInfo,
-      dirPath: '/',
+      dirPath: '',
       // TODO: feat/native-file-sync correct types.
       storedNotesInfo: cachedNotesFromLatestSync,
       readDir: fileSystemStore.readDir,

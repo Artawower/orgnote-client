@@ -72,7 +72,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   };
 
   const getFileNamesInDir = async (dirPath: string): Promise<string[]> => {
-    const existingFiles = await fileSystem.getFilesInDir(dirPath);
+    const existingFiles = await fileSystem.readDir(dirPath);
     return existingFiles.map((fi) => fi.name);
   };
 
