@@ -40,6 +40,8 @@ import { useQuasar } from 'quasar';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSyncStore } from 'src/stores/sync';
 import { useFileSystemStore } from 'src/stores/file-system.store';
+import { DefaultCommands } from 'orgnote-api';
+import { useKeybindingStore } from 'src/stores/keybindings';
 
 const authStore = useAuthStore();
 
@@ -86,10 +88,20 @@ const pathPickItems: MenuItemProps[] = [
   },
 ];
 
+const { executeCommand } = useKeybindingStore();
+
 const androidPermissionsItems: MenuItemProps[] = [
   {
     label: 'open persmissions',
-    handler: fileSystemStore.openPermissions,
+    handler: async () => {
+      await fileSystemStore.openPermissions();
+      if (!fileSystemStore.hasAccess) {
+        return;
+      }
+      executeCommand({
+        command: DefaultCommands.SYNC_FILES,
+      });
+    },
     color: getCssVar('blue'),
   },
 ];

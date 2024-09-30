@@ -181,7 +181,7 @@ export const useFileSystemStore = defineStore(
       hasAccess.value = (
         await AndroidFileSystemPermission.hasAccess()
       ).hasAccess;
-      if (hasAccess.value) {
+      if (hasAccess.value ?? accessRequests.value) {
         return;
       }
 
@@ -189,6 +189,14 @@ export const useFileSystemStore = defineStore(
         'file system access',
         'to synchronize existing notes, we need access to the file system'
       );
+
+      if (giveAccess) {
+        hasAccess.value = (
+          await AndroidFileSystemPermission.openAccess()
+        ).hasAccess;
+      }
+
+      accessRequests.value = true;
     };
 
     const openPermissions = async () => {
