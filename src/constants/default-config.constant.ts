@@ -3,7 +3,6 @@ import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 import { Platform } from 'quasar';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
-import { DEFAULT_NOTE_DIR } from './default-note-dir.constant';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {
@@ -23,7 +22,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   },
   vault: {
     type: platformSpecificValue({ data: 'inmemory', mobile: 'filesystem' }),
-    path: DEFAULT_NOTE_DIR,
+    path: '',
   },
   synchronization: {
     type: 'api',

@@ -37,11 +37,11 @@ import { buildMenuItems } from 'src/tools/config-menu-builder';
 import { SYNCHRONIZATION_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSyncStore } from 'src/stores/sync';
 import { useFileSystemStore } from 'src/stores/file-system.store';
 import { DefaultCommands } from 'orgnote-api';
 import { useKeybindingStore } from 'src/stores/keybindings';
+import { AndroidFolderPicker } from 'src/plugins/android-folder-picker.plugin';
 
 const authStore = useAuthStore();
 
@@ -67,8 +67,6 @@ const syncTypeItems: MenuItemProps[] = buildMenuItems(config.synchronization, {
   excludeKeys: ['path'],
 });
 
-const { orgNoteApi } = useOrgNoteApiStore();
-
 const pathPickItems: MenuItemProps[] = [
   {
     label: 'path',
@@ -81,9 +79,9 @@ const pathPickItems: MenuItemProps[] = [
     type: 'action',
     color: getCssVar('blue'),
     handler: async () => {
-      // TODO: feat/native-file-sync from file manager
-      // const path = await orgNoteApi.fileSystem.readPath();
-      // config.vault.path = path;
+      const res = await AndroidFolderPicker.pickFolder();
+      config.vault.path = res.path;
+      executeCommand({ command: DefaultCommands.SYNC_FILES });
     },
   },
 ];
