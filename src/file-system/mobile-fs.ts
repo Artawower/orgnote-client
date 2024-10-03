@@ -2,7 +2,6 @@ import {
   Filesystem,
   Encoding,
   FileInfo as CapacitorFileInfo,
-  Directory,
   StatResult,
 } from '@capacitor/filesystem';
 import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
@@ -19,7 +18,6 @@ const readFile: FileSystem['readFile'] = async <
 ): Promise<R> => {
   const data = (
     await Filesystem.readFile({
-      directory: Directory.Documents,
       path,
       encoding: encoding as unknown as Encoding,
     })
@@ -41,7 +39,6 @@ const writeFile: FileSystem['writeFile'] = async (
   const data = typeof content === 'string' ? content : new Blob([content]);
   await Filesystem.writeFile({
     path,
-    directory: Directory.Documents,
     data,
     encoding: encoding as unknown as Encoding,
   });
@@ -54,20 +51,17 @@ const rename: FileSystem['rename'] = async (
   await Filesystem.rename({
     from: oldPath,
     to: newPath,
-    directory: Directory.Documents,
   });
 };
 
 const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
   await Filesystem.deleteFile({
-    directory: Directory.Documents,
     path,
   });
 };
 
 const readDir: FileSystem['readDir'] = async (path: string) => {
   const res = await Filesystem.readdir({
-    directory: Directory.Documents,
     path,
   });
 
@@ -89,7 +83,6 @@ const mapFileInfo = (
 
 const rmdir: FileSystem['rmdir'] = async (path: string) => {
   await Filesystem.rmdir({
-    directory: Directory.Documents,
     recursive: true,
     path,
   });
@@ -97,7 +90,6 @@ const rmdir: FileSystem['rmdir'] = async (path: string) => {
 
 const mkdir: FileSystem['mkdir'] = async (path: string) => {
   await Filesystem.mkdir({
-    directory: Directory.Documents,
     path,
   });
 };
@@ -105,7 +97,6 @@ const mkdir: FileSystem['mkdir'] = async (path: string) => {
 const isDirExist: FileSystem['isDirExist'] = async (path: string) => {
   try {
     await Filesystem.readdir({
-      directory: Directory.Documents,
       path,
     });
     return true;
@@ -120,7 +111,6 @@ const isDirExist: FileSystem['isDirExist'] = async (path: string) => {
 const isFileExist: FileSystem['isFileExist'] = async (path: string) => {
   try {
     await Filesystem.stat({
-      directory: Directory.Documents,
       path,
     });
     return true;
@@ -142,8 +132,7 @@ const utimeSync: FileSystem['utimeSync'] = async (
 
 const fileInfo: FileSystem['fileInfo'] = async (path: string) => {
   const stat = await Filesystem.stat({
-    directory: Directory.Documents,
-    path,
+    path: path,
   });
   return mapFileInfo(stat, path);
 };

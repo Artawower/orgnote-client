@@ -12,6 +12,8 @@ import { FileInfo, isOrgGpgFile, join, OrgNoteEncryption } from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
 import { ref } from 'vue';
+import { computed } from 'vue';
+import { Platform } from 'quasar';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -33,6 +35,10 @@ export const useFileSystemStore = defineStore(
 
     const currentFs = orgNoteApi.core.useFileSystem();
 
+    const noVaultProvided = computed(
+      () => Platform.is.mobile && Platform.is.android && !config.vault.path
+    );
+
     const normalizePath = (path: string | string[]): string => {
       // TODO: feat/native-file-sync import from orgnote-api
       // const stringPath = getStringPath(path);
@@ -42,7 +48,7 @@ export const useFileSystemStore = defineStore(
 
     const getUserFilePath = (path: string): string => {
       path = path ? `/${path}` : '';
-      return `${getRootDir()}${path}`;
+      return `${getRootDir()}${config.vault.path}${path}`;
     };
 
     const getRootDir = () => {
@@ -50,7 +56,7 @@ export const useFileSystemStore = defineStore(
         desktop: '/',
         // TODO: feat/native-file-sync use vault here
         // data: 'org-notes',
-        data: config.vault.path,
+        data: '',
       });
       return `${fsPrefix}`;
     };
@@ -110,7 +116,7 @@ export const useFileSystemStore = defineStore(
     };
 
     const removeAllFiles = async () => {
-      await initFolderForFile(config.vault.path);
+      await initFolderForFile('');
 
       await mockMobile(async () => await currentFs.rmdir(config.vault.path))();
 
@@ -123,6 +129,9 @@ export const useFileSystemStore = defineStore(
       filePath: string | string[],
       isDir = false
     ): Promise<void> => {
+      if (noVaultProvided.value) {
+        return;
+      }
       const realPath = normalizePath(filePath);
       const dirPath = isDir ? realPath : getFileDirPath(realPath) || '/';
       const isDirExist = await currentFs.isDirExist(dirPath);
@@ -133,6 +142,10 @@ export const useFileSystemStore = defineStore(
     };
 
     const mkdir = async (path: string | string[]): Promise<void> => {
+      if (noVaultProvided.value) {
+        return;
+      }
+
       await currentFs.mkdir(normalizePath(path));
     };
 
@@ -152,6 +165,10 @@ export const useFileSystemStore = defineStore(
     };
 
     const readDir = async (path: string | string[] = '') => {
+      if (noVaultProvided.value) {
+        return [];
+      }
+
       await initFolderForFile(path, true);
       const res = await currentFs.readDir(normalizePath(path));
       const normalizedPaths = normalizeFilePaths(res);

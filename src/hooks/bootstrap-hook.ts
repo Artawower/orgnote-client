@@ -5,12 +5,16 @@ import { useFileManagerStore } from 'src/stores/file-manager';
 import { useFileSystemStore } from 'src/stores/file-system.store';
 import { useNoteEncryptionTasksStore } from 'src/stores/note-encryption-tasks.store';
 import { useNotesStore } from 'src/stores/notes';
+import { useSettingsStore } from 'src/stores/settings';
 import { useSyncStore } from 'src/stores/sync';
 import { ref } from 'vue';
 import { onBeforeMount } from 'vue';
 
 export function useBootstrap() {
   const appReady = ref<boolean>(!process.env.CLIENT);
+
+  const { config } = useSettingsStore();
+  config.vault.path = '';
 
   const extensionsStore = useExtensionsStore();
   const notesStore = useNotesStore();
