@@ -25,7 +25,7 @@ export function useEncryptionErrorHandler() {
     router.push({ name: RouteNames.EncryptionSettings });
   };
 
-  const handleError = (e: Error): boolean => {
+  const handleError = (e: unknown): boolean => {
     if (e instanceof IncorrectOrMissingPrivateKeyPasswordError) {
       openModalForChangeEncryptionPassword();
       notifications.notify(

@@ -11,7 +11,7 @@ export function getMobileDevicesCommands(): Command[] {
     {
       command: 'select file path',
       description: 'select file path',
-      available: () => $q.platform.is.mobile,
+      disabled: () => !$q.platform.is.mobile,
       icon: 'folder_open',
       group: 'mobile',
       handler: async () => {

@@ -10,6 +10,8 @@ import { useAppLockerStore } from './app-locker.store';
 import { useNotesStore } from './notes';
 import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
+import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
+import { useNotifications } from 'src/hooks';
 
 export type TaskProgressStatus = 'pending' | 'in-progress' | 'done' | 'error';
 
@@ -99,6 +101,9 @@ export const useNoteEncryptionTasksStore = defineStore(
 
     const { readTextFile } = useFileSystemStore();
 
+    const encryptionErrorHandler = useEncryptionErrorHandler();
+    const notifcations = useNotifications();
+
     const initEncryptionProgress = async () => {
       const notesIds = await repositories.notes.getIds(() => true);
 
@@ -115,7 +120,17 @@ export const useNoteEncryptionTasksStore = defineStore(
         return acc;
       }, {});
 
+      // try {
+      // await notesStore.syncWithFs();
       await completeMigrationTasks();
+      // } catch (e) {
+      //   if (encryptionErrorHandler.handleError(e as unknown as Error)) {
+      //     return;
+      //   }
+      //   notifcations.error('something went wrong. Check logs');
+      //   progress.value = {};
+      //   throw e;
+      // }
     };
 
     const completeMigrationTasks = async () => {
@@ -145,11 +160,23 @@ export const useNoteEncryptionTasksStore = defineStore(
 
     const { getNoteContent, updateNoteContent } = useCurrentNoteStore();
     const reencryptNoteById = async (noteId: string) => {
-      const noteContent = await getNoteContent(noteId);
+      const noteContent =
+        await readNoteContentByNewOrOldEncryptionMethod(noteId);
       if (isGpgEncrypted(noteContent)) {
         return;
       }
       await updateNoteContent(noteId, noteContent, newEncryption.data);
+    };
+
+    // NOTE: In some cases, a new key could be good for already decrypted data.
+    const readNoteContentByNewOrOldEncryptionMethod = async (
+      noteId: string
+    ) => {
+      try {
+        return await getNoteContent(noteId);
+      } catch (e) {
+        return await getNoteContent(noteId, newEncryption.data);
+      }
     };
 
     const updateProgressTaskStatus = (

@@ -233,4 +233,7 @@ export default {
     'для синхронизации существующих заметок нам необходим доступ к файловой системе',
   'there is no access to the file system! The app can’t read external notes.':
     'нет доступа к файловой системе! Приложение не сможет прочитать внешние заметки.',
+  'encrypt active note': 'зашифровать текущую заметку',
+  'decrypt active note': 'расшифровать текущую заметку',
+  'something went wrong. Check logs': 'что-то пошло не так, проверьте логи',
 };
