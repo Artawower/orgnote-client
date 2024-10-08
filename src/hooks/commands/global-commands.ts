@@ -3,8 +3,11 @@ import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
 import ProjectInfo from 'src/pages/ProjectInfo.vue';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 import { useModalStore } from 'src/stores/modal';
 import { useNoteCreatorStore } from 'src/stores/note-creator';
+import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useNotesStore } from 'src/stores/notes';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSidebarStore } from 'src/stores/sidebar';
@@ -15,6 +18,9 @@ export function getGlobalCommands(): Command[] {
   const sidebarStore = useSidebarStore();
   const noteCreatorStore = useNoteCreatorStore();
   const notesStore = useNotesStore();
+  const currentNoteStore = useCurrentNoteStore();
+  const fileSystemStore = useFileSystemStore();
+  const noteEditorStore = useNoteEditorStore();
 
   const { orgNoteApi } = useOrgNoteApiStore();
   const fileManagerStore = orgNoteApi.core.useFileManagerStore();
@@ -50,7 +56,6 @@ export function getGlobalCommands(): Command[] {
         modalStore.open(LoggerPage, { title: 'logs' });
       },
     },
-
     {
       command: DefaultCommands.TOGGLE_SIDEBAR,
       group: 'global',
@@ -92,6 +97,37 @@ export function getGlobalCommands(): Command[] {
       handler: () => {
         notesStore.syncWithFs();
         fileManagerStore.updateFileManager();
+      },
+    },
+    {
+      command: DefaultCommands.ENCRYPT_NOTE,
+      icon: 'sym_o_encrypted',
+      description: 'encrypt active note',
+      disabled: () =>
+        !currentNoteStore.currentNote || currentNoteStore.currentNote.encrypted,
+      group: 'global',
+      handler: async () => {
+        const path = currentNoteStore.currentNote.filePath;
+        const newFilePath = [...path.slice(0, -1), `${path.at(-1)}.gpg`];
+        await fileSystemStore.writeFile(newFilePath, currentNoteStore.noteText);
+        noteEditorStore.setFilePath(newFilePath);
+        await fileSystemStore.deleteFile(path);
+      },
+    },
+    {
+      command: DefaultCommands.DECRYPT_NOTE,
+      icon: 'sym_o_remove_moderator',
+      description: 'decrypt active note',
+      disabled: () => !currentNoteStore.currentNote?.encrypted,
+      group: 'global',
+      handler: async () => {
+        const path = currentNoteStore.currentNote.filePath;
+        const newFileName = path.at(-1).replace(/\.gpg$/, '');
+        const newFilePath = [...path.slice(0, -1), newFileName];
+
+        await fileSystemStore.writeFile(newFilePath, currentNoteStore.noteText);
+        noteEditorStore.setFilePath(newFilePath);
+        await fileSystemStore.deleteFile(path);
       },
     },
   ];

@@ -1,4 +1,4 @@
-import { FileOpenerStore, getFileExtension } from 'orgnote-api';
+import { FileOpenerStore, getFileExtension, isOrgGpgFile } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useCurrentNoteStore } from './current-note';
 import { useRouter } from 'vue-router';
@@ -16,6 +16,14 @@ export const useFileOpenerStore = defineStore<string, FileOpenerStore>(
 
     const openOrgFile = async (filePath: string[]): Promise<void> => {
       const note = await currentNoteStore.getByFilePath(filePath);
+      const isEncrypted = !note && isOrgGpgFile(filePath.at(-1));
+
+      if (isEncrypted) {
+        notifications.error(
+          'please, configure encryption settings for decrypt note'
+        );
+      }
+
       router.push({
         name: RouteNames.RawEditor,
         params: { id: note.id },

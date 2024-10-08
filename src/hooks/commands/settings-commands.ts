@@ -84,13 +84,13 @@ export function getSettingsCommands(): Command[] {
       group: 'editor',
       icon: 'bug_report',
       handler: () => noteEditorStore.toggleDebug(),
-      available: () => {
+      disabled: () => {
         const isNoteEditPage = [
           RouteNames.EditNote,
           RouteNames.RawEditor,
         ].includes(route.name as RouteNames);
 
-        return isNoteEditPage && settingsStore.config.developer.developerMode;
+        return !isNoteEditPage || !settingsStore.config.developer.developerMode;
       },
     },
     {

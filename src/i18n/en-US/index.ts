@@ -230,4 +230,7 @@ export default {
     'To synchronize existing notes, we need access to the file system',
   'there is no access to the file system! The app can’t read external notes.':
     'there is no access to the file system! The app can’t read external notes.',
+  'encrypt active note': 'encrypt active note',
+  'decrypt active note': 'decrypt active note',
+  'something went wrong. Check logs': 'something went wrong. Check logs',
 };

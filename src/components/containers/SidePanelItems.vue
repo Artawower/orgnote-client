@@ -1,7 +1,7 @@
 <template>
   <template v-for="item of items" :key="item.command">
     <q-item
-      v-if="item.available()"
+      v-if="!item.disabled?.()"
       clickable
       @click="emits('executeAction', item)"
     >

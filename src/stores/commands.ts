@@ -45,12 +45,7 @@ export const useCommandsStore = defineStore('commands', () => {
     if (!commands.length) {
       return;
     }
-    allCommands.value.push(
-      ...commands.map((c) => ({
-        ...c,
-        available: c.available ?? (() => true),
-      }))
-    );
+    allCommands.value.push(...commands);
     registerKeybindings(allCommands.value);
   };
 
@@ -71,7 +66,7 @@ export const useCommandsStore = defineStore('commands', () => {
   const recentCommandsStore = useRecentCommandsStore();
   const initCompletion = () => {
     const candidates = commands.value
-      .filter((c) => !c.ignorePrompt)
+      .filter((c) => !c.disabled?.())
       .sort(recentCommandsStore.sort(commandsCompletionGroup))
       .map(
         (c) =>

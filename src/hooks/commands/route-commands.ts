@@ -60,10 +60,9 @@ export function getRoutesCommands(): Command[] {
       group: 'editor',
       icon: 'edit',
       description: 'edit current note',
-      available: () => {
-        const isNoteDetailPage = route.name == RouteNames.NoteDetail;
-
-        return isNoteDetailPage && noteStore.currentNote?.isMy;
+      disabled: () => {
+        const isNoteDetailPage = route.name === RouteNames.NoteDetail;
+        return !isNoteDetailPage || !noteStore.currentNote?.isMy;
       },
       handler: () =>
         router.push({
@@ -75,13 +74,13 @@ export function getRoutesCommands(): Command[] {
       command: C.OPEN_NOTE_VIEWER,
       description: 'view current note',
       icon: 'visibility',
-      available: () => {
+      disabled: () => {
         const isNoteEditPage = [
           RouteNames.EditNote,
           RouteNames.RawEditor,
         ].includes(route.name as RouteNames);
 
-        return isNoteEditPage;
+        return !isNoteEditPage;
       },
       handler: () => {
         router.push({

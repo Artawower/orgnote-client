@@ -18,6 +18,7 @@ import {
   orgnodeToNote,
   isGpgEncrypted,
   splitPath,
+  isOrgGpgFile,
 } from 'orgnote-api';
 import {
   FILE_SYSTEM_MUTATION_ACTIONS,
@@ -26,6 +27,7 @@ import {
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { onMounted } from 'vue';
 import { v4 } from 'uuid';
+import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -208,15 +210,22 @@ export const useNotesStore = defineStore('notes', () => {
     }
   };
 
+  const encryptionErrorHandler = useEncryptionErrorHandler();
   const updateNoteCache = async (filePath: string): Promise<void> => {
-    const note = await getUpdatedNoteByFilePath(filePath);
-    const updatedAt = new Date().toISOString();
-    // NOTE: This apporach mark note as unsynced for remote API
-    // cause file moving does not update utime
-    note.updatedAt = updatedAt;
-    note.touchedAt = updatedAt;
+    try {
+      const note = await getUpdatedNoteByFilePath(filePath);
+      const updatedAt = new Date().toISOString();
+      // NOTE: This apporach mark note as unsynced for remote API
+      // cause file moving does not update utime
+      note.encrypted = isOrgGpgFile(filePath);
+      note.updatedAt = updatedAt;
+      note.touchedAt = updatedAt;
 
-    await upsertNotes([note]);
+      await upsertNotes([note]);
+    } catch (e) {
+      encryptionErrorHandler.handleError(e);
+      console.warn(e);
+    }
   };
 
   const getUpdatedNoteByFilePath = async (filePath: string): Promise<Note> => {
