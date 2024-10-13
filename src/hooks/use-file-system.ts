@@ -1,12 +1,13 @@
 import { FileSystem } from 'orgnote-api';
-import { browserFs } from 'src/file-system/browser-fs';
-import { mobileFs } from 'src/file-system/mobile-fs';
+import { useBrowserFs } from 'src/file-system/browser-fs';
+import { useMobileFs } from 'src/file-system/mobile-fs';
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 
 export function useFileSystem(): FileSystem {
+  // TODO: pick file system from configs
   const currentFs = platformSpecificValue<FileSystem>({
-    mobile: mobileFs,
-    desktop: browserFs,
+    mobile: useMobileFs(),
+    desktop: useBrowserFs(),
   });
 
   return currentFs;

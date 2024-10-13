@@ -1,5 +1,5 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
-import { configure } from '@zenfs/core';
+import { configure, InMemory } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
 import { useSettingsStore } from 'src/stores/settings';
 import { getFileDirPath } from 'src/tools/get-file-dir-path';
@@ -14,6 +14,7 @@ import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-per
 import { ref } from 'vue';
 import { computed } from 'vue';
 import { Platform } from 'quasar';
+import { removeRelativePath } from 'src/tools/remove-relative-path';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -40,21 +41,24 @@ export const useFileSystemStore = defineStore(
     );
 
     const normalizePath = (path: string | string[]): string => {
+      path = removeRelativePaths(path);
       const stringPath = typeof path === 'string' ? path : join(...path);
       return getUserFilePath(stringPath);
     };
 
-    const getUserFilePath = (path: string): string => {
-      path = path ? `/${path}` : '';
-      return `${getRootDir()}${config.vault.path}${path}`;
+    const removeRelativePaths = (
+      path: string | string[]
+    ): string | string[] => {
+      if (typeof path === 'string') {
+        return removeRelativePath(path);
+      }
+
+      return path.map((p) => removeRelativePath(p));
     };
 
-    const getRootDir = () => {
-      const fsPrefix = platformSpecificValue({
-        desktop: '/',
-        data: '',
-      });
-      return `${fsPrefix}`;
+    const getUserFilePath = (path: string): string => {
+      path = path ? `/${path}` : '';
+      return `${config.vault.path}${path}`;
     };
 
     const readTextFile = async (
@@ -138,7 +142,7 @@ export const useFileSystemStore = defineStore(
         return;
       }
       const realPath = normalizePath(filePath);
-      const dirPath = isDir ? realPath : getFileDirPath(realPath) || '/';
+      const dirPath = isDir ? realPath : getFileDirPath(realPath) || '';
       const isDirExist = await currentFs.isDirExist(dirPath);
       if (isDirExist) {
         return;
@@ -238,7 +242,6 @@ export const useFileSystemStore = defineStore(
       mkdir,
       rmdir,
       fileInfo,
-      getRootDir,
       readDir,
 
       initFileSystem,

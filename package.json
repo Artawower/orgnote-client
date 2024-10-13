@@ -61,7 +61,7 @@
     "@sotaproject/strikethrough": "1.0.1",
     "@uiw/codemirror-extensions-langs": "4.22.1",
     "@vueuse/core": "10.11.0",
-    "@zenfs/core": "1.0.5",
+    "@zenfs/core": "1.0.6",
     "@zenfs/dom": "0.2.17",
     "axios": "1.7.3",
     "dexie": "4.0.7",

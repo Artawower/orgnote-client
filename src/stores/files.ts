@@ -38,6 +38,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
     };
 
     const getBlobUrl = async (filePath: string): Promise<string> => {
+      filePath = filePath.slice(2, filePath.length);
       try {
         const file = await fileSystemStore.readFile(filePath, 'binary');
         const url = URL.createObjectURL(new Blob([file], { type: 'image' }));
