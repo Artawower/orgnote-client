@@ -5,10 +5,13 @@ import {
   StatResult,
 } from '@capacitor/filesystem';
 import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
+import { b64toBlob, blobToB64 } from 'src/tools/blob-base64-converter';
 
 const FILE_NOT_FOUND_ERR = 'File does not exist';
 const DIRECTORY_NOT_FOUND_ERR = 'Directory does not exist';
 
+// NOTE: mobile file system does not work with Blob.
+// this is the reason why we convert binary files to base64 and vice versa.
 const readFile: FileSystem['readFile'] = async <
   T extends 'utf8' | 'binary' = 'utf8',
   R = T extends 'utf8' ? string : Uint8Array,
@@ -19,15 +22,17 @@ const readFile: FileSystem['readFile'] = async <
   const data = (
     await Filesystem.readFile({
       path,
-      encoding: encoding as unknown as Encoding,
+      encoding: encoding === 'binary' ? undefined : Encoding.UTF8,
     })
   ).data;
 
-  if (typeof data === 'string') {
+  if (typeof data === 'string' && encoding === 'utf8') {
     return data as R;
   }
 
-  const res = await data.arrayBuffer().then((buffer) => new Uint8Array(buffer));
+  const res = await b64toBlob(data as string)
+    .arrayBuffer()
+    .then((buffer) => new Uint8Array(buffer));
   return res as R;
 };
 
@@ -36,7 +41,12 @@ const writeFile: FileSystem['writeFile'] = async (
   content: string | Uint8Array,
   encoding: BufferEncoding
 ) => {
-  const data = typeof content === 'string' ? content : new Blob([content]);
+  const data =
+    encoding !== 'binary'
+      ? (content as string)
+      : await blobToB64(new Blob([content]));
+
+  encoding = encoding === 'binary' ? undefined : encoding;
   await Filesystem.writeFile({
     path,
     data,

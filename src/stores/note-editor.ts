@@ -52,7 +52,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       filePath.value
     );
     if (titleChanged) {
-      // TODO: feat/native-file-sync this logic are broken now
+      // TODO: this logic are broken now
       // await tryRenameFile(orgNode);
     }
     noteText.value = text;

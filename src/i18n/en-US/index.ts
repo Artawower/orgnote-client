@@ -233,4 +233,5 @@ export default {
   'encrypt active note': 'encrypt active note',
   'decrypt active note': 'decrypt active note',
   'something went wrong. Check logs': 'something went wrong. Check logs',
+  'notes encryption': 'notes encryption',
 };

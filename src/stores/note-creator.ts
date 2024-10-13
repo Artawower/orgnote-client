@@ -1,4 +1,4 @@
-import { Note, getFileNameWithoutExtension } from 'orgnote-api';
+import { Note, getFileNameWithoutExtension, join } from 'orgnote-api';
 import { useAuthStore } from './auth';
 import { useNotesStore } from './notes';
 import { parse, withMetaInfo } from 'org-mode-ast';
@@ -40,7 +40,7 @@ export const useNoteCreatorStore = defineStore('noteCreatorStore', () => {
   } = {}) => {
     id ??= v4();
 
-    const existingFileNames = await getFileNamesInDir(fileName);
+    const existingFileNames = await getFileNamesInDir(join(...filePath));
     const uniqueFileName = getUniqueFileName(
       existingFileNames,
       '.org',

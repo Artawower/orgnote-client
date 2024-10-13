@@ -1,7 +1,7 @@
 <template>
   <div v-if="locked" class="locker">
     <loader-spinner />
-    <h1>Note encryption...</h1>
+    <h1 class="capitalize">{{ $t('notes encryption') }}...</h1>
     <h5>{{ doneTasksCount }} / {{ totalTasksCount }}</h5>
   </div>
   <slot v-else />

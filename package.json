@@ -61,8 +61,8 @@
     "@sotaproject/strikethrough": "1.0.1",
     "@uiw/codemirror-extensions-langs": "4.22.1",
     "@vueuse/core": "10.11.0",
-    "@zenfs/core": "0.16.4",
-    "@zenfs/dom": "0.2.14",
+    "@zenfs/core": "1.0.5",
+    "@zenfs/dom": "0.2.17",
     "axios": "1.7.3",
     "dexie": "4.0.7",
     "force-graph": "1.43.5",
@@ -71,7 +71,7 @@
     "katex": "0.16.10",
     "openapi-client-axios": "7.5.5",
     "org-mode-ast": "0.11.7",
-    "orgnote-api": "file:.yalc/orgnote-api",
+    "orgnote-api": "0.19.1",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.38",
@@ -96,7 +96,6 @@
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
     "@types/bun": "latest",
     "@types/editorjs__header": "2.6.3",
-    "@types/es6-promisify": "6.0.4",
     "@types/jest": "29.5.12",
     "@types/node": "20.5.9",
     "@types/uuid": "9.0.8",
@@ -137,13 +136,8 @@
   },
   "jscpd": {
     "threshold": 1.5,
-    "reporters": [
-      "html",
-      "console"
-    ],
-    "format": [
-      "typescript"
-    ],
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -154,10 +148,7 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": [
-      "import.*from\\s*'.*'",
-      "export.*from\\s*'.*'"
-    ],
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,

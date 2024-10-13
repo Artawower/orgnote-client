@@ -1,4 +1,3 @@
-import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
 import { useAppLockerStore } from 'src/stores/app-locker.store';
 import { useExtensionsStore } from 'src/stores/extensions';
 import { useFileManagerStore } from 'src/stores/file-manager';
@@ -14,7 +13,6 @@ export function useBootstrap() {
   const appReady = ref<boolean>(!process.env.CLIENT);
 
   const { config } = useSettingsStore();
-  config.vault.path = '';
 
   const extensionsStore = useExtensionsStore();
   const notesStore = useNotesStore();

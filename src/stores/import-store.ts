@@ -15,7 +15,7 @@ export const useNotesImportStore = defineStore('importStore', () => {
   const { writeFile: writeTextFile } = useFileSystemStore();
 
   const { orgNoteApi } = useOrgNoteApiStore();
-  const filesStore = orgNoteApi.core.useSyncStore();
+  const filesStore = orgNoteApi.core.useFilesStore();
 
   const handleFile = async (file: FileEntry | File) => {
     if (isOrgFile(file.name)) {
@@ -74,7 +74,6 @@ export const useNotesImportStore = defineStore('importStore', () => {
       file = await readFile(file);
     }
     // TODO: feat/native-file-sync import does not work
-    // await filesStore.saveFile(file);
   };
 
   const uploadFiles = async (files: FileEntry[] | FileList) => {

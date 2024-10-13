@@ -8,11 +8,11 @@ import {
 } from 'src/stores/file-system.store';
 import { v4 } from 'uuid';
 import { SortType } from 'src/models/sort-type.model';
-import { FileInfo, FileManagerStore, FileNode } from 'orgnote-api';
+import { FileInfo, FileManagerStore, FileNode, join } from 'orgnote-api';
 
 export const useFileManagerStore = defineStore<string, FileManagerStore>(
   'file-manager',
-  () => {
+  (): FileManagerStore => {
     const fileTree = ref<FileNode[]>([]);
     const editedFileItem = ref<FileNode | null>();
     const expandedNodes = ref<string[]>([]);
@@ -96,9 +96,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
 
     const updateFileManager = debounce(syncFiles, 50);
 
-    const createFolder = async (name = 'Untitled') => {
-      const filePath: string[] = [];
-
+    const createFolder = async (filePath: string[] = [], name = 'Untitled') => {
       const newItem: FileNode = {
         name: name,
         filePath,
@@ -107,9 +105,10 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
         children: [],
       };
       editedFileItem.value = newItem;
-      await fileSystemStore.mkdir(`${filePath}${name}`);
 
-      fileTree.value = [newItem, ...fileTree.value];
+      const path = join(...filePath, name);
+      await fileSystemStore.mkdir(path);
+      await syncFiles();
     };
 
     const stopEdit = () => {
@@ -126,6 +125,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
     };
 
     const renameFile = async (fileTree: FileNode, newName: string) => {
+      newName = newName.trim();
       const newFilePath = [...fileTree.filePath.slice(0, -1), newName];
       await fileSystemStore.rename(fileTree.filePath, newFilePath);
     };

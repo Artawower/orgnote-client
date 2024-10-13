@@ -236,4 +236,5 @@ export default {
   'encrypt active note': 'зашифровать текущую заметку',
   'decrypt active note': 'расшифровать текущую заметку',
   'something went wrong. Check logs': 'что-то пошло не так, проверьте логи',
+  'notes encryption': 'шифрование заметок',
 };

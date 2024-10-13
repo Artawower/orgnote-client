@@ -1,4 +1,5 @@
 import { Command, DefaultCommands } from 'orgnote-api';
+import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
@@ -10,6 +11,7 @@ import { useNoteCreatorStore } from 'src/stores/note-creator';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useNotesStore } from 'src/stores/notes';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
+import { useSettingsStore } from 'src/stores/settings';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { mockServer } from 'src/tools';
 
@@ -21,6 +23,7 @@ export function getGlobalCommands(): Command[] {
   const currentNoteStore = useCurrentNoteStore();
   const fileSystemStore = useFileSystemStore();
   const noteEditorStore = useNoteEditorStore();
+  const { config } = useSettingsStore();
 
   const { orgNoteApi } = useOrgNoteApiStore();
   const fileManagerStore = orgNoteApi.core.useFileManagerStore();
@@ -104,7 +107,10 @@ export function getGlobalCommands(): Command[] {
       icon: 'sym_o_encrypted',
       description: 'encrypt active note',
       disabled: () =>
-        !currentNoteStore.currentNote || currentNoteStore.currentNote.encrypted,
+        config.encryption.type ===
+          ModelsPublicNoteEncryptionTypeEnum.Disabled ||
+        !currentNoteStore.currentNote ||
+        currentNoteStore.currentNote.encrypted,
       group: 'global',
       handler: async () => {
         const path = currentNoteStore.currentNote.filePath;
@@ -118,7 +124,10 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.DECRYPT_NOTE,
       icon: 'sym_o_remove_moderator',
       description: 'decrypt active note',
-      disabled: () => !currentNoteStore.currentNote?.encrypted,
+      disabled: () =>
+        config.encryption.type ===
+          ModelsPublicNoteEncryptionTypeEnum.Disabled ||
+        !currentNoteStore.currentNote?.encrypted,
       group: 'global',
       handler: async () => {
         const path = currentNoteStore.currentNote.filePath;

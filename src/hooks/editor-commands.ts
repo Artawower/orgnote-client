@@ -18,7 +18,7 @@ const group = 'editor';
 
 export const registerEditorCommands = () => {
   const { orgNoteApi } = useOrgNoteApiStore();
-  // TODO: feat/native-file-sync migrate to orgnoteapi accessor
+  // TODO: migrate to orgnoteapi accessor
 
   const commandsStore = useCommandsStore();
   const filesStore = orgNoteApi.core.useFilesStore();
@@ -149,12 +149,12 @@ export const registerEditorCommands = () => {
       group,
       handler: async () => {
         const currentNotePath = currentNoteStore.currentNote.filePath;
-        const fileName = await filesStore.uploadMediaFile(
+        const filePath = await filesStore.uploadMediaFile(
           getParentDir(currentNotePath)
         );
         return insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
-          template: `[[./${fileName ?? ''}]]`,
+          template: `[[./${filePath ?? ''}]]`,
           focusOffset: 2,
           overrideLine: true,
         });

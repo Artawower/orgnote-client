@@ -184,7 +184,7 @@ export const useNotesStore = defineStore('notes', () => {
     await repositories.notes.clear();
   };
 
-  // TODO: feat/native-file-sync debounce
+  // TODO: debounce
   const syncWithFs = async () => {
     const cachedNotesFromLatestSync =
       (await repositories.notes.getNotesAfterUpdateTime()) as StoredNoteInfo[];
@@ -192,7 +192,6 @@ export const useNotesStore = defineStore('notes', () => {
     const noteFilesDiff = await findNoteFilesDiff({
       fileInfo: fileSystemStore.fileInfo,
       dirPath: '',
-      // TODO: feat/native-file-sync correct types.
       storedNotesInfo: cachedNotesFromLatestSync,
       readDir: fileSystemStore.readDir,
     });

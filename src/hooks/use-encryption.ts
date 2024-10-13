@@ -13,7 +13,7 @@ import {
   armor,
 } from 'orgnote-api';
 
-// TODO: feat/native-file-sync store cause use config
+// TODO: move to store
 export function useEncryption() {
   const { config } = useSettingsStore();
 

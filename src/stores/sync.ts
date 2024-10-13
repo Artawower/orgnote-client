@@ -40,7 +40,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
       watchNoteCacheChanged();
     });
 
-    // TODO: feat/native-file-sync register custom hook!
+    // TODO: register custom hook!
     const watchNoteCacheChanged = () => {
       notesStore.$onAction(({ after, name }) => {
         if (name !== 'syncWithFs') {
@@ -186,11 +186,6 @@ export const useSyncStore = defineStore<string, SyncStore>(
         await writeFile(newNote.filePath, noteContent, {
           type: 'disabled',
         });
-        console.log(
-          '✎: [line 201][UPLOAD FILE] newNote.filePath: ',
-          newNote.filePath
-        );
-        // TODO: feat/native-file-sync call method for set atime, mtime, ctime
         await notesStore.upsertNotes([newNote]);
       }
     };

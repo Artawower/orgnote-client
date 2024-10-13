@@ -23,7 +23,7 @@ import { useFileOpenerStore } from './file-opener.store';
 import { useFileManagerStore } from './file-manager';
 import { useAuthStore } from './auth';
 
-// TODO: feat/native-file-sync move to the bootstrap hook
+// TODO: move to the bootstrap hook
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
 

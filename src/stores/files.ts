@@ -5,7 +5,8 @@ import { useOrgNoteApiStore } from './orgnote-api.store';
 import { FilesStore } from 'orgnote-api/models';
 import { repositories } from 'src/boot/repositories';
 import { sdk } from 'src/boot/axios';
-import { getFileExtension, getFileName } from 'orgnote-api';
+import { getFileExtension, getFileName, join } from 'orgnote-api';
+import { useFileSystemStore } from './file-system.store';
 
 export const useFilesStore = defineStore<string, FilesStore>(
   'fileStore',
@@ -13,8 +14,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
     const $q = useQuasar();
 
     const { orgNoteApi } = useOrgNoteApiStore();
-    const fileSystem = orgNoteApi.core.useFileSystem();
-
+    const fileSystemStore = useFileSystemStore();
     const uploadMediaFile = async (path?: string): Promise<string> => {
       path ||= '/';
       // Programmatically create input for file upload (image extensions)
@@ -22,7 +22,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
       const files = await uploadFiles({ accept });
       const file = files[0];
 
-      path += file.name;
+      path = join(path, file.name);
 
       await saveFile(path, file);
       await repositories.files.upsert({
@@ -34,18 +34,19 @@ export const useFilesStore = defineStore<string, FilesStore>(
         touchedAt: new Date(),
       });
       preserveFiles();
-      return file.name;
+      return path;
     };
 
     const getBlobUrl = async (filePath: string): Promise<string> => {
       try {
-        const file = await fileSystem.readFile(filePath);
-        const url = URL.createObjectURL(new Blob([file]));
+        const file = await fileSystemStore.readFile(filePath, 'binary');
+        const url = URL.createObjectURL(new Blob([file], { type: 'image' }));
         return url;
       } catch (e) {
         if (!authStore.user || authStore.user.isAnonymous) {
           return;
         }
+        throw e;
         const fileName = getFileName(filePath);
         const blob = await sdk.files.downloadFile(authStore.user.id, fileName);
         const file = new File([blob], fileName);
@@ -56,7 +57,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
 
     const saveFile = async (path: string, file: File): Promise<void> => {
       const content = new Uint8Array(await file.arrayBuffer());
-      await fileSystem.writeFile(path, content, 'binary');
+      await fileSystemStore.writeFile(path, content);
     };
 
     const authStore = orgNoteApi.core.useAuthStore();
@@ -73,10 +74,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
         }
         try {
           const fileName = getFileName(firstFile.filePath);
-          const localFile = await fileSystem.readFile(
-            firstFile.filePath,
-            'binary'
-          );
+          const localFile = await fileSystemStore.readFile(firstFile.filePath);
           const blob = new Blob([localFile]);
           const file = new File([blob], fileName, {
             lastModified: new Date().getTime(),

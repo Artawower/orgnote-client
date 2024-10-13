@@ -6,8 +6,6 @@ export function getFileDirPath(filePath: string | string[]): string {
       ? filePath.split(PATH_DILIMITER_SLASH)
       : filePath
   )
-    // TODO: feat/native-file-sync delete?
-    // .filter((fp) => !!fp && fp != PATH_DILIMITER_SLASH)
     .slice(0, -1)
     .join('/');
 

@@ -40,8 +40,6 @@ export const useFileSystemStore = defineStore(
     );
 
     const normalizePath = (path: string | string[]): string => {
-      // TODO: feat/native-file-sync import from orgnote-api
-      // const stringPath = getStringPath(path);
       const stringPath = typeof path === 'string' ? path : join(...path);
       return getUserFilePath(stringPath);
     };
@@ -54,8 +52,6 @@ export const useFileSystemStore = defineStore(
     const getRootDir = () => {
       const fsPrefix = platformSpecificValue({
         desktop: '/',
-        // TODO: feat/native-file-sync use vault here
-        // data: 'org-notes',
         data: '',
       });
       return `${fsPrefix}`;
@@ -78,6 +74,14 @@ export const useFileSystemStore = defineStore(
       return text;
     };
 
+    const readFile = async (
+      path: string | string[],
+      encoding?: 'utf8' | 'binary'
+    ): Promise<Uint8Array> => {
+      const normalizedPath = normalizePath(path);
+      return await currentFs.readFile(normalizedPath, encoding);
+    };
+
     /*
      * Write file, if file is text and file name is *.org.gpg encrypt it
      */
@@ -94,7 +98,8 @@ export const useFileSystemStore = defineStore(
         isEncrypted && typeof content === 'string'
           ? await encrypt(content, 'binary', encryptionConfig)
           : content;
-      const format = isEncrypted ? 'binary' : 'utf8';
+      const format =
+        isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
       return await currentFs.writeFile(realPath, writeContent, format);
     };
 
@@ -224,6 +229,7 @@ export const useFileSystemStore = defineStore(
 
     return {
       readTextFile,
+      readFile,
       writeFile,
       rename,
       isFileExist,

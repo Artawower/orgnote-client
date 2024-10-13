@@ -74,7 +74,7 @@
 </template>
 
 <script lang="ts" setup>
-// TODO: feat/native-file-sync make as dumb component.
+// TODO: make as dumb component.
 import { QMenu, useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
 import { revealKeyboard } from 'src/tools';
@@ -119,9 +119,9 @@ const deleteFile = () => {
 };
 
 const createFolder = async () => {
-  // await fileManagerStore.createFolder(props.fileNode);
-  emits('expand', props.fileNode.id);
+  await fileManagerStore.createFolder(props.fileNode.filePath);
   revealKeyboard();
+  emits('expand', props.fileNode.id);
 };
 
 const createFile = async () => {

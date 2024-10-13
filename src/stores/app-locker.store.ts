@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-// TODO: feat/native-file-sync stack
+// TODO: stack
 export const useAppLockerStore = defineStore(
   'app-locker',
   () => {
