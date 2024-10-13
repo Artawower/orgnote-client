@@ -16,15 +16,19 @@ export const useFilesStore = defineStore<string, FilesStore>(
     const { orgNoteApi } = useOrgNoteApiStore();
     const fileSystemStore = useFileSystemStore();
     const uploadMediaFile = async (path?: string): Promise<string> => {
-      path ||= '/';
       // Programmatically create input for file upload (image extensions)
       const accept = !$q.platform.is.android ? 'image/*' : undefined;
       const files = await uploadFiles({ accept });
       const file = files[0];
 
+      return path;
+    };
+
+    const saveFile = async (file: File, path?: string): Promise<string> => {
+      path ||= '/';
       path = join(path, file.name);
 
-      await saveFile(path, file);
+      await writeFile(path, file);
       await repositories.files.upsert({
         fileName: file.name,
         filePath: path,
@@ -51,12 +55,12 @@ export const useFilesStore = defineStore<string, FilesStore>(
         const fileName = getFileName(filePath);
         const blob = await sdk.files.downloadFile(authStore.user.id, fileName);
         const file = new File([blob], fileName);
-        await saveFile(filePath, file);
+        await writeFile(filePath, file);
         return URL.createObjectURL(blob);
       }
     };
 
-    const saveFile = async (path: string, file: File): Promise<void> => {
+    const writeFile = async (path: string, file: File): Promise<void> => {
       const content = new Uint8Array(await file.arrayBuffer());
       await fileSystemStore.writeFile(path, content);
     };
@@ -97,6 +101,7 @@ export const useFilesStore = defineStore<string, FilesStore>(
     return {
       uploadMediaFile,
       getBlobUrl,
+      saveFile,
     };
   }
 );

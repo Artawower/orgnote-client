@@ -74,6 +74,7 @@ export const useNotesImportStore = defineStore('importStore', () => {
       file = await readFile(file);
     }
     // TODO: feat/native-file-sync import does not work
+    await filesStore.saveFile(file);
   };
 
   const uploadFiles = async (files: FileEntry[] | FileList) => {

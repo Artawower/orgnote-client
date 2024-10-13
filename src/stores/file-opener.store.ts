@@ -39,7 +39,6 @@ export const useFileOpenerStore = defineStore<string, FileOpenerStore>(
       const fileExtension = getFileExtension(filePath.at(-1));
       const fileOpener = fileOpeners[fileExtension];
       if (!fileOpener) {
-        // TODO: notification
         notifications.notify(
           fileExtension + ' ' + t('file opener is not supported yet')
         );

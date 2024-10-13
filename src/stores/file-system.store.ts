@@ -184,6 +184,7 @@ export const useFileSystemStore = defineStore(
       return normalizedPaths;
     };
 
+    // TODO: isolate inside mobile fs.
     const normalizeFilePaths = (paths: FileInfo[]): FileInfo[] => {
       return platformSpecificValue({
         data: (infos: FileInfo[]) => infos,

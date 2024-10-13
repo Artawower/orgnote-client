@@ -120,17 +120,7 @@ export const useNoteEncryptionTasksStore = defineStore(
         return acc;
       }, {});
 
-      // try {
-      // await notesStore.syncWithFs();
       await completeMigrationTasks();
-      // } catch (e) {
-      //   if (encryptionErrorHandler.handleError(e as unknown as Error)) {
-      //     return;
-      //   }
-      //   notifcations.error('something went wrong. Check logs');
-      //   progress.value = {};
-      //   throw e;
-      // }
     };
 
     const completeMigrationTasks = async () => {
