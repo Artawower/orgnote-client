@@ -60,6 +60,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     return true;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const tryRenameFile = async (orgNode: OrgNode): Promise<void> => {
     const fileDir = filePath.value.slice(0, -1).join('/');
     const newName = `${fileDir.length ? '/' : ''}${getFileNameFromText(orgNode.meta.title)}.org`;

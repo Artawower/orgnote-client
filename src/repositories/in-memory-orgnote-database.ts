@@ -117,6 +117,7 @@ class InMemoryNoteRepository implements INoteRepository {
 
   async markAsDeleted(): Promise<void> {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getByPath(_path: string[]): Promise<Note> {
     return;
   }

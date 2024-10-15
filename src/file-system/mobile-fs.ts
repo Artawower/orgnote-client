@@ -134,8 +134,11 @@ export const useMobileFs = () => {
   };
 
   const utimeSync: FileSystem['utimeSync'] = async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _path: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _atime?: string | number | Date,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mtime?: string | number | Date
   ) => {
     // Mobile file system does not have API for update ctime and atime unfortunately.

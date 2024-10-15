@@ -15,13 +15,14 @@ export const useFilesStore = defineStore<string, FilesStore>(
 
     const { orgNoteApi } = useOrgNoteApiStore();
     const fileSystemStore = useFileSystemStore();
+
     const uploadMediaFile = async (path?: string): Promise<string> => {
       // Programmatically create input for file upload (image extensions)
       const accept = !$q.platform.is.android ? 'image/*' : undefined;
       const files = await uploadFiles({ accept });
       const file = files[0];
 
-      return path;
+      return await saveFile(file, path);
     };
 
     const saveFile = async (file: File, path?: string): Promise<string> => {

@@ -10,8 +10,6 @@ import { useAppLockerStore } from './app-locker.store';
 import { useNotesStore } from './notes';
 import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
-import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
-import { useNotifications } from 'src/hooks';
 
 export type TaskProgressStatus = 'pending' | 'in-progress' | 'done' | 'error';
 
@@ -100,9 +98,6 @@ export const useNoteEncryptionTasksStore = defineStore(
     };
 
     const { readTextFile } = useFileSystemStore();
-
-    const encryptionErrorHandler = useEncryptionErrorHandler();
-    const notifcations = useNotifications();
 
     const initEncryptionProgress = async () => {
       const notesIds = await repositories.notes.getIds(() => true);

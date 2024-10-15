@@ -1,5 +1,5 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
-import { configure, InMemory } from '@zenfs/core';
+import { configure } from '@zenfs/core';
 import { IndexedDB } from '@zenfs/dom';
 import { useSettingsStore } from 'src/stores/settings';
 import { getFileDirPath } from 'src/tools/get-file-dir-path';

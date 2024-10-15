@@ -1,11 +1,7 @@
 import { BaseRepository } from './repository';
 import { migrator } from './migrator';
 import Dexie from 'dexie';
-import {
-  FileCache,
-  getFileExtension,
-  FileRepository as IFileRepository,
-} from 'orgnote-api';
+import { FileCache, FileRepository as IFileRepository } from 'orgnote-api';
 import Fuse, { IFuseOptions } from 'fuse.js';
 
 const fuseOptions: IFuseOptions<FileCache> = {

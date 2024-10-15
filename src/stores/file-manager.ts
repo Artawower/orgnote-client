@@ -130,20 +130,6 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
       await fileSystemStore.rename(fileTree.filePath, newFilePath);
     };
 
-    const getPathsFromDir = (fileTree: FileNode): string[][] => {
-      const filePaths: string[][] = [];
-
-      if (fileTree.type === 'file') {
-        filePaths.push(fileTree.filePath);
-      }
-
-      for (const child of fileTree?.children) {
-        filePaths.push(...getPathsFromDir(child));
-      }
-
-      return filePaths;
-    };
-
     onMounted(() => updateFileManager());
 
     return {
