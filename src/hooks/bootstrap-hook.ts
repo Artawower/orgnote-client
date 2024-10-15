@@ -34,6 +34,8 @@ export function useBootstrap() {
     appReady.value = true;
   });
 
+  // TODO: create crontab-like task runner for periodic sync notes.
+
   const bootstrapped = appReady;
 
   return {

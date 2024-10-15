@@ -197,7 +197,7 @@ export const useFileSystemStore = defineStore(
     };
 
     const normalizeMobilePath = (path: string): string => {
-      return path.replace(config.vault.path + '/', '');
+      return path.replaceAll(config.vault.path, '').replaceAll(/^\/+/g, '');
     };
 
     const initFileSystem = async () => {

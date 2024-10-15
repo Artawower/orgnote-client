@@ -1,4 +1,4 @@
-import { Note, NotePreview } from 'orgnote-api';
+import { join, Note, NotePreview } from 'orgnote-api';
 import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
@@ -79,7 +79,11 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
   }
 
   async getByPath(filePath: string[]): Promise<Note> {
-    return this.store.get({ filePath });
+    const filtered = await this.store
+      .filter((n) => !n.deleted && join(...n.filePath) === join(...filePath))
+      .toArray();
+
+    return filtered?.[0];
   }
 
   async getNotePreviews(
