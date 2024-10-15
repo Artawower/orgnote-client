@@ -52,7 +52,6 @@ export const useFilesStore = defineStore<string, FilesStore>(
         if (!authStore.user || authStore.user.isAnonymous) {
           return;
         }
-        throw e;
         const fileName = getFileName(filePath);
         const blob = await sdk.files.downloadFile(authStore.user.id, fileName);
         const file = new File([blob], fileName);
