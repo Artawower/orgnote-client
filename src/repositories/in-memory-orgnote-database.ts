@@ -1,13 +1,15 @@
-import { StoredExtension, ExtensionMeta, Note, NotePreview } from 'orgnote-api';
 import {
-  IExtensionRepository,
-  IFileManagerRepository,
-  IFileRepository,
-  INoteRepository,
+  StoredExtension,
+  ExtensionMeta,
+  Note,
+  NotePreview,
+  ExtensionRepository as IExtensionRepository,
+  FileRepository as IFileRepository,
+  NoteRepository as INoteRepository,
   Repositories,
-} from 'src/models';
-import { FileTree } from './file-manager-repository';
-import { FilePathInfo } from './note-repository';
+  FilePathInfo,
+  FileCache,
+} from 'orgnote-api';
 
 class InMemoryExtensionRepository implements IExtensionRepository {
   private extensions: StoredExtension[] = [];
@@ -71,18 +73,6 @@ class InMemoryExtensionRepository implements IExtensionRepository {
   }
 }
 
-class InMemoryFileManagerRepository implements IFileManagerRepository {
-  private fileTree: FileTree = {};
-
-  async getAll(): Promise<FileTree> {
-    return this.fileTree;
-  }
-
-  async upsert(fileTree: FileTree): Promise<void> {
-    this.fileTree = fileTree;
-  }
-}
-
 class InMemoryNoteRepository implements INoteRepository {
   private notes: Note[] = [];
 
@@ -126,6 +116,11 @@ class InMemoryNoteRepository implements INoteRepository {
   }
 
   async markAsDeleted(): Promise<void> {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getByPath(_path: string[]): Promise<Note> {
+    return;
+  }
 
   async bulkPartialUpdate(
     updates: { id: string; changes: Partial<Note> }[]
@@ -182,37 +177,75 @@ class InMemoryNoteRepository implements INoteRepository {
 }
 
 class InMemoryFileRepository implements IFileRepository {
-  private files: { [name: string]: File } = {};
+  private files: { [filePath: string]: FileCache } = {};
 
-  async save(file: File): Promise<void> {
-    this.files[file.name] = file;
+  async upsert(file: FileCache): Promise<void> {
+    this.files[file.filePath] = file;
   }
 
-  async deleteByName(name: string): Promise<void> {
-    delete this.files[name];
+  async bulkUpsert(files: FileCache[]): Promise<void> {
+    files.forEach((file) => {
+      this.files[file.filePath] = file;
+    });
   }
 
-  async getByName(name: string): Promise<File> {
-    const file = this.files[name];
-    if (!file) {
-      throw new Error(`File ${name} not found`);
+  async update(filePath: string, file: Partial<FileCache>): Promise<void> {
+    if (this.files[filePath]) {
+      this.files[filePath] = { ...this.files[filePath], ...file };
     }
-    return file;
   }
 
-  async getFirst(): Promise<File | null> {
-    const fileNames = Object.keys(this.files);
-    if (fileNames.length > 0) {
-      return this.files[fileNames[0]];
+  async delete(filePath: string): Promise<void> {
+    delete this.files[filePath];
+  }
+
+  async markAsDelete(
+    filePath: string,
+    deletedAt: Date = new Date()
+  ): Promise<void> {
+    if (this.files[filePath]) {
+      this.files[filePath].deletedAt = deletedAt;
     }
-    return null;
+  }
+
+  async clear(): Promise<void> {
+    this.files = {};
+  }
+
+  async getFirstUnuploaded(): Promise<FileCache | null> {
+    return Object.values(this.files).find((file) => !file.uploaded) || null;
+  }
+
+  async search(text: string): Promise<FileCache[]> {
+    return Object.values(this.files).filter((file) =>
+      file.fileName.includes(text)
+    );
+  }
+
+  async getAll(): Promise<FileCache[]> {
+    return Object.values(this.files);
+  }
+
+  async getFilesAfterUpdateTime(
+    updatedTime: Date = new Date(0)
+  ): Promise<FileCache[]> {
+    return Object.values(this.files).filter(
+      (file) => file.updatedAt && file.updatedAt > updatedTime
+    );
+  }
+
+  async count(updatedTime: Date = new Date(0)): Promise<number> {
+    return (await this.getFilesAfterUpdateTime(updatedTime)).length;
+  }
+
+  async getByPath(path: string): Promise<FileCache> {
+    return this.files[path];
   }
 }
 
 export function initInMemoryOrgNoteRepositories(): Repositories {
   const inMemoryRepositories = {
     notes: new InMemoryNoteRepository(),
-    fileManager: new InMemoryFileManagerRepository(),
     files: new InMemoryFileRepository(),
     extensions: new InMemoryExtensionRepository(),
   };

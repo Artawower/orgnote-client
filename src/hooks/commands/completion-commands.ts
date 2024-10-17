@@ -57,7 +57,7 @@ export function getCompletionCommands(): Command[] {
       handler: () => {
         completionStore.nextCandidate();
       },
-      ignorePrompt: true,
+      disabled: () => true,
       keySequence: 'Control+KeyJ',
       description: 'Next candidate',
       group: 'completion',
@@ -68,7 +68,7 @@ export function getCompletionCommands(): Command[] {
       handler: () => {
         completionStore.previousCandidate();
       },
-      ignorePrompt: true,
+      disabled: () => true,
       keySequence: 'Control+KeyK',
       description: 'Previous candidate',
       group: 'completion',
@@ -80,7 +80,7 @@ export function getCompletionCommands(): Command[] {
       description: 'Execute candidate',
       group: 'completion',
       allowOnInput: true,
-      ignorePrompt: true,
+      disabled: () => true,
       handler: () => {
         if (!completionStore.opened) {
           return;

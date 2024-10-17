@@ -1,6 +1,6 @@
 <template>
   <div
-    @click="openNote"
+    @click="openFile"
     class="file-item q-py-xs q-px-sm full-width cursor-pointer"
     draggable="true"
     @dragstart="(e) => dragStart(e, fileNode)"
@@ -74,9 +74,10 @@
 </template>
 
 <script lang="ts" setup>
+// TODO: make as dumb component.
 import { QMenu, useQuasar } from 'quasar';
 import { RouteNames } from 'src/router/routes';
-import { FlatTree, convertFlatTreeToFileTree, revealKeyboard } from 'src/tools';
+import { revealKeyboard } from 'src/tools';
 import { useRouter } from 'vue-router';
 
 import { computed, onMounted, ref, watch } from 'vue';
@@ -87,9 +88,13 @@ import { useSidebarStore } from 'src/stores/sidebar';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useDragStatus } from 'src/hooks/drag-status';
+import { useNoteCreatorStore } from 'src/stores/note-creator';
+import { FileNode, getParentDir, getStringPath, join } from 'orgnote-api';
+import { useFileSystemStore } from 'src/stores/file-system.store';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
 const props = defineProps<{
-  fileNode: FlatTree;
+  fileNode: FileNode;
 }>();
 
 const emits = defineEmits<{
@@ -99,6 +104,9 @@ const emits = defineEmits<{
 const fileName = ref(props.fileNode.name);
 const isFile = props.fileNode.type === 'file';
 const authStore = useAuthStore();
+
+const { orgNoteApi } = useOrgNoteApiStore();
+const fileOpenerStore = orgNoteApi.core.useFileOpenerStore();
 
 const deleteFile = () => {
   if (isFileOpened.value) {
@@ -111,13 +119,15 @@ const deleteFile = () => {
 };
 
 const createFolder = async () => {
-  await fileManagerStore.createFolder(props.fileNode);
-  emits('expand', props.fileNode.id);
+  await fileManagerStore.createFolder(props.fileNode.filePath);
   revealKeyboard();
+  emits('expand', props.fileNode.id);
 };
 
 const createFile = async () => {
-  await fileManagerStore.createFile(convertFlatTreeToFileTree(props.fileNode));
+  await noteCreatorStore.create({
+    filePath: props.fileNode.filePath,
+  });
   emits('expand', props.fileNode.id);
 };
 
@@ -125,33 +135,31 @@ const { dragLeave, dragOver, dragStart, dragInProgress, reset } =
   useDragStatus('browser');
 
 const onDrop = async (e: DragEvent) => {
-  const sourceFileItem: FlatTree = JSON.parse(e.dataTransfer.getData('text'));
+  const sourceFileItem: FileNode = JSON.parse(e.dataTransfer.getData('text'));
   const path = props.fileNode.filePath;
-  if (props.fileNode.type === 'folder') {
-    path.push(props.fileNode.name);
-  }
-  path.push(sourceFileItem.name);
-  await fileManagerStore.moveFile(sourceFileItem.id, path);
+  const targetInfo = await fileSystemStore.fileInfo(path);
+  const dirPath = targetInfo.type === 'file' ? path.slice(0, -1) : path;
+  dirPath.push(sourceFileItem.name);
+  await fileSystemStore.rename(sourceFileItem.filePath, dirPath);
   reset();
   emits('expand', props.fileNode.id);
 };
 
 const router = useRouter();
 const sidebarStore = useSidebarStore();
-const openNote = () => {
+const openFile = async () => {
   if (editMode.value) {
     return;
   }
   if (props.fileNode.type === 'file') {
-    router.push({
-      name: RouteNames.RawEditor,
-      params: { id: props.fileNode.id },
-    });
+    await fileOpenerStore.openFile(props.fileNode.filePath);
     sidebarStore.close();
   }
 };
 
 const fileManagerStore = useFileManagerStore();
+const fileSystemStore = useFileSystemStore();
+const noteCreatorStore = useNoteCreatorStore();
 
 const editMode = ref(false);
 const fileNameInput = ref<HTMLInputElement | null>();
@@ -165,11 +173,14 @@ const editName = () => {
 };
 
 const confirmEdit = async () => {
+  const isRoot = !props.fileNode.filePath.length;
+  if (isRoot) {
+    return;
+  }
   editMode.value = false;
-  await fileManagerStore.renameFile(
-    convertFlatTreeToFileTree(props.fileNode),
-    fileName.value
-  );
+  const currentFileDir = getParentDir(props.fileNode.filePath);
+  const newPath = join(currentFileDir, fileName.value);
+  await fileSystemStore.rename(props.fileNode.filePath, newPath);
   fileManagerStore.stopEdit();
 };
 
@@ -234,7 +245,8 @@ const currentNoteStore = useCurrentNoteStore();
 const isFileOpened = computed(() => {
   return (
     currentNoteStore.currentNote &&
-    currentNoteStore.currentNote?.id === props.fileNode.id
+    getStringPath(currentNoteStore.currentNote.filePath) ===
+      getStringPath(props.fileNode.filePath)
   );
 });
 </script>

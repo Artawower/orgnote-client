@@ -56,7 +56,7 @@ export const useToolbarStore = defineStore('toolbarStore', () => {
   });
 
   const visibleToolbarActions = computed(() =>
-    toolbarActions.value.filter((a) => a.available?.())
+    toolbarActions.value.filter((a) => !a.disabled?.())
   );
 
   const actionsStack = ref<Command[][]>([

@@ -1,5 +1,4 @@
 import { useCurrentNoteStore } from './current-note';
-import { useFileManagerStore } from './file-manager';
 import { useGraphStore } from './graph';
 import { useSyncStore } from './sync';
 import { defineStore } from 'pinia';
@@ -9,7 +8,26 @@ import { toDeepRaw } from 'src/tools';
 
 import { ref } from 'vue';
 import { repositories } from 'src/boot/repositories';
-import { NotePreview, NotesFilter, Note } from 'orgnote-api';
+import {
+  NotePreview,
+  NotesFilter,
+  Note,
+  findNoteFilesDiff,
+  StoredNoteInfo,
+  NoteChange,
+  orgnodeToNote,
+  isGpgEncrypted,
+  splitPath,
+  isOrgGpgFile,
+} from 'orgnote-api';
+import {
+  FILE_SYSTEM_MUTATION_ACTIONS,
+  useFileSystemStore,
+} from './file-system.store';
+import { parse, withMetaInfo } from 'org-mode-ast';
+import { onMounted } from 'vue';
+import { v4 } from 'uuid';
+import { useEncryptionErrorHandler } from 'src/hooks/use-encryption-error-handler';
 
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_OFFSET = 0;
@@ -22,12 +40,25 @@ export const useNotesStore = defineStore('notes', () => {
     offset: DEFAULT_OFFSET,
   });
   const total = ref<number>(0);
-  const selectedNote = ref<Note>();
 
   const syncStore = useSyncStore();
-  const fileManagerStore = useFileManagerStore();
   const graphStore = useGraphStore();
   const currentNoteStore = useCurrentNoteStore();
+  const fileSystemStore = useFileSystemStore();
+  const notesStore = useNotesStore();
+
+  onMounted(() => {
+    watchFileSystemChanges();
+  });
+
+  const watchFileSystemChanges = () => {
+    fileSystemStore.$onAction(({ after, name }) => {
+      if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
+        return;
+      }
+      after(() => notesStore.syncWithFs());
+    });
+  };
 
   const setFilters = (filter: Partial<NotesFilter>) => {
     const updatedFilters = { ...filters.value, ...filter };
@@ -40,14 +71,11 @@ export const useNotesStore = defineStore('notes', () => {
   const deleteNotes = async (noteIds: string[]) => {
     await repositories.notes.deleteNotes(noteIds);
     notes.value = notes.value.filter((n) => !noteIds.includes(n.id));
-    await fileManagerStore.updateFileManager();
     await loadNotes();
   };
 
   const markAsDeleted = async (noteIds: string[]) => {
     await repositories.notes.markAsDeleted(noteIds);
-    await fileManagerStore.updateFileManager();
-    await syncStore.markToSync();
   };
 
   const upsertNotes = async (notes: Note[]) => {
@@ -58,7 +86,6 @@ export const useNotesStore = defineStore('notes', () => {
   const upsertNotesLocally = async (notes: Note[]) => {
     await upsertNotes(notes);
     await syncStore.markToSync();
-    await fileManagerStore.updateFileManager();
     graphStore.rebuildGraph();
   };
 
@@ -155,12 +182,73 @@ export const useNotesStore = defineStore('notes', () => {
     // TODO: master global loader here. Block the app!
     await sdk.notes.allNotesDelete();
     await repositories.notes.clear();
-    await fileManagerStore.updateFileManager();
+  };
+
+  // TODO: debounce
+  const syncWithFs = async () => {
+    const cachedNotesFromLatestSync =
+      (await repositories.notes.getNotesAfterUpdateTime()) as StoredNoteInfo[];
+
+    const noteFilesDiff = await findNoteFilesDiff({
+      fileInfo: fileSystemStore.fileInfo,
+      dirPath: '',
+      storedNotesInfo: cachedNotesFromLatestSync,
+      readDir: fileSystemStore.readDir,
+    });
+
+    await markAsDeleted(noteFilesDiff.deleted.map((d) => d.id));
+    await updateNotesCache([
+      ...noteFilesDiff.created,
+      ...noteFilesDiff.updated,
+    ]);
+  };
+
+  const updateNotesCache = async (noteChanges: NoteChange[]) => {
+    for (const nc of noteChanges) {
+      await updateNoteCache(nc.filePath);
+    }
+  };
+
+  const encryptionErrorHandler = useEncryptionErrorHandler();
+  const updateNoteCache = async (filePath: string): Promise<void> => {
+    try {
+      const note = await getUpdatedNoteByFilePath(filePath);
+      const updatedAt = new Date().toISOString();
+      // NOTE: This apporach mark note as unsynced for remote API
+      // cause file moving does not update utime
+      note.encrypted = isOrgGpgFile(filePath);
+      note.updatedAt = updatedAt;
+      note.touchedAt = updatedAt;
+
+      await upsertNotes([note]);
+    } catch (e) {
+      encryptionErrorHandler.handleError(e);
+      console.warn(e);
+    }
+  };
+
+  const getUpdatedNoteByFilePath = async (filePath: string): Promise<Note> => {
+    const noteContent = await fileSystemStore.readTextFile(filePath);
+
+    if (isGpgEncrypted(noteContent)) {
+      const note: Note = {
+        id: v4(),
+        filePath: splitPath(filePath),
+        meta: {},
+        isMy: true,
+      };
+
+      return note;
+    }
+
+    const fileInfo = await fileSystemStore.fileInfo(filePath);
+    const parsedNote = withMetaInfo(parse(noteContent));
+    const note = orgnodeToNote(parsedNote, fileInfo);
+    return note;
   };
 
   return {
     notes,
-    selectedNote,
     total,
     filters,
     markAsDeleted,
@@ -178,5 +266,6 @@ export const useNotesStore = defineStore('notes', () => {
     resetCache,
     clearNotes,
     removeAllNotes,
+    syncWithFs,
   };
 });

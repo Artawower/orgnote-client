@@ -35,3 +35,5 @@ org-note-release-signed.aab
 /quasar.config.*.temporary.compiled*
 
 /src-capacitor/www/*
+.yalc/
+yalc.lock

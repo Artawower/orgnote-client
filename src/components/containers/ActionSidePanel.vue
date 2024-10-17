@@ -56,7 +56,6 @@
 
 <script lang="ts" setup>
 import { useQuasar } from 'quasar';
-import { User } from 'src/models';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { getNumericCssVar, mockServer } from 'src/tools';
 
@@ -73,7 +72,7 @@ import ActionPaneWrapper from 'src/components/ActionPaneWrapper.vue';
 import ProfileSideBar from 'src/components/containers/ProfileSideBar.vue';
 import SidePanelItems from 'src/components/containers/SidePanelItems.vue';
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { CommandPreview } from 'orgnote-api';
+import { CommandPreview, User } from 'orgnote-api';
 import { useToolbarStore } from 'src/stores/toolbar';
 
 const props = defineProps<{

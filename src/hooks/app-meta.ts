@@ -1,7 +1,7 @@
 import { useMeta } from 'quasar';
-import { MetaOptions } from 'quasar/dist/types/meta';
 import { onBeforeUnmount } from 'vue';
 import { description, productName } from '../../package.json';
+import { MetaOptions } from 'quasar/dist/types/meta.js';
 
 export function useAppMeta(options?: MetaOptions | (() => MetaOptions)) {
   const setMeta = (options: MetaOptions | (() => MetaOptions)) => {

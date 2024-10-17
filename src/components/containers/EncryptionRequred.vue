@@ -1,5 +1,5 @@
 <template>
-  <template v-if="note">
+  <template v-if="noteText">
     <div
       v-if="isCurrentNoteEncrypted"
       @click="openSettings"
@@ -14,20 +14,22 @@
 
 <script lang="ts" setup>
 import { useKeybindingStore } from 'src/stores/keybindings';
-import { DefaultCommands, Note, isGpgEncrypted } from 'orgnote-api';
+import { isGpgEncrypted } from 'orgnote-api';
 import { computed } from 'vue';
+import { RouteNames } from 'src/router/routes';
+import { convertRouterNameToCommand } from 'src/tools/route-name-to-command.tool';
 
 const { executeCommand } = useKeybindingStore();
 
 const props = defineProps<{
-  note?: Note;
+  noteText?: string;
 }>();
 
 const openSettings = () => {
-  executeCommand({ command: DefaultCommands.SETTINGS });
+  executeCommand({
+    command: convertRouterNameToCommand(RouteNames.EncryptionSettings),
+  });
 };
 
-const isCurrentNoteEncrypted = computed(() =>
-  isGpgEncrypted(props.note.content)
-);
+const isCurrentNoteEncrypted = computed(() => isGpgEncrypted(props.noteText));
 </script>

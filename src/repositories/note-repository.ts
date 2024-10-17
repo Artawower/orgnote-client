@@ -1,15 +1,13 @@
-import { Note, NotePreview } from 'orgnote-api';
+import { join, Note, NotePreview } from 'orgnote-api';
 import { migrator } from './migrator';
 import { convertNoteToNotePreview } from './note-mapper';
 import { BaseRepository } from './repository';
 import Dexie, { Collection } from 'dexie';
-import { INoteRepository } from 'src/models';
+import {
+  FilePathInfo,
+  NoteRepository as INoteRepository,
+} from 'orgnote-api/models';
 import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
-
-export interface FilePathInfo {
-  filePath: string[];
-  id: string;
-}
 
 export class NoteRepository extends BaseRepository implements INoteRepository {
   public static storeName = 'notes';
@@ -32,6 +30,10 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
       (n) =>
         (n.encryptionType =
           n.encrypted as unknown as ModelsPublicNoteEncryptionTypeEnum)
+    )
+    .v(7)
+    .indexes(
+      '++id, meta.title, meta.description, createdAt, updatedAt, *meta.fileTags, touchedAt, filePath'
     )
     .build();
 
@@ -74,6 +76,14 @@ export class NoteRepository extends BaseRepository implements INoteRepository {
 
   async getById(id: string): Promise<Note> {
     return this.store.get({ id });
+  }
+
+  async getByPath(filePath: string[]): Promise<Note> {
+    const filtered = await this.store
+      .filter((n) => !n.deleted && join(...n.filePath) === join(...filePath))
+      .toArray();
+
+    return filtered?.[0];
   }
 
   async getNotePreviews(

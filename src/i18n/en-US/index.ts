@@ -222,4 +222,18 @@ export default {
   'delete all notes': 'delete all notes',
   'are you sure you want to delete all notes?':
     'are you sure you want to delete all notes?',
+  'unsaved changes': 'unsaved changes',
+  'are you sure you want to leave the page?':
+    'are you sure you want to leave the page?',
+  'file system access': 'file system access',
+  'to synchronize existing notes, we need access to the file system':
+    'To synchronize existing notes, we need access to the file system',
+  'there is no access to the file system! The app can’t read external notes.':
+    'there is no access to the file system! The app can’t read external notes.',
+  'encrypt active note': 'encrypt active note',
+  'decrypt active note': 'decrypt active note',
+  'something went wrong. Check logs': 'something went wrong. Check logs',
+  'notes encryption': 'notes encryption',
+  'to continue working, you need to select the directory where the notes will be stored':
+    'to continue working, you need to select the directory where the notes will be stored',
 };

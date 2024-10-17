@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.21.8",
+  "version": "0.22.0",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -61,15 +61,17 @@
     "@sotaproject/strikethrough": "1.0.1",
     "@uiw/codemirror-extensions-langs": "4.22.1",
     "@vueuse/core": "10.11.0",
+    "@zenfs/core": "1.0.6",
+    "@zenfs/dom": "0.2.17",
     "axios": "1.7.3",
-    "capacitor-folder-picker": "0.0.2",
     "dexie": "4.0.7",
     "force-graph": "1.43.5",
+    "fuse.js": "7.0.0",
     "highlight.js": "11.9.0",
     "katex": "0.16.10",
     "openapi-client-axios": "7.5.5",
     "org-mode-ast": "0.11.7",
-    "orgnote-api": "0.12.3",
+    "orgnote-api": "0.19.3",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.38",
@@ -128,11 +130,6 @@
     "workbox-precaching": "7.1.0",
     "workbox-routing": "7.1.0",
     "workbox-strategies": "7.1.0"
-  },
-  "overrides": {
-    "capacitor-folder-picker": {
-      "@capacitor/core": "6.1.0"
-    }
   },
   "engines": {
     "bun": ">= 1.0.2"
