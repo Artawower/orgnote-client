@@ -1,9 +1,11 @@
 import { Command, DefaultCommands } from 'orgnote-api';
 import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
+import { Platform } from 'quasar';
 import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import DebugPage from 'src/pages/DebugPage.vue';
 import LoggerPage from 'src/pages/LoggerPage.vue';
 import ProjectInfo from 'src/pages/ProjectInfo.vue';
+import { RouteNames } from 'src/router/routes';
 import { useCurrentNoteStore } from 'src/stores/current-note';
 import { useFileSystemStore } from 'src/stores/file-system.store';
 import { useModalStore } from 'src/stores/modal';
@@ -14,6 +16,7 @@ import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSettingsStore } from 'src/stores/settings';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { mockServer } from 'src/tools';
+import { useRouter } from 'vue-router';
 
 export function getGlobalCommands(): Command[] {
   const modalStore = useModalStore();
@@ -27,6 +30,7 @@ export function getGlobalCommands(): Command[] {
 
   const { orgNoteApi } = useOrgNoteApiStore();
   const fileManagerStore = orgNoteApi.core.useFileManagerStore();
+  const router = useRouter();
 
   const commands: Command[] = [
     {
@@ -83,7 +87,13 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.CREATE_NOTE,
       group: 'global',
       icon: 'o_add_box',
-      handler: () => noteCreatorStore.create(),
+      handler: () => {
+        if (!config.vault.path && Platform.is.nativeMobile) {
+          router.push({ name: RouteNames.SynchronisationSettings });
+          return;
+        }
+        noteCreatorStore.create();
+      },
     },
     {
       command: DefaultCommands.PROJECT_INFO,

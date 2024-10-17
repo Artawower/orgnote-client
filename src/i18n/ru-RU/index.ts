@@ -237,4 +237,6 @@ export default {
   'decrypt active note': 'расшифровать текущую заметку',
   'something went wrong. Check logs': 'что-то пошло не так, проверьте логи',
   'notes encryption': 'шифрование заметок',
+  'to continue working, you need to select the directory where the notes will be stored':
+    'для продолжения работы необходимо выбрать директорию где будут храниться заметки',
 };

@@ -234,4 +234,6 @@ export default {
   'decrypt active note': 'decrypt active note',
   'something went wrong. Check logs': 'something went wrong. Check logs',
   'notes encryption': 'notes encryption',
+  'to continue working, you need to select the directory where the notes will be stored':
+    'to continue working, you need to select the directory where the notes will be stored',
 };

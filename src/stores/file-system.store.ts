@@ -15,6 +15,8 @@ import { ref } from 'vue';
 import { computed } from 'vue';
 import { Platform } from 'quasar';
 import { removeRelativePath } from 'src/tools/remove-relative-path';
+import { useRouter } from 'vue-router';
+import { RouteNames } from 'src/router/routes';
 
 export const configureFileSystem = mockDesktop(async () => {
   await configure({
@@ -204,6 +206,7 @@ export const useFileSystemStore = defineStore(
       await mockAndroid(initAndroidFileSystem)();
     };
 
+    const router = useRouter();
     const initAndroidFileSystem = async () => {
       hasAccess.value = (
         await AndroidFileSystemPermission.hasAccess()
@@ -224,6 +227,7 @@ export const useFileSystemStore = defineStore(
       }
 
       accessRequests.value = true;
+      router.push({ name: RouteNames.SynchronisationSettings });
     };
 
     const openPermissions = async () => {

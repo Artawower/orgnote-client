@@ -4,6 +4,11 @@
 
     <template v-if="$q.platform.is.mobile">
       <menu-group title="vault path" :items="pathPickItems" />
+      <the-description
+        v-if="!config.vault.path"
+        type="error"
+        text="to continue working, you need to select the directory where the notes will be stored"
+      />
     </template>
 
     <menu-group :items="forceSyncItems" />

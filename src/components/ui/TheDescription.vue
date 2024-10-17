@@ -21,4 +21,8 @@ defineProps<{ text?: string; title?: boolean; type?: 'warning' | 'error' }>();
 .warning {
   color: var(--yellow);
 }
+
+.error {
+  color: var(--red);
+}
 </style>
