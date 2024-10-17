@@ -4,9 +4,6 @@
 
     <template v-if="$q.platform.is.mobile">
       <menu-group title="vault path" :items="pathPickItems" />
-      <the-description
-        text="this functionality in development right now. It's not possible to sync notes with the filesystem yet."
-      />
     </template>
 
     <menu-group :items="forceSyncItems" />

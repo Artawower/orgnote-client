@@ -174,11 +174,6 @@ export const useSyncStore = defineStore<string, SyncStore>(
     const upsertNotes = async (notes: ModelsPublicNote[]): Promise<void> => {
       for (const note of notes) {
         const { content, ...newNote } = note;
-        console.log(
-          '✎: [line 177][sync.ts] newNote.filePat: ',
-          newNote.filePath,
-          content
-        );
         const noteContent = isOrgGpgFile(newNote.filePath.slice(-1)?.[0])
           ? readFromStream(await unarmor(content))
           : content;
