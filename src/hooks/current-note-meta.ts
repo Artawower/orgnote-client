@@ -68,7 +68,7 @@ function buildImageMeta(currentNote: Note): Record<string, object> {
   return {
     [MetaProperties.OG_IMAGE]: {
       property: MetaProperties.OG_IMAGE,
-      content: buildMediaFilePath(images[0], currentNote.author.id),
+      content: buildMediaFilePath(images[0], currentNote.author?.id),
     },
   };
 }

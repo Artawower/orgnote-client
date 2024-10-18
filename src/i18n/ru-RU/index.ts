@@ -1,3 +1,4 @@
+// TODO: migrate to contants.
 export default {
   failed: 'Неудача',
   success: 'Успешно выполнено.',
@@ -224,4 +225,18 @@ export default {
   'delete all notes': 'удалить все заметки',
   'are you sure you want to delete all notes?':
     'вы уверены что хотите удалить все заметки?',
+  'unsaved changes': 'не сохраненные изменения',
+  'are you sure you want to leave the page?':
+    'вы уверены что хотите покинуть страницу?',
+  'file system access': 'доступ к файловой системе',
+  'to synchronize existing notes, we need access to the file system':
+    'для синхронизации существующих заметок нам необходим доступ к файловой системе',
+  'there is no access to the file system! The app can’t read external notes.':
+    'нет доступа к файловой системе! Приложение не сможет прочитать внешние заметки.',
+  'encrypt active note': 'зашифровать текущую заметку',
+  'decrypt active note': 'расшифровать текущую заметку',
+  'something went wrong. Check logs': 'что-то пошло не так, проверьте логи',
+  'notes encryption': 'шифрование заметок',
+  'to continue working, you need to select the directory where the notes will be stored':
+    'для продолжения работы необходимо выбрать директорию где будут храниться заметки',
 };

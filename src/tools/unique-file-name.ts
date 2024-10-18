@@ -1,16 +1,14 @@
-import { FileTree } from 'src/repositories';
-
 export const getUniqueFileName = (
-  children: FileTree,
-  fileExt = '.org'
+  existingFileNames: string[],
+  fileExt = '.org',
+  filePrefix = 'untitled-note'
 ): string => {
-  const notePrefix = 'Untitled-note';
-  let initialName = notePrefix;
+  let initialName = `${filePrefix}${fileExt}`;
 
   let inc = 0;
-  while (children?.[`${initialName}${fileExt}`]) {
+  while (existingFileNames.includes(`${initialName}`)) {
     inc++;
-    initialName = `${notePrefix}-${inc}`;
+    initialName = `${filePrefix}-${inc}${fileExt}`;
   }
 
   return initialName;

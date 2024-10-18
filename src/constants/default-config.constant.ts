@@ -2,6 +2,7 @@ import { OrgNoteConfig } from 'orgnote-api';
 import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 import { Platform } from 'quasar';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {
@@ -18,6 +19,10 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   completion: {
     showGroup: false,
     defaultCompletionLimit: 500,
+  },
+  vault: {
+    type: platformSpecificValue({ data: 'inmemory', mobile: 'filesystem' }),
+    path: '',
   },
   synchronization: {
     type: 'api',

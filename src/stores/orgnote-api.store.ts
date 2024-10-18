@@ -16,8 +16,14 @@ import { useCommandsStore } from './commands';
 import { useSystemInfoStore } from './system-info';
 import { useModalStore } from './modal';
 import { Modal } from 'orgnote-api';
-import { FolderPicker } from 'capacitor-folder-picker';
+import { useFileSystem } from 'src/hooks/use-file-system';
+import { useSyncStore } from './sync';
+import { useFilesStore } from './files';
+import { useFileOpenerStore } from './file-opener.store';
+import { useFileManagerStore } from './file-manager';
+import { useAuthStore } from './auth';
 
+// TODO: move to the bootstrap hook
 export const useOrgNoteApiStore = () => {
   const router = useRouter();
 
@@ -58,11 +64,13 @@ export const useOrgNoteApiStore = () => {
         add: addWidgets,
       },
     },
-    fileSystem: {
-      readPath: async () => {
-        const res = await FolderPicker.chooseFolder();
-        return res.path;
-      },
+    core: {
+      useFileSystem,
+      useSyncStore,
+      useFilesStore,
+      useFileOpenerStore,
+      useFileManagerStore,
+      useAuthStore,
     },
     configuration: () => settings.config,
     sdk: sdk,

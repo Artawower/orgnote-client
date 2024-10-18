@@ -5,22 +5,28 @@ import { NodeType, OrgNode } from 'org-mode-ast';
 import { Command } from 'src/api';
 import { useCommandsStore } from 'src/stores/commands';
 import { useCompletionStore } from 'src/stores/completion';
-import { useFileStore } from 'src/stores/file';
 import { useNoteEditorStore } from 'src/stores/note-editor';
 import { useSearchStore } from 'src/stores/search';
 import { insertTemplate, isUrl } from 'src/tools';
 
 import { onBeforeUnmount, onMounted } from 'vue';
+import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
+import { useCurrentNoteStore } from 'src/stores/current-note';
+import { getParentDir } from 'orgnote-api/tools';
 
 const group = 'editor';
 
 export const registerEditorCommands = () => {
+  const { orgNoteApi } = useOrgNoteApiStore();
+  // TODO: migrate to orgnoteapi accessor
+
   const commandsStore = useCommandsStore();
-  const fileStore = useFileStore();
+  const filesStore = orgNoteApi.core.useFilesStore();
   const noteEditorStore = useNoteEditorStore();
   const searchStore = useSearchStore();
   const completionStore = useCompletionStore();
   const notificationStore = useNotifications();
+  const currentNoteStore = useCurrentNoteStore();
 
   const commands: Command[] = [
     {
@@ -142,10 +148,13 @@ export const registerEditorCommands = () => {
       description: 'insert an image',
       group,
       handler: async () => {
-        const fileName = await fileStore.uploadMediaFile();
+        const currentNotePath = currentNoteStore.currentNote.filePath;
+        const filePath = await filesStore.uploadMediaFile(
+          getParentDir(currentNotePath)
+        );
         return insertTemplate({
           editorView: noteEditorStore.editorView as EditorView,
-          template: `[[./${fileName ?? ''}]]`,
+          template: `[[./${filePath ?? ''}]]`,
           focusOffset: 2,
           overrideLine: true,
         });

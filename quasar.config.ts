@@ -9,8 +9,6 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 import { configure } from 'quasar/wrappers';
-// TODO: master just doesn't work https://github.com/marsprince/slate-vue/issues/121
-// const { SlatePlugin } = require('slate-vue');
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
@@ -39,6 +37,7 @@ export default configure(function (ctx) {
       { path: 'katex', server: false },
       'repositories',
       { path: 'graph-worker', server: false },
+      { path: 'file-system', server: false },
       { path: 'highlightjs', server: false },
       { path: 'client-only-dependencies', server: false },
     ],
@@ -142,8 +141,8 @@ export default configure(function (ctx) {
       // https: true,
       // host: process.env.HOST || 'localhost',
       host: '0.0.0.0',
-      // port: ctx.mode.spa ? 3200 : ctx.mode.pwa ? 9010 : 3000,
-      port: 3000,
+      port: ctx.mode.spa ? 3000 : ctx.mode.pwa ? 9010 : 3200,
+      // port: 3000,
       open: {
         app: { name: 'google chrome' },
       },
@@ -246,7 +245,7 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: false,
-      version: '0.21.8',
+      version: '0.22.0',
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron

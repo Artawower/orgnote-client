@@ -13,5 +13,14 @@ export const initFilesApi = (axiosInstance: Axios) => {
       });
       return response.data;
     },
+    downloadFile: async (userId: string, fileName: string): Promise<Blob> => {
+      const url = `/media/${userId}/${fileName}`;
+      const response = await axiosInstance.request({
+        url,
+        method: 'GET',
+        responseType: 'blob',
+      });
+      return response.data;
+    },
   } as const;
 };

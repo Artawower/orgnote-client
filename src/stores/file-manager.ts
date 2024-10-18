@@ -1,151 +1,146 @@
-import { useNoteCreatorStore } from './note-creator';
-import { useNotesStore } from './notes';
 import { defineStore } from 'pinia';
-import type { FileNode, FileNodeInfo, FileTree } from 'src/repositories';
+import { debounce } from 'src/tools';
+
+import { onMounted, ref } from 'vue';
 import {
-  addFileToTree,
-  buildFileTree,
-  convertFileTreeToFlatTree,
-  debounce,
-  deletePathFromTree,
-  getUniqueFileName,
-  mergeFilesTrees,
-  renameFileInTree,
-  toDeepRaw,
-} from 'src/tools';
+  FILE_SYSTEM_MUTATION_ACTIONS,
+  useFileSystemStore,
+} from 'src/stores/file-system.store';
 import { v4 } from 'uuid';
+import { SortType } from 'src/models/sort-type.model';
+import { FileInfo, FileManagerStore, FileNode, join } from 'orgnote-api';
 
-import { computed, onMounted, ref } from 'vue';
-import { repositories } from 'src/boot/repositories';
+export const useFileManagerStore = defineStore<string, FileManagerStore>(
+  'file-manager',
+  (): FileManagerStore => {
+    const fileTree = ref<FileNode[]>([]);
+    const editedFileItem = ref<FileNode | null>();
+    const expandedNodes = ref<string[]>([]);
+    const fileSystemStore = useFileSystemStore();
 
-// TODO: master temporary solution. Need to use decorator and update only
-// changed paths for preventing iteration over all notes. Check time.
-export const useFileManagerStore = defineStore('file-manager', () => {
-  const fileTree = ref<FileTree>();
-  const editedFileItem = ref<FileNode | null>();
-  const expandedNodes = ref<string[]>([]);
+    onMounted(async () => {
+      watchFileSystemChanges();
+      updateFileManager();
+    });
 
-  repositories.fileManager.getAll().then((fm) => {
-    fileTree.value = fm || {};
-  });
-
-  const syncFiles = async () => {
-    const notesPathsInfo = await repositories.notes.getFilePaths();
-    const filesBasedTree = buildFileTree(notesPathsInfo);
-    fileTree.value = mergeFilesTrees(fileTree.value, filesBasedTree);
-    const fileTreeEmpty = !Object.keys(fileTree.value).length;
-    if (fileTreeEmpty) {
-      return;
-    }
-    await repositories.fileManager.upsert(toDeepRaw(fileTree.value));
-  };
-
-  const updateFileManagerWithDebounce = debounce(syncFiles, 300);
-
-  const updateFileManager = async () => {
-    updateFileManagerWithDebounce();
-  };
-
-  const createFolder = async (fileNode?: FileNodeInfo) => {
-    const initialName = 'Untitled';
-    const filePath = fileNode ? [...fileNode.filePath, fileNode.name] : [];
-    const newItem: FileNode = {
-      name: initialName,
-      filePath,
-      id: v4(),
-      type: 'folder',
-      children: {},
+    const watchFileSystemChanges = () => {
+      fileSystemStore.$onAction(({ after, name }) => {
+        if (!FILE_SYSTEM_MUTATION_ACTIONS.includes(name)) {
+          return;
+        }
+        after(() => {
+          updateFileManager();
+        });
+      });
     };
-    editedFileItem.value = newItem;
 
-    fileTree.value = addFileToTree(fileTree.value, newItem);
-    await storePersistently();
-  };
-
-  const noteCreatorStore = useNoteCreatorStore();
-
-  const createFile = async (parentFileNode?: FileNode) => {
-    const children = parentFileNode?.children ?? fileTree.value;
-    const noteName = getUniqueFileName(children);
-    const id = v4();
-
-    const fileName = `${noteName}.org`;
-    const filePath = parentFileNode
-      ? [...(parentFileNode?.filePath ?? []), parentFileNode.name, fileName]
-      : [fileName];
-
-    const newFile: FileNode = {
-      name: fileName,
-      filePath,
-      id,
-      type: 'file',
+    const syncFiles = async () => {
+      const files = await fileSystemStore.readDir();
+      console.log('✎: [line 39][file-manager.ts] files: ', files);
+      fileTree.value = sortFileNodes(await extractFiles(files));
     };
-    fileTree.value = addFileToTree(fileTree.value, newFile);
-    editedFileItem.value = newFile;
-    await noteCreatorStore.create(id, newFile.filePath);
-    // await storePersistently();
-  };
 
-  const stopEdit = () => {
-    editedFileItem.value = null;
-  };
+    const extractFiles = async (
+      files: FileInfo[],
+      parentDir: string[] = []
+    ): Promise<FileNode[]> => {
+      const fileTrees: FileNode[] = [];
 
-  const fileManager = computed(() => {
-    return convertFileTreeToFlatTree(fileTree.value);
-  });
+      for (const f of files) {
+        fileTrees.push(await createFileNode(f, parentDir));
+      }
 
-  const notesStore = useNotesStore();
-  const deleteFile = async (fileNode: FileNodeInfo) => {
-    const [updatedFileTree, deletedFileIds] = deletePathFromTree(
-      fileTree.value,
-      fileNode
-    );
-    fileTree.value = updatedFileTree;
-    await notesStore.markAsDeleted(deletedFileIds);
-  };
+      return fileTrees;
+    };
 
-  const renameFile = async (fileNode: FileNode, newName: string) => {
-    const [updatedTree, filePaths] = renameFileInTree(
-      fileTree.value,
-      fileNode,
-      newName
-    );
-    fileTree.value = updatedTree;
-    const notesUpdates = filePaths.map((fp) => ({
-      id: fp.id,
-      changes: { filePath: fp.filePath },
-    }));
-    await notesStore.bulkPathNotesLocally(notesUpdates);
-    await storePersistently();
-  };
+    const sortFileNodes = (
+      fileTrees: FileNode[],
+      { directory = 'asc' }: { directory?: SortType } = {}
+    ): FileNode[] => {
+      const compare = (a: FileNode, b: FileNode) => {
+        if (a.type === 'directory' && b.type !== 'directory') return -1;
+        if (a.type !== 'directory' && b.type === 'directory') return 1;
+        if (directory === 'asc') return a.name.localeCompare(b.name);
+        return b.name.localeCompare(a.name);
+      };
 
-  const moveFile = async (noteId: string, filePath: string[]) => {
-    await notesStore.bulkPathNotesLocally([
-      {
-        id: noteId,
-        changes: { filePath },
-      },
-    ]);
-    await storePersistently();
-    syncFiles();
-  };
+      return [...fileTrees].sort(compare).map((fileTree) => ({
+        ...fileTree,
+        children: fileTree.children
+          ? sortFileNodes(fileTree.children, { directory })
+          : undefined,
+      }));
+    };
 
-  const storePersistently = async () =>
-    await repositories.fileManager.upsert(toDeepRaw(fileTree.value));
+    const createFileNode = async (
+      file: FileInfo,
+      parentPath: string[] = []
+    ): Promise<FileNode> => {
+      const filePath = [...parentPath, file.name];
+      const children =
+        file.type === 'directory'
+          ? await extractFiles(await fileSystemStore.readDir(filePath), [
+              ...parentPath,
+              file.name,
+            ])
+          : undefined;
 
-  onMounted(() => updateFileManager());
+      return {
+        id: file.name,
+        type: file.type,
+        name: file.name,
+        filePath,
+        children,
+      };
+    };
 
-  return {
-    fileTree,
-    fileManager,
-    createFile,
-    renameFile,
-    deleteFile,
-    updateFileManager,
-    createFolder,
-    editedFileItem,
-    stopEdit,
-    expandedNodes,
-    moveFile,
-  };
-});
+    const updateFileManager = debounce(syncFiles, 50);
+
+    const createFolder = async (filePath: string[] = [], name = 'Untitled') => {
+      const newItem: FileNode = {
+        name: name,
+        filePath,
+        id: v4(),
+        type: 'directory',
+        children: [],
+      };
+      editedFileItem.value = newItem;
+
+      const path = join(...filePath, name);
+      await fileSystemStore.mkdir(path);
+      await syncFiles();
+    };
+
+    const stopEdit = () => {
+      editedFileItem.value = null;
+    };
+
+    const deleteFile = async (fileTree: FileNode) => {
+      const deletePath = [...fileTree.filePath];
+      if (fileTree.type === 'directory') {
+        await fileSystemStore.rmdir(deletePath);
+        return;
+      }
+      await fileSystemStore.deleteFile(deletePath);
+    };
+
+    const renameFile = async (fileTree: FileNode, newName: string) => {
+      newName = newName.trim();
+      const newFilePath = [...fileTree.filePath.slice(0, -1), newName];
+      await fileSystemStore.rename(fileTree.filePath, newFilePath);
+    };
+
+    onMounted(() => updateFileManager());
+
+    return {
+      fileTree,
+      renameFile,
+      deleteFile,
+      updateFileManager,
+      createFolder,
+      editedFileItem,
+      stopEdit,
+      expandedNodes,
+    };
+  }
+);

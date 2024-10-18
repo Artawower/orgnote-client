@@ -44,6 +44,11 @@ const links = [
     url: 'https://cordova.apache.org/',
     icon: 'https://cordova.apache.org/static/img/cordova_bot.png',
   },
+  {
+    name: 'ZenFS',
+    url: 'https://github.com/zen-fs/corei',
+    icon: 'https://avatars.githubusercontent.com/u/164564881?s=200&v=4',
+  },
 ] as const;
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <q-page class="height-auto" :style-fn="resetPageMinHeight">
-    <encryption-required :note="currentNote">
+    <encryption-required :note-text="noteText">
       <author-info
         v-if="currentNote?.author && currentNote && !currentNote?.isMy"
         :author="currentNote?.author"
@@ -8,7 +8,7 @@
       >
         ></author-info
       >
-      <note-detail :note="currentNote"></note-detail>
+      <note-detail :note-text="noteText"></note-detail>
     </encryption-required>
   </q-page>
 </template>
@@ -31,7 +31,7 @@ const route = useRoute();
 
 const currentNoteStore = useCurrentNoteStore();
 
-const { currentNote } = storeToRefs(currentNoteStore);
+const { currentNote, noteText } = storeToRefs(currentNoteStore);
 
 if (route.params.id) {
   await currentNoteStore.selectNoteById(route.params.id as string);

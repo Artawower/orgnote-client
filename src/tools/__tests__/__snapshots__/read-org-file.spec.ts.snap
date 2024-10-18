@@ -1,15 +1,5 @@
 // Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`read-org-file Should read org file by provided entry 1`] = `
-{
-  "content": "#+TITLE: some org file",
-  "filePath": [
-    "dir",
-    "test.org",
-  ],
-}
-`;
-
 exports[`read-org-file Should read org file by provided entry without start slash 1`] = `
 {
   "content": "#+TITLE: some org file",

@@ -1,5 +1,5 @@
 // Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`unique-file-name should return unique name 1`] = `"Untitled-note-1"`;
+exports[`unique-file-name should return unique name 1`] = `"untitled-note.org"`;
 
-exports[`unique-file-name Should return unique name with multiple default names 1`] = `"Untitled-note-3"`;
+exports[`unique-file-name Should return unique name with multiple default names 1`] = `"untitled-note.org"`;

@@ -1,19 +1,29 @@
 <template>
   <navigation-page>
     <menu-group title="synchronization type" :items="syncTypeItems" />
-    <menu-group
-      title="vault path"
-      v-if="dirSyncAvailable"
-      :items="pathPickItems"
-    />
-    <the-description
-      v-if="config.synchronization.type === 'filesystem'"
-      text="this functionality in development right now. It's not possible to sync notes with the filesystem yet."
-    />
+
+    <template v-if="$q.platform.is.mobile">
+      <menu-group title="vault path" :items="pathPickItems" />
+      <the-description
+        v-if="!config.vault.path"
+        type="error"
+        text="to continue working, you need to select the directory where the notes will be stored"
+      />
+    </template>
+
     <menu-group :items="forceSyncItems" />
     <the-description
       text="this functionality will completely clear the local cache and reload all notes from an external source. Important: Unsaved notes will be deleted."
     />
+
+    <template v-if="$q.platform.is.android">
+      <menu-group :items="androidPermissionsItems" />
+      <the-description
+        v-if="!fileSystemStore.hasAccess"
+        type="warning"
+        text="there is no access to the file system! The app can’t read external notes."
+      />
+    </template>
   </navigation-page>
 </template>
 
@@ -29,17 +39,18 @@ import { buildMenuItems } from 'src/tools/config-menu-builder';
 import { SYNCHRONIZATION_CONFIG_SCHEME } from 'src/constants/default-config.constant';
 import { computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 import { useSyncStore } from 'src/stores/sync';
+import { useFileSystemStore } from 'src/stores/file-system.store';
+import { DefaultCommands } from 'orgnote-api';
+import { useKeybindingStore } from 'src/stores/keybindings';
+import { AndroidFolderPicker } from 'src/plugins/android-folder-picker.plugin';
 
 const authStore = useAuthStore();
 
-const dirSyncAvailable = computed(
-  () => $q.platform.is.mobile && config.synchronization.type === 'filesystem'
-);
-
 const syncStore = useSyncStore();
 const { config } = useSettingsStore();
+
+const fileSystemStore = useFileSystemStore();
 
 const forceSyncItems: MenuItemProps[] = [
   {
@@ -58,12 +69,10 @@ const syncTypeItems: MenuItemProps[] = buildMenuItems(config.synchronization, {
   excludeKeys: ['path'],
 });
 
-const { orgNoteApi } = useOrgNoteApiStore();
-
 const pathPickItems: MenuItemProps[] = [
   {
     label: 'path',
-    reactivePath: config.synchronization,
+    reactivePath: config.vault,
     reactiveKey: 'path',
     type: 'readonly',
   },
@@ -72,11 +81,29 @@ const pathPickItems: MenuItemProps[] = [
     type: 'action',
     color: getCssVar('blue'),
     handler: async () => {
-      const path = await orgNoteApi.fileSystem.readPath();
-      config.synchronization.path = path;
+      const res = await AndroidFolderPicker.pickFolder();
+      config.vault.path = res.path;
+      executeCommand({ command: DefaultCommands.SYNC_FILES });
     },
   },
 ];
 
+const { executeCommand } = useKeybindingStore();
+
+const androidPermissionsItems: MenuItemProps[] = [
+  {
+    label: 'open persmissions',
+    handler: async () => {
+      await fileSystemStore.openPermissions();
+      if (!fileSystemStore.hasAccess) {
+        return;
+      }
+      executeCommand({
+        command: DefaultCommands.SYNC_FILES,
+      });
+    },
+    color: getCssVar('blue'),
+  },
+];
 const $q = useQuasar();
 </script>

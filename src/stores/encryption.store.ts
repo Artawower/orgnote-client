@@ -7,6 +7,7 @@ import { useSyncStore } from './sync';
 import { useCurrentNoteStore } from './current-note';
 import { repositories } from 'src/boot/repositories';
 import { isGpgEncrypted } from 'orgnote-api';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useEncryptionStore = defineStore('encryption', () => {
   // TODO: implement progress.
@@ -17,10 +18,16 @@ export const useEncryptionStore = defineStore('encryption', () => {
   const notesStore = useNotesStore();
   const syncStore = useSyncStore();
   const currentNoteStore = useCurrentNoteStore();
+  const { readTextFile } = useFileSystemStore();
 
   const changeEncryptionType = async () => {
-    const encryptedNoteIds = await repositories.notes.getIds((n) =>
-      isGpgEncrypted(n.content)
+    const notesIds = await repositories.notes.getIds(() => true);
+    const encryptedNoteIds = await Promise.all(
+      notesIds.filter(async (id) => {
+        const note = await repositories.notes.getById(id);
+        const content = await readTextFile(note.filePath);
+        return isGpgEncrypted(content);
+      })
     );
 
     for (const id of encryptedNoteIds) {
@@ -50,7 +57,8 @@ export const useEncryptionStore = defineStore('encryption', () => {
   const decryptNoteById = async (noteId: string) => {
     const note = await repositories.notes.getById(noteId);
     try {
-      const decryptedNote = await decryptNote(note);
+      const noteText = await readTextFile(note.filePath);
+      const [decryptedNote] = await decryptNote(note, noteText);
       await repositories.notes.putNote(decryptedNote);
     } catch (e) {
       handleError(e as Error);

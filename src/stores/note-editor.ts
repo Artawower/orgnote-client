@@ -11,6 +11,7 @@ import { useNotesStore } from './notes';
 import { EditorView } from '@codemirror/view';
 import { Note } from 'orgnote-api';
 import { useCurrentNoteStore } from './current-note';
+import { useFileSystemStore } from 'src/stores/file-system.store';
 
 export const useNoteEditorStore = defineStore('noteEditor', () => {
   const noteOrgData = ref<OrgNode>();
@@ -21,17 +22,22 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const debug = ref<boolean>(false);
   const cursorPosition = ref<number>(0);
   const editorView = shallowRef<EditorView>(null);
+  const { writeFile: writeTextFile } = useFileSystemStore();
+  const fileSystem = useFileSystemStore();
 
   const fileManagerStore = useFileManagerStore();
   const { getNoteById } = useCurrentNoteStore();
   // TODO: master persistent value should be done via indexed db.
-  const saveNoteData = (text: string, orgNode: OrgNode) => {
-    if (setNoteContent(text, orgNode)) {
-      save();
+  const saveNoteData = async (text: string, orgNode: OrgNode) => {
+    if (await setNoteContent(text, orgNode)) {
+      await save();
     }
   };
 
-  const setNoteContent = (text: string, orgNode: OrgNode): boolean => {
+  const setNoteContent = async (
+    text: string,
+    orgNode: OrgNode
+  ): Promise<boolean> => {
     if (!filePath.value?.length) {
       return;
     }
@@ -41,17 +47,30 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       orgNode.meta.title !== noteOrgData.value?.meta.title;
 
     if (titleChanged) {
-      const newName = `${getFileNameFromText(orgNode.meta.title)}.org`;
-      fileManagerStore.updateFileManager();
-      filePath.value.splice(-1, 1, newName);
+      // TODO: this logic are broken now
+      // await tryRenameFile(orgNode);
     }
     noteText.value = text;
     noteOrgData.value = orgNode;
     return true;
   };
 
-  const setNoteTree = (orgNode: OrgNode) => {
-    setNoteContent(orgNode.rawValue, orgNode);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const tryRenameFile = async (orgNode: OrgNode): Promise<void> => {
+    const fileDir = filePath.value.slice(0, -1).join('/');
+    const newName = `${fileDir.length ? '/' : ''}${getFileNameFromText(orgNode.meta.title)}.org`;
+    const newFilePath = `${fileDir}${newName}`;
+
+    if (await fileSystem.isFileExist(newFilePath)) {
+      return;
+    }
+    await fileSystem.rename(filePath.value, newName);
+    filePath.value.splice(-1, 1, newName);
+    fileManagerStore.updateFileManager();
+  };
+
+  const setNoteTree = async (orgNode: OrgNode) => {
+    await setNoteContent(orgNode.rawValue, orgNode);
   };
 
   const setFilePath = (path: string[]) => {
@@ -80,7 +99,6 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const note = computed(
     (): Note =>
       orgTree.value && {
-        content: orgTree.value.rawValue,
         id: orgTree.value.meta.id,
         filePath: filePath.value ?? [
           generateFileName(orgTree.value.meta.title),
@@ -92,10 +110,10 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
   const upsertNote = async () => {
     const now = new Date().toISOString();
     const [previousNote] = await getNoteById(orgTree.value.meta.id);
+    await writeTextFile(filePath.value, lastSavedText.value);
     await notesStore.upsertNotesLocally([
       {
         ...previousNote,
-        content: lastSavedText.value,
         id: orgTree.value.meta.id,
         createdAt: createdTime.value ?? now,
         isMy: true,
@@ -109,7 +127,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     ]);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!noteOrgData.value) {
       return;
     }
@@ -119,7 +137,7 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
       return;
     }
     lastSavedText.value = noteText.value;
-    upsertNote();
+    await upsertNote();
   };
 
   const saved = computed(() => lastSavedText.value === noteText.value);
