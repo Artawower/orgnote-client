@@ -85,7 +85,6 @@ export const useSimpleFs = (): FileSystem => {
     const renameFilePaths: string[] = [];
 
     await fs.each((f) => {
-      console.log('[line 67]: f', f, oldPath, f.path.startsWith(oldPath));
       f.path.startsWith(oldPath) ? renameFilePaths.push(f.path) : null;
     });
 

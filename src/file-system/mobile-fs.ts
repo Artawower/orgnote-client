@@ -3,15 +3,43 @@ import {
   Encoding,
   FileInfo as CapacitorFileInfo,
   StatResult,
-  Directory,
 } from '@capacitor/filesystem';
-import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
+import {
+  ErrorDirectoryNotFound,
+  ErrorFileNotFound,
+  FileInfo,
+  FileSystem,
+  getFileName,
+} from 'orgnote-api';
 import { b64toBlob, blobToB64 } from 'src/tools/blob-base64-converter';
 
 const FILE_NOT_FOUND_ERR = 'File does not exist';
 const DIRECTORY_NOT_FOUND_ERR = 'Directory does not exist';
 
 export const useMobileFs = () => {
+  const isFileNotFoundError = (e: unknown) =>
+    e instanceof Error && e.message === FILE_NOT_FOUND_ERR;
+  const isDirNotFoundError = (e: unknown) =>
+    e instanceof Error && e.message === DIRECTORY_NOT_FOUND_ERR;
+
+  const withErrorHandling = <ARGS extends unknown[], RES>(
+    fn: (path: string, ...params: ARGS) => RES
+  ): ((path: string, ...params: ARGS) => Promise<Awaited<RES>>) => {
+    return async (path: string, ...params: ARGS): Promise<Awaited<RES>> => {
+      try {
+        return await fn(path, ...params);
+      } catch (e) {
+        if (isFileNotFoundError(e)) {
+          throw new ErrorFileNotFound(path);
+        }
+        if (isDirNotFoundError(e)) {
+          throw new ErrorDirectoryNotFound(path);
+        }
+        throw e;
+      }
+    };
+  };
+
   // NOTE: mobile file system does not work with Blob.
   // this is the reason why we convert binary files to base64 and vice versa.
   const readFile: FileSystem['readFile'] = async <
@@ -103,7 +131,7 @@ export const useMobileFs = () => {
   const mkdir: FileSystem['mkdir'] = async (path: string) => {
     await Filesystem.mkdir({
       recursive: true,
-      path: '/foo/bar/some/old',
+      path,
     });
   };
 
@@ -114,12 +142,10 @@ export const useMobileFs = () => {
       });
       return true;
     } catch (e) {
-      const isDirNotFoundError =
-        (e as { message: string }).message !== DIRECTORY_NOT_FOUND_ERR;
-      if (!isDirNotFoundError) {
-        throw e;
+      if (isDirNotFoundError(e)) {
+        return false;
       }
-      return false;
+      throw e;
     }
   };
 
@@ -130,10 +156,10 @@ export const useMobileFs = () => {
       });
       return true;
     } catch (e) {
-      if ((e as { message: string }).message !== FILE_NOT_FOUND_ERR) {
-        throw e;
+      if (isFileNotFoundError(e)) {
+        return false;
       }
-      return false;
+      throw e;
     }
   };
 
@@ -156,16 +182,16 @@ export const useMobileFs = () => {
   };
 
   return {
-    fileInfo,
-    readFile,
-    writeFile,
-    rename,
-    deleteFile,
-    readDir,
-    rmdir,
-    mkdir,
+    fileInfo: withErrorHandling(fileInfo),
+    readFile: withErrorHandling(readFile),
+    writeFile: withErrorHandling(writeFile),
+    rename: withErrorHandling(rename),
+    deleteFile: withErrorHandling(deleteFile),
+    readDir: withErrorHandling(readDir),
+    rmdir: withErrorHandling(rmdir),
+    mkdir: withErrorHandling(mkdir),
     isDirExist,
     isFileExist,
-    utimeSync,
+    utimeSync: withErrorHandling(utimeSync),
   };
 };
