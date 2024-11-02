@@ -28,27 +28,28 @@ export function useEncryptionErrorHandler() {
   const handleError = (e: unknown): boolean => {
     if (e instanceof IncorrectOrMissingPrivateKeyPasswordError) {
       openModalForChangeEncryptionPassword();
-      notifications.notify(
-        'missing or incorrect encryption password',
-        true,
-        'error'
-      );
+      notifications.notify('missing or incorrect encryption password', {
+        group: true,
+        level: 'error',
+      });
       return true;
     }
 
     if (e instanceof ImpossibleToDecryptWithProvidedKeysError) {
       openEcnryptionSettingsForChangingKeys();
-      notifications.notify(
-        'impossible to decrypt with provided keys',
-        true,
-        'error'
-      );
+      notifications.notify('impossible to decrypt with provided keys', {
+        group: true,
+        level: 'error',
+      });
       return true;
     }
 
     if (e instanceof IncorrectEncryptionPasswordError) {
       openModalForChangeEncryptionPassword();
-      notifications.notify('incorrect encryption password', true, 'error');
+      notifications.notify('incorrect encryption password', {
+        group: true,
+        level: 'error',
+      });
       return true;
     }
 
@@ -57,7 +58,10 @@ export function useEncryptionErrorHandler() {
       e instanceof NoKeysProvidedError
     ) {
       openEcnryptionSettingsForChangingKeys();
-      notifications.notify('incorrect encryption method', true, 'error');
+      notifications.notify('incorrect encryption method', {
+        group: true,
+        level: 'error',
+      });
       return true;
     }
   };

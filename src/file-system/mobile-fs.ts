@@ -3,6 +3,7 @@ import {
   Encoding,
   FileInfo as CapacitorFileInfo,
   StatResult,
+  Directory,
 } from '@capacitor/filesystem';
 import { FileInfo, FileSystem, getFileName } from 'orgnote-api';
 import { b64toBlob, blobToB64 } from 'src/tools/blob-base64-converter';
@@ -101,7 +102,8 @@ export const useMobileFs = () => {
 
   const mkdir: FileSystem['mkdir'] = async (path: string) => {
     await Filesystem.mkdir({
-      path,
+      recursive: true,
+      path: '/foo/bar/some/old',
     });
   };
 
@@ -112,7 +114,9 @@ export const useMobileFs = () => {
       });
       return true;
     } catch (e) {
-      if ((e as { message: string }).message !== DIRECTORY_NOT_FOUND_ERR) {
+      const isDirNotFoundError =
+        (e as { message: string }).message !== DIRECTORY_NOT_FOUND_ERR;
+      if (!isDirNotFoundError) {
         throw e;
       }
       return false;

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { debounce } from 'src/tools';
+import { withQueue } from 'src/tools';
 
 import { onMounted, ref } from 'vue';
 import {
@@ -36,7 +36,6 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
 
     const syncFiles = async () => {
       const files = await fileSystemStore.readDir();
-      console.log('✎: [line 39][file-manager.ts] files: ', files);
       fileTree.value = sortFileNodes(await extractFiles(files));
     };
 
@@ -94,7 +93,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
       };
     };
 
-    const updateFileManager = debounce(syncFiles, 50);
+    const updateFileManager = withQueue(syncFiles);
 
     const createFolder = async (filePath: string[] = [], name = 'Untitled') => {
       const newItem: FileNode = {
@@ -108,7 +107,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>(
 
       const path = join(...filePath, name);
       await fileSystemStore.mkdir(path);
-      await syncFiles();
+      updateFileManager();
     };
 
     const stopEdit = () => {

@@ -18,6 +18,8 @@ import { useFileSystemStore } from 'src/stores/file-system.store';
 import { isOrgGpgFile, unarmor } from 'orgnote-api';
 import { readFromStream } from 'src/tools/read-from-stream.tool';
 import { onMounted } from 'vue';
+import { useNotifications } from 'src/hooks';
+import { withQueue } from 'src/tools';
 
 export const useSyncStore = defineStore<string, SyncStore>(
   'sync',
@@ -30,6 +32,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
     const syncTimeTimeout = 2000;
 
     let abortController: AbortController;
+    let syncInProgress = false;
 
     const inactiveUser = computed(
       () =>
@@ -76,16 +79,20 @@ export const useSyncStore = defineStore<string, SyncStore>(
     };
 
     const syncViaApi = async () => {
+      if (syncInProgress) {
+        return;
+      }
       cancelPreviousRequest();
       const notes = await getNotesFromLastSync();
 
+      syncInProgress = true;
       try {
         const deletedNotesIds = (
           await repositories.notes.getDeletedNotes()
         ).map((n) => n.id);
         const rspns = await sdk.notes.notesSyncPost(
           {
-            // TODO: fix misstyping
+            // TODO: fix misstyping of
             notes,
             deletedNotesIds,
             timestamp: lastSyncTime.value ?? new Date(0).toISOString(),
@@ -99,16 +106,18 @@ export const useSyncStore = defineStore<string, SyncStore>(
           rspns.data.data.deletedNotes.map((n) => n.id)
         );
         await upsertNotes(rspns.data.data.notes);
+        lastSyncTime.value = new Date().toISOString();
+
         await checkCurrentEditedNoteChanged(rspns.data.data.notes);
 
         await notesStore.loadTotal();
         if (!notesStore.total) {
           return;
         }
-
-        lastSyncTime.value = new Date().toISOString();
       } catch (e: unknown) {
         handleSyncError(e as Error);
+      } finally {
+        syncInProgress = false;
       }
     };
 
@@ -161,7 +170,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
       handleError(e);
     };
 
-    const runSyncTask = debounce(sync, syncTimeTimeout);
+    const runSyncTask = withQueue(sync);
 
     const cancelPreviousRequest = () => {
       abortController?.abort();
@@ -171,18 +180,49 @@ export const useSyncStore = defineStore<string, SyncStore>(
     const noteEditorStore = useNoteEditorStore();
     const { readTextFile, writeFile } = useFileSystemStore();
 
-    const upsertNotes = async (notes: ModelsPublicNote[]): Promise<void> => {
-      for (const note of notes) {
-        const { content, ...newNote } = note;
-        const noteContent = isOrgGpgFile(newNote.filePath.slice(-1)?.[0])
-          ? readFromStream(await unarmor(content))
-          : content;
+    const notifications = useNotifications();
 
-        await writeFile(newNote.filePath, noteContent, {
-          type: 'disabled',
-        });
-        await notesStore.upsertNotes([newNote]);
+    const upsertNotes = async (notes: ModelsPublicNote[]): Promise<void> => {
+      if (!notes.length) {
+        return;
       }
+      const notification = notifications.notify('Note syncing in progress...', {
+        group: false,
+      });
+      const BATCH_SIZE = 1;
+      let processedNotes = 0;
+
+      for (let i = 0; i < notes.length; i += BATCH_SIZE) {
+        const notesBatch = notes.slice(i, i + BATCH_SIZE);
+
+        await Promise.all(
+          notesBatch.map(async (note) => {
+            processedNotes++;
+            const { content, ...noteMetadata } = note;
+
+            const noteContent = isOrgGpgFile(
+              noteMetadata.filePath.slice(-1)?.[0]
+            )
+              ? readFromStream(await unarmor(content))
+              : content;
+
+            try {
+              await writeFile(noteMetadata.filePath, noteContent, {
+                type: 'disabled',
+              });
+              await notesStore.upsertNotes([noteMetadata]);
+            } catch (e) {
+              throw e;
+            }
+
+            notification({
+              caption: `${processedNotes}/${notes.length} notes synced`,
+            });
+          })
+        );
+      }
+
+      notification({ timeout: 1000 });
     };
 
     const checkCurrentEditedNoteChanged = async (updatedNotes: Note[]) => {

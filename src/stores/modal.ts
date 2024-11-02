@@ -57,7 +57,7 @@ export const useModalStore = defineStore('modal', () => {
         ?.component
   );
 
-  const title = computed(() => config.value.title);
+  const title = computed(() => config.value?.title);
 
   const closeAll = () => {
     openedComponentStack.value = [];
