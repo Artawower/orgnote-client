@@ -6,6 +6,7 @@ import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
 export function useFileSystem(): FileSystem {
   // TODO: pick file system from configs
   const currentFs = platformSpecificValue<FileSystem>({
+    nativeMobile: useMobileFs(),
     mobile: useMobileFs(),
     desktop: useSimpleFs(),
   });

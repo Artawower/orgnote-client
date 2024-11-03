@@ -50,7 +50,6 @@ export const useSimpleFs = (): FileSystem => {
     _encoding: string
   ) => {
     path = normalizePath(path);
-    console.log('✎: [line 45][simple-fs.ts] path: ', path);
     const existingFile = await fileInfo(path);
     await recursiveMkdir(path);
 

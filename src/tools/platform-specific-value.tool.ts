@@ -2,6 +2,7 @@ import { Platform } from 'quasar';
 
 export function platformSpecificValue<TData = unknown>(datasource: {
   data?: TData;
+  nativeMobile?: TData;
   server?: TData;
   mobile?: TData;
   desktop?: TData;
@@ -14,7 +15,7 @@ export function platformSpecificValue<TData = unknown>(datasource: {
     return datasource.data;
   }
 
-  const datasourceKeys = ['desktop', 'mobile'] as const;
+  const datasourceKeys = ['desktop', 'mobile', 'nativeMobile'] as const;
 
   for (const platform of datasourceKeys) {
     if (Platform.is[platform]) {
