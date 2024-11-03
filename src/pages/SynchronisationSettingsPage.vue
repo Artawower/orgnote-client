@@ -2,7 +2,7 @@
   <navigation-page>
     <menu-group title="synchronization type" :items="syncTypeItems" />
 
-    <template v-if="$q.platform.is.mobile">
+    <template v-if="$q.platform.is.nativeMobile">
       <menu-group title="vault path" :items="pathPickItems" />
       <the-description
         v-if="!config.vault.path"
