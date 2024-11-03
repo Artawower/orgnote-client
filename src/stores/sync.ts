@@ -182,6 +182,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
 
     const notifications = useNotifications();
 
+    // TODO: refactor. Create mechanism to run async tasks.
     const upsertNotes = async (notes: ModelsPublicNote[]): Promise<void> => {
       if (!notes.length) {
         return;
@@ -206,14 +207,10 @@ export const useSyncStore = defineStore<string, SyncStore>(
               ? readFromStream(await unarmor(content))
               : content;
 
-            try {
-              await writeFile(noteMetadata.filePath, noteContent, {
-                type: 'disabled',
-              });
-              await notesStore.upsertNotes([noteMetadata]);
-            } catch (e) {
-              throw e;
-            }
+            await writeFile(noteMetadata.filePath, noteContent, {
+              type: 'disabled',
+            });
+            await notesStore.upsertNotes([noteMetadata]);
 
             notification({
               caption: `${processedNotes}/${notes.length} notes synced`,

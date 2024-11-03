@@ -132,24 +132,17 @@ export const useFileSystemStore = defineStore(
       isDir = false
     ): Promise<void> => {
       if (noVaultProvided.value) {
-        console.log('[line 144]: NO VAULT PROVIDED');
         return;
       }
       const realPath = normalizePath(filePath);
       const dirPath = isDir ? realPath : getFileDirPath(realPath) || '';
       const isDirExist = await currentFs.isDirExist(dirPath);
-      console.trace(
-        '✎: [line 150][BROWSER FILE SAVE] isDirExist: ',
-        isDirExist
-      );
       if (isDirExist) {
         return;
       }
-      console.log('✎: [line 154][BROWSER FILE SAVE] dirPath MKDIR: ', dirPath);
       try {
         await currentFs.mkdir(dirPath);
       } catch (e) {
-        console.log('[line 158][BROWSER FILE SAVE]: dirPath error', dirPath);
         throw e;
       }
     };

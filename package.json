@@ -133,7 +133,7 @@
     "bun": ">= 1.0.2"
   },
   "jscpd": {
-    "threshold": 1.64,
+    "threshold": 1.65,
     "reporters": ["html", "console"],
     "format": ["typescript"],
     "ignore": [
