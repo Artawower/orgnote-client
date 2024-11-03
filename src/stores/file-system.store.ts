@@ -1,6 +1,4 @@
 import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
-import { configure } from '@zenfs/core';
-import { IndexedDB } from '@zenfs/dom';
 import { useSettingsStore } from 'src/stores/settings';
 import { getFileDirPath } from 'src/tools/get-file-dir-path';
 import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/default-note-dir.constant';
@@ -8,7 +6,13 @@ import { mockDesktop } from 'src/tools/mock-desktop';
 import { mockAndroid, mockMobile } from 'src/tools/mock-mobile';
 import { defineStore } from 'pinia';
 import { useEncryption } from 'src/hooks';
-import { FileInfo, isOrgGpgFile, join, OrgNoteEncryption } from 'orgnote-api';
+import {
+  ErrorFileNotFound,
+  FileInfo,
+  isOrgGpgFile,
+  join,
+  OrgNoteEncryption,
+} from 'orgnote-api';
 import { useOrgNoteApiStore } from './orgnote-api.store';
 import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
 import { ref } from 'vue';
@@ -17,14 +21,6 @@ import { Platform } from 'quasar';
 import { removeRelativePath } from 'src/tools/remove-relative-path';
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
-
-export const configureFileSystem = mockDesktop(async () => {
-  await configure({
-    mounts: {
-      ['/']: IndexedDB,
-    },
-  });
-});
 
 export const useFileSystemStore = defineStore(
   'file-system',
@@ -96,7 +92,6 @@ export const useFileSystemStore = defineStore(
       content: string | Uint8Array,
       encryptionConfig?: OrgNoteEncryption
     ) => {
-      await initFolderForFile(path);
       const realPath = normalizePath(path);
       encryptionConfig ??= config.encryption;
       const isEncrypted = isOrgGpgFile(realPath);
@@ -113,7 +108,6 @@ export const useFileSystemStore = defineStore(
       path: string | string[],
       newPath: string | string[]
     ): Promise<void> => {
-      await initFolderForFile(path);
       return currentFs.rename(normalizePath(path), normalizePath(newPath));
     };
 
@@ -122,13 +116,10 @@ export const useFileSystemStore = defineStore(
     };
 
     const deleteFile = async (path: string | string[]) => {
-      await initFolderForFile(path);
       return await currentFs.deleteFile(normalizePath(path));
     };
 
     const removeAllFiles = async () => {
-      await initFolderForFile('');
-
       await mockMobile(async () => await currentFs.rmdir(config.vault.path))();
 
       mockDesktop(() => {
@@ -149,7 +140,11 @@ export const useFileSystemStore = defineStore(
       if (isDirExist) {
         return;
       }
-      await currentFs.mkdir(dirPath);
+      try {
+        await currentFs.mkdir(dirPath);
+      } catch (e) {
+        throw e;
+      }
     };
 
     const mkdir = async (path: string | string[]): Promise<void> => {
@@ -180,7 +175,6 @@ export const useFileSystemStore = defineStore(
         return [];
       }
 
-      await initFolderForFile(path, true);
       const res = await currentFs.readDir(normalizePath(path));
       const normalizedPaths = normalizeFilePaths(res);
       return normalizedPaths;
@@ -236,18 +230,35 @@ export const useFileSystemStore = defineStore(
       ).hasAccess;
     };
 
+    const withSafeFolderCreation =
+      <PATH extends string | string[], A extends unknown[], R>(
+        fn: (p: PATH, ...args: A) => R,
+        isDir = false
+      ) =>
+      async (path?: PATH, ...args: A): Promise<Awaited<R>> => {
+        try {
+          return await fn(path, ...args);
+        } catch (e) {
+          if (!(e instanceof ErrorFileNotFound)) {
+            throw e;
+          }
+          await initFolderForFile(path, isDir);
+          return await fn(path, ...args);
+        }
+      };
+
     return {
-      readTextFile,
-      readFile,
-      writeFile,
-      rename,
+      readTextFile: withSafeFolderCreation(readTextFile),
+      readFile: withSafeFolderCreation(readFile),
+      writeFile: withSafeFolderCreation(writeFile),
+      rename: withSafeFolderCreation(rename),
       isFileExist,
-      deleteFile,
+      deleteFile: withSafeFolderCreation(deleteFile),
       removeAllFiles,
-      mkdir,
-      rmdir,
-      fileInfo,
-      readDir,
+      mkdir: withSafeFolderCreation(mkdir),
+      rmdir: withSafeFolderCreation(rmdir, true),
+      fileInfo: withSafeFolderCreation(fileInfo),
+      readDir: withSafeFolderCreation(readDir),
 
       initFileSystem,
       hasAccess,

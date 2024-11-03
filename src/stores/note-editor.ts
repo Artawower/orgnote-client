@@ -133,7 +133,9 @@ export const useNoteEditorStore = defineStore('noteEditor', () => {
     }
     const validationErrors = getOrgNodeValidationErrors(orgTree.value);
     if (validationErrors) {
-      notifications.notify(validationErrors.join('\n'), false, 'error');
+      notifications.notify(validationErrors.join('\n'), {
+        level: 'error',
+      });
       return;
     }
     lastSavedText.value = noteText.value;

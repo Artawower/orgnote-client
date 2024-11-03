@@ -144,7 +144,10 @@ export const useAuthStore = defineStore<string, AuthStore>(
           throw e;
         }
         const axiosErr = e as AxiosError<{ message?: string }>;
-        notificaitons.notify(axiosErr.response.data?.message, true, 'error');
+        notificaitons.notify(axiosErr.response.data?.message, {
+          group: true,
+          level: 'error',
+        });
         return;
       }
     };

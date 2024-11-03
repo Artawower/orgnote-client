@@ -236,4 +236,5 @@ export default {
   'notes encryption': 'notes encryption',
   'to continue working, you need to select the directory where the notes will be stored':
     'to continue working, you need to select the directory where the notes will be stored',
+  'note syncing': 'note syncing',
 };

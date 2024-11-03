@@ -32,12 +32,12 @@ export default configure(function (ctx) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
+      'promise-with-resolvers-polyfill',
       'i18n',
       'axios',
       { path: 'katex', server: false },
       'repositories',
       { path: 'graph-worker', server: false },
-      { path: 'file-system', server: false },
       { path: 'highlightjs', server: false },
       { path: 'client-only-dependencies', server: false },
     ],
@@ -86,7 +86,7 @@ export default configure(function (ctx) {
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
-      // polyfillModulePreload: true,
+      polyfillModulePreload: true,
       // distDir
 
       // extendViteConf (viteConf) {},
@@ -245,7 +245,7 @@ export default configure(function (ctx) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-capacitor-apps/configuring-capacitor
     capacitor: {
       hideSplashscreen: false,
-      version: '0.22.0',
+      version: '0.22.1',
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron

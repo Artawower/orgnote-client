@@ -48,7 +48,7 @@ export const useGraphStore = defineStore('graph', () => {
   };
 
   const graphNodes = computed(() => {
-    return graph.value.nodes.reduce<{ [id: string]: GraphNoteNode }>(
+    return graph.value?.nodes.reduce<{ [id: string]: GraphNoteNode }>(
       (acc, cur) => {
         acc[cur.id] = cur;
         return acc;
