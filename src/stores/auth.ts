@@ -12,6 +12,7 @@ import { ref } from 'vue';
 import { mockServer } from 'src/tools';
 import { useNotesStore } from './notes';
 import { AuthStore, OAuthProvider, PersonalInfo } from 'orgnote-api';
+import { useFileSystemStore } from './file-system.store';
 
 const defaultUserAccount = (): PersonalInfo => ({
   id: v4(),
@@ -95,10 +96,12 @@ export const useAuthStore = defineStore<string, AuthStore>(
       token.value = null;
     };
 
+    const fileSystemStore = useFileSystemStore();
     const logout = async () => {
       // TODO: make as a command!
       const settingsStore = useSettingsStore();
       await notesStore.clearNotes();
+      await fileSystemStore.dropFileSystem();
       settingsStore.reset();
       syncStore.reset();
       resetAuthInfo();

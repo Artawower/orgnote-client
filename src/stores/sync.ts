@@ -150,6 +150,7 @@ export const useSyncStore = defineStore<string, SyncStore>(
     const forceResync = async () => {
       localStorage.removeItem('sync');
       await db.dropAll();
+      await fileSystemStore.dropFileSystem();
       await router.push({ name: RouteNames.Home });
       await fileSystemStore.removeAllFiles();
       window.location.reload();

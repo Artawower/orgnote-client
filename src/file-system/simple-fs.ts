@@ -135,6 +135,12 @@ export const useSimpleFs = (): FileSystem => {
   };
 
   const rmdir: FileSystem['rmdir'] = async (path: string) => {
+    // NOTE: if path is root
+    if (path === '/') {
+      await fs.clear();
+      await init();
+      return;
+    }
     if (!(await isDirExist(path))) {
       throw new ErrorDirectoryNotFound(path);
     }
@@ -192,6 +198,10 @@ export const useSimpleFs = (): FileSystem => {
     return fs.get(path);
   };
 
+  const init = async () => {
+    await mkdir('/');
+  };
+
   return {
     readFile: readFile,
     fileInfo: fileInfo,
@@ -204,5 +214,6 @@ export const useSimpleFs = (): FileSystem => {
     isDirExist: isDirExist,
     isFileExist: isFileExist,
     utimeSync: utimeSync,
+    init,
   };
 };

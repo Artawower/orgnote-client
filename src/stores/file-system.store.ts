@@ -247,6 +247,14 @@ export const useFileSystemStore = defineStore(
         }
       };
 
+    const dropFileSystem = async () => {
+      // NOTE: ignore native mobile file system.
+      if (Platform.is.nativeMobile) {
+        return;
+      }
+      await currentFs.rmdir('/');
+    };
+
     return {
       readTextFile: withSafeFolderCreation(readTextFile),
       readFile: withSafeFolderCreation(readFile),
@@ -259,6 +267,7 @@ export const useFileSystemStore = defineStore(
       rmdir: withSafeFolderCreation(rmdir, true),
       fileInfo: withSafeFolderCreation(fileInfo),
       readDir: withSafeFolderCreation(readDir),
+      dropFileSystem,
 
       initFileSystem,
       hasAccess,
