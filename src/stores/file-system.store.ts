@@ -164,7 +164,7 @@ export const useFileSystemStore = defineStore(
 
       fileInfo.path = platformSpecificValue({
         data: (path: string) => path,
-        mobile: (path: string) => normalizeMobilePath(path),
+        nativeMobile: (path: string) => normalizeMobilePath(path),
       })(fileInfo.path);
 
       return fileInfo;
@@ -184,7 +184,7 @@ export const useFileSystemStore = defineStore(
     const normalizeFilePaths = (paths: FileInfo[]): FileInfo[] => {
       return platformSpecificValue({
         data: (infos: FileInfo[]) => infos,
-        mobile: (infos: FileInfo[]) =>
+        nativeMobile: (infos: FileInfo[]) =>
           infos.map((p) => ({
             ...p,
             path: normalizeMobilePath(p.path),
@@ -193,7 +193,11 @@ export const useFileSystemStore = defineStore(
     };
 
     const normalizeMobilePath = (path: string): string => {
-      return path.replaceAll(config.vault.path, '').replaceAll(/^\/+/g, '');
+      const normalizedPath = path
+        .split(config.vault.path)
+        .join('')
+        .replaceAll(/^\/+/g, '');
+      return normalizedPath;
     };
 
     const initFileSystem = async () => {

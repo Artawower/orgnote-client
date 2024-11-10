@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.22.6",
+  "version": "0.22.7",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",

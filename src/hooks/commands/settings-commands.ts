@@ -103,6 +103,7 @@ export function getSettingsCommands(): Command[] {
           name: platformSpecificValue({
             data: RouteNames.SystemSettings,
             mobile: RouteNames.SettingsPage,
+            nativeMobile: RouteNames.SettingsPage,
           }),
         }),
     },

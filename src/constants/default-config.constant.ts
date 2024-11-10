@@ -21,7 +21,11 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     defaultCompletionLimit: 500,
   },
   vault: {
-    type: platformSpecificValue({ data: 'inmemory', mobile: 'filesystem' }),
+    type: platformSpecificValue({
+      data: 'inmemory',
+      mobile: 'filesystem',
+      nativeMobile: 'filesystem',
+    }),
     path: '',
   },
   synchronization: {

@@ -52,7 +52,8 @@ export const useMobileFs = () => {
     const data = (
       await Filesystem.readFile({
         path,
-        encoding: encoding === 'binary' ? undefined : Encoding.UTF8,
+        encoding:
+          encoding === 'binary' || !encoding ? undefined : Encoding.UTF8,
       })
     ).data;
 

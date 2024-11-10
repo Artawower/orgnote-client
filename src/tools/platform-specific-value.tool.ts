@@ -15,7 +15,8 @@ export function platformSpecificValue<TData = unknown>(datasource: {
     return datasource.data;
   }
 
-  const datasourceKeys = ['desktop', 'mobile', 'nativeMobile'] as const;
+  // NOTE: order is important!
+  const datasourceKeys = ['desktop', 'nativeMobile', 'mobile'] as const;
 
   for (const platform of datasourceKeys) {
     if (Platform.is[platform]) {

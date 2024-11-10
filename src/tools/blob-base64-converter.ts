@@ -8,13 +8,13 @@ export const blobToB64 = (blob: Blob): Promise<string> => {
   });
 };
 
-export const b64toBlob = (
+export function b64toBlob(
   b64Data: string,
-  contentType = '',
+  contentType = 'application/octet-stream',
   sliceSize = 512
-) => {
+): Blob {
   const byteCharacters = atob(b64Data);
-  const byteArrays = [];
+  const byteArrays: Uint8Array[] = [];
 
   for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
     const slice = byteCharacters.slice(offset, offset + sliceSize);
@@ -28,6 +28,5 @@ export const b64toBlob = (
     byteArrays.push(byteArray);
   }
 
-  const blob = new Blob(byteArrays, { type: contentType });
-  return blob;
-};
+  return new Blob(byteArrays, { type: contentType });
+}
