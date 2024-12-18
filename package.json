@@ -12,6 +12,7 @@
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
     "build": "quasar build",
+    "report:duplicates": "jscpd ./src",
     "postinstall": "quasar prepare",
     "prepare": "husky"
   },
@@ -36,10 +37,31 @@
     "eslint-plugin-vue": "9.30.0",
     "globals": "15.12.0",
     "husky": "9.1.7",
+    "jscpd": "4.0.5",
     "prettier": "3.3.3",
     "typescript": "~5.5.3",
     "vite-plugin-checker": "0.8.0",
     "vue-tsc": "2.0.29"
+  },
+  "jscpd": {
+    "threshold": 1.65,
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
+    "ignore": [
+      "**/__snapshots__/**",
+      "**/.git/**",
+      "**/*.spec.ts",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/generated/**"
+    ],
+    "minLines": 3,
+    "minTokens": 50,
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
+    "output": "./dist/duplication-report/",
+    "absolute": true,
+    "blame": true,
+    "gitignore": true
   },
   "engines": {
     "node": "^28 || ^26 || ^24 || ^22 || ^20 || ^18",
