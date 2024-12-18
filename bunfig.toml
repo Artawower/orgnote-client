@@ -1,3 +1,0 @@
-[test]
-coverage = true # always enable coverage
-preload = "./happydom.ts"
