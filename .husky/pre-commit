@@ -3,5 +3,5 @@
 
 # TODO: feat/stable-beta uncomment
 # ./deploy/sync-capaticor-version.sh
-bun install --package-lock-only && git add bun.lockb
+bun install --package-lock-only --no-scripts && git add bun.lockb
 # git add quasar.config.ts src-capacitor/android/app/build.gradle
