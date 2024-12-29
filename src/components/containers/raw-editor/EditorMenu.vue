@@ -40,7 +40,8 @@ const editorInsertItems: Command[] =
   commandsStore.getCommandsFromGroup('editor');
 
 const onItemClicked = (itemFn: (params: CommandHandlerParams) => void) => {
-  return () => itemFn({ editorView: props.editorView });
+  return (params: CommandHandlerParams) =>
+    itemFn({ editorView: props.editorView, ...params });
 };
 </script>
 

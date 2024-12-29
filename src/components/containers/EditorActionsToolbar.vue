@@ -31,7 +31,12 @@ const commandsStore = useCommandsStore();
 const editorCommands = commandsStore.getCommandsFromGroup('editor');
 
 const handleEditorAction = (action: Command) => {
-  action.handler(noteEditorStore.editorView);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { handler: _, ...meta } = action;
+  action.handler({
+    meta,
+    data: noteEditorStore.editorView,
+  });
 };
 
 const inited = ref<boolean>(false);

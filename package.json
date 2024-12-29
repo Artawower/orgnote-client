@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.22.7",
+  "version": "0.22.8",
   "description": "OrgNote app. OrgNote is a note-taking app for organizing your thoughts and ideas. It is based on the emacs org-roam package and org-mode format.",
   "productName": "OrgNote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -68,8 +68,8 @@
     "highlight.js": "11.9.0",
     "katex": "0.16.10",
     "openapi-client-axios": "7.5.5",
-    "org-mode-ast": "0.11.7",
-    "orgnote-api": "0.19.5",
+    "org-mode-ast": "0.11.8",
+    "orgnote-api": "0.19.10",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.38",

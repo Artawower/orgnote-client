@@ -47,7 +47,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
     Object.values(keybindings.value).forEach((k) => {
       const command = {
         [k.keySequence as string]: (event: KeyboardEvent) =>
-          k.handler({ event }),
+          k.handler({ event, meta: {} }),
       };
       unregisterFunctions.push(hotkeys(window, command, !k.allowOnInput));
     });
@@ -95,7 +95,7 @@ export const useKeybindingStore = defineStore('keybindings', () => {
       completionStore.closeCompletion();
       return;
     }
-    keybindings.value[command]?.handler?.({ data });
+    keybindings.value[command]?.handler?.({ data, meta: {} });
   };
 
   return {
