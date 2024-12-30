@@ -1,8 +1,0 @@
-{
-	"appId": "org.note.app",
-	"appName": "orgnote",
-	"webDir": "www",
-	"packageClassList": [
-		"AppPlugin"
-	]
-}
