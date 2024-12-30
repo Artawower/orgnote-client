@@ -17,6 +17,8 @@
     "dev:ios-tablet:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T ios -- --target=\"iPad-10th-generation\"",
     "dev:electron": "quasar dev -m electron",
     "dev:electron:remote": "env-cmd -f ./.env.prod quasar dev -m electron",
+    "dev:ssr:build": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
+
     "build": "quasar build",
     "build:ssr": "env-cmd -f ./.env.prod bun run build -m ssr",
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
@@ -27,10 +29,13 @@
     "build:android:aab:sign": "bun run build:android:aab && ./sign-aab.sh",
     "build:android:apk:sign": "bun run build:android:aab && ./sign-apk.sh",
     "build:ios": "env-cmd -f ./.env.prod quasar build -m capacitor -T ios",
-    "serve:ssr": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
+
     "report:duplicates": "jscpd ./src",
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "test": "vitest test",
+
+    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 120,120 -m capacitor -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8",
+
     "prepare": "husky"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import { setActivePinia, createPinia } from 'pinia';
-import { describe, test, expect, beforeEach } from 'vitest';
+import { test, expect, beforeEach } from 'vitest';
 import { useCommandsStore } from '../commands-store';
 import { type Command } from 'orgnote-api';
 
@@ -15,36 +15,36 @@ test('registers commands correctly', () => {
     handler: () => 'test-result',
   };
 
-  store.register(mockCommand);
+  store.add(mockCommand);
 
   expect(store.commands).toHaveLength(1);
   expect(store.commands[0]).toEqual(mockCommand);
 });
 
-test('does not register commands when no arguments are provided', () => {
+test('does not add commands when no arguments are provided', () => {
   const store = useCommandsStore();
 
-  store.register(); // No commands passed
+  store.add(); // No commands passed
 
   expect(store.commands).toHaveLength(0);
 });
 
-test('unregisters commands correctly', () => {
+test('removes commands correctly', () => {
   const store = useCommandsStore();
   const mockCommand: Command = {
     command: 'test-command',
     handler: () => 'test-result',
   };
 
-  store.register(mockCommand);
+  store.add(mockCommand);
   expect(store.commands).toHaveLength(1);
 
-  store.unregister(mockCommand);
+  store.remove(mockCommand);
 
   expect(store.commands).toHaveLength(0);
 });
 
-test('does not unregister non-existent commands', () => {
+test('does not remove non-existent commands', () => {
   const store = useCommandsStore();
   const mockCommand: Command = {
     command: 'test-command',
@@ -55,10 +55,10 @@ test('does not unregister non-existent commands', () => {
     handler: () => 'no-op',
   };
 
-  store.register(mockCommand);
+  store.add(mockCommand);
   expect(store.commands).toHaveLength(1);
 
-  store.unregister(nonExistentCommand);
+  store.remove(nonExistentCommand);
 
   expect(store.commands).toHaveLength(1);
 });
@@ -70,20 +70,20 @@ test('retrieves commands by name correctly', () => {
     handler: () => 'test-result',
   };
 
-  store.register(mockCommand);
+  store.add(mockCommand);
 
-  const retrievedCommand = store.getCommand('test-command');
+  const retrievedCommand = store.get('test-command');
   expect(retrievedCommand).toEqual(mockCommand);
 });
 
 test('returns undefined when retrieving a non-existent command', () => {
   const store = useCommandsStore();
 
-  const retrievedCommand = store.getCommand('non-existent-command');
+  const retrievedCommand = store.get('non-existent-command');
   expect(retrievedCommand).toBeUndefined();
 });
 
-test('registers multiple commands correctly', () => {
+test('adds multiple commands correctly', () => {
   const store = useCommandsStore();
   const commands: Command[] = [
     { command: 'command1', handler: () => 'result1' },
@@ -91,13 +91,13 @@ test('registers multiple commands correctly', () => {
     { command: 'command3', handler: () => 'result3' },
   ];
 
-  store.register(...commands);
+  store.add(...commands);
 
   expect(store.commands).toHaveLength(3);
   expect(store.commands).toEqual(commands);
 });
 
-test('unregisters multiple commands correctly', () => {
+test('removes multiple commands correctly', () => {
   const store = useCommandsStore();
   const commands: Command[] = [
     { command: 'command1', handler: () => 'result1' },
@@ -105,8 +105,8 @@ test('unregisters multiple commands correctly', () => {
     { command: 'command3', handler: () => 'result3' },
   ];
 
-  store.register(...commands);
-  store.unregister(commands[0], commands[2]); // Remove first and last commands
+  store.add(...commands);
+  store.remove(commands[0]!, commands[2]!); // Remove first and last commands
 
   expect(store.commands).toHaveLength(1);
   expect(store.commands[0]).toEqual(commands[1]); // Only the middle command remains
@@ -116,8 +116,8 @@ test('handles duplicate command registration gracefully', () => {
   const store = useCommandsStore();
   const command: Command = { command: 'command1', handler: () => 'result1' };
 
-  store.register(command);
-  store.register(command); // Attempt to register the same command again
+  store.add(command);
+  store.add(command); // Attempt to add the same command again
 
   expect(store.commands).toHaveLength(2); // Duplicate allowed in this implementation
   expect(store.commands[0]).toEqual(command);
@@ -133,17 +133,17 @@ test('correctly handles multiple adds and deletes in sequence', () => {
   ];
 
   // Step 1: Add commands
-  store.register(...commands);
+  store.add(...commands);
   expect(store.commands).toHaveLength(3);
 
   // Step 2: Remove one command
-  store.unregister(commands[1]); // Remove the second command
+  store.remove(commands[1]!); // Remove the second command
   expect(store.commands).toHaveLength(2);
   expect(store.commands).toEqual([commands[0], commands[2]]);
 
   // Step 3: Add one more command
   const newCommand: Command = { command: 'command4', handler: () => 'result4' };
-  store.register(newCommand);
+  store.add(newCommand);
   expect(store.commands).toHaveLength(3);
   expect(store.commands).toEqual([commands[0], commands[2], newCommand]);
 });
@@ -156,10 +156,10 @@ test('correctly finds commands after multiple operations', () => {
     { command: 'command3', handler: () => 'result3' },
   ];
 
-  store.register(...commands);
-  store.unregister(commands[1]); // Remove the second command
+  store.add(...commands);
+  store.remove(commands[1]!); // Remove the second command
 
-  expect(store.getCommand('command1')).toEqual(commands[0]); // First command exists
-  expect(store.getCommand('command2')).toBeUndefined(); // Removed command does not exist
-  expect(store.getCommand('command3')).toEqual(commands[2]); // Third command exists
+  expect(store.get('command1')).toEqual(commands[0]); // First command exists
+  expect(store.get('command2')).toBeUndefined(); // Removed command does not exist
+  expect(store.get('command3')).toEqual(commands[2]); // Third command exists
 });

@@ -18,14 +18,14 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     commands.value = commands.value.filter((c) => !unregisterCommandsNames.has(c.command));
   };
 
-  const getCommand = (name: string) => {
+  const get = (name: string) => {
     return commands.value.find((c) => c.command === name);
   };
 
   return {
-    register: clientOnly(register),
-    unregister: clientOnly(unregister),
-    getCommand,
+    add: clientOnly(register),
+    remove: clientOnly(unregister),
+    get,
     commands,
   };
 });

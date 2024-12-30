@@ -62,9 +62,9 @@ test('returns commands from a specific group', () => {
     handler: () => 'test-result',
   };
 
-  commandsStore.register(testCommand);
+  commandsStore.add(testCommand);
 
-  const groupCommands = groupStore.getCommandsFromGroup(COMMAND_GROUPS[0]);
+  const groupCommands = groupStore.getCommandsByGroup(COMMAND_GROUPS[0]);
   expect(groupCommands).toEqual([testCommand]);
 });
 
@@ -83,7 +83,7 @@ test('currentGroupsCommands returns commands belonging to active groups', () => 
     handler: () => 'result2',
   };
 
-  commandsStore.register(commandInGroup, commandOutOfGroup);
+  commandsStore.add(commandInGroup, commandOutOfGroup);
 
   expect(groupStore.currentGroupsCommands).toEqual([commandInGroup]);
 });
@@ -98,7 +98,7 @@ test('updates currentGroupsCommands when a group is activated', () => {
     handler: () => 'new-result',
   };
 
-  commandsStore.register(newGroupCommand);
+  commandsStore.add(newGroupCommand);
   groupStore.activateGroup(newGroup);
 
   expect(
@@ -117,7 +117,7 @@ test('updates currentGroupsCommands when a group is deactivated', async () => {
     handler: () => 'result',
   };
 
-  commandsStore.register(testCommand);
+  commandsStore.add(testCommand);
   expect(
     groupStore.currentGroupsCommands.find((c) => c.command === testCommand.command),
   ).toBeTruthy();
