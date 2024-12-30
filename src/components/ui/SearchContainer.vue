@@ -41,7 +41,7 @@ const props = defineProps<{
   autofocus?: boolean;
   handlerWrapper?: (
     handler: (params?: CommandHandlerParams) => void
-  ) => (...arg: unknown[]) => void;
+  ) => (params?: CommandHandlerParams) => void;
 }>();
 
 const search = ref<string>('');
@@ -57,7 +57,7 @@ const filteredItems = computed(() =>
 
 const handleItem = (cmd: Command) => {
   if (props.handlerWrapper) {
-    props.handlerWrapper(cmd.handler)();
+    props.handlerWrapper(cmd.handler)({ meta: cmd });
   } else {
     cmd.handler();
   }
