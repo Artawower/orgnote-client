@@ -2,7 +2,7 @@ import type { Command, CommandGroup, CommandsGroupStore } from 'orgnote-api'; //
 import { COMMAND_GROUPS } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { useCommandsStore } from './commands-store';
+import { useCommandsStore } from './command-store';
 
 export const useCommandsGroupStore = defineStore<'commands-group', CommandsGroupStore>(
   'commands-group',

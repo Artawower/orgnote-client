@@ -6,7 +6,6 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
   const commands = ref<Command[]>([]);
 
   const register = (...newCommands: Command[]) => {
-    console.log('✎: [line 9][commands-store.ts<stores>] newCommands: ', newCommands);
     if (!newCommands.length) {
       return;
     }

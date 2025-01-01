@@ -1,6 +1,6 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { test, expect, beforeEach } from 'vitest';
-import { useCommandsStore } from '../commands-store';
+import { useCommandsStore } from '../command-store';
 import { type Command } from 'orgnote-api';
 
 beforeEach(() => {
