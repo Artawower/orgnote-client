@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto';
 import { setActivePinia, createPinia } from 'pinia';
 import { test, expect, beforeEach } from 'vitest';
 import { useCommandsStore } from '../command-store';

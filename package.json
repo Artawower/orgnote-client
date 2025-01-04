@@ -37,6 +37,8 @@
   "dependencies": {
     "@quasar/extras": "1.16.15",
     "axios": "1.7.9",
+    "dexie": "4.0.10",
+    "fuse.js": "7.0.0",
     "orgnote-api": "file:.yalc/orgnote-api",
     "pinia": "2.3.0",
     "quasar": "2.17.5",
@@ -48,6 +50,7 @@
   "devDependencies": {
     "@electron/packager": "^18.3.2",
     "@eslint/js": "9.17.0",
+    "@faker-js/faker": "9.3.0",
     "@intlify/unplugin-vue-i18n": "6.0.1",
     "@quasar/app-vite": "2.0.2",
     "@types/node": "22.10.2",
@@ -58,6 +61,7 @@
     "env-cmd": "10.1.0",
     "eslint": "9.17.0",
     "eslint-plugin-vue": "9.32.0",
+    "fake-indexeddb": "6.0.0",
     "globals": "15.14.0",
     "husky": "9.1.7",
     "jscpd": "4.0.5",
