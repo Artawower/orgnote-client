@@ -1,7 +1,7 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { test, expect, beforeEach } from 'vitest';
-import { useCommandsStore } from '../command-store';
-import { useCommandsGroupStore } from '../command-group-store';
+import { useCommandsStore } from './command';
+import { useCommandsGroupStore } from './command-group';
 import { COMMAND_GROUPS } from 'orgnote-api';
 import type { Command, CommandGroup } from 'orgnote-api';
 

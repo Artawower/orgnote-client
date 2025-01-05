@@ -5,10 +5,9 @@ import {
   REPOSITORIES_PROVIDER_TOKEN,
 } from 'src/constants/app-providers';
 import { initRepositories } from 'src/infrastructure/repositories';
-import { useCommandsGroupStore } from 'src/stores/command-group-store';
-import { useCommandsStore } from 'src/stores/command-store';
-import { useExtensionsStore } from 'src/stores/extension-store';
-import { provide } from 'vue';
+import { useCommandsGroupStore } from 'src/stores/command-group';
+import { useCommandsStore } from 'src/stores/command';
+import { useExtensionsStore } from 'src/stores/extension';
 
 const repositories = await initRepositories();
 
