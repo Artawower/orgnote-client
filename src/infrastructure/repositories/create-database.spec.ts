@@ -1,23 +1,11 @@
-import { createDatabase } from './create-database';
+// src/infrastructure/repositories/create-database.spec.ts
+import 'fake-indexeddb/auto';
+import { createDatabase, MockItem } from './create-database';
 import Dexie from 'dexie';
-import { expect, test } from 'vitest';
+import { expect, test, beforeEach, afterEach } from 'vitest';
 
-// Mock repository
-interface MockItem {
-  id: number;
-  name?: string;
-  createdAt?: Date;
-  updated?: boolean;
-  migrated?: boolean;
-}
-
-const mockRepositories: {
-  storeName: string;
-  migrations: Record<
-    string,
-    { indexes: string; migrate?: (item: unknown) => void | Promise<void> }
-  >;
-}[] = [
+// Конфигурация mockRepositories
+const mockRepositories = [
   {
     storeName: 'store1',
     migrations: {
@@ -47,51 +35,89 @@ const mockRepositories: {
   },
 ];
 
-test('should initialize schema correctly', () => {
-  const { db } = createDatabase(mockRepositories);
+const DATABASE_NAME = 'orgnote';
 
-  expect(db.verno).toBe(2); // Ensure the latest version is applied
+let db: Dexie;
+
+beforeEach(async () => {
+  await Dexie.delete(DATABASE_NAME);
+  const dbInstance = createDatabase(mockRepositories, DATABASE_NAME);
+  db = dbInstance.db;
+  await db.open();
+});
+
+afterEach(async () => {
+  if (db && db.isOpen()) {
+    await db.close();
+  }
+  await Dexie.delete(DATABASE_NAME);
+});
+
+beforeEach(async () => {
+  await Dexie.delete(DATABASE_NAME);
+
+  const dbInstance = createDatabase(mockRepositories, DATABASE_NAME);
+  db = dbInstance.db;
+  await db.open();
+});
+
+afterEach(async () => {
+  if (db && db.isOpen()) {
+    await db.close();
+  }
+  await Dexie.delete(DATABASE_NAME);
+});
+
+// Тест: инициализация схемы
+test('should initialize schema correctly', () => {
+  expect(db.verno).toBe(2); // Проверяем, что применена последняя версия
 
   const schema = db.tables.map((table) => table.name);
   expect(schema).toContain('store1');
   expect(schema).toContain('store2');
 });
 
+// Тест: обработка миграций
 test('should handle migrations', async () => {
-  const { db } = createDatabase(mockRepositories);
+  // Добавляем данные в store1
+  const store1 = db.table<MockItem>('store1');
+  await store1.add({ id: 1, name: 'Test Item' });
 
-  // Mock transaction and data
-  const mockTx = db.transaction('rw', db.tables, async () => {
-    const store1 = db.table<MockItem>('store1');
-    await store1.add({ id: 1, name: 'Test Item' });
-    await store1.toCollection().modify((item) => {
-      const mockItem = item as MockItem;
-      mockItem.updated = true;
-    });
-
-    const store2 = db.table<MockItem>('store2');
-    await store2.add({ id: 2, createdAt: new Date() });
-    await store2.toCollection().modify((item) => {
-      const mockItem = item as MockItem;
-      mockItem.migrated = true;
-    });
+  // Модифицируем данные в store1
+  await store1.toCollection().modify((item) => {
+    const mockItem = item as MockItem;
+    mockItem.updated = true;
   });
 
-  await mockTx;
+  // Добавляем данные в store2
+  const store2 = db.table<MockItem>('store2');
+  await store2.add({ id: 2, createdAt: new Date() });
 
-  const store1Data = await db.table<MockItem>('store1').toArray();
-  const store2Data = await db.table<MockItem>('store2').toArray();
+  // Модифицируем данные в store2
+  await store2.toCollection().modify((item) => {
+    const mockItem = item as MockItem;
+    mockItem.migrated = true;
+  });
 
+  // Проверяем изменения в store1
+  const store1Data = await store1.toArray();
   expect(store1Data[0]?.updated).toBe(true);
+
+  // Проверяем изменения в store2
+  const store2Data = await store2.toArray();
   expect(store2Data[0]?.migrated).toBe(true);
 });
 
+// Тест: удаление всех данных
 test('should drop all data', async () => {
-  const { db, dropAll } = createDatabase(mockRepositories);
-
+  // Добавляем данные в store1
   await db.table<MockItem>('store1').add({ id: 1, name: 'Test Item' });
+
+  // Удаляем базу данных
+  const { dropAll } = createDatabase(mockRepositories, DATABASE_NAME);
   await dropAll();
 
+  // Проверяем, что база данных удалена
   const tables = await Dexie.getDatabaseNames();
-  expect(tables).not.toContain('orgnote');
+  expect(tables).not.toContain(DATABASE_NAME);
 });
