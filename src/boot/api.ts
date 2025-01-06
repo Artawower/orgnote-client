@@ -8,6 +8,7 @@ import { initRepositories } from 'src/infrastructure/repositories';
 import { useCommandsGroupStore } from 'src/stores/command-group';
 import { useCommandsStore } from 'src/stores/command';
 import { useExtensionsStore } from 'src/stores/extension';
+import { useFileSystemStore } from 'src/stores/file-system';
 
 const repositories = await initRepositories();
 
@@ -19,6 +20,7 @@ const api: OrgNoteApi = {
     useCommands: useCommandsStore,
     useCommandsGroup: useCommandsGroupStore,
     useExtenions: useExtensionsStore,
+    useFileSystem: useFileSystemStore,
   },
 };
 

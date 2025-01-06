@@ -1,4 +1,5 @@
 import { defineStore } from '@quasar/app-vite/wrappers';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import type { OrgNoteApi } from 'orgnote-api';
 import { createPinia } from 'pinia';
 
@@ -28,6 +29,6 @@ export default defineStore((/* { ssrContext } */) => {
 
   // You can add Pinia plugins here
   // pinia.use(SomePiniaPlugin)
-
+  pinia.use(piniaPluginPersistedstate);
   return pinia;
 });
