@@ -4,6 +4,7 @@ import { useSettingsStore } from './settings';
 import { useFileSystemStore } from './file-system';
 import { DEFAULT_CONFIG } from 'src/constants/config';
 import clone from 'rfdc';
+import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
 
 vi.mock('./file-system', () => ({
   useFileSystemStore: vi.fn(),
@@ -14,6 +15,8 @@ const mockSyncFile = vi.fn();
 const mockFileSystemStore = {
   syncFile: mockSyncFile,
 };
+
+const configJsonPath = getSystemFilesPath('config.json');
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -39,7 +42,7 @@ test('sync method updates config if new config is available', async () => {
 
   await store.sync();
 
-  expect(mockSyncFile).toHaveBeenCalledWith('config.json', JSON.stringify(originalConfig), 0);
+  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(originalConfig), 0);
   expect(store.config).toEqual(newConfig);
 });
 
@@ -51,7 +54,7 @@ test('sync method does not update config if no new config is returned', async ()
   const originalConfig = { ...store.config };
   await store.sync();
 
-  expect(mockSyncFile).toHaveBeenCalledWith('config.json', JSON.stringify(store.config), 0);
+  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
   expect(store.config).toEqual(originalConfig);
 });
 
@@ -61,7 +64,7 @@ test('sync method handles invalid JSON gracefully', async () => {
   mockSyncFile.mockResolvedValue('invalid-json');
 
   await expect(store.sync()).rejects.toThrow(SyntaxError);
-  expect(mockSyncFile).toHaveBeenCalledWith('config.json', JSON.stringify(store.config), 0);
+  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
 });
 
 test('sync method handles syncFile throwing an error', async () => {
@@ -70,7 +73,7 @@ test('sync method handles syncFile throwing an error', async () => {
   mockSyncFile.mockRejectedValue(new Error('Disk error'));
 
   await expect(store.sync()).rejects.toThrow('Disk error');
-  expect(mockSyncFile).toHaveBeenCalledWith('config.json', JSON.stringify(store.config), 0);
+  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
 });
 
 test('config is not updated if validation fails', async () => {

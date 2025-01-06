@@ -10,7 +10,7 @@ import { ref } from 'vue';
 import { computed } from 'vue';
 import { BUILTIN_EXTENSIONS } from 'src/extensions';
 import { api } from 'src/boot/api';
-import { compileExtension } from 'src/tools/read-extension';
+import { compileExtension } from 'src/utils/read-extension';
 
 export const useExtensionsStore = defineStore<'extension', ExtensionStore>('extension', () => {
   const extensions = ref<ExtensionMeta[]>([]);

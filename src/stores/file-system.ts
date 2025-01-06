@@ -1,9 +1,9 @@
-import { platformSpecificValue } from 'src/tools/platform-specific-value.tool';
+import { platformSpecificValue } from 'src/utils/platform-specific-value.tool';
 import { useSettingsStore } from 'src/stores/settings';
-import { getFileDirPath } from 'src/tools/get-file-dir-path';
+import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/default-note-dir.constant';
-import { mockDesktop } from 'src/tools/mock-desktop';
-import { mockAndroid, mockMobile } from 'src/tools/mock-mobile';
+import { mockDesktop } from 'src/utils/mock-desktop';
+import { mockAndroid, mockMobile } from 'src/utils/mock-mobile';
 import { defineStore } from 'pinia';
 // import { useEncryption } from 'src/hooks';
 import {
@@ -19,7 +19,7 @@ import {
 import { ref } from 'vue';
 import { computed } from 'vue';
 import { Platform } from 'quasar';
-import { removeRelativePath } from 'src/tools/remove-relative-path';
+import { removeRelativePath } from 'src/utils/remove-relative-path';
 // import { useRouter } from 'vue-router';
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('file-system', () => {

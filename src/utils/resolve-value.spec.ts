@@ -1,5 +1,5 @@
 import { test, expect, vi } from 'vitest';
-import { resolveValue } from '../resolve-value';
+import { resolveValue } from './resolve-value';
 
 test('returns undefined if value is undefined', () => {
   const result = resolveValue();

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { formatValidationErrors, type ValiError } from '../format-validation-errors';
+import { formatValidationErrors, type ValiError } from './format-validation-errors';
 
 test('returns unknownErrorMessage if error is not an object', () => {
   const result = formatValidationErrors(null);

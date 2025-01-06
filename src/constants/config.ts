@@ -1,5 +1,5 @@
 import type { OrgNoteConfig } from 'orgnote-api';
-import { platformSpecificValue } from 'src/tools/platform-specific-value';
+import { platformSpecificValue } from 'src/utils/platform-specific-value';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {

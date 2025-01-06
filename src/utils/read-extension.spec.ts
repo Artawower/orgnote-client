@@ -1,5 +1,5 @@
 import { test, expect, vi } from 'vitest';
-import { readExtension, readExtensionFromString, compileExtension } from '../read-extension';
+import { readExtension, readExtensionFromString, compileExtension } from './read-extension';
 
 const manifestExample = {
   name: 'Test Extension',

@@ -5,18 +5,17 @@ import { reactive, ref } from 'vue';
 import clone from 'rfdc';
 import { useFileSystemStore } from './file-system';
 import { parse } from 'valibot';
-import { formatValidationErrors } from 'src/tools/format-validation-errors';
+import { formatValidationErrors } from 'src/utils/format-validation-errors';
+import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
 
 export const useSettingsStore = defineStore<'settings', SettingsStore>(
   'settings',
   () => {
     const fileSystem = useFileSystemStore();
-    const diskConfigPath = 'config.json';
+    const diskConfigPath = getSystemFilesPath('config.json');
     const lastSyncTime = ref<number>(0);
 
     const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
-
-    // TODO: feat/stable-beta - add config validation
     const configErrors = ref<string[]>([]);
 
     const sync = async () => {
