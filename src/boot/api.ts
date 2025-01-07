@@ -16,6 +16,7 @@ import {
   serverOnly,
   desktopOnly,
 } from 'src/utils/platform-specific';
+import { useEncryptionStore } from 'src/stores/encryption';
 
 const repositories = await initRepositories();
 
@@ -28,6 +29,7 @@ const api: OrgNoteApi = {
     useCommandsGroup: useCommandsGroupStore,
     useExtenions: useExtensionsStore,
     useFileSystem: useFileSystemStore,
+    useEncryption: useEncryptionStore,
   },
   utils: {
     mobileOnly,
