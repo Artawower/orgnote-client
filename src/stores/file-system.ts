@@ -1,33 +1,33 @@
-import { platformSpecificValue } from 'src/utils/platform-specific-value.tool';
 import { useSettingsStore } from 'src/stores/settings';
-import { getFileDirPath } from 'src/utils/get-file-dir-path';
-import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/default-note-dir.constant';
-import { mockDesktop } from 'src/utils/mock-desktop';
-import { mockAndroid, mockMobile } from 'src/utils/mock-mobile';
 import { defineStore } from 'pinia';
 // import { useEncryption } from 'src/hooks';
-import {
-  ErrorFileNotFound,
-  isOrgGpgFile,
-  join,
+import type {
   OrgNoteEncryption,
   FileSystemStore,
   FileSystem,
   DiskFile,
+  OrgNoteApi,
 } from 'orgnote-api';
+import { ErrorFileNotFound, isOrgGpgFile, join } from 'orgnote-api';
 // import { AndroidFileSystemPermission } from 'src/plugins/android-file-system-permissions.plugin';
 import { ref } from 'vue';
 import { computed } from 'vue';
 import { Platform } from 'quasar';
 import { removeRelativePath } from 'src/utils/remove-relative-path';
+import { useEncryptionStore } from './encryption';
+import { desktopOnly, mobileOnly } from 'src/utils/platform-specific';
+import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/indexeddb-fs-name';
+import { getFileDirPath } from 'src/utils/get-file-dir-path';
+import { platformSpecificValue } from 'src/utils/platform-specific-value';
+import { api } from 'src/boot/api';
 // import { useRouter } from 'vue-router';
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('file-system', () => {
   const { config } = useSettingsStore();
-  const { decrypt, encrypt } = useEncryption();
+  const { decrypt, encrypt } = useEncryptionStore();
 
   const hasAccess = ref<boolean>(false);
-  const accessRequests = ref<boolean>(false);
+  // const accessRequests = ref<boolean>(false);
 
   const fileSystems = ref<{ [name: string]: FileSystem }>({});
   const activeFileSystemName = ref<string>('');
@@ -100,23 +100,23 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
     return await currentFs.value.writeFile(realPath, writeContent, format);
   };
 
-  const syncFile = async (
+  const syncFile = async <T extends string | Uint8Array>(
     path: string | string[],
-    content: string | Uint8Array,
+    content: T,
     time: number,
     encryptionConfig?: OrgNoteEncryption,
-  ): Promise<string | Uint8Array> => {
+  ): Promise<T> => {
     const realPath = normalizePath(path);
     const previousFileInfo = await currentFs.value.fileInfo(realPath);
     const needToUpdate = previousFileInfo.mtime < time;
     const isTextFile = typeof content === 'string';
 
     if (!needToUpdate && isTextFile) {
-      return readTextFile(realPath, encryptionConfig);
+      return readTextFile(realPath, encryptionConfig) as unknown as T;
     }
 
     if (!needToUpdate && !isTextFile) {
-      return readFile(realPath);
+      return readFile(realPath) as unknown as T;
     }
 
     await writeFile(realPath, content, encryptionConfig);
@@ -131,11 +131,8 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
   };
 
   const removeAllFiles = async () => {
-    await mockMobile(async () => await currentFs.value.rmdir(config.vault.path))();
-
-    mockDesktop(() => {
-      indexedDB.deleteDatabase(BROWSER_INDEXEDBB_FS_NAME);
-    })();
+    await mobileOnly(async () => await currentFs.value.rmdir(config.vault.path))();
+    desktopOnly(indexedDB.deleteDatabase)(BROWSER_INDEXEDBB_FS_NAME);
   };
 
   const initFolderForFile = async (filePath: string | string[], isDir = false): Promise<void> => {
@@ -180,7 +177,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
     return fileInfo;
   };
 
-  const readDir = async (path: string | string[] = '') => {
+  const readDir = async (path: string | string[] = ''): Promise<DiskFile[]> => {
     if (noVaultProvided.value) {
       return [];
     }
@@ -212,21 +209,21 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
   // };
 
   // const router = useRouter();
-  const initAndroidFileSystem = async () => {
-    // hasAccess.value = (await AndroidFileSystemPermission.hasAccess()).hasAccess;
-    // if (hasAccess.value ?? accessRequests.value) {
-    //   return;
-    // }
-    // const giveAccess = await orgNoteApi.interaction.confirm(
-    //   'file system access',
-    //   'to synchronize existing notes, we need access to the file system',
-    // );
-    // if (giveAccess) {
-    //   hasAccess.value = (await AndroidFileSystemPermission.openAccess()).hasAccess;
-    // }
-    // accessRequests.value = true;
-    // router.push({ name: RouteNames.SynchronisationSettings });
-  };
+  // const initAndroidFileSystem = async () => {
+  // hasAccess.value = (await AndroidFileSystemPermission.hasAccess()).hasAccess;
+  // if (hasAccess.value ?? accessRequests.value) {
+  //   return;
+  // }
+  // const giveAccess = await orgNoteApi.interaction.confirm(
+  //   'file system access',
+  //   'to synchronize existing notes, we need access to the file system',
+  // );
+  // if (giveAccess) {
+  //   hasAccess.value = (await AndroidFileSystemPermission.openAccess()).hasAccess;
+  // }
+  // accessRequests.value = true;
+  // router.push({ name: RouteNames.SynchronisationSettings });
+  // };
 
   const getPermissions = async () => {
     // TODO: feat/stable-beta fs method for getting persmissions
@@ -258,15 +255,20 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
     await currentFs.value.rmdir('/');
   };
 
-  const registerFileSystem = (name: string, fs: FileSystem): void => {
+  const registerFileSystem = async (
+    name: string,
+    fs: FileSystem | ((api: OrgNoteApi) => Promise<FileSystem>),
+  ): Promise<void> => {
+    fs = typeof fs === 'function' ? await fs(api) : fs;
     fileSystems.value = {
       ...fileSystems.value,
       [name]: fs,
     };
   };
 
-  const unregisterFileSystem = (name: string): void => {
+  const unregisterFileSystem = (name: string): Promise<void> => {
     delete fileSystems.value[name];
+    return;
   };
 
   const pickFileSystem = async (fsName: string): Promise<void> => {
@@ -274,7 +276,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
     activeFileSystemName.value = fsName;
   };
 
-  return {
+  const store: FileSystemStore = {
     readFile: withSafeFolderCreation(readFile),
     readTextFile: withSafeFolderCreation(readTextFile),
     writeFile: withSafeFolderCreation(writeFile),
@@ -298,4 +300,6 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>('f
     activeFileSystemName,
     fileSystems,
   };
+
+  return store;
 });

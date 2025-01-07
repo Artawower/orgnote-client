@@ -1,5 +1,6 @@
-import { type CommandsStore, clientOnly, type Command } from 'orgnote-api';
+import { type CommandsStore, type Command } from 'orgnote-api';
 import { defineStore } from 'pinia';
+import { clientOnly } from 'src/utils/platform-specific';
 import { ref } from 'vue';
 
 export const useCommandsStore = defineStore<'commands', CommandsStore>('commands', () => {

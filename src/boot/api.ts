@@ -9,6 +9,13 @@ import { useCommandsGroupStore } from 'src/stores/command-group';
 import { useCommandsStore } from 'src/stores/command';
 import { useExtensionsStore } from 'src/stores/extension';
 import { useFileSystemStore } from 'src/stores/file-system';
+import {
+  mobileOnly,
+  clientOnly,
+  androidOnly,
+  serverOnly,
+  desktopOnly,
+} from 'src/utils/platform-specific';
 
 const repositories = await initRepositories();
 
@@ -21,6 +28,13 @@ const api: OrgNoteApi = {
     useCommandsGroup: useCommandsGroupStore,
     useExtenions: useExtensionsStore,
     useFileSystem: useFileSystemStore,
+  },
+  utils: {
+    mobileOnly,
+    clientOnly,
+    androidOnly,
+    serverOnly,
+    desktopOnly,
   },
 };
 
