@@ -17,6 +17,7 @@ import {
   desktopOnly,
 } from 'src/utils/platform-specific';
 import { useEncryptionStore } from 'src/stores/encryption';
+import { sleep } from 'src/utils/sleep';
 
 const repositories = await initRepositories();
 
@@ -40,7 +41,8 @@ const api: OrgNoteApi = {
   },
 };
 
-export default defineBoot(({ app, store }) => {
+export default defineBoot(async ({ app, store }) => {
+  await sleep(5000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, repositories);

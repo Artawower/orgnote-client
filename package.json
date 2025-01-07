@@ -31,7 +31,7 @@
     "report:duplicates": "jscpd ./src",
     "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs,vue}\"",
     "test": "vitest",
-    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 120,120 -m capacitor -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8",
+    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 70,70 -m capacitor -i images/modern-unicorn-round.png --png-color 9356E8 --splashscreen-color 9356E8",
     "prepare": "husky"
   },
   "dependencies": {
