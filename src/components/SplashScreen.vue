@@ -1,7 +1,10 @@
 <template>
   <div class="splash-screen">
     <div class="content">
-      <img alt="orgnote icon" src="images/modern-unicorn-round.png" width="40%" height="auto" />
+      <div class="image-container">
+        <img alt="orgnote icon" src="images/modern-unicorn-round.png" />
+        <div class="gloss"></div>
+      </div>
       <h5 class="text-capitalize">
         {{ loadingMessages.currentMessage }}
       </h5>
@@ -25,16 +28,52 @@ const loadingMessages = useLoadingMessages();
   background-color: var(--violet);
   padding: var(--block-padding-lg);
 
-  h1 {
-    text-align: center;
-  }
-
   .content {
     @include flexify(column, center, center);
+    margin-top: 98px;
   }
+}
 
-  .q-linear-progress {
-    max-width: 40%;
+.image-container {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+}
+
+.image-container img {
+  display: inline-block;
+  width: 100%;
+  height: auto;
+}
+
+.gloss {
+  position: absolute;
+  top: -150%;
+  left: -100%;
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: rotate(-30deg);
+  animation: gloss-animation 2s infinite;
+}
+
+@keyframes gloss-animation {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(-30deg);
   }
+  50% {
+    transform: translateX(25%) translateY(25%) rotate(-30deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(-30deg);
+  }
+}
+
+.q-linear-progress {
+  width: 40%;
 }
 </style>
