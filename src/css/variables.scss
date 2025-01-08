@@ -1,0 +1,53 @@
+body {
+  // Paddings
+  --block-padding-sm: 8px; /* Small padding for compact blocks */
+  --block-padding-md: 16px; /* Medium padding for regular spacing */
+  --block-padding-lg: 32px; /* Large padding for spacious designs */
+
+  // Margins
+  --block-margin-sm: 8px; /* Small margin for compact blocks */
+  --block-margin-md: 16px; /* Medium margin for regular spacing */
+  --block-margin-lg: 32px; /* Large margin for spacious designs */
+
+  // Font Sizes
+  --font-size-xs: 12px; /* Extra small font size for captions or labels */
+  --font-size-sm: 14px; /* Small font size for secondary text */
+  --font-size-md: 16px; /* Medium font size for body text */
+  --font-size-lg: 20px; /* Large font size for headers */
+  --font-size-xl: 24px; /* Extra large font size for prominent headers */
+
+  // Font Weights
+  --font-weight-regular: 400; /* Default font weight */
+  --font-weight-bold: 700; /* Bold font weight for emphasis */
+
+  // Line Heights
+  --line-height-sm: 1.2; /* Compact line height for dense text */
+  --line-height-md: 1.5; /* Standard line height for readability */
+  --line-height-lg: 1.8; /* Spacious line height for larger blocks of text */
+
+  // Colors
+  --color-primary: #3490dc; /* Primary color for buttons, links, or highlights */
+  --color-secondary: #ffed4a; /* Secondary color for accents */
+  --color-success: #38c172; /* Color for success messages or indicators */
+  --color-error: #e3342f; /* Color for error messages or warnings */
+  --color-background: #f8f9fa; /* Background color for the app */
+  --color-text: #343a40; /* Default text color */
+  --color-border: #ced4da; /* Border color for outlines or dividers */
+
+  // Border Radius
+  --border-radius-sm: 4px; /* Small border radius for minimal rounding */
+  --border-radius-md: 8px; /* Medium border radius for standard UI elements */
+  --border-radius-lg: 16px; /* Large border radius for prominent elements */
+
+  // Shadows
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for small elements */
+  --shadow-md: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Moderate shadow for raised elements */
+  --shadow-lg: 0px 10px 15px rgba(0, 0, 0, 0.1); /* Prominent shadow for floating elements */
+
+  // Spacing (Gaps)
+  --spacing-xs: 4px; /* Extra small spacing for tight layouts */
+  --spacing-sm: 8px; /* Small spacing for compact areas */
+  --spacing-md: 16px; /* Medium spacing for general layouts */
+  --spacing-lg: 24px; /* Large spacing for spacious designs */
+  --spacing-xl: 32px; /* Extra large spacing for wide layouts */
+}

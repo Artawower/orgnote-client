@@ -1,14 +1,18 @@
-// This is just an example,
-// so you can safely delete all default props below
-
-import type { I18NKeys } from 'orgnote-api';
+import {
+  LOADING_MESSAGE_1,
+  LOADING_MESSAGE_2,
+  LOADING_MESSAGE_3,
+  LOADING_MESSAGE_4,
+  LOADING_MESSAGE_5,
+  type I18NKeys,
+} from 'orgnote-api';
 
 const eng: { [key in I18NKeys]: string } = {
-  loadingMessage1: 'loading...',
-  loadingMessage2: 'fetching data...',
-  loadingMessage3: 'almost there...',
-  loadingMessage4: 'compiling magic...',
-  loadingMessage5: 'just a moment...',
+  [LOADING_MESSAGE_1]: 'loading...',
+  [LOADING_MESSAGE_2]: 'fetching data...',
+  [LOADING_MESSAGE_3]: 'almost there...',
+  [LOADING_MESSAGE_4]: 'compiling magic...',
+  [LOADING_MESSAGE_5]: 'just a moment...',
 };
 
 export default eng;

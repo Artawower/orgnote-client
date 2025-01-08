@@ -58,6 +58,7 @@
     "@types/node": "22.10.2",
     "@vue/eslint-config-prettier": "10.1.0",
     "@vue/eslint-config-typescript": "14.1.4",
+    "@vue/test-utils": "2.4.6",
     "autoprefixer": "10.4.20",
     "electron": "33.2.1",
     "env-cmd": "10.1.0",

@@ -5,6 +5,7 @@ import { h } from 'vue';
 
 export const useSplashScreen: UseSplashScreen = () => {
   const show = (config?: SplashScreenConfig) => {
+    console.log('✎: [line 8][BOOT] config: ', config);
     Loading.show({
       spinner: h(SplashScreen, { message: 'Preparing your data...' }),
       backgroundColor: 'red',
@@ -16,6 +17,7 @@ export const useSplashScreen: UseSplashScreen = () => {
   };
 
   const hide = (config?: SplashScreenGroupConfig) => {
+    console.log('✎: [line 20][BOOT] config: ', config);
     Loading.hide();
   };
 

@@ -65,7 +65,7 @@ const api: OrgNoteApi = {
 export default defineBoot(async ({ app, store }) => {
   const splashScreen = useSplashScreen();
   splashScreen.show();
-  await sleep(5000);
+  await sleep(50000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, repositories);
