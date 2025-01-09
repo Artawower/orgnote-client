@@ -1,0 +1,19 @@
+<template>
+  <div class="footer"></div>
+</template>
+
+<script lang="ts" setup></script>
+
+<style lang="scss" scoped>
+.footer {
+  @include flexify(row, flex-start, center);
+
+  width: 100%;
+  height: var(--footer-height);
+  background: var(--footer-background);
+  border-top: var(--footer-border-top);
+  padding: var(--footer-padding);
+  position: absolute;
+  bottom: 0;
+}
+</style>

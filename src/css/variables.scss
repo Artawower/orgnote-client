@@ -50,4 +50,10 @@ body {
   --spacing-md: 16px; /* Medium spacing for general layouts */
   --spacing-lg: 24px; /* Large spacing for spacious designs */
   --spacing-xl: 32px; /* Extra large spacing for wide layouts */
+
+  // Footer
+  --footer-height: 60px;
+  --footer-border-top: 1px solid var(--fg-alt);
+  --footer-padding: 0;
+  --footer-background: var(--bg-alt);
 }

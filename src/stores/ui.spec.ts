@@ -1,4 +1,3 @@
-import { createTestingPinia } from '@pinia/testing';
 import { createPinia, setActivePinia } from 'pinia';
 import { useUiStore } from 'src/stores/ui';
 import { StatusBar, Style } from '@capacitor/status-bar';
