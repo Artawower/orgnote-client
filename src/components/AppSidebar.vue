@@ -35,11 +35,11 @@ withDefaults(
   width: var(--sidebar-width);
   height: 100vh;
   height: 100mvh;
-
-  .mini {
-    width: var(--sidebar-mini-width);
-    height: 100vh;
-    height: 100mvh;
-  }
+}
+.mini {
+  @include flexify(column, space-between, flex-start);
+  width: var(--sidebar-mini-width);
+  height: 100vh;
+  height: 100mvh;
 }
 </style>

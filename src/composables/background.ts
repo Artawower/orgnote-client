@@ -1,12 +1,11 @@
-import { defineStore } from 'pinia';
-import type { UiStore } from 'orgnote-api';
 import { mobileOnly } from 'src/utils/platform-specific';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { useSettingsStore } from './settings';
 import { getCssVar } from 'src/utils/css-utils';
 import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
+import { useSettingsStore } from 'src/stores/settings';
+import type { BackgroundSettings } from 'orgnote-api';
 
-export const useUiStore = defineStore<'ui-store', UiStore>('ui-store', () => {
+export const useBackgroundSettings = () => {
   const { config } = useSettingsStore();
 
   const setStatusBarBackground = async (bgColor?: string) => {
@@ -30,10 +29,10 @@ export const useUiStore = defineStore<'ui-store', UiStore>('ui-store', () => {
     });
   };
 
-  const store: UiStore = {
+  const bgSettings: BackgroundSettings = {
     setBottomBarBackground: mobileOnly(setBottomBarBackground),
     setStatusBarBackground: mobileOnly(setStatusBarBackground),
   };
 
-  return store;
-});
+  return bgSettings;
+};

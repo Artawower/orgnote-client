@@ -28,14 +28,14 @@ import {
   applyCSSVariables,
   resetCSSVariables,
 } from 'src/utils/css-utils';
-import { useUiStore } from 'src/stores/ui';
+import { useBackgroundSettings } from 'src/composables/background';
+import { useSidebarStore } from 'src/stores/sidebar';
 
 const repositories = await initRepositories();
 
 let api: OrgNoteApi;
 
 function initApi(): void {
-  const ui = useUiStore();
   api = {
     infrastructure: {
       ...repositories,
@@ -64,8 +64,8 @@ function initApi(): void {
     },
     ui: {
       useSplashScreen,
-      setBottomBarBackground: ui.setBottomBarBackground,
-      setStatusBarBackground: ui.setStatusBarBackground,
+      useBackgroundSettings,
+      useSidebar: useSidebarStore,
     },
   };
 }

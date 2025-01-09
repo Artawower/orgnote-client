@@ -9,7 +9,7 @@
 <style lang="scss" scoped>
 .page {
   @include fit();
-  @include flexify(column, flex-start, flex-start);
+  @include flexify(row, flex-start, flex-start);
 
   background: var(--bg);
   padding-bottom: var(--footer-height);

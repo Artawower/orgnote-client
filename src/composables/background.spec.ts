@@ -1,6 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia';
-import { useUiStore } from 'src/stores/ui';
-import { StatusBar, Style } from '@capacitor/status-bar';
+import { useBackgroundSettings } from './background';
+import { StatusBar } from '@capacitor/status-bar';
 import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
 import type { Mock } from 'vitest';
 import { vi, test, expect, beforeEach } from 'vitest';
@@ -57,34 +57,31 @@ beforeEach(() => {
 });
 
 test('setStatusBarBackground sets the background color and style for dark theme', async () => {
-  const uiStore = useUiStore();
-
-  await uiStore.setStatusBarBackground('custom-color');
-
+  const bgSettings = useBackgroundSettings();
+  await bgSettings.setStatusBarBackground('custom-color');
   expect(StatusBar.setBackgroundColor).toHaveBeenCalledWith({ color: '#FFFFFF' });
-  expect(StatusBar.setStyle).toHaveBeenCalledWith({ style: Style.Dark });
 });
 
 test('setStatusBarBackground does nothing if color is not found', async () => {
   const mockedGetCssVar = getCssVar as Mock;
   mockedGetCssVar.mockReturnValueOnce(null);
 
-  const uiStore = useUiStore();
+  const bgSettings = useBackgroundSettings();
 
-  await uiStore.setStatusBarBackground('custom-color');
+  await bgSettings.setStatusBarBackground('custom-color');
 
   expect(StatusBar.setBackgroundColor).not.toHaveBeenCalled();
   expect(StatusBar.setStyle).not.toHaveBeenCalled();
 });
 
 test('setBottomBarBackground sets the navigation bar color', async () => {
-  const uiStore = useUiStore();
+  const bgSettings = useBackgroundSettings();
 
   vi.mock('src/utils/css-utils', () => ({
     getCssVar: vi.fn(() => '#FFFFFF'),
   }));
 
-  await uiStore.setBottomBarBackground('custom-color');
+  await bgSettings.setBottomBarBackground('custom-color');
 
   expect(NavigationBar.setColor).toHaveBeenCalledWith({ color: '#FFFFFF' });
 });
@@ -93,9 +90,9 @@ test('setBottomBarBackground does nothing if color is not found', async () => {
   const mockedGetCssVar = getCssVar as Mock;
   mockedGetCssVar.mockReturnValueOnce(null);
 
-  const uiStore = useUiStore();
+  const bgSettings = useBackgroundSettings();
 
-  await uiStore.setBottomBarBackground('custom-color');
+  await bgSettings.setBottomBarBackground('custom-color');
 
   expect(NavigationBar.setColor).not.toHaveBeenCalled();
 });

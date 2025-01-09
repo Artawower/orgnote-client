@@ -1,10 +1,26 @@
 <template>
   <app-sidebar :mini="true">
-    <action-button icon="add" />
+    <div class="command-list">
+      <command-action-button v-for="cmd of commands" :command="cmd" :key="cmd" />
+    </div>
+    <template #footer>
+      <div class="command-list">
+        <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
+      </div>
+    </template>
   </app-sidebar>
 </template>
 
 <script lang="ts" setup>
 import AppSidebar from 'src/components/AppSidebar.vue';
-import ActionButton from 'src/components/ActionButton.vue';
+import CommandActionButton from 'src/containers/CommandActionButton.vue';
+import { useSidebarStore } from 'src/stores/sidebar';
+
+const { commands, footerCommands } = useSidebarStore();
 </script>
+
+<style lang="scss" scoped>
+.command-list {
+  @include flexify(column, flex-start, flex-start, var(--gap-sm));
+}
+</style>
