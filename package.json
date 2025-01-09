@@ -50,12 +50,16 @@
     "vue-router": "4.5.0"
   },
   "devDependencies": {
+    "@capacitor/status-bar": "6.0.2",
     "@electron/packager": "^18.3.2",
     "@eslint/js": "9.17.0",
     "@faker-js/faker": "9.3.0",
+    "@hugotomazi/capacitor-navigation-bar": "4.0.1",
     "@intlify/unplugin-vue-i18n": "6.0.1",
+    "@pinia/testing": "0.1.7",
     "@quasar/app-vite": "2.0.2",
     "@types/node": "22.10.2",
+    "@vitejs/plugin-vue": "5.2.1",
     "@vue/eslint-config-prettier": "10.1.0",
     "@vue/eslint-config-typescript": "14.1.4",
     "@vue/test-utils": "2.4.6",

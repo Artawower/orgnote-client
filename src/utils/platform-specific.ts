@@ -9,11 +9,11 @@ export const platformSpecific = (condition: Condition): PlatformSpecificFn => {
     fn?: T,
     defaultValue?: ReturnType<T> | Promise<ReturnType<T>>,
   ) => {
-    return (...params: Parameters<T>): ReturnType<T> | Promise<ReturnType<T>> => {
+    return (...params: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
       if (fn && condition()) {
-        return fn(...params) as ReturnType<T>;
+        return Promise.resolve(fn(...params)); // Упрощаем вложенные промисы
       }
-      return defaultValue as ReturnType<T>;
+      return Promise.resolve(defaultValue) as Promise<Awaited<ReturnType<T>>>;
     };
   };
 };

@@ -28,44 +28,53 @@ import {
   applyCSSVariables,
   resetCSSVariables,
 } from 'src/utils/css-utils';
+import { useUiStore } from 'src/stores/ui';
 
 const repositories = await initRepositories();
 
-const api: OrgNoteApi = {
-  infrastructure: {
-    ...repositories,
-  },
-  core: {
-    useCommands: useCommandsStore,
-    useCommandsGroup: useCommandsGroupStore,
-    useExtenions: useExtensionsStore,
-    useFileSystem: useFileSystemStore,
-    useEncryption: useEncryptionStore,
-  },
-  utils: {
-    mobileOnly,
-    clientOnly,
-    androidOnly,
-    serverOnly,
-    desktopOnly,
+let api: OrgNoteApi;
 
-    getCssVar,
-    getCssTheme,
-    getNumericCssVar,
-    getCssProperty,
-    getCssNumericProperty,
-    applyCSSVariables,
-    resetCSSVariables,
-  },
-  ui: {
-    useSplashScreen,
-  },
-};
+function initApi(): void {
+  const ui = useUiStore();
+  api = {
+    infrastructure: {
+      ...repositories,
+    },
+    core: {
+      useCommands: useCommandsStore,
+      useCommandsGroup: useCommandsGroupStore,
+      useExtenions: useExtensionsStore,
+      useFileSystem: useFileSystemStore,
+      useEncryption: useEncryptionStore,
+    },
+    utils: {
+      mobileOnly,
+      clientOnly,
+      androidOnly,
+      serverOnly,
+      desktopOnly,
+
+      getCssVar,
+      getCssTheme,
+      getNumericCssVar,
+      getCssProperty,
+      getCssNumericProperty,
+      applyCSSVariables,
+      resetCSSVariables,
+    },
+    ui: {
+      useSplashScreen,
+      setBottomBarBackground: ui.setBottomBarBackground,
+      setStatusBarBackground: ui.setStatusBarBackground,
+    },
+  };
+}
 
 export default defineBoot(async ({ app, store }) => {
+  initApi();
   const splashScreen = useSplashScreen();
   splashScreen.show();
-  await sleep(50000);
+  await sleep(1000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, repositories);
