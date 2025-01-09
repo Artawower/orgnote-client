@@ -1,10 +1,15 @@
 <template>
-  <the-page>
+  <page-wrapper>
+    <main-sidebar />
+    <div class="content">
+      <router-view />
+    </div>
     <the-footer />
-  </the-page>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
 import TheFooter from 'src/containers/TheFooter.vue';
-import ThePage from 'src/components/ThePage.vue';
+import PageWrapper from 'src/components/PageWrapper.vue';
+import MainSidebar from 'src/containers/MainSidebar.vue';
 </script>
