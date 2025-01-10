@@ -4,6 +4,10 @@ body {
   --block-padding-md: 16px;
   --block-padding-lg: 32px;
 
+  --padding-sm: 4px;
+  --padding-md: 8px;
+  --padding-lg: 16px;
+
   // Margins
   --block-margin-sm: 8px;
   --block-margin-md: 16px;
@@ -65,4 +69,18 @@ body {
   --sidebar-mini-width: 60px;
   --sidebar-background: var(--bg-alt);
   --sidebar-border-right: var(--border-deftaul);
+  --sidebar-mini-padding: var(--block-padding-md);
+
+  // Button
+  --btn-action-padding: var(--padding-md);
+  --btn-action-radius: var(--border-radius-md);
+  --btn-action-color: var(--fg);
+  --btn-action-bg: var(--bg);
+  --btn-action-hover-bg: var(--fg-alt);
+  --btn-action-hover-brightness: 130%;
+  --btn-action-sm-size: 24px;
+  --btn-action-md-size: 48px;
+  --btn-action-lg-size: 60px;
+  --btn-action-border: none;
+  --btn-action-active-color: var(--accent);
 }

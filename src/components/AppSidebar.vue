@@ -41,5 +41,6 @@ withDefaults(
   width: var(--sidebar-mini-width);
   height: 100vh;
   height: 100mvh;
+  padding: var(--sidebar-mini-padding);
 }
 </style>
