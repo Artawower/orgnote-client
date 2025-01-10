@@ -22,10 +22,24 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     return commands.value.find((c) => c.command === name);
   };
 
+  const execute = async (name: string, data?: unknown) => {
+    console.log('✎: [line 26][command.ts<stores>] name: ', name);
+    const command = get(name);
+    console.log('✎: [line 28][command.ts<stores>] command: ', command);
+    if (!command) {
+      return;
+    }
+    await command.handler({
+      meta: command,
+      data,
+    });
+  };
+
   return {
     add: clientOnly(register),
     remove: clientOnly(unregister),
     get,
     commands,
+    execute,
   };
 });

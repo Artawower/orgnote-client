@@ -1,5 +1,5 @@
 <template>
-  <action-button v-if="command" :icon="extractDynamicValue(command.icon)" />
+  <action-button @click="execute" v-if="command" :icon="extractDynamicValue(command.icon)" />
 </template>
 
 <script lang="ts" setup>
@@ -16,4 +16,8 @@ const props = defineProps<{
 const commandsStore = useCommandsStore();
 
 const command = computed(() => commandsStore.get(props.command));
+
+const execute = () => {
+  commandsStore.execute(props.command);
+};
 </script>

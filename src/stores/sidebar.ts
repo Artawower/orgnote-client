@@ -57,7 +57,10 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
       open();
       return;
     }
-    openComponent(cmp);
+    if (cmp) {
+      openComponent(cmp);
+    }
+    open();
   };
 
   const store: SidebarStore = {

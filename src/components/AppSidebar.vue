@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar" :class="{ opened }">
     <div v-if="mini" class="mini">
       <div class="top">
         <slot />
@@ -7,6 +7,9 @@
       <div class="footer">
         <slot name="footer" />
       </div>
+    </div>
+    <div class="content">
+      <slot name="content" />
     </div>
   </div>
 </template>
@@ -26,21 +29,34 @@ withDefaults(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .sidebar {
   @include flexify();
   border-right: var(--sidebar-border-right);
   background: var(--sidebar-background);
-  padding: var(--sidebar-padding);
-  width: var(--sidebar-width);
   height: 100vh;
   height: 100mvh;
-}
-.mini {
-  @include flexify(column, space-between, flex-start);
-  width: var(--sidebar-mini-width);
-  height: 100vh;
-  height: 100mvh;
-  padding: var(--sidebar-mini-padding);
+
+  .mini {
+    @include flexify(column, space-between, center);
+    width: var(--sidebar-mini-width);
+    height: 100vh;
+    height: 100mvh;
+    padding: var(--sidebar-padding);
+  }
+
+  &.opened {
+    .content {
+      padding: var(--sidebar-padding);
+      flex: 1;
+      width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
+    }
+  }
+
+  .content {
+    height: 100%;
+    width: 0;
+    overflow: hidden;
+  }
 }
 </style>

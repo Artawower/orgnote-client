@@ -47,7 +47,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       },
       description: 'toggle sidebar',
       handler: () => {
-        // sidebarStore.toggle();
+        sidebarStore.toggle();
       },
     },
     {

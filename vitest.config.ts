@@ -3,12 +3,25 @@ import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
-  plugins: [vue() as any], // eslint-disable-line @typescript-eslint/no-explicit-any
+  plugins: [vue() as any],
+  // research dart-sass deprecation warning
+  // css: {
+  //   preprocessorOptions: {
+  //     scss: {
+  //       additionalData: `
+  //       @import "src/css/mixins.scss";
+  //       @import "src/css/quasar.variables.scss";
+  //       @import "src/css/colors.scss";
+  //       @import "src/css/app.scss";`,
+  //     },
+  //   },
+  // },
   test: {
     include: ['src/**/*.spec.ts'],
     exclude: ['node_modules', 'dist'],
     environment: 'happy-dom',
     globals: true,
+    css: false,
   },
   resolve: {
     alias: {

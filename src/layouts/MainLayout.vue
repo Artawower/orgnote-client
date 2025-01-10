@@ -19,6 +19,6 @@ import MainSidebar from 'src/containers/MainSidebar.vue';
   position: relative;
   height: 100vh;
   height: 100dvh;
-  width: 100%;
+  flex: 1;
 }
 </style>
