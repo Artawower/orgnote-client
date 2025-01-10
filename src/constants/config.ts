@@ -33,6 +33,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     theme: 'light',
     darkThemeName: null,
     lightThemeName: null,
+    enableAnimations: true,
   },
   extensions: {
     sources: ['https://github.com/Artawower/orgnote-extensions'],

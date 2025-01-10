@@ -1,10 +1,14 @@
 <template>
   <button :class="{ size, active }">
-    <q-icon :name="icon" :size="size" />
+    <animation-wrapper>
+      <q-icon :key="icon" :name="icon" :size="size" />
+    </animation-wrapper>
   </button>
 </template>
 
 <script lang="ts" setup>
+import AnimationWrapper from './AnimationWrapper.vue';
+
 withDefaults(
   defineProps<{
     icon: string;
