@@ -1,5 +1,5 @@
 <template>
-  <app-sidebar :mini="true" :opened="opened">
+  <app-sidebar :mini="miniMode" :opened="opened">
     <div class="command-list">
       <command-action-button v-for="cmd of commands" :command="cmd" :key="cmd" />
     </div>
@@ -13,11 +13,12 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
+import { api } from 'src/boot/api';
 import AppSidebar from 'src/components/AppSidebar.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
-import { useSidebarStore } from 'src/stores/sidebar';
 
-const { commands, footerCommands, opened } = storeToRefs(useSidebarStore());
+const { commands, footerCommands, opened } = storeToRefs(api.ui.useSidebar());
+const miniMode = api.core.useQuasar().platform.is.desktop;
 </script>
 
 <style lang="scss" scoped>

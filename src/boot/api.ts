@@ -19,7 +19,7 @@ import {
 import { useEncryptionStore } from 'src/stores/encryption';
 import { sleep } from 'src/utils/sleep';
 import { useSplashScreen } from 'src/composables/use-splash-screen';
-import { getCssVar } from 'quasar';
+import { getCssVar, useQuasar } from 'quasar';
 import {
   getCssTheme,
   getNumericCssVar,
@@ -46,6 +46,7 @@ function initApi(): void {
       useExtenions: useExtensionsStore,
       useFileSystem: useFileSystemStore,
       useEncryption: useEncryptionStore,
+      useQuasar: useQuasar,
     },
     utils: {
       mobileOnly,
