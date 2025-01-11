@@ -1,12 +1,14 @@
 <template>
-  <div class="footer"></div>
+  <div class="footer">
+    <slot />
+  </div>
 </template>
 
 <script lang="ts" setup></script>
 
 <style lang="scss" scoped>
 .footer {
-  @include flexify(row, flex-start, center);
+  @include flexify(row, center, center);
 
   width: 100%;
   height: var(--footer-height);

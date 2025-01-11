@@ -30,6 +30,7 @@ import {
 } from 'src/utils/css-utils';
 import { useBackgroundSettings } from 'src/composables/background';
 import { useSidebarStore } from 'src/stores/sidebar';
+import { useToolbarStore } from 'src/stores/toolbar';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -67,6 +68,7 @@ async function initApi(): Promise<void> {
       useSplashScreen,
       useBackgroundSettings,
       useSidebar: useSidebarStore,
+      useToolbar: useToolbarStore,
     },
   };
 }
