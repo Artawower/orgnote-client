@@ -11,6 +11,10 @@ export const useToolbarStore = defineStore<'toolbar', ToolbarStore>('toolbar', (
   ]);
 
   const addCommand = (command: CommandName) => {
+    const elareadyExists = commands.value.includes(command);
+    if (elareadyExists) {
+      return;
+    }
     commands.value.push(command);
   };
 
