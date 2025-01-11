@@ -89,8 +89,11 @@ body {
   // Platform specific value
   --device-padding-bottom: 0px;
 
+  // Backdrop
+  --backdrop-bg: rgba(0, 0, 0, 0.2);
+
   // Modal
-  --modal-backdrop-bg: rgba(0, 0, 0, 0.2);
+  --modal-backdrop-bg: var(--backdrop-bg);
   --modal-border: var(--border-deftaul);
   --modal-border-radius: var(--border-radius-md);
   --modal-padding: var(--block-padding-lg);
@@ -102,6 +105,9 @@ body {
   body {
     --modal-max-width: unset;
     --modal-max-height: unset;
+    --modal-padding: var(--block-padding-md);
+    --modal-border: none;
+    --modal-border-radius: 0;
   }
 }
 

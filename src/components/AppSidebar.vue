@@ -2,14 +2,14 @@
   <div class="sidebar" :class="{ opened }">
     <div v-if="mini" class="mini">
       <div class="top">
-        <slot />
+        <slot name="mini-top" />
       </div>
       <div class="footer">
-        <slot name="footer" />
+        <slot name="mini-footer" />
       </div>
     </div>
     <div class="content">
-      <slot name="content" />
+      <slot />
     </div>
   </div>
 </template>

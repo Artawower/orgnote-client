@@ -2,6 +2,7 @@
   <page-wrapper v-touch-swipe.mouse.left="sidebar.close" v-touch-swipe.mouse.right="sidebar.open">
     <main-sidebar ref="sidebarRef" />
     <div class="content">
+      <div v-if="sidebar.opened" class="backdrop"></div>
       <router-view />
       <platform-specific mobile ios android>
         <main-footer />
@@ -34,5 +35,15 @@ onClickOutside(sidebarRef, () => {
   height: 100vh;
   height: 100dvh;
   flex: 1;
+}
+
+@include below-desktop {
+  .backdrop {
+    position: absolute;
+    background-color: var(--backdrop-bg);
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
 }
 </style>
