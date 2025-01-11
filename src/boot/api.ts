@@ -31,11 +31,11 @@ import {
 import { useBackgroundSettings } from 'src/composables/background';
 import { useSidebarStore } from 'src/stores/sidebar';
 
-const repositories = await initRepositories();
-
 let api: OrgNoteApi;
+let repositories: OrgNoteApi['infrastructure'];
 
-function initApi(): void {
+async function initApi(): Promise<void> {
+  repositories = await initRepositories();
   api = {
     infrastructure: {
       ...repositories,
@@ -72,13 +72,13 @@ function initApi(): void {
 }
 
 export default defineBoot(async ({ app, store }) => {
-  initApi();
   const splashScreen = useSplashScreen();
   splashScreen.show();
+  await initApi();
   await sleep(1000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
-  app.provide(REPOSITORIES_PROVIDER_TOKEN, repositories);
+  app.provide(REPOSITORIES_PROVIDER_TOKEN, api.repositories);
   splashScreen.hide();
 });
 

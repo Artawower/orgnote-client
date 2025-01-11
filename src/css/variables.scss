@@ -1,3 +1,5 @@
+@use 'mixins' as m;
+
 body {
   // Paddings
   --block-padding-sm: 8px;
@@ -83,4 +85,11 @@ body {
   --btn-action-lg-size: 60px;
   --btn-action-border: none;
   --btn-action-active-color: var(--accent);
+
+  // Platform specific value
+  --device-padding-bottom: 0px;
+}
+
+body.standalone {
+  --device-padding-bottom: 24px;
 }

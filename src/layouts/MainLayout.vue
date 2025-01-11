@@ -3,7 +3,9 @@
     <main-sidebar />
     <div class="content">
       <router-view />
-      <the-footer />
+      <platform-specific mobile ios android>
+        <the-footer />
+      </platform-specific>
     </div>
   </page-wrapper>
 </template>
@@ -12,6 +14,7 @@
 import TheFooter from 'src/containers/TheFooter.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
+import PlatformSpecific from 'src/components/PlatformSpecific.vue';
 </script>
 
 <style lang="scss" scoped>

@@ -2,7 +2,7 @@
   <div class="splash-screen">
     <div class="content">
       <div class="image-container">
-        <img alt="orgnote icon" src="images/modern-unicorn-round.png" />
+        <img alt="orgnote icon" src="icons/modern-unicorn-round.png" />
         <div class="gloss"></div>
       </div>
       <h5 class="text-capitalize">
