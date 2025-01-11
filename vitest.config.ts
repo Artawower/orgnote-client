@@ -1,9 +1,15 @@
 import path from 'path';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+import { quasar, transformAssetUrls } from '@quasar/vite-plugin';
 
 export default defineConfig({
-  plugins: [vue() as any],
+  plugins: [
+    vue({
+      template: { transformAssetUrls },
+    }),
+    quasar({}),
+  ],
   // research dart-sass deprecation warning
   // css: {
   //   preprocessorOptions: {
@@ -22,6 +28,7 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     css: false,
+    setupFiles: ['./test/setup-tests.ts'],
   },
   resolve: {
     alias: {

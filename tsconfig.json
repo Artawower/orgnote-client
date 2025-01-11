@@ -3,5 +3,13 @@
   "compilerOptions": {
     "exactOptionalPropertyTypes": false,
     "strictNullChecks": false
-  }
+  },
+  "exclude": [
+    "./../dist",
+    "./../node_modules",
+    "./../src-capacitor",
+    "./../src-cordova",
+    "./../quasar.config.*.temporary.compiled*",
+    "vitest.config.ts"
+  ]
 }

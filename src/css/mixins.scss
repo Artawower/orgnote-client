@@ -55,6 +55,12 @@
   }
 }
 
+@mixin below-desktop {
+  @media (max-width: 1023px) {
+    @content;
+  }
+}
+
 @mixin line-limit($lines) {
   overflow: hidden;
   display: -webkit-box !important;

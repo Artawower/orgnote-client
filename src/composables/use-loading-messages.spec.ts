@@ -1,7 +1,7 @@
 import { useLoadingMessages } from 'src/composables/use-loading-messages';
 import { LOADING_MESSAGE_1 } from 'orgnote-api';
 import { test, expect, vi } from 'vitest';
-import { withSetup } from 'src/test-utils/with-setup';
+import { withSetup } from '../../test/with-setup';
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({

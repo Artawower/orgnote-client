@@ -1,5 +1,5 @@
 <template>
-  <dialog @click="handleDialogClick" ref="modalDialogRef">
+  <dialog @click="handleDialogClick" @close="modal.close" ref="modalDialogRef">
     <div class="modal-content">
       <div class="modal-header">
         <h1 v-if="config?.title" class="title capitalize">

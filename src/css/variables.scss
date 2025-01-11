@@ -91,11 +91,18 @@ body {
 
   // Modal
   --modal-backdrop-bg: rgba(0, 0, 0, 0.2);
-  --modal-max-width: 960px;
-  --modal-max-height: 860px;
   --modal-border: var(--border-deftaul);
   --modal-border-radius: var(--border-radius-md);
-  --modal-padding: var(--block-padding-md);
+  --modal-padding: var(--block-padding-lg);
+  --modal-max-width: 1280px;
+  --modal-max-height: 860px;
+}
+
+@include below-desktop {
+  body {
+    --modal-max-width: unset;
+    --modal-max-height: unset;
+  }
 }
 
 body.standalone {
