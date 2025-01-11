@@ -28,6 +28,7 @@ export default defineConfig({
       src: path.resolve(__dirname, './src'),
       components: path.resolve(__dirname, './src/components'),
       images: path.resolve(__dirname, './images'),
+      icons: path.resolve(__dirname, './public/icons'),
     },
   },
   assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.svg'],

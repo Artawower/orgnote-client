@@ -29,9 +29,33 @@ export const useBackgroundSettings = () => {
     });
   };
 
+  const setBackground = async (bgColor?: string) => {
+    setThemeColor(bgColor);
+    await Promise.all([setStatusBarBackground(bgColor), setBottomBarBackground(bgColor)]);
+  };
+
+  function setThemeColor(bgColor?: string): void {
+    const backgroundColor = getCssVar(bgColor ?? 'bg');
+    if (!backgroundColor) {
+      return;
+    }
+
+    const themeMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeMeta) {
+      themeMeta.setAttribute('content', backgroundColor);
+      return;
+    }
+
+    const newMeta = document.createElement('meta');
+    newMeta.name = 'theme-color';
+    newMeta.content = backgroundColor;
+    document.head.appendChild(newMeta);
+  }
+
   const bgSettings: BackgroundSettings = {
     setBottomBarBackground: mobileOnly(setBottomBarBackground),
     setStatusBarBackground: mobileOnly(setStatusBarBackground),
+    setBackground: mobileOnly(setBackground),
   };
 
   return bgSettings;
