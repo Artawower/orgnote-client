@@ -18,6 +18,7 @@
     "dev:electron": "quasar dev -m electron",
     "dev:electron:remote": "env-cmd -f ./.env.prod quasar dev -m electron",
     "dev:ssr:build": "env-cmd -f ./.env.ssr node ./dist/ssr/index.js",
+    "dev:pwa:remote": "npm run build:pwa && docker compose -f ./deploy/docker-compose.pwa.yaml up",
     "build": "quasar build",
     "build:ssr": "env-cmd -f ./.env.prod bun run build -m ssr",
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
@@ -42,7 +43,8 @@
     "orgnote-api": "file:.yalc/orgnote-api",
     "pinia": "2.3.0",
     "pinia-plugin-persistedstate": "4.2.0",
-    "quasar": "2.17.5",
+    "quasar": "2.17.6",
+    "register-service-worker": "^1.7.2",
     "rfdc": "1.4.1",
     "valibot": "1.0.0-beta.9",
     "vue": "3.5.13",
@@ -78,7 +80,14 @@
     "typescript": "~5.7.2",
     "vite-plugin-checker": "0.8.0",
     "vitest": "2.1.8",
-    "vue-tsc": "2.1.10"
+    "vue-tsc": "2.1.10",
+    "workbox-build": "^7.3.0",
+    "workbox-cacheable-response": "^7.3.0",
+    "workbox-core": "^7.3.0",
+    "workbox-expiration": "^7.3.0",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0",
+    "workbox-strategies": "^7.3.0"
   },
   "jscpd": {
     "threshold": 1.65,
