@@ -7,6 +7,7 @@
         <main-footer />
       </platform-specific>
     </div>
+    <modal-window />
   </page-wrapper>
 </template>
 
@@ -15,6 +16,7 @@ import MainFooter from 'src/containers/MainFooter.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
 import PlatformSpecific from 'src/components/PlatformSpecific.vue';
+import ModalWindow from 'src/containers/ModalWindow.vue';
 import { onClickOutside } from '@vueuse/core';
 import { api } from 'src/boot/api';
 import { ref } from 'vue';

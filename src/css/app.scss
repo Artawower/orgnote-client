@@ -1,7 +1,9 @@
 @use 'sass:meta';
 
+@import 'reset';
 @import 'mixins';
 @import 'colors';
 @import 'variables';
 @import 'animations';
 @import 'patches';
+@import 'typography';

@@ -1,0 +1,131 @@
+@import 'mixins';
+
+@font-face {
+  font-family: 'Jetbrains Mono';
+  src:
+    url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2')
+      format('woff2'),
+    url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff/JetBrainsMono-Regular.woff')
+      format('woff');
+}
+
+@font-face {
+  font-family: 'Menlo';
+  src: url('./fonts/Menlo-Regular.ttf') format('truetype');
+}
+
+body {
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 22px;
+
+  --main-font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
+    'Apple Color Emoji', Arial, sans-serif;
+  --editor-font-family-main: 'Menlo', charter, Georgia, Cambria, 'Roboto', Times, serif;
+  --paragraph-font-family: var(--main-font-family);
+  --headline-font-family: 'Roboto', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --code-font-family: monospace, monospace;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--headline-font-family);
+}
+
+p,
+div,
+span,
+input {
+  font-family: var(--paragraph-font-family);
+}
+
+p,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input {
+  color: var(--fg);
+}
+
+.color-main {
+  color: var(--fg) !important;
+}
+
+.color-secondary {
+  color: var(--fg-alt);
+}
+
+.color-red {
+  color: var(--red);
+}
+
+.color-green {
+  color: var(--green);
+}
+
+.color-blue {
+  color: var(--blue);
+}
+
+.color-yellow {
+  color: var(--yellow);
+}
+
+.color-magenta {
+  color: var(--magenta);
+}
+
+.color-cyan {
+  color: var(--cyan);
+}
+
+.color-violet {
+  color: var(--violet);
+}
+
+.color-dark-blue {
+  color: var(--dark-blue);
+}
+
+.color-teal {
+  color: var(--teal);
+}
+
+.color-orange {
+  color: var(--orange);
+}
+
+.color-reverse {
+  color: var(--bg);
+}
+
+.color-action {
+  color: var(--font-color-action);
+}
+
+.capitalize::first-letter {
+  text-transform: capitalize;
+}
+
+.line-limit-1 {
+  @include line-limit(1);
+}
+
+.line-limit-2 {
+  @include line-limit(2);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}

@@ -31,6 +31,7 @@ import {
 import { useBackgroundSettings } from 'src/composables/background';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { useToolbarStore } from 'src/stores/toolbar';
+import { useModalStore } from 'src/stores/modal';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -69,6 +70,7 @@ async function initApi(): Promise<void> {
       useBackgroundSettings,
       useSidebar: useSidebarStore,
       useToolbar: useToolbarStore,
+      useModal: useModalStore,
     },
   };
 }

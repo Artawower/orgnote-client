@@ -88,6 +88,14 @@ body {
 
   // Platform specific value
   --device-padding-bottom: 0px;
+
+  // Modal
+  --modal-backdrop-bg: rgba(0, 0, 0, 0.2);
+  --modal-max-width: 960px;
+  --modal-max-height: 860px;
+  --modal-border: var(--border-deftaul);
+  --modal-border-radius: var(--border-radius-md);
+  --modal-padding: var(--block-padding-md);
 }
 
 body.standalone {

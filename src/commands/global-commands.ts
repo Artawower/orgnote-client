@@ -1,10 +1,12 @@
 import type { Command } from 'orgnote-api';
 import { DefaultCommands } from 'orgnote-api';
+import { api } from 'src/boot/api';
 // import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 // import { Platform } from 'quasar';
 // import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
-import { useSidebarStore } from 'src/stores/sidebar';
+import TheSettings from 'src/containers/TheSettings.vue';
+// import { useSidebarStore } from 'src/stores/sidebar';
 // import DebugPage from 'src/pages/DebugPage.vue';
 // import LoggerPage from 'src/pages/LoggerPage.vue';
 // import ProjectInfo from 'src/pages/ProjectInfo.vue';
@@ -13,7 +15,8 @@ import type { Router } from 'vue-router';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getGlobalCommands({ router }: { router?: Router } = {}): Command[] {
-  const sidebarStore = useSidebarStore();
+  const sidebarStore = api.ui.useSidebar();
+  const modal = api.ui.useModal();
   const commands: Command[] = [
     {
       command: DefaultCommands.REPORT_BUG,
@@ -58,6 +61,16 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       handler: () => {
         // sidebarStore.toggleWithComponent(FileManagerSideBar);
       },
+    },
+    {
+      command: DefaultCommands.SETTINGS,
+      group: 'global',
+      icon: 'settings',
+      handler: () =>
+        modal.open(TheSettings, {
+          title: 'settings',
+          closable: true,
+        }),
     },
     {
       command: DefaultCommands.CREATE_NOTE,
