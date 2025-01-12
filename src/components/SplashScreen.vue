@@ -5,7 +5,7 @@
         <img alt="orgnote icon" src="icons/modern-unicorn-round.png" />
         <div class="gloss"></div>
       </div>
-      <h5 class="text-capitalize">
+      <h5 class="title text-capitalize color-white">
         {{ loadingMessages.currentMessage }}
       </h5>
       <linear-progress />
@@ -21,15 +21,19 @@ const loadingMessages = useLoadingMessages();
 </script>
 
 <style lang="scss" scoped>
+h5 {
+  padding-bottom: var(--block-padding-md);
+}
 .splash-screen {
   @include fit();
   @include overscreen;
   @include flexify(row, center, center);
+  color: white;
   background-color: var(--violet);
   padding: var(--block-padding-lg);
 
   .content {
-    @include flexify(column, center, center);
+    @include flexify(column, center, center, var(--gap-md));
     margin-top: 98px;
   }
 }

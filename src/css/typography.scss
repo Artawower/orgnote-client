@@ -25,6 +25,12 @@ body {
   --paragraph-font-family: var(--main-font-family);
   --headline-font-family: 'Roboto', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --code-font-family: monospace, monospace;
+
+  --description-font-family: var(--main-font-family);
+  --description-font-size: 16px;
+  --description-font-style: unset;
+  --description-font-color: var(--fg-alt);
+  --description-padding: 18px 0px;
 }
 
 h1,
@@ -44,7 +50,6 @@ input {
 }
 
 p,
-div,
 span,
 h1,
 h2,
@@ -54,6 +59,10 @@ h5,
 h6,
 input {
   color: var(--fg);
+}
+
+.color-white {
+  color: white !important;
 }
 
 .color-main {
@@ -128,4 +137,12 @@ input {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   line-height: 1;
+}
+
+.description {
+  font-family: var(--description-font-family);
+  font-size: var(--description-font-size);
+  font-style: var(--description-font-style);
+  color: var(--description-font-color);
+  padding: var(--description-padding);
 }
