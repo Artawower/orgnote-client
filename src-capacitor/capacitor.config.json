@@ -18,6 +18,10 @@
       "splashImmersive": true,
       "layoutName": "launch_screen",
       "useDialog": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#9356E8",
+      "style": "DARK"
     }
   }
 }
