@@ -10,9 +10,9 @@ test('renders slots correctly', () => {
       mini: true,
     },
     slots: {
-      content: '<div>Default Content</div>',
-      footer: '<div>Footer Content</div>',
-      top: '<h1>TOP</h1>',
+      default: '<div>Default Content</div>',
+      'mini-footer': '<div>Footer Content</div>',
+      'mini-top': '<h1>TOP</h1>',
     },
   });
 
@@ -94,9 +94,9 @@ test('does not render slots when mini is false', () => {
       mini: false,
     },
     slots: {
-      content: '<div>Default Content</div>',
-      footer: '<div>Footer Content</div>',
-      top: '<h1>TOP</h1>',
+      default: '<div>Default Content</div>',
+      'mini-footer': '<div>Footer Content</div>',
+      'mini-top': '<h1>TOP</h1>',
     },
   });
 
