@@ -81,8 +81,8 @@ body {
   --btn-action-hover-bg: var(--fg-alt);
   --btn-action-hover-brightness: 130%;
   --btn-action-sm-size: 24px;
-  --btn-action-md-size: 48px;
-  --btn-action-lg-size: 60px;
+  --btn-action-md-size: 32px;
+  --btn-action-lg-size: 48px;
   --btn-action-border: none;
   --btn-action-active-color: var(--accent);
 
@@ -99,6 +99,20 @@ body {
   --modal-padding: var(--block-padding-lg);
   --modal-max-width: 1280px;
   --modal-max-height: 860px;
+
+  // Cards
+  --card-padding: var(--block-padding-md);
+  --card-border: var(--border-deftaul);
+  --card-border-radius: var(--border-radius-md);
+
+  // Menu item
+  --menu-item-padding: 8px;
+  --menu-item-height: 50px;
+  --menu-item-max-height: 200px;
+  --menu-item-hover-bg: var(--bg-active);
+
+  // Icons
+  --icon-rounded-border-radius: var(--border-radius-sm);
 }
 
 @include below-desktop {

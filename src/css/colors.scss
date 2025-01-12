@@ -34,6 +34,7 @@
   --default-bg: #22272e;
   --default-bg-alt: var(--q-dark);
   --default-bg-alt2: var(--q-dark);
+  --default-bg-active: rgba(99, 110, 123, 0.4);
   --default-fg: #adbac7;
   --default-fg-alt: #{$grey-6};
 }
@@ -42,6 +43,7 @@
   --default-bg: #ffffff;
   --default-bg-alt: #ffffff;
   --default-bg-alt2: #f8f9fc;
+  --default-bg-active: rgba(175, 184, 193, 0.2);
   --default-fg: #34495e;
   --default-fg-alt: #{$grey-5};
 }
@@ -50,6 +52,7 @@ body {
   --bg: var(--default-bg);
   --bg-alt: var(--default-bg-alt);
   --bg-alt2: var(--default-bg-alt2);
+  --bg-active: var(--default-bg-active);
   --fg: var(--default-fg);
   --fg-alt: var(--default-fg-alt);
   --accent: var(--violet);

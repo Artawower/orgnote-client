@@ -70,13 +70,24 @@ dialog::backdrop {
 }
 
 .modal-content {
+  @include flexify(column, flex-start, flex-start, var(--modal-padding));
+
   width: 100%;
   height: 100%;
   padding: var(--modal-padding);
+  overflow: hidden;
+
+  div {
+    width: 100%;
+  }
 }
 
 .modal-header {
   @include flexify(row, space-between, center);
-  padding-bottom: var(--block-padding-sm);
+}
+
+.content {
+  display: flex;
+  overflow: hidden;
 }
 </style>

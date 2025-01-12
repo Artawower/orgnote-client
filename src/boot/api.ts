@@ -32,6 +32,7 @@ import { useBackgroundSettings } from 'src/composables/background';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { useToolbarStore } from 'src/stores/toolbar';
 import { useModalStore } from 'src/stores/modal';
+import { useSettingsStore } from 'src/stores/settings';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -48,6 +49,7 @@ async function initApi(): Promise<void> {
       useExtenions: useExtensionsStore,
       useFileSystem: useFileSystemStore,
       useEncryption: useEncryptionStore,
+      useSettings: useSettingsStore,
       useQuasar: useQuasar,
     },
     utils: {

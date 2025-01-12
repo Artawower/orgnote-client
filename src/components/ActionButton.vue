@@ -1,12 +1,13 @@
 <template>
   <button :class="{ size, active }">
     <animation-wrapper>
-      <q-icon :key="icon" :name="icon" :size="size" />
+      <app-icon :key="icon" :name="icon" :size="size" />
     </animation-wrapper>
   </button>
 </template>
 
 <script lang="ts" setup>
+import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
 
 withDefaults(
