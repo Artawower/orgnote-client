@@ -7,6 +7,7 @@ import {
   getCssNumericProperty,
   applyCSSVariables,
   resetCSSVariables,
+  normalizeCssVariable,
 } from './css-utils';
 
 test('returns CSS variable value when it exists', () => {
@@ -91,4 +92,34 @@ test.only('resets CSS variables to default values', () => {
   resetCSSVariables({ testVar: '', anotherVar: '' });
   expect(document.body.style.getPropertyValue('--test-var')).toBe('');
   expect(document.body.style.getPropertyValue('--another-var')).toBe('');
+});
+
+test('returns the variable as is if it starts with "--"', () => {
+  const input = '--primary-color';
+  const output = normalizeCssVariable(input);
+  expect(output).toBe('--primary-color');
+});
+
+test('adds "--" prefix if variable does not start with it', () => {
+  const input = 'primary-color';
+  const output = normalizeCssVariable(input);
+  expect(output).toBe('--primary-color');
+});
+
+test('handles empty string', () => {
+  const input = '';
+  const output = normalizeCssVariable(input);
+  expect(output).toBe('--');
+});
+
+test('handles variable with special characters', () => {
+  const input = 'color@variable';
+  const output = normalizeCssVariable(input);
+  expect(output).toBe('--color@variable');
+});
+
+test('handles variable already prefixed with "--"', () => {
+  const input = '--color-variable';
+  const output = normalizeCssVariable(input);
+  expect(output).toBe('--color-variable');
 });

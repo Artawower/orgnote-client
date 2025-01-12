@@ -12,7 +12,7 @@ import { toKebabCase } from './to-kebab-case';
 
 export const getCssVar: GetCssVar = (varName) => {
   const root = document.body;
-  const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
+  const normalizedName = normalizeCssVariable(varName);
   const computedStyle = getComputedStyle(root);
   return computedStyle.getPropertyValue(normalizedName);
 };
@@ -30,7 +30,7 @@ export const getCssTheme: GetCssTheme = (variableNames) => {
 };
 
 export const getNumericCssVar: GetNumericCssVar = (varName) => {
-  const normalizedName = varName.startsWith('--') ? varName : `--${varName}`;
+  const normalizedName = normalizeCssVariable(varName);
   const value = getCssVar(normalizedName);
   const n = value.replace(/[^\d.]/g, '');
   return +n;
@@ -60,4 +60,8 @@ export const resetCSSVariables: ResetCSSVariables<string> = (variables) => {
     const kebabedVarName = toKebabCase(k);
     body.style.setProperty(`--${kebabedVarName}`, `var(--default-${kebabedVarName})`);
   });
+};
+
+export const normalizeCssVariable = (variable: string) => {
+  return variable.startsWith('--') ? variable : `--${variable}`;
 };
