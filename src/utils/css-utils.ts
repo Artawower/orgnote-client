@@ -22,6 +22,9 @@ export const getCssTheme: GetCssTheme = (variableNames) => {
     (acc, cur) => {
       const variable = toKebabCase(cur);
       const cssValue = getCssVar(variable);
+      if (!cssValue) {
+        return acc;
+      }
       acc[cur as ThemeVariable] = cssValue;
       return acc;
     },
@@ -64,4 +67,11 @@ export const resetCSSVariables: ResetCSSVariables<string> = (variables) => {
 
 export const normalizeCssVariable = (variable: string) => {
   return variable.startsWith('--') ? variable : `--${variable}`;
+};
+
+export const getCssVariableName = (variable: string): string => {
+  if (!variable) {
+    return variable;
+  }
+  return `var(${normalizeCssVariable(variable)})`;
 };
