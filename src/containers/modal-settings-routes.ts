@@ -1,9 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { RouteNames } from 'orgnote-api';
-import { provide, ref } from 'vue';
+import { ref } from 'vue';
 import { getNumericCssVar } from 'src/utils/css-utils';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 
 const redirectRoute: RouteRecordRaw = {
   path: '/',
@@ -30,7 +29,7 @@ export function createSettingsRouter() {
   });
 
   const screenWidth = ref(window.innerWidth);
-  const isMobile = ref(screenWidth.value < 768);
+  const isMobile = ref<boolean>(null);
 
   const updateRoutes = () => {
     router.removeRoute(RouteNames.SettingsPage);
@@ -52,6 +51,7 @@ export function createSettingsRouter() {
     }
     screenWidth.value = window.innerWidth;
     const mobile = screenWidth.value < maxMobileWidth;
+    console.log('✎: [line 55][modal-settings-routes.ts] mobile: ', mobile, isMobile.value);
     if (mobile === isMobile.value) {
       return;
     }
@@ -70,6 +70,6 @@ export function createSettingsRouter() {
 
   handleResize();
 
-  provide(SETTINGS_ROUTER_PROVIDER_TOKEN, router);
+  console.log('[line 73]: ', router.getRoutes());
   return router;
 }

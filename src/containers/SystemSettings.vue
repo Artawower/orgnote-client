@@ -41,5 +41,6 @@ const { t } = useI18n({
 <style lang="scss" scoped>
 .system-settings {
   @include flexify(column, flex-start, flex-start, var(--gap-sm));
+  width: 100%;
 }
 </style>

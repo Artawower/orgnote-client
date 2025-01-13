@@ -1,7 +1,7 @@
 <template>
   <button :class="{ size, active }">
     <animation-wrapper>
-      <app-icon :key="icon" :name="icon" :size="size" />
+      <app-icon :key="icon" :name="icon" :size="size" :color="color" />
     </animation-wrapper>
   </button>
 </template>
@@ -9,12 +9,14 @@
 <script lang="ts" setup>
 import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
+import { computed } from 'vue';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     icon: string;
     active?: boolean;
     size?: 'sm' | 'md' | 'lg';
+    color?: string;
     fireIcon?: string;
     fireColor?: string;
   }>(),
@@ -23,6 +25,8 @@ withDefaults(
     size: 'md',
   },
 );
+
+const color = computed(() => props.color ?? 'fg');
 </script>
 
 <style lang="scss" scoped>
