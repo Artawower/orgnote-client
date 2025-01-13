@@ -1,15 +1,14 @@
 <template>
-  <div
-    class="card-wrapper"
-    :class="{ padding, border }"
-    :style="{ 'background-color': background }"
-  >
+  <div class="card-wrapper" :class="{ padding, border }" :style="{ 'background-color': bg }">
     <slot />
   </div>
 </template>
 
 <script lang="ts" setup>
-withDefaults(
+import { getCssVariableName } from 'src/utils/css-utils';
+import { computed } from 'vue';
+
+const props = withDefaults(
   defineProps<{
     padding?: boolean;
     border?: boolean;
@@ -21,12 +20,15 @@ withDefaults(
     background: 'var(--bg)',
   },
 );
+
+const bg = computed(() => getCssVariableName(props.background ?? 'bg-alt'));
 </script>
 
 <style lang="scss">
 .card-wrapper {
   border-radius: var(--card-border-radius);
   overflow: hidden;
+  width: 100%;
 
   &.padding {
     padding: var(--card-padding);

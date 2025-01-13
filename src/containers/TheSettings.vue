@@ -19,8 +19,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, provide } from 'vue';
-import { createSettingsRouter } from './modal-settings-routes';
+import { computed } from 'vue';
 import SettingsMenu from './SettingsMenu.vue';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import { RouteNames } from 'orgnote-api';
@@ -35,10 +34,13 @@ const props = withDefaults(
   },
 );
 
+import { getCurrentInstance } from 'vue';
+import { createSettingsRouter } from './modal-settings-routes';
+const app = getCurrentInstance().appContext.app;
 const settingsRouter = createSettingsRouter();
+app.provide(SETTINGS_ROUTER_PROVIDER_TOKEN, settingsRouter);
 settingsRouter.isReady();
 
-provide(SETTINGS_ROUTER_PROVIDER_TOKEN, settingsRouter);
 const currentRoute = computed(() => settingsRouter.currentRoute.value);
 
 const currentView = computed(() => {

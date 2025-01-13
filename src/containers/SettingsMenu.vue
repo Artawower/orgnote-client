@@ -1,6 +1,6 @@
 <template>
   <div class="settings-menu">
-    <card-wrapper background="var(--bg-alt2)">
+    <card-wrapper background="bg-alt2">
       <menu-item
         @click="navigateTo(RouteNames.SystemSettings)"
         icon="sym_o_settings"
@@ -39,9 +39,7 @@ const { t } = useI18n({
 const { isActive } = useRouteActive(settingsRouter);
 
 function navigateTo(name: string) {
-  settingsRouter.push({ name }).then(() => {
-    console.log(settingsRouter.currentRoute.value);
-  });
+  settingsRouter.push({ name });
 }
 </script>
 

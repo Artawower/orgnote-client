@@ -8,7 +8,7 @@
         color="bg"
         :rounded="true"
       ></app-icon>
-      <div class="content">
+      <div class="content" :style="{ color }">
         <slot />
       </div>
     </div>
@@ -18,12 +18,18 @@
 
 <script lang="ts" setup>
 import AppIcon from 'src/components/AppIcon.vue';
+import { getCssVariableName } from 'src/utils/css-utils';
+import { computed } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   icon?: string;
   narrow?: boolean;
   active?: boolean;
+  disabled?: boolean;
+  color?: string;
 }>();
+
+const color = computed(() => getCssVariableName(props.active ? 'accent' : (props.color ?? 'fg')));
 </script>
 
 <style lang="scss" scoped>

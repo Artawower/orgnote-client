@@ -17,7 +17,6 @@ import {
   desktopOnly,
 } from 'src/utils/platform-specific';
 import { useEncryptionStore } from 'src/stores/encryption';
-import { sleep } from 'src/utils/sleep';
 import { useSplashScreen } from 'src/composables/use-splash-screen';
 import { getCssVar, useQuasar } from 'quasar';
 import {
@@ -81,7 +80,7 @@ export default defineBoot(async ({ app, store }) => {
   const splashScreen = useSplashScreen();
   splashScreen.show();
   await initApi();
-  await sleep(1000);
+  // await sleep(1000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, api.repositories);

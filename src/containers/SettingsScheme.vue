@@ -1,7 +1,7 @@
 <template>
   <div class="settings-scheme">
     <h5 class="capitalize description">{{ name }}</h5>
-    <card-wrapper background="var(--bg-alt2)">
+    <card-wrapper background="bg-alt2">
       <menu-item
         v-for="(scheme, name) of scheme.entries as Record<string, any>"
         :path="getNestedPath(name)"

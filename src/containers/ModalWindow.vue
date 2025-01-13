@@ -2,7 +2,8 @@
   <dialog @click="handleDialogClick" @close="modal.close" ref="modalDialogRef">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 v-if="config?.title" class="title capitalize">
+        <component v-if="config?.headerTitleComponent" :is="config.headerTitleComponent" />
+        <h1 v-else-if="config?.title" class="title capitalize">
           {{ t(config.title) }}
         </h1>
         <action-button @click="modal.close" v-if="config?.closable" icon="close" size="sm" />

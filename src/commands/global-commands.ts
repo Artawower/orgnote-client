@@ -11,6 +11,7 @@ import TheSettings from 'src/containers/TheSettings.vue';
 // import LoggerPage from 'src/pages/LoggerPage.vue';
 // import ProjectInfo from 'src/pages/ProjectInfo.vue';
 import { clientOnly } from 'src/utils/platform-specific';
+import { defineAsyncComponent } from 'vue';
 import type { Router } from 'vue-router';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,6 +71,9 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
         modal.open(TheSettings, {
           title: 'settings',
           closable: true,
+          headerTitleComponent: defineAsyncComponent(
+            () => import('src/containers/SettingsHeaderTitle.vue'),
+          ),
           modalProps: {
             initialRoute: RouteNames.SettingsPage,
           },

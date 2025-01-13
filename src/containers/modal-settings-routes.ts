@@ -1,8 +1,9 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { RouteNames } from 'orgnote-api';
-import { ref } from 'vue';
+import { provide, ref } from 'vue';
 import { getNumericCssVar } from 'src/utils/css-utils';
+import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 
 const redirectRoute: RouteRecordRaw = {
   path: '/',
@@ -68,6 +69,7 @@ export function createSettingsRouter() {
   window.addEventListener('resize', handleResize);
 
   handleResize();
-  console.log('[line 64]: rts', router.getRoutes());
+
+  provide(SETTINGS_ROUTER_PROVIDER_TOKEN, router);
   return router;
 }
