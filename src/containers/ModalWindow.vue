@@ -8,7 +8,7 @@
         <action-button @click="modal.close" v-if="config?.closable" icon="close" size="sm" />
       </div>
       <div class="content">
-        <component :is="component" />
+        <component :is="component" v-bind="config?.modalProps" />
       </div>
     </div>
   </dialog>

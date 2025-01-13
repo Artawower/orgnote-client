@@ -1,5 +1,5 @@
 import type { Command } from 'orgnote-api';
-import { DefaultCommands } from 'orgnote-api';
+import { DefaultCommands, RouteNames } from 'orgnote-api';
 import { api } from 'src/boot/api';
 // import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 // import { Platform } from 'quasar';
@@ -70,6 +70,9 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
         modal.open(TheSettings, {
           title: 'settings',
           closable: true,
+          modalProps: {
+            initialRoute: RouteNames.SystemSettings,
+          },
         }),
     },
     {

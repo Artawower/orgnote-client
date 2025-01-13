@@ -1,7 +1,13 @@
 <template>
-  <div class="menu-item">
+  <div class="menu-item" :class="{ active }">
     <div class="left">
-      <app-icon v-if="icon" :name="icon" background="fg" color="bg" :rounded="true"></app-icon>
+      <app-icon
+        v-if="icon"
+        :name="icon"
+        :background="active ? 'accent' : 'fg'"
+        color="bg"
+        :rounded="true"
+      ></app-icon>
       <div class="content">
         <slot />
       </div>
@@ -16,6 +22,7 @@ import AppIcon from 'src/components/AppIcon.vue';
 defineProps<{
   icon?: string;
   narrow?: boolean;
+  active?: boolean;
 }>();
 </script>
 
@@ -39,5 +46,9 @@ defineProps<{
 
 .content {
   padding-left: var(--menu-item-padding);
+}
+
+.active {
+  color: var(--accent);
 }
 </style>

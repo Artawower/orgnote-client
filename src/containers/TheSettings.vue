@@ -4,26 +4,46 @@
       <settings-menu />
     </div>
     <div class="content">
-      <settings-scheme
-        v-for="(scheme, name) of configScheme.entries"
-        :key="name"
-        :scheme="scheme"
-        :name="name"
-        :path="name"
-      />
+      <component :is="currentView" />
+      <!-- <settings-scheme
+             v-for="(scheme, name) of configScheme.entries"
+             :key="name"
+             :scheme="scheme"
+             :name="name"
+             :path="name"
+             /> -->
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ORG_NOTE_CONFIG_SCHEMA } from 'orgnote-api';
-import SettingsScheme from './SettingsScheme.vue';
+import { computed, provide } from 'vue';
+import { createSettingsRouter } from './modal-settings-routes';
 import SettingsMenu from './SettingsMenu.vue';
-// import { storeToRefs } from 'pinia';
-// import { api } from 'src/boot/api';
+import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
+import { RouteNames } from 'orgnote-api';
+// import { RouteNames } from 'orgnote-api';
 
-// const { config } = storeToRefs(api.core.useSettings());
-const configScheme = ORG_NOTE_CONFIG_SCHEMA;
+const props = withDefaults(
+  defineProps<{
+    initialRoute?: RouteNames;
+  }>(),
+  {
+    initialRoute: RouteNames.SystemSettings,
+  },
+);
+
+const settingsRouter = createSettingsRouter();
+settingsRouter.isReady();
+
+provide(SETTINGS_ROUTER_PROVIDER_TOKEN, settingsRouter);
+const currentRoute = computed(() => settingsRouter.currentRoute.value);
+
+const currentView = computed(() => {
+  return currentRoute.value.matched[0]?.components?.default;
+});
+
+settingsRouter.push({ name: props.initialRoute });
 </script>
 
 <style lang="scss" scoped>
@@ -37,8 +57,5 @@ const configScheme = ORG_NOTE_CONFIG_SCHEMA;
   width: 100%;
   height: 100%;
   overflow-y: auto;
-}
-.menu {
-  /* padding-top: 54px; */
 }
 </style>
