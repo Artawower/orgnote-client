@@ -1,4 +1,5 @@
 @use 'mixins' as m;
+@use 'quasar.variables' as a;
 
 body {
   // Paddings
@@ -114,9 +115,13 @@ body {
 
   // Icons
   --icon-rounded-border-radius: var(--border-radius-sm);
+
+  // Device sizes
+  --tablet: #{a.$tablet};
+  --desktop: #{a.$desktop};
 }
 
-@include below-desktop {
+@include desktop-below {
   body {
     --modal-max-width: unset;
     --modal-max-height: unset;

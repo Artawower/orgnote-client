@@ -1,8 +1,10 @@
 <template>
   <div class="settings">
-    <div class="menu">
-      <settings-menu />
-    </div>
+    <visibility-wrapper condition="desktop-above">
+      <div class="menu">
+        <settings-menu />
+      </div>
+    </visibility-wrapper>
     <div class="content">
       <component :is="currentView" />
       <!-- <settings-scheme
@@ -22,14 +24,14 @@ import { createSettingsRouter } from './modal-settings-routes';
 import SettingsMenu from './SettingsMenu.vue';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import { RouteNames } from 'orgnote-api';
-// import { RouteNames } from 'orgnote-api';
+import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 
 const props = withDefaults(
   defineProps<{
     initialRoute?: RouteNames;
   }>(),
   {
-    initialRoute: RouteNames.SystemSettings,
+    initialRoute: RouteNames.SettingsPage,
   },
 );
 

@@ -37,7 +37,7 @@ onClickOutside(sidebarRef, () => {
   flex: 1;
 }
 
-@include below-desktop {
+@include desktop-below {
   .backdrop {
     position: absolute;
     background-color: var(--backdrop-bg);

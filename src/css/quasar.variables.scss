@@ -25,4 +25,8 @@ $negative: var(--red);
 $info: var(--cyan);
 $warning: var(--yellow);
 
+$mobile: 0px;
+$tablet: 600px;
+$desktop: 1024px;
+
 @import './mixins.scss';

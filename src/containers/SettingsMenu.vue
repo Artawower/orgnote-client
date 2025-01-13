@@ -52,5 +52,9 @@ function navigateTo(name: string) {
 
 .settings-menu {
   width: 420px;
+
+  @include desktop-below {
+    width: 100%;
+  }
 }
 </style>

@@ -71,7 +71,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
           title: 'settings',
           closable: true,
           modalProps: {
-            initialRoute: RouteNames.SystemSettings,
+            initialRoute: RouteNames.SettingsPage,
           },
         }),
     },
