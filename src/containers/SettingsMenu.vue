@@ -1,19 +1,14 @@
 <template>
   <div class="settings-menu">
-    <card-wrapper background="bg-alt2">
+    <card-wrapper v-for="(menuItems, key) of settingsMenu" :key="key" background="bg-alt2">
       <menu-item
-        @click="navigateTo(RouteNames.SystemSettings)"
-        icon="sym_o_settings"
-        :active="isActive(RouteNames.SystemSettings)"
+        v-for="(menuItem, i) of menuItems"
+        :key="i"
+        @click="execute(menuItem.command)"
+        :icon="menuItem.icon"
+        :active="menuItem?.isActive()"
       >
-        <div class="capitalize text-bold">{{ t(SYSTEM) }}</div>
-      </menu-item>
-      <menu-item
-        @click="navigateTo(RouteNames.LanguageSettings)"
-        icon="language"
-        :active="isActive(RouteNames.LanguageSettings)"
-      >
-        <div class="capitalize">{{ t(LANGUAGE) }}</div>
+        <div class="capitalize text-bold">{{ t(menuItem.name) }}</div>
       </menu-item>
     </card-wrapper>
   </div>
@@ -22,25 +17,17 @@
 <script lang="ts" setup>
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
-import { SYSTEM, LANGUAGE, RouteNames } from 'orgnote-api';
 import { useI18n } from 'vue-i18n';
-import { inject } from 'vue';
-import type { Router } from 'vue-router';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
-import { useRouteActive } from 'src/composables/use-route-active';
-
-const settingsRouter = inject<Router>(SETTINGS_ROUTER_PROVIDER_TOKEN);
+import { api } from 'src/boot/api';
+import { storeToRefs } from 'pinia';
 
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
 });
 
-const { isActive } = useRouteActive(settingsRouter);
-
-function navigateTo(name: string) {
-  settingsRouter.push({ name });
-}
+const { settingsMenu } = storeToRefs(api.ui.useSettingsUi());
+const { execute } = api.core.useCommands();
 </script>
 
 <style lang="scss" scoped>

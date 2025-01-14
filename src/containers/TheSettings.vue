@@ -19,10 +19,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onUnmounted } from 'vue';
 import SettingsMenu from './SettingsMenu.vue';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
-import { RouteNames } from 'orgnote-api';
+import { DefaultCommands, RouteNames } from 'orgnote-api';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 
 const props = withDefaults(
@@ -36,6 +36,7 @@ const props = withDefaults(
 
 import { getCurrentInstance } from 'vue';
 import { createSettingsRouter } from './modal-settings-routes';
+import { api } from 'src/boot/api';
 const app = getCurrentInstance().appContext.app;
 const settingsRouter = createSettingsRouter();
 
@@ -48,7 +49,30 @@ const currentView = computed(() => {
   return currentRoute.value.matched[0]?.components?.default;
 });
 
-settingsRouter.push({ name: props.initialRoute });
+const navigate = (routeName: string) => {
+  settingsRouter.push({ name: routeName });
+};
+
+navigate(props.initialRoute);
+
+const commandsStore = api.core.useCommands();
+
+const routeByCommands: Record<string, string> = {
+  [DefaultCommands.SYSTEM_SETTINGS]: RouteNames.SettingsPage,
+  [DefaultCommands.LANGUAGE_SETTINGS]: RouteNames.LanguageSettings,
+};
+
+const unsubscribe = commandsStore.afterExecute(
+  [DefaultCommands.SYSTEM_SETTINGS, DefaultCommands.LANGUAGE_SETTINGS],
+  (meta) => {
+    const routeName = routeByCommands[meta.command];
+    settingsRouter.push({ name: routeName });
+  },
+);
+
+onUnmounted(() => {
+  unsubscribe();
+});
 </script>
 
 <style lang="scss" scoped>

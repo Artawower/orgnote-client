@@ -32,6 +32,7 @@ import { useSidebarStore } from 'src/stores/sidebar';
 import { useToolbarStore } from 'src/stores/toolbar';
 import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
+import { useSettingsUiStore } from 'src/stores/settings-ui';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -72,6 +73,7 @@ async function initApi(): Promise<void> {
       useSidebar: useSidebarStore,
       useToolbar: useToolbarStore,
       useModal: useModalStore,
+      useSettingsUi: useSettingsUiStore,
     },
   };
 }
