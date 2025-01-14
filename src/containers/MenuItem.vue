@@ -13,6 +13,7 @@
       </div>
     </div>
     <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" />
+    <app-icon v-else-if="selected" name="sym_o_check" color="blue" />
   </div>
 </template>
 
@@ -27,6 +28,7 @@ const props = defineProps<{
   active?: boolean;
   disabled?: boolean;
   color?: string;
+  selected?: boolean;
 }>();
 
 const color = computed(() => getCssVariableName(props.active ? 'accent' : (props.color ?? 'fg')));
