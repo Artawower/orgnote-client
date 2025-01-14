@@ -25,6 +25,21 @@ export function createSettingsRouter() {
         path: '/settings/language',
         component: () => import('./LanguageSettings.vue'),
       },
+      {
+        name: RouteNames.InterfaceSettings,
+        path: '/settings/interface',
+        component: () => import('./InterfaceSettings.vue'),
+      },
+      {
+        name: RouteNames.SynchronisationSettings,
+        path: '/settings/synchronisation',
+        component: () => import('./SynchronisationSettings.vue'),
+      },
+      {
+        name: RouteNames.SubscriptionSettings,
+        path: '/settings/subscription',
+        component: () => import('./SubscriptionSettings.vue'),
+      },
     ],
   });
 

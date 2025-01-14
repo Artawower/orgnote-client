@@ -4,10 +4,10 @@ import { getRoutesCommands } from 'src/commands/router-commands';
 import { getSettingsommands as getSettingsCommands } from 'src/commands/settings-commands';
 import { useCommandsStore } from 'src/stores/command';
 
-export default defineBoot(async ({ router }) => {
+export default defineBoot(async ({ router, app }) => {
   const routeCommands = getRoutesCommands(router);
   const commandsStore = useCommandsStore();
   const globalCommands = getGlobalCommands();
-  const settingsCommands = getSettingsCommands();
+  const settingsCommands = getSettingsCommands(app);
   commandsStore.add(...routeCommands, ...globalCommands, ...settingsCommands);
 });

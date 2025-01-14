@@ -6,6 +6,5 @@ export function useRouteActive(customRouter?: Router) {
   const currentRoute = computed(() => customRouter?.currentRoute.value || useRoute());
 
   const isActive = (routeName: string) => currentRoute.value?.name === routeName;
-
   return { isActive };
 }
