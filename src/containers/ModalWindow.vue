@@ -44,7 +44,7 @@ const handleDialogClick = (e: MouseEvent) => {
     return;
   }
   const target = e.target as HTMLDialogElement;
-  if (!target.closest('div.modal-content')) {
+  if (!['div.modal-content', 'i', 'button'].some((t) => target.closest(t))) {
     modal.close();
   }
 };

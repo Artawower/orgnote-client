@@ -18,7 +18,7 @@ const returnBack = () => {
   if (props.to) {
     router.push(props.to);
   } else {
-    router.go(-1);
+    router.back();
   }
 };
 </script>
