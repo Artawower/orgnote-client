@@ -33,11 +33,12 @@ import { useToolbarStore } from 'src/stores/toolbar';
 import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
 import { useSettingsUiStore } from 'src/stores/settings-ui';
+import type { App } from 'vue';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
 
-async function initApi(): Promise<void> {
+async function initApi(app: App): Promise<void> {
   repositories = await initRepositories();
   api = {
     infrastructure: {
@@ -51,6 +52,7 @@ async function initApi(): Promise<void> {
       useEncryption: useEncryptionStore,
       useSettings: useSettingsStore,
       useQuasar: useQuasar,
+      app,
     },
     utils: {
       mobileOnly,
@@ -81,7 +83,7 @@ async function initApi(): Promise<void> {
 export default defineBoot(async ({ app, store }) => {
   const splashScreen = useSplashScreen();
   splashScreen.show();
-  await initApi();
+  await initApi(app);
   // await sleep(1000);
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);

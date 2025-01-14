@@ -4,21 +4,20 @@ import { api } from 'src/boot/api';
 import { useRouteActive } from 'src/composables/use-route-active';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import TheSettings from 'src/containers/TheSettings.vue';
-import type { App } from 'vue';
 import { defineAsyncComponent } from 'vue';
 
-export function getSettingsommands(app: App): Command[] {
+export function getSettingsommands(): Command[] {
   const modal = api.ui.useModal();
 
   const isActiveRoute = (routeName: RouteNames): boolean => {
-    const settingsRouter = app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
+    const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
     const { isActive } = useRouteActive(settingsRouter);
     return isActive(routeName);
   };
 
   const openSettingsRoute = (routeName: string) => {
     const isModalOpened = modal.component && modal.component === TheSettings;
-    const settingsRouter = app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
+    const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
     if (isModalOpened) {
       settingsRouter.push({ name: routeName });
       return;
