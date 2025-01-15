@@ -12,7 +12,7 @@
         <slot />
       </div>
     </div>
-    <div class="right">
+    <div v-if="slots.right || narrow || selected" class="right">
       <slot name="right" />
       <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" size="xs" color="fg-alt" />
       <app-icon v-else-if="selected" name="sym_o_check" color="accent" size="sm" />
@@ -23,6 +23,7 @@
 <script lang="ts" setup>
 import AppIcon from 'src/components/AppIcon.vue';
 import { getCssVariableName } from 'src/utils/css-utils';
+import { useSlots } from 'vue';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -35,6 +36,7 @@ const props = defineProps<{
 }>();
 
 const color = computed(() => getCssVariableName(props.active ? 'accent' : (props.color ?? 'fg')));
+const slots = useSlots();
 </script>
 
 <style lang="scss" scoped>
@@ -54,6 +56,7 @@ const color = computed(() => getCssVariableName(props.active ? 'accent' : (props
 
 .left {
   @include flexify(row, flex-start, center, var(--gap-sm));
+  width: 100%;
 }
 
 .content {

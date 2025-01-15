@@ -57,7 +57,9 @@ h3,
 h4,
 h5,
 h6,
-input {
+input,
+ul,
+li {
   color: var(--fg);
 }
 
@@ -149,4 +151,24 @@ input {
 
 .text-bold {
   font-weight: var(--font-weight-bold);
+}
+
+p,
+ul {
+  font-size: var(--font-size-md);
+  font-family: var(--paragraph-font-family);
+}
+
+p {
+  margin-bottom: var(--block-margin-md);
+}
+
+.link {
+  color: var(--fg);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent);
+  }
 }

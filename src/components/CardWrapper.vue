@@ -1,5 +1,9 @@
 <template>
-  <div class="card-wrapper" :class="{ padding, border }" :style="{ 'background-color': bg }">
+  <div
+    class="card-wrapper"
+    :class="[{ padding, border }, classes]"
+    :style="{ 'background-color': bg }"
+  >
     <slot />
   </div>
 </template>
@@ -13,6 +17,7 @@ const props = withDefaults(
     padding?: boolean;
     border?: boolean;
     background?: string;
+    classes?: string;
   }>(),
   {
     padding: false,

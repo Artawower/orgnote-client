@@ -21,7 +21,7 @@ const { settingsMenu } = storeToRefs(api.ui.useSettingsUi());
 }
 
 .settings-menu {
-  width: 420px;
+  width: 320px;
 
   @include desktop-below {
     width: 100%;

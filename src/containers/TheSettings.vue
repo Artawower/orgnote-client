@@ -52,12 +52,15 @@ navigate(props.initialRoute);
 .settings {
   @include flexify(row, flex-start, flex-start, var(--gap-lg));
   flex: 1;
+
+  & > div {
+    height: 100%;
+    overflow-y: auto;
+  }
 }
 
 .content {
   @include flexify(column, flex-start, flex-start, var(--gap-lg));
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
+  flex: 1;
 }
 </style>

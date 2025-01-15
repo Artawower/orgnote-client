@@ -14,13 +14,13 @@
         v-if="scheme.type === 'boolean'"
         v-model="config[props.path][props.name]"
       />
-      <input
-        class="text-right"
+      <app-input
         v-else-if="scheme.type === 'number'"
-        :type="scheme.type"
         v-model="config[props.path][props.name]"
-        ref="editInputRef"
+        :textRight="true"
+        :type="scheme.type"
         :name="name"
+        ref="editInputRef"
       />
     </template>
   </menu-item>
@@ -41,6 +41,7 @@
 <script lang="ts" setup>
 import MenuItem from './MenuItem.vue';
 import ToggleButton from 'src/components/ToggleButton.vue';
+import AppInput from 'src/components/AppInput.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { ref } from 'vue';
@@ -56,7 +57,7 @@ const props = defineProps<{
 const { config } = api.core.useSettings() as Record<string, any>;
 const getNestedPath = (path: string) => `${props.path}.${path}`;
 
-const editInputRef = ref<HTMLInputElement | null>(null);
+const editInputRef = ref<typeof AppInput | null>(null);
 
 const onItemClick = () => {
   if (editInputRef.value) {
@@ -67,13 +68,3 @@ const onItemClick = () => {
   }
 };
 </script>
-
-<style lang="scss" scoped>
-input {
-  color: var(--fg);
-  border: none;
-  background: transparent;
-
-  @include reset-input();
-}
-</style>
