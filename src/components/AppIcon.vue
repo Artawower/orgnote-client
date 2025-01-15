@@ -1,6 +1,6 @@
 <template>
   <div class="icon" :style="{ backgroundColor: bgColor, color }" :class="[{ rounded }, size]">
-    <q-icon v-bind="$props" :color="color ?? getCssVariableName('fg')" />
+    <q-icon v-bind="$props" :color="color ?? getCssVariableName('fg')" :size="iconSize" />
   </div>
 </template>
 
@@ -9,10 +9,12 @@ import type { QIconProps } from 'quasar';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { computed } from 'vue';
 
+type IconSize = 'xs' | 'sm' | 'md' | 'lg';
+
 interface Props {
   color?: string;
   background?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: IconSize;
   rounded?: boolean;
 }
 
@@ -23,6 +25,14 @@ const props = withDefaults(defineProps<QIconProps & Props>(), {
 const bgColor = computed(() => props.background && getCssVariableName(props.background));
 const color = computed(() => getCssVariableName(props.color ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
+
+const iconSizeMap: { [key in IconSize]: string } = {
+  xs: '1em',
+  sm: '1.2em',
+  md: '1.6em',
+  lg: '3em',
+};
+const iconSize = computed(() => iconSizeMap[props.size]);
 </script>
 
 <style lang="scss">
@@ -32,19 +42,19 @@ const size = computed(() => `icon-${props.size}`);
   padding: 2px;
   box-sizing: content-box;
 
-  &.icon-sm {
-    width: var(--btn-action-sm-size);
-    height: var(--btn-action-sm-size);
-  }
+  $btn-sizes: (
+    sm: var(--btn-action-sm-size),
+    md: var(--btn-action-md-size),
+    lg: var(--btn-action-lg-size),
+  );
 
-  &.icon-md {
-    width: var(--btn-action-md-size);
-    height: var(--btn-action-md-size);
-  }
-
-  &.icon-lg {
-    width: var(--btn-action-lg-size);
-    height: var(--btn-action-lg-size);
+  @each $size, $value in $btn-sizes {
+    &.icon-#{$size} {
+      width: $value;
+      height: $value;
+      min-width: $value;
+      min-height: $value;
+    }
   }
 }
 </style>

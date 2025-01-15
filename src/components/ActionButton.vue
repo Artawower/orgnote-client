@@ -1,5 +1,5 @@
 <template>
-  <button :class="{ size, active }">
+  <button :class="[`icon-${size}`, active]">
     <animation-wrapper>
       <app-icon :key="icon" :name="icon" :size="size" :color="color" />
     </animation-wrapper>
@@ -11,11 +11,12 @@ import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
 import { computed } from 'vue';
 
+type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 const props = withDefaults(
   defineProps<{
     icon: string;
     active?: boolean;
-    size?: 'sm' | 'md' | 'lg';
+    size?: IconSize;
     color?: string;
     fireIcon?: string;
     fireColor?: string;
@@ -38,21 +39,7 @@ button {
   background: var(--btn-action-bg);
   cursor: pointer;
   border: var(--btn-action-border);
-
-  &.sm {
-    width: var(--btn-action-sm-size);
-    height: var(--btn-action-sm-size);
-  }
-
-  &.md {
-    width: var(--btn-action-md-size);
-    height: var(--btn-action-md-size);
-  }
-
-  &.lg {
-    width: var(--btn-action-lg-size);
-    height: var(--btn-action-lg-size);
-  }
+  box-sizing: border-box;
 
   &:hover,
   &:active {
