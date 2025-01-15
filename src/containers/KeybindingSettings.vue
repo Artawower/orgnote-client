@@ -1,5 +1,7 @@
 <template>
-  <h1>keybindings</h1>
+  <under-development />
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import UnderDevelopment from 'src/components/UnderDevelopment.vue';
+</script>
