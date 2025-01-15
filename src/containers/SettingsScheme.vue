@@ -3,7 +3,7 @@
     <h5 v-if="name" class="capitalize description">{{ name.toUpperCase() }}</h5>
     <card-wrapper background="bg-alt2">
       <settings-item
-        v-for="(scheme, name) of entries as Record<string, any>"
+        v-for="(scheme, name) of props.scheme.entries as Record<string, any>"
         :key="name"
         :name="name"
         :path="path"
@@ -16,15 +16,15 @@
 <script lang="ts" setup>
 import CardWrapper from 'src/components/CardWrapper.vue';
 import SettingsItem from './SettingsItem.vue';
+import type { ValibotScheme } from 'src/models/valibot-scheme';
 
 const props = defineProps<{
   path: string;
   name?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entries: Record<string, any>;
+  scheme: ValibotScheme;
 }>();
 
-console.log('[line 27]: ', props.entries);
+console.log('[line 27]: ', props.scheme.entries);
 </script>
 
 <style lang="scss" scoped>

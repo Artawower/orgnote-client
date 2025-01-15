@@ -1,10 +1,11 @@
 <template>
-  <settings-scheme :entries="developmentEntries" path="developer"></settings-scheme>
+  <settings-scheme :scheme="developmentScheme" path="developer"></settings-scheme>
 </template>
 
 <script lang="ts" setup>
 import { ORG_NOTE_CONFIG_SCHEMA } from 'orgnote-api';
 import SettingsScheme from './SettingsScheme.vue';
+import { valibotScheme } from 'src/models/valibot-scheme';
 
-const developmentEntries = { ...ORG_NOTE_CONFIG_SCHEMA.entries.developer.entries };
+const developmentScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.developer.entries });
 </script>

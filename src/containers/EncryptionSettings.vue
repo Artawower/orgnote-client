@@ -1,6 +1,6 @@
 <template>
   <h1>qew</h1>
-  <settings-scheme :entries="encryptionEntries" path="encryption"></settings-scheme>
+  <settings-scheme :scheme="encryptionScheme" path="encryption"></settings-scheme>
   <card-wrapper background="bg-alt2">
     <app-description v-if="config.encryption.type === 'gpgKeys'">
       {{ t(TXT_ENCRYPTION_KEYS_GEN_WARNING) }}
@@ -24,9 +24,10 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';
 import SettingsScheme from './SettingsScheme.vue';
+import { valibotScheme } from 'src/models/valibot-scheme';
 
-const encryptionEntries = { ...ORG_NOTE_CONFIG_SCHEMA.entries.encryption };
-console.log('✎: [line 11][EncryptionSettings.vue] encryptionEntries: ', encryptionEntries);
+const encryptionScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.encryption });
+console.log('✎: [line 11][EncryptionSettings.vue] encryptionEntries: ', encryptionScheme);
 
 const { config } = storeToRefs(api.core.useSettings());
 

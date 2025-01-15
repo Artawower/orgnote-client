@@ -1,11 +1,11 @@
 <template>
   <div class="interface-settings">
-    <settings-scheme :name="t(TXT_COMMON)" :entries="commonEntries" path="ui"></settings-scheme>
-    <settings-scheme :name="t(TXT_THEMES)" :entries="themeEntries" path="ui"></settings-scheme>
-    <settings-scheme :name="t(TXT_EDITOR)" :entries="editorEntries" path="editor"></settings-scheme>
+    <settings-scheme :name="t(TXT_COMMON)" :scheme="commonScheme" path="ui"></settings-scheme>
+    <settings-scheme :name="t(TXT_THEMES)" :scheme="themeScheme" path="ui"></settings-scheme>
+    <settings-scheme :name="t(TXT_EDITOR)" :scheme="editorScheme" path="editor"></settings-scheme>
     <settings-scheme
       :name="t(TXT_COMPLETION)"
-      :entries="completionEntries"
+      :scheme="completionScheme"
       path="completion"
     ></settings-scheme>
   </div>
@@ -21,20 +21,25 @@ import {
   TXT_THEMES,
   ORG_NOTE_CONFIG_SCHEMA,
 } from 'orgnote-api';
+import { valibotScheme } from 'src/models/valibot-scheme';
 
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
 });
 
-const commonEntries = { ...ORG_NOTE_CONFIG_SCHEMA.entries.ui.entries };
-delete commonEntries['theme'];
-delete commonEntries['darkThemeName'];
-delete commonEntries['lightThemeName'];
-const themeEntries = { theme: ORG_NOTE_CONFIG_SCHEMA.entries.ui.entries['theme'] };
+const commonScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.ui });
+const theme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.ui.entries.theme });
+delete commonScheme.entries['theme'];
+delete commonScheme.entries['darkThemeName'];
+delete commonScheme.entries['lightThemeName'];
+const themeScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.ui });
+themeScheme.entries = {
+  theme,
+};
 
-const editorEntries = ORG_NOTE_CONFIG_SCHEMA.entries.editor.entries;
-const completionEntries = ORG_NOTE_CONFIG_SCHEMA.entries.completion.entries;
+const editorScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.editor);
+const completionScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.completion);
 </script>
 
 <style lang="scss" scoped>

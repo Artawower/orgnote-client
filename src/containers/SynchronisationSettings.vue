@@ -1,5 +1,5 @@
 <template>
-  <settings-scheme :entries="syncEntries" path="ui"></settings-scheme>
+  <settings-scheme :scheme="syncScheme" path="ui"></settings-scheme>
   <card-wrapper background="bg-alt2">
     <menu-item color="blue" :disabled="true">
       <div class="capitalize text-bold color-blue">{{ t(TXT_FORCE_SYNC) }}</div>
@@ -15,8 +15,9 @@ import AppDescription from 'src/components/AppDescription.vue';
 import MenuItem from './MenuItem.vue';
 import { useI18n } from 'vue-i18n';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import { valibotScheme } from 'src/models/valibot-scheme';
 
-const syncEntries = ORG_NOTE_CONFIG_SCHEMA.entries.synchronization.entries;
+const syncScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.synchronization);
 
 const { t } = useI18n({
   useScope: 'global',

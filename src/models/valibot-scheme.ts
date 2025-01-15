@@ -14,3 +14,8 @@ export interface ValibotScheme {
   entries: { [key: string]: ValibotScheme };
   literal?: string;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function valibotScheme(t: any): ValibotScheme {
+  return t as unknown as ValibotScheme;
+}
