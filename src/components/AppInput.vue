@@ -19,7 +19,7 @@ defineProps<{
   type?: string;
 }>();
 
-const model = defineModel<string>('');
+const model = defineModel<string | number>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
 
