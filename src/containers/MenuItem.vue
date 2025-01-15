@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item" :class="{ active }">
+  <div class="menu-item" :class="{ active, disabled }">
     <div class="left">
       <app-icon
         v-if="icon"
