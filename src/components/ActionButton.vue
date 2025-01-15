@@ -1,7 +1,7 @@
 <template>
-  <button :class="[`icon-${size}`, active]">
+  <button :class="[`icon-${size}`, active, { outline }]">
     <animation-wrapper>
-      <app-icon :key="icon" :name="icon" :size="size" :color="color" />
+      <app-icon :hover-color="hoverColor" :key="icon" :name="icon" :size="size" :color="color" />
     </animation-wrapper>
   </button>
 </template>
@@ -20,6 +20,8 @@ const props = withDefaults(
     color?: string;
     fireIcon?: string;
     fireColor?: string;
+    outline?: boolean;
+    hoverColor?: string;
   }>(),
   {
     active: false,
@@ -36,15 +38,18 @@ button {
   padding: var(--btn-action-padding);
   border-radius: var(--btn-action-radius);
   color: var(--btn-action-color);
-  background: var(--btn-action-bg);
   cursor: pointer;
   border: var(--btn-action-border);
   box-sizing: border-box;
+  background: transparent;
 
-  &:hover,
-  &:active {
-    background: var(--btn-action-hover-bg);
-    filter: brightness(var(--btn-action-hover-brightness));
+  &:not(.outline) {
+    background: var(--btn-action-bg);
+    &:hover,
+    &:active {
+      background: var(--btn-action-hover-bg);
+      filter: brightness(var(--btn-action-hover-brightness));
+    }
   }
 
   .active {

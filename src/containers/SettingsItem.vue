@@ -1,10 +1,41 @@
 <template>
-  <menu-item
-    @click="onItemClick"
-    v-if="scheme.type !== 'union'"
-    :path="getNestedPath(name)"
-    :key="name"
-  >
+  <template v-if="scheme.type === 'union'">
+    <menu-item
+      @click="config[props.path][props.name] = option.literal"
+      v-for="option of scheme.options"
+      :key="option"
+      :selected="config[props.path][props.name] === option.literal"
+    >
+      <div class="capitalize menu-item-content">
+        {{ option.literal }}
+      </div>
+    </menu-item>
+  </template>
+  <template v-else-if="scheme.type === 'array'">
+    <menu-item v-for="(_, i) of config[props.path][props.name]" :key="i">
+      <app-input
+        v-model="config[props.path][props.name][i]"
+        :type="scheme.type"
+        :name="name"
+        ref="editInputRef"
+      />
+      <template #right>
+        <div class="action-btn">
+          <action-button
+            @click="removeFromArray(i)"
+            icon="delete"
+            size="sm"
+            outline
+            hover-color="red"
+          ></action-button>
+        </div>
+      </template>
+    </menu-item>
+    <menu-item :active="true" @click="addValueToArray">
+      <div class="capitalize">{{ t(TXT_ADD) }}</div>
+    </menu-item>
+  </template>
+  <menu-item v-else @click="onItemClick" :path="getNestedPath(name)" :key="name">
     <div class="capitalize text-bold menu-item-content">
       {{ camelCaseToWords(name) }}
     </div>
@@ -24,27 +55,18 @@
       />
     </template>
   </menu-item>
-  <template v-if="scheme.type === 'union'">
-    <menu-item
-      @click="config[props.path][props.name] = option.literal"
-      v-for="option of scheme.options"
-      :key="option"
-      :selected="config[props.path][props.name] === option.literal"
-    >
-      <div class="capitalize menu-item-content">
-        {{ option.literal }}
-      </div>
-    </menu-item>
-  </template>
 </template>
 
 <script lang="ts" setup>
 import MenuItem from './MenuItem.vue';
 import ToggleButton from 'src/components/ToggleButton.vue';
 import AppInput from 'src/components/AppInput.vue';
+import ActionButton from 'src/components/ActionButton.vue';
+import { TXT_ADD } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   path: string;
@@ -67,4 +89,33 @@ const onItemClick = () => {
     config[props.path][props.name] = !config[props.path][props.name];
   }
 };
+
+const addValueToArray = () => {
+  if (props.scheme.type === 'array') {
+    config[props.path][props.name].push('');
+  }
+};
+
+const removeFromArray = (index: number) => {
+  if (props.scheme.type === 'array') {
+    config[props.path][props.name].splice(index, 1);
+  }
+};
+
+const { t } = useI18n({
+  useScope: 'global',
+  inheritLocale: true,
+});
 </script>
+
+<style lang="scss" scoped>
+.action-btn {
+  display: none;
+}
+
+.menu-item:hover {
+  .action-btn {
+    display: block;
+  }
+}
+</style>

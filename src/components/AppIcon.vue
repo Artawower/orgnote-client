@@ -1,6 +1,10 @@
 <template>
-  <div class="icon" :style="{ backgroundColor: bgColor, color }" :class="[{ rounded }, size]">
-    <q-icon v-bind="$props" :color="color ?? getCssVariableName('fg')" :size="iconSize" />
+  <div
+    class="icon"
+    :style="{ backgroundColor: bgColor, color, '--icon-hover-color': hoverColor }"
+    :class="[{ rounded }, size]"
+  >
+    <q-icon v-bind="$props" color="inherit" :size="iconSize" />
   </div>
 </template>
 
@@ -13,6 +17,7 @@ type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface Props {
   color?: string;
+  hoverColor?: string;
   background?: string;
   size?: IconSize;
   rounded?: boolean;
@@ -24,6 +29,7 @@ const props = withDefaults(defineProps<QIconProps & Props>(), {
 
 const bgColor = computed(() => props.background && getCssVariableName(props.background));
 const color = computed(() => getCssVariableName(props.color ?? 'fg'));
+const hoverColor = computed(() => getCssVariableName(props.hoverColor ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
 
 const iconSizeMap: { [key in IconSize]: string } = {
@@ -55,6 +61,12 @@ const iconSize = computed(() => iconSizeMap[props.size]);
       min-width: $value;
       min-height: $value;
     }
+  }
+}
+
+.icon {
+  &:hover {
+    color: var(--icon-hover-color) !important;
   }
 }
 </style>
