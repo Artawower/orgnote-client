@@ -3,6 +3,7 @@
     @click="execute(props.command)"
     :icon="extractDynamicValue(command.icon)"
     :active="command?.isActive?.()"
+    :narrow="command?.context?.narrow"
   >
     <div class="capitalize text-bold">{{ t(command.command) }}</div>
   </menu-item>

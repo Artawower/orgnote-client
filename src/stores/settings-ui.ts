@@ -11,7 +11,15 @@ export const useSettingsUiStore = defineStore('settings-ui', () => {
       DefaultCommands.INTERFACE_SETTINGS,
       DefaultCommands.SYNCHRONISATION_SETTINGS,
       DefaultCommands.SUBSCRIPTION_SETTINGS,
+      DefaultCommands.KEYBINDINGS_SETTINGS,
     ],
+    pro: [
+      DefaultCommands.DEVELOPER_SETTINGS,
+      DefaultCommands.EXTENSIONS_SETTINGS,
+      DefaultCommands.ENCRYPTION_SETTINGS,
+      DefaultCommands.API_SETTINGS,
+    ],
+    links: [DefaultCommands.SOURCE_CODE, DefaultCommands.READ_WIKI, DefaultCommands.SPONSOR],
   });
 
   const store: SettingsUiStore = {

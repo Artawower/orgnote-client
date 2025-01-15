@@ -1,5 +1,5 @@
 import { useLoadingMessages } from 'src/composables/use-loading-messages';
-import { LOADING_MESSAGE_1 } from 'orgnote-api';
+import { TXT_LOADING_MESSAGE_1 } from 'orgnote-api';
 import { test, expect, vi } from 'vitest';
 import { withSetup } from '../../test/with-setup';
 
@@ -13,7 +13,7 @@ test('default messages are used when none are provided', () => {
   const [result] = withSetup(() => useLoadingMessages());
   const { currentMessage, timer } = result;
 
-  expect(currentMessage.value).toBe(LOADING_MESSAGE_1);
+  expect(currentMessage.value).toBe(TXT_LOADING_MESSAGE_1);
   expect(timer.value).toBe(3000);
 });
 

@@ -26,5 +26,7 @@ const { settingsMenu } = storeToRefs(api.ui.useSettingsUi());
   @include desktop-below {
     width: 100%;
   }
+
+  @include flexify(column, flex-start, center, var(--gap-lg));
 }
 </style>

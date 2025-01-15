@@ -1,9 +1,9 @@
 import {
-  LOADING_MESSAGE_1,
-  LOADING_MESSAGE_2,
-  LOADING_MESSAGE_3,
-  LOADING_MESSAGE_4,
-  LOADING_MESSAGE_5,
+  TXT_LOADING_MESSAGE_1,
+  TXT_LOADING_MESSAGE_2,
+  TXT_LOADING_MESSAGE_3,
+  TXT_LOADING_MESSAGE_4,
+  TXT_LOADING_MESSAGE_5,
 } from 'orgnote-api';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -15,11 +15,11 @@ export function useLoadingMessages(options: { messages?: string[]; timer?: numbe
   });
 
   const defaultMessages = [
-    t(LOADING_MESSAGE_1),
-    t(LOADING_MESSAGE_2),
-    t(LOADING_MESSAGE_3),
-    t(LOADING_MESSAGE_4),
-    t(LOADING_MESSAGE_5),
+    t(TXT_LOADING_MESSAGE_1),
+    t(TXT_LOADING_MESSAGE_2),
+    t(TXT_LOADING_MESSAGE_3),
+    t(TXT_LOADING_MESSAGE_4),
+    t(TXT_LOADING_MESSAGE_5),
   ];
 
   const messages = ref<string[]>(

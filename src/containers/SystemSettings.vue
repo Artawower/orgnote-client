@@ -2,19 +2,19 @@
   <div class="system-settings">
     <card-wrapper background="bg-alt2">
       <menu-item color="red">
-        <div class="capitalize text-bold">{{ t(CLEAR_ALL_LOCAL_DATA) }}</div>
+        <div class="capitalize text-bold">{{ t(TXT_CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
       <menu-item color="red">
-        <div class="capitalize text-bold">{{ t(DELETE_ALL_NOTES) }}</div>
+        <div class="capitalize text-bold">{{ t(TXT_DELETE_ALL_NOTES) }}</div>
       </menu-item>
     </card-wrapper>
-    <app-description :text="PURGE_DATA_WARNING" />
+    <app-description :text="TXT_PURGE_DATA_WARNING" />
     <card-wrapper background="bg-alt2">
       <menu-item color="red">
-        <div class="capitalize text-bold">{{ t(REMOVE_ACCOUNT) }}</div>
+        <div class="capitalize text-bold">{{ t(TXT_REMOVE_ACCOUNT) }}</div>
       </menu-item>
     </card-wrapper>
-    <app-description :text="REMOVE_ACCOUNT_WARNING" />
+    <app-description :text="TXT_REMOVE_ACCOUNT_WARNING" />
   </div>
 </template>
 
@@ -25,11 +25,11 @@ import AppDescription from 'src/components/AppDescription.vue';
 
 import { useI18n } from 'vue-i18n';
 import {
-  CLEAR_ALL_LOCAL_DATA,
-  DELETE_ALL_NOTES,
-  REMOVE_ACCOUNT,
-  PURGE_DATA_WARNING,
-  REMOVE_ACCOUNT_WARNING,
+  TXT_CLEAR_ALL_LOCAL_DATA,
+  TXT_DELETE_ALL_NOTES,
+  TXT_REMOVE_ACCOUNT,
+  TXT_PURGE_DATA_WARNING,
+  TXT_REMOVE_ACCOUNT_WARNING,
 } from 'orgnote-api';
 
 const { t } = useI18n({

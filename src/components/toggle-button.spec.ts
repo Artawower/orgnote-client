@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { vi, test, expect } from 'vitest';
+import { test, expect } from 'vitest';
 import ToggleButton from './ToggleButton.vue';
 
 test('renders the switch component with default props', () => {
@@ -36,15 +36,4 @@ test('binds the v-model correctly', async () => {
 
   await input.setValue(true);
   expect((input.element as HTMLInputElement).checked).toBe(true);
-});
-
-test('prevents default click on the container', async () => {
-  const wrapper = mount(ToggleButton);
-
-  const container = wrapper.find('.switch__container');
-  const preventDefaultSpy = vi.fn();
-
-  await container.trigger('click', { preventDefault: preventDefaultSpy });
-
-  expect(preventDefaultSpy).toHaveBeenCalled();
 });

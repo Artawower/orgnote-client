@@ -92,6 +92,56 @@ export function getSettingsommands(): Command[] {
         narrow: true,
       },
     },
+    {
+      command: DefaultCommands.KEYBINDINGS_SETTINGS,
+      group: 'settings',
+      icon: 'keyboard',
+      handler: () => openSettingsRoute(RouteNames.KeybindingSettings),
+      isActive: () => isActiveRoute(RouteNames.KeybindingSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.DEVELOPER_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_terminal',
+      handler: () => openSettingsRoute(RouteNames.DeveloperSettings),
+      isActive: () => isActiveRoute(RouteNames.DeveloperSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.EXTENSIONS_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_extension',
+      handler: () => openSettingsRoute(RouteNames.ExtensionsSettings),
+      isActive: () => isActiveRoute(RouteNames.ExtensionsSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.ENCRYPTION_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_extension',
+      handler: () => openSettingsRoute(RouteNames.EncryptionSettings),
+      isActive: () => isActiveRoute(RouteNames.EncryptionSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.API_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_hub',
+      handler: () => openSettingsRoute(RouteNames.ApiSettings),
+      isActive: () => isActiveRoute(RouteNames.ApiSettings),
+      context: {
+        narrow: true,
+      },
+    },
   ];
 
   return commands;

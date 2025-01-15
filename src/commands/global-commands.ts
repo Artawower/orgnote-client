@@ -1,6 +1,7 @@
 import type { Command } from 'orgnote-api';
 import { DefaultCommands } from 'orgnote-api';
 import { api } from 'src/boot/api';
+import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 // import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
 // import { Platform } from 'quasar';
 // import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
@@ -124,6 +125,27 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
         // noteEditorStore.setFilePath(newFilePath);
         // await fileSystemStore.deleteFile(path);
       },
+    },
+    {
+      command: DefaultCommands.SOURCE_CODE,
+      icon: 'fa-brands fa-github-alt',
+      description: 'check source code',
+      group: 'global',
+      handler: () => window.open(GITHUB_LINK, '_blank'),
+    },
+    {
+      command: DefaultCommands.READ_WIKI,
+      icon: 'sym_o_help',
+      description: 'read wiki',
+      group: 'global',
+      handler: () => window.open(WIKI_LINK, '_blank'),
+    },
+    {
+      command: DefaultCommands.SPONSOR,
+      icon: 'sym_o_savings',
+      description: 'sponsor project',
+      group: 'global',
+      handler: () => window.open(PATREON_LINK, '_blank'),
     },
   ];
 

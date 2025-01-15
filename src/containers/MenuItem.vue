@@ -12,8 +12,11 @@
         <slot />
       </div>
     </div>
-    <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" />
-    <app-icon v-else-if="selected" name="sym_o_check" color="blue" />
+    <div class="right">
+      <slot name="right" />
+      <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" size="xs" color="fg-alt" />
+      <app-icon v-else-if="selected" name="sym_o_check" color="accent" size="sm" />
+    </div>
   </div>
 </template>
 
@@ -41,6 +44,7 @@ const color = computed(() => getCssVariableName(props.active ? 'accent' : (props
   padding: var(--menu-item-padding);
   height: var(--menu-item-height);
   max-height: var(--menu-item-height);
+  width: 100%;
 
   &:hover,
   &:active {
@@ -54,6 +58,7 @@ const color = computed(() => getCssVariableName(props.active ? 'accent' : (props
 
 .content {
   padding-left: var(--menu-item-padding);
+  width: 100%;
 }
 
 .active {

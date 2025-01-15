@@ -1,37 +1,40 @@
 <template>
   <div class="settings-scheme">
-    <h5 class="capitalize description">{{ name }}</h5>
+    <h5 v-if="name" class="capitalize description">{{ name.toUpperCase() }}</h5>
     <card-wrapper background="bg-alt2">
-      <menu-item
-        v-for="(scheme, name) of scheme.entries as Record<string, any>"
-        :path="getNestedPath(name)"
+      <settings-item
+        v-for="(scheme, name) of entries as Record<string, any>"
         :key="name"
-      >
-        <div class="capitalize">
-          {{ camelCaseToWords(name) }}
-        </div>
-      </menu-item>
+        :name="name"
+        :path="path"
+        :scheme="scheme"
+      ></settings-item>
     </card-wrapper>
   </div>
 </template>
 
 <script lang="ts" setup>
 import CardWrapper from 'src/components/CardWrapper.vue';
-import MenuItem from './MenuItem.vue';
-import { camelCaseToWords } from 'src/utils/camel-case-to-words';
+import SettingsItem from './SettingsItem.vue';
 
 const props = defineProps<{
   path: string;
-  name: string;
+  name?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  scheme: Record<string, any>;
+  entries: Record<string, any>;
 }>();
 
-const getNestedPath = (path: string) => `${props.path}.${path}`;
+console.log('[line 27]: ', props.entries);
 </script>
 
 <style lang="scss" scoped>
 .settings-scheme {
+  width: 100%;
+}
+
+.menu-item-content {
+  @include flexify(row, space-between, center);
+
   width: 100%;
 }
 </style>

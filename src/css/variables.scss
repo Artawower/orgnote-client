@@ -119,6 +119,9 @@ body {
   // Device sizes
   --tablet: #{a.$tablet};
   --desktop: #{a.$desktop};
+
+  // Toggle button
+  --toggle-button-scale: 0.45;
 }
 
 @include desktop-below {

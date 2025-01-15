@@ -1,5 +1,5 @@
 <template>
-  <div @click.prevent class="switch__container">
+  <div class="switch__container">
     <input :id="id" class="switch switch--flat" type="checkbox" v-model="model" />
     <label :for="id"></label>
   </div>
@@ -24,6 +24,7 @@ const id = useId();
   margin: 0 auto;
   width: 120px;
   transform: scale(var(--toggle-button-scale)) translateX(calc(var(--toggle-button-scale) * 100%));
+  padding-left: 20px;
 }
 
 .switch {
@@ -80,11 +81,11 @@ const id = useId();
 }
 
 .switch--flat:checked + label {
-  background-color: var(--green);
+  background-color: var(--accent);
 }
 
 .switch--flat:checked + label:after {
   margin-left: 60px;
-  background-color: var(--green);
+  background-color: var(--accent);
 }
 </style>

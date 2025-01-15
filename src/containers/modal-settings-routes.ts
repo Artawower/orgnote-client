@@ -40,6 +40,31 @@ export function createSettingsRouter() {
         path: '/settings/subscription',
         component: () => import('./SubscriptionSettings.vue'),
       },
+      {
+        name: RouteNames.KeybindingSettings,
+        path: '/settings/keybindings',
+        component: () => import('./KeybindingSettings.vue'),
+      },
+      {
+        name: RouteNames.EncryptionSettings,
+        path: '/settings/encryption',
+        component: () => import('./EncryptionSettings.vue'),
+      },
+      {
+        name: RouteNames.DeveloperSettings,
+        path: '/settings/developer',
+        component: () => import('./DeveloperSettings.vue'),
+      },
+      {
+        name: RouteNames.ExtensionsSettings,
+        path: '/settings/extensions',
+        component: () => import('./ExtensionsSettings.vue'),
+      },
+      {
+        name: RouteNames.ApiSettings,
+        path: '/settings/api',
+        component: () => import('./ApiSettings.vue'),
+      },
     ],
   });
 

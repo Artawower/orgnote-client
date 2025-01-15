@@ -12,7 +12,7 @@ import { computed } from 'vue';
 interface Props {
   color?: string;
   background?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   rounded?: boolean;
 }
 
