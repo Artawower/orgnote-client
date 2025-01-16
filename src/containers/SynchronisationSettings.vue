@@ -1,8 +1,8 @@
 <template>
   <settings-scheme :scheme="syncScheme" path="ui"></settings-scheme>
   <card-wrapper background="bg-alt2">
-    <menu-item color="blue" :disabled="true">
-      <div class="capitalize text-bold color-blue">{{ t(TXT_FORCE_SYNC) }}</div>
+    <menu-item type="info" :disabled="true">
+      <div class="capitalize text-bold">{{ t(TXT_FORCE_SYNC) }}</div>
     </menu-item>
   </card-wrapper>
   <app-description>{{ t(TXT_FORCE_SYNC_DESCRIPTION) }}</app-description>

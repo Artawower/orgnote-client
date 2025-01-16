@@ -5,6 +5,7 @@
       v-for="(option, k) of scheme.options"
       :key="k"
       :selected="config[props.path][props.name] === option.literal"
+      :active="config[props.path][props.name] === option.literal"
     >
       <div class="capitalize menu-item-content">
         {{ option.literal }}
@@ -31,8 +32,8 @@
         </div>
       </template>
     </menu-item>
-    <menu-item :active="true" @click="addValueToArray">
-      <div class="capitalize">{{ t(TXT_ADD) }}</div>
+    <menu-item type="info" @click="addValueToArray">
+      {{ t(TXT_ADD) }}
     </menu-item>
   </template>
   <template v-else-if="metadata?.textarea">
@@ -40,11 +41,9 @@
       <app-description padded>{{ camelCaseToWords(name) }}</app-description>
       <app-text-area ref="editInputRef" v-model="config[props.path][props.name]"></app-text-area>
     </menu-item>
-    <menu-item v-if="metadata.upload"
-      ><div class="capitalize color-blue text-bold">
-        {{ t(TXT_UPLOAD) }} {{ camelCaseToWords(name) }}
-      </div></menu-item
-    >
+    <menu-item v-if="metadata.upload" type="info">
+      {{ t(TXT_UPLOAD) }} {{ camelCaseToWords(name) }}
+    </menu-item>
   </template>
   <menu-item v-else @click="onItemClick" :path="getNestedPath(name)" :key="name">
     <div v-if="!metadata?.textarea" class="capitalize text-bold menu-item-content">

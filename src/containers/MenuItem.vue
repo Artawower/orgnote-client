@@ -1,14 +1,14 @@
 <template>
-  <div class="menu-item" :class="{ active, disabled }" :style="{ '--menu-item-lines': lines }">
+  <div class="menu-item" :class="[{ disabled }, type]" :style="{ '--menu-item-lines': lines }">
     <div class="left">
       <app-icon
         v-if="icon"
         :name="icon"
-        :background="active ? 'accent' : 'fg'"
-        color="bg"
+        :background="inverseIconColors ? background : color"
+        :color="inverseIconColors ? color : background"
         :rounded="true"
       ></app-icon>
-      <div class="content" :style="{ color }">
+      <div class="content text-bold capitalize" :style="{ color: getCssVariableName(color) }">
         <slot />
       </div>
     </div>
@@ -26,23 +26,36 @@ import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
 
+type MenuItemType = 'info' | 'warning' | 'plain' | 'danger' | 'active';
+
 const props = withDefaults(
   defineProps<{
     icon?: string;
     narrow?: boolean;
-    active?: boolean;
     disabled?: boolean;
-    color?: string;
+    active?: boolean;
+    type?: MenuItemType;
     selected?: boolean;
     lines?: number;
+    inverseIconColors?: boolean;
   }>(),
   {
+    type: 'plain',
     lines: 1,
   },
 );
 
-const color = computed(() => getCssVariableName(props.active ? 'accent' : (props.color ?? 'fg')));
+const typeColorMap: { [key in MenuItemType]?: string } = {
+  info: 'blue',
+  warning: 'yellow',
+  danger: 'red',
+  plain: 'fg',
+  active: 'accent',
+};
+
 const slots = useSlots();
+const color = computed(() => (props.active ? 'accent' : typeColorMap[props.type] || 'fg'));
+const background = computed(() => 'bg');
 </script>
 
 <style lang="scss" scoped>

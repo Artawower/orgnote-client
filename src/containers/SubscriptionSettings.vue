@@ -4,8 +4,8 @@
       <menu-item @click="inputRef?.focus()">
         <app-input ref="inputRef" :placeholder="t(TXT_SUBSCRIPTION_KEY)" />
       </menu-item>
-      <menu-item>
-        <div class="capitalize text-bold color-blue">{{ t(TXT_ACTIVATE) }}</div>
+      <menu-item type="info">
+        <div class="capitalize text-bold">{{ t(TXT_ACTIVATE) }}</div>
       </menu-item>
     </card-wrapper>
 

@@ -9,6 +9,7 @@
         <menu-item
           @click="changeConditionalType(o.entries[conditionalKey].literal)"
           :selected="o.entries[conditionalKey].literal === encryptionConfig"
+          :active="o.entries[conditionalKey].literal === encryptionConfig"
           v-for="(o, i) of scheme.options"
           :key="i"
         >
