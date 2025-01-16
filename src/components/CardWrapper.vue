@@ -1,32 +1,24 @@
 <template>
-  <div
-    class="card-wrapper"
-    :class="[{ padding, border }, classes]"
-    :style="{ 'background-color': bg }"
-  >
+  <div class="card-wrapper" :class="[{ padding, border }, type]">
     <slot />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { getCssVariableName } from 'src/utils/css-utils';
-import { computed } from 'vue';
+import type { CardType } from 'src/models/card-type';
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     padding?: boolean;
     border?: boolean;
-    background?: string;
-    classes?: string;
+    type?: CardType;
   }>(),
   {
     padding: false,
     border: false,
-    background: 'var(--bg)',
+    type: 'simple',
   },
 );
-
-const bg = computed(() => getCssVariableName(props.background ?? 'bg-alt'));
 </script>
 
 <style lang="scss">
@@ -42,6 +34,27 @@ const bg = computed(() => getCssVariableName(props.background ?? 'bg-alt'));
 
   &.border {
     border: var(--card-border);
+  }
+
+  $type-colors: (
+    info: var(--blue),
+    warning: var(--yellow),
+    danger: var(--red),
+  );
+
+  &.simple {
+    background: var(--bg-alt2);
+  }
+
+  @each $type, $color in $type-colors {
+    &.#{$type} {
+      background: color-mix(in srgb, $color, var(--bg) 80%) !important;
+      border-color: $color;
+
+      ::v-deep(li::marker) {
+        color: color-mix(in srgb, $color, var(--bg) 40%) !important;
+      }
+    }
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <settings-scheme :scheme="encryptionScheme" path="encryption"></settings-scheme>
   <template v-if="config.encryption.type === 'gpgKeys'">
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item type="danger">
         {{ t(TXT_GENERATE_GPG_KEYS) }}
       </menu-item>
@@ -10,7 +10,7 @@
       {{ t(TXT_ENCRYPTION_KEYS_GEN_WARNING) }}
     </app-description>
   </template>
-  <card-wrapper background="bg-alt2">
+  <card-wrapper>
     <menu-item type="danger">
       {{ t(TXT_ENCRYPT_AND_SYNC) }}
     </menu-item>

@@ -1,6 +1,6 @@
 <template>
   <div class="system-settings">
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item type="danger">
         <div class="capitalize text-bold">{{ t(TXT_CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
@@ -9,7 +9,7 @@
       </menu-item>
     </card-wrapper>
     <app-description :text="TXT_PURGE_DATA_WARNING" padded />
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item type="danger">
         <div class="capitalize text-bold">{{ t(TXT_REMOVE_ACCOUNT) }}</div>
       </menu-item>

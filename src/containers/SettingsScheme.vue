@@ -5,7 +5,7 @@
       v-if="scheme.type === 'union' && Object.keys(conditionalOption ?? {}).length"
       class="union-settings"
     >
-      <card-wrapper background="bg-alt2">
+      <card-wrapper>
         <menu-item
           @click="changeConditionalType(o.entries[conditionalKey].literal)"
           :selected="o.entries[conditionalKey].literal === encryptionConfig"
@@ -18,7 +18,7 @@
       </card-wrapper>
       <settings-scheme :scheme="conditionalOption" :path="path" />
     </div>
-    <card-wrapper v-else background="bg-alt2">
+    <card-wrapper v-else>
       <settings-item
         v-for="(scheme, name) of props.scheme.entries as Record<string, any>"
         :key="name"

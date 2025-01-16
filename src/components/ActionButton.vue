@@ -19,7 +19,7 @@
 <script lang="ts" setup>
 import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
 
@@ -43,20 +43,20 @@ const props = withDefaults(
   },
 );
 
-const activeIcon = ref<string>(props.icon);
-const activeColor = ref<string>(props.color);
+const fired = ref<boolean>(false);
+
+const activeIcon = computed(() => (fired.value ? props.fireIcon : props.icon));
+const activeColor = computed(() => (fired.value ? (props.fireColor ?? props.color) : props.color));
 
 const onButtonClick = () => {
   if (!props.fireIcon) {
     return;
   }
 
-  activeIcon.value = props.fireIcon;
-  activeColor.value = props.fireColor ?? props.color;
+  fired.value = true;
 
   setTimeout(() => {
-    activeIcon.value = props.icon;
-    activeColor.value = props.color;
+    fired.value = false;
   }, ICON_CHANGE_DURATION);
 };
 </script>

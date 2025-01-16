@@ -1,6 +1,6 @@
 <template>
   <div class="subscription-settings">
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item @click="inputRef?.focus()">
         <app-input ref="inputRef" :placeholder="t(TXT_SUBSCRIPTION_KEY)" />
       </menu-item>

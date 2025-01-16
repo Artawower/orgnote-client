@@ -4,7 +4,7 @@
       <div class="capitalize">{{ t(TXT_AVAILABLE_FOR_SUBSCRIPTION) }}</div>
     </app-description>
 
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item v-for="(token, i) of tokens" type="plain" :key="i">
         {{ token.token }}
         <template #right>
@@ -24,7 +24,7 @@
         </template>
       </menu-item>
     </card-wrapper>
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item @click="addToken" type="info">
         <div class="capitalize">{{ t(TXT_CREATE_NEW_TOKEN) }}</div>
       </menu-item>

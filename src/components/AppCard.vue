@@ -1,5 +1,5 @@
 <template>
-  <card-wrapper :classes="type">
+  <card-wrapper :type="type">
     <h5 v-if="slots.cardTitle" class="card-title text-bold" :style="{ color: bg }">
       <app-icon v-if="type !== 'simple'" size="sm" :name="icon" :color="background" />
       <slot name="cardTitle" />
@@ -16,8 +16,8 @@ import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
 import AppIcon from './AppIcon.vue';
-
-type CardType = 'simple' | 'info' | 'warning' | 'danger';
+import type { CardType } from 'src/models/card-type';
+import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
 
 const props = withDefaults(
   defineProps<{
@@ -31,17 +31,10 @@ const props = withDefaults(
   },
 );
 
-const typeBgMap: { [key in CardType]: string } = {
-  simple: 'bg',
-  info: 'blue',
-  warning: 'yellow',
-  danger: 'red',
-};
-
 const slots = useSlots();
 
 const background = computed(() => {
-  return typeBgMap[props.type];
+  return CARD_TYPE_TO_BACKGROUND[props.type];
 });
 
 const typeIconMap: { [key in CardType]: string } = {
@@ -64,24 +57,6 @@ const bg = computed(() => getCssVariableName(background.value));
   box-sizing: border-box;
 
   padding: var(--block-padding-md);
-
-  $type-colors: (
-    simple: var(--bg),
-    info: var(--blue),
-    warning: var(--yellow),
-    danger: var(--red),
-  );
-
-  @each $type, $color in $type-colors {
-    &.#{$type} {
-      background: color-mix(in srgb, $color, var(--bg) 80%) !important;
-      border-color: $color;
-
-      ::v-deep(li::marker) {
-        color: color-mix(in srgb, $color, var(--bg) 40%) !important;
-      }
-    }
-  }
 }
 
 h5 {

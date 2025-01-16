@@ -1,6 +1,6 @@
 <template>
   <div class="settings-menu">
-    <card-wrapper v-for="(menuItems, key) of settingsMenu" :key="key" background="bg-alt2">
+    <card-wrapper v-for="(menuItems, key) of settingsMenu" :key="key">
       <command-menu-item v-for="(menuItem, i) of menuItems" :key="i" :command="menuItem" />
     </card-wrapper>
   </div>

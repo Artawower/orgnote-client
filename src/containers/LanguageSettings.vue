@@ -3,7 +3,7 @@
     <app-description padded>
       {{ t(TXT_PICK_LANGUAGE).toUpperCase() }}
     </app-description>
-    <card-wrapper background="bg-alt2">
+    <card-wrapper>
       <menu-item v-for="(_, key) of messages" :key="key" :selected="key === locale">
         {{ key }}
       </menu-item>
