@@ -67,6 +67,7 @@ const background = computed(() => 'bg');
   /* max-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1)); */
   height: auto;
   width: 100%;
+  position: relative;
 
   &:hover,
   &:active {

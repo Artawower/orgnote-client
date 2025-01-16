@@ -7,6 +7,7 @@ import { useFileSystemStore } from './file-system';
 import { parse } from 'valibot';
 import { formatValidationErrors } from 'src/utils/format-validation-errors';
 import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
+import type { ModelsAPIToken } from 'orgnote-api/remote-api';
 
 export const useSettingsStore = defineStore<'settings', SettingsStore>(
   'settings',
@@ -14,6 +15,8 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
     const fileSystem = useFileSystemStore();
     const diskConfigPath = getSystemFilesPath('config.json');
     const lastSyncTime = ref<number>(0);
+
+    const tokens = ref<ModelsAPIToken[]>([{ id: '1', token: 'bla' }]);
 
     const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
     const configErrors = ref<string[]>([]);
@@ -42,6 +45,7 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
       config,
       sync,
       configErrors,
+      tokens,
     };
   },
   { persist: true },

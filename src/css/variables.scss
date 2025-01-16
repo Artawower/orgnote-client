@@ -48,7 +48,7 @@ body {
   --border-radius-lg: 16px;
 
   // Default borders
-  --border-deftaul: 1px solid var(--fg-alt);
+  --border-default: 1px solid var(--fg-alt);
 
   // Shadows
   --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.1);
@@ -64,7 +64,7 @@ body {
 
   // Footer
   --footer-height: 60px;
-  --footer-border-top: var(--border-deftaul);
+  --footer-border-top: var(--border-default);
   --footer-padding: 0;
   --footer-background: var(--bg-alt);
 
@@ -72,7 +72,7 @@ body {
   --sidebar-width: 360px;
   --sidebar-mini-width: 72px;
   --sidebar-background: var(--bg-alt);
-  --sidebar-border-right: var(--border-deftaul);
+  --sidebar-border-right: var(--border-default);
   --sidebar-padding: var(--block-padding-md);
 
   // Button
@@ -96,7 +96,7 @@ body {
 
   // Modal
   --modal-backdrop-bg: var(--backdrop-bg);
-  --modal-border: var(--border-deftaul);
+  --modal-border: var(--border-default);
   --modal-border-radius: var(--border-radius-md);
   --modal-padding: var(--block-padding-lg);
   --modal-max-width: 1280px;
@@ -104,7 +104,7 @@ body {
 
   // Cards
   --card-padding: var(--block-padding-md);
-  --card-border: var(--border-deftaul);
+  --card-border: var(--border-default);
   --card-border-radius: var(--border-radius-md);
 
   // Menu item

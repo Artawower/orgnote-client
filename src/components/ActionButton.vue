@@ -1,7 +1,17 @@
 <template>
-  <button :class="[`icon-${size}`, active, { outline }]">
+  <button
+    @click="onButtonClick"
+    :class="[`icon-${size}`, active, { outline, border }]"
+    :style="{ '--action-border-color': getCssVariableName(activeColor) }"
+  >
     <animation-wrapper>
-      <app-icon :hover-color="hoverColor" :key="icon" :name="icon" :size="size" :color="color" />
+      <app-icon
+        :hover-color="hoverColor"
+        :key="activeIcon"
+        :name="activeIcon"
+        :size="size"
+        :color="activeColor"
+      />
     </animation-wrapper>
   </button>
 </template>
@@ -9,7 +19,9 @@
 <script lang="ts" setup>
 import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
-import { computed } from 'vue';
+import { ref } from 'vue';
+import { ICON_CHANGE_DURATION } from 'src/constants/animations';
+import { getCssVariableName } from 'src/utils/css-utils';
 
 type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 const props = withDefaults(
@@ -22,14 +34,31 @@ const props = withDefaults(
     fireColor?: string;
     outline?: boolean;
     hoverColor?: string;
+    border?: boolean;
   }>(),
   {
     active: false,
     size: 'md',
+    color: 'fg',
   },
 );
 
-const color = computed(() => props.color ?? 'fg');
+const activeIcon = ref<string>(props.icon);
+const activeColor = ref<string>(props.color);
+
+const onButtonClick = () => {
+  if (!props.fireIcon) {
+    return;
+  }
+
+  activeIcon.value = props.fireIcon;
+  activeColor.value = props.fireColor ?? props.color;
+
+  setTimeout(() => {
+    activeIcon.value = props.icon;
+    activeColor.value = props.color;
+  }, ICON_CHANGE_DURATION);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -52,9 +81,26 @@ button {
     }
   }
 
-  .active {
+  &.active {
     background: var(--btn-action-active-bg);
     color: var(--btn-action-active-color);
+  }
+
+  &.border {
+    border: var(--border-default);
+    border-color: var(--action-border-color, var(--border-default));
+  }
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black);
+
+    .icon {
+      color: color-mix(
+        in srgb,
+        var(--action-border-color, var(--border-default)),
+        20% black
+      ) !important;
+    }
   }
 }
 </style>
