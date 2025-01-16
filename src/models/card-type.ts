@@ -1,1 +1,1 @@
-export type CardType = 'simple' | 'info' | 'warning' | 'danger';
+export type CardType = 'plain' | 'info' | 'warning' | 'danger' | 'active';

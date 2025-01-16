@@ -16,7 +16,7 @@ withDefaults(
   {
     padding: false,
     border: false,
-    type: 'simple',
+    type: 'plain',
   },
 );
 </script>

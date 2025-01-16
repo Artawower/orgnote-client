@@ -25,7 +25,9 @@
 </template>
 
 <script lang="ts" setup>
+import type { ThemeVariable } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
+import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
@@ -51,17 +53,16 @@ const props = withDefaults(
   },
 );
 
-const typeColorMap: { [key in MenuItemType]?: string } = {
-  info: 'blue',
-  warning: 'yellow',
-  danger: 'red',
+const typeColorMap: { [key in MenuItemType]?: ThemeVariable } = {
+  ...CARD_TYPE_TO_BACKGROUND,
   plain: 'fg',
-  active: 'accent',
 };
 
 const slots = useSlots();
-const color = computed(() => (props.active ? 'accent' : typeColorMap[props.type] || 'fg'));
-const background = computed(() => 'bg');
+const color = computed<ThemeVariable>(() =>
+  props.active ? 'accent' : typeColorMap[props.type] || 'fg',
+);
+const background = computed<ThemeVariable>(() => 'bg');
 </script>
 
 <style lang="scss" scoped>

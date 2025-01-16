@@ -1,7 +1,7 @@
 <template>
   <card-wrapper :type="type">
     <h5 v-if="slots.cardTitle" class="card-title text-bold" :style="{ color: bg }">
-      <app-icon v-if="type !== 'simple'" size="sm" :name="icon" :color="background" />
+      <app-icon v-if="type !== 'plain'" size="sm" :name="icon" :color="background" />
       <slot name="cardTitle" />
     </h5>
     <div class="card-content">
@@ -27,7 +27,7 @@ const props = withDefaults(
     type?: CardType;
   }>(),
   {
-    type: 'simple',
+    type: 'plain',
   },
 );
 
@@ -37,8 +37,8 @@ const background = computed(() => {
   return CARD_TYPE_TO_BACKGROUND[props.type];
 });
 
-const typeIconMap: { [key in CardType]: string } = {
-  simple: 'sym_o_info',
+const typeIconMap: { [key in CardType]?: string } = {
+  plain: 'sym_o_info',
   info: 'sym_o_info',
   warning: 'sym_o_warning',
   danger: 'sym_o_dangerous',

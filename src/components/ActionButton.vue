@@ -22,6 +22,7 @@ import AnimationWrapper from './AnimationWrapper.vue';
 import { computed, ref } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
+import type { ThemeVariable } from 'orgnote-api';
 
 type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 const props = withDefaults(
@@ -29,11 +30,11 @@ const props = withDefaults(
     icon: string;
     active?: boolean;
     size?: IconSize;
-    color?: string;
+    color?: ThemeVariable;
     fireIcon?: string;
-    fireColor?: string;
+    fireColor?: ThemeVariable;
     outline?: boolean;
-    hoverColor?: string;
+    hoverColor?: ThemeVariable;
     border?: boolean;
   }>(),
   {

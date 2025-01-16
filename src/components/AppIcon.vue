@@ -9,6 +9,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { ThemeVariable } from 'orgnote-api';
 import type { QIconProps } from 'quasar';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { computed } from 'vue';
@@ -16,7 +17,7 @@ import { computed } from 'vue';
 type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface Props {
-  color?: string;
+  color?: ThemeVariable;
   hoverColor?: string;
   background?: string;
   size?: IconSize;
