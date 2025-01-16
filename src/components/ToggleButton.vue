@@ -1,6 +1,6 @@
 <template>
-  <div class="switch__container">
-    <input :id="id" class="switch switch--flat" type="checkbox" v-model="model" />
+  <div>
+    <input :id="id" name="toggle" class="sw" type="checkbox" v-model="model" />
     <label :for="id"></label>
   </div>
 </template>
@@ -17,75 +17,80 @@ const id = useId();
 </script>
 
 <style lang="scss" scoped>
-/* https://codepen.io/fellipe/pen/adzmPR */
+// https://codepen.io/kowlor/pen/ByavWB
+$sw-height: 30px;
+$sw-width: 51px;
 
-/* Estilo iOS */
-.switch__container {
-  margin: 0 auto;
-  width: 120px;
-  transform: scale(var(--toggle-button-scale)) translateX(calc(var(--toggle-button-scale) * 100%));
-  padding-left: 20px;
-}
+input {
+  &.sw {
+    opacity: 0;
+    position: absolute;
+    left: -9999px;
+    & + label {
+      cursor: pointer;
+      transition: 0.2s ease;
+      display: inline-block;
+      height: $sw-height;
+      width: $sw-width;
+      position: relative;
+      box-shadow: inset 0 0 0px 2px #e4e4e4;
+      border-radius: 60px;
+      &:before {
+        content: '';
+        position: absolute;
+        display: block;
+        height: $sw-height;
+        width: $sw-height;
+        top: 0;
+        left: 0;
+        border-radius: $sw-height/2;
+        background: rgba(76, 217, 100, 0);
+        transition: 0.2s cubic-bezier(0.24, 0, 0.5, 1);
+      }
 
-.switch {
-  visibility: hidden;
-  position: absolute;
-  margin-left: -9999px;
-}
+      /* White toggle */
+      &:after {
+        content: '';
+        position: absolute;
+        display: block;
+        height: 28px;
+        width: 28px;
+        top: 50%;
+        margin-top: -14px;
+        left: 1px;
+        border-radius: 60px;
+        background: #fff;
+        box-shadow:
+          0 0 0 1px hsla(0, 0%, 0%, 0.1),
+          0 4px 0px 0 hsla(0, 0%, 0%, 0.04),
+          0 4px 9px hsla(0, 0%, 0%, 0.13),
+          0 3px 3px hsla(0, 0%, 0%, 0.05);
+        transition: 0.35s cubic-bezier(0.54, 1.6, 0.5, 1);
+      }
+      span {
+        white-space: nowrap;
+        height: $sw-height;
+        line-height: $sw-height;
+        margin-left: $sw-width;
+        padding-left: 16px;
+      }
+    }
+    &:checked {
+      & + label:before {
+        width: $sw-width;
+        background: var(--accent);
+        transition: width 0.2s cubic-bezier(0, 0, 0, 0.1) !important;
+      }
 
-.switch + label {
-  display: block;
-  position: relative;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-}
+      & + label:after {
+        left: $sw-width - $sw-height + 1;
+      }
 
-/* Estilo Flat */
-.switch--flat + label {
-  padding: 2px;
-  width: 120px;
-  height: 60px;
-  background-color: #dddddd;
-  border-radius: 60px;
-  transition: background 0.4s;
-}
-
-.switch--flat + label:before,
-.switch--flat + label:after {
-  display: block;
-  position: absolute;
-  content: '';
-}
-
-.switch--flat + label:before {
-  top: 2px;
-  left: 2px;
-  bottom: 2px;
-  right: 2px;
-  background-color: var(--bg);
-  border-radius: 60px;
-  transition: background 0.4s;
-}
-
-.switch--flat + label:after {
-  top: 4px;
-  left: 4px;
-  bottom: 4px;
-  width: 56px;
-  background-color: #dddddd;
-  border-radius: 52px;
-  transition:
-    margin 0.4s,
-    background 0.4s;
-}
-
-.switch--flat:checked + label {
-  background-color: var(--accent);
-}
-
-.switch--flat:checked + label:after {
-  margin-left: 60px;
-  background-color: var(--accent);
+      & + label {
+        box-shadow: inset 0 0 0px 25px #e4e4e4;
+        transition: box-shadow 2.5s cubic-bezier(0, 1.2, 0.94, 0.95);
+      }
+    }
+  }
 }
 </style>
