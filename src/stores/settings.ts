@@ -16,7 +16,7 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
     const diskConfigPath = getSystemFilesPath('config.json');
     const lastSyncTime = ref<number>(0);
 
-    const tokens = ref<ModelsAPIToken[]>([{ id: '1', token: 'bla' }]);
+    const tokens = ref<ModelsAPIToken[]>([]);
 
     const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
     const configErrors = ref<string[]>([]);

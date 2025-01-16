@@ -10,6 +10,7 @@
         <template #right>
           <div class="actions">
             <action-button
+              @click="api.utils.copyToClipboard(token.token)"
               icon="content_copy"
               color="fg-alt"
               fire-icon="done"

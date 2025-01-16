@@ -34,6 +34,7 @@ import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
 import { useSettingsUiStore } from 'src/stores/settings-ui';
 import type { App } from 'vue';
+import { copyToClipboard } from 'src/utils/clipboard';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -68,6 +69,8 @@ async function initApi(app: App): Promise<void> {
       getCssNumericProperty,
       applyCSSVariables,
       resetCSSVariables,
+
+      copyToClipboard,
     },
     ui: {
       useSplashScreen,

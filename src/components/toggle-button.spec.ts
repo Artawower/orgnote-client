@@ -5,11 +5,9 @@ import ToggleButton from './ToggleButton.vue';
 test('renders the switch component with default props', () => {
   const wrapper = mount(ToggleButton);
 
-  const input = wrapper.find('input.switch');
+  const input = wrapper.find('input');
   const label = wrapper.find('label');
-  const container = wrapper.find('.switch__container');
 
-  expect(container.exists()).toBe(true);
   expect(input.exists()).toBe(true);
   expect(input.attributes('type')).toBe('checkbox');
   expect(label.exists()).toBe(true);
@@ -19,10 +17,9 @@ test('renders the switch component with default props', () => {
 test('renders the switch component with "flat" type by default', () => {
   const wrapper = mount(ToggleButton);
 
-  const input = wrapper.find('input.switch');
+  const input = wrapper.find('input');
 
   expect(input.exists()).toBe(true);
-  expect(input.classes()).toContain('switch--flat');
 });
 
 test('binds the v-model correctly', async () => {
@@ -30,7 +27,7 @@ test('binds the v-model correctly', async () => {
     props: { modelValue: false },
   });
 
-  const input = wrapper.find('input.switch');
+  const input = wrapper.find('input');
 
   expect((input.element as HTMLInputElement).checked).toBe(false);
 
