@@ -1,6 +1,6 @@
 <template>
   <div class="language-settings">
-    <app-description>
+    <app-description padded>
       {{ t(TXT_PICK_LANGUAGE).toUpperCase() }}
     </app-description>
     <card-wrapper background="bg-alt2">

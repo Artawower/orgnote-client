@@ -1,10 +1,16 @@
 <template>
-  <h1>qew</h1>
   <settings-scheme :scheme="encryptionScheme" path="encryption"></settings-scheme>
-  <card-wrapper background="bg-alt2">
+  <template v-if="config.encryption.type === 'gpgKeys'">
+    <card-wrapper background="bg-alt2">
+      <menu-item>
+        <div class="capitalize color-red text-bold">{{ t(TXT_GENERATE_GPG_KEYS) }}</div>
+      </menu-item>
+    </card-wrapper>
     <app-description v-if="config.encryption.type === 'gpgKeys'">
       {{ t(TXT_ENCRYPTION_KEYS_GEN_WARNING) }}
     </app-description>
+  </template>
+  <card-wrapper background="bg-alt2">
     <menu-item>
       <div class="capitalize color-red text-bold">{{ t(TXT_ENCRYPT_AND_SYNC) }}</div>
     </menu-item>
@@ -16,6 +22,7 @@ import {
   ORG_NOTE_CONFIG_SCHEMA,
   TXT_ENCRYPT_AND_SYNC,
   TXT_ENCRYPTION_KEYS_GEN_WARNING,
+  TXT_GENERATE_GPG_KEYS,
 } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';

@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item" :class="{ active, disabled }">
+  <div class="menu-item" :class="{ active, disabled }" :style="{ '--menu-item-lines': lines }">
     <div class="left">
       <app-icon
         v-if="icon"
@@ -26,14 +26,20 @@ import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
 
-const props = defineProps<{
-  icon?: string;
-  narrow?: boolean;
-  active?: boolean;
-  disabled?: boolean;
-  color?: string;
-  selected?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    icon?: string;
+    narrow?: boolean;
+    active?: boolean;
+    disabled?: boolean;
+    color?: string;
+    selected?: boolean;
+    lines?: number;
+  }>(),
+  {
+    lines: 1,
+  },
+);
 
 const color = computed(() => getCssVariableName(props.active ? 'accent' : (props.color ?? 'fg')));
 const slots = useSlots();
@@ -44,8 +50,9 @@ const slots = useSlots();
   @include flexify(row, space-between, center);
   cursor: pointer;
   padding: var(--menu-item-padding);
-  height: var(--menu-item-height);
-  max-height: var(--menu-item-height);
+  min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
+  /* max-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1)); */
+  height: auto;
   width: 100%;
 
   &:hover,
@@ -62,6 +69,12 @@ const slots = useSlots();
 .content {
   padding-left: var(--menu-item-padding);
   width: 100%;
+}
+
+.left,
+.right,
+.content {
+  height: 100%;
 }
 
 .active {

@@ -32,7 +32,8 @@ const bg = computed(() => getCssVariableName(props.background ?? 'bg-alt'));
 <style lang="scss">
 .card-wrapper {
   border-radius: var(--card-border-radius);
-  overflow: hidden;
+  clip-path: inset(0 round var(--card-border-radius));
+  /* overflow: hidden; */
   width: 100%;
 
   &.padding {

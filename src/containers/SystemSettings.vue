@@ -8,13 +8,13 @@
         <div class="capitalize text-bold">{{ t(TXT_DELETE_ALL_NOTES) }}</div>
       </menu-item>
     </card-wrapper>
-    <app-description :text="TXT_PURGE_DATA_WARNING" />
+    <app-description :text="TXT_PURGE_DATA_WARNING" padded />
     <card-wrapper background="bg-alt2">
       <menu-item color="red">
         <div class="capitalize text-bold">{{ t(TXT_REMOVE_ACCOUNT) }}</div>
       </menu-item>
     </card-wrapper>
-    <app-description :text="TXT_REMOVE_ACCOUNT_WARNING" />
+    <app-description :text="TXT_REMOVE_ACCOUNT_WARNING" padded />
   </div>
 </template>
 

@@ -2,14 +2,17 @@
 // with necessary fields for rendering.
 
 export interface ValibotMetadata {
-  conditionalKey?: string;
-  textarea?: boolean;
-  upload?: boolean;
+  metadata: {
+    conditionalKey?: string;
+    textarea?: boolean;
+    upload?: boolean;
+  };
+  type: string;
 }
 
 export interface ValibotScheme {
   type: string;
-  options: ValibotScheme;
+  options: ValibotScheme[];
   pipe?: ValibotMetadata[];
   entries: { [key: string]: ValibotScheme };
   literal?: string;
