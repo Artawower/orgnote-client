@@ -41,13 +41,19 @@
       <app-description padded>{{ camelCaseToWords(name) }}</app-description>
       <app-text-area ref="editInputRef" v-model="config[props.path][props.name]"></app-text-area>
     </menu-item>
-    <menu-item v-if="metadata.upload" type="info">
+    <menu-item @click="uploadConfigFile" v-if="metadata.upload" type="info">
       {{ t(TXT_UPLOAD) }} {{ camelCaseToWords(name) }}
     </menu-item>
   </template>
-  <menu-item v-else @click="onItemClick" :path="getNestedPath(name)" :key="name">
+  <menu-item
+    v-else
+    @click="onItemClick"
+    :path="getNestedPath(name)"
+    :key="name"
+    :prefer="inputSchemeType ? 'right' : 'left'"
+  >
     <div v-if="!metadata?.textarea" class="capitalize text-bold menu-item-content">
-      {{ camelCaseToWords(name) }}
+      {{ camelCaseToWords(name) }} {{ scheme.type }}
     </div>
     <template #right>
       <toggle-button
@@ -56,10 +62,10 @@
         v-model="config[props.path][props.name]"
       />
       <app-input
-        v-else-if="scheme.type === 'number' || 'string'"
+        v-else-if="inputSchemeType"
         v-model="config[props.path][props.name]"
         :textRight="true"
-        :type="scheme.type === 'string' ? 'text' : 'number'"
+        :type="scheme.type === 'string' || scheme.wrapped?.type === 'string' ? 'text' : 'number'"
         :name="name"
         ref="editInputRef"
       />
@@ -76,7 +82,7 @@ import type { OrgNoteConfig } from 'orgnote-api';
 import { TXT_ADD, TXT_UPLOAD } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ValibotScheme } from 'src/models/valibot-scheme';
 import AppTextArea from './AppTextArea.vue';
@@ -115,12 +121,22 @@ const removeFromArray = (index: number) => {
   }
 };
 
+const uploadConfigFile = async () => {
+  const file = await api.utils.uploadFile();
+  config[props.path][props.name] = await file.text();
+};
+
 const metadata = props.scheme.pipe?.find((e) => e.type === 'metadata')?.metadata;
 
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
 });
+
+const inputTypes = ['string', 'number'];
+const inputSchemeType = computed(
+  () => inputTypes.includes(props.scheme?.type) || inputTypes.includes(props.scheme?.wrapped?.type),
+);
 </script>
 
 <style lang="scss" scoped>

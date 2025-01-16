@@ -1,5 +1,9 @@
 <template>
-  <div class="menu-item" :class="[{ disabled }, type]" :style="{ '--menu-item-lines': lines }">
+  <div
+    class="menu-item"
+    :class="[{ disabled }, type, `prefer-${prefer}`]"
+    :style="{ '--menu-item-lines': lines }"
+  >
     <div class="left">
       <app-icon
         v-if="icon"
@@ -38,10 +42,12 @@ const props = withDefaults(
     selected?: boolean;
     lines?: number;
     inverseIconColors?: boolean;
+    prefer?: 'left' | 'right';
   }>(),
   {
     type: 'plain',
     lines: 1,
+    prefer: 'left',
   },
 );
 
@@ -60,7 +66,7 @@ const background = computed(() => 'bg');
 
 <style lang="scss" scoped>
 .menu-item {
-  @include flexify(row, space-between, center);
+  @include flexify(row, space-between, center, var(--gap-md));
   cursor: pointer;
   padding: var(--menu-item-padding);
   min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
@@ -77,7 +83,19 @@ const background = computed(() => 'bg');
 
 .left {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  width: 100%;
+  white-space: nowrap;
+}
+
+.prefer-left {
+  .left {
+    width: 100%;
+  }
+}
+
+.prefer-right {
+  .right {
+    width: 100%;
+  }
 }
 
 .content {

@@ -35,6 +35,7 @@ import { useSettingsStore } from 'src/stores/settings';
 import { useSettingsUiStore } from 'src/stores/settings-ui';
 import type { App } from 'vue';
 import { copyToClipboard } from 'src/utils/clipboard';
+import { uploadFile, uploadFiles } from 'src/utils/file-upload';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -71,6 +72,9 @@ async function initApi(app: App): Promise<void> {
       resetCSSVariables,
 
       copyToClipboard,
+
+      uploadFile,
+      uploadFiles,
     },
     ui: {
       useSplashScreen,
