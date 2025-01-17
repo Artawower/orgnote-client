@@ -36,6 +36,7 @@ import { useSettingsUiStore } from 'src/stores/settings-ui';
 import type { App } from 'vue';
 import { copyToClipboard } from 'src/utils/clipboard';
 import { uploadFile, uploadFiles } from 'src/utils/file-upload';
+import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -83,6 +84,7 @@ async function initApi(app: App): Promise<void> {
       useToolbar: useToolbarStore,
       useModal: useModalStore,
       useSettingsUi: useSettingsUiStore,
+      useConfirmationModal,
     },
   };
 }

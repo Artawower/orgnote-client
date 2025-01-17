@@ -1,7 +1,7 @@
 <template>
   <div class="system-settings">
     <card-wrapper>
-      <menu-item type="danger">
+      <menu-item @click="clearAllData" type="danger">
         <div class="capitalize text-bold">{{ t(TXT_CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
       <menu-item type="danger">
@@ -31,11 +31,18 @@ import {
   TXT_PURGE_DATA_WARNING,
   TXT_REMOVE_ACCOUNT_WARNING,
 } from 'orgnote-api';
+import { api } from 'src/boot/api';
 
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
 });
+
+const { confirm } = api.ui.useConfirmationModal();
+const clearAllData = async () => {
+  const ok = await confirm();
+  console.log('✎: [line 44][SystemSettings.vue] ok: ', ok);
+};
 </script>
 
 <style lang="scss" scoped>

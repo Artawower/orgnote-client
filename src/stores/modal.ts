@@ -1,61 +1,45 @@
 import type { Modal, ModalConfig, ModalStore, VueComponent } from 'orgnote-api';
 import { defineStore } from 'pinia';
-
-import { computed, ref, shallowRef } from 'vue';
+import { computed, shallowRef } from 'vue';
 
 export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
-  const opened = ref<boolean>(false);
-
-  const openedComponentStack = shallowRef<Modal[]>([]);
+  const modals = shallowRef<Modal[]>([]);
 
   const open = (cmp: VueComponent, modalConfig: ModalConfig = { closable: true }) => {
-    const alreadyOpenedIndex = openedComponentStack.value.findIndex((c) => c.component === cmp);
+    const alreadyOpenedIndex = modals.value.findIndex((c) => c.component === cmp);
     if (alreadyOpenedIndex !== -1) {
-      openedComponentStack.value = openedComponentStack.value.slice(0, alreadyOpenedIndex + 1);
-      opened.value = true;
+      modals.value = modals.value.slice(0, alreadyOpenedIndex + 1);
       return;
     }
 
-    openedComponentStack.value = [
-      ...openedComponentStack.value,
+    modals.value = [
+      ...modals.value,
       {
         component: cmp,
         config: modalConfig,
       },
     ];
-    opened.value = true;
   };
 
   const close = () => {
-    openedComponentStack.value = openedComponentStack.value.slice(
-      0,
-      openedComponentStack.value.length - 1,
-    );
-    if (openedComponentStack.value.length === 0) {
-      opened.value = false;
-    }
+    modals.value = modals.value.slice(0, modals.value.length - 1);
   };
 
-  const config = computed(
-    () => openedComponentStack.value[openedComponentStack.value.length - 1]?.config,
-  );
+  const config = computed(() => modals.value[modals.value.length - 1]?.config);
 
-  const component = computed(
-    () => openedComponentStack.value[openedComponentStack.value.length - 1]?.component,
-  );
+  const component = computed(() => modals.value[modals.value.length - 1]?.component);
 
   const title = computed(() => config.value?.title);
 
   const closeAll = () => {
-    openedComponentStack.value = [];
-    opened.value = false;
+    modals.value = [];
   };
 
   return {
     open,
-    opened,
     title,
     close,
+    modals,
     component,
     config,
     closeAll,

@@ -1,15 +1,28 @@
 <template>
-  <dialog @click="handleDialogClick" @close="modal.close" ref="modalDialogRef">
+  <dialog
+    v-for="(m, i) of modals"
+    :key="i"
+    @click="handleDialogClick"
+    @close="modal.close"
+    :class="{ mini: m.config?.mini }"
+    :ref="
+      (el) => {
+        if (el) {
+          modalDialogRefs[i] = el as HTMLDialogElement;
+        }
+      }
+    "
+  >
     <div class="modal-content">
       <div class="modal-header">
-        <component v-if="config?.headerTitleComponent" :is="config.headerTitleComponent" />
-        <h1 v-else-if="config?.title" class="title capitalize">
-          {{ t(config.title) }}
+        <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
+        <h1 v-else-if="m.config?.title" class="title capitalize">
+          {{ t(m.config.title) }}
         </h1>
-        <action-button @click="modal.close" v-if="config?.closable" icon="close" size="sm" />
+        <action-button @click="modal.close" v-if="m.config?.closable" icon="close" size="sm" />
       </div>
       <div class="content">
-        <component :is="component" v-bind="config?.modalProps" />
+        <component :is="m.component" v-bind="m.config?.modalProps" />
       </div>
     </div>
   </dialog>
@@ -19,28 +32,36 @@
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
-import { watch } from 'vue';
+import { nextTick, watch } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const modal = api.ui.useModal();
-const { opened, component, config } = storeToRefs(modal);
+const { modals } = storeToRefs(modal);
 
-const modalDialogRef = ref(null);
+const modalDialogRefs = ref<HTMLDialogElement[]>([]);
 
-const initDialog = () => {
-  if (opened.value) {
-    modalDialogRef.value.showModal();
-    return;
-  }
-  modalDialogRef.value.close();
+const initDialog = async () => {
+  await nextTick();
+  modalDialogRefs.value[modals.value.length - 1].showModal();
 };
 
-watch(opened, initDialog);
+const closeDialog = () => {
+  modalDialogRefs.value.splice(modals.value.length - 1, 1);
+};
+
+watch(modals, async (curr, prev) => {
+  const modalAdded = prev.length < curr.length;
+  if (modalAdded) {
+    await initDialog();
+    return;
+  }
+  closeDialog();
+});
 
 // NOTE: https://stackoverflow.com/a/54267686
 const handleDialogClick = (e: MouseEvent) => {
-  if (!opened.value) {
+  if (!modals.value.length) {
     return;
   }
   const target = e.target as HTMLDialogElement;
@@ -57,8 +78,10 @@ const { t } = useI18n({
 
 <style lang="scss" scoped>
 dialog {
-  width: 100%;
-  height: 100%;
+  &:not(.mini) {
+    width: 100%;
+    height: 100%;
+  }
   max-width: var(--modal-max-width);
   max-height: var(--modal-max-height);
   border: var(--modal-border);

@@ -42,7 +42,7 @@ withDefaults(
     danger: var(--red),
   );
 
-  &.simple {
+  &.plain {
     background: var(--bg-alt2);
   }
 
