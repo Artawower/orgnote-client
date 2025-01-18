@@ -1,5 +1,14 @@
 import type { Command } from 'orgnote-api';
-import { DefaultCommands, RouteNames } from 'orgnote-api';
+import {
+  DefaultCommands,
+  RouteNames,
+  TXT_CLEAR_ALL_LOCAL_DATA,
+  TXT_CONFIRM_DELETE_ACCOUNT,
+  TXT_CONFIRM_DELETE_ALL_DATA,
+  TXT_CONFIRM_DELETE_NOTES,
+  TXT_DELETE_ALL_NOTES,
+  TXT_REMOVE_ACCOUNT,
+} from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { useRouteActive } from 'src/composables/use-route-active';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
@@ -8,6 +17,7 @@ import { defineAsyncComponent } from 'vue';
 
 export function getSettingsommands(): Command[] {
   const modal = api.ui.useModal();
+  const confirmationModal = api.ui.useConfirmationModal();
 
   const isActiveRoute = (routeName: RouteNames): boolean => {
     const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
@@ -140,6 +150,42 @@ export function getSettingsommands(): Command[] {
       isActive: () => isActiveRoute(RouteNames.ApiSettings),
       context: {
         narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.DELETE_ALL_DATA,
+      icon: 'sym_o_delete',
+      group: 'settings',
+      handler: async () => {
+        const confirm = await confirmationModal.confirm({
+          title: TXT_CLEAR_ALL_LOCAL_DATA,
+          message: TXT_CONFIRM_DELETE_ALL_DATA,
+        });
+        console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
+      },
+    },
+    {
+      command: DefaultCommands.DELETE_ALL_NOTES,
+      icon: 'sym_o_event_busy',
+      group: 'settings',
+      handler: async () => {
+        const confirm = await confirmationModal.confirm({
+          title: TXT_DELETE_ALL_NOTES,
+          message: TXT_CONFIRM_DELETE_NOTES,
+        });
+        console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
+      },
+    },
+    {
+      command: DefaultCommands.DELETE_ACCOUNT,
+      icon: 'sym_o_event_busy',
+      group: 'settings',
+      handler: async () => {
+        const confirm = await confirmationModal.confirm({
+          title: TXT_REMOVE_ACCOUNT,
+          message: TXT_CONFIRM_DELETE_ACCOUNT,
+        });
+        console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },
     },
   ];

@@ -1,16 +1,16 @@
 <template>
   <div class="system-settings">
     <card-wrapper>
-      <menu-item @click="clearAllData" type="danger">
+      <menu-item @click="execute(DefaultCommands.DELETE_ALL_DATA)" type="danger">
         <div class="capitalize text-bold">{{ t(TXT_CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
-      <menu-item type="danger">
+      <menu-item @click="execute(DefaultCommands.DELETE_ALL_NOTES)" type="danger">
         <div class="capitalize text-bold">{{ t(TXT_DELETE_ALL_NOTES) }}</div>
       </menu-item>
     </card-wrapper>
     <app-description :text="TXT_PURGE_DATA_WARNING" padded />
     <card-wrapper>
-      <menu-item type="danger">
+      <menu-item @click="execute(DefaultCommands.DELETE_ACCOUNT)" type="danger">
         <div class="capitalize text-bold">{{ t(TXT_REMOVE_ACCOUNT) }}</div>
       </menu-item>
     </card-wrapper>
@@ -30,7 +30,7 @@ import {
   TXT_REMOVE_ACCOUNT,
   TXT_PURGE_DATA_WARNING,
   TXT_REMOVE_ACCOUNT_WARNING,
-  TXT_CONFIRM_DELETE_ALL_DATA,
+  DefaultCommands,
 } from 'orgnote-api';
 import { api } from 'src/boot/api';
 
@@ -39,14 +39,7 @@ const { t } = useI18n({
   inheritLocale: true,
 });
 
-const { confirm } = api.ui.useConfirmationModal();
-const clearAllData = async () => {
-  const ok = await confirm({
-    title: TXT_CLEAR_ALL_LOCAL_DATA,
-    message: TXT_CONFIRM_DELETE_ALL_DATA,
-  });
-  console.log('✎: [line 44][SystemSettings.vue] ok: ', ok);
-};
+const { execute } = api.core.useCommands();
 </script>
 
 <style lang="scss" scoped>

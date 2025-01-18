@@ -1,5 +1,5 @@
 <template>
-  <button :class="{ outline, [type]: type }">
+  <button :class="{ outline, [type]: type }" class="text-bold">
     <slot />
   </button>
 </template>
@@ -45,9 +45,7 @@ button {
         color: var(--fg);
       }
 
-      ::v-deep {
-        color: var(--bg);
-      }
+      color: var(--bg);
 
       &:hover {
         background: color-mix(in srgb, $color, var(--bg) 5%) !important;
