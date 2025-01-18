@@ -14,7 +14,7 @@
     "
   >
     <div class="modal-content">
-      <div class="modal-header">
+      <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
         <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
         <h1 v-else-if="m.config?.title" class="title capitalize">
           {{ t(m.config.title) }}

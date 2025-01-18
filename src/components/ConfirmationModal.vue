@@ -1,15 +1,42 @@
 <template>
-  <h1>CONFIRM MOTHERFUCKER!</h1>
-  <app-button @click="resolver(true)" type="danger">ok</app-button>
-  <app-button @click="resolver(false)" type="info">not ok</app-button>
+  <div class="confirmation-modal">
+    <h5 v-if="title" class="title capitalize">{{ t(title) }}</h5>
+    <div v-if="message" class="message capitalize">{{ t(message) }}</div>
+    <div class="actions">
+      <app-button @click="resolver(true)" type="danger">{{
+        t(confirmText ?? TXT_CONFIRM)
+      }}</app-button>
+      <app-button @click="resolver(false)" type="info">{{
+        t(cancelText ?? TXT_CANCEL)
+      }}</app-button>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import type { ConfirmationModalParams } from 'orgnote-api';
+import { TXT_CONFIRM, TXT_CANCEL } from 'orgnote-api';
 import AppButton from './AppButton.vue';
+import { useI18n } from 'vue-i18n';
 defineProps<
   {
     resolver: (data?: boolean) => void;
   } & ConfirmationModalParams
 >();
+
+const { t } = useI18n({
+  useScope: 'global',
+  inheritLocale: true,
+});
 </script>
+
+<style lang="scss" scoped>
+.confirmation-modal {
+  @include flexify(column, flex-start, flex-start, var(--gap-lg));
+}
+
+.actions {
+  @include flexify(row, flex-end, center, var(--gap-md));
+  width: 100%;
+}
+</style>

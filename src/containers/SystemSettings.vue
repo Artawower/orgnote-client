@@ -30,6 +30,7 @@ import {
   TXT_REMOVE_ACCOUNT,
   TXT_PURGE_DATA_WARNING,
   TXT_REMOVE_ACCOUNT_WARNING,
+  TXT_CONFIRM_DELETE_ALL_DATA,
 } from 'orgnote-api';
 import { api } from 'src/boot/api';
 
@@ -40,7 +41,10 @@ const { t } = useI18n({
 
 const { confirm } = api.ui.useConfirmationModal();
 const clearAllData = async () => {
-  const ok = await confirm();
+  const ok = await confirm({
+    title: TXT_CLEAR_ALL_LOCAL_DATA,
+    message: TXT_CONFIRM_DELETE_ALL_DATA,
+  });
   console.log('✎: [line 44][SystemSettings.vue] ok: ', ok);
 };
 </script>

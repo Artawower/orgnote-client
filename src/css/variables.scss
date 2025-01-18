@@ -79,6 +79,10 @@ body {
   --btn-action-border: none;
   --btn-action-active-color: var(--accent);
 
+  --button-border-raidius: var(--border-radius-md);
+  --button-padding: 12px var(--block-padding-md);
+  --button-min-width: 120px;
+
   // Platform specific value
   --device-padding-bottom: 0px;
 
