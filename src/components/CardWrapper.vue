@@ -5,13 +5,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { CardType } from 'src/models/card-type';
+import type { ViewType } from 'src/models/card-type';
 
 withDefaults(
   defineProps<{
     padding?: boolean;
     border?: boolean;
-    type?: CardType;
+    type?: ViewType;
   }>(),
   {
     padding: false,
