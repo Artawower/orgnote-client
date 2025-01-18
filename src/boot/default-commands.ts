@@ -1,4 +1,5 @@
 import { defineBoot } from '@quasar/app-vite/wrappers';
+import { getCompletionCommands } from 'src/commands/completion';
 import { getGlobalCommands } from 'src/commands/global-commands';
 import { getRoutesCommands } from 'src/commands/router-commands';
 import { getSettingsommands as getSettingsCommands } from 'src/commands/settings-commands';
@@ -9,5 +10,11 @@ export default defineBoot(async ({ router }) => {
   const commandsStore = useCommandsStore();
   const globalCommands = getGlobalCommands();
   const settingsCommands = getSettingsCommands();
-  commandsStore.add(...routeCommands, ...globalCommands, ...settingsCommands);
+  const completionCommnads = getCompletionCommands();
+  commandsStore.add(
+    ...routeCommands,
+    ...globalCommands,
+    ...settingsCommands,
+    ...completionCommnads,
+  );
 });

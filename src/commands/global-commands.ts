@@ -2,14 +2,7 @@ import type { Command } from 'orgnote-api';
 import { DefaultCommands } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
-// import { ModelsPublicNoteEncryptionTypeEnum } from 'orgnote-api/remote-api';
-// import { Platform } from 'quasar';
-// import FileManagerSideBar from 'src/components/containers/FileManagerSideBar.vue';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
-// import { useSidebarStore } from 'src/stores/sidebar';
-// import DebugPage from 'src/pages/DebugPage.vue';
-// import LoggerPage from 'src/pages/LoggerPage.vue';
-// import ProjectInfo from 'src/pages/ProjectInfo.vue';
 import { clientOnly } from 'src/utils/platform-specific';
 import type { Router } from 'vue-router';
 
