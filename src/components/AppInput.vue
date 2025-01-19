@@ -42,5 +42,9 @@ input {
   width: 100%;
 
   @include reset-input();
+
+  &::placeholder {
+    color: var(--placeholder-color);
+  }
 }
 </style>

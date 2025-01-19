@@ -37,6 +37,7 @@ import type { App } from 'vue';
 import { copyToClipboard } from 'src/utils/clipboard';
 import { uploadFile, uploadFiles } from 'src/utils/file-upload';
 import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
+import { useCompletionStore } from 'src/stores/completion';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -54,6 +55,7 @@ async function initApi(app: App): Promise<void> {
       useFileSystem: useFileSystemStore,
       useEncryption: useEncryptionStore,
       useSettings: useSettingsStore,
+      useCompletion: useCompletionStore,
       useQuasar: useQuasar,
       app,
     },

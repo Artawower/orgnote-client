@@ -4,7 +4,10 @@
     :key="i"
     @click="handleDialogClick"
     @close="modal.close"
-    :class="{ mini: m.config?.mini }"
+    :class="{
+      mini: m.config?.mini,
+      [`position-${m.config?.position ?? 'center'}`]: m.config.position,
+    }"
     :ref="
       (el) => {
         if (el) {
@@ -13,7 +16,7 @@
       }
     "
   >
-    <div class="modal-content">
+    <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
       <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
         <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
         <h1 v-else-if="m.config?.title" class="title capitalize">
@@ -87,6 +90,17 @@ dialog {
   border: var(--modal-border);
   border-radius: var(--modal-border-radius);
   padding: 0;
+
+  &.position-top {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+  }
+
+  &.position-top {
+    top: var(--block-padding-lg);
+  }
 }
 
 dialog::backdrop {
@@ -98,8 +112,11 @@ dialog::backdrop {
 
   width: 100%;
   height: 100%;
-  padding: var(--modal-padding);
   overflow: hidden;
+
+  &:not(.no-padding) {
+    padding: var(--modal-padding);
+  }
 
   div {
     width: 100%;

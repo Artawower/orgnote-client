@@ -117,6 +117,15 @@ body {
 
   // Toggle button
   --toggle-button-scale: 0.45;
+
+  // Completion
+  --completion-width: 100vw;
+  --completion-max-width: 768px;
+  --completion-padding: var(--block-padding-sm);
+  --completion-footer-height: 24px;
+
+  // Inputs
+  --placeholder-color: var(--fg-alt);
 }
 
 @include desktop-below {
