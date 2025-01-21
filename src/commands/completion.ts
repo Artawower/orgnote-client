@@ -1,6 +1,50 @@
-import type { CompletionSearchResult } from 'orgnote-api';
+import type { CompletionCandidate, CompletionSearchResult, OrgNoteApi } from 'orgnote-api';
 import { DefaultCommands, TXT_EXECUTE_COMMAND, type Command } from 'orgnote-api';
-import { api } from 'src/boot/api';
+import type { IFuseOptions } from 'fuse.js';
+import Fuse from 'fuse.js';
+
+const toggleCommandsHandler = (api: OrgNoteApi) => {
+  const completion = api.core.useCompletion();
+  const cmds = api.core.useCommands();
+
+  const getCommands = (commands: Command[]): CompletionCandidate<Command>[] => {
+    return commands.reduce<CompletionCandidate<Command>[]>((acc, cmd) => {
+      acc.push({
+        group: cmd.group,
+        icon: cmd.icon,
+        title: cmd.title ?? cmd.command,
+        data: cmd,
+        description: cmd.description,
+        commandHandler: () => cmds.execute(cmd.command),
+      });
+      return acc;
+    }, []);
+  };
+
+  const fuseOptions: IFuseOptions<CompletionCandidate<Command>> = {
+    threshold: 0.4,
+    keys: ['title', 'description', 'group', 'command'],
+  };
+
+  const itemsGetter = (filter: string) => {
+    const commands = getCommands(cmds.commands);
+    const fuse = new Fuse(commands, fuseOptions);
+    const result = filter ? fuse.search(filter).map((r) => r.item) : commands;
+
+    const res: CompletionSearchResult<Command> = {
+      total: result.length,
+      result,
+    };
+
+    return res;
+  };
+  completion.open<Command>({
+    itemsGetter,
+    placeholder: TXT_EXECUTE_COMMAND,
+    type: 'choice',
+    searchText: '',
+  });
+};
 
 export function getCompletionCommands(): Command[] {
   const commands: Command[] = [
@@ -9,32 +53,7 @@ export function getCompletionCommands(): Command[] {
       icon: 'terminal',
       description: 'toggle commands',
       group: 'completion',
-      handler: () => {
-        const completion = api.core.useCompletion();
-        const itemsGetter = (filter: string, limit?: number, offset?: number) => {
-          console.log(
-            '✎: [line 14][completion.ts<commands>] filter: string, limit?: number, offset?: number: ',
-            filter,
-            limit,
-            offset,
-          );
-          const res: CompletionSearchResult<string> = {
-            total: 3,
-            result: [
-              { data: 'hello', commandHandler: () => '' },
-              { data: 'world', commandHandler: () => '' },
-            ],
-          };
-
-          return res;
-        };
-        completion.open<string>({
-          itemsGetter,
-          placeholder: TXT_EXECUTE_COMMAND,
-          searchText: '',
-        });
-        console.log('[line 13]: boo');
-      },
+      handler: toggleCommandsHandler,
     },
   ];
 

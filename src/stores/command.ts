@@ -1,6 +1,7 @@
 import type { CommandCallback } from 'orgnote-api';
 import { type CommandsStore, type Command } from 'orgnote-api';
 import { defineStore } from 'pinia';
+import { api } from 'src/boot/api';
 import { clientOnly } from 'src/utils/platform-specific';
 import { ref } from 'vue';
 
@@ -56,7 +57,7 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
       return;
     }
 
-    await command.handler({
+    await command.handler(api, {
       meta: command,
       data,
     });

@@ -110,6 +110,9 @@ body {
 
   // Icons
   --icon-rounded-border-radius: var(--border-radius-sm);
+  --icon-border: var(--border-default);
+  --icon-border-padding: var(--block-padding-sm);
+  --icon-border-radius: var(--border-radius-md);
 
   // Device sizes
   --tablet: #{a.$tablet};
@@ -121,8 +124,12 @@ body {
   // Completion
   --completion-width: 100vw;
   --completion-max-width: 768px;
+  --completion-max-height: 68dvh;
   --completion-padding: var(--block-padding-sm);
   --completion-footer-height: 24px;
+  --completion-item-hover-bg: var(--bg-alt2);
+  --completion-item-border-radius: var(--border-radius-md);
+  --completion-item-padding: 10px;
 
   // Inputs
   --placeholder-color: var(--fg-alt);

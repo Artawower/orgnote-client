@@ -1,40 +1,42 @@
 <template>
-  <dialog
-    v-for="(m, i) of modals"
-    :key="i"
-    @click="handleDialogClick"
-    @close="modal.close"
-    :class="{
-      mini: m.config?.mini,
-      [`position-${m.config?.position ?? 'center'}`]: m.config.position,
-    }"
-    :ref="
-      (el) => {
-        if (el) {
-          modalDialogRefs[i] = el as HTMLDialogElement;
+  <animation-wrapper v-for="(m, i) of modals" :key="i">
+    <dialog
+      @click="handleDialogClick"
+      @close="modal.close"
+      :class="{
+        mini: m.config?.mini,
+        [`position-${m.config?.position ?? 'center'}`]: m.config.position,
+        'full-screen': m.config?.fullScreen,
+      }"
+      :ref="
+        (el) => {
+          if (el) {
+            modalDialogRefs[i] = el as HTMLDialogElement;
+          }
         }
-      }
-    "
-  >
-    <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
-      <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
-        <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
-        <h1 v-else-if="m.config?.title" class="title capitalize">
-          {{ t(m.config.title) }}
-        </h1>
-        <action-button @click="modal.close" v-if="m.config?.closable" icon="close" size="sm" />
+      "
+    >
+      <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
+        <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
+          <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
+          <h1 v-else-if="m.config?.title" class="title capitalize">
+            {{ t(m.config.title) }}
+          </h1>
+          <action-button @click="modal.close" icon="close" size="sm" />
+        </div>
+        <div class="content">
+          <component :is="m.component" v-bind="m.config?.modalProps" />
+        </div>
       </div>
-      <div class="content">
-        <component :is="m.component" v-bind="m.config?.modalProps" />
-      </div>
-    </div>
-  </dialog>
+    </dialog>
+  </animation-wrapper>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
+import AnimationWrapper from 'src/components/AnimationWrapper.vue';
 import { nextTick, watch } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -81,25 +83,43 @@ const { t } = useI18n({
 
 <style lang="scss" scoped>
 dialog {
-  &:not(.mini) {
-    width: 100%;
-    height: 100%;
-  }
   max-width: var(--modal-max-width);
   max-height: var(--modal-max-height);
+
   border: var(--modal-border);
   border-radius: var(--modal-border-radius);
   padding: 0;
 
-  &.position-top {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
+  &:not(.mini) {
+    width: 100%;
+    height: 100%;
   }
 
-  &.position-top {
-    top: var(--block-padding-lg);
+  @include desktop-below {
+    width: 100%;
+    height: 100%;
+  }
+
+  @include tablet-above {
+    &.position-top {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+    }
+
+    &.position-top {
+      top: var(--block-padding-lg);
+    }
+  }
+
+  &.full-screen {
+    max-width: unset;
+    max-height: unset;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    border-radius: 0;
   }
 }
 

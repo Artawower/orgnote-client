@@ -2,7 +2,7 @@
   <div
     class="icon"
     :style="{ backgroundColor: bgColor, color: color, '--icon-hover-color': hoverColor }"
-    :class="[{ rounded }, size]"
+    :class="[{ rounded, bordered }, size]"
   >
     <q-icon v-bind="$props" color="inherit" :size="iconSize" />
   </div>
@@ -22,6 +22,7 @@ interface Props {
   background?: string;
   size?: IconSize;
   rounded?: boolean;
+  bordered?: boolean;
 }
 
 const props = withDefaults(defineProps<QIconProps & Props>(), {
@@ -65,9 +66,9 @@ const iconSize = computed(() => iconSizeMap[props.size]);
   }
 }
 
-.icon {
-  &:hover {
-    color: var(--icon-hover-color) !important;
-  }
+.bordered {
+  border: var(--icon-border);
+  padding: var(--icon-border-padding);
+  border-radius: var(--icon-border-radius);
 }
 </style>

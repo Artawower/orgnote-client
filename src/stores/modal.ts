@@ -44,6 +44,19 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
     modals.value = [];
   };
 
+  const updateConfig = (newConfig: Partial<ModalConfig>) => {
+    modals.value = [
+      ...modals.value.slice(0, -1),
+      {
+        ...modals.value[modals.value.length - 1],
+        config: {
+          ...modals.value[modals.value.length - 1].config,
+          ...newConfig,
+        },
+      },
+    ];
+  };
+
   const store: ModalStore = {
     open,
     title,
@@ -52,6 +65,7 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
     component,
     config,
     closeAll,
+    updateConfig,
   };
 
   return store;

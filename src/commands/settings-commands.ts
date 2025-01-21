@@ -16,7 +16,6 @@ import TheSettings from 'src/containers/TheSettings.vue';
 import { defineAsyncComponent } from 'vue';
 
 export function getSettingsommands(): Command[] {
-  const modal = api.ui.useModal();
   const confirmationModal = api.ui.useConfirmationModal();
 
   const isActiveRoute = (routeName: RouteNames): boolean => {
@@ -26,6 +25,7 @@ export function getSettingsommands(): Command[] {
   };
 
   const openSettingsRoute = (routeName: string) => {
+    const modal = api.ui.useModal();
     const isModalOpened = modal.component && modal.component === TheSettings;
     const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
     if (isModalOpened) {

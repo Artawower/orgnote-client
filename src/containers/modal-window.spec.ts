@@ -4,6 +4,7 @@ import ModalWindow from './ModalWindow.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { ref } from 'vue';
 import ActionButton from 'src/components/ActionButton.vue';
+import { nextTick } from 'vue';
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -110,9 +111,10 @@ test('renders title from config.title', async () => {
 
 test('renders close button when config.closable is true', async () => {
   mockModal.modals.value = [
-    { component: { template: '<div>SomeModal</div>' }, config: { closable: true } },
+    { component: { template: '<div>SomeModal</div>' }, config: { closable: true, title: 'p' } },
   ];
   await wrapper.vm.$nextTick();
+  await nextTick();
   const closeButton = wrapper.findComponent(ActionButton);
   expect(closeButton.exists()).toBe(true);
 });
