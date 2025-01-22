@@ -1,0 +1,1 @@
+export const DEFAULT_COMPLETIO_ITEM_HEIGHT = 60;

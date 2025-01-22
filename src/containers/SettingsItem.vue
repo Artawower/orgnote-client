@@ -53,7 +53,7 @@
     :prefer="inputSchemeType ? 'right' : 'left'"
   >
     <div v-if="!metadata?.textarea" class="capitalize text-bold menu-item-content">
-      {{ camelCaseToWords(name) }} {{ scheme.type }}
+      {{ camelCaseToWords(name) }}
     </div>
     <template #right>
       <toggle-button

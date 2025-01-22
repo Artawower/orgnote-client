@@ -4,7 +4,10 @@
       <completion-input :placeholder="placeholder" />
     </div>
     <div class="content">
-      <completion-result />
+      <completion-result v-if="activeCompletion.candidates?.length" />
+      <div v-else class="not-found" :style="{ height: completionItemHeight + 'px' }">
+        {{ t(TXT_NOT_FOUND).toUpperCase() }}
+      </div>
     </div>
     <div class="footer">
       {{ activeCompletion.selectedCandidateIndex + 1 }}/{{ activeCompletion.total }}
@@ -13,19 +16,30 @@
 </template>
 
 <script lang="ts" setup>
-import type { CompletionConfig } from 'orgnote-api';
+import { TXT_NOT_FOUND, type CompletionConfig } from 'orgnote-api';
 import CompletionInput from './CompletionInput.vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import CompletionResult from './CompletionResult.vue';
+import { computed } from 'vue';
+import { DEFAULT_COMPLETIO_ITEM_HEIGHT } from 'src/constants/completion-item';
+import { useI18n } from 'vue-i18n';
 defineProps<
   {
     placeholder?: string;
-  } & CompletionConfig
+  } & Partial<CompletionConfig>
 >();
 
 const { config } = storeToRefs(api.ui.useModal());
 const { activeCompletion } = storeToRefs(api.core.useCompletion());
+const completionItemHeight = computed(
+  () => activeCompletion.value.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
+);
+
+const { t } = useI18n({
+  useScope: 'global',
+  inheritLocale: true,
+});
 </script>
 
 <style lang="scss" scoped>
@@ -98,5 +112,10 @@ const { activeCompletion } = storeToRefs(api.core.useCompletion());
 
 .full-screen {
   @include completion-fullframe();
+}
+
+.not-found {
+  @include flexify(row, center, center);
+  color: var(--fg-alt);
 }
 </style>

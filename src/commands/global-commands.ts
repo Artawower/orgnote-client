@@ -1,5 +1,11 @@
 import type { Command } from 'orgnote-api';
-import { DefaultCommands } from 'orgnote-api';
+import {
+  DefaultCommands,
+  TXT_CHECK_GITHUB_SOURCE_CODE,
+  TXT_DECRYPT_ACTIVE_NOTE,
+  TXT_ENCRYPT_ACTIVE_NOTE,
+  TXT_VISIT_DEBUG_INFO,
+} from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
@@ -12,13 +18,12 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
   const commands: Command[] = [
     {
       command: DefaultCommands.REPORT_BUG,
-      description: 'report bug',
       group: 'debug',
       handler: clientOnly(() => window.open(ISSUE_PAGE, '_blank')),
     },
     {
       command: DefaultCommands.OPEN_DEBUG_INFO,
-      description: 'open debug info',
+      description: TXT_VISIT_DEBUG_INFO,
       group: 'debug',
       handler: () => {
         // TODO: feat/stable-beta
@@ -27,7 +32,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     },
     {
       command: DefaultCommands.SHOW_LOGS,
-      description: 'show logs',
       group: 'debug',
       handler: () => {
         // modalStore.open(LoggerPage, { title: 'logs' });
@@ -40,7 +44,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
         // TODO: feat/stable-beta also make as ref
         return sidebarStore.opened ? 'arrow_circle_left' : 'menu';
       },
-      description: 'toggle sidebar',
       handler: () => {
         sidebarStore.toggle();
       },
@@ -49,7 +52,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       command: DefaultCommands.TOGGLE_FILE_MANAGER,
       group: 'global',
       icon: 'folder',
-      description: 'toggle file manager',
       handler: () => {
         // sidebarStore.toggleWithComponent(FileManagerSideBar);
       },
@@ -69,7 +71,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.PROJECT_INFO,
       icon: 'o_info',
-      description: 'show project info',
       group: 'global',
       handler: () => {
         // modalStore.open(ProjectInfo),
@@ -78,7 +79,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.SYNC_FILES,
       icon: 'sync',
-      description: 'sync files',
       group: 'global',
       handler: () => {
         // notesStore.syncWithFs();
@@ -88,7 +88,8 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.ENCRYPT_NOTE,
       icon: 'sym_o_encrypted',
-      description: 'encrypt active note',
+      description: TXT_ENCRYPT_ACTIVE_NOTE,
+      // description: 'encrypt active note',
       // disabled: () =>
       //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
       //   !currentNoteStore.currentNote ||
@@ -105,7 +106,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.DECRYPT_NOTE,
       icon: 'sym_o_remove_moderator',
-      description: 'decrypt active note',
+      description: TXT_DECRYPT_ACTIVE_NOTE,
       // disabled: () =>
       //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
       //   !currentNoteStore.currentNote?.encrypted,
@@ -122,21 +123,19 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.SOURCE_CODE,
       icon: 'fa-brands fa-github-alt',
-      description: 'check source code',
+      description: TXT_CHECK_GITHUB_SOURCE_CODE,
       group: 'global',
       handler: () => window.open(GITHUB_LINK, '_blank'),
     },
     {
       command: DefaultCommands.READ_WIKI,
       icon: 'sym_o_help',
-      description: 'read wiki',
       group: 'global',
       handler: () => window.open(WIKI_LINK, '_blank'),
     },
     {
       command: DefaultCommands.SPONSOR,
       icon: 'sym_o_savings',
-      description: 'sponsor project',
       group: 'global',
       handler: () => window.open(PATREON_LINK, '_blank'),
     },

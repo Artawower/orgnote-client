@@ -1,14 +1,18 @@
 <template>
+  <div class="group-title" v-if="'groupTitle' in item">{{ item.groupTitle }}</div>
   <div
+    v-else
     :key="extractDynamicValue(item.title)"
     class="completion-item"
     :class="{ selected }"
     @click="executeCompletionItem"
-    @mouseover="(e: MouseEvent) => focusCompletionCandidate(e, index)"
+    @mouseover="
+      (e: MouseEvent) =>
+        focusCompletionCandidate(e, (item as IndexedCompletionCandidate).index || index)
+    "
   >
     <app-icon v-if="item.icon" :name="extractDynamicValue(item.icon)" size="md" bordered></app-icon>
     <div class="text-bold color-main">
-      <div v-if="config.completion.showGroup">[{{ item.group }}]:&nbsp;</div>
       <div class="line-limit-1">
         <div class="capitalize">
           {{ extractDynamicValue(item.title) }}
@@ -24,23 +28,24 @@
 </template>
 
 <script lang="ts" setup>
-import type { CompletionCandidate } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import AppIcon from 'src/components/AppIcon.vue';
-import { useSettingsStore } from 'src/stores/settings';
+import type {
+  GroupedCompletionCandidate,
+  IndexedCompletionCandidate,
+} from 'src/models/grouped-completion-candidate';
 import { extractDynamicValue } from 'src/utils/extract-dynamic-value';
 
 const props = defineProps<{
-  item: CompletionCandidate;
+  item: GroupedCompletionCandidate;
   selected?: boolean;
   index: number;
 }>();
 
-const { config } = useSettingsStore();
+const completion = api.core.useCompletion();
 
 let lastCoords = [0, 0];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const focusCompletionCandidate = (e: MouseEvent, _index: number) => {
+const focusCompletionCandidate = (e: MouseEvent, index: number) => {
   const coordsChanged = lastCoords[0] !== e.clientX || lastCoords[1] !== e.clientY;
 
   if (!coordsChanged) {
@@ -48,10 +53,11 @@ const focusCompletionCandidate = (e: MouseEvent, _index: number) => {
   }
   lastCoords = [e.clientX, e.clientY];
   // completionStore.focusCandidate(index);
+  completion.activeCompletion.selectedCandidateIndex = index;
 };
 
-const completion = api.core.useCompletion();
 const executeCompletionItem = async (e: MouseEvent) => {
+  if ('groupTitle' in props.item) return;
   e.preventDefault();
   e.stopPropagation();
   completion.close();
@@ -69,8 +75,22 @@ const executeCompletionItem = async (e: MouseEvent) => {
 
   &:hover,
   &:active {
-    /* background: var(--completion-item-hover-bg); */
     background: color-mix(in srgb, var(--fg), var(--bg) 90%);
+  }
+}
+
+.group-title {
+  @include flexify(row, flex-start, center);
+  height: 100%;
+  font-weight: bold;
+  color: var(--fg-alt);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: var(--border-default);
+    margin: 0 10px;
   }
 }
 </style>
