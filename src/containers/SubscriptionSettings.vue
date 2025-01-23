@@ -73,6 +73,6 @@ const inputRef = ref<typeof AppInput | undefined>();
   width: 100%;
 }
 .reference {
-  padding-top: var(--block-padding-md);
+  padding-top: var(--padding-lg);
 }
 </style>

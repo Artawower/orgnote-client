@@ -56,7 +56,7 @@ const bg = computed(() => getCssVariableName(background.value));
   @include flexify(column, flex-start, flex-start, var(--gap-md));
   box-sizing: border-box;
 
-  padding: var(--block-padding-md);
+  padding: var(--padding-lg);
 }
 
 h5 {

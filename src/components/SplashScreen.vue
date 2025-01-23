@@ -22,7 +22,7 @@ const loadingMessages = useLoadingMessages();
 
 <style lang="scss" scoped>
 h5 {
-  padding-bottom: var(--block-padding-md);
+  padding-bottom: var(--padding-lg);
 }
 .splash-screen {
   @include fit();
@@ -30,7 +30,7 @@ h5 {
   @include flexify(row, center, center);
   color: white;
   background-color: var(--violet);
-  padding: var(--block-padding-lg);
+  padding: var(--padding-xl);
 
   .content {
     @include flexify(column, center, center, var(--gap-md));

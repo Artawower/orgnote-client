@@ -69,7 +69,7 @@ const { t } = useI18n({
 .footer {
   @include flexify(row, center, center);
   border-top: var(--border-default);
-  padding: var(--block-padding-md);
+  padding: var(--padding-lg);
   height: var(--completion-footer-height);
   color: var(--fg-alt);
 }

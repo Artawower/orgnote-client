@@ -73,6 +73,22 @@ button {
   box-sizing: border-box;
   background: transparent;
 
+  &.icon-xs {
+    padding: var(--padding-xs);
+  }
+
+  &.icon-sm {
+    padding: var(--padding-sm);
+  }
+
+  &.icon-md {
+    padding: var(--padding-md);
+  }
+
+  &.icon-lg {
+    padding: var(--padding-lg);
+  }
+
   &:not(.outline) {
     background: var(--btn-action-bg);
     &:hover,

@@ -2,14 +2,11 @@
 @use 'quasar.variables' as a;
 
 body {
-  // Paddings
-  --block-padding-sm: 8px;
-  --block-padding-md: 16px;
-  --block-padding-lg: 32px;
-
+  --padding-xs: 2px;
   --padding-sm: 4px;
   --padding-md: 8px;
   --padding-lg: 16px;
+  --padding-xl: 32px;
 
   // Margins
   --block-margin-sm: 8px;
@@ -64,7 +61,7 @@ body {
   --sidebar-mini-width: 54px;
   --sidebar-background: var(--bg-alt);
   --sidebar-border-right: var(--border-default);
-  --sidebar-padding: var(--block-padding-sm);
+  --sidebar-padding: var(--padding-md);
 
   // Button
   --btn-action-padding: var(--padding-md);
@@ -80,7 +77,7 @@ body {
   --btn-action-active-color: var(--accent);
 
   --button-border-raidius: var(--border-radius-md);
-  --button-padding: 12px var(--block-padding-md);
+  --button-padding: 12px var(--padding-lg);
   --button-min-width: 120px;
 
   // Platform specific value
@@ -93,12 +90,12 @@ body {
   --modal-backdrop-bg: var(--backdrop-bg);
   --modal-border: var(--border-default);
   --modal-border-radius: var(--border-radius-md);
-  --modal-padding: var(--block-padding-lg);
+  --modal-padding: var(--padding-xl);
   --modal-max-width: 1280px;
   --modal-max-height: 860px;
 
   // Cards
-  --card-padding: var(--block-padding-md);
+  --card-padding: var(--padding-lg);
   --card-border: var(--border-default);
   --card-border-radius: var(--border-radius-md);
 
@@ -111,7 +108,7 @@ body {
   // Icons
   --icon-rounded-border-radius: var(--border-radius-sm);
   --icon-border: var(--border-default);
-  --icon-border-padding: var(--block-padding-sm);
+  --icon-border-padding: var(--padding-md);
   --icon-border-radius: var(--border-radius-md);
 
   // Device sizes
@@ -125,7 +122,7 @@ body {
   --completion-width: 100vw;
   --completion-max-width: 768px;
   --completion-max-height: 68dvh;
-  --completion-padding: var(--block-padding-sm);
+  --completion-padding: var(--padding-md);
   --completion-footer-height: 24px;
   --completion-item-hover-bg: var(--bg-alt2);
   --completion-item-border-radius: var(--border-radius-md);
@@ -135,18 +132,26 @@ body {
   --placeholder-color: var(--fg-alt);
 
   // Pages
-  --page-padding: var(--block-padding-md);
+  --page-padding: var(--padding-lg);
 
   // Panes
   --splitter-size: 2px;
   --splitter-background: var(--bg-alt2);
+
+  // Tab
+  --tab-padding: 2px 4px;
+  --tab-background: var(--bg-alt);
+  --tab-border: var(--border-default);
+  --tab-border-radius: var(--border-radius-md);
+  --tab-color: var(--fg);
+  --tab-width: 160px;
 }
 
 @include desktop-below {
   body {
     --modal-max-width: unset;
     --modal-max-height: unset;
-    --modal-padding: var(--block-padding-md);
+    --modal-padding: var(--padding-lg);
     --modal-border: none;
     --modal-border-radius: 0;
   }

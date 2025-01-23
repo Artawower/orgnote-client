@@ -30,7 +30,7 @@ defineExpose({
 <style lang="scss" scoped>
 textarea {
   flex: 1;
-  margin-right: var(--block-padding-md);
+  margin-right: var(--padding-lg);
   color: var(--fg);
   border: none;
   background: transparent;

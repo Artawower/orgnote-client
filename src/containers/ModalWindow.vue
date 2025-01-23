@@ -110,7 +110,7 @@ dialog {
     }
 
     &.position-top {
-      top: var(--block-padding-lg);
+      top: var(--padding-xl);
     }
   }
 
