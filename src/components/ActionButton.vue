@@ -23,8 +23,8 @@ import { computed, ref } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
 import type { ThemeVariable } from 'orgnote-api';
+import type { IconSize } from 'src/models/icon-size';
 
-type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 const props = withDefaults(
   defineProps<{
     icon: string;

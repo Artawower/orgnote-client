@@ -98,14 +98,15 @@ dialog {
   @include desktop-below {
     width: 100%;
     height: 100%;
+    margin: 0;
   }
 
   @include tablet-above {
     &.position-top {
+      margin: 0;
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      margin: 0;
     }
 
     &.position-top {

@@ -4,7 +4,7 @@
     <div class="content">
       <div v-if="sidebar.opened" class="backdrop"></div>
       <router-view />
-      <platform-specific mobile ios android>
+      <platform-specific mobile ios android desktop>
         <main-footer />
       </platform-specific>
     </div>

@@ -1,6 +1,6 @@
 <template>
   <app-footer>
-    <command-action-button v-for="cmd of toolbarCommands" :key="cmd" :command="cmd" />
+    <command-action-button size="md" v-for="cmd of toolbarCommands" :key="cmd" :command="cmd" />
   </app-footer>
 </template>
 
