@@ -133,6 +133,13 @@ body {
 
   // Inputs
   --placeholder-color: var(--fg-alt);
+
+  // Pages
+  --page-padding: var(--block-padding-md);
+
+  // Panes
+  --splitter-size: 2px;
+  --splitter-background: var(--bg-alt2);
 }
 
 @include desktop-below {

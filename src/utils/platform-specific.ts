@@ -23,5 +23,8 @@ export const androidOnly = platformSpecific(
 );
 export const clientOnly = platformSpecific(() => !!process.env.CLIENT);
 export const serverOnly = platformSpecific(() => !process.env.CLIENT);
-export const mobileOnly = platformSpecific(() => process.env.CLIENT && Platform.is.nativeMobile);
+export const mobileOnly = platformSpecific(() => process.env.CLIENT && Platform.is.mobile);
+export const nativeMobileOnly = platformSpecific(
+  () => process.env.CLIENT && Platform.is.nativeMobile,
+);
 export const desktopOnly = platformSpecific(() => !Platform.is.mobile && !!process.env.CLIENT);

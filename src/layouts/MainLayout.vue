@@ -1,10 +1,13 @@
 <template>
-  <page-wrapper v-touch-swipe.mouse.left="sidebar.close" v-touch-swipe.mouse.right="sidebar.open">
+  <page-wrapper
+    v-touch-swipe.mouse.left="mobileOnly(sidebar.close)"
+    v-touch-swipe.mouse.right="mobileOnly(sidebar.open)"
+  >
     <main-sidebar ref="sidebarRef" />
     <div class="content">
       <div v-if="sidebar.opened" class="backdrop"></div>
       <router-view />
-      <platform-specific mobile ios android desktop>
+      <platform-specific mobile ios android>
         <main-footer />
       </platform-specific>
     </div>
@@ -21,6 +24,7 @@ import ModalWindow from 'src/containers/ModalWindow.vue';
 import { onClickOutside } from '@vueuse/core';
 import { api } from 'src/boot/api';
 import { ref } from 'vue';
+import { mobileOnly } from 'src/utils/platform-specific';
 
 const sidebar = api.ui.useSidebar();
 const sidebarRef = ref(null);

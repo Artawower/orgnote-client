@@ -1,10 +1,14 @@
 <template>
-  <div class="page">
+  <div class="page" :class="{ padding }">
     <slot />
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+defineProps<{
+  padding?: boolean;
+}>();
+</script>
 
 <style lang="scss" scoped>
 .page {
@@ -13,5 +17,9 @@
 
   background: var(--bg);
   padding-bottom: var(--footer-height);
+
+  &.padding {
+    padding: var(--page-padding);
+  }
 }
 </style>
