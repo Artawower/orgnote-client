@@ -77,8 +77,7 @@ const { t } = useI18n({
 @mixin completion-fullframe {
   max-width: unset;
   width: 100% !important;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
 }
 
 @include desktop-below {

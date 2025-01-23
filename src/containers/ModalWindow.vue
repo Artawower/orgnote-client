@@ -150,5 +150,7 @@ dialog::backdrop {
 .content {
   display: flex;
   overflow: hidden;
+  max-height: var(--viewport-height);
+  height: 100%;
 }
 </style>
