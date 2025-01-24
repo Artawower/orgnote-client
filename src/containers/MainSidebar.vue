@@ -24,10 +24,12 @@ import { api } from 'src/boot/api';
 import AppFooter from 'src/components/AppFooter.vue';
 import AppSidebar from 'src/components/AppSidebar.vue';
 import PlatformSpecific from 'src/components/PlatformSpecific.vue';
+import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 
 const { commands, footerCommands, opened } = storeToRefs(api.ui.useSidebar());
-const miniMode = api.core.useQuasar().platform.is.desktop;
+const screenDetector = useScreenDetection();
+const miniMode = screenDetector.desktopAbove;
 </script>
 
 <style lang="scss" scoped>

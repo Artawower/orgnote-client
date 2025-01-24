@@ -1,9 +1,6 @@
 <template>
   <div class="settings-title">
-    <visibility-wrapper
-      v-if="currentRouteName !== RouteNames.SettingsPage"
-      condition="desktop-below"
-    >
+    <visibility-wrapper v-if="currentRouteName !== RouteNames.SettingsPage" desktop-below>
       <navigation-history :router="settingsRouter" />
     </visibility-wrapper>
     <h1 class="title capitalize">

@@ -1,50 +1,39 @@
 <template>
-  <div v-if="isVisible">
-    <slot />
-  </div>
+  <slot name="default" v-if="isVisible" />
+  <slot name="desktop-above" v-if="da"></slot>
+  <slot name="desktop-below" v-else-if="db"></slot>
+  <slot name="tablet-below" v-else-if="tb"></slot>
+  <slot name="tablet-above" v-else-if="ta"></slot>
+  <slot name="mobile" v-else-if="m"></slot>
 </template>
 
 <script lang="ts" setup>
-import { getNumericCssVar } from 'src/utils/css-utils';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { useScreenDetection } from 'src/composables/use-screen-detection';
+import { computed } from 'vue';
 
 const props = defineProps<{
-  condition:
-    | 'desktop'
-    | 'desktop-above'
-    | 'desktop-below'
-    | 'tablet-below'
-    | 'tablet-above'
-    | 'mobile';
+  desktopAbove?: boolean;
+  desktopBelow?: boolean;
+  tabletBelow?: boolean;
+  tabletAbove?: boolean;
+  mobile?: boolean;
 }>();
 
-const screenWidth = ref(window.innerWidth);
+const {
+  tabletAbove: ta,
+  desktopBelow: db,
+  desktopAbove: da,
+  mobile: m,
+  tabletBelow: tb,
+} = useScreenDetection();
 
-const breakpoints = {
-  tablet: getNumericCssVar('--tablet'),
-  desktop: getNumericCssVar('--desktop'),
-};
-
-const conditions = {
-  desktop: () => screenWidth.value >= breakpoints.desktop,
-  'desktop-above': () => screenWidth.value > breakpoints.desktop,
-  'desktop-below': () => screenWidth.value < breakpoints.desktop,
-  'tablet-below': () => screenWidth.value < breakpoints.tablet,
-  'tablet-above': () => screenWidth.value >= breakpoints.tablet,
-  mobile: () => screenWidth.value < breakpoints.tablet,
-};
-
-const updateScreenWidth = () => {
-  screenWidth.value = window.innerWidth;
-};
-
-onMounted(() => {
-  window.addEventListener('resize', updateScreenWidth);
+const isVisible = computed(() => {
+  return (
+    (props.desktopAbove && da.value) ||
+    (props.desktopBelow && db.value) ||
+    (props.tabletBelow && tb.value) ||
+    (props.tabletAbove && ta.value) ||
+    (props.mobile && m.value)
+  );
 });
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateScreenWidth);
-});
-
-const isVisible = computed(() => conditions[props.condition]?.() ?? false);
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div class="settings">
-    <visibility-wrapper condition="desktop-above">
+    <visibility-wrapper desktop-above>
       <div class="menu">
         <settings-menu />
       </div>

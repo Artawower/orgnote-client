@@ -5,7 +5,7 @@
       <app-input v-model="activeCompletion.searchQuery" :placeholder="placeholder"></app-input>
     </div>
 
-    <visibility-wrapper condition="desktop-above">
+    <visibility-wrapper desktop-above>
       <action-button
         @click="toggleFullScreen"
         :icon="config.fullScreen ? 'sym_o_close_fullscreen' : 'open_in_full'"

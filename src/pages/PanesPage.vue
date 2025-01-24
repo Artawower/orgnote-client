@@ -1,13 +1,21 @@
 <template>
   <page-wrapper>
-    <splitpanes>
-      <pane>
+    <visibility-wrapper>
+      <template #desktop-below>
+        <h1>page</h1>
         <tabs-page />
-      </pane>
-      <pane>
-        <tabs-page />
-      </pane>
-    </splitpanes>
+      </template>
+      <template #desktop-above>
+        <splitpanes>
+          <pane>
+            <tabs-page />
+          </pane>
+          <pane>
+            <tabs-page />
+          </pane>
+        </splitpanes>
+      </template>
+    </visibility-wrapper>
   </page-wrapper>
 </template>
 
@@ -16,6 +24,7 @@ import PageWrapper from 'src/components/PageWrapper.vue';
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
 import TabsPage from './TabsPage.vue';
+import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 </script>
 
 <style lang="scss" scoped>
