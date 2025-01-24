@@ -35,7 +35,7 @@ const hoverColor = computed(() => getCssVariableName(props.hoverColor ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
 
 const iconSizeMap: { [key in IconSize]: string } = {
-  xs: '1em',
+  xs: '0.8em',
   sm: '1.2em',
   md: '1.6em',
   lg: '3em',
@@ -44,13 +44,10 @@ const iconSize = computed(() => iconSizeMap[props.size]);
 </script>
 
 <style lang="scss">
-.icon.rounded {
+.icon {
   @include flexify(flex-start, center, center);
-  border-radius: var(--icon-rounded-border-radius);
-  padding: 2px;
-  box-sizing: content-box;
-
   $btn-sizes: (
+    xs: var(--btn-action-xs-size),
     sm: var(--btn-action-sm-size),
     md: var(--btn-action-md-size),
     lg: var(--btn-action-lg-size),
@@ -64,6 +61,12 @@ const iconSize = computed(() => iconSizeMap[props.size]);
       min-height: $value;
     }
   }
+}
+
+.icon.rounded {
+  border-radius: var(--icon-rounded-border-radius);
+  padding: 2px;
+  box-sizing: content-box;
 }
 
 .bordered {

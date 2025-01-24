@@ -1,8 +1,12 @@
 <template>
   <page-wrapper>
     <splitpanes>
-      <pane>1</pane>
-      <pane>2</pane>
+      <pane>
+        <tabs-page />
+      </pane>
+      <pane>
+        <tabs-page />
+      </pane>
     </splitpanes>
   </page-wrapper>
 </template>
@@ -11,6 +15,7 @@
 import PageWrapper from 'src/components/PageWrapper.vue';
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
+import TabsPage from './TabsPage.vue';
 </script>
 
 <style lang="scss" scoped>

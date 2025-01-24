@@ -75,6 +75,8 @@ button {
 
   &.icon-xs {
     padding: var(--padding-xs);
+    width: var(--btn-action-xs-size);
+    height: var(--btn-action-xs-size);
   }
 
   &.icon-sm {

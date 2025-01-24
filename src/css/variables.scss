@@ -65,14 +65,15 @@ body {
 
   // Button
   --btn-action-padding: var(--padding-md);
-  --btn-action-radius: var(--border-radius-md);
+  --btn-action-radius: 20%;
   --btn-action-color: var(--fg);
   --btn-action-bg: var(--bg);
   --btn-action-hover-bg: var(--fg-alt);
   --btn-action-hover-brightness: 130%;
-  --btn-action-sm-size: 24px;
-  --btn-action-md-size: 32px;
-  --btn-action-lg-size: 48px;
+  --btn-action-xs-size: 14px;
+  --btn-action-sm-size: 20px;
+  --btn-action-md-size: 26px;
+  --btn-action-lg-size: 32px;
   --btn-action-border: none;
   --btn-action-active-color: var(--accent);
 
