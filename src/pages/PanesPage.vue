@@ -2,7 +2,6 @@
   <page-wrapper>
     <visibility-wrapper>
       <template #desktop-below>
-        <h1>page</h1>
         <tabs-page />
       </template>
       <template #desktop-above>

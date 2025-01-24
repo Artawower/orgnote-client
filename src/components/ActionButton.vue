@@ -1,7 +1,7 @@
 <template>
   <button
     @click="onButtonClick"
-    :class="[`icon-${size}`, active, { outline, border }]"
+    :class="[`icon-${size}`, active, { outline, border, text: slots.text }]"
     :style="{ '--action-border-color': getCssVariableName(activeColor) }"
   >
     <animation-wrapper>
@@ -13,13 +13,14 @@
         :color="activeColor"
       />
     </animation-wrapper>
+    <slot name="text" />
   </button>
 </template>
 
 <script lang="ts" setup>
 import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, useSlots } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
 import type { ThemeVariable } from 'orgnote-api';
@@ -60,11 +61,14 @@ const onButtonClick = () => {
     fired.value = false;
   }, ICON_CHANGE_DURATION);
 };
+
+const slots = useSlots();
+console.log('✎: [line 66][ActionButton.vue] slots: ', slots);
 </script>
 
 <style lang="scss" scoped>
 button {
-  @include flexify(row, center, center);
+  @include flexify(row, center, center, var(--gap-sm));
   padding: var(--btn-action-padding);
   border-radius: var(--btn-action-radius);
   color: var(--btn-action-color);
@@ -73,22 +77,31 @@ button {
   box-sizing: border-box;
   background: transparent;
 
+  &.text {
+    width: var(--btn-action-text-width);
+    justify-content: flex-start;
+  }
+
   &.icon-xs {
     padding: var(--padding-xs);
     width: var(--btn-action-xs-size);
     height: var(--btn-action-xs-size);
+    border-radius: var(--border-radius-xs);
   }
 
   &.icon-sm {
     padding: var(--padding-sm);
+    border-radius: var(--border-radius-sm);
   }
 
   &.icon-md {
     padding: var(--padding-md);
+    border-radius: var(--border-radius-md);
   }
 
   &.icon-lg {
     padding: var(--padding-lg);
+    border-radius: var(--border-radius-lg);
   }
 
   &:not(.outline) {

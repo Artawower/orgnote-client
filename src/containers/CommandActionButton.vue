@@ -4,7 +4,9 @@
     v-if="command"
     :icon="extractDynamicValue(command.icon)"
     :size="size"
-  />
+  >
+    <template v-if="includeText" #text>{{ camelCaseToWords(command.command) }}</template>
+  </action-button>
 </template>
 
 <script lang="ts" setup>
@@ -14,11 +16,13 @@ import { useCommandsStore } from 'src/stores/command';
 import { computed } from 'vue';
 import { extractDynamicValue } from 'src/utils/extract-dynamic-value';
 import type { IconSize } from 'src/models/icon-size';
+import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 
 const props = withDefaults(
   defineProps<{
     command: CommandName;
     size?: IconSize;
+    includeText?: boolean;
   }>(),
   {
     size: 'md',
