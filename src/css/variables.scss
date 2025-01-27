@@ -142,12 +142,17 @@ body {
   --splitter-background: var(--bg-alt2);
 
   // Tab
-  --tab-padding: 2px 4px;
+  --tab-padding: var(--padding-md);
+  --tab-height: 28px;
   --tab-background: var(--bg-alt);
-  --tab-border: var(--border-default);
-  --tab-border-radius: var(--border-radius-md);
+  --tab-border: 0;
+  --tab-border-radius: var(--border-radius-sm);
   --tab-color: var(--fg);
   --tab-width: 160px;
+  --tab-active-border: 0;
+  --tab-active-hover-background: var(--bg-alt2);
+  --tab-active-color: var(--fg);
+  --tab-active-background: var(--bg-alt2);
 }
 
 @include desktop-below {

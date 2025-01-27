@@ -1,4 +1,4 @@
-import type { Page, Pane } from 'orgnote-api';
+import type { InitialPaneParams, Page, Pane } from 'orgnote-api';
 import { RouteNames, type PaneStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { UNTITLED_PAGE } from 'src/constants/untitled-page';
@@ -19,7 +19,6 @@ export const initPageRouter = async (): Promise<Router> => {
       },
     ],
   });
-  console.log('✎: [line 22][pane.ts] router: ', router.currentRoute.value);
   return router;
 };
 
@@ -38,7 +37,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     };
   };
 
-  const initNewPane = async (params?: Partial<Pick<Page, 'title' | 'pageId'>>): Promise<Pane> => {
+  const initNewPane = async (params?: InitialPaneParams): Promise<Pane> => {
     const newPage = await initNewPage(params);
     const pane: Pane = {
       activePageId: newPage.pageId,
@@ -60,12 +59,29 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
 
   const getPane = (id: string): Pane => panes.value[id];
 
+  const addPage = async (params?: InitialPaneParams) => {
+    const page = await initNewPage(params);
+    panes.value = {
+      ...panes.value,
+      [activePaneId.value]: {
+        ...panes.value[activePaneId.value],
+        pages: {
+          ...panes.value[activePaneId.value].pages,
+          [page.pageId]: page,
+        },
+      },
+    };
+
+    return page;
+  };
+
   const store: PaneStore = {
     panes,
     activePane,
     initNewPane,
     getPane,
     activePaneId,
+    addPage,
   };
   return store;
 });

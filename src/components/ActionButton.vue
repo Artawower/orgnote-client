@@ -104,7 +104,6 @@ button {
   }
 
   &:not(.outline) {
-    background: var(--btn-action-bg);
     &:hover,
     &:active {
       background: var(--btn-action-hover-bg);
