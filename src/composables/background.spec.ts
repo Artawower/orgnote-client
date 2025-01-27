@@ -7,7 +7,6 @@ import { vi, test, expect, beforeEach } from 'vitest';
 import { getCssVar } from 'src/utils/css-utils';
 
 vi.mock('@capacitor/status-bar', () => {
-  console.log('Mock for StatusBar applied');
   return {
     StatusBar: {
       setBackgroundColor: vi.fn(),
@@ -31,7 +30,7 @@ vi.mock('quasar', () => ({
     is: {
       nativeMobile: true,
       android: false,
-      mobile: false,
+      mobile: true,
     },
   },
 }));
@@ -51,6 +50,7 @@ vi.mock('src/utils/css-utils', () => ({
 }));
 
 beforeEach(() => {
+  vi.resetModules();
   setActivePinia(createPinia());
   process.env.CLIENT = 'true';
   vi.clearAllMocks();
@@ -58,8 +58,14 @@ beforeEach(() => {
 
 test('setStatusBarBackground sets the background color and style for dark theme', async () => {
   const bgSettings = useBackgroundSettings();
+  console.log('✎: [line 61][background.spec.ts] bgSettings: ', bgSettings);
   await bgSettings.setStatusBarBackground('bg');
   expect(StatusBar.setBackgroundColor).toHaveBeenCalledWith({ color: '#FFFFFF' });
+});
+
+test('StatusBar.setBackgroundColor is called in mock', async () => {
+  StatusBar.setBackgroundColor({ color: '#123456' });
+  expect(StatusBar.setBackgroundColor).toHaveBeenCalledWith({ color: '#123456' });
 });
 
 test('setStatusBarBackground does nothing if color is not found', async () => {

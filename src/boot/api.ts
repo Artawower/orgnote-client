@@ -39,6 +39,7 @@ import { uploadFile, uploadFiles } from 'src/utils/file-upload';
 import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
 import { useCompletionStore } from 'src/stores/completion';
 import { usePaneStore } from 'src/stores/pane';
+import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -59,6 +60,7 @@ async function initApi(app: App): Promise<void> {
       useCompletion: useCompletionStore,
       useQuasar: useQuasar,
       usePane: usePaneStore,
+      useFileSystemManager: useFileSystemManagerStore,
       app,
     },
     utils: {

@@ -1,4 +1,4 @@
-import { mobileOnly } from 'src/utils/platform-specific';
+import { nativeMobileOnly } from 'src/utils/platform-specific';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { getCssVar } from 'src/utils/css-utils';
 import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
@@ -9,6 +9,8 @@ export const useBackgroundSettings = () => {
   const { config } = useSettingsStore();
 
   const setStatusBarBackground = async (bgColor?: string) => {
+    console.log('✎: [line 18][BACKGROUND!] StatusBar: ', StatusBar);
+
     const backgroundColor = getCssVar(bgColor ?? 'bg');
     if (!backgroundColor) {
       return;
@@ -53,9 +55,9 @@ export const useBackgroundSettings = () => {
   }
 
   const bgSettings: BackgroundSettings = {
-    setBottomBarBackground: mobileOnly(setBottomBarBackground),
-    setStatusBarBackground: mobileOnly(setStatusBarBackground),
-    setBackground: mobileOnly(setBackground),
+    setBottomBarBackground: nativeMobileOnly(setBottomBarBackground),
+    setStatusBarBackground: nativeMobileOnly(setStatusBarBackground),
+    setBackground: nativeMobileOnly(setBackground),
   };
 
   return bgSettings;

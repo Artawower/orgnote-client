@@ -1,5 +1,12 @@
 import { test, expect, vi } from 'vitest';
-import { androidOnly, clientOnly, serverOnly, mobileOnly, desktopOnly } from './platform-specific';
+import {
+  androidOnly,
+  clientOnly,
+  serverOnly,
+  mobileOnly,
+  desktopOnly,
+  nativeMobileOnly,
+} from './platform-specific';
 import { Platform } from 'quasar';
 
 vi.mock('quasar', () => ({
@@ -78,7 +85,7 @@ test('serverOnly returns default value when CLIENT is true', async () => {
 
 test('mobileOnly executes fn only on mobile platform', async () => {
   process.env.CLIENT = 'true';
-  Platform.is.nativeMobile = true;
+  Platform.is.mobile = true;
 
   const mockFn = vi.fn(() => 'Mobile only');
   const result = await mobileOnly(mockFn, 'default')();
@@ -87,9 +94,20 @@ test('mobileOnly executes fn only on mobile platform', async () => {
   expect(result).toBe('Mobile only');
 });
 
+test('nativeMobileOnly executes fn only on mobile platform', async () => {
+  process.env.CLIENT = 'true';
+  Platform.is.nativeMobile = true;
+
+  const mockFn = vi.fn(() => 'Mobile only');
+  const result = await nativeMobileOnly(mockFn, 'default')();
+
+  expect(mockFn).toHaveBeenCalledOnce();
+  expect(result).toBe('Mobile only');
+});
+
 test('mobileOnly returns default value on non-mobile platform', async () => {
   process.env.CLIENT = 'true';
-  Platform.is.nativeMobile = false;
+  Platform.is.mobile = false;
 
   const mockFn = vi.fn(() => 'Mobile only');
   const result = await mobileOnly(mockFn, 'default')();
