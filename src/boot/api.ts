@@ -38,6 +38,7 @@ import { copyToClipboard } from 'src/utils/clipboard';
 import { uploadFile, uploadFiles } from 'src/utils/file-upload';
 import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
 import { useCompletionStore } from 'src/stores/completion';
+import { usePaneStore } from 'src/stores/pane';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -57,6 +58,7 @@ async function initApi(app: App): Promise<void> {
       useSettings: useSettingsStore,
       useCompletion: useCompletionStore,
       useQuasar: useQuasar,
+      usePane: usePaneStore,
       app,
     },
     utils: {

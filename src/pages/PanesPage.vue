@@ -2,15 +2,12 @@
   <page-wrapper>
     <visibility-wrapper>
       <template #desktop-below>
-        <tabs-page />
+        <app-pane v-if="activePaneId" :pane-id="activePaneId" />
       </template>
       <template #desktop-above>
         <splitpanes>
-          <pane>
-            <tabs-page />
-          </pane>
-          <pane>
-            <tabs-page />
+          <pane v-for="(_, i) of panes" :key="i">
+            <app-pane :pane-id="i" />
           </pane>
         </splitpanes>
       </template>
@@ -22,8 +19,23 @@
 import PageWrapper from 'src/components/PageWrapper.vue';
 import { Splitpanes, Pane } from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
-import TabsPage from './TabsPage.vue';
+import AppPane from './AppPane.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
+import { storeToRefs } from 'pinia';
+import { api } from 'src/boot/api';
+import { onMounted } from 'vue';
+
+const paneManager = api.core.usePane();
+const { panes, activePaneId } = storeToRefs(paneManager);
+
+const initInitialPane = async () => {
+  if (activePaneId.value) {
+    return;
+  }
+  await paneManager.initNewPane();
+};
+
+onMounted(initInitialPane);
 </script>
 
 <style lang="scss" scoped>

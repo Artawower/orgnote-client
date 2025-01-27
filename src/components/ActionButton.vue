@@ -63,7 +63,6 @@ const onButtonClick = () => {
 };
 
 const slots = useSlots();
-console.log('✎: [line 66][ActionButton.vue] slots: ', slots);
 </script>
 
 <style lang="scss" scoped>
