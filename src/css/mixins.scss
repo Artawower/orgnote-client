@@ -93,7 +93,7 @@
 }
 
 @mixin mobile-footer-padding($offset: 0px) {
-  @include mobile {
+  @include desktop-below {
     padding-bottom: calc(var(--footer-height) + #{$offset});
   }
 }

@@ -19,69 +19,104 @@ export const initPageRouter = async (): Promise<Router> => {
       },
     ],
   });
+  router.push({ name: RouteNames.InitialPage });
   return router;
 };
 
-export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
-  const panes = shallowRef<Record<string, Pane>>({});
-  const activePaneId = shallowRef<string | null>(null);
+export const usePaneStore = defineStore<'panes', PaneStore>(
+  'panes',
+  () => {
+    const panes = shallowRef<Record<string, Pane>>({});
+    const activePaneId = shallowRef<string | null>(null);
 
-  const activePane = computed(() => panes.value[activePaneId.value]);
+    const activePane = computed(() => panes.value[activePaneId.value]);
 
-  const initNewPage = async (params?: Partial<Pick<Page, 'title' | 'pageId'>>): Promise<Page> => {
-    const router = await initPageRouter();
-    return {
-      title: params?.title || UNTITLED_PAGE,
-      pageId: params?.pageId || v4(),
-      router,
-    };
-  };
-
-  const initNewPane = async (params?: InitialPaneParams): Promise<Pane> => {
-    const newPage = await initNewPage(params);
-    const pane: Pane = {
-      activePageId: newPage.pageId,
-      pages: {
-        [newPage.pageId]: newPage,
-      },
+    const initNewPage = async (params?: Partial<Pick<Page, 'title' | 'id'>>): Promise<Page> => {
+      const router = await initPageRouter();
+      return {
+        title: params?.title || UNTITLED_PAGE,
+        id: params?.id || v4(),
+        router,
+      };
     };
 
-    const paneId = v4();
-
-    activePaneId.value = paneId;
-    panes.value = {
-      ...panes.value,
-      [paneId]: pane,
-    };
-
-    return pane;
-  };
-
-  const getPane = (id: string): Pane => panes.value[id];
-
-  const addPage = async (params?: InitialPaneParams) => {
-    const page = await initNewPage(params);
-    panes.value = {
-      ...panes.value,
-      [activePaneId.value]: {
-        ...panes.value[activePaneId.value],
+    const initNewPane = async (params?: InitialPaneParams): Promise<Pane> => {
+      const newPage = await initNewPage(params);
+      const paneId = v4();
+      const pane: Pane = {
+        id: paneId,
+        activePageId: newPage.id,
         pages: {
-          ...panes.value[activePaneId.value].pages,
-          [page.pageId]: page,
+          [newPage.id]: newPage,
         },
-      },
+      };
+
+      activePaneId.value = paneId;
+      panes.value = {
+        ...panes.value,
+        [paneId]: pane,
+      };
+
+      return pane;
     };
 
-    return page;
-  };
+    const getPane = (id: string): Pane => panes.value[id];
 
-  const store: PaneStore = {
-    panes,
-    activePane,
-    initNewPane,
-    getPane,
-    activePaneId,
-    addPage,
-  };
-  return store;
-});
+    const addPage = async (params?: InitialPaneParams) => {
+      const page = await initNewPage(params);
+      panes.value = {
+        ...panes.value,
+        [activePaneId.value]: {
+          ...panes.value[activePaneId.value],
+          pages: {
+            ...panes.value[activePaneId.value].pages,
+            [page.id]: page,
+          },
+        },
+      };
+
+      return page;
+    };
+
+    const selectPage = (paneId: string, pageId: string) => {
+      activePaneId.value = paneId;
+      panes.value = {
+        ...panes.value,
+        [paneId]: {
+          ...panes.value[paneId],
+          activePageId: pageId,
+        },
+      };
+    };
+
+    const closePage = (paneId: string, pageId: string) => {
+      const pane = panes.value[paneId];
+      const pages = { ...pane.pages };
+      delete pages[pageId];
+      const pageIds = Object.keys(pages);
+      const lastPageId = pageIds[pageIds.length - 1];
+      pane.activePageId = lastPageId;
+
+      panes.value = {
+        ...panes.value,
+        [paneId]: {
+          ...pane,
+          pages,
+        },
+      };
+    };
+
+    const store: PaneStore = {
+      panes,
+      activePane,
+      initNewPane,
+      getPane,
+      activePaneId,
+      addPage,
+      selectPage,
+      closePage,
+    };
+    return store;
+  },
+  { persist: true },
+);

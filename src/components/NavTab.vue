@@ -4,7 +4,7 @@
       <app-icon v-if="icon" :name="icon" size="xs" color="fg-alt" />
       <slot />
     </div>
-    <action-button icon="close" size="xs" color="fg-alt" />
+    <action-button @click.prevent.stop="emits('close')" icon="close" size="xs" color="fg-alt" />
   </div>
 </template>
 
@@ -22,6 +22,10 @@ withDefaults(
     closble: true,
   },
 );
+
+const emits = defineEmits<{
+  (e: 'close'): void;
+}>();
 </script>
 
 <style lang="scss" scoped>
@@ -46,7 +50,6 @@ withDefaults(
   border: var(--tab-active-border);
   color: var(--tab-active-color);
   background: var(--tab-active-background);
-  font-weight: 500;
 }
 
 .label {

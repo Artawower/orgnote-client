@@ -39,6 +39,7 @@ onClickOutside(sidebarRef, () => {
   height: 100vh;
   height: 100dvh;
   flex: 1;
+  overflow: hidden;
 }
 
 @include desktop-below {

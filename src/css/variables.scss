@@ -52,7 +52,7 @@ body {
   --gap-xl: 32px;
 
   // Footer
-  --footer-height: 60px;
+  --footer-height: 0px;
   --footer-border-top: var(--border-default);
   --footer-padding: 0;
   --footer-background: var(--bg-alt);
@@ -147,7 +147,7 @@ body {
   --tab-background: var(--bg-alt);
   --tab-border: 0;
   --tab-border-radius: var(--border-radius-sm);
-  --tab-color: var(--fg);
+  --tab-color: var(--fg-alt);
   --tab-width: 160px;
   --tab-active-border: 0;
   --tab-active-hover-background: var(--bg-alt2);
@@ -162,6 +162,7 @@ body {
     --modal-padding: var(--padding-lg);
     --modal-border: none;
     --modal-border-radius: 0;
+    --footer-height: 60px;
   }
 }
 

@@ -4,13 +4,17 @@
       <nav-tabs>
         <nav-tab
           v-for="(page, i) of Object.values(activePane.pages)"
+          @click="pane.selectPage(activePane.id, page.id)"
+          @close="pane.closePage(activePane.id, page.id)"
           icon="description"
           :key="i"
-          :active="page.pageId === activePane.activePageId"
+          :active="page.id === activePane.activePageId"
         >
           {{ page.title }}
         </nav-tab>
-        <command-action-button :command="DefaultCommands.NEW_PAGE" size="sm" />
+        <template #actions>
+          <command-action-button :command="DefaultCommands.NEW_PAGE" size="sm" />
+        </template>
       </nav-tabs>
     </template>
   </visibility-wrapper>
@@ -36,7 +40,6 @@ const { activePane } = storeToRefs(pane);
 const currentPane = computed(() => pane.getPane(props.paneId));
 
 const router = computed(() => currentPane.value.pages[currentPane.value.activePageId].router);
-router.value.push('/');
 
 const currentRoute = computed(() => router.value.currentRoute.value);
 
