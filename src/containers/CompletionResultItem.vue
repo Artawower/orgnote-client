@@ -80,17 +80,19 @@ const executeCompletionItem = async (e: MouseEvent) => {
 }
 
 .group-title {
-  @include flexify(row, flex-start, center);
+  @include flexify(row, center, center);
   height: 100%;
   font-weight: bold;
   color: var(--fg-alt);
+  background: var(--bg-alt2);
+  user-select: none;
 
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-bottom: var(--border-default);
-    margin: 0 10px;
-  }
+  /* &::before,
+     &::after {
+     content: '';
+     flex: 1;
+     border-bottom: var(--border-default);
+     margin: 0 10px;
+     } */
 }
 </style>

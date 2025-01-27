@@ -8,7 +8,7 @@
 
 <style lang="scss" scoped>
 .nav-tabs {
-  @include flexify(row, flex-start, center, var(--gap-sm));
+  @include flexify(row, flex-start, center, var(--gap-xs));
   padding: var(--padding-md);
 }
 </style>
