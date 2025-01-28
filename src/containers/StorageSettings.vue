@@ -55,6 +55,6 @@ const { fileSystems, currentFsName } = storeToRefs(fsManager);
 }
 
 .card-wrapper {
-  margin-top: var(--block-margin-md);
+  margin-top: var(--margin-md);
 }
 </style>
