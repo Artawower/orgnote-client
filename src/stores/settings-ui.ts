@@ -7,6 +7,7 @@ export const useSettingsUiStore = defineStore('settings-ui', () => {
   const settingsMenu = ref({
     main: [
       DefaultCommands.SYSTEM_SETTINGS,
+      DefaultCommands.STORAGE_SETTINGS,
       DefaultCommands.LANGUAGE_SETTINGS,
       DefaultCommands.INTERFACE_SETTINGS,
       DefaultCommands.SYNCHRONISATION_SETTINGS,

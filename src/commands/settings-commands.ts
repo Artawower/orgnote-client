@@ -53,6 +53,16 @@ export function getSettingsommands(): Command[] {
       isActive: () => isActiveRoute(RouteNames.SettingsPage),
     },
     {
+      command: DefaultCommands.STORAGE_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_save',
+      handler: () => openSettingsRoute(RouteNames.StorageSettings),
+      isActive: () => isActiveRoute(RouteNames.StorageSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
       command: DefaultCommands.SYSTEM_SETTINGS,
       group: 'settings',
       icon: 'sym_o_settings',

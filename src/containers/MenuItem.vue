@@ -4,22 +4,27 @@
     :class="[{ disabled }, type, `prefer-${prefer}`]"
     :style="{ '--menu-item-lines': lines }"
   >
-    <div class="left">
-      <app-icon
-        v-if="icon"
-        :name="icon"
-        :background="inverseIconColors ? background : color"
-        :color="inverseIconColors ? color : background"
-        :rounded="true"
-      ></app-icon>
-      <div class="content text-bold capitalize" :style="{ color: getCssVariableName(color) }">
-        <slot />
+    <div class="header">
+      <div class="left">
+        <app-icon
+          v-if="icon"
+          :name="icon"
+          :background="inverseIconColors ? background : color"
+          :color="inverseIconColors ? color : background"
+          :rounded="true"
+        ></app-icon>
+        <div class="content text-bold capitalize" :style="{ color: getCssVariableName(color) }">
+          <slot />
+        </div>
+      </div>
+      <div v-if="slots.right || narrow || selected" class="right">
+        <slot name="right" />
+        <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" size="xs" color="fg-alt" />
+        <app-icon v-else-if="selected" name="sym_o_check" color="accent" size="sm" />
       </div>
     </div>
-    <div v-if="slots.right || narrow || selected" class="right">
-      <slot name="right" />
-      <app-icon v-if="narrow" name="sym_o_arrow_forward_ios" size="xs" color="fg-alt" />
-      <app-icon v-else-if="selected" name="sym_o_check" color="accent" size="sm" />
+    <div v-if="slots.content" class="content">
+      <slot name="content" />
     </div>
   </div>
 </template>
@@ -67,7 +72,7 @@ const background = computed<ThemeVariable>(() => 'bg');
 
 <style lang="scss" scoped>
 .menu-item {
-  @include flexify(row, space-between, center, var(--gap-md));
+  @include flexify(column, flex-start, center, var(--gap-md));
   cursor: pointer;
   padding: var(--menu-item-padding);
   min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
@@ -80,6 +85,12 @@ const background = computed<ThemeVariable>(() => 'bg');
   &:active {
     background-color: var(--menu-item-hover-bg);
   }
+}
+
+.header {
+  @include flexify(row, space-between, center, var(--gap-md));
+  width: 100%;
+  flex: 1;
 }
 
 .left {

@@ -21,6 +21,11 @@ export function createSettingsRouter() {
         component: () => import('./SystemSettings.vue'),
       },
       {
+        name: RouteNames.StorageSettings,
+        path: '/settings/storage',
+        component: () => import('./StorageSettings.vue'),
+      },
+      {
         name: RouteNames.LanguageSettings,
         path: '/settings/language',
         component: () => import('./LanguageSettings.vue'),

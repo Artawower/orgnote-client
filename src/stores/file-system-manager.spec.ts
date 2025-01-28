@@ -3,21 +3,23 @@ import { useFileSystemManagerStore } from './file-system-manager';
 import { expect, test, vi, beforeEach } from 'vitest';
 import type { FileSystemInfo } from 'orgnote-api';
 
+const mockFileSystemInstance = {
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  readDir: vi.fn(),
+  fileInfo: vi.fn(),
+  rename: vi.fn(),
+  deleteFile: vi.fn(),
+  rmdir: vi.fn(),
+  mkdir: vi.fn(),
+  isDirExist: vi.fn(),
+  isFileExist: vi.fn(),
+  utimeSync: vi.fn(),
+};
+
 const mockFileSystemInfo: FileSystemInfo = {
   name: 'mockFs',
-  fs: {
-    readFile: vi.fn(),
-    writeFile: vi.fn(),
-    readDir: vi.fn(),
-    fileInfo: vi.fn(),
-    rename: vi.fn(),
-    deleteFile: vi.fn(),
-    rmdir: vi.fn(),
-    mkdir: vi.fn(),
-    isDirExist: vi.fn(),
-    isFileExist: vi.fn(),
-    utimeSync: vi.fn(),
-  },
+  fs: () => mockFileSystemInstance, // Always return the same instance
   type: 'desktop',
 };
 
@@ -46,7 +48,7 @@ test('setting currentFsName updates currentFs correctly', () => {
   store.currentFsName = 'mockFs';
 
   expect(store.currentFsName).toBe('mockFs');
-  expect(store.currentFs).toEqual(mockFileSystemInfo.fs);
+  expect(store.currentFs).toEqual(mockFileSystemInfo.fs());
 });
 
 test('computed properties are updated correctly after registration and setting currentFsName', () => {
@@ -55,7 +57,7 @@ test('computed properties are updated correctly after registration and setting c
   store.currentFsName = 'mockFs';
 
   expect(store.fileSystems).toEqual([mockFileSystemInfo]);
-  expect(store.currentFs).toEqual(mockFileSystemInfo.fs);
+  expect(store.currentFs).toEqual(mockFileSystemInfo.fs());
 });
 
 test('registering a file system with a duplicate name overwrites the existing one', () => {
@@ -64,7 +66,7 @@ test('registering a file system with a duplicate name overwrites the existing on
 
   const duplicateFileSystemInfo: FileSystemInfo = {
     name: 'mockFs',
-    fs: {
+    fs: () => ({
       readFile: vi.fn(),
       writeFile: vi.fn(),
       readDir: vi.fn(),
@@ -76,7 +78,7 @@ test('registering a file system with a duplicate name overwrites the existing on
       isDirExist: vi.fn(),
       isFileExist: vi.fn(),
       utimeSync: vi.fn(),
-    },
+    }),
     type: 'web',
   };
 
