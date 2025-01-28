@@ -30,7 +30,6 @@ export function useLoadingMessages(options: { messages?: string[]; timer?: numbe
   let intervalId: ReturnType<typeof setInterval> | null = null;
 
   const updateMessage = () => {
-    console.log('[line 30]: UPDATE?');
     const currentIndex = messages.value.indexOf(currentMessage.value);
     const nextIndex = (currentIndex + 1) % messages.value.length;
     currentMessage.value = messages.value[nextIndex];
@@ -44,7 +43,6 @@ export function useLoadingMessages(options: { messages?: string[]; timer?: numbe
     if (intervalId !== null) {
       clearInterval(intervalId);
       intervalId = null;
-      console.log('[line 45]: CLEAR TIMER');
     }
   });
 

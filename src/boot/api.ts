@@ -95,6 +95,10 @@ async function initApi(app: App): Promise<void> {
   };
 }
 
+const syncConfigurations = async (api: OrgNoteApi) => {
+  await api.core.useSettings().sync();
+};
+
 export default defineBoot(async ({ app, store }) => {
   const splashScreen = useSplashScreen();
   splashScreen.show();
@@ -103,6 +107,7 @@ export default defineBoot(async ({ app, store }) => {
   store.use(() => ({ api: api as OrgNoteApi }));
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, api.repositories);
+  await syncConfigurations(api);
   splashScreen.hide();
 });
 

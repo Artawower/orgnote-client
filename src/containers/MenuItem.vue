@@ -33,11 +33,10 @@
 import type { ThemeVariable } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
+import type { ViewType } from 'src/models/card-type';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
-
-type MenuItemType = 'info' | 'warning' | 'plain' | 'danger' | 'active';
 
 const props = withDefaults(
   defineProps<{
@@ -45,7 +44,7 @@ const props = withDefaults(
     narrow?: boolean;
     disabled?: boolean;
     active?: boolean;
-    type?: MenuItemType;
+    type?: ViewType;
     selected?: boolean;
     lines?: number;
     inverseIconColors?: boolean;
@@ -58,7 +57,7 @@ const props = withDefaults(
   },
 );
 
-const typeColorMap: { [key in MenuItemType]?: ThemeVariable } = {
+const typeColorMap: { [key in ViewType]?: ThemeVariable } = {
   ...CARD_TYPE_TO_BACKGROUND,
   plain: 'fg',
 };

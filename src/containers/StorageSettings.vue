@@ -14,6 +14,8 @@
           <app-description>{{ t(fs.description) }}</app-description>
         </template>
       </menu-item>
+      <menu-item>{{ t(TXT_VAULT) }}: {{ vault }}</menu-item>
+      <path-picker folder />
     </card-wrapper>
     <app-card v-if="currentFsName" type="danger">
       <template #cardTitle>
@@ -33,11 +35,16 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 import AppCard from 'src/components/AppCard.vue';
+import PathPicker from './PathPicker.vue';
 
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
-import { TXT_STORAGE_CHANGE_WARNING, TXT_STORAGE_CHANGE_WARNING_DESCRIPTION } from 'orgnote-api';
+import {
+  TXT_STORAGE_CHANGE_WARNING,
+  TXT_STORAGE_CHANGE_WARNING_DESCRIPTION,
+  TXT_VAULT,
+} from 'orgnote-api';
 
 const { t } = useI18n({
   useScope: 'global',
@@ -46,6 +53,7 @@ const { t } = useI18n({
 
 const fsManager = api.core.useFileSystemManager();
 const { fileSystems, currentFsName } = storeToRefs(fsManager);
+const { vault } = storeToRefs(api.core.useFileSystem());
 </script>
 
 <style lang="scss" scoped>

@@ -1,18 +1,20 @@
 import { ORG_NOTE_CONFIG_SCHEMA, type OrgNoteConfig, type SettingsStore } from 'orgnote-api';
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { DEFAULT_CONFIG } from 'src/constants/config';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import clone from 'rfdc';
 import { useFileSystemStore } from './file-system';
 import { parse } from 'valibot';
 import { formatValidationErrors } from 'src/utils/format-validation-errors';
 import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
 import type { ModelsAPIToken } from 'orgnote-api/remote-api';
+import { debounce } from 'src/utils/debounce';
 
 export const useSettingsStore = defineStore<'settings', SettingsStore>(
   'settings',
   () => {
     const fileSystem = useFileSystemStore();
+    const { vault } = storeToRefs(fileSystem);
     const diskConfigPath = getSystemFilesPath('config.json');
     const lastSyncTime = ref<number>(0);
 
@@ -31,6 +33,7 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
         return;
       }
       const parsedConfig: OrgNoteConfig = JSON.parse(newConfig);
+
       try {
         parse(ORG_NOTE_CONFIG_SCHEMA, parsedConfig);
         const clonedConfig = clone()(parsedConfig);
@@ -40,6 +43,16 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
         configErrors.value = errorMsg;
       }
     };
+
+    const syncWithDebounce = debounce(sync, 1000);
+
+    watch(
+      [vault, config],
+      async () => {
+        await syncWithDebounce();
+      },
+      { deep: true },
+    );
 
     return {
       config,
