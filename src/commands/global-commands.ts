@@ -1,11 +1,5 @@
 import type { Command } from 'orgnote-api';
-import {
-  DefaultCommands,
-  TXT_CHECK_GITHUB_SOURCE_CODE,
-  TXT_DECRYPT_ACTIVE_NOTE,
-  TXT_ENCRYPT_ACTIVE_NOTE,
-  TXT_VISIT_DEBUG_INFO,
-} from 'orgnote-api';
+import { DefaultCommands, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
@@ -23,7 +17,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     },
     {
       command: DefaultCommands.OPEN_DEBUG_INFO,
-      description: TXT_VISIT_DEBUG_INFO,
+      description: I18N.VISIT_DEBUG_INFO,
       group: 'debug',
       handler: () => {
         // TODO: feat/stable-beta
@@ -88,7 +82,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.ENCRYPT_NOTE,
       icon: 'sym_o_encrypted',
-      description: TXT_ENCRYPT_ACTIVE_NOTE,
+      description: I18N.ENCRYPT_ACTIVE_NOTE,
       // description: 'encrypt active note',
       // disabled: () =>
       //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
@@ -106,7 +100,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.DECRYPT_NOTE,
       icon: 'sym_o_remove_moderator',
-      description: TXT_DECRYPT_ACTIVE_NOTE,
+      description: I18N.DECRYPT_ACTIVE_NOTE,
       // disabled: () =>
       //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
       //   !currentNoteStore.currentNote?.encrypted,
@@ -123,7 +117,7 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
     {
       command: DefaultCommands.SOURCE_CODE,
       icon: 'fa-brands fa-github-alt',
-      description: TXT_CHECK_GITHUB_SOURCE_CODE,
+      description: I18N.CHECK_GITHUB_SOURCE_CODE,
       group: 'global',
       handler: () => window.open(GITHUB_LINK, '_blank'),
     },

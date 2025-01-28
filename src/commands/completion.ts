@@ -1,5 +1,5 @@
 import type { CompletionCandidate, CompletionSearchResult, OrgNoteApi } from 'orgnote-api';
-import { DefaultCommands, TXT_EXECUTE_COMMAND, type Command } from 'orgnote-api';
+import { DefaultCommands, I18N, type Command } from 'orgnote-api';
 import type { IFuseOptions } from 'fuse.js';
 import Fuse from 'fuse.js';
 
@@ -40,7 +40,7 @@ const toggleCommandsHandler = (api: OrgNoteApi) => {
   };
   completion.open<Command>({
     itemsGetter,
-    placeholder: TXT_EXECUTE_COMMAND,
+    placeholder: I18N.EXECUTE_COMMAND,
     type: 'choice',
     searchText: '',
   });

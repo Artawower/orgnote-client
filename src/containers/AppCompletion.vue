@@ -6,7 +6,7 @@
     <div class="content">
       <completion-result v-if="activeCompletion.candidates?.length" />
       <div v-else class="not-found" :style="{ height: completionItemHeight + 'px' }">
-        {{ t(TXT_NOT_FOUND).toUpperCase() }}
+        {{ t(I18N.NOT_FOUND).toUpperCase() }}
       </div>
     </div>
     <div class="footer">
@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { TXT_NOT_FOUND, type CompletionConfig } from 'orgnote-api';
+import { I18N, type CompletionConfig } from 'orgnote-api';
 import CompletionInput from './CompletionInput.vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';

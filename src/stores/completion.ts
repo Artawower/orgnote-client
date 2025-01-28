@@ -1,5 +1,5 @@
 import type { Completion, CompletionSearchResult } from 'orgnote-api';
-import { TXT_EXECUTE_COMMAND, type CompletionConfig, type CompletionStore } from 'orgnote-api';
+import { I18N, type CompletionConfig, type CompletionStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useModalStore } from './modal';
 import AppCompletion from 'src/containers/AppCompletion.vue';
@@ -24,7 +24,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
         noPadding: true,
         position: 'top',
         modalProps: {
-          placeholder: TXT_EXECUTE_COMMAND,
+          placeholder: I18N.EXECUTE_COMMAND,
         },
       });
 

@@ -1,14 +1,5 @@
 import type { Command } from 'orgnote-api';
-import {
-  DefaultCommands,
-  RouteNames,
-  TXT_CLEAR_ALL_LOCAL_DATA,
-  TXT_CONFIRM_DELETE_ACCOUNT,
-  TXT_CONFIRM_DELETE_ALL_DATA,
-  TXT_CONFIRM_DELETE_NOTES,
-  TXT_DELETE_ALL_NOTES,
-  TXT_REMOVE_ACCOUNT,
-} from 'orgnote-api';
+import { DefaultCommands, RouteNames, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { useRouteActive } from 'src/composables/use-route-active';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
@@ -168,8 +159,8 @@ export function getSettingsommands(): Command[] {
       group: 'settings',
       handler: async () => {
         const confirm = await confirmationModal.confirm({
-          title: TXT_CLEAR_ALL_LOCAL_DATA,
-          message: TXT_CONFIRM_DELETE_ALL_DATA,
+          title: I18N.CLEAR_ALL_LOCAL_DATA,
+          message: I18N.CONFIRM_DELETE_ALL_DATA,
         });
         console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },
@@ -180,8 +171,8 @@ export function getSettingsommands(): Command[] {
       group: 'settings',
       handler: async () => {
         const confirm = await confirmationModal.confirm({
-          title: TXT_DELETE_ALL_NOTES,
-          message: TXT_CONFIRM_DELETE_NOTES,
+          title: I18N.DELETE_ALL_NOTES,
+          message: I18N.CONFIRM_DELETE_NOTES,
         });
         console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },
@@ -192,8 +183,8 @@ export function getSettingsommands(): Command[] {
       group: 'settings',
       handler: async () => {
         const confirm = await confirmationModal.confirm({
-          title: TXT_REMOVE_ACCOUNT,
-          message: TXT_CONFIRM_DELETE_ACCOUNT,
+          title: I18N.REMOVE_ACCOUNT,
+          message: I18N.CONFIRM_DELETE_ACCOUNT,
         });
         console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },

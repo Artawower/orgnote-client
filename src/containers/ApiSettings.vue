@@ -1,7 +1,7 @@
 <template>
   <div class="api-settings">
     <app-description padded>
-      <div class="capitalize">{{ t(TXT_AVAILABLE_FOR_SUBSCRIPTION) }}</div>
+      <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
     </app-description>
 
     <card-wrapper>
@@ -26,14 +26,14 @@
     </card-wrapper>
     <card-wrapper>
       <menu-item @click="addToken" type="info">
-        <div class="capitalize">{{ t(TXT_CREATE_NEW_TOKEN) }}</div>
+        <div class="capitalize">{{ t(I18N.CREATE_NEW_TOKEN) }}</div>
       </menu-item>
     </card-wrapper>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { TXT_CREATE_NEW_TOKEN, TXT_AVAILABLE_FOR_SUBSCRIPTION } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 import AppDescription from 'src/components/AppDescription.vue';
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';

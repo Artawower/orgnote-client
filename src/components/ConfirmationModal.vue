@@ -4,10 +4,10 @@
     <div v-if="message" class="message capitalize">{{ t(message) }}</div>
     <div class="actions">
       <app-button @click="resolver(true)" type="danger">{{
-        t(confirmText ?? TXT_CONFIRM)
+        t(confirmText ?? I18N.CONFIRM)
       }}</app-button>
       <app-button @click="resolver(false)" type="info">{{
-        t(cancelText ?? TXT_CANCEL)
+        t(cancelText ?? I18N.CANCEL)
       }}</app-button>
     </div>
   </div>
@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 import type { ConfirmationModalParams } from 'orgnote-api';
-import { TXT_CONFIRM, TXT_CANCEL } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 import AppButton from './AppButton.vue';
 import { useI18n } from 'vue-i18n';
 defineProps<

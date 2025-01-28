@@ -2,14 +2,14 @@
   <settings-scheme :scheme="syncScheme" path="ui"></settings-scheme>
   <card-wrapper>
     <menu-item type="info" :disabled="true">
-      <div class="capitalize text-bold">{{ t(TXT_FORCE_SYNC) }}</div>
+      <div class="capitalize text-bold">{{ t(I18N.FORCE_SYNC) }}</div>
     </menu-item>
   </card-wrapper>
-  <app-description>{{ t(TXT_FORCE_SYNC_DESCRIPTION) }}</app-description>
+  <app-description>{{ t(I18N.FORCE_SYNC_DESCRIPTION) }}</app-description>
 </template>
 
 <script lang="ts" setup>
-import { ORG_NOTE_CONFIG_SCHEMA, TXT_FORCE_SYNC_DESCRIPTION, TXT_FORCE_SYNC } from 'orgnote-api';
+import { ORG_NOTE_CONFIG_SCHEMA, I18N } from 'orgnote-api';
 import SettingsScheme from './SettingsScheme.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 import MenuItem from './MenuItem.vue';

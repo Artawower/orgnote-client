@@ -1,10 +1,10 @@
 <template>
   <div class="interface-settings">
-    <settings-scheme :name="t(TXT_COMMON)" :scheme="commonScheme" path="ui"></settings-scheme>
-    <settings-scheme :name="t(TXT_THEMES)" :scheme="themeScheme" path="ui"></settings-scheme>
-    <settings-scheme :name="t(TXT_EDITOR)" :scheme="editorScheme" path="editor"></settings-scheme>
+    <settings-scheme :name="t(I18N.COMMON)" :scheme="commonScheme" path="ui"></settings-scheme>
+    <settings-scheme :name="t(I18N.THEMES)" :scheme="themeScheme" path="ui"></settings-scheme>
+    <settings-scheme :name="t(I18N.EDITOR)" :scheme="editorScheme" path="editor"></settings-scheme>
     <settings-scheme
-      :name="t(TXT_COMPLETION)"
+      :name="t(I18N.COMPLETION)"
       :scheme="completionScheme"
       path="completion"
     ></settings-scheme>
@@ -14,13 +14,7 @@
 <script lang="ts" setup>
 import SettingsScheme from './SettingsScheme.vue';
 import { useI18n } from 'vue-i18n';
-import {
-  TXT_COMPLETION,
-  TXT_COMMON,
-  TXT_EDITOR,
-  TXT_THEMES,
-  ORG_NOTE_CONFIG_SCHEMA,
-} from 'orgnote-api';
+import { I18N, ORG_NOTE_CONFIG_SCHEMA } from 'orgnote-api';
 import { valibotScheme } from 'src/models/valibot-scheme';
 
 const { t } = useI18n({

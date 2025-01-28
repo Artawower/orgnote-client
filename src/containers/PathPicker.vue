@@ -1,13 +1,13 @@
 <template>
   <menu-item @click="pickPath" type="info">
-    {{ t(folder ? TXT_PICK_FOLDER : TXT_PICK_FILE) }}
+    {{ t(folder ? I18N.PICK_FOLDER : I18N.PICK_FILE) }}
   </menu-item>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';
-import { TXT_PICK_FOLDER, TXT_PICK_FILE } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 
 defineProps<{
   folder?: boolean;

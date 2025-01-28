@@ -33,7 +33,7 @@
       </template>
     </menu-item>
     <menu-item type="info" @click="addValueToArray">
-      {{ t(TXT_ADD) }}
+      {{ t(I18N.ADD) }}
     </menu-item>
   </template>
   <template v-else-if="metadata?.textarea">
@@ -42,7 +42,7 @@
       <app-text-area ref="editInputRef" v-model="config[props.path][props.name]"></app-text-area>
     </menu-item>
     <menu-item @click="uploadConfigFile" v-if="metadata.upload" type="info">
-      {{ t(TXT_UPLOAD) }} {{ camelCaseToWords(name) }}
+      {{ t(I18N.UPLOAD) }} {{ camelCaseToWords(name) }}
     </menu-item>
   </template>
   <menu-item
@@ -79,7 +79,7 @@ import ToggleButton from 'src/components/ToggleButton.vue';
 import AppInput from 'src/components/AppInput.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import type { OrgNoteConfig } from 'orgnote-api';
-import { TXT_ADD, TXT_UPLOAD } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { computed, ref } from 'vue';

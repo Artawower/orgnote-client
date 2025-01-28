@@ -14,17 +14,17 @@
           <app-description>{{ t(fs.description) }}</app-description>
         </template>
       </menu-item>
-      <menu-item>{{ t(TXT_VAULT) }}: {{ vault }}</menu-item>
+      <menu-item>{{ t(I18N.VAULT) }}: {{ vault }}</menu-item>
       <path-picker folder />
     </card-wrapper>
     <app-card v-if="currentFsName" type="danger">
       <template #cardTitle>
         <div class="capitalize">
-          {{ t(TXT_STORAGE_CHANGE_WARNING) }}
+          {{ t(I18N.STORAGE_CHANGE_WARNING) }}
         </div>
       </template>
       <div class="capitalize">
-        {{ t(TXT_STORAGE_CHANGE_WARNING_DESCRIPTION) }}
+        {{ t(I18N.STORAGE_CHANGE_WARNING_DESCRIPTION) }}
       </div>
     </app-card>
   </div>
@@ -40,11 +40,7 @@ import PathPicker from './PathPicker.vue';
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
-import {
-  TXT_STORAGE_CHANGE_WARNING,
-  TXT_STORAGE_CHANGE_WARNING_DESCRIPTION,
-  TXT_VAULT,
-} from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 
 const { t } = useI18n({
   useScope: 'global',

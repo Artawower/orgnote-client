@@ -3,27 +3,22 @@
   <template v-if="config.encryption.type === 'gpgKeys'">
     <card-wrapper>
       <menu-item type="danger">
-        {{ t(TXT_GENERATE_GPG_KEYS) }}
+        {{ t(I18N.GENERATE_GPG_KEYS) }}
       </menu-item>
     </card-wrapper>
     <app-description v-if="config.encryption.type === 'gpgKeys'">
-      {{ t(TXT_ENCRYPTION_KEYS_GEN_WARNING) }}
+      {{ t(I18N.ENCRYPTION_KEYS_GEN_WARNING) }}
     </app-description>
   </template>
   <card-wrapper>
     <menu-item type="danger">
-      {{ t(TXT_ENCRYPT_AND_SYNC) }}
+      {{ t(I18N.ENCRYPT_AND_SYNC) }}
     </menu-item>
   </card-wrapper>
 </template>
 
 <script lang="ts" setup>
-import {
-  ORG_NOTE_CONFIG_SCHEMA,
-  TXT_ENCRYPT_AND_SYNC,
-  TXT_ENCRYPTION_KEYS_GEN_WARNING,
-  TXT_GENERATE_GPG_KEYS,
-} from 'orgnote-api';
+import { ORG_NOTE_CONFIG_SCHEMA, I18N } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
