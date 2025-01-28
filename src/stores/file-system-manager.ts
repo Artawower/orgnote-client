@@ -20,7 +20,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
 
     const useFs = async (fsName: string): Promise<void> => {
       currentFsName.value = fsName;
-      return;
+      await currentFs.value?.init();
     };
 
     const store: FileSystemManagerStore = {

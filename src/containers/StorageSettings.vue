@@ -6,8 +6,8 @@
         icon="sym_o_web"
         v-for="fs of fileSystems"
         :key="fs.name"
-        :selected="fs.name === currentFsName || true"
-        :active="fs.name === currentFsName || true"
+        :selected="fs.name === currentFsName"
+        :active="fs.name === currentFsName"
       >
         {{ fs.name }}
         <template v-if="fs.description" #content>
@@ -15,7 +15,7 @@
         </template>
       </menu-item>
     </card-wrapper>
-    <app-card type="danger">
+    <app-card v-if="currentFsName" type="danger">
       <template #cardTitle>
         <div class="capitalize">
           {{ t(TXT_STORAGE_CHANGE_WARNING) }}
