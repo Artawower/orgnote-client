@@ -6,11 +6,20 @@
           {{ targetPath }}
         </app-description>
       </menu-item>
+      <menu-item>
+        <search-input v-model="searchQuery" :placeholder="I18N.SEARCH" />
+      </menu-item>
     </card-wrapper>
     <div class="files">
       <card-wrapper>
         <file-manager-item v-if="targetPath && targetPath !== '/'" @click="moveUp" root />
-        <file-manager-item @click="handleFileClick(f)" v-for="f of files" :key="f.name" :file="f" />
+        <file-manager-item
+          :highlight="searchHighlightKeywords"
+          @click="handleFileClick(f)"
+          v-for="f of searchFiles"
+          :key="f.name"
+          :file="f"
+        />
       </card-wrapper>
     </div>
     <div class="footer">
@@ -35,7 +44,8 @@ import FileManagerItem from './FileManagerItem.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import AppDescription from 'src/components/AppDescription.vue';
-import { ref, watch } from 'vue';
+import SearchInput from 'src/components/SearchInput.vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
@@ -58,6 +68,13 @@ const targetPath = ref(props.path);
 const fs = api.core.useFileSystem();
 
 const files = ref<DiskFile[]>([]);
+const searchQuery = ref<string>('');
+const searchHighlightKeywords = computed(() => searchQuery.value.split(' '));
+const searchFiles = computed(() =>
+  files.value.filter((f) =>
+    searchQuery.value ? f.name.toLowerCase().includes(searchQuery.value) : files.value,
+  ),
+);
 
 watch(targetPath, async () => {
   await readDir();

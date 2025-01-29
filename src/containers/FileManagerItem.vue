@@ -9,7 +9,13 @@
       <div class="name">
         <span v-if="root"> .. </span>
         <template v-else>
-          {{ file?.name }}
+          <highlighter
+            class="my-highlight"
+            highlightClassName="highlight"
+            :searchWords="highlight"
+            :autoEscape="true"
+            :textToHighlight="file?.name"
+          />
         </template>
       </div>
     </div>
@@ -20,8 +26,10 @@
 import type { DiskFile } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import MenuItem from './MenuItem.vue';
+import Highlighter from 'vue-highlight-words';
 
 defineProps<{
+  highlight?: string[];
   file?: DiskFile;
   root?: boolean;
 }>();
