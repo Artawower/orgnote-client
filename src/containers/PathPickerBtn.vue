@@ -8,6 +8,8 @@
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';
 import { I18N } from 'orgnote-api';
+import { api } from 'src/boot/api';
+import FileManager from './FileManager.vue';
 
 defineProps<{
   folder?: boolean;
@@ -19,7 +21,23 @@ const { t } = useI18n({
   inheritLocale: true,
 });
 
+const modal = api.ui.useModal();
+
+const emits = defineEmits<{
+  (e: 'picked', path: string): void;
+}>();
+
 const pickPath = () => {
-  console.log('[line 14]: PICK FILE');
+  modal.open(FileManager, {
+    modalProps: {
+      path: '/',
+      pickDir: true,
+      closable: true,
+    },
+    modalEmits: {
+      close: () => modal.close(),
+    },
+  });
+  emits('picked', 'qwe');
 };
 </script>

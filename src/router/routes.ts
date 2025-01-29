@@ -11,7 +11,7 @@ const routes: RouteRecordRaw[] = [
       const fileManager = api.core.useFileSystemManager();
       const fs = api.core.useFileSystem();
 
-      const available = fileManager.currentFsName && fs.vault;
+      const available = fileManager.currentFsName && fs.vault != null;
       if (available) {
         return { name: RouteNames.Home };
       }
@@ -26,7 +26,7 @@ const routes: RouteRecordRaw[] = [
       const fileManager = api.core.useFileSystemManager();
       const fs = api.core.useFileSystem();
 
-      const available = fileManager.currentFsName && fs.vault;
+      const available = fileManager.currentFsName && fs.vault != null;
       if (!available) {
         return { name: RouteNames.Onboarding };
       }

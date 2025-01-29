@@ -9,5 +9,6 @@ export default defineBoot(async ({ store }) => {
     name: SIMPLE_FS_NAME,
     fs: useSimpleFs,
     description: I18N.SIMPLE_FS_DESCRIPTION,
+    initialVault: '',
   });
 });

@@ -1,7 +1,7 @@
 <template>
   <animation-wrapper v-for="(m, i) of modals" :key="i">
     <dialog
-      @click="handleDialogClick"
+      @mousedown="handleDialogClick"
       @close="modal.close"
       :class="{
         mini: m.config?.mini,
@@ -25,7 +25,11 @@
           <action-button @click="modal.close" icon="close" size="sm" />
         </div>
         <div class="content">
-          <component :is="m.component" v-bind="m.config?.modalProps" />
+          <component
+            :is="m.component"
+            v-bind="m.config?.modalProps"
+            v-on="m.config?.modalEmits ?? {}"
+          />
         </div>
       </div>
     </dialog>
@@ -70,7 +74,7 @@ const handleDialogClick = (e: MouseEvent) => {
     return;
   }
   const target = e.target as HTMLDialogElement;
-  if (!['div.modal-content', 'i', 'button'].some((t) => target.closest(t))) {
+  if (target === e.currentTarget) {
     modal.close();
   }
 };

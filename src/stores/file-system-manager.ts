@@ -7,7 +7,8 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
   () => {
     const currentFsName = ref<string>('');
     const registeredFileSystems = ref<Record<string, FileSystemInfo>>({});
-    const currentFs = computed(() => registeredFileSystems.value[currentFsName?.value]?.fs());
+    const currentFsInfo = computed(() => registeredFileSystems.value[currentFsName?.value]);
+    const currentFs = computed(() => currentFsInfo.value?.fs());
 
     const fileSystems = computed(() => Object.values(registeredFileSystems.value));
 
@@ -28,6 +29,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       currentFs,
       fileSystems,
       currentFsName,
+      currentFsInfo,
       useFs,
     };
     return store;

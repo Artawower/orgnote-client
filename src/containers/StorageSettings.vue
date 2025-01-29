@@ -1,5 +1,8 @@
 <template>
-  <div class="system-settings">
+  <div class="storage-settings">
+    <app-description>
+      {{ t(I18N.CHOOSE_FILE_SYSTEM) }}
+    </app-description>
     <card-wrapper>
       <menu-item
         @click="fsManager.useFs(fs.name)"
@@ -14,8 +17,6 @@
           <app-description>{{ t(fs.description) }}</app-description>
         </template>
       </menu-item>
-      <menu-item>{{ t(I18N.VAULT) }}: {{ vault }}</menu-item>
-      <path-picker folder />
     </card-wrapper>
     <app-card v-if="currentFsName" type="danger">
       <template #cardTitle>
@@ -27,15 +28,22 @@
         {{ t(I18N.STORAGE_CHANGE_WARNING_DESCRIPTION) }}
       </div>
     </app-card>
+    <app-description>
+      {{ t(I18N.CHOOSE_VAULT) }}
+    </app-description>
+    <card-wrapper v-if="currentFsName">
+      <menu-item>{{ t(I18N.VAULT) }}: {{ vault }}</menu-item>
+      <path-picker-btn folder />
+    </card-wrapper>
   </div>
 </template>
 
 <script lang="ts" setup>
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
-import AppDescription from 'src/components/AppDescription.vue';
 import AppCard from 'src/components/AppCard.vue';
-import PathPicker from './PathPicker.vue';
+import PathPickerBtn from './PathPickerBtn.vue';
+import AppDescription from 'src/components/AppDescription.vue';
 
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
@@ -53,8 +61,8 @@ const { vault } = storeToRefs(api.core.useFileSystem());
 </script>
 
 <style lang="scss" scoped>
-.system-settings {
-  @include flexify(column, flex-start, flex-start, var(--gap-sm));
+.storage-settings {
+  @include flexify(column, flex-start, flex-start, var(--gap-md));
   width: 100%;
 }
 

@@ -52,5 +52,9 @@ button {
       }
     }
   }
+
+  &.plain {
+    color: var(--fg);
+  }
 }
 </style>
