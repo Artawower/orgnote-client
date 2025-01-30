@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, shallowRef } from 'vue';
+import type { ComponentConfig } from 'orgnote-api';
 import {
   DefaultCommands,
   type CommandName,
@@ -11,6 +12,8 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
   const opened = ref(false);
 
   const component = shallowRef<VueComponent>(null);
+  const componentConfig = shallowRef<ComponentConfig<VueComponent>>();
+
   const commands = ref<CommandName[]>([
     DefaultCommands.TOGGLE_FILE_MANAGER,
     DefaultCommands.CREATE_NOTE,
@@ -43,8 +46,9 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
     opened.value = true;
   };
 
-  const openComponent = (cmp: VueComponent) => {
+  const openComponent = <T extends VueComponent>(cmp: T, config?: ComponentConfig<T>) => {
     opened.value = true;
+    componentConfig.value = config;
     component.value = cmp;
   };
 
@@ -58,7 +62,7 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
       return;
     }
     if (cmp) {
-      openComponent(cmp);
+      openComponent(cmp, componentConfig.value);
     }
     open();
   };
@@ -74,6 +78,7 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
     footerCommands,
     addCommand,
     removeCommand,
+    componentConfig,
   };
 
   return store;

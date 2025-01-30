@@ -1,7 +1,7 @@
 <template>
   <div class="file-manager">
     <card-wrapper>
-      <menu-item>
+      <menu-item v-if="!compact">
         <app-description>
           {{ targetPath }}
         </app-description>
@@ -50,6 +50,8 @@ import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   path?: string;
+  tree?: boolean;
+  compact?: boolean;
   pickDir?: boolean;
   closable?: boolean;
 }>();

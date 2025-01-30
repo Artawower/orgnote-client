@@ -15,6 +15,7 @@
         <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
       </app-footer>
     </platform-specific>
+    <component :is="component" v-bind="componentConfig?.componentProps || {}"></component>
   </app-sidebar>
 </template>
 
@@ -27,7 +28,9 @@ import PlatformSpecific from 'src/components/PlatformSpecific.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 
-const { commands, footerCommands, opened } = storeToRefs(api.ui.useSidebar());
+const { commands, footerCommands, opened, component, componentConfig } = storeToRefs(
+  api.ui.useSidebar(),
+);
 const screenDetector = useScreenDetection();
 const miniMode = screenDetector.desktopAbove;
 </script>
