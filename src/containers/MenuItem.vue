@@ -1,8 +1,8 @@
 <template>
   <div
     class="menu-item"
-    :class="[{ disabled }, type, `prefer-${prefer}`]"
-    :style="{ '--menu-item-lines': lines }"
+    :class="[{ disabled }, type, `prefer-${prefer}`, `size-${size}`]"
+    :style="{ '--menu-item-lines': lines, '--current-menu-item-height': itemHeight }"
   >
     <div class="header">
       <div class="left">
@@ -34,6 +34,7 @@ import type { ThemeVariable } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
 import type { ViewType } from 'src/models/card-type';
+import type { ViewSize } from 'src/models/view-size';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
@@ -45,6 +46,7 @@ const props = withDefaults(
     disabled?: boolean;
     active?: boolean;
     type?: ViewType;
+    size?: ViewSize;
     selected?: boolean;
     lines?: number;
     inverseIconColors?: boolean;
@@ -54,6 +56,7 @@ const props = withDefaults(
     type: 'plain',
     lines: 1,
     prefer: 'left',
+    size: 'auto',
   },
 );
 
@@ -67,18 +70,35 @@ const color = computed<ThemeVariable>(() =>
   props.active ? 'accent' : typeColorMap[props.type] || 'fg',
 );
 const background = computed<ThemeVariable>(() => 'bg');
+
+const itemHeightMap = {
+  xs: 'var(--menu-item-height-xs)',
+  sm: 'var(--menu-item-height-sm)',
+  md: 'var(--menu-item-height-md)',
+  lg: 'var(--menu-item-height-lg)',
+  auto: 'auto',
+};
+const itemHeight = computed(() => itemHeightMap[props.size]);
 </script>
 
 <style lang="scss" scoped>
 .menu-item {
   @include flexify(column, flex-start, center, var(--gap-md));
   cursor: pointer;
-  padding: var(--menu-item-padding);
-  min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
-  /* max-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1)); */
+  min-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
   height: auto;
   width: 100%;
   position: relative;
+  padding: var(--padding-sm) calc(var(--padding-sm) * 2);
+
+  &:not(.size-auto) {
+    max-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
+  }
+
+  &.size-auto {
+    min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
+    padding: var(--menu-item-padding);
+  }
 
   &:hover,
   &:active {

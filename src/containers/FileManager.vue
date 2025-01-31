@@ -1,52 +1,76 @@
 <template>
-  <div class="file-manager">
-    <card-wrapper>
-      <menu-item v-if="!compact">
-        <app-description>
-          {{ targetPath }}
-        </app-description>
-      </menu-item>
-      <menu-item>
-        <search-input v-model="searchQuery" :placeholder="I18N.SEARCH" />
-      </menu-item>
-    </card-wrapper>
+  <div class="file-manager" :class="{ compact }">
     <div class="files">
+      <div class="actions">
+        <action-buttons horizontal :position="compact ? 'left' : 'right'">
+          <command-action-button
+            v-if="compact"
+            :command="DefaultCommands.MAXIMIZE_FILE_MANAGER"
+            :size="compact ? 'sm' : 'md'"
+          >
+          </command-action-button>
+          <command-action-button
+            :command="DefaultCommands.CREATE_NOTE"
+            :size="compact ? 'sm' : 'md'"
+          ></command-action-button>
+          <command-action-button
+            :command="DefaultCommands.CREATE_FOLDER"
+            :size="compact ? 'sm' : 'md'"
+          >
+          </command-action-button>
+          <action-button
+            @click="emits('close')"
+            v-if="closable"
+            icon="close"
+            :size="compact ? 'sm' : 'md'"
+          />
+        </action-buttons>
+      </div>
       <card-wrapper>
-        <file-manager-item v-if="targetPath && targetPath !== '/'" @click="moveUp" root />
+        <menu-item :size="menuItemSize">
+          <search-input
+            :size="compact ? 'xs' : 'sm'"
+            v-model="searchQuery"
+            :placeholder="I18N.SEARCH"
+          />
+        </menu-item>
+        <menu-item :size="menuItemSize">
+          <div class="file-path">
+            {{ targetPath ?? '/' }}
+          </div>
+        </menu-item>
+
+        <file-manager-item
+          v-if="targetPath && targetPath !== '/'"
+          @click="moveUp"
+          root
+          :size="menuItemSize"
+        />
         <file-manager-item
           :highlight="searchHighlightKeywords"
           @click="handleFileClick(f)"
           v-for="f of searchFiles"
           :key="f.name"
           :file="f"
+          :size="menuItemSize"
         />
       </card-wrapper>
-    </div>
-    <div class="footer">
-      <app-button @click="createDirectory" outline>
-        {{ t(I18N.CREATE_DIRECTORY) }}
-      </app-button>
-      <app-button outline v-if="pickDir">
-        {{ t(I18N.PICK_FOLDER) }}
-      </app-button>
-      <app-button outline v-if="closable" @click="emits('close')">
-        {{ t(I18N.CLOSE_PAGE) }}
-      </app-button>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { getParentDir, I18N, join, withRoot, type DiskFile } from 'orgnote-api';
+import { DefaultCommands, getParentDir, I18N, join, withRoot, type DiskFile } from 'orgnote-api';
 import { api } from 'src/boot/api';
-import AppButton from 'src/components/AppButton.vue';
 import FileManagerItem from './FileManagerItem.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
-import AppDescription from 'src/components/AppDescription.vue';
 import SearchInput from 'src/components/SearchInput.vue';
+import ActionButtons from 'src/components/ActionButtons.vue';
 import { computed, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import CommandActionButton from './CommandActionButton.vue';
+import ActionButton from 'src/components/ActionButton.vue';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
   path?: string;
@@ -60,14 +84,29 @@ const emits = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const { t } = useI18n({
-  useScope: 'global',
-  inheritLocale: true,
-});
+const menuItemSize = computed(() => (props.compact ? 'sm' : 'auto'));
 
-const targetPath = ref(props.path);
-
+const { path: targetPath } = storeToRefs(api.ui.useFileManager());
+if (props.path) {
+  targetPath.value = props.path;
+}
 const fs = api.core.useFileSystem();
+
+const fsChangesActions: (keyof typeof fs)[] = [
+  'mkdir',
+  'rmdir',
+  'rename',
+  'writeFile',
+  'syncFile',
+  'deleteFile',
+];
+
+fs.$onAction(async ({ name }) => {
+  if (!fsChangesActions.includes(name)) {
+    return;
+  }
+  await readDir();
+});
 
 const files = ref<DiskFile[]>([]);
 const searchQuery = ref<string>('');
@@ -78,6 +117,7 @@ const searchFiles = computed(() =>
   ),
 );
 
+// TODO: feat/stable-beta watch fs changed
 watch(targetPath, async () => {
   await readDir();
 });
@@ -88,11 +128,11 @@ const readDir = async () => {
 
 readDir();
 
-const createDirectory = async () => {
-  const path = join(targetPath.value, 'new directory');
-  await fs.mkdir(path);
-  await readDir();
-};
+// const createDirectory = async () => {
+//   const path = join(targetPath.value, 'new directory');
+//   await fs.mkdir(path);
+//   await readDir();
+// };
 
 const handleFileClick = async (f: DiskFile) => {
   if (f.type === 'directory') {
@@ -123,5 +163,15 @@ const moveUp = async () => {
 
 .footer {
   @include flexify(row, flex-end, center, var(--gap-md));
+}
+
+.file-path {
+  @include flexify(row, flex-start, center);
+  color: var(--fg-alt);
+  flex: 1;
+}
+
+.actions {
+  padding: var(--padding-sm);
 }
 </style>

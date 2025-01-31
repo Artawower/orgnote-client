@@ -40,6 +40,7 @@ import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
 import { useCompletionStore } from 'src/stores/completion';
 import { usePaneStore } from 'src/stores/pane';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
+import { useFileManagerStore } from 'src/stores/file-manager';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -91,6 +92,7 @@ async function initApi(app: App): Promise<void> {
       useModal: useModalStore,
       useSettingsUi: useSettingsUiStore,
       useConfirmationModal,
+      useFileManager: useFileManagerStore,
     },
   };
 }

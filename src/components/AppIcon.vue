@@ -11,16 +11,15 @@
 <script lang="ts" setup>
 import type { ThemeVariable } from 'orgnote-api';
 import type { QIconProps } from 'quasar';
+import type { ViewSize } from 'src/models/view-size';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { computed } from 'vue';
-
-type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface Props {
   color?: ThemeVariable;
   hoverColor?: string;
   background?: string;
-  size?: IconSize;
+  size?: ViewSize;
   rounded?: boolean;
   bordered?: boolean;
 }
@@ -34,8 +33,8 @@ const color = computed(() => getCssVariableName(props.color ?? 'fg'));
 const hoverColor = computed(() => getCssVariableName(props.hoverColor ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
 
-const iconSizeMap: { [key in IconSize]: string } = {
-  xs: '0.8em',
+const iconSizeMap: { [key in ViewSize]?: string } = {
+  xs: '1em',
   sm: '1.2em',
   md: '1.6em',
   lg: '3em',

@@ -1,8 +1,8 @@
 <template>
-  <menu-item>
+  <menu-item :size="size">
     <div class="file-info">
       <app-icon
-        :name="file?.type === 'folder' || root ? 'sym_o_folder' : 'sym_o_draft'"
+        :name="file?.type === 'directory' || root ? 'sym_o_folder' : 'sym_o_draft'"
         color="fg-alt"
         size="sm"
       />
@@ -27,11 +27,13 @@ import type { DiskFile } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import MenuItem from './MenuItem.vue';
 import Highlighter from 'vue-highlight-words';
+import type { ViewSize } from 'src/models/view-size';
 
 defineProps<{
   highlight?: string[];
   file?: DiskFile;
   root?: boolean;
+  size?: ViewSize;
 }>();
 </script>
 

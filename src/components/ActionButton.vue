@@ -24,13 +24,13 @@ import { computed, ref, useSlots } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
 import type { ThemeVariable } from 'orgnote-api';
-import type { IconSize } from 'src/models/icon-size';
+import type { ViewSize } from 'src/models/view-size';
 
 const props = withDefaults(
   defineProps<{
     icon: string;
     active?: boolean;
-    size?: IconSize;
+    size?: ViewSize;
     color?: ThemeVariable;
     fireIcon?: string;
     fireColor?: ThemeVariable;
@@ -94,7 +94,7 @@ button {
   }
 
   &.icon-md {
-    padding: var(--padding-md);
+    padding: var(--padding-sm);
     border-radius: var(--border-radius-md);
   }
 

@@ -29,7 +29,7 @@ withDefaults(
 );
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .sidebar {
   @include flexify();
   border-right: var(--sidebar-border-right);

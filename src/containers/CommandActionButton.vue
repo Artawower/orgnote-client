@@ -15,13 +15,13 @@ import type { CommandName } from 'orgnote-api';
 import { useCommandsStore } from 'src/stores/command';
 import { computed } from 'vue';
 import { extractDynamicValue } from 'src/utils/extract-dynamic-value';
-import type { IconSize } from 'src/models/icon-size';
+import type { ViewSize } from 'src/models/view-size';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 
 const props = withDefaults(
   defineProps<{
     command: CommandName;
-    size?: IconSize;
+    size?: ViewSize;
     includeText?: boolean;
   }>(),
   {

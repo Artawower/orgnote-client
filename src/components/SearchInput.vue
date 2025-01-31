@@ -1,13 +1,14 @@
 <template>
   <div class="search-input">
     <input :name="name" :type="type" v-model="model" :placeholder="t(placeholder)" />
-    <action-button @click="model = ''" icon="close" size="sm" />
+    <action-button @click="model = ''" icon="sym_o_backspace" :size="size" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import ActionButton from './ActionButton.vue';
+import type { ViewSize } from 'src/models/view-size';
 
 withDefaults(
   defineProps<{
@@ -15,10 +16,12 @@ withDefaults(
     placeholder?: string;
     type?: string;
     clearable?: boolean;
+    size?: ViewSize;
   }>(),
   {
     type: 'text',
     clearable: true,
+    size: 'sm',
   },
 );
 

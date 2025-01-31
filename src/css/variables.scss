@@ -93,7 +93,7 @@ body {
   --modal-backdrop-bg: var(--backdrop-bg);
   --modal-border: var(--border-default);
   --modal-border-radius: var(--border-radius-md);
-  --modal-padding: var(--padding-xl);
+  --modal-padding: var(--padding-lg);
   --modal-max-width: 1280px;
   --modal-max-height: 860px;
 
@@ -107,6 +107,10 @@ body {
   --menu-item-height: 42px;
   --menu-item-max-height: 200px;
   --menu-item-hover-bg: var(--bg-active);
+
+  --menu-item-height-sm: 30px;
+  --menu-item-height-md: 42px;
+  --menu-item-height-lg: 50px;
 
   // Icons
   --icon-rounded-border-radius: var(--border-radius-sm);
@@ -159,7 +163,7 @@ body {
   body {
     --modal-max-width: unset;
     --modal-max-height: unset;
-    --modal-padding: var(--padding-lg);
+    --modal-padding: var(--padding-md);
     --modal-border: none;
     --modal-border-radius: 0;
     --footer-height: 60px;

@@ -1,10 +1,9 @@
-import type { Command, OrgNoteApi } from 'orgnote-api';
+import type { Command } from 'orgnote-api';
 import { DefaultCommands, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
 import { clientOnly } from 'src/utils/platform-specific';
-import { defineAsyncComponent } from 'vue';
 import type { Router } from 'vue-router';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,37 +40,6 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       },
       handler: () => {
         sidebarStore.toggle();
-      },
-    },
-    {
-      command: DefaultCommands.TOGGLE_FILE_MANAGER,
-      group: 'global',
-      icon: 'folder',
-      handler: (api: OrgNoteApi) => {
-        const sidebar = api.ui.useSidebar();
-        sidebar.openComponent(
-          defineAsyncComponent(() => import('src/containers/FileManager.vue')),
-          {
-            componentProps: {
-              closable: false,
-              tree: true,
-              compact: true,
-            },
-          },
-        );
-        // sidebarStore.toggleWithComponent(FileManagerSideBar);
-      },
-    },
-    {
-      command: DefaultCommands.CREATE_NOTE,
-      group: 'global',
-      icon: 'o_add_box',
-      handler: () => {
-        // if (!config.vault.path && Platform.is.nativeMobile) {
-        //   router.push({ name: RouteNames.SynchronisationSettings });
-        //   return;
-        // }
-        // noteCreatorStore.create();
       },
     },
     {

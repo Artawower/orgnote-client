@@ -47,6 +47,9 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
   };
 
   const openComponent = <T extends VueComponent>(cmp: T, config?: ComponentConfig<T>) => {
+    if (cmp.__name === component.value?.__name && opened.value) {
+      return;
+    }
     opened.value = true;
     componentConfig.value = config;
     component.value = cmp;
