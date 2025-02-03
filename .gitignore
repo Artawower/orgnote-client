@@ -37,3 +37,5 @@ org-note-release-signed.aab
 /src-capacitor/www/*
 .yalc/
 yalc.lock
+*storybook.log
+storybook-static

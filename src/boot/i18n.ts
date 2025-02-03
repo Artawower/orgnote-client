@@ -1,7 +1,7 @@
 import { createI18n } from 'vue-i18n';
 
 import messages from 'src/i18n';
-import { defineBoot } from '#q-app/wrappers';
+import { defineBoot } from '@quasar/app-vite/wrappers';
 
 export type MessageLanguages = keyof typeof messages;
 // Type-define 'en-US' as the master schema for the resource
@@ -21,13 +21,13 @@ declare module 'vue-i18n' {
 }
 /* eslint-enable @typescript-eslint/no-empty-object-type */
 
-export default defineBoot(({ app }) => {
-  const i18n = createI18n<{ message: MessageSchema }, MessageLanguages>({
-    locale: 'en-US',
-    legacy: false,
-    messages,
-  });
+export const i18n = createI18n<{ message: MessageSchema }, MessageLanguages>({
+  locale: 'en-US',
+  legacy: false,
+  messages,
+});
 
+export default defineBoot(({ app }) => {
   // Set i18n instance on app
   app.use(i18n);
 });
