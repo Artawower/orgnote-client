@@ -32,6 +32,7 @@ button {
   border-radius: var(--button-border-raidius);
   padding: var(--button-padding);
   min-width: var(--button-min-width);
+  box-sizing: border-box;
 
   @each $type, $color in $type-colors {
     &.#{$type} {
@@ -41,7 +42,7 @@ button {
 
       &.outline {
         background: var(--bg);
-        border-color: $color;
+        border: 1px solid $color;
         color: var(--fg);
       }
 
