@@ -15,7 +15,7 @@ import 'quasar/dist/quasar.css';
 import { setup } from '@storybook/vue3';
 import { i18n } from '../src/boot/i18n';
 
-import { QBtn, QIcon, Quasar } from 'quasar';
+import { QBtn, QIcon, QLinearProgress, Quasar } from 'quasar';
 import { createPinia } from 'pinia';
 import './global.css';
 
@@ -24,6 +24,7 @@ setup((app) => {
     components: {
       QIcon,
       QBtn,
+      QLinearProgress,
       // etc. for whichever Quasar components you directly use
     },
   });
