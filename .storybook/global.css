@@ -1,15 +1,3 @@
-.preview {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  div:nth-child(1) {
-    min-width: 50px;
-  }
-
-  div:nth-child(2) {
-    flex: 1;
-  }
+body {
+  overflow: auto !important;
 }

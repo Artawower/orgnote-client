@@ -17,7 +17,6 @@ import { computed } from 'vue';
 
 interface Props {
   color?: ThemeVariable;
-  hoverColor?: string;
   background?: string;
   size?: ViewSize;
   rounded?: boolean;
@@ -30,7 +29,6 @@ const props = withDefaults(defineProps<QIconProps & Props>(), {
 
 const bgColor = computed(() => props.background && getCssVariableName(props.background));
 const color = computed(() => getCssVariableName(props.color ?? 'fg'));
-const hoverColor = computed(() => getCssVariableName(props.hoverColor ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
 
 const iconSizeMap: { [key in ViewSize]?: string } = {

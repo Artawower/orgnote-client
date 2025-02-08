@@ -1,5 +1,7 @@
 import AppIcon from '../components/AppIcon.vue';
 import type { StoryObj } from '@storybook/vue3';
+import StoryList from './StoryList.vue';
+import { computed } from 'vue';
 
 export default {
   component: AppIcon,
@@ -13,23 +15,20 @@ const sizes = ['xs', 'sm', 'md', 'lg'];
 export const Default: StoryObj<typeof AppIcon> = {
   args: {
     name: 'folder',
+    hoverColor: 'red',
   },
   render: (args) => ({
-    components: { AppIcon },
+    components: { StoryList, AppIcon },
     setup() {
-      return { args };
+      const listItems = computed(() => {
+        return sizes.map((size) => ({
+          component: AppIcon,
+          props: { ...args, size },
+          description: size,
+        }));
+      });
+      return { args, listItems };
     },
-    template: `
-    ${sizes
-      .map(
-        (size) => `<div class="preview">
-    <div>
-    <app-icon v-bind="args" size="${size}" />
-    </div>
-    <div>${size}</div>
-    </div>`,
-      )
-      .join('\n')}
-`,
+    template: `<story-list :items="listItems" />`,
   }),
 };

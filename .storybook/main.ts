@@ -37,6 +37,14 @@ const config: StorybookConfig = {
       },
     };
 
+    config.define = {
+      ...config.define,
+      'process.env': {
+        NODE_ENV: 'development',
+        CLIENT: 'true',
+      },
+    };
+
     return config;
   },
 };

@@ -1,10 +1,15 @@
 import type { Preview } from '@storybook/vue3';
 import '@quasar/extras/roboto-font/roboto-font.css';
-import '@quasar/extras/material-icons/material-icons.css';
 import '@quasar/extras/animate/fadeInUp.css';
 import '@quasar/extras/animate/fadeOutDown.css';
 import '@quasar/extras/animate/fadeInRight.css';
 import '@quasar/extras/animate/fadeOutRight.css';
+
+import '@quasar/extras/roboto-font/roboto-font.css';
+import '@quasar/extras/material-icons/material-icons.css';
+import '@quasar/extras/material-icons-outlined/material-icons-outlined.css';
+import '@quasar/extras/material-symbols-outlined/material-symbols-outlined.css';
+import '@quasar/extras/fontawesome-v6/fontawesome-v6.css';
 
 import 'quasar/dist/quasar.css';
 import { setup } from '@storybook/vue3';

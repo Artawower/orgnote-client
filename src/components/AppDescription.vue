@@ -7,8 +7,9 @@
 </template>
 
 <script lang="ts" setup>
+import type { ViewType } from 'src/models/card-type';
 import { useI18n } from 'vue-i18n';
-defineProps<{ text?: string; title?: boolean; type?: 'warning' | 'error'; padded?: boolean }>();
+defineProps<{ text?: string; title?: boolean; type?: ViewType; padded?: boolean }>();
 
 const { t } = useI18n({
   useScope: 'global',
@@ -30,10 +31,14 @@ const { t } = useI18n({
 }
 
 .warning {
-  color: var(--yellow);
+  color: color-mix(in srgb, var(--yellow), var(--fg-alt) 50%);
 }
 
-.error {
-  color: var(--red);
+.danger {
+  color: color-mix(in srgb, var(--red), var(--fg-alt) 50%);
+}
+
+.info {
+  color: color-mix(in srgb, var(--blue), var(--fg-alt) 50%);
 }
 </style>
