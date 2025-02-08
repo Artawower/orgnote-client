@@ -36,17 +36,11 @@ withDefaults(
     border: var(--card-border);
   }
 
-  $type-colors: (
-    info: var(--blue),
-    warning: var(--yellow),
-    danger: var(--red),
-  );
-
   &.plain {
     background: var(--bg-alt2);
   }
 
-  @each $type, $color in $type-colors {
+  @include for-each-view-type using ($type, $color) {
     &.#{$type} {
       background: color-mix(in srgb, $color, var(--bg) 80%) !important;
       border-color: $color;

@@ -110,3 +110,15 @@
   left: 0;
   z-index: $z-index;
 }
+
+$type-colors: (
+  info: var(--blue),
+  warning: var(--yellow),
+  danger: var(--red),
+);
+
+@mixin for-each-view-type {
+  @each $type, $color in $type-colors {
+    @content ($type, $color);
+  }
+}

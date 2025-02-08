@@ -62,4 +62,12 @@ const bg = computed(() => getCssVariableName(background.value));
 h5 {
   @include flexify(row, flex-start, center, var(--gap-sm));
 }
+
+@include for-each-view-type using ($type, $color) {
+  .#{$type} {
+    ::v-deep(input::placeholder) {
+      color: color-mix(in srgb, $color, var(--bg) 35%) !important;
+    }
+  }
+}
 </style>
