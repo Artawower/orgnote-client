@@ -21,4 +21,17 @@
     overflow-x: auto;
   }
 }
+
+::v-deep(.tab:not(:last-child)) {
+  &::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    display: block;
+    width: 1px;
+    z-index: 10;
+    height: 66%;
+    background: var(--bg-alt2);
+  }
+}
 </style>

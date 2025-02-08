@@ -14,12 +14,12 @@ import AppIcon from './AppIcon.vue';
 
 withDefaults(
   defineProps<{
-    closble?: boolean;
+    closable?: boolean;
     icon?: string;
     active?: boolean;
   }>(),
   {
-    closble: true,
+    closable: true,
   },
 );
 
@@ -40,6 +40,7 @@ const emits = defineEmits<{
   cursor: pointer;
   height: var(--tab-height);
   box-sizing: border-box;
+  position: relative;
 
   &:not(.active):hover {
     background: var(--tab-active-hover-background);
