@@ -2,7 +2,7 @@
   <div class="splash-screen">
     <div class="content">
       <div class="image-container">
-        <img alt="orgnote icon" src="icons/modern-unicorn-round.png" />
+        <img alt="orgnote icon" src="/icons/modern-unicorn-round.png" />
         <div class="gloss"></div>
       </div>
       <h5 class="title text-capitalize color-white">
@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import LinearProgress from 'components/LinearProgress.vue';
+import LinearProgress from 'src/components/LinearProgress.vue';
 import { useLoadingMessages } from 'src/composables/use-loading-messages';
 
 const loadingMessages = useLoadingMessages();
