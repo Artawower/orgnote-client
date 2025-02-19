@@ -1,7 +1,7 @@
 <template>
   <div
     class="icon"
-    :style="{ backgroundColor: bgColor, color: color, '--icon-hover-color': hoverColor }"
+    :style="{ backgroundColor: bgColor, color: color }"
     :class="[{ rounded, bordered }, size]"
   >
     <q-icon v-bind="$props" color="inherit" :size="iconSize" />

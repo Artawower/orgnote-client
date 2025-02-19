@@ -15,7 +15,6 @@ const sizes = ['xs', 'sm', 'md', 'lg'];
 export const Default: StoryObj<typeof AppIcon> = {
   args: {
     name: 'folder',
-    hoverColor: 'red',
   },
   render: (args) => ({
     components: { StoryList, AppIcon },
