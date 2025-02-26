@@ -30,7 +30,7 @@ const sidebar = api.ui.useSidebar();
 const sidebarRef = ref(null);
 
 onClickOutside(sidebarRef, () => {
-  sidebar.close();
+  mobileOnly(sidebar.close)();
 });
 </script>
 
