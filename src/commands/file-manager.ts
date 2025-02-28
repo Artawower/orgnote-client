@@ -1,5 +1,5 @@
-import type { OrgNoteApi } from 'orgnote-api';
-import { DefaultCommands, type Command } from 'orgnote-api';
+import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
+import { DefaultCommands, getFileName, I18N, type Command } from 'orgnote-api';
 import { defineAsyncComponent } from 'vue';
 
 const group = 'file manager';
@@ -68,6 +68,37 @@ export function getFileManagerCommands(): Command[] {
       handler: async (api: OrgNoteApi) => {
         const fm = api.ui.useFileManager();
         await fm.createFile();
+      },
+    },
+    {
+      command: DefaultCommands.RENAME_FILE,
+      group,
+      icon: 'sym_o_edit',
+      handler: async (api: OrgNoteApi, params: CommandHandlerParams<string>) => {
+        console.log(
+          '✎: [line 78][file-manager.ts] api: OrgNoteApi, filePath: string: ',
+          api,
+          params,
+        );
+        return;
+      },
+    },
+    {
+      command: DefaultCommands.DELETE_FILE,
+      group,
+      icon: 'sym_o_delete',
+      handler: async (api: OrgNoteApi, params: CommandHandlerParams<string>) => {
+        const { confirm } = api.ui.useConfirmationModal();
+        const fm = api.ui.useFileManager();
+        const fileName = getFileName(params.data);
+        const ok = await confirm({
+          title: fileName,
+          message: I18N.CONFIRM_FILE_DELETION,
+        });
+
+        if (ok) {
+          await fm.deleteFile(params.data);
+        }
       },
     },
   ];

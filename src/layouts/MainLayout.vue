@@ -29,8 +29,12 @@ import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 const sidebar = api.ui.useSidebar();
 const sidebarRef = ref(null);
 
+const { desktopBelow } = api.ui.useScreenDetection();
+
 onClickOutside(sidebarRef, () => {
-  mobileOnly(sidebar.close)();
+  if (desktopBelow.value) {
+    sidebar.close();
+  }
 });
 </script>
 

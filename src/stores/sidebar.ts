@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, shallowRef } from 'vue';
+import { defineAsyncComponent, ref, shallowRef } from 'vue';
 import type { ComponentConfig } from 'orgnote-api';
 import {
   DefaultCommands,
@@ -67,7 +67,16 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
     if (cmp) {
       openComponent(cmp, componentConfig.value);
     }
-    open();
+    openComponent(
+      defineAsyncComponent(() => import('src/containers/FileManager.vue')),
+      {
+        componentProps: {
+          closable: false,
+          tree: true,
+          compact: true,
+        },
+      },
+    );
   };
 
   const store: SidebarStore = {

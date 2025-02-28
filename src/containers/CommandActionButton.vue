@@ -23,6 +23,7 @@ const props = withDefaults(
     command: CommandName;
     size?: ViewSize;
     includeText?: boolean;
+    data?: unknown;
   }>(),
   {
     size: 'md',
@@ -34,6 +35,6 @@ const commandsStore = useCommandsStore();
 const command = computed(() => commandsStore.get(props.command));
 
 const execute = () => {
-  commandsStore.execute(props.command);
+  commandsStore.execute(props.command, props.data);
 };
 </script>

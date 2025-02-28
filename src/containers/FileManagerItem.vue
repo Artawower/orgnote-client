@@ -1,6 +1,6 @@
 <template>
   <menu-item :size="size">
-    <div class="file-info">
+    <div @contextmenu.stop.prevent="openContextMenu()" class="file-info" ref="fileManageItemRef">
       <app-icon
         :name="file?.type === 'directory' || root ? 'sym_o_folder' : 'sym_o_draft'"
         color="fg-alt"
@@ -18,23 +18,59 @@
           />
         </template>
       </div>
+
+      <context-menu
+        v-if="!file?.path?.startsWith(`${rootSystemFilePath}`)"
+        :items="actionItems"
+        ref="contextMenuRef"
+        :target="fileManageItemRef"
+        :data="file?.path"
+      />
     </div>
   </menu-item>
 </template>
 
 <script lang="ts" setup>
-import type { DiskFile } from 'orgnote-api';
+import type { CommandName } from 'orgnote-api';
+import { DefaultCommands, type DiskFile } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import MenuItem from './MenuItem.vue';
 import Highlighter from 'vue-highlight-words';
 import type { ViewSize } from 'src/models/view-size';
+import ContextMenu from 'src/components/ContextMenu.vue';
+import { computed, ref } from 'vue';
+import { rootSystemFilePath } from 'src/constants/root-system-file-path';
 
-defineProps<{
+const props = defineProps<{
   highlight?: string[];
   file?: DiskFile;
   root?: boolean;
   size?: ViewSize;
 }>();
+
+const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
+const fileManageItemRef = ref<HTMLElement>();
+
+const openContextMenu = () => {
+  if (!props.file) {
+    return;
+  }
+  contextMenuRef.value?.open();
+};
+
+const actionItems = computed<CommandName[]>(() => {
+  const items: CommandName[] = [
+    DefaultCommands.CREATE_FILE,
+    DefaultCommands.DELETE_FILE,
+    DefaultCommands.RENAME_FILE,
+  ];
+
+  if (props.file?.type === 'directory') {
+    items.unshift(DefaultCommands.CREATE_FOLDER);
+  }
+
+  return items;
+});
 </script>
 
 <style lang="scss" scoped>

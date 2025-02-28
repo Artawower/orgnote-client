@@ -6,24 +6,16 @@
           <command-action-button
             v-if="compact"
             :command="DefaultCommands.MAXIMIZE_FILE_MANAGER"
-            :size="compact ? 'sm' : 'md'"
+            :size="iconSize"
           >
           </command-action-button>
           <command-action-button
             :command="DefaultCommands.CREATE_NOTE"
-            :size="compact ? 'sm' : 'md'"
+            :size="iconSize"
           ></command-action-button>
-          <command-action-button
-            :command="DefaultCommands.CREATE_FOLDER"
-            :size="compact ? 'sm' : 'md'"
-          >
+          <command-action-button :command="DefaultCommands.CREATE_FOLDER" :size="iconSize">
           </command-action-button>
-          <action-button
-            @click="emits('close')"
-            v-if="closable"
-            icon="close"
-            :size="compact ? 'sm' : 'md'"
-          />
+          <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
         </action-buttons>
       </div>
       <card-wrapper>
@@ -71,6 +63,7 @@ import { computed, ref, watch } from 'vue';
 import CommandActionButton from './CommandActionButton.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { storeToRefs } from 'pinia';
+import type { ViewSize } from 'src/models/view-size';
 
 const props = defineProps<{
   path?: string;
@@ -145,6 +138,8 @@ const moveUp = async () => {
   targetPath.value = withRoot(getParentDir(targetPath.value));
   await readDir();
 };
+
+const iconSize = computed<ViewSize>(() => (props.compact ? 'md' : 'md'));
 </script>
 
 <style lang="scss" scoped>
@@ -172,6 +167,6 @@ const moveUp = async () => {
 }
 
 .actions {
-  padding: var(--padding-sm);
+  padding-bottom: var(--padding-sm);
 }
 </style>

@@ -94,17 +94,9 @@ export const useSimpleFs = (): FileSystem => {
     );
   };
 
-  const isFile = async (path: string) => {
-    return (await fs.get(path)).type === 'file';
-  };
-
   const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
     path = normalizePath(path);
     await fs.delete(path);
-    if (await isFile(path)) {
-      return;
-    }
-    throw new ErrorDirectoryNotFound(path);
   };
 
   const readDir: FileSystem['readDir'] = async (path: string) => {

@@ -41,6 +41,7 @@ import { useCompletionStore } from 'src/stores/completion';
 import { usePaneStore } from 'src/stores/pane';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { useFileManagerStore } from 'src/stores/file-manager';
+import { useScreenDetection } from 'src/composables/use-screen-detection';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -93,6 +94,7 @@ async function initApi(app: App): Promise<void> {
       useSettingsUi: useSettingsUiStore,
       useConfirmationModal,
       useFileManager: useFileManagerStore,
+      useScreenDetection,
     },
   };
 }

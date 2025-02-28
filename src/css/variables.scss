@@ -157,6 +157,10 @@ body {
   --tab-active-hover-background: var(--bg-alt2);
   --tab-active-color: var(--fg);
   --tab-active-background: var(--bg-alt2);
+
+  // Context menu
+  --context-menu-item-padding: var(--padding-md);
+  --context-menu-item-hover-bg: var(--bg-alt2);
 }
 
 @include desktop-below {

@@ -1,6 +1,5 @@
 import { join } from 'orgnote-api';
-
-const rootSystemFilePath = '.orgnote';
+import { rootSystemFilePath } from 'src/constants/root-system-file-path';
 
 export function getSystemFilesPath(path: string | string[]): string {
   const normalizedPath = typeof path === 'string' ? path : join(...path);
