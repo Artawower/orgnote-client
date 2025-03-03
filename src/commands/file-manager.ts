@@ -1,5 +1,6 @@
 import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
 import { DefaultCommands, getFileName, I18N, type Command } from 'orgnote-api';
+import { useFileRenameCompletion } from 'src/constants/file-rename-completion';
 import { defineAsyncComponent } from 'vue';
 
 const group = 'file manager';
@@ -75,6 +76,8 @@ export function getFileManagerCommands(): Command[] {
       group,
       icon: 'sym_o_edit',
       handler: async (api: OrgNoteApi, params: CommandHandlerParams<string>) => {
+        const fm = api.ui.useFileManager();
+        useFileRenameCompletion(api, fm.focusFile.path);
         console.log(
           '✎: [line 78][file-manager.ts] api: OrgNoteApi, filePath: string: ',
           api,

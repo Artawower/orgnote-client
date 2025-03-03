@@ -52,7 +52,6 @@ const focusCompletionCandidate = (e: MouseEvent, index: number) => {
     return;
   }
   lastCoords = [e.clientX, e.clientY];
-  // completionStore.focusCandidate(index);
   completion.activeCompletion.selectedCandidateIndex = index;
 };
 
@@ -60,7 +59,11 @@ const executeCompletionItem = async (e: MouseEvent) => {
   if ('groupTitle' in props.item) return;
   e.preventDefault();
   e.stopPropagation();
-  completion.close();
+  if (completion.activeCompletion.type === 'input-choice') {
+    completion.activeCompletion.searchQuery = extractDynamicValue(props.item.title);
+    return;
+  }
+  completion.close(props.item.data);
   props.item.commandHandler(props.item.data);
 };
 </script>

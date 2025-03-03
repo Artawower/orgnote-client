@@ -1,6 +1,6 @@
 <template>
   <q-virtual-scroll
-    v-if="activeCompletion.type === 'choice'"
+    v-if="candidatesAvailable"
     ref="scrollTarget"
     :items-size="total"
     :virtual-scroll-slice-size="config.completion.defaultCompletionLimit"
@@ -73,5 +73,9 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
 
 const total = computed(
   () => activeCompletion.value.candidates?.length + groupedCandidates.value[1].length,
+);
+
+const candidatesAvailable = computed(() =>
+  ['choice', 'input-choice'].includes(activeCompletion.value.type),
 );
 </script>

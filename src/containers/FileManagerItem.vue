@@ -40,6 +40,7 @@ import type { ViewSize } from 'src/models/view-size';
 import ContextMenu from 'src/components/ContextMenu.vue';
 import { computed, ref } from 'vue';
 import { rootSystemFilePath } from 'src/constants/root-system-file-path';
+import { api } from 'src/boot/api';
 
 const props = defineProps<{
   highlight?: string[];
@@ -51,10 +52,13 @@ const props = defineProps<{
 const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
 const fileManageItemRef = ref<HTMLElement>();
 
+const fm = api.ui.useFileManager();
+
 const openContextMenu = () => {
   if (!props.file) {
     return;
   }
+  fm.focusFile = props.file;
   contextMenuRef.value?.open();
 };
 

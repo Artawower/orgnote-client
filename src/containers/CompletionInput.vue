@@ -2,7 +2,11 @@
   <div class="completion-input">
     <div class="input">
       <app-icon name="keyboard_arrow_right" size="md"></app-icon>
-      <app-input v-model="activeCompletion.searchQuery" :placeholder="placeholder"></app-input>
+      <app-input
+        @keypress.enter="handleCompletionInput"
+        v-model="activeCompletion.searchQuery"
+        :placeholder="placeholder"
+      ></app-input>
     </div>
 
     <visibility-wrapper desktop-above>
@@ -38,6 +42,14 @@ const toggleFullScreen = () => {
   modal.updateConfig({
     fullScreen: !config.value.fullScreen,
   });
+};
+
+const handleCompletionInput = () => {
+  const isInputChoice = activeCompletion.value.type === 'input-choice';
+  if (isInputChoice) {
+    completion.close(completion.activeCompletion.searchQuery);
+    return;
+  }
 };
 </script>
 

@@ -1,5 +1,5 @@
 import type { Completion, CompletionSearchResult } from 'orgnote-api';
-import { I18N, type CompletionConfig, type CompletionStore } from 'orgnote-api';
+import { type CompletionConfig, type CompletionStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useModalStore } from './modal';
 import AppCompletion from 'src/containers/AppCompletion.vue';
@@ -7,6 +7,8 @@ import { computed, ref } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import { useSettingsStore } from './settings';
+import { defaultInputDebounce } from 'src/constants/default-input-debounce';
+import { createPromise } from 'src/utils/create-promise';
 
 export const useCompletionStore = defineStore<'completion-store', CompletionStore>(
   'completion-store',
@@ -17,23 +19,28 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const openedCompletions = ref<Completion<any>[]>([]);
 
-    const open = <T>(config: CompletionConfig<T>) => {
-      console.log('✎: [line 11][completion.ts<orgnote-client/src/stores>] config: ', config);
-      const closed = modal.open(AppCompletion, {
+    const open = async <TItem, TReturn = void>(
+      config: CompletionConfig<TItem>,
+    ): Promise<TReturn> => {
+      const closed = modal.open<TReturn>(AppCompletion, {
         mini: true,
         noPadding: true,
         position: 'top',
         modalProps: {
-          placeholder: I18N.EXECUTE_COMMAND,
+          placeholder: config.placeholder,
+          searchText: config.searchText,
         },
       });
 
-      openedCompletions.value.push({ ...config, searchQuery: '' });
+      const [result, resolve] = createPromise();
+      openedCompletions.value.push({ ...config, searchQuery: config.searchText ?? '', result });
 
       search();
-      return closed.then(() => {
-        lastModalConfig = config;
-      });
+      const res = await closed;
+      resolve(res);
+
+      lastModalConfig = config;
+      return res;
     };
 
     const restore = () => {
@@ -44,8 +51,8 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       lastModalConfig = null;
     };
 
-    const close = () => {
-      modal.close();
+    const close = <TReturn = unknown>(data?: TReturn) => {
+      modal.close(data);
     };
 
     const closeAll = () => {
@@ -131,7 +138,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       activeCompletion.value.total = r.total;
     };
 
-    const searchWithDebounce = debounce(search, 100);
+    const searchWithDebounce = debounce(search, defaultInputDebounce);
 
     watch(
       () => activeCompletion.value?.searchQuery,

@@ -5,16 +5,21 @@ import { computed, shallowRef } from 'vue';
 
 export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
   const modals = shallowRef<Modal[]>([]);
-  const resolvers: Array<() => void> = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resolvers: Array<(value?: any) => any> = [];
 
-  const open = (cmp: VueComponent, modalConfig: ModalConfig = { closable: true }) => {
+  const open = <TReturn = unknown>(
+    cmp: VueComponent,
+    modalConfig: ModalConfig = { closable: true },
+  ): Promise<TReturn> => {
     const alreadyOpenedIndex = modals.value.findIndex((c) => c.component === cmp);
+
     if (alreadyOpenedIndex !== -1) {
       modals.value = modals.value.slice(0, alreadyOpenedIndex + 1);
       return modals.value[alreadyOpenedIndex]?.closed;
     }
 
-    const [p, resolver] = createPromise<void>();
+    const [p, resolver] = createPromise<TReturn>();
     resolvers.push(resolver);
 
     modals.value = [
@@ -29,9 +34,9 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
     return p;
   };
 
-  const close = () => {
+  const close = <TReturn = unknown>(data?: TReturn) => {
     modals.value = modals.value.slice(0, modals.value.length - 1);
-    resolvers.pop()?.();
+    resolvers.pop()?.(data);
   };
 
   const config = computed(() => modals.value[modals.value.length - 1]?.config);

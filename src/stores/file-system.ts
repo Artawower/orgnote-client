@@ -126,6 +126,10 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
     const fileInfo = async (path: string | string[]): Promise<DiskFile> => {
       const fileInfo = await currentFs.value.fileInfo(normalizePath(path));
 
+      if (!fileInfo) {
+        return;
+      }
+
       fileInfo.path = platformSpecificValue({
         data: (path: string) => path,
         nativeMobile: (path: string) => normalizeMobilePath(path),
