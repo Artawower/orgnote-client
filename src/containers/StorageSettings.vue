@@ -33,7 +33,7 @@
     </app-description>
     <card-wrapper v-if="currentFsName">
       <menu-item>{{ t(I18N.VAULT) }}: {{ vault }}</menu-item>
-      <path-picker-btn folder />
+      <path-picker-btn folder @picked="setVault" />
     </card-wrapper>
   </div>
 </template>
@@ -58,6 +58,10 @@ const { t } = useI18n({
 const fsManager = api.core.useFileSystemManager();
 const { fileSystems, currentFsName } = storeToRefs(fsManager);
 const { vault } = storeToRefs(api.core.useFileSystem());
+
+const setVault = (path: string) => {
+  vault.value = path;
+};
 </script>
 
 <style lang="scss" scoped>

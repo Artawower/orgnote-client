@@ -36,8 +36,13 @@ const pickPath = () => {
     },
     modalEmits: {
       close: () => modal.close(),
+      dirPicked,
     },
   });
-  emits('picked', 'qwe');
+};
+
+const dirPicked = (dirPath: string) => {
+  emits('picked', dirPath);
+  modal.close();
 };
 </script>

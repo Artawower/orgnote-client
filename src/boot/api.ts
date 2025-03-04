@@ -63,6 +63,7 @@ async function initApi(app: App): Promise<void> {
       useQuasar: useQuasar,
       usePane: usePaneStore,
       useFileSystemManager: useFileSystemManagerStore,
+      useFileManager: useFileManagerStore,
       app,
     },
     utils: {
@@ -93,7 +94,6 @@ async function initApi(app: App): Promise<void> {
       useModal: useModalStore,
       useSettingsUi: useSettingsUiStore,
       useConfirmationModal,
-      useFileManager: useFileManagerStore,
       useScreenDetection,
     },
   };

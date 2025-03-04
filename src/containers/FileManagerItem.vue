@@ -20,7 +20,7 @@
       </div>
 
       <context-menu
-        v-if="!file?.path?.startsWith(`${rootSystemFilePath}`)"
+        v-if="!file?.path?.startsWith(`/${rootSystemFilePath}`)"
         :items="actionItems"
         ref="contextMenuRef"
         :target="fileManageItemRef"
@@ -52,7 +52,7 @@ const props = defineProps<{
 const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();
 const fileManageItemRef = ref<HTMLElement>();
 
-const fm = api.ui.useFileManager();
+const fm = api.core.useFileManager();
 
 const openContextMenu = () => {
   if (!props.file) {

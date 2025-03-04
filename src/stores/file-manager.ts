@@ -1,14 +1,28 @@
 import { join, type DiskFile, type FileManagerStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
-import { ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import { useFileSystemStore } from './file-system';
 import { getUniqueFileName } from 'src/utils/unique-file-name';
+import { getFileDirPath } from 'src/utils/get-file-dir-path';
+import { isFilePath } from 'src/utils/is-file-path';
 
 export const useFileManagerStore = defineStore<string, FileManagerStore>('file-manager', () => {
   const path = ref<string>('/');
   const focusFile = shallowRef<DiskFile | null>(null);
 
   const fs = useFileSystemStore();
+
+  const focusDirPath = computed<string>(() => {
+    if (!focusFile.value) {
+      return '/';
+    }
+    const isFile = isFilePath(focusFile.value.path);
+    if (isFile) {
+      return getFileDirPath(focusFile.value.path);
+    }
+
+    return focusFile.value.path;
+  });
 
   const deleteFile = async (path?: string): Promise<void> => {
     await fs.deleteFile(path ?? focusFile.value?.path);
@@ -46,6 +60,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
     deleteFile,
     createFile,
     createFolder,
+    focusDirPath,
   };
 
   return store;

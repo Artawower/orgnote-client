@@ -3,6 +3,7 @@
     <div class="input">
       <app-icon name="keyboard_arrow_right" size="md"></app-icon>
       <app-input
+        ref="appInputRef"
         @keypress.enter="handleCompletionInput"
         v-model="activeCompletion.searchQuery"
         :placeholder="placeholder"
@@ -27,6 +28,7 @@ import ActionButton from 'src/components/ActionButton.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppInput from 'src/components/AppInput.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
+import { ref } from 'vue';
 
 defineProps<{
   placeholder?: string;
@@ -51,6 +53,8 @@ const handleCompletionInput = () => {
     return;
   }
 };
+
+const appInputRef = ref<InstanceType<typeof AppInput> | null>(null);
 </script>
 
 <style lang="scss" scoped>

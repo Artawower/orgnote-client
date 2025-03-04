@@ -59,11 +59,9 @@ const executeCompletionItem = async (e: MouseEvent) => {
   if ('groupTitle' in props.item) return;
   e.preventDefault();
   e.stopPropagation();
-  if (completion.activeCompletion.type === 'input-choice') {
-    completion.activeCompletion.searchQuery = extractDynamicValue(props.item.title);
-    return;
+  if (completion.activeCompletion.type !== 'input-choice') {
+    completion.close(props.item.data);
   }
-  completion.close(props.item.data);
   props.item.commandHandler(props.item.data);
 };
 </script>

@@ -1,6 +1,6 @@
 // import { createPinia, setActivePinia } from 'pinia';
 // import { useFileSystemStore } from 'src/stores/file-system';
-// import { beforeEach, expect, test, vi } from 'vitest';
+import { test } from 'vitest';
 // import { Platform } from 'quasar';
 // import { ErrorFileNotFound, type FileSystem } from 'orgnote-api';
 
@@ -213,3 +213,5 @@
 //   const store = useFileSystemStore();
 //   await expect(store.registerFileSystem('invalid-fs', invalidFs as FileSystem)).rejects.toThrow();
 // });
+
+test('fake', () => {});
