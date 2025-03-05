@@ -61,6 +61,12 @@
   }
 }
 
+@mixin tablet-below {
+  @media (max-width: calc($desktop - 1px)) {
+    @content;
+  }
+}
+
 @mixin line-limit($lines) {
   overflow: hidden;
   display: -webkit-box !important;

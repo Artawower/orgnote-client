@@ -7,7 +7,7 @@
     <div class="content">
       <div v-if="sidebar.opened" class="backdrop"></div>
       <router-view />
-      <visibility-wrapper desktop-below>
+      <visibility-wrapper tablet-below>
         <main-footer />
       </visibility-wrapper>
     </div>
@@ -29,10 +29,10 @@ import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 const sidebar = api.ui.useSidebar();
 const sidebarRef = ref(null);
 
-const { desktopBelow } = api.ui.useScreenDetection();
+const { tabletBelow } = api.ui.useScreenDetection();
 
 onClickOutside(sidebarRef, () => {
-  if (desktopBelow.value) {
+  if (tabletBelow.value) {
     sidebar.close();
   }
 });
@@ -46,7 +46,7 @@ onClickOutside(sidebarRef, () => {
   overflow: hidden;
 }
 
-@include desktop-below {
+@include tablet-below {
   .backdrop {
     position: absolute;
     background-color: var(--backdrop-bg);

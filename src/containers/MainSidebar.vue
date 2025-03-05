@@ -32,7 +32,7 @@ const { commands, footerCommands, opened, component, componentConfig } = storeTo
   api.ui.useSidebar(),
 );
 const screenDetector = useScreenDetection();
-const miniMode = screenDetector.desktopAbove;
+const miniMode = screenDetector.tabletAbove;
 </script>
 
 <style lang="scss" scoped>
