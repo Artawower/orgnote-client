@@ -6,6 +6,10 @@ export const createFileCompletion = async (api: OrgNoteApi): Promise<string> => 
   const fm = api.core.useFileManager();
   let filePath = await getNewFileName(api, fm.focusDirPath);
 
+  if (!filePath) {
+    return;
+  }
+
   if (!isOrgFile(filePath)) {
     filePath += `.${ORG_EXTENSION}`;
   }

@@ -62,6 +62,9 @@ export function getFileManagerCommands(): Command[] {
       handler: async (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
         const filePath = await createFileCompletion(api);
+        if (!filePath) {
+          return;
+        }
         const dirPath = getFileDirPath(filePath);
         fm.path = dirPath;
         await fm.createFile();

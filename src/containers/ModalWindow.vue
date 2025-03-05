@@ -2,7 +2,7 @@
   <animation-wrapper v-for="(m, i) of modals" :key="i">
     <dialog
       @mousedown="handleDialogClick"
-      @close="modal.close"
+      @close="modal.close()"
       :class="{
         mini: m.config?.mini,
         [`position-${m.config?.position ?? 'center'}`]: m.config.position,

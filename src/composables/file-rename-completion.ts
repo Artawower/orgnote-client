@@ -7,7 +7,7 @@ export const useFileRenameCompletion = async (
   filePath: string,
 ): Promise<string> => {
   const result = await getNewFileName(api, filePath);
-  const filePathDoesNotChanged = filePath === result;
+  const filePathDoesNotChanged = filePath === result || !result;
 
   if (filePathDoesNotChanged) {
     return;
