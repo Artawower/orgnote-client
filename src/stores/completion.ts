@@ -7,7 +7,7 @@ import { computed, ref } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import { useSettingsStore } from './settings';
-import { defaultInputDebounce } from 'src/constants/default-input-debounce';
+import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
 import { createPromise } from 'src/utils/create-promise';
 
 export const useCompletionStore = defineStore<'completion-store', CompletionStore>(
@@ -138,7 +138,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       activeCompletion.value.total = r.total;
     };
 
-    const searchWithDebounce = debounce(search, defaultInputDebounce);
+    const searchWithDebounce = debounce(search, DEFAULT_INPUT_DEBOUNCE);
 
     watch(
       () => activeCompletion.value?.searchQuery,

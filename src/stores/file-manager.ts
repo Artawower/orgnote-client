@@ -5,6 +5,7 @@ import { useFileSystemStore } from './file-system';
 import { getUniqueFileName } from 'src/utils/unique-file-name';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { isFilePath } from 'src/utils/is-file-path';
+import { DEFAULT_FOLDER_NAME } from 'src/constants/default-folder-name';
 
 export const useFileManagerStore = defineStore<string, FileManagerStore>('file-manager', () => {
   const path = ref<string>('/');
@@ -48,7 +49,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
 
     const files = (await fs.readDir(path.value)).map((f) => f.name);
 
-    const folderName = getUniqueFileName(files, '', 'untitled-folder');
+    const folderName = getUniqueFileName(files, '', DEFAULT_FOLDER_NAME);
 
     const folderPath = join(path.value, folderName);
     await fs.mkdir(folderPath);

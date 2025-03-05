@@ -8,7 +8,11 @@ const fuseOptions: IFuseOptions<DiskFile> = {
   keys: ['path'],
 };
 
-export const dirItemsGetter = async (api: OrgNoteApi, filter: string) => {
+export const dirItemsGetter = async (
+  api: OrgNoteApi,
+  filter: string,
+  includeFiles: boolean = false,
+) => {
   const fs = api.core.useFileSystem();
   const fileInfo = await fs.fileInfo(filter);
 
@@ -19,7 +23,8 @@ export const dirItemsGetter = async (api: OrgNoteApi, filter: string) => {
     return { total: 0, result: [] };
   }
   const parentPath = getParentDir(filter);
-  const dirs = (await fs.readDir(parentPath)).filter((f) => f.type === 'directory');
+  const dirItems = await fs.readDir(parentPath);
+  const dirs = includeFiles ? dirItems : dirItems.filter((f) => f.type === 'directory');
   const fuse = new Fuse(dirs, fuseOptions);
   const matchedDirs = fuse.search(filter).map((r) => r.item);
   const completion = api.core.useCompletion();

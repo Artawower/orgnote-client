@@ -1,1 +1,1 @@
-export const defaultInputDebounce = 250;
+export const DEFAULT_INPUT_DEBOUNCE = 250;

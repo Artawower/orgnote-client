@@ -1,6 +1,8 @@
 import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { DefaultCommands, getFileName, I18N, type Command } from 'orgnote-api';
+import { DefaultCommands, type Command } from 'orgnote-api';
 import { createFileCompletion } from 'src/composables/create-file-completion';
+import { createFolderCompletion } from 'src/composables/create-folder-completion';
+import { deleteFileCompletion } from 'src/composables/delete-file-completion';
 import { useFileRenameCompletion } from 'src/composables/file-rename-completion';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { defineAsyncComponent } from 'vue';
@@ -51,8 +53,14 @@ export function getFileManagerCommands(): Command[] {
       group,
       icon: 'sym_o_create_new_folder',
       handler: async (api: OrgNoteApi) => {
-        const fm = api.core.useFileManager();
-        await fm.createFolder();
+        try {
+          const newFolderPath = await createFolderCompletion(api);
+          const fm = api.core.useFileManager();
+          fm.path = newFolderPath;
+        } catch (e) {
+          // TODO: error handler
+          console.log('[line 60][FILE SYSTEM]: ', e);
+        }
       },
     },
     {
@@ -76,6 +84,12 @@ export function getFileManagerCommands(): Command[] {
       icon: 'o_add_box',
       handler: async (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
+        const filePath = await createFileCompletion(api);
+        if (!filePath) {
+          return;
+        }
+        const dirPath = getFileDirPath(filePath);
+        fm.path = dirPath;
         await fm.createFile();
       },
     },
@@ -83,14 +97,9 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.RENAME_FILE,
       group,
       icon: 'sym_o_edit',
-      handler: async (api: OrgNoteApi, params: CommandHandlerParams<string>) => {
+      handler: async (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
         useFileRenameCompletion(api, fm.focusFile.path);
-        console.log(
-          '✎: [line 78][file-manager.ts] api: OrgNoteApi, filePath: string: ',
-          api,
-          params,
-        );
         return;
       },
     },
@@ -99,17 +108,7 @@ export function getFileManagerCommands(): Command[] {
       group,
       icon: 'sym_o_delete',
       handler: async (api: OrgNoteApi, params: CommandHandlerParams<string>) => {
-        const { confirm } = api.ui.useConfirmationModal();
-        const fm = api.core.useFileManager();
-        const fileName = getFileName(params.data);
-        const ok = await confirm({
-          title: fileName,
-          message: I18N.CONFIRM_FILE_DELETION,
-        });
-
-        if (ok) {
-          await fm.deleteFile(params.data);
-        }
+        await deleteFileCompletion(api, params.data);
       },
     },
   ];

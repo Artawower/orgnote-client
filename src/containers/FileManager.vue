@@ -18,6 +18,7 @@
           >
           </command-action-button>
           <command-action-button
+            v-if="!compact"
             :command="DefaultCommands.CREATE_NOTE"
             :size="iconSize"
           ></command-action-button>
