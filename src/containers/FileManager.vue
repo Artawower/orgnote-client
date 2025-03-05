@@ -50,7 +50,7 @@
           :highlight="searchHighlightKeywords"
           @click="handleFileClick(f)"
           v-for="f of searchFiles"
-          :key="f.name"
+          :key="f.path"
           :file="f"
           :size="menuItemSize"
         />
