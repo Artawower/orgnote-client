@@ -85,21 +85,37 @@ export const useSimpleFs = (): FileSystem => {
     oldPath = normalizePath(oldPath);
     newPath = normalizePath(newPath);
 
-    const renameFilePaths: string[] = [];
+    const filesToRename = await getFilesToRename(oldPath);
+    await updateFilePaths(filesToRename, oldPath, newPath);
+  };
 
+  const getFilesToRename = async (oldPath: string): Promise<string[]> => {
+    const files: string[] = [];
     await fs.each((f) => {
-      f.path.startsWith(oldPath) ? renameFilePaths.push(f.path) : null;
+      if (f.path.startsWith(oldPath)) {
+        files.push(f.path);
+      }
     });
+    return files;
+  };
 
+  const updateFilePaths = async (
+    files: string[],
+    oldPath: string,
+    newPath: string
+  ) => {
     await Promise.all(
-      renameFilePaths.map(
-        async (p) =>
-          await fs.update(p, {
-            path: p.replace(oldPath, newPath),
-            name: extractFileNameFromPath(newPath),
-            mtime: Date.now(),
-          })
-      )
+      files.map(async (filePath) => {
+        const relativePath = filePath.slice(oldPath.length);
+        const newFilePath = `${newPath}${relativePath}`;
+        const fileName = extractFileNameFromPath(newFilePath);
+
+        await fs.update(filePath, {
+          path: newFilePath,
+          name: fileName,
+          mtime: Date.now(),
+        });
+      })
     );
   };
 
