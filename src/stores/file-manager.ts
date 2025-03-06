@@ -14,15 +14,15 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   const fs = useFileSystemStore();
 
   const focusDirPath = computed<string>(() => {
-    if (!focusFile.value) {
+    if (!path.value) {
       return '/';
     }
-    const isFile = isFilePath(focusFile.value.path);
+    const isFile = isFilePath(path.value);
     if (isFile) {
-      return getFileDirPath(focusFile.value.path);
+      return getFileDirPath(path.value);
     }
 
-    return focusFile.value.path;
+    return path.value;
   });
 
   const deleteFile = async (path?: string): Promise<void> => {

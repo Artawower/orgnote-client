@@ -6,6 +6,7 @@ test('returns true for valid file paths', () => {
   expect(isFilePath('dir/subdir/image.png')).toBe(true);
   expect(isFilePath('documents/report.pdf')).toBe(true);
   expect(isFilePath('a/b/c/script.js')).toBe(true);
+  expect(isFilePath('/untitled-note-1.org')).toBe(true);
 });
 
 test('returns false for paths without an extension', () => {
@@ -22,7 +23,6 @@ test('returns false for paths without a directory', () => {
 
 test('returns false for empty or invalid input', () => {
   expect(isFilePath('')).toBe(false);
-  expect(isFilePath('/file.txt')).toBe(false);
   expect(isFilePath('folder/')).toBe(false);
   expect(isFilePath('/folder/file.txt')).toBe(true);
 });

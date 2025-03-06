@@ -64,21 +64,6 @@ export function getFileManagerCommands(): Command[] {
       },
     },
     {
-      command: DefaultCommands.CREATE_FILE,
-      group,
-      icon: 'sym_o_edit_document',
-      handler: async (api: OrgNoteApi) => {
-        const fm = api.core.useFileManager();
-        const filePath = await createFileCompletion(api);
-        if (!filePath) {
-          return;
-        }
-        const dirPath = getFileDirPath(filePath);
-        fm.path = dirPath;
-        await fm.createFile();
-      },
-    },
-    {
       command: DefaultCommands.CREATE_NOTE,
       group: 'file manager',
       icon: 'o_add_box',
@@ -90,7 +75,6 @@ export function getFileManagerCommands(): Command[] {
         }
         const dirPath = getFileDirPath(filePath);
         fm.path = dirPath;
-        await fm.createFile();
       },
     },
     {

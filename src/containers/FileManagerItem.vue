@@ -1,6 +1,6 @@
 <template>
-  <menu-item :size="size">
-    <div @contextmenu.stop.prevent="openContextMenu()" class="file-info" ref="fileManageItemRef">
+  <menu-item @contextmenu.stop.prevent="openContextMenu()" :size="size">
+    <div class="file-info" ref="fileManageItemRef">
       <app-icon
         :name="file?.type === 'directory' || root ? 'sym_o_folder' : 'sym_o_draft'"
         color="fg-alt"
