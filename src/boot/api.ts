@@ -42,6 +42,7 @@ import { usePaneStore } from 'src/stores/pane';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
+import { useConfigStore } from 'src/stores/config';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -64,6 +65,7 @@ async function initApi(app: App): Promise<void> {
       usePane: usePaneStore,
       useFileSystemManager: useFileSystemManagerStore,
       useFileManager: useFileManagerStore,
+      useConfig: useConfigStore,
       app,
     },
     utils: {
@@ -100,7 +102,7 @@ async function initApi(app: App): Promise<void> {
 }
 
 const syncConfigurations = async (api: OrgNoteApi) => {
-  await api.core.useSettings().sync();
+  await api.core.useConfig().sync();
 };
 
 export default defineBoot(async ({ app, store }) => {

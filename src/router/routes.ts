@@ -9,9 +9,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/OnboardingPage.vue'),
     beforeEnter: () => {
       const fileManager = api.core.useFileSystemManager();
-      const fs = api.core.useFileSystem();
-
-      const available = fileManager.currentFsName && fs.vault != null;
+      const available = fileManager.currentFsName;
       if (available) {
         return { name: RouteNames.Home };
       }
@@ -24,9 +22,8 @@ const routes: RouteRecordRaw[] = [
     name: RouteNames.Home,
     beforeEnter: () => {
       const fileManager = api.core.useFileSystemManager();
-      const fs = api.core.useFileSystem();
 
-      const available = fileManager.currentFsName && fs.vault != null;
+      const available = fileManager.currentFsName;
       if (!available) {
         return { name: RouteNames.Onboarding };
       }

@@ -39,3 +39,4 @@ org-note-release-signed.aab
 yalc.lock
 *storybook.log
 storybook-static
+.early.coverage

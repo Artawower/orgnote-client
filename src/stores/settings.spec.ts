@@ -1,101 +1,32 @@
-import { test, expect, vi, beforeEach, type Mock } from 'vitest';
+import { test, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSettingsStore } from './settings';
-import { useFileSystemStore } from './file-system';
-import { DEFAULT_CONFIG } from 'src/constants/config';
-import clone from 'rfdc';
-import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
-
-vi.mock('./file-system', () => ({
-  useFileSystemStore: vi.fn(),
-}));
-
-const mockSyncFile = vi.fn();
-
-const mockFileSystemStore = {
-  syncFile: mockSyncFile,
-};
-
-const configJsonPath = getSystemFilesPath('config.json');
 
 beforeEach(() => {
   setActivePinia(createPinia());
-  (useFileSystemStore as unknown as Mock).mockReturnValue(mockFileSystemStore);
-  mockSyncFile.mockReset();
 });
 
 test('initial state', () => {
   const store = useSettingsStore();
 
-  expect(store.config).toEqual(clone()(DEFAULT_CONFIG));
-  expect(store.configErrors).toEqual([]);
-  expect(store.sync).toBeDefined();
+  expect(store.settings).toEqual({});
+  expect(store.tokens).toEqual([]);
 });
 
-test('sync method updates config if new config is available', async () => {
+test('able to mutate tokens', () => {
   const store = useSettingsStore();
 
-  const originalConfig = clone()(DEFAULT_CONFIG);
-  const newConfig = { ...originalConfig, newKey: 'newValue' };
+  store.tokens.push({ id: '1', token: 'abc123' });
+  store.tokens.push({ id: '2', token: 'xyz987' });
 
-  mockSyncFile.mockResolvedValue(JSON.stringify(newConfig));
-
-  await store.sync();
-
-  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(originalConfig), 0);
-  expect(store.config).toEqual(newConfig);
+  expect(store.tokens).toHaveLength(2);
+  expect(store.tokens[0]).toEqual({ id: 1, token: 'abc123' });
 });
 
-test('sync method does not update config if no new config is returned', async () => {
+test('able to mutate settings', () => {
   const store = useSettingsStore();
 
-  mockSyncFile.mockResolvedValue(null);
+  store.settings.newProp = 'hello';
 
-  const originalConfig = { ...store.config };
-  await store.sync();
-
-  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
-  expect(store.config).toEqual(originalConfig);
-});
-
-test('sync method handles invalid JSON gracefully', async () => {
-  const store = useSettingsStore();
-
-  mockSyncFile.mockResolvedValue('invalid-json');
-
-  await expect(store.sync()).rejects.toThrow(SyntaxError);
-  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
-});
-
-test('sync method handles syncFile throwing an error', async () => {
-  const store = useSettingsStore();
-
-  mockSyncFile.mockRejectedValue(new Error('Disk error'));
-
-  await expect(store.sync()).rejects.toThrow('Disk error');
-  expect(mockSyncFile).toHaveBeenCalledWith(configJsonPath, JSON.stringify(store.config), 0);
-});
-
-test('config is not updated if validation fails', async () => {
-  const store = useSettingsStore();
-
-  const invalidConfig = { invalidKey: 'value' };
-  mockSyncFile.mockResolvedValue(JSON.stringify(invalidConfig));
-
-  await store.sync();
-
-  expect(store.configErrors.length).toBeGreaterThan(0);
-  expect(store.config).toEqual(clone()(DEFAULT_CONFIG));
-});
-
-test('sync updates config and implies lastSyncTime is updated', async () => {
-  const store = useSettingsStore();
-
-  const newConfig = { ...clone()(DEFAULT_CONFIG), system: { language: 'ru-RU' } };
-  mockSyncFile.mockResolvedValue(JSON.stringify(newConfig));
-
-  await store.sync();
-
-  expect(mockSyncFile).toHaveBeenCalled();
-  expect(store.config).toEqual(newConfig);
+  expect(store.settings.newProp).toBe('hello');
 });

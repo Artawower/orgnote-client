@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useSettingsStore } from 'src/stores/settings';
+import { useConfigStore } from 'src/stores/config';
 
 withDefaults(
   defineProps<{
@@ -21,7 +21,7 @@ withDefaults(
   },
 );
 
-const { config } = useSettingsStore();
+const { config } = useConfigStore();
 </script>
 
 <style scoped>

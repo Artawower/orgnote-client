@@ -193,8 +193,11 @@ export const useSimpleFs = (): FileSystem => {
     return fs.get(path);
   };
 
-  const init = async () => {
+  const init: FileSystem['init'] = async () => {
     await mkdir('/');
+    return {
+      root: '/',
+    };
   };
 
   return {

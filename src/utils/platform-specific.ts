@@ -11,7 +11,7 @@ export const platformSpecific = (condition: Condition): PlatformSpecificFn => {
   ) => {
     return (...params: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
       if (fn && condition()) {
-        return Promise.resolve(fn(...params)); // Упрощаем вложенные промисы
+        return Promise.resolve(fn(...params));
       }
       return Promise.resolve(defaultValue) as Promise<Awaited<ReturnType<T>>>;
     };

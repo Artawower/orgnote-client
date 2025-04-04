@@ -47,7 +47,7 @@ const props = defineProps<{
   scheme: ValibotScheme;
 }>();
 
-const { config } = storeToRefs(api.core.useSettings());
+const { config } = storeToRefs(api.core.useConfig());
 
 const metadata = props.scheme.pipe?.find((e) => e.type === 'metadata')?.metadata;
 const conditionalKey = metadata?.conditionalKey;

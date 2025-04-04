@@ -1,5 +1,4 @@
 import type { OrgNoteConfig } from 'orgnote-api';
-import { platformSpecificValue } from 'src/utils/platform-specific-value';
 
 export const DEFAULT_CONFIG: OrgNoteConfig = {
   editor: {
@@ -16,14 +15,6 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   completion: {
     showGroup: false,
     defaultCompletionLimit: 500,
-  },
-  vault: {
-    type: platformSpecificValue({
-      data: 'inmemory',
-      mobile: 'filesystem',
-      nativeMobile: 'filesystem',
-    }),
-    path: '',
   },
   synchronization: {
     type: 'api',

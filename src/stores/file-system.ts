@@ -1,25 +1,27 @@
 import { defineStore } from 'pinia';
 import type { FileSystemStore, DiskFile } from 'orgnote-api';
 import { ErrorFileNotFound, isOrgGpgFile, join } from 'orgnote-api';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { Platform } from 'quasar';
 import { removeRelativePath } from 'src/utils/remove-relative-path';
 import { desktopOnly, mobileOnly } from 'src/utils/platform-specific';
 import { BROWSER_INDEXEDBB_FS_NAME } from 'src/constants/indexeddb-fs-name';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
-import { platformSpecificValue } from 'src/utils/platform-specific-value';
 import { storeToRefs } from 'pinia';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { watch } from 'vue';
+import { api } from 'src/boot/api';
+import { useSettingsStore } from './settings';
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
   'file-system',
   () => {
     const { currentFs, currentFsInfo } = storeToRefs(useFileSystemManagerStore());
-    const vault = ref<string>(currentFsInfo.value?.initialVault);
+    console.log('✎: [line 22][ANDROID FS] api: ', api);
+    const settingsStore = useSettingsStore();
 
     watch(currentFsInfo, () => {
-      vault.value = currentFsInfo.value?.initialVault;
+      settingsStore.settings.vault = currentFsInfo.value?.initialVault;
     });
 
     const normalizePath = (path: string | string[]): string => {
@@ -29,7 +31,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       return getUserFilePath(stringPath);
     };
 
-    const noVaultProvided = computed(() => vault.value == null);
+    const noVaultProvided = computed(() => settingsStore.settings.vault == null);
 
     const removeRelativePaths = (path: string | string[]): string | string[] => {
       if (typeof path === 'string') {
@@ -49,7 +51,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
 
     const getUserFilePath = (path: string): string => {
       path = path ? `/${path}` : '';
-      return `${vault.value ?? ''}${path}`;
+      return path;
     };
 
     const readFile = async <T extends 'utf8' | 'binary'>(
@@ -77,7 +79,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       const needToUpdate = previousFileInfo?.mtime < time;
 
       if (previousFileInfo && !needToUpdate) {
-        return readFile(realPath) as unknown as T;
+        return;
       }
 
       await writeFile(realPath, content);
@@ -92,7 +94,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
     };
 
     const removeAllFiles = async () => {
-      await mobileOnly(async () => await currentFs.value.rmdir(vault.value))();
+      await mobileOnly(async () => await currentFs.value.rmdir('/'))();
       desktopOnly(indexedDB.deleteDatabase)(BROWSER_INDEXEDBB_FS_NAME);
     };
 
@@ -130,11 +132,6 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
         return;
       }
 
-      fileInfo.path = platformSpecificValue({
-        data: (path: string) => path,
-        nativeMobile: (path: string) => normalizeMobilePath(path),
-      })(fileInfo.path);
-
       return fileInfo;
     };
 
@@ -145,25 +142,6 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
 
       const res = await currentFs.value.readDir(normalizePath(path));
       return res;
-      // const normalizedPaths = normalizeFilePaths(res);
-      // return normalizedPaths;
-    };
-
-    // // TODO: isolate inside mobile fs.
-    // const normalizeFilePaths = (paths: DiskFile[]): DiskFile[] => {
-    //   return platformSpecificValue({
-    //     data: (infos: DiskFile[]) => infos,
-    //     nativeMobile: (infos: DiskFile[]) =>
-    //       infos.map((p) => ({
-    //         ...p,
-    //         path: normalizeMobilePath(p.path),
-    //       })),
-    //   })(paths);
-    // };
-
-    const normalizeMobilePath = (path: string): string => {
-      const normalizedPath = path.split(vault.value).join('').replaceAll(/^\/+/g, '');
-      return normalizedPath;
     };
 
     const withSafeFolderCreation =
@@ -206,7 +184,6 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       fileInfo: withSafeFolderCreation(fileInfo),
       readDir: withSafeFolderCreation(readDir),
       dropFileSystem,
-      vault,
     };
 
     return store;

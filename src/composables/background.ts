@@ -2,11 +2,11 @@ import { nativeMobileOnly } from 'src/utils/platform-specific';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { getCssVar } from 'src/utils/css-utils';
 import { NavigationBar } from '@hugotomazi/capacitor-navigation-bar';
-import { useSettingsStore } from 'src/stores/settings';
 import type { BackgroundSettings } from 'orgnote-api';
+import { useConfigStore } from 'src/stores/config';
 
 export const useBackgroundSettings = () => {
-  const { config } = useSettingsStore();
+  const { config } = useConfigStore();
 
   const setStatusBarBackground = async (bgColor?: string) => {
     console.log('✎: [line 18][BACKGROUND!] StatusBar: ', StatusBar);

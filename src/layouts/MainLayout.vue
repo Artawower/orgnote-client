@@ -5,7 +5,7 @@
   >
     <main-sidebar ref="sidebarRef" />
     <div class="content">
-      <div v-if="sidebar.opened" class="backdrop"></div>
+      <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
       <router-view />
       <visibility-wrapper tablet-below>
         <main-footer />
@@ -20,7 +20,6 @@ import MainFooter from 'src/containers/MainFooter.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
-import { onClickOutside } from '@vueuse/core';
 import { api } from 'src/boot/api';
 import { ref } from 'vue';
 import { mobileOnly } from 'src/utils/platform-specific';
@@ -31,11 +30,11 @@ const sidebarRef = ref(null);
 
 const { tabletBelow } = api.ui.useScreenDetection();
 
-onClickOutside(sidebarRef, () => {
+const closeMainSidebar = () => {
   if (tabletBelow.value) {
     sidebar.close();
   }
-});
+};
 </script>
 
 <style lang="scss" scoped>
@@ -54,5 +53,9 @@ onClickOutside(sidebarRef, () => {
     height: 100%;
     z-index: 1;
   }
+}
+
+.page {
+  flex-direction: row;
 }
 </style>

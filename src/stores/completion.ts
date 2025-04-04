@@ -6,9 +6,9 @@ import AppCompletion from 'src/containers/AppCompletion.vue';
 import { computed, ref } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
-import { useSettingsStore } from './settings';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
 import { createPromise } from 'src/utils/create-promise';
+import { useConfigStore } from './config';
 
 export const useCompletionStore = defineStore<'completion-store', CompletionStore>(
   'completion-store',
@@ -106,7 +106,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       if (activeCompletion.value.type === 'input') {
         return;
       }
-      const { config } = useSettingsStore();
+      const { config } = useConfigStore();
       limit = config.completion.defaultCompletionLimit;
       activeCompletion.value.selectedCandidateIndex = 0;
 

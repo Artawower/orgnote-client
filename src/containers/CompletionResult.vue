@@ -38,7 +38,7 @@ import { extractDynamicValue } from 'src/utils/extract-dynamic-value';
 
 const completion = api.core.useCompletion();
 const { activeCompletion } = storeToRefs(completion);
-const { config } = storeToRefs(api.core.useSettings());
+const { config } = storeToRefs(api.core.useConfig());
 
 const getPagedResult = (from: number, size: number) => {
   const fakeRows = Object.freeze(new Array(size).fill(null));

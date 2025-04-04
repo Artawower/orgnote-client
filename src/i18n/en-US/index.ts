@@ -4,7 +4,7 @@ const eng: { [key in I18N]?: string } = {
   [I18N.LOADING_MESSAGE_1]: 'loading...',
   [I18N.LOADING_MESSAGE_2]: 'fetching data...',
   [I18N.LOADING_MESSAGE_3]: 'almost there...',
-  [I18N.LOADING_MESSAGE_4]: 'compiling I18N.magic...',
+  [I18N.LOADING_MESSAGE_4]: 'compiling magic...',
   [I18N.LOADING_MESSAGE_5]: 'just a moment...',
   [I18N.SYSTEM]: 'system',
   [I18N.LANGUAGE]: 'language',

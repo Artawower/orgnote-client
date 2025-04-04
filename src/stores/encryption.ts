@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import { useSettingsStore } from 'src/stores/settings';
 import {
   encryptNote as _encryptNote,
   decryptNote as _decryptNote,
@@ -14,9 +13,10 @@ import type {
   OrgNoteEncryption,
 } from 'orgnote-api';
 import { armor } from 'orgnote-api';
+import { useConfigStore } from './config';
 
 export const useEncryptionStore = defineStore<'encryption', EncryptionStore>('encryption', () => {
-  const { config } = useSettingsStore();
+  const { config } = useConfigStore();
 
   const encrypt = async (
     text: string,

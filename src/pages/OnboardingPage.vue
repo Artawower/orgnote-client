@@ -1,7 +1,7 @@
 <template>
   <page-wrapper padding>
     <storage-settings />
-    <card-wrapper v-if="isSetupReady">
+    <card-wrapper class="actions" v-if="isSetupReady">
       <menu-item active @click="finishSetup">{{ t(I18N.FINISH_SETUP) }}</menu-item>
     </card-wrapper>
   </page-wrapper>
@@ -25,8 +25,7 @@ import { I18N } from 'orgnote-api';
 
 const fsManager = api.core.useFileSystemManager();
 const { currentFsName } = storeToRefs(fsManager);
-const { vault } = storeToRefs(api.core.useFileSystem());
-const isSetupReady = computed(() => !!currentFsName.value && vault.value != null);
+const isSetupReady = computed(() => !!currentFsName.value);
 
 const router = useRouter();
 const finishSetup = () => {
@@ -38,3 +37,9 @@ const { t } = useI18n({
   inheritLocale: true,
 });
 </script>
+
+<style lang="scss" scoped>
+.actions {
+  margin-top: var(--margin-md);
+}
+</style>

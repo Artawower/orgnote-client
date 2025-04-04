@@ -18,6 +18,7 @@
         </template>
       </menu-item>
     </card-wrapper>
+
     <app-card v-if="currentFsName" type="danger">
       <template #cardTitle>
         <div class="capitalize">
@@ -28,13 +29,13 @@
         {{ t(I18N.STORAGE_CHANGE_WARNING_DESCRIPTION) }}
       </div>
     </app-card>
-    <app-description>
-      {{ t(I18N.CHOOSE_VAULT) }}
+
+    <app-description v-if="fsManager.currentFs?.pickFolder">
+      <menu-item>{{ t(I18N.VAULT) }}: {{ settings.vault }}</menu-item>
+      <menu-item @click="fsManager.currentFs.pickFolder" type="info">{{
+        I18N.PICK_FOLDER
+      }}</menu-item>
     </app-description>
-    <card-wrapper v-if="currentFsName">
-      <menu-item>{{ t(I18N.VAULT) }}: {{ vault }}</menu-item>
-      <path-picker-btn folder @picked="setVault" />
-    </card-wrapper>
   </div>
 </template>
 
@@ -42,7 +43,6 @@
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import AppCard from 'src/components/AppCard.vue';
-import PathPickerBtn from './PathPickerBtn.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 
 import { useI18n } from 'vue-i18n';
@@ -57,11 +57,8 @@ const { t } = useI18n({
 
 const fsManager = api.core.useFileSystemManager();
 const { fileSystems, currentFsName } = storeToRefs(fsManager);
-const { vault } = storeToRefs(api.core.useFileSystem());
 
-const setVault = (path: string) => {
-  vault.value = path;
-};
+const { settings } = storeToRefs(api.core.useSettings());
 </script>
 
 <style lang="scss" scoped>

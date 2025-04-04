@@ -31,7 +31,7 @@ import { valibotScheme } from 'src/models/valibot-scheme';
 const encryptionScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.encryption });
 console.log('✎: [line 11][EncryptionSettings.vue] encryptionEntries: ', encryptionScheme);
 
-const { config } = storeToRefs(api.core.useSettings());
+const { config } = storeToRefs(api.core.useConfig());
 
 const { t } = useI18n({
   useScope: 'global',
