@@ -45,9 +45,12 @@ const { t } = useI18n({
 <style lang="scss" scoped>
 .completion-wrapper {
   @include flexify(column, flex-start, stretch, 0);
-  max-width: var(--completion-max-width);
-  width: var(--completion-width) !important;
-  padding-bottom: var(--device-padding-bottom);
+
+  & {
+    max-width: var(--completion-max-width);
+    width: var(--completion-width) !important;
+    padding-bottom: var(--device-padding-bottom);
+  }
 
   &.full-screen {
     max-width: unset;
@@ -68,10 +71,13 @@ const { t } = useI18n({
 
 .footer {
   @include flexify(row, center, center);
-  border-top: var(--border-default);
-  padding: var(--padding-lg);
-  height: var(--completion-footer-height);
-  color: var(--fg-alt);
+
+  & {
+    border-top: var(--border-default);
+    padding: var(--padding-lg);
+    height: var(--completion-footer-height);
+    color: var(--fg-alt);
+  }
 }
 
 @mixin completion-fullframe {
@@ -115,6 +121,9 @@ const { t } = useI18n({
 
 .not-found {
   @include flexify(row, center, center);
-  color: var(--fg-alt);
+
+  & {
+    color: var(--fg-alt);
+  }
 }
 </style>

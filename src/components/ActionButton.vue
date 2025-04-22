@@ -65,13 +65,16 @@ const slots = useSlots();
 <style lang="scss" scoped>
 button {
   @include flexify(row, center, center, var(--gap-sm));
-  padding: var(--btn-action-padding);
-  border-radius: var(--btn-action-radius);
-  color: var(--btn-action-color);
-  cursor: pointer;
-  border: var(--btn-action-border);
-  box-sizing: border-box;
-  background: transparent;
+
+  & {
+    padding: var(--btn-action-padding);
+    border-radius: var(--btn-action-radius);
+    color: var(--btn-action-color);
+    cursor: pointer;
+    border: var(--btn-action-border);
+    box-sizing: border-box;
+    background: transparent;
+  }
 
   &.icon-xs {
     padding: var(--padding-xs);

@@ -64,7 +64,10 @@ const { settings } = storeToRefs(api.core.useSettings());
 <style lang="scss" scoped>
 .storage-settings {
   @include flexify(column, flex-start, flex-start, var(--gap-md));
-  width: 100%;
+
+  & {
+    width: 100%;
+  }
 }
 
 .card-wrapper:nth-child(2) {

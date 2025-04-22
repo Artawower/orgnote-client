@@ -37,6 +37,9 @@ const { t } = useI18n({
 
 .actions {
   @include flexify(row, flex-end, center, var(--gap-md));
-  width: 100%;
+
+  & {
+    width: 100%;
+  }
 }
 </style>

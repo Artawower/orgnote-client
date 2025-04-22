@@ -82,6 +82,12 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
         return;
       }
 
+      const dirExists = await currentFs.value.isDirExist(getFileDirPath(realPath));
+
+      if (!dirExists) {
+        await currentFs.value.mkdir(getFileDirPath(realPath));
+      }
+
       await writeFile(realPath, content);
     };
 

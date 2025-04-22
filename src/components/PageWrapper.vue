@@ -15,8 +15,10 @@ defineProps<{
   @include fit();
   @include flexify(column, flex-start, flex-start);
 
-  background: var(--bg);
-  padding-bottom: var(--footer-height);
+  & {
+    background: var(--bg);
+    padding-bottom: var(--footer-height);
+  }
 
   &.padding {
     padding: var(--page-padding);

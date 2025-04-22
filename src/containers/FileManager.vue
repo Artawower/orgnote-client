@@ -105,11 +105,12 @@ const fsChangesActions: (keyof typeof fs)[] = [
   'deleteFile',
 ];
 
-fs.$onAction(async ({ name }) => {
+fs.$onAction(async ({ name, after }) => {
   if (!fsChangesActions.includes(name)) {
     return;
   }
-  await readDir();
+
+  after(async () => await readDir());
 });
 
 const files = ref<DiskFile[]>([]);
@@ -161,7 +162,10 @@ const { t } = useI18n({
 <style lang="scss" scoped>
 .file-manager {
   @include flexify(column, flex-start, flex-start, var(--gap-md));
-  height: 100%;
+
+  & {
+    height: 100%;
+  }
 
   .files {
     flex: 1;
@@ -178,8 +182,11 @@ const { t } = useI18n({
 
 .file-path {
   @include flexify(row, flex-start, center);
-  color: var(--fg-alt);
-  flex: 1;
+
+  & {
+    color: var(--fg-alt);
+    flex: 1;
+  }
 }
 
 .actions {

@@ -12,13 +12,19 @@
 <style lang="scss" scoped>
 .nav-tabs {
   @include flexify(row, flex-start, center, var(--gap-xs));
-  padding: var(--padding-md);
-  width: 100%;
-  max-width: 100%;
+
+  & {
+    padding: var(--padding-md);
+    width: 100%;
+    max-width: 100%;
+  }
 
   .content {
     @include flexify(row, flex-start, center, var(--gap-xs));
-    overflow-x: auto;
+
+    & {
+      overflow-x: auto;
+    }
   }
 }
 

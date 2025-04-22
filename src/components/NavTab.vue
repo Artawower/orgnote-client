@@ -31,16 +31,19 @@ const emits = defineEmits<{
 <style lang="scss" scoped>
 .tab {
   @include flexify(row, space-between, center, var(--gap-sm));
-  padding: var(--tab-padding);
-  background: var(--tab-background);
-  border-radius: var(--tab-border-radius);
-  color: var(--tab-color);
-  border: var(--tab-border);
-  width: var(--tab-width);
-  cursor: pointer;
-  height: var(--tab-height);
-  box-sizing: border-box;
-  position: relative;
+
+  & {
+    padding: var(--tab-padding);
+    background: var(--tab-background);
+    border-radius: var(--tab-border-radius);
+    color: var(--tab-color);
+    border: var(--tab-border);
+    width: var(--tab-width);
+    cursor: pointer;
+    height: var(--tab-height);
+    box-sizing: border-box;
+    position: relative;
+  }
 
   &:not(.active):hover {
     background: var(--tab-active-hover-background);

@@ -58,8 +58,11 @@ onClickOutside(contextMenuWrapperRef, () => {
 <style lang="scss" scoped>
 .context-menu-item {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  padding: var(--context-menu-item-padding);
-  cursor: pointer;
+
+  & {
+    padding: var(--context-menu-item-padding);
+    cursor: pointer;
+  }
 
   &:hover,
   &:active {

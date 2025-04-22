@@ -84,12 +84,15 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 <style lang="scss" scoped>
 .menu-item {
   @include flexify(column, flex-start, center, var(--gap-md));
-  cursor: pointer;
-  min-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
-  height: auto;
-  width: 100%;
-  position: relative;
-  padding: var(--padding-sm) calc(var(--padding-sm) * 2);
+
+  & {
+    cursor: pointer;
+    min-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
+    height: auto;
+    width: 100%;
+    position: relative;
+    padding: var(--padding-sm) calc(var(--padding-sm) * 2);
+  }
 
   &:not(.size-auto) {
     max-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
@@ -108,13 +111,19 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 
 .header {
   @include flexify(row, space-between, center, var(--gap-md));
-  width: 100%;
-  flex: 1;
+
+  & {
+    width: 100%;
+    flex: 1;
+  }
 }
 
 .left {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  white-space: nowrap;
+
+  & {
+    white-space: nowrap;
+  }
 }
 
 .prefer-left {

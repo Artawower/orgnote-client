@@ -32,31 +32,41 @@ withDefaults(
 <style lang="scss" scoped>
 .sidebar {
   @include flexify();
-  border-right: var(--sidebar-border-right);
-  background: var(--sidebar-background);
-  height: 100vh;
-  height: 100mvh;
+
+  & {
+    border-right: var(--sidebar-border-right);
+    background: var(--sidebar-background);
+    height: 100vh;
+    height: 100mvh;
+  }
 
   .mini {
     @include flexify(column, space-between, center);
-    width: var(--sidebar-mini-width);
-    height: 100vh;
-    height: 100mvh;
-    padding: var(--sidebar-padding);
+
+    & {
+      width: var(--sidebar-mini-width);
+      height: 100vh;
+      height: 100mvh;
+      padding: var(--sidebar-padding);
+    }
   }
 
   &.opened {
     .content {
-      padding: var(--sidebar-padding);
-      flex: 1;
-      width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
+      & {
+        padding: var(--sidebar-padding);
+        flex: 1;
+        width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
+      }
     }
   }
 
   .content {
-    height: 100%;
-    width: 0;
-    overflow: hidden;
+    & {
+      height: 100%;
+      width: 0;
+      overflow: hidden;
+    }
   }
 }
 </style>

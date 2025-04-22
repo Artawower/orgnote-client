@@ -1,0 +1,13 @@
+arguments=--init-script /Users/darkawower/.emacs.d/var/lsp-java/eclipse.jdt.ls/server/config_mac/org.eclipse.osgi/50/0/.cp/gradle/init/init.gradle --init-script /Users/darkawower/.emacs.d/var/lsp-java/eclipse.jdt.ls/server/config_mac/org.eclipse.osgi/50/0/.cp/gradle/protobuf/init.gradle
+auto.sync=true
+build.scans.enabled=false
+connection.gradle.distribution=GRADLE_DISTRIBUTION(LOCAL_INSTALLATION(/Users/darkawower/.sdkman/candidates/gradle/current))
+connection.project.dir=
+eclipse.preferences.version=1
+gradle.user.home=
+java.home=/Users/darkawower/.sdkman/candidates/java/17.0.11-tem
+jvm.arguments=
+offline.mode=false
+override.workspace.settings=true
+show.console.view=true
+show.executions.view=true

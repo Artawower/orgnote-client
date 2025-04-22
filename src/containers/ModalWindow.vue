@@ -135,9 +135,11 @@ dialog::backdrop {
 .modal-content {
   @include flexify(column, flex-start, flex-start, var(--modal-padding));
 
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+  & {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
 
   &:not(.no-padding) {
     padding: var(--modal-padding);

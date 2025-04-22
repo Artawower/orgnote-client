@@ -2,6 +2,7 @@ import { type FileSystemInfo, type FileSystemManagerStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { useSettingsStore } from './settings';
+import { watch } from 'vue';
 
 export const useFileSystemManagerStore = defineStore<string, FileSystemManagerStore>(
   'file-system-manager',
@@ -11,6 +12,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
     const currentFsInfo = computed(() => registeredFileSystems.value[currentFsName?.value]);
     const currentFs = computed(() => currentFsInfo.value?.fs());
     const settings = useSettingsStore();
+    const fsMounted = ref(false);
 
     const fileSystems = computed(() => Object.values(registeredFileSystems.value));
 
@@ -30,6 +32,16 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
         settings.settings.vault = params.root;
       }
     };
+
+    watch(
+      () => currentFs.value,
+      (fs) => {
+        if (!fs || fsMounted.value) {
+          return;
+        }
+        fs.mount({ root: settings.settings.vault });
+      },
+    );
 
     const store: FileSystemManagerStore = {
       register,

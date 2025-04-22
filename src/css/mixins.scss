@@ -1,16 +1,20 @@
 @mixin flexify($direction: row, $justify: space-between, $align: center, $gap: 0px) {
-  display: flex !important;
-  flex-direction: $direction;
-  justify-content: $justify;
-  align-items: $align;
-  gap: $gap;
+  & {
+    display: flex !important;
+    flex-direction: $direction;
+    justify-content: $justify;
+    align-items: $align;
+    gap: $gap;
+  }
 }
 
 @mixin flexify-inline($direction: row, $justify: space-between, $align: center) {
-  display: inline-flex !important;
-  flex-direction: $direction;
-  justify-content: $justify;
-  align-items: $align;
+  & {
+    display: inline-flex !important;
+    flex-direction: $direction;
+    justify-content: $justify;
+    align-items: $align;
+  }
 }
 
 @mixin dark-mode {
@@ -68,16 +72,20 @@
 }
 
 @mixin line-limit($lines) {
-  overflow: hidden;
-  display: -webkit-box !important;
-
-  -webkit-line-clamp: $lines;
-  -webkit-box-orient: vertical;
+  & {
+    overflow: hidden;
+    display: -webkit-box !important;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+  }
 }
 
 @mixin reset-input {
-  background: transparent;
-  border: 0;
+  & {
+    background: transparent;
+    border: 0;
+  }
+
   &:focus {
     outline: none;
   }
@@ -87,16 +95,17 @@
     margin: 0;
   }
 
-  /* Firefox */
   &[type='number'] {
     -moz-appearance: textfield;
   }
 }
 
 @mixin sticky-header {
-  position: sticky;
-  top: -1px;
-  z-index: 1000;
+  & {
+    position: sticky;
+    top: -1px;
+    z-index: 1000;
+  }
 }
 
 @mixin mobile-footer-padding($offset: 0px) {
@@ -106,15 +115,19 @@
 }
 
 @mixin fit {
-  height: 100%;
-  width: 100%;
+  & {
+    height: 100%;
+    width: 100%;
+  }
 }
 
 @mixin overscreen($z-index: 2) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: $z-index;
+  & {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: $z-index;
+  }
 }
 
 $type-colors: (

@@ -64,6 +64,9 @@ const appInputRef = ref<InstanceType<typeof AppInput> | null>(null);
 
 .input {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  width: 100%;
+
+  & {
+    width: 100%;
+  }
 }
 </style>

@@ -24,7 +24,7 @@ RUN curl -LJ -o bundletool.jar https://github.com/google/bundletool/releases/dow
 
 RUN pwd
 
-COPY bun.lockb package.json ./
+COPY bun.lock package.json ./
 
 RUN ls
 

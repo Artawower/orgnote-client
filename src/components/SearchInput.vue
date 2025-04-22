@@ -35,13 +35,19 @@ const { t } = useI18n({
 
 <style lang="scss" scoped>
 .search-input {
-  width: 100%;
   @include flexify(row, space-between, center, var(--gap-sm));
+
+  & {
+    width: 100%;
+  }
 }
 
 input {
   @include reset-input;
-  height: 100%;
-  flex: 1;
+
+  & {
+    height: 100%;
+    flex: 1;
+  }
 }
 </style>

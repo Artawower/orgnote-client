@@ -28,13 +28,19 @@ h5 {
   @include fit();
   @include overscreen;
   @include flexify(row, center, center);
-  color: white;
-  background-color: var(--violet);
-  padding: var(--padding-xl);
+
+  & {
+    color: white;
+    background-color: var(--violet);
+    padding: var(--padding-xl);
+  }
 
   .content {
     @include flexify(column, center, center, var(--gap-md));
-    margin-top: 98px;
+
+    & {
+      margin-top: 98px;
+    }
   }
 }
 

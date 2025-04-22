@@ -69,10 +69,13 @@ const executeCompletionItem = async (e: MouseEvent) => {
 <style lang="scss" scoped>
 .completion-item {
   @include flexify(row, flex-start, center, var(--gap-md));
-  height: 100%;
-  cursor: pointer;
-  border-radius: var(--completion-item-border-radius);
-  padding: var(--completion-item-padding);
+
+  & {
+    height: 100%;
+    cursor: pointer;
+    border-radius: var(--completion-item-border-radius);
+    padding: var(--completion-item-padding);
+  }
 
   &:hover,
   &:active {
@@ -82,11 +85,14 @@ const executeCompletionItem = async (e: MouseEvent) => {
 
 .group-title {
   @include flexify(row, center, center);
-  height: 100%;
-  font-weight: bold;
-  color: var(--fg-alt);
-  background: var(--bg-alt2);
-  user-select: none;
+
+  & {
+    height: 100%;
+    font-weight: bold;
+    color: var(--fg-alt);
+    background: var(--bg-alt2);
+    user-select: none;
+  }
 
   /* &::before,
      &::after {

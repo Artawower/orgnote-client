@@ -9,6 +9,7 @@ import { formatValidationErrors } from 'src/utils/format-validation-errors';
 import { getSystemFilesPath } from 'src/utils/get-sytem-files-path';
 import { debounce } from 'src/utils/debounce';
 import { useSettingsStore } from './settings';
+import { useFileSystemManagerStore } from './file-system-manager';
 
 export const useConfigStore = defineStore<'config', ConfigStore>(
   'config',
@@ -27,7 +28,6 @@ export const useConfigStore = defineStore<'config', ConfigStore>(
 
       const content = JSON.stringify(config);
       const newConfig = await fileSystem.syncFile(diskConfigPath, content, lastSyncTime.value);
-      console.log('✎: [line 30][ANDROID FS] newConfig: ', newConfig);
 
       if (!newConfig) {
         return;
@@ -47,10 +47,11 @@ export const useConfigStore = defineStore<'config', ConfigStore>(
 
     const syncWithDebounce = debounce(sync, 1000);
 
+    const fsManager = useFileSystemManagerStore();
+
     watch(
-      [settingsStore.settings.vault, config],
+      [settingsStore.settings.vault, config, fsManager.currentFsInfo],
       async () => {
-        console.log('[line 51][ANDROID FS]: VAULT CHANGED');
         await syncWithDebounce();
       },
       { deep: true },

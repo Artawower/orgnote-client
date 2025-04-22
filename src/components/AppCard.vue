@@ -54,9 +54,11 @@ const bg = computed(() => getCssVariableName(background.value));
 <style lang="scss" scoped>
 .card-wrapper {
   @include flexify(column, flex-start, flex-start, var(--gap-md));
-  box-sizing: border-box;
 
-  padding: var(--padding-lg);
+  & {
+    box-sizing: border-box;
+    padding: var(--padding-lg);
+  }
 }
 
 h5 {

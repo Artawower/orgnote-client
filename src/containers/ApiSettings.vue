@@ -55,11 +55,17 @@ const addToken = () => {};
 <style lang="scss" scoped>
 .api-settings {
   @include flexify(column, flex-start, flex-start, var(--gap-md));
-  width: 100%;
+
+  & {
+    width: 100%;
+  }
 }
 .actions {
   @include flexify(row, flex-start, center, var(--gap-sm));
-  opacity: 0;
+
+  & {
+    opacity: 0;
+  }
 }
 
 .menu-item {

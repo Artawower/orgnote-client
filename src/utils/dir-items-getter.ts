@@ -22,7 +22,7 @@ export const dirItemsGetter = async (
   if (isFilterNotRoot && isFile) {
     return { total: 0, result: [] };
   }
-  const parentPath = getParentDir(filter);
+  const parentPath = filter.endsWith('/') ? filter : getParentDir(filter);
   const dirItems = await fs.readDir(parentPath);
   const dirs = includeFiles ? dirItems : dirItems.filter((f) => f.type === 'directory');
   const fuse = new Fuse(dirs, fuseOptions);

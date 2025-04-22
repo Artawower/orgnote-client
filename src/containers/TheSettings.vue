@@ -51,7 +51,10 @@ navigate(props.initialRoute);
 <style lang="scss" scoped>
 .settings {
   @include flexify(row, flex-start, flex-start, var(--gap-lg));
-  flex: 1;
+
+  & {
+    flex: 1;
+  }
 
   & > div {
     height: 100%;
@@ -61,6 +64,9 @@ navigate(props.initialRoute);
 
 .content {
   @include flexify(column, flex-start, flex-start, var(--gap-lg));
-  flex: 1;
+
+  & {
+    flex: 1;
+  }
 }
 </style>

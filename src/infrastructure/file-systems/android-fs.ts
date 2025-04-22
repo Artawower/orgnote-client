@@ -1,4 +1,4 @@
-import type { DiskFile, FileSystem, InitFileSystemParams } from 'orgnote-api';
+import { splitPath, type DiskFile, type FileSystem, type FileSystemParams } from 'orgnote-api';
 import { AndroidSaf } from 'src/plugins/saf.plugin';
 
 export const ANDROID_SAF_FS_NAME = 'SAF android file system';
@@ -6,12 +6,18 @@ export const ANDROID_SAF_FS_NAME = 'SAF android file system';
 export const useAndroidFs = (): FileSystem => {
   let rootUri = '';
 
-  const init: FileSystem['init'] = async (
-    params: InitFileSystemParams,
-  ): Promise<InitFileSystemParams> => {
+  const init: FileSystem['init'] = async (params: FileSystemParams): Promise<FileSystemParams> => {
     params.root = params?.root ?? (await pickFolder());
     rootUri = params.root;
     return params;
+  };
+
+  const mount: FileSystem['mount'] = async (params: FileSystemParams): Promise<boolean> => {
+    if (params.root) {
+      rootUri = params.root;
+      return true;
+    }
+    return false;
   };
 
   const pickFolder = async (): Promise<string> => {
@@ -19,28 +25,42 @@ export const useAndroidFs = (): FileSystem => {
     return res.uri;
   };
 
-  const resolveUri = (path: string): string => `${rootUri}/${path}`;
-
-  const toDiskFile = (file: {
+  const toDiskFile = (file?: {
     name: string;
     uri?: string;
     path?: string;
     type: 'file' | 'directory';
     size: number;
     mtime: number;
-  }): DiskFile => ({
-    name: file.name,
-    path: file.uri || file.path || '',
-    uri: file.uri || file.path,
-    type: file.type,
-    size: file.size,
-    mtime: file.mtime,
-  });
+  }): DiskFile => {
+    if (!file) {
+      return;
+    }
+    const uri = file.uri || file.path || '';
+    let relativePath = '';
+
+    const rootId = rootUri.split('/tree/')[1];
+    const docPrefix = `/document/${rootId}`;
+    const index = uri.indexOf(docPrefix);
+
+    if (index !== -1) {
+      const encodedRelPath = uri.slice(index + docPrefix.length);
+      relativePath = decodeURIComponent(encodedRelPath).replace(/^\/+/, '');
+    }
+
+    return {
+      name: file.name,
+      path: `/${relativePath}`,
+      uri,
+      type: file.type,
+      size: file.size,
+      mtime: file.mtime,
+    };
+  };
 
   const readFile: FileSystem['readFile'] = async (path, encoding = 'utf8') => {
     try {
-      const res = await AndroidSaf.readFile({ uri: resolveUri(path) });
-      console.log('✎: [line 36][ANDROID FS] res: ', res);
+      const res = await AndroidSaf.readFile({ uri: rootUri, path: splitPath(path) });
       return (encoding === 'utf8' ? res.data : new TextEncoder().encode(res.data)) as never;
     } catch (e) {
       console.log('✎: [line 38][ANDROID FS] e: ', e);
@@ -49,34 +69,34 @@ export const useAndroidFs = (): FileSystem => {
 
   const writeFile: FileSystem['writeFile'] = async (path, content) => {
     const data = typeof content === 'string' ? content : new TextDecoder().decode(content);
-    const dirPath = path.substring(0, path.lastIndexOf('/'));
-    const fileName = path.split('/').pop() || path;
-    await AndroidSaf.writeFile({ uri: resolveUri(dirPath), fileName, data });
+    await AndroidSaf.writeFile({ uri: rootUri, path: splitPath(path), data });
   };
 
   const readDir: FileSystem['readDir'] = async (path) => {
-    const { files } = await AndroidSaf.readDir({ uri: resolveUri(path) });
-    console.log('✎: [line 48][ANDROID FS] files: ', files);
-    return files.map(toDiskFile);
+    const { files } = await AndroidSaf.readDir({ uri: rootUri, path: splitPath(path) });
+    const normalizedFiles = files.map(toDiskFile);
+    return normalizedFiles;
   };
 
   const fileInfo: FileSystem['fileInfo'] = async (path) => {
-    const file = await AndroidSaf.fileInfo({ uri: resolveUri(path) });
+    const file = await AndroidSaf.fileInfo({ uri: rootUri, path: splitPath(path) });
     return toDiskFile(file);
   };
 
   const mkdir: FileSystem['mkdir'] = async (path) => {
-    console.log('✎: [line 66][ANDROID FS] path: ', path);
-    await AndroidSaf.mkdir({ path: resolveUri(path) });
+    await AndroidSaf.mkdir({ uri: rootUri, path: splitPath(path) });
   };
 
   const deleteFile: FileSystem['deleteFile'] = async (path) => {
-    await AndroidSaf.delete({ uri: resolveUri(path) });
+    await AndroidSaf.delete({ uri: rootUri, path: splitPath(path) });
   };
 
   const rename: FileSystem['rename'] = async (path, newPath) => {
-    const newName = newPath.split('/').pop() || newPath;
-    await AndroidSaf.rename({ uri: resolveUri(path), newName });
+    await AndroidSaf.rename({
+      uri: rootUri,
+      newPath: splitPath(newPath),
+      oldPath: splitPath(path),
+    });
   };
 
   const isDirExist: FileSystem['isDirExist'] = async (path) => {
@@ -99,7 +119,7 @@ export const useAndroidFs = (): FileSystem => {
 
   const utimeSync: FileSystem['utimeSync'] = async (path, _, mtime) => {
     const timestamp = mtime ? new Date(mtime).getTime() : Date.now();
-    await AndroidSaf.utime({ uri: resolveUri(path), mtime: timestamp });
+    await AndroidSaf.utime({ uri: rootUri, path: splitPath(path), mtime: timestamp });
   };
 
   const rmdir: FileSystem['rmdir'] = async (path) => {
@@ -126,5 +146,6 @@ export const useAndroidFs = (): FileSystem => {
     isFileExist,
     utimeSync,
     pickFolder,
+    mount,
   };
 };
