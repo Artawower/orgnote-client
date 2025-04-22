@@ -7,7 +7,7 @@
       <template #desktop-above>
         <splitpanes>
           <pane v-for="(_, i) of panes" :key="i">
-            <app-pane :pane-id="i" />
+            <app-pane :pane-id="`${i}`" />
           </pane>
         </splitpanes>
       </template>

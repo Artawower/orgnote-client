@@ -21,6 +21,7 @@ function createPlatformMock(overrides: Partial<Platform['is']> = {}): Platform['
     nativeMobile: false,
     nativeMobileWrapper: undefined,
     ios: false,
+    ie: false,
     android: false,
     electron: false,
     bex: false,
@@ -42,6 +43,8 @@ function createPlatformMock(overrides: Partial<Platform['is']> = {}): Platform['
     kindle: false,
     winphone: false,
     webkit: false,
+    blackberry: false,
+    playbook: false,
     ...overrides,
   };
 }
