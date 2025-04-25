@@ -64,7 +64,7 @@ const openContextMenu = () => {
 
 const actionItems = computed<CommandName[]>(() => {
   const items: CommandName[] = [
-    DefaultCommands.CREATE_FILE,
+    DefaultCommands.CREATE_NOTE,
     DefaultCommands.DELETE_FILE,
     DefaultCommands.RENAME_FILE,
   ];
