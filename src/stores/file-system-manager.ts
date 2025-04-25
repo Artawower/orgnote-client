@@ -39,7 +39,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
         if (!fs || fsMounted.value) {
           return;
         }
-        fs.mount({ root: settings.settings.vault });
+        fs.mount?.({ root: settings.settings.vault });
       },
     );
 
