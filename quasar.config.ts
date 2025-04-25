@@ -102,6 +102,7 @@ export default defineConfig((ctx) => {
     devServer: {
       // https: true,
       host: '0.0.0.0',
+      https: true,
       port: 3000,
       open: {
         app: { name: 'google chrome' },

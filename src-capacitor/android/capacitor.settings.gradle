@@ -13,3 +13,6 @@ project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacit
 
 include ':hugotomazi-capacitor-navigation-bar'
 project(':hugotomazi-capacitor-navigation-bar').projectDir = new File('../node_modules/@hugotomazi/capacitor-navigation-bar/android')
+
+include ':jcesarmobile-ssl-skip'
+project(':jcesarmobile-ssl-skip').projectDir = new File('../node_modules/@jcesarmobile/ssl-skip/android')
