@@ -5,7 +5,9 @@
   >
     <main-sidebar ref="sidebarRef" />
     <div class="content">
-      <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
+      <visibility-wrapper tablet-below>
+        <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
+      </visibility-wrapper>
       <router-view />
       <visibility-wrapper tablet-below>
         <main-footer />
