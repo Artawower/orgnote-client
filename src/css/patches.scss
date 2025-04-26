@@ -3,7 +3,6 @@ body,
 dialog {
   overscroll-behavior: none;
   overflow: hidden;
-  padding: 0;
   touch-action: none;
 }
 
@@ -15,8 +14,8 @@ body {
 
 body,
 dialog {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(env(safe-area-inset-bottom) + var(--device-padding-bottom));
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top) !important;
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--device-padding-bottom)) !important;
+  padding-left: env(safe-area-inset-left) !important;
+  padding-right: env(safe-area-inset-right) !important;
 }
