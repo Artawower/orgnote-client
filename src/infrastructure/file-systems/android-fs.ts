@@ -132,6 +132,30 @@ export const useAndroidFs = (): FileSystem => {
     await deleteFile(path);
   };
 
+  const prettifyPath = (uri: string): string => {
+    const primaryPrefix = 'primary%3A';
+    const startIndex = uri.indexOf(primaryPrefix);
+
+    if (startIndex !== -1) {
+      const encodedPath = uri.substring(startIndex + primaryPrefix.length);
+      return decodeURIComponent(encodedPath);
+    }
+
+    const treePrefix = 'tree/';
+    const treeIndex = uri.indexOf(treePrefix);
+
+    if (treeIndex !== -1) {
+      const encodedPath = uri.substring(treeIndex + treePrefix.length);
+      const colonIndex = encodedPath.indexOf('%3A');
+      if (colonIndex !== -1) {
+        return decodeURIComponent(encodedPath.substring(colonIndex + 3));
+      }
+    }
+
+    // Если формат неизвестен, возвращаем исходный URI (или выбрасываем ошибку)
+    throw new Error('Неизвестный формат URI: ' + uri);
+  };
+
   return {
     init,
     readFile,
@@ -147,5 +171,6 @@ export const useAndroidFs = (): FileSystem => {
     utimeSync,
     pickFolder,
     mount,
+    prettifyPath,
   };
 };

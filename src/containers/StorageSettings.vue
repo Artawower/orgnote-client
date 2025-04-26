@@ -31,7 +31,9 @@
     </app-card>
 
     <app-description v-if="fsManager.currentFs?.pickFolder">
-      <menu-item>{{ t(I18N.VAULT) }}: {{ settings.vault }}</menu-item>
+      <menu-item>
+        <overflow-line> {{ t(I18N.VAULT) }}: {{ fileSystem.prettyVault }} </overflow-line>
+      </menu-item>
       <menu-item @click="fsManager.currentFs.pickFolder" type="info">{{
         I18N.PICK_FOLDER
       }}</menu-item>
@@ -44,6 +46,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import AppCard from 'src/components/AppCard.vue';
 import AppDescription from 'src/components/AppDescription.vue';
+import OverflowLine from 'src/components/OverflowLine.vue';
 
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
@@ -56,9 +59,8 @@ const { t } = useI18n({
 });
 
 const fsManager = api.core.useFileSystemManager();
+const fileSystem = api.core.useFileSystem();
 const { fileSystems, currentFsName } = storeToRefs(fsManager);
-
-const { settings } = storeToRefs(api.core.useSettings());
 </script>
 
 <style lang="scss" scoped>

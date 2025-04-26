@@ -174,6 +174,10 @@ body {
   }
 }
 
+@include native-mobile {
+  --footer-padding: 0 0 24px 0;
+}
+
 body.standalone {
   --device-padding-bottom: 24px;
 }

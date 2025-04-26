@@ -29,6 +29,12 @@
   }
 }
 
+@mixin native-mobile {
+  body.capacitor {
+    @content;
+  }
+}
+
 @mixin mobile {
   @media (max-width: calc($tablet - 1px)) {
     @content;

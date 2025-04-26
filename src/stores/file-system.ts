@@ -33,6 +33,14 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
 
     const noVaultProvided = computed(() => settingsStore.settings.vault == null);
 
+    const prettyVault = computed(() => {
+      if (noVaultProvided.value || !currentFs.value) {
+        return '';
+      }
+
+      return currentFs.value.prettifyPath(settingsStore.settings.vault) ?? '';
+    });
+
     const removeRelativePaths = (path: string | string[]): string | string[] => {
       if (typeof path === 'string') {
         return removeRelativePath(path);
@@ -190,6 +198,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       fileInfo: withSafeFolderCreation(fileInfo),
       readDir: withSafeFolderCreation(readDir),
       dropFileSystem,
+      prettyVault,
     };
 
     return store;
