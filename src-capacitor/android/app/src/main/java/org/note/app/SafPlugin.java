@@ -219,4 +219,70 @@ public class SafPlugin extends Plugin {
           call.resolve(res);
         });
   }
+
+  @PluginMethod
+  public void rename(PluginCall call) {
+    WrapPluginCall.wrapPluginCall(
+        call,
+        () -> {
+          String rootUri = call.getString("uri");
+          String[] oldPath = SafPluginUtils.extractStringArray(call.getArray("oldPath"));
+          String[] newPath = SafPluginUtils.extractStringArray(call.getArray("newPath"));
+
+          if (oldPath.length == 0 || newPath.length == 0) {
+            throw new IllegalArgumentException("Old path and new path must not be empty.");
+          }
+
+          DocumentFile oldFile = uriResolver.resolve(getContext(), rootUri, oldPath);
+          if (oldFile == null || !oldFile.exists()) {
+            throw new FileNotFoundException("Source file not found: " + String.join("/", oldPath));
+          }
+
+          String newFileName = newPath[newPath.length - 1];
+          String[] newParentPath = new String[newPath.length - 1];
+          System.arraycopy(newPath, 0, newParentPath, 0, newPath.length - 1);
+
+          DocumentFile newParentDir = uriResolver.resolve(getContext(), rootUri, newParentPath);
+          if (newParentDir == null || !newParentDir.exists() || !newParentDir.isDirectory()) {
+            throw new FileNotFoundException(
+                "Target directory not found: " + String.join("/", newParentPath));
+          }
+
+          DocumentFile currentParent = oldFile.getParentFile();
+          if (currentParent != null && currentParent.getUri().equals(newParentDir.getUri())) {
+            boolean success = oldFile.renameTo(newFileName);
+            if (!success) {
+              throw new IOException("Failed to rename file: " + String.join("/", oldPath));
+            }
+          } else {
+            throw new UnsupportedOperationException(
+                "Moving files between directories is not supported yet.");
+          }
+
+          call.resolve();
+        });
+  }
+
+  @PluginMethod
+  public void utime(PluginCall call) {
+    WrapPluginCall.wrapPluginCall(
+        call,
+        () -> {
+          String rootUri = call.getString("uri");
+          String[] path = SafPluginUtils.extractStringArray(call.getArray("path"));
+          long mtime = call.getLong("mtime");
+
+          DocumentFile file = uriResolver.resolve(getContext(), rootUri, path);
+          if (file == null || !file.exists()) {
+            throw new FileNotFoundException("File not found: " + String.join("/", path));
+          }
+
+          boolean success = SafFileModifier.setLastModified(getContext(), file.getUri(), mtime);
+          if (!success) {
+            throw new IOException("Failed to update mtime for file: " + String.join("/", path));
+          }
+
+          call.resolve();
+        });
+  }
 }
