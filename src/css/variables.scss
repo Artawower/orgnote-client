@@ -176,6 +176,7 @@ body {
 
 @include native-mobile {
   --footer-padding: 0 0 24px 0;
+  --device-padding-bottom: 14px;
 }
 
 body.standalone {
