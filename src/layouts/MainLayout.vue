@@ -1,21 +1,20 @@
 <template>
-  <safe-area>
-    <page-wrapper
-      v-touch-swipe.mouse.left="mobileOnly(sidebar.close)"
-      v-touch-swipe.mouse.right="mobileOnly(sidebar.open)"
-    >
-      <main-sidebar ref="sidebarRef" />
-      <div class="content">
-        <visibility-wrapper tablet-below>
-          <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
-        </visibility-wrapper>
-        <router-view />
-        <visibility-wrapper tablet-below>
-          <main-footer />
-        </visibility-wrapper>
-      </div>
-      <modal-window /> </page-wrapper
-  ></safe-area>
+  <page-wrapper
+    v-touch-swipe.mouse.left="mobileOnly(sidebar.close)"
+    v-touch-swipe.mouse.right="mobileOnly(sidebar.open)"
+  >
+    <main-sidebar ref="sidebarRef" />
+    <div class="content">
+      <visibility-wrapper tablet-below>
+        <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
+      </visibility-wrapper>
+      <router-view />
+      <visibility-wrapper tablet-below>
+        <main-footer />
+      </visibility-wrapper>
+    </div>
+    <modal-window />
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -27,7 +26,6 @@ import { api } from 'src/boot/api';
 import { ref } from 'vue';
 import { mobileOnly } from 'src/utils/platform-specific';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
-import SafeArea from 'src/components/SafeArea.vue';
 
 const sidebar = api.ui.useSidebar();
 const sidebarRef = ref(null);

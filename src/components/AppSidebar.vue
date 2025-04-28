@@ -1,20 +1,24 @@
 <template>
   <div class="sidebar" :class="{ opened }">
-    <div v-if="mini" class="mini">
-      <div class="top">
-        <slot name="mini-top" />
+    <safe-area>
+      <div v-if="mini" class="mini">
+        <div class="top">
+          <slot name="mini-top" />
+        </div>
+        <div class="footer">
+          <slot name="mini-footer" />
+        </div>
       </div>
-      <div class="footer">
-        <slot name="mini-footer" />
+      <div class="content">
+        <slot />
       </div>
-    </div>
-    <div class="content">
-      <slot />
-    </div>
+    </safe-area>
   </div>
 </template>
 
 <script lang="ts" setup>
+import SafeArea from './SafeArea.vue';
+
 withDefaults(
   defineProps<{
     mini?: boolean;
