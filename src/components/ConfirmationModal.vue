@@ -38,6 +38,14 @@ const { t } = useI18n({
 .actions {
   @include flexify(row, flex-end, center, var(--gap-md));
 
+  @include tablet-below {
+    @include flexify(column, flex-end, center, var(--gap-sm));
+
+    button {
+      width: 100%;
+    }
+  }
+
   & {
     width: 100%;
   }

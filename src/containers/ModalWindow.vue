@@ -16,7 +16,7 @@
         }
       "
     >
-      <safe-area>
+      <safe-area :enabled="!m.config?.mini">
         <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
           <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
             <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
@@ -118,9 +118,9 @@ dialog {
 
     &.mini {
       top: unset;
-      bottom: var(--modal-padding);
-      width: calc(100% - var(--modal-padding) * 2);
-      left: var(--modal-padding);
+      bottom: 0;
+      padding-bottom: calc(env(safe-area-inset-bottom) + var(--device-padding-bottom));
+      width: 100%;
     }
   }
 }

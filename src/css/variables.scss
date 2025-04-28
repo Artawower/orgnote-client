@@ -167,16 +167,17 @@ body {
   body {
     --modal-max-width: 100%;
     --modal-max-height: 100%;
-    --modal-padding: var(--padding-md);
+    // --modal-padding: var(--padding-md);
     --modal-border: none;
     // --modal-border-radius: 0;
     --footer-height: 60px;
+    --modal-mini-padding-bottom: 32px;
   }
 }
 
 @include native-mobile {
   --footer-padding: 0 0 24px 0;
-  --device-padding-bottom: 14px;
+  --device-padding-bottom: 18px;
 }
 
 body.standalone {
