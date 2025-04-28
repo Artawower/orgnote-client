@@ -23,7 +23,6 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       config: CompletionConfig<TItem>,
     ): Promise<TReturn> => {
       const closed = modal.open<TReturn>(AppCompletion, {
-        mini: true,
         noPadding: true,
         position: 'top',
         modalProps: {

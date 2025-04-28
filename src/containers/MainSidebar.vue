@@ -10,11 +10,11 @@
         <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
       </div>
     </template>
-    <platform-specific :mobile="true">
+    <visibility-wrapper tablet-below>
       <app-footer v-if="opened">
         <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
       </app-footer>
-    </platform-specific>
+    </visibility-wrapper>
     <component :is="component" v-bind="componentConfig?.componentProps || {}"></component>
   </app-sidebar>
 </template>
@@ -24,7 +24,7 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppFooter from 'src/components/AppFooter.vue';
 import AppSidebar from 'src/components/AppSidebar.vue';
-import PlatformSpecific from 'src/components/PlatformSpecific.vue';
+import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 

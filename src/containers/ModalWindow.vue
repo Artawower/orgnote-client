@@ -16,22 +16,24 @@
         }
       "
     >
-      <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
-        <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
-          <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
-          <h1 v-else-if="m.config?.title" class="title capitalize">
-            {{ t(m.config.title) }}
-          </h1>
-          <action-button @click="modal.close" icon="close" size="sm" />
+      <safe-area>
+        <div class="modal-content" :class="{ 'no-padding': m.config?.noPadding }">
+          <div v-if="m.config?.headerTitleComponent || m.config?.title" class="modal-header">
+            <component v-if="m.config?.headerTitleComponent" :is="m.config.headerTitleComponent" />
+            <h1 v-else-if="m.config?.title" class="title capitalize">
+              {{ t(m.config.title) }}
+            </h1>
+            <action-button @click="modal.close" icon="close" size="sm" />
+          </div>
+          <div class="content">
+            <component
+              :is="m.component"
+              v-bind="m.config?.modalProps"
+              v-on="m.config?.modalEmits ?? {}"
+            />
+          </div>
         </div>
-        <div class="content">
-          <component
-            :is="m.component"
-            v-bind="m.config?.modalProps"
-            v-on="m.config?.modalEmits ?? {}"
-          />
-        </div>
-      </div>
+      </safe-area>
     </dialog>
   </animation-wrapper>
 </template>
@@ -41,6 +43,7 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import AnimationWrapper from 'src/components/AnimationWrapper.vue';
+import SafeArea from 'src/components/SafeArea.vue';
 import { nextTick, watch } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -93,43 +96,56 @@ dialog {
   border: var(--modal-border);
   border-radius: var(--modal-border-radius);
   padding: 0;
+  position: fixed;
 
-  &:not(.mini) {
-    width: 100%;
-    height: 100%;
+  &:not(.full-screen) {
+    max-width: var(--modal-max-width);
+    max-height: var(--modal-max-height);
   }
 
-  @include desktop-below {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-  }
-
-  @include tablet-above {
-    &.position-top {
-      margin: 0;
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    &.position-top {
-      top: var(--padding-xl);
-    }
-  }
-
-  &.full-screen {
-    max-width: unset;
-    max-height: unset;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    border-radius: 0;
+  &::backdrop {
+    background-color: var(--modal-backdrop-bg);
   }
 }
 
-dialog::backdrop {
-  background-color: var(--modal-backdrop-bg);
+@include desktop-below {
+  dialog {
+    &:not(.mini) {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    &.mini {
+      top: unset;
+      bottom: var(--modal-padding);
+      width: calc(100% - var(--modal-padding) * 2);
+      left: var(--modal-padding);
+    }
+  }
+}
+
+@include tablet-above {
+  dialog.position-top {
+    margin: 0;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--padding-xl);
+  }
+}
+
+dialog.full-screen {
+  width: 100%;
+  height: 100%;
+  max-width: unset;
+  max-height: unset;
+  top: 0;
+  border-radius: 0;
+}
+
+.modal-header {
+  @include flexify(row, space-between, center);
 }
 
 .modal-content {
@@ -148,10 +164,6 @@ dialog::backdrop {
   div {
     width: 100%;
   }
-}
-
-.modal-header {
-  @include flexify(row, space-between, center);
 }
 
 .content {

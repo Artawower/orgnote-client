@@ -165,11 +165,11 @@ body {
 
 @include desktop-below {
   body {
-    --modal-max-width: unset;
-    --modal-max-height: unset;
+    --modal-max-width: 100%;
+    --modal-max-height: 100%;
     --modal-padding: var(--padding-md);
     --modal-border: none;
-    --modal-border-radius: 0;
+    // --modal-border-radius: 0;
     --footer-height: 60px;
   }
 }
