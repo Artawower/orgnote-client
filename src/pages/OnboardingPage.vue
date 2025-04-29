@@ -1,10 +1,12 @@
 <template>
-  <page-wrapper padding>
-    <storage-settings />
-    <card-wrapper class="actions" v-if="isSetupReady">
-      <menu-item active @click="finishSetup">{{ t(I18N.FINISH_SETUP) }}</menu-item>
-    </card-wrapper>
-  </page-wrapper>
+  <safe-area>
+    <page-wrapper padding>
+      <storage-settings />
+      <card-wrapper class="actions" v-if="isSetupReady">
+        <menu-item active @click="finishSetup">{{ t(I18N.FINISH_SETUP) }}</menu-item>
+      </card-wrapper>
+    </page-wrapper>
+  </safe-area>
   <modal-window />
 </template>
 
@@ -14,6 +16,7 @@ import ModalWindow from 'src/containers/ModalWindow.vue';
 import StorageSettings from 'src/containers/StorageSettings.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
+import SafeArea from 'src/components/SafeArea.vue';
 
 import { RouteNames } from 'orgnote-api/constants';
 import { storeToRefs } from 'pinia';

@@ -26,6 +26,9 @@
     "server": {
       "url": "http://192.168.39.101:3200",
       "cleartext": true
+    },
+    "Keyboard": {
+      "resize": "body"
     }
   }
 }
