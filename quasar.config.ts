@@ -3,6 +3,7 @@
 
 import { defineConfig } from '#q-app/wrappers';
 import { fileURLToPath } from 'node:url';
+import fs from 'fs';
 
 export default defineConfig((ctx) => {
   return {
@@ -102,7 +103,10 @@ export default defineConfig((ctx) => {
     devServer: {
       // https: true,
       host: '0.0.0.0',
-      https: true,
+      https: {
+        key: fs.readFileSync('.certs/key.pem'),
+        cert: fs.readFileSync('.certs/cert.pem'),
+      },
       port: 3000,
       open: {
         app: { name: 'google chrome' },

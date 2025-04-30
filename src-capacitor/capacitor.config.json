@@ -2,6 +2,9 @@
   "appId": "org.note.app",
   "appName": "OrgNote",
   "webDir": "www",
+  "ios": {
+    "minVersion": "14.0"
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 250,
@@ -24,7 +27,7 @@
       "style": "DARK"
     },
     "server": {
-      "url": "http://192.168.39.101:3200",
+      "url": "http://192.168.1.2:3000",
       "cleartext": true
     },
     "Keyboard": {
