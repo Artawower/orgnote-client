@@ -39,6 +39,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@capacitor/keyboard": "7.0.1",
     "@quasar/cli": "^2.5.0",
     "@quasar/extras": "1.16.17",
     "@vueuse/core": "13.1.0",

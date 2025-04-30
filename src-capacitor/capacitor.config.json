@@ -28,7 +28,8 @@
       "cleartext": true
     },
     "Keyboard": {
-      "resize": "body"
+      "resize": "body",
+      "resizeOnFullScreen": true
     }
   }
 }

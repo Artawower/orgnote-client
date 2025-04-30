@@ -49,7 +49,6 @@ const { t } = useI18n({
   & {
     max-width: var(--completion-max-width);
     width: var(--completion-width) !important;
-    padding-bottom: var(--device-padding-bottom);
   }
 
   &.full-screen {
