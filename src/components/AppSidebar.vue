@@ -1,6 +1,6 @@
 <template>
-  <div class="sidebar" :class="{ opened }">
-    <safe-area>
+  <safe-area>
+    <div class="sidebar" :class="{ opened }">
       <div v-if="mini" class="mini">
         <div class="top">
           <slot name="mini-top" />
@@ -12,8 +12,8 @@
       <div class="content">
         <slot />
       </div>
-    </safe-area>
-  </div>
+    </div>
+  </safe-area>
 </template>
 
 <script lang="ts" setup>

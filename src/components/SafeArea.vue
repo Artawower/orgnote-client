@@ -25,7 +25,6 @@ withDefaults(
 
   & {
     height: 100%;
-    width: 100%;
     padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
   }
