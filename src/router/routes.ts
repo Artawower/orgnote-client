@@ -19,7 +19,6 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    name: RouteNames.Home,
     beforeEnter: () => {
       const fileManager = api.core.useFileSystemManager();
 
@@ -32,6 +31,8 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
+        name: RouteNames.Home,
+
         redirect: { name: RouteNames.Panes },
       },
       {

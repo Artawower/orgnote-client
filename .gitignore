@@ -40,3 +40,5 @@ yalc.lock
 *storybook.log
 storybook-static
 .early.coverage
+
+.certs
