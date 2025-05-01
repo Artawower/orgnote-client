@@ -31,7 +31,6 @@
       "cleartext": true
     },
     "Keyboard": {
-      "resize": "body",
       "resizeOnFullScreen": true
     }
   }

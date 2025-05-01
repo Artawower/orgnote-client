@@ -41,8 +41,7 @@ const closeMainSidebar = () => {
 
 <style lang="scss" scoped>
 .content {
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   flex: 1;
   overflow: hidden;
 }

@@ -13,11 +13,14 @@ export function useViewportDetector(cb?: Callback) {
   let rafId = 0;
 
   const measure = () => {
-    const vh = window.visualViewport?.height ?? window.innerHeight;
-    viewportHeight.value = vh;
-    keyboardOpened.value = Math.abs(window.innerHeight - vh) > 80;
-    document.documentElement.style.setProperty('--vh', `${vh * 0.01}px`);
-    cb?.({ viewportHeight: vh, keyboardOpened: keyboardOpened.value });
+    const screenHeight = window.visualViewport?.height ?? window.innerHeight;
+    viewportHeight.value = screenHeight;
+    keyboardOpened.value = Math.abs(window.innerHeight - screenHeight) > 80;
+
+    const singleVh = screenHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${singleVh}px`);
+    document.documentElement.style.setProperty('--screen-height', `${screenHeight}px`);
+    cb?.({ viewportHeight: screenHeight, keyboardOpened: keyboardOpened.value });
   };
 
   const schedule = () => {

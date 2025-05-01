@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>orgnote</string>
+        <string>OrgNote</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,17 +45,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-  <key>NSAppTransportSecurity</key>
-  <dict>
-    <key>NSExceptionDomains</key>
-    <dict>
-      <key>192.168.1.2</key>
-      <dict>
-        <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key><true/>
-        <key>NSTemporaryExceptionMinimumTLSVersion</key><string>TLSv1.2</string>
-        <key>NSIncludesSubdomains</key><true/>
-      </dict>
-    </dict>
-  </dict>
 </dict>
 </plist>

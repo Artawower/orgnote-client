@@ -38,6 +38,9 @@ const { execute } = api.core.useCommands();
 <style lang="scss" scoped>
 .system-settings {
   @include flexify(column, flex-start, flex-start, var(--gap-sm));
-  width: 100%;
+
+  & {
+    width: 100%;
+  }
 }
 </style>

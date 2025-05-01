@@ -112,14 +112,14 @@ dialog {
   dialog {
     &:not(.mini) {
       width: 100%;
-      height: 100%;
-      margin: 0;
+      height: var(--screen-height);
+      top: 0;
+      bottom: 0;
     }
 
     &.mini {
       top: unset;
       bottom: 0;
-      padding-bottom: calc(env(safe-area-inset-bottom) + var(--device-padding-bottom));
       width: 100%;
     }
   }
