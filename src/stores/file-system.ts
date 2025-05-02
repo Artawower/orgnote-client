@@ -10,14 +10,12 @@ import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { storeToRefs } from 'pinia';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { watch } from 'vue';
-import { api } from 'src/boot/api';
 import { useSettingsStore } from './settings';
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
   'file-system',
   () => {
     const { currentFs, currentFsInfo } = storeToRefs(useFileSystemManagerStore());
-    console.log('✎: [line 22][ANDROID FS] api: ', api);
     const settingsStore = useSettingsStore();
 
     watch(currentFsInfo, () => {

@@ -1,7 +1,7 @@
 import { ORG_NOTE_CONFIG_SCHEMA, type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { DEFAULT_CONFIG } from 'src/constants/config';
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import clone from 'rfdc';
 import { useFileSystemStore } from './file-system';
 import { parse } from 'valibot';
@@ -17,7 +17,8 @@ export const useConfigStore = defineStore<'config', ConfigStore>(
     const fileSystem = useFileSystemStore();
     const diskConfigPath = getSystemFilesPath('config.json');
     const lastSyncTime = ref<number>(0);
-    const settingsStore = useSettingsStore();
+    const { settings } = storeToRefs(useSettingsStore());
+    const vault = computed(() => settings.value.vault);
 
     const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
 
@@ -47,10 +48,10 @@ export const useConfigStore = defineStore<'config', ConfigStore>(
 
     const syncWithDebounce = debounce(sync, 1000);
 
-    const fsManager = useFileSystemManagerStore();
+    const { currentFsInfo } = storeToRefs(useFileSystemManagerStore());
 
     watch(
-      [settingsStore.settings.vault, config, fsManager.currentFsInfo],
+      [vault, config, currentFsInfo],
       async () => {
         await syncWithDebounce();
       },
