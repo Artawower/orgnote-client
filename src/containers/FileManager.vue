@@ -27,7 +27,7 @@
           <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
         </action-buttons>
       </div>
-      <card-wrapper>
+      <card-wrapper type="clear">
         <menu-item :size="menuItemSize">
           <search-input
             :size="compact ? 'xs' : 'sm'"
@@ -191,5 +191,9 @@ const { t } = useI18n({
 
 .actions {
   padding-bottom: var(--padding-sm);
+}
+
+.card-wrapper {
+  /* border: var(--card-border); */
 }
 </style>

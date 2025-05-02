@@ -49,4 +49,22 @@ const miniMode = screenDetector.tabletAbove;
   left: 0;
   bottom: 0;
 }
+
+/* TODO: plugin */
+/* Plugin */
+/* --sidebar-background: var(--fg); */
+
+/* ::v-deep(*) {
+   color: var(--bg) !important;
+   }
+
+   ::v-deep() {
+   .action-btn:hover {
+   div {
+   i {
+   color: var(--fg) !important;
+   }
+   }
+   }
+   } */
 </style>

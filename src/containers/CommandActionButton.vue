@@ -4,6 +4,7 @@
     v-if="command"
     :icon="extractDynamicValue(command.icon)"
     :size="size"
+    classes="action-btn"
   >
     <template v-if="includeText" #text>{{ camelCaseToWords(command.command) }}</template>
   </action-button>

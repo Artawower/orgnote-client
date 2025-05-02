@@ -23,10 +23,11 @@ withDefaults(
 
 <style lang="scss">
 .card-wrapper {
-  border-radius: var(--card-border-radius);
-  clip-path: inset(0 round var(--card-border-radius));
-  /* overflow: hidden; */
-  width: 100%;
+  & {
+    border-radius: var(--card-border-radius);
+    clip-path: inset(0 round var(--card-border-radius));
+    width: 100%;
+  }
 
   &.padding {
     padding: var(--card-padding);
@@ -38,6 +39,10 @@ withDefaults(
 
   &.plain {
     background: var(--bg-alt2);
+  }
+
+  &.clear {
+    background: transparent;
   }
 
   @include for-each-view-type using ($type, $color) {

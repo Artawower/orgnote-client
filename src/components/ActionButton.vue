@@ -1,7 +1,7 @@
 <template>
   <button
     @click="onButtonClick"
-    :class="[`icon-${size}`, active, { outline, border, text: slots.text }]"
+    :class="[`icon-${size}`, active, { outline, border, text: slots.text }, props.classes]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
       '--btn-action-hover-color': getCssVariableName(hoverColor),
@@ -34,11 +34,13 @@ const props = withDefaults(
     outline?: boolean;
     hoverColor?: ThemeVariable;
     border?: boolean;
+    classes?: string;
   }>(),
   {
     active: false,
     size: 'md',
     color: 'fg',
+    classes: '',
   },
 );
 
