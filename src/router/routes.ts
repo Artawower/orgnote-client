@@ -1,5 +1,6 @@
 import { Platform } from 'quasar';
 import { useAuthStore } from 'src/stores/auth';
+import { useSystemInfoStore } from 'src/stores/system-info';
 import { RouteRecordRaw } from 'vue-router';
 
 export enum RouteNames {
@@ -139,6 +140,21 @@ const settingsPages: RouteRecordRaw[] = [
     component: clientOnly(() => import('pages/SubscriptionSettingsPage.vue')),
     meta: {
       title: 'subscription',
+    },
+    beforeEnter: async (_to, _from, next) => {
+      try {
+        const systemInfoStore = useSystemInfoStore();
+        if (!systemInfoStore.systemInfo) {
+          await systemInfoStore.loadSystemInfo();
+        }
+
+        if (systemInfoStore.systemInfo?.environment?.selfHosted) {
+          return next({ name: RouteNames.Home });
+        }
+        next();
+      } catch (error) {
+        next({ name: RouteNames.Home });
+      }
     },
   },
   {

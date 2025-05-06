@@ -28,7 +28,7 @@ syncStore.markToSync();
 useLoggerStore().init();
 
 const systemStore = useSystemInfoStore();
-systemStore.loadNewReleaseInfo();
+systemStore.loadSystemInfo();
 
 const orgBabelStore = useOrgBabelStore();
 orgBabelStore.register(jsBabel);
