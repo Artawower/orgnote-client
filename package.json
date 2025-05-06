@@ -69,7 +69,7 @@
     "katex": "0.16.10",
     "openapi-client-axios": "7.5.5",
     "org-mode-ast": "0.11.8",
-    "orgnote-api": "0.19.10",
+    "orgnote-api": "0.20.2",
     "pinia": "2.1.7",
     "pinia-plugin-persistedstate": "3.2.1",
     "postcss": "8.4.38",
@@ -134,8 +134,13 @@
   },
   "jscpd": {
     "threshold": 1.65,
-    "reporters": ["html", "console"],
-    "format": ["typescript"],
+    "reporters": [
+      "html",
+      "console"
+    ],
+    "format": [
+      "typescript"
+    ],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -146,7 +151,10 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
+    "ignorePattern": [
+      "import.*from\\s*'.*'",
+      "export.*from\\s*'.*'"
+    ],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,

@@ -19,6 +19,7 @@ import { readFromStream } from 'src/tools/read-from-stream.tool';
 import { onMounted } from 'vue';
 import { useNotifications } from 'src/hooks';
 import { withQueue } from 'src/tools';
+import { useSystemInfoStore } from './system-info';
 
 export const useSyncStore = defineStore<string, SyncStore>(
   'sync',
@@ -31,9 +32,14 @@ export const useSyncStore = defineStore<string, SyncStore>(
     let abortController: AbortController;
     let syncInProgress = false;
 
+    const systemInfoStore = useSystemInfoStore();
+
     const inactiveUser = computed(
       () =>
-        !authStore.user || authStore.user.isAnonymous || !authStore.user.active
+        !authStore.user ||
+        authStore.user.isAnonymous ||
+        (!authStore.user.active &&
+          !systemInfoStore.systemInfo?.environment.selfHosted)
     );
 
     onMounted(() => {

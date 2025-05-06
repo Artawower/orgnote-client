@@ -21,12 +21,14 @@ import MenuGroup from 'src/components/ui/MenuGroup.vue';
 import { watch } from 'vue';
 import { getCssVar } from 'src/tools';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { useSystemInfoStore } from 'src/stores/system-info';
 
 const settingsStore = useSettingsStore();
 const { tokens } = toRefs(settingsStore);
 settingsStore.getApiTokens();
 
 const authStore = useAuthStore();
+const systemInfoStore = useSystemInfoStore();
 
 const copyToken = (token: ModelsAPIToken) => {
   copyToClipboard(token.token);
@@ -63,7 +65,12 @@ const initMenuitems = () => {
       label: 'Create new token',
       handler: () => settingsStore.createNewToken(),
       color: getCssVar('blue'),
-      disabled: computed(() => !authStore.user.active),
+      disabled: computed(
+        () =>
+          authStore.user.isAnonymous ||
+          (!authStore.user.active &&
+            !systemInfoStore.systemInfo.environment?.selfHosted)
+      ),
     },
   ];
 };

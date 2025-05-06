@@ -2,7 +2,7 @@
   <div class="container">
     <h5 class="capitalize">
       {{ $t('new release available') }}:
-      <span class="color-green">{{ newReleaseInfo.version }}</span>
+      <span class="color-green">{{ systemInfo.update.version }}</span>
     </h5>
     <the-seporator />
     <ul class="changelog">
@@ -12,7 +12,7 @@
     </ul>
     <q-card-actions align="right">
       <q-btn
-        :href="newReleaseInfo.url"
+        :href="systemInfo.update.url"
         target="_blank"
         flat
         color="black"
@@ -36,10 +36,10 @@ import TheSeporator from 'src/components/ui/TheSeporator.vue';
 import { useSystemInfoStore } from 'src/stores/system-info';
 import { useOrgNoteApiStore } from 'src/stores/orgnote-api.store';
 
-const { newReleaseInfo } = useSystemInfoStore();
+const { systemInfo } = useSystemInfoStore();
 
 const changeLog = computed(
-  () => newReleaseInfo?.changeLog?.split('\n').slice(1) ?? []
+  () => systemInfo.update?.changeLog?.split('\n').slice(1) ?? []
 );
 
 const { orgNoteApi } = useOrgNoteApiStore();
