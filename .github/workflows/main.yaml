@@ -69,7 +69,7 @@ jobs:
     name: Push client image
     runs-on: ubuntu-latest
     needs: [tests, lint, code-quality, check_commit]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     environment: deploy
     steps:
       - name: Check out Git repository
