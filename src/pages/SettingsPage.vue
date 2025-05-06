@@ -78,7 +78,7 @@ const commonSettingsItems = computed<MenuItemProps[]>(() => {
     });
   })();
 
-  if (!systemInfo.value.environment?.selfHosted) {
+  if (!systemInfo.value?.environment?.selfHosted) {
     resultItems.push({
       label: 'subscription',
       icon: 'sym_o_loyalty',

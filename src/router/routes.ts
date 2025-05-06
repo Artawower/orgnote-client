@@ -154,7 +154,6 @@ const settingsPages: RouteRecordRaw[] = [
         next();
       } catch (error) {
         next({ name: RouteNames.Home });
-        throw error;
       }
     },
   },
