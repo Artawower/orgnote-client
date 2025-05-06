@@ -27,9 +27,12 @@ import {
 import { useRouter } from 'vue-router';
 import { RouteNames } from 'src/router/routes';
 import { MenuItemProps } from 'src/components/ui/MenuItem.vue';
+import { computed } from 'vue';
+import { useSystemInfoStore } from 'src/stores/system-info';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
-const commonSettingsItems: MenuItemProps[] = [
+const visibleCommonSettingsItems: MenuItemProps[] = [
   {
     label: 'system',
     iconBackgroundColor: getCssVar('base5'),
@@ -58,24 +61,35 @@ const commonSettingsItems: MenuItemProps[] = [
     handler: () => router.push({ name: RouteNames.SynchronisationSettings }),
     narrow: true,
   },
-  {
-    label: 'subscription',
-    icon: 'sym_o_loyalty',
-    iconBackgroundColor: getCssVar('green'),
-    handler: () => router.push({ name: RouteNames.SubscriptionSettings }),
-    narrow: true,
-  },
 ];
 
-mockDesktop(() => {
-  commonSettingsItems.push({
-    label: 'keybindings',
-    icon: 'keyboard',
-    narrow: true,
-    iconBackgroundColor: getCssVar('base5'),
-    handler: () => router.push({ name: RouteNames.KeybindingSettings }),
-  });
-})();
+const { systemInfo } = storeToRefs(useSystemInfoStore());
+
+const commonSettingsItems = computed<MenuItemProps[]>(() => {
+  const resultItems = [...visibleCommonSettingsItems];
+
+  mockDesktop(() => {
+    resultItems.push({
+      label: 'keybindings',
+      icon: 'keyboard',
+      narrow: true,
+      iconBackgroundColor: getCssVar('base5'),
+      handler: () => router.push({ name: RouteNames.KeybindingSettings }),
+    });
+  })();
+
+  if (!systemInfo.value.environment?.selfHosted) {
+    resultItems.push({
+      label: 'subscription',
+      icon: 'sym_o_loyalty',
+      iconBackgroundColor: getCssVar('green'),
+      handler: () => router.push({ name: RouteNames.SubscriptionSettings }),
+      narrow: true,
+    });
+  }
+
+  return resultItems;
+});
 
 const developerModeSettings: MenuItemProps[] = [
   {
