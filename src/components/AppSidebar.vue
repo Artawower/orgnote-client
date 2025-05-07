@@ -40,6 +40,7 @@ withDefaults(
   & {
     border-right: var(--sidebar-border-right);
     background: var(--sidebar-background);
+    position: relative;
     height: 100vh;
     height: 100mvh;
   }
