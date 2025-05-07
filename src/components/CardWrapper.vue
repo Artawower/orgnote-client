@@ -5,13 +5,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { ViewType } from 'src/models/card-type';
+import type { StyleVariant } from 'orgnote-api';
 
 withDefaults(
   defineProps<{
     padding?: boolean;
     border?: boolean;
-    type?: ViewType;
+    type?: StyleVariant;
   }>(),
   {
     padding: false,

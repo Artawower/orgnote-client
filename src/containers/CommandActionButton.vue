@@ -12,17 +12,16 @@
 
 <script lang="ts" setup>
 import ActionButton from 'src/components/ActionButton.vue';
-import type { CommandName } from 'orgnote-api';
+import type { CommandName, StyleSize } from 'orgnote-api';
 import { useCommandsStore } from 'src/stores/command';
 import { computed } from 'vue';
 import { extractDynamicValue } from 'src/utils/extract-dynamic-value';
-import type { ViewSize } from 'src/models/view-size';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 
 const props = withDefaults(
   defineProps<{
     command: CommandName;
-    size?: ViewSize;
+    size?: StyleSize;
     includeText?: boolean;
     data?: unknown;
   }>(),

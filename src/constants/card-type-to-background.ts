@@ -1,7 +1,6 @@
-import type { ThemeVariable } from 'orgnote-api';
-import type { ViewType } from 'src/models/card-type';
+import type { StyleVariant, ThemeVariable } from 'orgnote-api';
 
-export const CARD_TYPE_TO_BACKGROUND: { [key in ViewType]?: ThemeVariable } = {
+export const CARD_TYPE_TO_BACKGROUND: { [key in StyleVariant]?: ThemeVariable } = {
   plain: 'bg-alt2',
   info: 'blue',
   warning: 'yellow',

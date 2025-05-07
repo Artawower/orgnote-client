@@ -8,7 +8,7 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import ActionButton from './ActionButton.vue';
-import type { ViewSize } from 'src/models/view-size';
+import type { StyleSize } from 'orgnote-api';
 
 withDefaults(
   defineProps<{
@@ -16,7 +16,7 @@ withDefaults(
     placeholder?: string;
     type?: string;
     clearable?: boolean;
-    size?: ViewSize;
+    size?: StyleSize;
   }>(),
   {
     type: 'text',

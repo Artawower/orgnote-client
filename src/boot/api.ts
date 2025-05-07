@@ -43,6 +43,8 @@ import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { useConfigStore } from 'src/stores/config';
+import { useNotificationsStore } from 'src/stores/notifications';
+import { useFileReaderStore } from 'src/stores/file-reader';
 
 let api: OrgNoteApi;
 let repositories: OrgNoteApi['infrastructure'];
@@ -66,6 +68,8 @@ async function initApi(app: App): Promise<void> {
       useFileSystemManager: useFileSystemManagerStore,
       useFileManager: useFileManagerStore,
       useConfig: useConfigStore,
+      useNotifications: useNotificationsStore,
+      useFileReader: useFileReaderStore,
       app,
     },
     utils: {

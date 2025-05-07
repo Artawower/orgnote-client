@@ -16,15 +16,15 @@ import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
 import AppIcon from './AppIcon.vue';
-import type { ViewType } from 'src/models/card-type';
 import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
+import type { StyleVariant } from 'orgnote-api';
 
 const props = withDefaults(
   defineProps<{
     title?: string;
     bordered?: boolean;
     outline?: boolean;
-    type?: ViewType;
+    type?: StyleVariant;
   }>(),
   {
     type: 'plain',
@@ -37,7 +37,7 @@ const background = computed(() => {
   return CARD_TYPE_TO_BACKGROUND[props.type];
 });
 
-const typeIconMap: { [key in ViewType]?: string } = {
+const typeIconMap: { [key in StyleVariant]?: string } = {
   plain: 'sym_o_info',
   info: 'sym_o_info',
   warning: 'sym_o_warning',

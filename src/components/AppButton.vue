@@ -5,11 +5,11 @@
 </template>
 
 <script lang="ts" setup>
-import type { ViewType } from 'src/models/card-type';
+import type { StyleVariant } from 'orgnote-api';
 
 withDefaults(
   defineProps<{
-    type?: ViewType;
+    type?: StyleVariant;
     outline?: boolean;
   }>(),
   {

@@ -30,11 +30,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { ThemeVariable } from 'orgnote-api';
+import type { StyleSize, StyleVariant, ThemeVariable } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
-import type { ViewType } from 'src/models/card-type';
-import type { ViewSize } from 'src/models/view-size';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { useSlots } from 'vue';
 import { computed } from 'vue';
@@ -45,8 +43,8 @@ const props = withDefaults(
     narrow?: boolean;
     disabled?: boolean;
     active?: boolean;
-    type?: ViewType;
-    size?: ViewSize;
+    type?: StyleVariant;
+    size?: StyleSize;
     selected?: boolean;
     lines?: number;
     inverseIconColors?: boolean;
@@ -60,7 +58,7 @@ const props = withDefaults(
   },
 );
 
-const typeColorMap: { [key in ViewType]?: ThemeVariable } = {
+const typeColorMap: { [key in StyleVariant]?: ThemeVariable } = {
   ...CARD_TYPE_TO_BACKGROUND,
   plain: 'fg',
 };

@@ -2,7 +2,7 @@ import type { StoryObj } from '@storybook/vue3';
 import StoryList from './StoryList.vue';
 import { computed } from 'vue';
 import AppButton from 'src/components/AppButton.vue';
-import type { ViewType } from 'src/models/card-type';
+import type { StyleVariant } from 'orgnote-api';
 
 export default {
   component: AppButton,
@@ -11,7 +11,7 @@ export default {
   args: {},
 };
 
-const types: ViewType[] = ['info', 'plain', 'warning', 'danger'];
+const types: StyleVariant[] = ['info', 'plain', 'warning', 'danger'];
 
 export const Default: StoryObj<typeof AppButton> = {
   args: {

@@ -25,6 +25,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     darkThemeName: null,
     lightThemeName: null,
     enableAnimations: true,
+    notificationTimeout: 5000,
   },
   extensions: {
     sources: ['https://github.com/Artawower/orgnote-extensions'],

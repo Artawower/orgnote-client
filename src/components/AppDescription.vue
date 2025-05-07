@@ -7,9 +7,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { ViewType } from 'src/models/card-type';
+import type { StyleVariant } from 'orgnote-api';
 import { useI18n } from 'vue-i18n';
-defineProps<{ text?: string; title?: boolean; type?: ViewType; padded?: boolean }>();
+defineProps<{ text?: string; title?: boolean; type?: StyleVariant; padded?: boolean }>();
 
 const { t } = useI18n({
   useScope: 'global',

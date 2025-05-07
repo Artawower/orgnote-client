@@ -40,6 +40,10 @@
   },
   "dependencies": {
     "@capacitor/keyboard": "7.0.1",
+    "@codemirror/autocomplete": "6.18.6",
+    "@codemirror/language": "6.11.0",
+    "@codemirror/state": "6.5.2",
+    "@codemirror/view": "6.36.7",
     "@quasar/cli": "^2.5.0",
     "@quasar/extras": "1.16.17",
     "@vueuse/core": "13.1.0",

@@ -61,6 +61,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { StyleSize } from 'orgnote-api';
 import { DefaultCommands, getParentDir, I18N, join, withRoot, type DiskFile } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import FileManagerItem from './FileManagerItem.vue';
@@ -72,7 +73,6 @@ import { computed, ref, watch } from 'vue';
 import CommandActionButton from './CommandActionButton.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { storeToRefs } from 'pinia';
-import type { ViewSize } from 'src/models/view-size';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
@@ -139,11 +139,16 @@ readDir();
 //   await readDir();
 // };
 
+const fileReader = api.core.useFileReader();
+
 const handleFileClick = async (f: DiskFile) => {
   if (f.type === 'directory') {
     targetPath.value = withRoot(join(targetPath.value, f.name));
     await readDir();
+    return;
   }
+
+  fileReader.openFile(f.path);
 };
 
 const moveUp = async () => {
@@ -151,7 +156,7 @@ const moveUp = async () => {
   await readDir();
 };
 
-const iconSize = computed<ViewSize>(() => (props.compact ? 'md' : 'md'));
+const iconSize = computed<StyleSize>(() => (props.compact ? 'md' : 'md'));
 
 const { t } = useI18n({
   useScope: 'global',
@@ -191,9 +196,5 @@ const { t } = useI18n({
 
 .actions {
   padding-bottom: var(--padding-sm);
-}
-
-.card-wrapper {
-  /* border: var(--card-border); */
 }
 </style>

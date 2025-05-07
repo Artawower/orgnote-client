@@ -31,12 +31,11 @@
 </template>
 
 <script lang="ts" setup>
-import type { CommandName } from 'orgnote-api';
+import type { CommandName, StyleSize } from 'orgnote-api';
 import { DefaultCommands, type DiskFile } from 'orgnote-api';
 import AppIcon from 'src/components/AppIcon.vue';
 import MenuItem from './MenuItem.vue';
 import Highlighter from 'vue-highlight-words';
-import type { ViewSize } from 'src/models/view-size';
 import ContextMenu from 'src/components/ContextMenu.vue';
 import { computed, ref } from 'vue';
 import { rootSystemFilePath } from 'src/constants/root-system-file-path';
@@ -46,7 +45,7 @@ const props = defineProps<{
   highlight?: string[];
   file?: DiskFile;
   root?: boolean;
-  size?: ViewSize;
+  size?: StyleSize;
 }>();
 
 const contextMenuRef = ref<InstanceType<typeof ContextMenu>>();

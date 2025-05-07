@@ -9,16 +9,15 @@
 </template>
 
 <script lang="ts" setup>
-import type { ThemeVariable } from 'orgnote-api';
+import type { StyleSize, ThemeVariable } from 'orgnote-api';
 import type { QIconProps } from 'quasar';
-import type { ViewSize } from 'src/models/view-size';
 import { getCssVariableName } from 'src/utils/css-utils';
 import { computed } from 'vue';
 
 interface Props {
   color?: ThemeVariable;
   background?: string;
-  size?: ViewSize;
+  size?: StyleSize;
   rounded?: boolean;
   bordered?: boolean;
 }
@@ -31,7 +30,7 @@ const bgColor = computed(() => props.background && getCssVariableName(props.back
 const color = computed(() => getCssVariableName(props.color ?? 'fg'));
 const size = computed(() => `icon-${props.size}`);
 
-const iconSizeMap: { [key in ViewSize]?: string } = {
+const iconSizeMap: { [key in StyleSize]?: string } = {
   xs: '1em',
   sm: '1.2em',
   md: '1.6em',

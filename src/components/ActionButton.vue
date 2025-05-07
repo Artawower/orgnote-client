@@ -20,14 +20,13 @@ import AnimationWrapper from './AnimationWrapper.vue';
 import { computed, ref, useSlots } from 'vue';
 import { ICON_CHANGE_DURATION } from 'src/constants/animations';
 import { getCssVariableName } from 'src/utils/css-utils';
-import type { ThemeVariable } from 'orgnote-api';
-import type { ViewSize } from 'src/models/view-size';
+import type { StyleSize, ThemeVariable } from 'orgnote-api';
 
 const props = withDefaults(
   defineProps<{
     icon: string;
     active?: boolean;
-    size?: ViewSize;
+    size?: StyleSize;
     color?: ThemeVariable;
     fireIcon?: string;
     fireColor?: ThemeVariable;
