@@ -60,6 +60,7 @@
           </div>
         </app-flex>
       </app-flex>
+      <app-notifications />
     </app-flex>
   </animation-wrapper>
 </template>
@@ -70,6 +71,7 @@ import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import AnimationWrapper from 'src/components/AnimationWrapper.vue';
 import SafeArea from 'src/components/SafeArea.vue';
+import AppNotifications from 'src/components/AppNotifications.vue';
 import { nextTick, watch } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';

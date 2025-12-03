@@ -1,66 +1,72 @@
 import { defineStore, storeToRefs } from 'pinia';
-import {
-  I18N,
-  type Notification,
-  type NotificationConfig,
-  type NotificationsStore,
-} from 'orgnote-api';
+import { type Notification, type NotificationConfig, type NotificationsStore } from 'orgnote-api';
 import { ref } from 'vue';
-import { Notify } from 'quasar';
-import { i18n } from 'src/boot/i18n';
+import { notify as notiwindNotify } from 'notiwind';
 import { useConfigStore } from './config';
-import { useScreenDetection } from 'src/composables/use-screen-detection';
+
+let notificationCounter = 0;
+
+const getNotificationKey = (config: NotificationConfig): string =>
+  `${config.message}::${config.description ?? ''}::${config.level ?? 'info'}`;
 
 export const useNotificationsStore = defineStore<'notifications', NotificationsStore>(
   'notifications',
   (): NotificationsStore => {
     const notifications = ref<Notification[]>([]);
+    const groupCounts = ref<Map<string, number>>(new Map());
 
     const { config } = storeToRefs(useConfigStore());
 
-    const screenDetection = useScreenDetection();
-    const position = screenDetection.tabletBelow.value ? 'top' : 'bottom-right';
-
     const notify = (notificationConfig: NotificationConfig): void => {
-      const dismiss = Notify.create({
-        message: notificationConfig.message,
-        caption: notificationConfig.caption,
-        timeout: notificationConfig.timeout ?? config.value.ui.notificationTimeout ?? 5000,
-        type: notificationConfig.level || 'info',
-        group: notificationConfig.group !== false ? notificationConfig.message : false,
-        classes: 'notification',
-        closeBtn: notificationConfig.closable && i18n.global.t(I18N.CLOSE),
-        position,
-      });
+      const id = notificationConfig.id ?? `notification-${++notificationCounter}`;
+      const timeout = notificationConfig.timeout ?? config.value.ui.notificationTimeout ?? 5000;
+      const shouldGroup = notificationConfig.group !== false;
+      const groupKey = getNotificationKey(notificationConfig);
+
+      if (shouldGroup) {
+        const currentCount = groupCounts.value.get(groupKey) ?? 0;
+        groupCounts.value.set(groupKey, currentCount + 1);
+      }
+
+      const count = shouldGroup ? groupCounts.value.get(groupKey) : undefined;
+
+      notiwindNotify(
+        {
+          group: 'main',
+          title: notificationConfig.message,
+          text: notificationConfig.description,
+          type: notificationConfig.level ?? 'info',
+          count,
+          groupKey: shouldGroup ? groupKey : undefined,
+          closable: notificationConfig.closable ?? true,
+          icon: notificationConfig.icon,
+          iconEnabled: notificationConfig.iconEnabled ?? true,
+          onClick: notificationConfig.onClick,
+        },
+        timeout,
+      );
+
+      const configWithId = { ...notificationConfig, id };
 
       notifications.value.push({
         read: false,
-        dismiss,
-        config: notificationConfig,
+        config: configWithId,
+        icon: notificationConfig.icon,
+        iconEnabled: notificationConfig.iconEnabled ?? true,
       });
     };
 
     const clear = (): void => {
-      notifications.value.forEach((notification) => {
-        notification.dismiss?.();
-      });
       notifications.value = [];
+      groupCounts.value.clear();
     };
 
     const deleteNotification = (notificationId: string): void => {
-      const notification = notifications.value.find(
-        (notification) => notification.config.id === notificationId,
-      );
-      notification?.dismiss?.();
-      notifications.value = notifications.value.filter(
-        (notification) => notification.config.id !== notificationId,
-      );
+      notifications.value = notifications.value.filter((n) => n.config.id !== notificationId);
     };
 
     const markAsRead = (notificationId: string): void => {
-      const notification = notifications.value.find(
-        (notification) => notification.config.id === notificationId,
-      );
+      const notification = notifications.value.find((n) => n.config.id === notificationId);
       if (notification) {
         notification.read = true;
       }
@@ -68,7 +74,6 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
 
     const hideAll = (): void => {
       notifications.value.forEach((n) => {
-        n.dismiss?.();
         n.dismiss = undefined;
       });
     };

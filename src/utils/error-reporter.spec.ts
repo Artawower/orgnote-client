@@ -198,9 +198,9 @@ test('report uses provided notification message and level', () => {
 
 test('report fills missing notification fields and respects options.level', () => {
   const err = new Error('Warn original');
-  errorReporter.report(err, { level: 'warn', notification: { caption: 'Cap' } as NotificationConfig });
+  errorReporter.report(err, { level: 'warn', notification: { description: 'Desc' } as NotificationConfig });
   expect(mockLogger.warn).toHaveBeenCalledWith('Warn original', { cause: err.cause, stack: err.stack });
-  expect(mockNotifications.notify).toHaveBeenCalledWith({ message: 'Warn original', level: 'warning', caption: 'Cap' });
+  expect(mockNotifications.notify).toHaveBeenCalledWith({ message: 'Warn original', level: 'warning', description: 'Desc' });
 });
 
 test('reportError accepts NotificationConfig sugar', () => {
@@ -216,4 +216,33 @@ test('reportResult accepts notification override', () => {
   errorReporter.reportResult(resultError, message, { notification: { message: 'Shown', level: 'info' } as NotificationConfig });
   expect(mockLogger.error).toHaveBeenCalledWith('Failed', { cause: 'reason', stack: expect.any(String) });
   expect(mockNotifications.notify).toHaveBeenCalledWith({ message: 'Shown', level: 'info' });
+});
+
+test('report includes onClick when executeCommand is provided', () => {
+  const mockExecuteCommand = vi.fn();
+  const reporterWithCommand = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand);
+  const error = new Error('Click test');
+
+  reporterWithCommand.report(error);
+
+  expect(mockNotifications.notify).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message: 'Click test',
+      level: 'danger',
+      onClick: expect.any(Function),
+    }),
+  );
+});
+
+test('report onClick executes SHOW_LOGS command', () => {
+  const mockExecuteCommand = vi.fn();
+  const reporterWithCommand = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand);
+  const error = new Error('Click test');
+
+  reporterWithCommand.report(error);
+
+  const notifyCall = vi.mocked(mockNotifications.notify).mock.calls[0]?.[0];
+  notifyCall?.onClick?.();
+
+  expect(mockExecuteCommand).toHaveBeenCalledWith('show-logs');
 });

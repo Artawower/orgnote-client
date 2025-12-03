@@ -14,7 +14,7 @@ export const useInteractiveClipboard = () => {
     result.match(
       () => notifications.notify({ message: t(I18N.COPIED_TO_CLIPBOARD), level: 'info' }),
       (error) =>
-        notifications.notify({ message: t(I18N.COPY), caption: error.message, level: 'danger' }),
+        notifications.notify({ message: t(I18N.COPY), description: error.message, level: 'danger' }),
     );
   };
 

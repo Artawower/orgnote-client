@@ -181,7 +181,10 @@ const openInstallFromUrl = async () => {
 
   const gitSource = { type: 'git' as const, repo: url };
   await extensionStore.installExtension(gitSource);
-  notifications.notify({ message: t(i18n.EXTENSION_INSTALLED_FROM_URL), level: 'info' });
+  notifications.notify({
+    message: t(i18n.EXTENSION_INSTALLED_FROM_URL),
+    level: 'info',
+  });
 };
 
 onMounted(() => {

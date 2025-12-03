@@ -206,6 +206,41 @@ body {
 
   // badge
   --badge-radius: 6px;
+
+  // Notifications
+  --notification-z-index: 9999;
+  --notification-max-width: 480px;
+  --notification-min-width: 400px;
+  --notification-container-top: var(--padding-lg);
+  --notification-container-right: var(--padding-lg);
+  --notification-container-bottom: auto;
+  --notification-container-left: auto;
+  --notification-container-gap: var(--gap-sm);
+
+  --notification-padding: var(--padding-lg);
+  --notification-border-radius: var(--border-radius-md);
+  --notification-bg: var(--bg-alt);
+  --notification-color: var(--fg);
+  --notification-border: var(--border-default);
+  --notification-shadow: var(--shadow-lg);
+
+  --notification-message-font-size: var(--font-size-sm);
+  --notification-message-font-weight: var(--font-weight-bold);
+  --notification-caption-font-size: var(--font-size-xs);
+  --notification-caption-opacity: 0.8;
+  --notification-icon-size: var(--font-size-lg);
+
+  --notification-close-padding: var(--padding-xs);
+  --notification-close-opacity: 0.7;
+
+  --notification-badge-size: 20px;
+  --notification-badge-padding: var(--padding-xs);
+  --notification-badge-margin: var(--gap-xs);
+  --notification-badge-font-size: var(--font-size-xs);
+  --notification-badge-font-weight: var(--font-weight-bold);
+  --notification-badge-bg: var(--accent);
+  --notification-badge-color: var(--bg);
+  --notification-badge-radius: var(--border-radius-sm);
 }
 
 @include desktop-below {
@@ -221,6 +256,12 @@ body {
     --tab-overview-container-padding: var(--padding-sm);
     --tab-overview-grid-gap: var(--gap-md);
     --tab-overview-grid-columns: 3;
+
+    --notification-container-top: var(--padding-md);
+    --notification-container-right: var(--padding-md);
+    --notification-container-left: var(--padding-md);
+    --notification-max-width: none;
+    --notification-min-width: none;
   }
 }
 
