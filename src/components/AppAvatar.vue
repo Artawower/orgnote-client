@@ -58,8 +58,8 @@ withDefaults(
 }
 
 .avatar-image {
-  @include fit;
   object-fit: cover;
+  @include fit;
 }
 
 .avatar-fallback {

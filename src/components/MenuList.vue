@@ -40,10 +40,11 @@ const isCommandAction = (item: MenuAction): item is CommandMenuAction => 'comman
 const getCommand = (item: CommandMenuAction): Command | undefined =>
   commandsStore.get(item.command);
 
-const getIcon = (item: MenuAction) => {
+const getIcon = (item: MenuAction): string | undefined => {
   if (isCommandAction(item)) {
     const command = getCommand(item);
-    return command ? toValue(command.icon) : undefined;
+    const icon = command ? toValue(command.icon) : undefined;
+    return typeof icon === 'string' ? icon : undefined;
   }
   return item.icon;
 };

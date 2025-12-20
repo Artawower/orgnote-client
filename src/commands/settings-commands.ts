@@ -1,4 +1,4 @@
-import type { Command, CommandHandlerParams } from 'orgnote-api';
+import type { Command, CommandHandlerParams, CommandIcon } from 'orgnote-api';
 import { DefaultCommands, RouteNames, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
@@ -7,7 +7,8 @@ import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import TheSettings from 'src/containers/TheSettings.vue';
 import { getDatabase } from 'src/infrastructure/repositories';
 import { to } from 'orgnote-api/utils';
-import { defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, h } from 'vue';
+import AppAvatar from 'src/components/AppAvatar.vue';
 
 export function getSettingsCommands(): Command[] {
   const confirmationModal = api.ui.useConfirmationModal();
@@ -39,11 +40,21 @@ export function getSettingsCommands(): Command[] {
     });
   };
 
+  const auth = api.core.useAuth();
+
+  const settingsIcon = computed<CommandIcon>(() => {
+    const avatarUrl = auth.user?.avatarUrl;
+    if (!avatarUrl) {
+      return 'sym_o_settings';
+    }
+    return () => h(AppAvatar, { url: avatarUrl, size: 'xs' });
+  });
+
   const commands: Command[] = [
     {
       command: DefaultCommands.SETTINGS,
       group: 'global',
-      icon: 'sym_o_settings',
+      icon: settingsIcon,
       handler: () => openSettingsRoute(RouteNames.SettingsPage),
       isActive: () => isActiveRoute(RouteNames.SettingsPage),
     },

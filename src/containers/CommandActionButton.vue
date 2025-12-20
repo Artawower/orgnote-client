@@ -1,12 +1,15 @@
 <template>
   <action-button
-    @click="execute"
     v-if="command && !command.hide?.(api)"
-    :icon="resolvedIcon"
+    @click="execute"
+    :icon="iconString"
     :size="size"
     classes="action-btn"
     :alignment="alignment"
   >
+    <template v-if="iconComponent" #icon="{ size: iconSize }">
+      <component :is="iconComponent" :size="iconSize" />
+    </template>
     <template v-if="includeText || text" #text>{{
       text || camelCaseToWords(command.command)
     }}</template>
@@ -20,6 +23,7 @@ import { useCommandsStore } from 'src/stores/command';
 import { computed, toValue } from 'vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
+import { useResolvedIcon } from 'src/composables/use-resolved-icon';
 
 const props = withDefaults(
   defineProps<{
@@ -40,7 +44,7 @@ const commandsStore = useCommandsStore();
 
 const command = computed(() => commandsStore.get(props.command));
 
-const resolvedIcon = computed(() => toValue(command.value?.icon));
+const { iconString, iconComponent } = useResolvedIcon(computed(() => toValue(command.value?.icon)));
 
 const execute = () => {
   commandsStore.execute(props.command, props.data);
