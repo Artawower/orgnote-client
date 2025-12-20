@@ -23,7 +23,8 @@
     align="center"
     gap="md"
   >
-    <app-icon v-if="resolvedIcon" :name="resolvedIcon" size="sm"></app-icon>
+    <component v-if="iconComponent" :is="iconComponent" size="sm" />
+    <app-icon v-else-if="iconString" :name="iconString" size="sm" />
     <div class="text-bold color-main">
       <div class="line-limit-1">
         {{ resolvedTitle }}
@@ -46,6 +47,7 @@ import type {
   IndexedCompletionCandidate,
 } from 'src/models/grouped-completion-candidate';
 import AppFlex from 'src/components/AppFlex.vue';
+import { useResolvedIcon } from 'src/composables/use-resolved-icon';
 
 const props = defineProps<{
   item: GroupedCompletionCandidate;
@@ -61,8 +63,8 @@ const resolvedTitle = computed(() =>
   'groupTitle' in props.item ? undefined : toValue(props.item.title),
 );
 
-const resolvedIcon = computed(() =>
-  'groupTitle' in props.item ? undefined : toValue(props.item.icon),
+const { iconString, iconComponent } = useResolvedIcon(
+  computed(() => ('groupTitle' in props.item ? undefined : toValue(props.item.icon))),
 );
 
 const resolvedDescription = computed(() =>

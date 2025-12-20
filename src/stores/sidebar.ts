@@ -24,8 +24,8 @@ export const useSidebarStore = defineStore<'sidebar', SidebarStore>('sidebar', (
   ]);
   const footerCommands = ref<CommandName[]>([
     DefaultCommands.TOGGLE_COMMANDS,
-    DefaultCommands.SETTINGS,
     DefaultCommands.PROJECT_INFO,
+    DefaultCommands.SETTINGS,
     DefaultCommands.TOGGLE_SIDEBAR,
   ]);
 

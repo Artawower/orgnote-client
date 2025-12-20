@@ -27,6 +27,9 @@ const mockApi = {
         },
       },
     },
+    useAuth: vi.fn(() => ({
+      user: null,
+    })),
   },
   infrastructure: {},
   utils: {},
@@ -53,9 +56,13 @@ vi.mock('src/containers/TheSettings.vue', () => ({
 
 const mockDefineAsyncComponent = <T>(factory: () => T): T => factory();
 
-vi.mock('vue', () => ({
-  defineAsyncComponent: vi.fn(mockDefineAsyncComponent),
-}));
+vi.mock('vue', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as object),
+    defineAsyncComponent: vi.fn(mockDefineAsyncComponent),
+  };
+});
 
 beforeEach(() => {
   vi.clearAllMocks();

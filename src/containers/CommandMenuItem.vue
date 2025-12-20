@@ -40,7 +40,10 @@ const { get, execute } = api.core.useCommands();
 
 const command = get(props.command);
 
-const resolvedIcon = computed(() => toValue(command?.icon));
+const resolvedIcon = computed(() => {
+  const icon = toValue(command?.icon);
+  return typeof icon === 'string' ? icon : undefined;
+});
 const isActive = computed(() => command?.isActive?.(api));
 const isNarrow = computed(() => command?.context?.narrow);
 

@@ -15,7 +15,8 @@ const getValueByPath = (obj: CompletionCandidate<Command>, path: string | string
     ['title', 'description', 'icon', 'group'].includes(k);
 
   if (key && isDynamicKey(key)) {
-    return toValue(obj[key]) ?? '';
+    const value = toValue(obj[key]);
+    return typeof value === 'string' ? value : '';
   }
 
   return Fuse.config.getFn(obj, path) as string;

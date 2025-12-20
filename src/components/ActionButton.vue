@@ -9,7 +9,9 @@
     }"
   >
     <animation-wrapper>
-      <app-icon :key="activeIcon" :name="activeIcon" :size="size" :color="activeColor" />
+      <slot name="icon" :size="size" :color="activeColor">
+        <app-icon :key="activeIcon" :name="activeIcon" :size="size" :color="activeColor" />
+      </slot>
     </animation-wrapper>
     <slot name="text" />
   </button>
@@ -95,21 +97,35 @@ button {
     padding: var(--padding-xs);
     width: var(--btn-action-xs-size);
     height: var(--btn-action-xs-size);
+    min-width: var(--btn-action-xs-size);
+    min-height: var(--btn-action-xs-size);
     border-radius: var(--border-radius-xs);
   }
 
   &.icon-sm {
     padding: var(--padding-sm);
+    width: var(--btn-action-sm-size);
+    height: var(--btn-action-sm-size);
+    min-width: var(--btn-action-sm-size);
+    min-height: var(--btn-action-sm-size);
     border-radius: var(--border-radius-sm);
   }
 
   &.icon-md {
     padding: var(--padding-sm);
+    width: var(--btn-action-md-size);
+    height: var(--btn-action-md-size);
+    min-width: var(--btn-action-md-size);
+    min-height: var(--btn-action-md-size);
     border-radius: var(--border-radius-md);
   }
 
   &.icon-lg {
     padding: var(--padding-lg);
+    width: var(--btn-action-lg-size);
+    height: var(--btn-action-lg-size);
+    min-width: var(--btn-action-lg-size);
+    min-height: var(--btn-action-lg-size);
     border-radius: var(--border-radius-lg);
   }
 
