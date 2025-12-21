@@ -1,7 +1,19 @@
 import { defineBoot } from '@quasar/app-vite/wrappers';
 import { reporter } from './report';
 import type { Router } from 'vue-router';
+import type { ComponentPublicInstance } from 'vue';
 import { RouteNames } from 'orgnote-api';
+
+const extractComponentChain = (instance: ComponentPublicInstance | null): string[] => {
+  const chain: string[] = [];
+  let current = instance;
+  while (current) {
+    const name = current.$.type?.name ?? current.$.type?.__name ?? 'Anonymous';
+    chain.push(name);
+    current = current.$.parent?.proxy ?? null;
+  }
+  return chain;
+};
 
 const handleError = (error: unknown, meta: Record<string, unknown>, router: Router): void => {
   reporter.reportCritical(error, meta);
@@ -39,9 +51,12 @@ export default defineBoot(({ app, router, ssrContext }) => {
   }
 
   app.config.errorHandler = (err, instance, info): void => {
+    const componentChain = extractComponentChain(instance);
+
     reporter.reportCritical(err, {
       context: `Vue: ${info}`,
-      component: instance?.$.type?.name,
+      component: componentChain[0],
+      componentChain,
     });
 
     router.push('/error').catch(() => {

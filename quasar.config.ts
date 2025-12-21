@@ -94,11 +94,21 @@ export default defineConfig((ctx) => {
       // distDir
 
       extendViteConf(viteConf) {
-        // Polyfill Node.js util module for browser (required by @es-git packages)
         viteConf.resolve = viteConf.resolve || {};
         viteConf.resolve.alias = {
           ...viteConf.resolve.alias,
           util: 'util/',
+        };
+
+        viteConf.build = viteConf.build || {};
+        viteConf.build.minify = 'terser';
+        viteConf.build.terserOptions = {
+          keep_fnames: true,
+          keep_classnames: true,
+          mangle: {
+            keep_fnames: true,
+            keep_classnames: true,
+          },
         };
       },
       // viteVuePluginOptions: {},
