@@ -22,6 +22,7 @@ const eng: Record<string, string> = {
   [I18N.BOOT_ERRORS]: 'Boot Errors (Fallback)',
   [I18N.APP_ERRORS]: 'Application Errors',
   [I18N.CONFIRM_CLEAR_LOGS]: 'Are you sure you want to clear logs?',
+  [I18N.SYSTEM_INFO]: 'System Info',
 
   [I18N.THEME_MODE_LIGHT]: 'Light',
   [I18N.THEME_MODE_DARK]: 'Dark',

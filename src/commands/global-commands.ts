@@ -6,6 +6,7 @@ import { ISSUE_PAGE } from 'src/constants/issue-page';
 import { clientOnly } from 'src/utils/platform-specific';
 import type { Router } from 'vue-router';
 import LogsContainer from 'src/containers/LogsContainer.vue';
+import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
@@ -21,12 +22,12 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       handler: clientOnly(() => window.open(ISSUE_PAGE, '_blank')),
     },
     {
-      command: DefaultCommands.OPEN_DEBUG_INFO,
+      command: DefaultCommands.OPEN_SYSTEM_INFO,
       description: I18N.VISIT_DEBUG_INFO,
+      icon: 'sym_o_info',
       group: 'debug',
       handler: () => {
-        // TODO: feat/stable-beta
-        // modalStore.open(DebugPage, { title: 'system info' });
+        modalStore.open(SystemInfoContainer, { title: i18n.SYSTEM_INFO, wide: true });
       },
     },
     {
