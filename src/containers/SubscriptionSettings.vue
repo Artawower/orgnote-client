@@ -49,7 +49,20 @@
       </app-card>
     </template>
 
-    <app-satisfied v-else :text="t(I18N.SUCCESSFULLY_SUBSCRIBED)" />
+    <template v-else>
+      <app-satisfied :text="t(I18N.SUCCESSFULLY_SUBSCRIBED)" />
+      <app-progress
+        v-if="hasStorageInfo"
+        class="storage-section"
+        padding
+        :value="usedSpaceMb"
+        :max="spaceLimitMb"
+        :label="storageLabel"
+        show-label
+        size="lg"
+        auto-variant
+      />
+    </template>
   </app-flex>
 </template>
 
@@ -59,14 +72,17 @@ import MenuItem from './MenuItem.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { PATREON_LINK } from 'src/constants/external-link';
 import AppCard from 'src/components/AppCard.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppLink from 'src/components/AppLink.vue';
 import AppSatisfied from 'src/components/AppSatisfied.vue';
+import AppProgress from 'src/components/AppProgress.vue';
+import AppDescription from 'src/components/AppDescription.vue';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
+import { bytesToMegabytes } from 'src/utils/size-converter';
 
 const { t } = useI18n({
   useScope: 'global',
@@ -81,15 +97,26 @@ const { user } = storeToRefs(authStore);
 const activationKey = ref<string>('');
 
 const activate = () => authStore.subscribe(activationKey.value);
+
+const hasStorageInfo = computed(
+  () => user.value?.usedSpace !== undefined && user.value?.spaceLimit !== undefined,
+);
+
+const usedSpaceMb = computed(() => bytesToMegabytes(user.value?.usedSpace ?? 0));
+const spaceLimitMb = computed(() => bytesToMegabytes(user.value?.spaceLimit ?? 0));
+
+const storageLabel = computed(
+  () =>
+    `${t(I18N.STORAGE)} (${usedSpaceMb.value.toFixed(2)} / ${spaceLimitMb.value.toFixed(2)} MB)`,
+);
 </script>
 
 <style lang="scss" scoped>
 .subscription-settings {
-  & {
-    width: 100%;
-  }
+  width: 100%;
 }
-.reference {
-  padding-top: var(--padding-lg);
+
+.storage-section {
+  width: 100%;
 }
 </style>
