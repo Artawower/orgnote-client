@@ -99,6 +99,7 @@ jobs:
           DEBUG=${{ inputs.environment == 'dev' && 'true' || 'false' }}
           VITE_API_URL=${{ secrets.API_URL }}
           VITE_AUTH_URL=${{ secrets.AUTH_URL }}
+          VITE_WS_URL=${{ secrets.WS_URL }}
           EOT
           echo "=== .env.prod contents ==="
           cat .env.prod

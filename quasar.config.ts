@@ -86,6 +86,7 @@ export default defineConfig((ctx) => {
       env: {
         API_URL: process.env.VITE_API_URL ?? '',
         AUTH_URL: process.env.VITE_AUTH_URL ?? '',
+        WS_URL: process.env.VITE_WS_URL ?? '',
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
