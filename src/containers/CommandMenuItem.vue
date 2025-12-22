@@ -32,6 +32,7 @@ defineOptions({
 const props = defineProps<{
   command: CommandName;
   data?: unknown;
+  disableIcon?: boolean;
 }>();
 
 const slots = useSlots();
@@ -41,6 +42,9 @@ const { get, execute } = api.core.useCommands();
 const command = get(props.command);
 
 const resolvedIcon = computed(() => {
+  if (props.disableIcon) {
+    return;
+  }
   const icon = toValue(command?.icon);
   return typeof icon === 'string' ? icon : undefined;
 });

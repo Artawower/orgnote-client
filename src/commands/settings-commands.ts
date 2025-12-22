@@ -1,5 +1,5 @@
 import type { Command, CommandHandlerParams, CommandIcon } from 'orgnote-api';
-import { DefaultCommands, RouteNames, I18N } from 'orgnote-api';
+import { DefaultCommands, RouteNames, i18n } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
@@ -157,7 +157,7 @@ export function getSettingsCommands(): Command[] {
         modal.open(
           defineAsyncComponent(() => import('src/containers/ExtensionManager.vue')),
           {
-            title: I18N.EXTENSIONS,
+            title: i18n.EXTENSIONS,
             closable: true,
             wide: true,
           },
@@ -195,15 +195,16 @@ export function getSettingsCommands(): Command[] {
       },
     },
     {
-      command: DefaultCommands.DELETE_ALL_DATA,
-      icon: 'sym_o_delete',
+      command: DefaultCommands.RESET_SYSTEM,
+      icon: 'sym_o_update',
       group: 'settings',
+      description: i18n.RESET_SYSTEM_DESCRIPTION,
       handler: async (api, params: CommandHandlerParams<{ force?: boolean }>) => {
         const confirm =
           params.data?.force ||
           (await confirmationModal.confirm({
-            title: I18N.CLEAR_ALL_LOCAL_DATA,
-            message: I18N.CONFIRM_DELETE_ALL_DATA,
+            title: i18n.RESET_SYSTEM,
+            message: i18n.RESET_SYSTEM_WARNING,
           }));
 
         if (!confirm) {
@@ -235,8 +236,8 @@ export function getSettingsCommands(): Command[] {
       group: 'settings',
       handler: async () => {
         const confirm = await confirmationModal.confirm({
-          title: I18N.DELETE_ALL_NOTES,
-          message: I18N.CONFIRM_DELETE_NOTES,
+          title: i18n.DELETE_ALL_NOTES,
+          message: i18n.CONFIRM_DELETE_NOTES,
         });
         console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },
@@ -247,8 +248,8 @@ export function getSettingsCommands(): Command[] {
       group: 'settings',
       handler: async () => {
         const confirm = await confirmationModal.confirm({
-          title: I18N.REMOVE_ACCOUNT,
-          message: I18N.CONFIRM_DELETE_ACCOUNT,
+          title: i18n.REMOVE_ACCOUNT,
+          message: i18n.CONFIRM_DELETE_ACCOUNT,
         });
         console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
       },

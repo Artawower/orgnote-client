@@ -11,6 +11,7 @@
           <menu-item type="info" @click="safeCopyToClipboard(errorLogText)">
             {{ $t(I18N.COPY_LOG) }}
           </menu-item>
+          <command-menu-item :command="DefaultCommands.RESET_SYSTEM" type="danger" disable-icon />
         </card-wrapper>
       </template>
     </container-layout>
@@ -27,6 +28,7 @@ import MenuItem from 'src/containers/MenuItem.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
+import CommandMenuItem from './CommandMenuItem.vue';
 
 const { errorLogText } = useAppLogs();
 const { safeCopyToClipboard } = useInteractiveClipboard();
