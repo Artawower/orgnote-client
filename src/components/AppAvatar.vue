@@ -58,8 +58,9 @@ withDefaults(
 }
 
 .avatar-image {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
   object-fit: cover;
-  @include fit;
 }
 
 .avatar-fallback {
