@@ -9,6 +9,7 @@ import { getDatabase } from 'src/infrastructure/repositories';
 import { to } from 'orgnote-api/utils';
 import { computed, defineAsyncComponent, h } from 'vue';
 import AppAvatar from 'src/components/AppAvatar.vue';
+import { usePanePersistence } from 'src/composables/pane-persistence';
 
 export function getSettingsCommands(): Command[] {
   const confirmationModal = api.ui.useConfirmationModal();
@@ -210,6 +211,10 @@ export function getSettingsCommands(): Command[] {
         if (!confirm) {
           return;
         }
+
+        const panePersistence = usePanePersistence();
+        panePersistence.stop();
+
         const fileSystem = api.core.useFileSystem();
         const clearResult = await to(
           () => fileSystem.removeAllFiles(),
@@ -227,7 +232,7 @@ export function getSettingsCommands(): Command[] {
         localStorage.clear();
         sessionStorage.clear();
 
-        setTimeout(() => window.location.reload());
+        window.location.reload();
       },
     },
     {
