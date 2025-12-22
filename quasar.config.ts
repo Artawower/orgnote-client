@@ -111,6 +111,11 @@ export default defineConfig((ctx) => {
             keep_classnames: true,
           },
         };
+
+        const enableSourceMaps = process.env.VITE_SOURCEMAP === 'true';
+        if (enableSourceMaps) {
+          viteConf.build.sourcemap = true;
+        }
       },
       // viteVuePluginOptions: {},
 

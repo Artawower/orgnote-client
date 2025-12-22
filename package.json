@@ -27,6 +27,7 @@
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
     "build:all": "bun run build:pwa && bun run build:android:aab",
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",
+    "build:pwa:dev": "VITE_SOURCEMAP=true env-cmd -f ./.env.prod quasar build -m pwa",
     "serve:pwa": "bun run build:pwa && bunx serve dist/pwa -l 9000",
     "build:android": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
     "build:android:aab": "./deploy/sync-capaticor-version.sh && build:android",

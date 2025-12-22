@@ -100,6 +100,7 @@ jobs:
           VITE_API_URL=${{ secrets.API_URL }}
           VITE_AUTH_URL=${{ secrets.AUTH_URL }}
           VITE_WS_URL=${{ secrets.WS_URL }}
+          VITE_SOURCEMAP=${{ inputs.environment == 'dev' && 'true' || 'false' }}
           EOT
           echo "=== .env.prod contents ==="
           cat .env.prod
