@@ -23,7 +23,7 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { api } from 'src/boot/api';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { I18N } from 'orgnote-api';
 
 const fsManager = api.core.useFileSystemManager();
@@ -38,6 +38,12 @@ const finishSetup = () => {
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
+});
+
+onMounted(() => {
+  if (currentFsName.value) {
+    router.replace({ name: RouteNames.Home });
+  }
 });
 </script>
 

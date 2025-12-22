@@ -2,6 +2,8 @@ import { RouteNames, RoutePaths } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import type { RouteRecordRaw } from 'vue-router';
 
+const isServer = (): boolean => !!process.env.SERVER;
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/error',
@@ -17,6 +19,9 @@ const routes: RouteRecordRaw[] = [
     name: RouteNames.Onboarding,
     component: () => import('pages/OnboardingPage.vue'),
     beforeEnter: () => {
+      if (isServer()) {
+        return true;
+      }
       const fileManager = api.core.useFileSystemManager();
       const available = fileManager.currentFsName;
       if (available) {
@@ -37,6 +42,9 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     beforeEnter: () => {
+      if (isServer()) {
+        return true;
+      }
       const fileManager = api.core.useFileSystemManager();
 
       const available = fileManager.currentFsName;

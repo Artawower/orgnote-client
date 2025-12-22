@@ -37,6 +37,7 @@ import SafeArea from 'src/components/SafeArea.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reporter } from 'src/boot/report';
+import { RouteNames } from 'orgnote-api';
 
 const route = useRoute();
 const router = useRouter();
@@ -64,8 +65,16 @@ const handleErrorFromQuery = (): void => {
   router.replace({ query: { ...route.query, error: undefined } });
 };
 
+const checkFileSystemAvailability = (): void => {
+  const fileManager = api.core.useFileSystemManager();
+  if (!fileManager.currentFsName) {
+    router.replace({ name: RouteNames.Onboarding });
+  }
+};
+
 onMounted(() => {
   handleErrorFromQuery();
+  checkFileSystemAvailability();
 });
 </script>
 
