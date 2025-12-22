@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.40.1",
+  "version": "0.40.2",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -27,6 +27,7 @@
     "build:electron": "env-cmd -f ./.env.prod bun run build -m electron",
     "build:all": "bun run build:pwa && bun run build:android:aab",
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",
+    "serve:pwa": "bun run build:pwa && bunx serve dist/pwa -l 9000",
     "build:android": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
     "build:android:aab": "./deploy/sync-capaticor-version.sh && build:android",
     "build:android:aab:sign": "bun run build:android:aab && ./sign-aab.sh",

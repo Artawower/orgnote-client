@@ -12,15 +12,13 @@
   >
     <async-item-container :items-list="groupedCandidates[0]" :index="index" :height="itemHeight">
       <template #default="{ item, index }">
-        <keep-alive>
-          <completion-result-item
-            :item="item as CompletionCandidate"
-            :index="index"
-            :selected="index === completion.activeCompletion!.selectedCandidateIndex"
-            rounded
-            @select="$emit('select')"
-          />
-        </keep-alive>
+        <completion-result-item
+          :item="item as CompletionCandidate"
+          :index="index"
+          :selected="index === completion.activeCompletion!.selectedCandidateIndex"
+          rounded
+          @select="$emit('select')"
+        />
       </template>
     </async-item-container>
   </q-virtual-scroll>
