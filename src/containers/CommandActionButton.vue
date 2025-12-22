@@ -7,8 +7,8 @@
     classes="action-btn"
     :alignment="alignment"
   >
-    <template v-if="iconComponent" #icon="{ size: iconSize }">
-      <component :is="iconComponent" :size="iconSize" />
+    <template v-if="iconComponent" #icon>
+      <component :is="iconComponent" />
     </template>
     <template v-if="includeText || text" #text>{{
       text || camelCaseToWords(command.command)
