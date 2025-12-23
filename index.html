@@ -189,6 +189,23 @@
         return ' (' + meta.url + line + col + ')';
       }
 
+      function isSameOriginUrl(url) {
+        if (!url) return false;
+        try {
+          return new URL(url, window.location.href).origin === window.location.origin;
+        } catch {
+          return false;
+        }
+      }
+
+      function isSameOriginStack(stack) {
+        if (!stack) return false;
+        var origin = window.location.origin;
+        return stack.split('\n').some(function (line) {
+          return line.indexOf(origin) !== -1;
+        });
+      }
+
       function isResourceTarget(target) {
         if (!target) return false;
         return target.tagName === 'SCRIPT' || target.tagName === 'LINK' || target.tagName === 'IMG';
@@ -251,18 +268,51 @@
         };
       }
 
+      function isNonFatalRejectionReason(reason) {
+        if (reason === null || reason === undefined) return true;
+        var name = reason && typeof reason === 'object' ? reason.name : null;
+        if (name === 'AbortError' || name === 'CanceledError' || name === 'CancelledError') return true;
+        var message = toReadableMessage(reason);
+        return message.indexOf('Failed to fetch') !== -1 || message.indexOf('NetworkError') !== -1;
+      }
+
+      function isFatalResourceError(details) {
+        if (!details.meta || details.meta.tagName !== 'SCRIPT') return false;
+        return isSameOriginUrl(details.meta.src);
+      }
+
+      function isFatalErrorEvent(event, details) {
+        if (event && event.message && event.message.trim() === 'Script error.') return false;
+        if (event && event.error && event.error.stack && isSameOriginStack(event.error.stack)) return true;
+        if (details.meta && details.meta.url && isSameOriginUrl(details.meta.url)) return true;
+        return false;
+      }
+
+      function isFatalRejection(details) {
+        var reason = details.value;
+        if (isNonFatalRejectionReason(reason)) return false;
+        if (reason && reason.stack && isSameOriginStack(reason.stack)) return true;
+        return false;
+      }
+
+      function shouldShowCriticalScreen(event, details) {
+        if (details.type === 'resource_error') return isFatalResourceError(details);
+        if (details.type === 'rejection') return isFatalRejection(details);
+        return isFatalErrorEvent(event, details);
+      }
+
       window.addEventListener('error', function (event) {
         var details = extractErrorDetails(event);
         window.__errorBuffer.capture(details.value, details.type, details.meta);
         console.error('[FALLBACK] Uncaught error:', details.message);
-        showMinimalErrorScreen();
+        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
       }, true);
 
       window.addEventListener('unhandledrejection', function (event) {
         var details = extractRejectionDetails(event);
         window.__errorBuffer.capture(details.value, details.type, details.meta);
         console.error('[FALLBACK] Unhandled rejection:', details.message);
-        showMinimalErrorScreen();
+        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
       });
     </script>
     <!-- quasar:entry-point -->
