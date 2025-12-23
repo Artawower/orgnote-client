@@ -12,95 +12,60 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue';
-import { EditorView, keymap } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { api } from 'src/boot/api';
 import { setCursorToEOF } from './use-cursor';
-import { orgMode } from './org-parser';
-import { editorLanguages } from './editor-languages';
-import type { OrgNode } from 'org-mode-ast';
+import { useEditorView } from './use-editor-view';
 
-defineProps<{
+const props = defineProps<{
   readonly?: boolean;
 }>();
 
 const model = defineModel<string>();
 const editorRef = ref<HTMLDivElement>();
-const orgNode = shallowRef<OrgNode | null>(null);
 
 const configStore = api.core.useConfig();
 const editorConfig = computed(() => configStore.config.editor);
 
-let editorView: EditorView | undefined;
 let isInternalUpdate = false;
 
-const handleOrgNodeChanged = (node: OrgNode) => {
-  orgNode.value = node;
+const handleContentUpdate = (content: string) => {
+  isInternalUpdate = true;
+  model.value = content;
+  isInternalUpdate = false;
 };
 
-const createUpdateListener = () =>
-  EditorView.updateListener.of((update) => {
-    if (!update.docChanged) return;
-    isInternalUpdate = true;
-    model.value = update.state.doc.toString();
-    isInternalUpdate = false;
-  });
-
-const createEditorState = (content: string) =>
-  EditorState.create({
-    doc: content,
-    extensions: [
-      history(),
-      keymap.of([...defaultKeymap, ...historyKeymap]),
-      EditorView.lineWrapping,
-      createUpdateListener(),
-      orgMode({
-        wrap: editorLanguages,
-        orgAstChanged: handleOrgNodeChanged,
-      }),
-    ],
-  });
+const {
+  initView,
+  destroyView,
+  updateContent,
+  setReadonly,
+} = useEditorView({
+  readonly: props.readonly,
+  onContentUpdate: handleContentUpdate,
+});
 
 const initEditor = () => {
   if (!editorRef.value) return;
 
-  editorView = new EditorView({
-    state: createEditorState(model.value ?? ''),
-    parent: editorRef.value,
-  });
-
-  setCursorToEOF(editorView);
-};
-
-const updateEditorContent = (content: string) => {
-  if (!editorView) return;
-
-  const currentContent = editorView.state.doc.toString();
-  if (currentContent === content) return;
-
-  editorView.dispatch({
-    changes: {
-      from: 0,
-      to: currentContent.length,
-      insert: content,
-    },
-  });
+  const view = initView(editorRef.value, model.value ?? '');
+  setCursorToEOF(view);
 };
 
 onMounted(initEditor);
-
-onUnmounted(() => {
-  editorView?.destroy();
-});
+onUnmounted(destroyView);
 
 watch(
   () => model.value,
   (newValue) => {
     if (isInternalUpdate) return;
-    updateEditorContent(newValue ?? '');
-  },
+    updateContent(newValue ?? '');
+  }
+);
+
+watch(
+  () => props.readonly,
+  (value) => setReadonly(value ?? false)
 );
 </script>
 
