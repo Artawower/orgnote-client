@@ -6,6 +6,7 @@ import { isNullable } from 'orgnote-api/utils';
 
 const mockRouter = {
   push: vi.fn(),
+  hasRoute: vi.fn(() => true),
   currentRoute: {
     value: {
       path: '/',

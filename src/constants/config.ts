@@ -48,4 +48,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   encryption: {
     type: 'disabled',
   },
+  fileReaders: {
+    preferredReaders: {},
+  },
 };

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 
@@ -31,4 +31,6 @@ const initEditor = () => {
 };
 
 onMounted(() => initEditor());
+
+watch(() => model.value, initEditor);
 </script>

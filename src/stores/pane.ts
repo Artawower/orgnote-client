@@ -431,6 +431,13 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     router: Router,
     routeLocation: TabSnapshot['routeLocation'],
   ): Promise<void> => {
+    const hasMatchingRoute =
+      routeLocation.name && router.hasRoute(routeLocation.name as string);
+
+    if (!hasMatchingRoute) {
+      return;
+    }
+
     if (routeLocation.name) {
       await router.push({
         name: routeLocation.name,

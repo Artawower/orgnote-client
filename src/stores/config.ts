@@ -1,7 +1,4 @@
-import {
-  type OrgNoteConfig,
-  type ConfigStore,
-} from 'orgnote-api';
+import { type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
 import { defineStore, storeToRefs } from 'pinia';
 import { DEFAULT_CONFIG } from 'src/constants/config';
 import { computed, reactive, ref, watch } from 'vue';
