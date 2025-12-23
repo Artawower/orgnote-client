@@ -25,6 +25,7 @@ import { THEME_VARIABLES } from 'orgnote-api';
 import { useConfigStore } from './config';
 import { Dark } from 'quasar';
 import { ORGNOTE_EXTENSIONS_FILE_PATH } from 'src/constants/system-file-paths';
+import { BUILTIN_LOADERS, BUILTIN_META } from 'src/extensions';
 
 interface ActiveExtension extends ExtensionMeta {
   module: Extension;
@@ -62,8 +63,18 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const sync = async (): Promise<void> => {
     loading.value++;
     await readFromDisk();
+    registerBuiltinExtensions();
     await mountActiveExtensions();
     loading.value--;
+  };
+
+  const registerBuiltinExtensions = (): void => {
+    BUILTIN_META.forEach((meta) => {
+      const exists = extensions.value.some((e) => e.manifest.name === meta.manifest.name);
+      if (!exists) {
+        extensions.value.push(meta);
+      }
+    });
   };
 
   const writeToDisk = async (): Promise<void> => {
@@ -107,26 +118,15 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const mountActiveExtensions = async (): Promise<void> => {
     const activeExtensionsMeta = extensions.value.filter((meta) => meta.active);
 
-    const mountPromises = activeExtensionsMeta.map(async (meta) => {
-      const source = await api.infrastructure.extensionSourceRepository.get(meta.manifest.name);
-      if (!source) {
-        return;
-      }
-      await mountExtension(meta, source);
-    });
+    const mountPromises = activeExtensionsMeta.map((meta) => mountExtension(meta));
 
     await Promise.allSettled(mountPromises);
   };
 
-  const mountExtension = async (
-    meta: ExtensionMeta,
-    source: ExtensionSource,
-  ): Promise<ActiveExtension | undefined> => {
-    const existingActive = activeExtensions.value.find(
-      (e) => e.manifest.name === meta.manifest.name,
-    );
-    if (existingActive) {
-      return existingActive;
+  const compileFromRepository = async (name: string): Promise<Extension | undefined> => {
+    const source = await api.infrastructure.extensionSourceRepository.get(name);
+    if (!source) {
+      return undefined;
     }
 
     const safeCompile = to(compileExtension, 'Failed to load extension');
@@ -134,10 +134,28 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
 
     if (compileResult.isErr()) {
       reporter.reportError(compileResult.error);
-      return;
+      return undefined;
     }
 
-    const module = compileResult.value;
+    return compileResult.value;
+  };
+
+  const getExtensionModule = (name: string): Promise<Extension | undefined> =>
+    BUILTIN_LOADERS[name]?.() ?? compileFromRepository(name);
+
+  const mountExtension = async (meta: ExtensionMeta): Promise<ActiveExtension | undefined> => {
+    const existingActive = activeExtensions.value.find(
+      (e) => e.manifest.name === meta.manifest.name,
+    );
+    if (existingActive) {
+      return existingActive;
+    }
+
+    const module = await getExtensionModule(meta.manifest.name);
+    if (!module) {
+      return undefined;
+    }
+
     const safeMounted = to(
       module.onMounted.bind(module),
       `Failed to mount extension ${meta.manifest.name}`,
@@ -146,7 +164,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
 
     if (mountResult.isErr()) {
       reporter.reportError(mountResult.error);
-      return;
+      return undefined;
     }
 
     const activeExt: ActiveExtension = {
@@ -237,25 +255,11 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
       return;
     }
 
-    const source = await api.infrastructure.extensionSourceRepository.get(extensionName);
-    if (!source) {
-      reporter.reportWarning(`Extension source ${extensionName} not found in cache`);
-      return;
-    }
-
-    const safeCompile = to(compileExtension, 'Failed to load extension');
-    const compileResult = await safeCompile(source.module);
-
-    if (compileResult.isErr()) {
-      reporter.reportError(compileResult.error);
-      return;
-    }
-
     if (isThemeExtension(meta.manifest)) {
       await handleThemeActivation(extensionName);
     }
 
-    await mountExtension(meta, source);
+    await mountExtension(meta);
     meta.active = true;
     await writeToDisk();
   };
@@ -378,6 +382,9 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     local: () => {
       throw new Error('Local extensions cannot be installed via installExtension');
     },
+    builtin: () => {
+      throw new Error('Builtin extensions cannot be installed via installExtension');
+    },
   };
 
   const installExtension = async (source: ExtensionSourceInfo): Promise<void> => {
@@ -472,15 +479,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
 
   const disableSafeMode = async (): Promise<void> => {
     const activeExtensionsMeta = extensions.value.filter((meta) => meta.active);
-
-    const mountPromises = activeExtensionsMeta.map(async (meta) => {
-      const source = await api.infrastructure.extensionSourceRepository.get(meta.manifest.name);
-      if (!source) {
-        return;
-      }
-      await mountExtension(meta, source);
-    });
-
+    const mountPromises = activeExtensionsMeta.map((meta) => mountExtension(meta));
     await Promise.allSettled(mountPromises);
   };
 

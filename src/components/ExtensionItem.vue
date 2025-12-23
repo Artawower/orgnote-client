@@ -44,6 +44,7 @@
               />
 
               <action-button
+                v-if="!isBuiltin"
                 @click.stop="$emit('delete', manifest.name)"
                 size="sm"
                 color="red"
@@ -175,6 +176,8 @@ const isActive = computed(() => {
   }
   return (props.extension as ExtensionMeta).active ?? false;
 });
+
+const isBuiltin = computed(() => manifest.value.source.type === 'builtin');
 
 const sourceLabel = computed(() => {
   const source = manifest.value.source;
