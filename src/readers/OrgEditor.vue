@@ -5,7 +5,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import type { Buffer } from 'orgnote-api';
-import RichEditor from 'src/components/RichEditor.vue';
+import { RichEditor } from 'src/containers/RichEditor';
 
 const props = defineProps<{
   buffer: Buffer;
