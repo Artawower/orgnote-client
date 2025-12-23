@@ -260,6 +260,11 @@ body {
   // Editor
   --editor-max-width: 768px;
   --editor-padding: var(--padding-xl) var(--padding-lg);
+  --editor-cursor-color: var(--accent);
+  --editor-cursor-width: 2px;
+  --editor-selection-bg: var(--accent);
+  --editor-selection-fg: var(--bg);
+  --editor-active-line-bg: transparent;
 }
 
 @include desktop-below {
