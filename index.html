@@ -20,18 +20,29 @@
   </head>
   <body style="background-color: var(--bg, #9356e8)">
     <script>
+      function toReadableMessage(value, fallback) {
+        if (value === null || value === undefined) return fallback || 'Unknown error';
+        if (value instanceof Error) {
+          return (value.name || 'Error') + ': ' + (value.message || 'Unknown error');
+        }
+        if (typeof value === 'string') return value;
+        if (typeof value === 'object' && typeof value.message === 'string') {
+          var name = typeof value.name === 'string' ? value.name : 'Error';
+          return name + ': ' + (value.message || 'Unknown error');
+        }
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      }
+
       window.__errorBuffer = (function () {
         const errors = [];
         const MAX_ERRORS = 50;
 
         const serializeError = function (error) {
-          if (error instanceof Error) return error.message;
-          if (typeof error === 'string') return error;
-          try {
-            return JSON.stringify(error);
-          } catch {
-            return String(error);
-          }
+          return toReadableMessage(error);
         };
 
         return {
@@ -163,19 +174,94 @@
         ';
       }
 
+      function buildLocationMeta(event) {
+        var meta = {};
+        if (event.filename) meta.url = event.filename;
+        if (event.lineno) meta.line = event.lineno;
+        if (event.colno) meta.col = event.colno;
+        return Object.keys(meta).length ? meta : null;
+      }
+
+      function formatLocation(meta) {
+        if (!meta || !meta.url) return '';
+        var line = meta.line ? ':' + meta.line : '';
+        var col = meta.col ? ':' + meta.col : '';
+        return ' (' + meta.url + line + col + ')';
+      }
+
+      function isResourceTarget(target) {
+        if (!target) return false;
+        return target.tagName === 'SCRIPT' || target.tagName === 'LINK' || target.tagName === 'IMG';
+      }
+
+      function extractResourceErrorDetails(target) {
+        if (!isResourceTarget(target)) return null;
+        var source = target.src || target.href || '';
+        var label = source ? target.tagName + ' ' + source : target.tagName;
+        return {
+          value: 'Resource failed to load: ' + label,
+          message: 'Resource failed to load: ' + label,
+          type: 'resource_error',
+          meta: {
+            tagName: target.tagName,
+            src: source || undefined,
+          },
+        };
+      }
+
+      function buildErrorDetailsFromError(error, meta) {
+        var message = toReadableMessage(error) + formatLocation(meta);
+        return {
+          value: error,
+          message: message,
+          type: 'error',
+          meta: meta,
+        };
+      }
+
+      function buildErrorDetailsFromMessage(message, meta) {
+        var readable = toReadableMessage(message, 'Unknown error occurred') + formatLocation(meta);
+        return {
+          value: readable,
+          message: readable,
+          type: 'error',
+          meta: meta,
+        };
+      }
+
+      function extractErrorDetails(event) {
+        var resourceDetails = extractResourceErrorDetails(event.target);
+        if (resourceDetails) return resourceDetails;
+        var meta = buildLocationMeta(event);
+        if (event.error) return buildErrorDetailsFromError(event.error, meta);
+        return buildErrorDetailsFromMessage(event.message, meta);
+      }
+
+      function extractRejectionDetails(event) {
+        var reason = event.reason;
+        var message = 'Unhandled promise rejection: ' + toReadableMessage(reason, 'Unknown reason');
+        var value = reason === null || reason === undefined ? message : reason;
+        return {
+          value: value,
+          message: message,
+          type: 'rejection',
+          meta: {
+            reasonType: reason === null ? 'null' : typeof reason,
+          },
+        };
+      }
+
       window.addEventListener('error', function (event) {
-        window.__errorBuffer.capture(event.error, 'error', {
-          url: event.filename,
-          line: event.lineno,
-          col: event.colno,
-        });
-        console.error('[FALLBACK] Uncaught error:', event.error);
+        var details = extractErrorDetails(event);
+        window.__errorBuffer.capture(details.value, details.type, details.meta);
+        console.error('[FALLBACK] Uncaught error:', details.message);
         showMinimalErrorScreen();
-      });
+      }, true);
 
       window.addEventListener('unhandledrejection', function (event) {
-        window.__errorBuffer.capture(event.reason, 'rejection');
-        console.error('[FALLBACK] Unhandled rejection:', event.reason);
+        var details = extractRejectionDetails(event);
+        window.__errorBuffer.capture(details.value, details.type, details.meta);
+        console.error('[FALLBACK] Unhandled rejection:', details.message);
         showMinimalErrorScreen();
       });
     </script>
