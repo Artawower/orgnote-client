@@ -1,30 +1,177 @@
-/* TODO: master simplify classes for CM */
 .editor-wrapper {
-  width: 100%;
-  height: 100%;
-}
+  @include fit;
 
-#editor {
-  font-family: var(--editor-font-family-main);
-  padding-bottom: var(--editor-padding-bottom);
-}
-
-.ql-editor {
-  &:focus {
-    outline: none;
+  .rich-editor {
+    max-width: var(--editor-max-width);
+    padding: var(--editor-padding);
+    height: 100%;
+    margin: auto;
   }
 
-  p {
-    margin: 0;
+  .cm-editor {
+    height: 100%;
+    font-family: var(--editor-font-family-main);
+
+    &.cm-focused {
+      outline: none;
+    }
+
+    .cm-scroller {
+      overflow: auto;
+      padding-bottom: var(--editor-padding-bottom);
+    }
+
+    .cm-content {
+      padding: 0;
+    }
+
+    .cm-gutters,
+    .cm-gutter {
+      background: transparent;
+      background-color: transparent !important;
+      border-right: 0 !important;
+    }
+
+    .cm-line,
+    .org-text,
+    .header-text {
+      letter-spacing: 0.5px;
+      white-space: pre-wrap;
+      font-size: var(--paragraph-font-size);
+      font-family: var(--main-font-family);
+      color: var(--fg);
+      -webkit-font-smoothing: auto;
+    }
+
+    .cm-line {
+      &:not(.org-headline-line),
+      &:not(.org-keyword-title-line) {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      > .org-quote-block:not(.org-keyword):first-child {
+        padding-left: 16px;
+        position: relative;
+      }
+    }
+
+    .cm-line:not(.org-src-block-line, .org-headline-line) {
+      line-height: var(--editor-line-height);
+    }
+
+    .cm-activeLine {
+      .org-operator,
+      .org-link-url {
+        display: inline !important;
+      }
+    }
+
+    .cm-tag-name,
+    .cm-angle-bracket {
+      color: var(--yellow);
+    }
+
+    .cm-string,
+    .cm-regexp {
+      color: var(--green);
+    }
+
+    .cm-definition-keyword,
+    .cm-keyword,
+    .cm-control-keyword,
+    .cm-type-name,
+    .cm-type-definition,
+    .cm-property-definition,
+    .cm-private-property-definition {
+      color: var(--violet);
+    }
+
+    .cm-variable-name,
+    .cm-bool {
+      color: var(--fg);
+    }
+
+    .cm-property-name,
+    .cm-name {
+      color: var(--blue);
+    }
+
+    .cm-attribute-value {
+      color: var(--green);
+    }
+
+    .cm-action-menu {
+      width: 48px;
+      left: -56px;
+    }
   }
-}
 
-.ql-clipboard {
-  display: none;
-}
+  &.hide-special-symbols .cm-editor {
+    .org-bold,
+    .org-italic,
+    .org-verbatim,
+    .org-inline-code,
+    .org-crossed {
+      &.org-operator {
+        display: none;
+      }
+    }
 
-.ql-syntax {
-  overflow: auto;
+    @for $i from 1 through 12 {
+      .org-headline-#{$i} {
+        &.org-operator {
+          display: none;
+        }
+      }
+    }
+
+    .org-keyword-description-line,
+    .org-keyword-title-line,
+    .org-keyword-filetags-line {
+      &:not(.cm-activeLine) {
+        .org-keyword:first-of-type {
+          display: none !important;
+        }
+      }
+    }
+  }
+
+  &.show-property-drawer .cm-editor {
+    .org-embedded-propertydrawer {
+      display: block;
+    }
+  }
+
+  &.readonly .cm-editor {
+    .cm-cursor,
+    .cm-dropCursor {
+      display: none !important;
+      border-color: transparent !important;
+    }
+
+    .org-property-drawer,
+    .org-operator,
+    .cm-action-menu {
+      display: none !important;
+    }
+
+    .org-src-block-line {
+      .org-keyword {
+        display: none !important;
+      }
+    }
+
+    .org-keyword-line {
+      .org-keyword:first-of-type {
+        display: none !important;
+      }
+    }
+
+    .org-widget-edit-badge {
+      display: none !important;
+    }
+  }
 }
 
 .org-bold {
@@ -40,46 +187,8 @@
 
     .org-embedded-operator {
       margin-left: -6px;
-      /* TODO: master plugin */
-      /* position: absolute;
-      // left - 100% from size of container via transform
-      transform: translateX(-100%); */
     }
   }
-}
-
-.hide-special-symbols {
-  .org-bold,
-  .org-italic,
-  .org-verbatim,
-  .org-inline-code,
-  .org-crossed {
-    &.org-operator {
-      display: none;
-    }
-  }
-
-  @for $i from 1 through 12 {
-    .org-headline-#{$i} {
-      &.org-operator {
-        display: none;
-      }
-    }
-  }
-
-  .org-keyword-description-line,
-  .org-keyword-title-line,
-  .org-keyword-filetags-line {
-    &:not(.cm-activeLine) {
-      .org-keyword:first-of-type {
-        display: none !important;
-      }
-    }
-  }
-}
-
-.org-bold {
-  font-weight: bold;
 }
 
 .org-italic {
@@ -106,44 +215,9 @@
   cursor: pointer;
 }
 
-.cm-gutters,
-.cm-gutter {
-  background: transparent;
-  background-color: transparent !important;
-  border-right: 0 !important;
-}
-
 .org-property-drawer {
   color: var(--fg-alt);
   font-family: var(--editor-font-family-main);
-}
-
-.cm-line,
-.org-text,
-.header-text {
-  letter-spacing: 0.5px;
-  white-space: pre-wrap;
-  font-size: var(--paragraph-font-size);
-  font-family: var(--main-font-family);
-  color: var(--fg);
-  -webkit-font-smoothing: auto;
-}
-
-.cm-line {
-  &:not(.org-headline-line),
-  &:not(.org-keyword-title-line) {
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-}
-
-.cm-line:not(.org-src-block-line, .org-headline-line) {
-  line-height: var(--editor-line-height);
-}
-
-.cm-tag-name,
-.cm-angle-bracket {
-  color: var(--yellow);
 }
 
 .org-keyword,
@@ -168,38 +242,6 @@
   color: var(--yellow);
 }
 
-.cm-string,
-.cm-regexp {
-  color: var(--green);
-}
-
-.cm-definition-keyword,
-.cm-keyword,
-.cm-control-keyword,
-.cm-type-name,
-.cm-type-definition,
-.cm-property-definition,
-.cm-private-property-definition {
-  color: var(--violet);
-}
-
-.cm-variable-name,
-.cm-bool {
-  color: var(--fg);
-}
-
-.cm-property-name,
-.cm-name {
-  color: var(--blue);
-}
-
-.cm-activeLine {
-  .org-operator,
-  .org-link-url {
-    display: inline !important;
-  }
-}
-
 .org-verbatim,
 .org-inline-code {
   &:not(.org-operator) {
@@ -210,10 +252,6 @@
     background-color: var(--inline-code-background);
     color: var(--inline-code-font-color);
   }
-}
-
-.cm-attribute-value {
-  color: var(--green);
 }
 
 .org-headline-1 {
@@ -274,13 +312,6 @@
   color: var(--green);
 }
 
-.cm-line {
-  > .org-quote-block:not(.org-keyword):first-child {
-    padding-left: 16px;
-    position: relative;
-  }
-}
-
 .org-quote-block-line {
   position: relative;
 
@@ -306,7 +337,7 @@
 
 .org-keyword-kill,
 .org-keyword-rejected,
-org-keyword-block {
+.org-keyword-block {
   color: var(--red);
 }
 
@@ -326,6 +357,7 @@ org-keyword-block {
 
 .org-multiline-widget {
   margin-top: var(--block-margin-md);
+
   &:hover,
   &:active {
     .org-widget-edit-badge {
@@ -346,13 +378,13 @@ org-keyword-block {
 }
 
 .org-headline-line {
-  /* TODO: master create padding for main title */
   padding-top: 16px !important;
 }
 
 .org-horizontal-rule-line {
   @include flexify();
   height: var(--editor-default-line-height);
+
   span {
     display: inline-block;
     height: 100%;
@@ -379,14 +411,12 @@ org-keyword-block {
     margin-top: var(--block-margin-sm);
   }
 }
+
 .org-block-header {
   position: relative;
-
   border-top-right-radius: var(--block-border-radius-sm);
   border-top-left-radius: var(--block-border-radius-sm);
 }
-
-// Readonly mode
 
 .org-list-bullet {
   color: var(--fg-alt);
@@ -402,7 +432,6 @@ org-keyword-block {
   width: 16px;
 }
 
-/* FIXME: hack for empty line with absolute bullet */
 .org-list-item-line.cm-activeLine {
   min-height: var(--editor-default-line-height);
 }
@@ -446,20 +475,14 @@ org-keyword-block {
   }
 }
 
-.cm-action-menu {
-  width: 48px;
-  left: -56px;
-}
-
 .org-keyword-title-line {
   .org-keyword {
     font-size: 2rem;
     font-weight: var(--headline-font-weight);
     font-family: var(--headline-font-family);
-  }
-  .org-keyword {
     line-height: var(--editor-headline-line-height);
   }
+
   .org-keyword:not(:first-of-type) {
     color: var(--fg);
   }
@@ -484,13 +507,6 @@ org-keyword-block {
   display: none;
 }
 
-.show-property-drawer {
-  .org-embedded-propertydrawer {
-    display: block;
-  }
-}
-
-/* TODO: master what a hell..need to fix dual name in org parser */
 .org-embedded-listtag,
 .org-embedded-taglist,
 .org-embedded-latexfragment {
@@ -498,23 +514,26 @@ org-keyword-block {
 }
 
 @include mobile {
-  .cm-gutters {
-    left: -16px !important;
-  }
-
   .editor-wrapper {
-    .cm-action-menu {
-      display: none;
-    }
+    .cm-editor {
+      .cm-gutters {
+        left: -16px !important;
+        position: absolute !important;
+      }
 
-    .cm-scroller {
-      padding: var(--mobile-editor-padding);
-      outline: none !important;
-    }
+      .cm-scroller {
+        padding: var(--mobile-editor-padding);
+        outline: none !important;
+      }
 
-    .cm-gutters {
-      position: absolute !important;
-      left: 0;
+      .cm-action-menu {
+        display: none;
+      }
+
+      .cm-line {
+        padding-left: var(--block-padding-md);
+        padding-right: var(--block-padding-md);
+      }
     }
 
     .org-widget-edit-badge {
@@ -531,47 +550,10 @@ org-keyword-block {
           display: block;
         }
       }
+
+      .actions {
+        right: 50px;
+      }
     }
-
-    .cm-line {
-      padding-left: var(--block-padding-md);
-      padding-right: var(--block-padding-md);
-    }
-  }
-
-  .org-multiline-widget {
-    .actions {
-      right: 50px;
-    }
-  }
-}
-
-.readonly {
-  .cm-cursor,
-  .cm-dropCursor {
-    display: none !important;
-    border-color: transparent !important;
-  }
-
-  .org-property-drawer,
-  .org-operator,
-  .cm-action-menu {
-    display: none !important;
-  }
-
-  .org-src-block-line {
-    .org-keyword {
-      display: none !important;
-    }
-  }
-
-  .org-keyword-line {
-    .org-keyword:first-of-type {
-      display: none !important;
-    }
-  }
-
-  .org-widget-edit-badge {
-    display: none !important;
   }
 }
