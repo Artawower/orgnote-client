@@ -1,6 +1,6 @@
 <template>
   <div class="extension-item">
-    <app-spoiler style="--spoiler-max-height: unset">
+    <app-spoiler style="--spoiler-max-height: unset; --card-radius: 0">
       <template #title>
         <app-flex row between class="full-width">
           <app-flex gap="md" align="center">
