@@ -49,7 +49,7 @@ const handleEditClick = (event: MouseEvent) => {
 }
 
 .org-multiline-widget {
-  margin-top: var(--block-margin-md);
+  margin-top: var(--margin-md);
   width: 100%;
   overflow: auto;
 }

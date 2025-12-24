@@ -16,6 +16,6 @@ const tag = computed(() => props.node.value);
 <style lang="scss" scoped>
 .org-list-tag {
   font-weight: 600;
-  margin-left: 4px;
+  margin-left: var(--padding-sm);
 }
 </style>

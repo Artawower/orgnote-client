@@ -3,15 +3,18 @@ import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
 
-import OrgCheckbox from './components/OrgCheckbox.vue';
-import OrgDateTime from './components/OrgDateTime.vue';
-import OrgHorizontalRule from './components/OrgHorizontalRule.vue';
-import OrgInvisible from './components/OrgInvisible.vue';
-import OrgLink from './components/OrgLink.vue';
-import OrgListTag from './components/OrgListTag.vue';
-import OrgPriority from './components/OrgPriority.vue';
-import OrgRawLink from './components/OrgRawLink.vue';
-import OrgTags from './components/OrgTags.vue';
+import {
+  OrgCheckbox,
+  OrgDateTime,
+  OrgHorizontalRule,
+  OrgInlineCode,
+  OrgInvisible,
+  OrgLink,
+  OrgListTag,
+  OrgPriority,
+  OrgRawLink,
+  OrgTags,
+} from 'src/components/org-nodes';
 import styles from './styles.css?raw';
 
 const createInlineWidgets = (
@@ -28,6 +31,20 @@ const createInlineWidgets = (
     nodeType: NodeType.Entity,
     decorationType: 'mark',
     classBuilder: () => 'org-entity',
+  },
+  {
+    type: WidgetType.Inline,
+    nodeType: NodeType.InlineCode,
+    decorationType: 'replace',
+    ignoreEvent: true,
+    widgetBuilder: createWidgetBuilder(OrgInlineCode),
+  },
+  {
+    type: WidgetType.Inline,
+    nodeType: NodeType.Verbatim,
+    decorationType: 'replace',
+    ignoreEvent: true,
+    widgetBuilder: createWidgetBuilder(OrgInlineCode),
   },
   {
     type: WidgetType.Inline,

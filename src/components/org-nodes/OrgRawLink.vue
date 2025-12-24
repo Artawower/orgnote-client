@@ -1,12 +1,13 @@
 <template>
-  <a :href="linkAddress" target="_blank" class="org-raw-link">
+  <app-link :href="linkAddress" class="org-raw-link">
     {{ shortLink }}
-  </a>
+  </app-link>
 </template>
 
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import { computed, toRef } from 'vue';
+import AppLink from 'src/components/AppLink.vue';
 
 const props = defineProps<{
   node: OrgNode;

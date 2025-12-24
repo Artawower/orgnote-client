@@ -265,6 +265,16 @@ body {
   --editor-selection-bg: var(--accent);
   --editor-selection-fg: var(--bg);
   --editor-active-line-bg: transparent;
+  --editor-default-line-height: 1.6em;
+  --editor-headline-line-height: 1.4;
+
+  --inline-code-bg: var(--bg-elevated);
+  --inline-code-fg: var(--fg);
+
+  // Src blocks
+  --src-block-padding-x: var(--padding-md);
+  --src-footer-padding-y: var(--padding-sm);
+  --src-margin-y: var(--margin-md);
 
   --org-list-item-bullet-margin-left: 20px;
 }

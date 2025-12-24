@@ -1,5 +1,6 @@
 <template>
   <div class="separator">
+    <!-- TODO: custom component -->
     <q-separator />
   </div>
 </template>

@@ -1,5 +1,6 @@
 <template>
   <span class="org-priority" :class="`org-priority-${priorityLevel}`">
+    <!-- TODO: use our icon -->
     <q-icon :name="icon" size="sm" />
   </span>
 </template>
@@ -24,7 +25,7 @@ const PRIORITY_ICONS: Record<string, string> = {
 const priority = computed(() => props.node.children?.get(1)?.value ?? '');
 const icon = computed(() => PRIORITY_ICONS[priority.value.toUpperCase()] ?? 'priority_high');
 const priorityLevel = computed(
-  () => (Object.keys(PRIORITY_ICONS).indexOf(priority.value.toUpperCase()) ?? 0) + 1
+  () => (Object.keys(PRIORITY_ICONS).indexOf(priority.value.toUpperCase()) ?? 0) + 1,
 );
 </script>
 
