@@ -41,22 +41,32 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     return dynamicComponentInstance;
   };
 
-  const addWidget = (meta: WidgetMeta): void => {
-    const { type, nodeType, ...widget } = meta;
-    const registry = widgetRegistry.value[type];
-    (registry as Record<string, unknown>)[nodeType] = widget;
-  };
-
   const addWidgets = (...widgets: WidgetMeta[]): void => {
-    widgets.forEach(addWidget);
-    widgetRegistry.value = { ...widgetRegistry.value };
+    const newRegistry: WidgetRegistry = {
+      [WidgetType.Inline]: { ...widgetRegistry.value[WidgetType.Inline] },
+      [WidgetType.Multiline]: { ...widgetRegistry.value[WidgetType.Multiline] },
+      [WidgetType.LineClass]: { ...widgetRegistry.value[WidgetType.LineClass] },
+    };
+
+    widgets.forEach(({ type, nodeType, ...widget }) => {
+      (newRegistry[type] as Record<string, unknown>)[nodeType] = widget;
+    });
+
+    widgetRegistry.value = newRegistry;
   };
 
   const removeWidget = (nodeType: NodeType): void => {
-    delete widgetRegistry.value[WidgetType.Inline][nodeType];
-    delete widgetRegistry.value[WidgetType.Multiline][nodeType];
-    delete widgetRegistry.value[WidgetType.LineClass][nodeType];
-    widgetRegistry.value = { ...widgetRegistry.value };
+    const newRegistry: WidgetRegistry = {
+      [WidgetType.Inline]: { ...widgetRegistry.value[WidgetType.Inline] },
+      [WidgetType.Multiline]: { ...widgetRegistry.value[WidgetType.Multiline] },
+      [WidgetType.LineClass]: { ...widgetRegistry.value[WidgetType.LineClass] },
+    };
+
+    delete newRegistry[WidgetType.Inline][nodeType];
+    delete newRegistry[WidgetType.Multiline][nodeType];
+    delete newRegistry[WidgetType.LineClass][nodeType];
+
+    widgetRegistry.value = newRegistry;
   };
 
   const addExtensions = (...newExtensions: EditorExtension[]): void => {
@@ -72,7 +82,7 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     props: Record<string, unknown> = {}
   ): WidgetBuilder => {
     return (params: WidgetBuilderParams): EmbeddedWidget => {
-      const normalizedType = textToKebab(params.orgNode.type.toLowerCase());
+      const normalizedType = textToKebab(params.orgNode.type);
       params.wrap.classList.add(`org-embedded-${normalizedType}`);
 
       return getDynamicComponent().mount(cmp, params.wrap, {

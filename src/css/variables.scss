@@ -265,6 +265,8 @@ body {
   --editor-selection-bg: var(--accent);
   --editor-selection-fg: var(--bg);
   --editor-active-line-bg: transparent;
+
+  --org-list-item-bullet-margin-left: 20px;
 }
 
 @include desktop-below {

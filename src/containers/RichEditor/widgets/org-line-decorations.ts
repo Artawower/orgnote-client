@@ -10,7 +10,7 @@ import { orgNodeGetterFacet, lineClassesFacet } from '../facets';
 const applyLineDecorationsForSrcParentBlock = (
   lineDecorations: Range<Decoration>[],
   node: OrgNode,
-  lineClass: string
+  lineClass: string,
 ): void => {
   const srcParent = findParent(node, (n) => n.is(NodeType.SrcBlock));
   if (!srcParent) return;
@@ -29,7 +29,7 @@ const applyLineDecorationsForSrcParentBlock = (
 
 const buildLineDecorations = (
   orgNode: OrgNode | null,
-  orgLineClasses: OrgLineClasses
+  orgLineClasses: OrgLineClasses,
 ): DecorationSet => {
   if (!orgNode) return Decoration.none;
 
@@ -39,16 +39,13 @@ const buildLineDecorations = (
     const lineDecoration = orgLineClasses[n.type]?.class;
     if (!lineDecoration) return false;
 
-    const lineClass =
-      typeof lineDecoration === 'function' ? lineDecoration(n) : lineDecoration;
+    const lineClass = typeof lineDecoration === 'function' ? lineDecoration(n) : lineDecoration;
 
     if (!lineClass) return false;
 
     applyLineDecorationsForSrcParentBlock(lineDecorations, n, lineClass);
 
-    lineDecorations.push(
-      Decoration.line({ class: lineClass }).range(n.start, n.start)
-    );
+    lineDecorations.push(Decoration.line({ class: lineClass }).range(n.start, n.start));
 
     return false;
   });
@@ -76,16 +73,12 @@ export const orgLineDecoration = ViewPlugin.fromClass(
       const caretPosition = update.state.selection.main.head;
       const caretPositionChanged = this.lastPosition !== caretPosition;
 
-      if (
-        update.docChanged ||
-        update.viewportChanged ||
-        caretPositionChanged
-      ) {
+      if (update.docChanged || update.viewportChanged || caretPositionChanged) {
         this.decorations = this.buildDecorations(update.view);
       }
     }
   },
   {
     decorations: (v) => v.decorations,
-  }
+  },
 );

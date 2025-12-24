@@ -1,159 +1,132 @@
-import { test, expect, vi, beforeEach } from 'vitest';
-import {
-  getCssVar,
-  getCssTheme,
-  getNumericCssVar,
-  getCssProperty,
-  getCssNumericProperty,
-  applyCSSVariables,
-  resetCSSVariables,
-  normalizeCssVariable,
-  getCssVariableName,
-} from './css-utils';
+import { test, expect, afterEach } from 'vitest';
+import { applyScopedStyles, removeScopedStyles } from './css-utils';
 
-const mockComputedStyle = (getPropertyValue: (prop: string) => string) => {
-  vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
-    getPropertyValue: vi.fn().mockImplementation(getPropertyValue),
-  } as unknown as CSSStyleDeclaration);
-};
+const testScopeId = 'test-scope';
+const testStyles = '.test { color: red; }';
 
-const mockDefaultViewComputedStyle = (getPropertyValue: (prop: string) => string) => {
-  const defaultView = document.defaultView;
-  if (!defaultView) {
-    throw new Error('Expected defaultView to be defined');
-  }
-  return vi.spyOn(defaultView, 'getComputedStyle').mockReturnValue({
-    getPropertyValue: vi.fn().mockImplementation(getPropertyValue),
-  } as unknown as CSSStyleDeclaration);
-};
-
-beforeEach(() => vi.clearAllMocks());
-
-test('returns CSS variable value when it exists', () => {
-  mockComputedStyle(() => '10px');
-
-  const result = getCssVar('test-var');
-  if (!result) {
-    throw new Error('Expected result to be defined');
-  }
-  expect(result.trim()).toBe('10px');
+afterEach(() => {
+  const el = document.getElementById(testScopeId);
+  el?.remove();
 });
 
-test('returns empty string for non-existent CSS variable', () => {
-  mockComputedStyle(() => '');
+test('applyScopedStyles: creates style element in document head', () => {
+  applyScopedStyles(testScopeId, testStyles);
 
-  const result = getCssVar('non-existent-var');
-  expect(result).toBe('');
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl).not.toBeNull();
+  expect(styleEl?.tagName.toLowerCase()).toBe('style');
 });
 
-test('returns theme variables as an object', () => {
-  mockComputedStyle((varName) => {
-    if (varName === '--theme-color') return '#ffffff';
-    if (varName === '--theme-font') return 'Arial';
-    return '';
-  });
+test('applyScopedStyles: sets correct id attribute', () => {
+  applyScopedStyles(testScopeId, testStyles);
 
-  const result = getCssTheme(['theme-color', 'theme-font']);
-  expect(result).toEqual({ 'theme-color': '#ffffff', 'theme-font': 'Arial' });
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl?.id).toBe(testScopeId);
 });
 
-test('returns empty object when theme variables do not exist', () => {
-  mockComputedStyle(() => '');
+test('applyScopedStyles: sets textContent to provided styles', () => {
+  applyScopedStyles(testScopeId, testStyles);
 
-  const result = getCssTheme(['non-existent-var']);
-  expect(result).toEqual({});
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl?.textContent).toBe(testStyles);
 });
 
-test('parses numeric CSS variable correctly', () => {
-  mockComputedStyle(() => '42px');
+test('applyScopedStyles: appends style element to head', () => {
+  applyScopedStyles(testScopeId, testStyles);
 
-  const result = getNumericCssVar('test-var');
-  expect(result).toBe(42);
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl?.parentElement).toBe(document.head);
 });
 
-test('retrieves specific CSS property of an element', () => {
-  const div = document.createElement('div');
-  mockDefaultViewComputedStyle(() => '100px');
+test('applyScopedStyles: replaces existing style with same id', () => {
+  const newStyles = '.new { color: blue; }';
 
-  const result = getCssProperty(div, 'width');
-  expect(result).toBe('100px');
+  applyScopedStyles(testScopeId, testStyles);
+  applyScopedStyles(testScopeId, newStyles);
+
+  const styleEls = document.querySelectorAll(`#${testScopeId}`);
+  expect(styleEls.length).toBe(1);
+  expect(styleEls[0]?.textContent).toBe(newStyles);
 });
 
-test('returns empty string for non-existent CSS property', () => {
-  const div = document.createElement('div');
-  const spy = mockDefaultViewComputedStyle(() => '');
+test('applyScopedStyles: handles empty styles string', () => {
+  applyScopedStyles(testScopeId, '');
 
-  const result = getCssProperty(div, 'non-existent-prop');
-  expect(spy).toHaveBeenCalledWith(div, null);
-  expect(result).toBe('');
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl?.textContent).toBe('');
 });
 
-test('retrieves numeric value of CSS property', () => {
-  const div = document.createElement('div');
-  mockDefaultViewComputedStyle(() => '200px');
+test('applyScopedStyles: handles multiline styles', () => {
+  const multilineStyles = `
+    .class1 { color: red; }
+    .class2 { color: blue; }
+  `;
 
-  const result = getCssNumericProperty(div, 'width');
-  expect(result).toBe(200);
+  applyScopedStyles(testScopeId, multilineStyles);
+
+  const styleEl = document.getElementById(testScopeId);
+  expect(styleEl?.textContent).toBe(multilineStyles);
 });
 
-test('returns 0 for non-numeric CSS property value', () => {
-  const div = document.createElement('div');
-  mockDefaultViewComputedStyle(() => 'px solid red');
+test('applyScopedStyles: allows multiple different scopes', () => {
+  const scope1 = 'scope-1';
+  const scope2 = 'scope-2';
 
-  const result = getCssNumericProperty(div, 'border');
-  expect(result).toBe(0);
+  applyScopedStyles(scope1, '.a { color: red; }');
+  applyScopedStyles(scope2, '.b { color: blue; }');
+
+  expect(document.getElementById(scope1)).not.toBeNull();
+  expect(document.getElementById(scope2)).not.toBeNull();
+
+  document.getElementById(scope1)?.remove();
+  document.getElementById(scope2)?.remove();
 });
 
-test('applies CSS variables to the body', () => {
-  const spy = vi.spyOn(document.body.style, 'setProperty');
+test('removeScopedStyles: removes style element by id', () => {
+  applyScopedStyles(testScopeId, testStyles);
+  expect(document.getElementById(testScopeId)).not.toBeNull();
 
-  applyCSSVariables({ testVar: '50px', anotherVar: 'red' });
+  removeScopedStyles(testScopeId);
 
-  expect(spy).toHaveBeenCalledWith('--test-var', '50px');
-  expect(spy).toHaveBeenCalledWith('--another-var', 'red');
+  expect(document.getElementById(testScopeId)).toBeNull();
 });
 
-test('resets CSS variables to default values', () => {
-  const spy = vi.spyOn(document.body.style, 'removeProperty');
-
-  resetCSSVariables(['testVar', 'anotherVar']);
-
-  expect(spy).toHaveBeenCalledWith('--test-var');
-  expect(spy).toHaveBeenCalledWith('--another-var');
+test('removeScopedStyles: handles non-existent id gracefully', () => {
+  expect(() => removeScopedStyles('non-existent-scope')).not.toThrow();
 });
 
-test('returns the variable as is if it starts with "--"', () => {
-  expect(normalizeCssVariable('--primary-color')).toBe('--primary-color');
+test('removeScopedStyles: removes only specified scope', () => {
+  const scope1 = 'scope-1';
+  const scope2 = 'scope-2';
+
+  applyScopedStyles(scope1, '.a { color: red; }');
+  applyScopedStyles(scope2, '.b { color: blue; }');
+
+  removeScopedStyles(scope1);
+
+  expect(document.getElementById(scope1)).toBeNull();
+  expect(document.getElementById(scope2)).not.toBeNull();
+
+  document.getElementById(scope2)?.remove();
 });
 
-test('adds "--" prefix if variable does not start with it', () => {
-  expect(normalizeCssVariable('primary-color')).toBe('--primary-color');
+test('removeScopedStyles: can be called multiple times for same scope', () => {
+  applyScopedStyles(testScopeId, testStyles);
+
+  removeScopedStyles(testScopeId);
+  expect(() => removeScopedStyles(testScopeId)).not.toThrow();
 });
 
-test('handles empty string', () => {
-  expect(normalizeCssVariable('')).toBe('--');
-});
+test('scopedStyles: apply -> remove -> apply cycle works correctly', () => {
+  const styles1 = '.first { color: red; }';
+  const styles2 = '.second { color: blue; }';
 
-test('handles variable with special characters', () => {
-  expect(normalizeCssVariable('color@variable')).toBe('--color@variable');
-});
+  applyScopedStyles(testScopeId, styles1);
+  expect(document.getElementById(testScopeId)?.textContent).toBe(styles1);
 
-test('handles variable already prefixed with "--"', () => {
-  expect(normalizeCssVariable('--color-variable')).toBe('--color-variable');
-});
+  removeScopedStyles(testScopeId);
+  expect(document.getElementById(testScopeId)).toBeNull();
 
-test('returns a valid CSS variable name with "var(--...)" syntax for normalized variable', () => {
-  expect(getCssVariableName('variable')).toBe('var(--variable)');
-});
-
-test('handles variables already prefixed with "--"', () => {
-  expect(getCssVariableName('--already-prefixed')).toBe('var(--already-prefixed)');
-});
-
-test('handles empty string input', () => {
-  expect(getCssVariableName('')).toBe('');
-});
-
-test('handles variable with special characters', () => {
-  expect(getCssVariableName('special@variable')).toBe('var(--special@variable)');
+  applyScopedStyles(testScopeId, styles2);
+  expect(document.getElementById(testScopeId)?.textContent).toBe(styles2);
 });

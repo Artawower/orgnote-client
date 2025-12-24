@@ -1,11 +1,12 @@
 <template>
-  <a :href="linkAddress" class="org-link" target="_blank">
-    <span>{{ displayText }}</span>
-  </a>
+  <app-link :href="linkAddress" class="org-link">
+    {{ displayText }}
+  </app-link>
 </template>
 
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
+import AppLink from 'src/components/AppLink.vue';
 import { computed, toRef } from 'vue';
 
 const props = defineProps<{
@@ -23,24 +24,14 @@ const extractLink = (raw: string): string => {
   return match?.[1] ?? raw;
 };
 
-const rawLink = computed(
-  () => node.value.children?.get(1)?.children?.get(1)?.value ?? ''
-);
+const rawLink = computed(() => node.value.children?.get(1)?.children?.get(1)?.value ?? '');
 const linkAddress = computed(() => extractLink(rawLink.value));
 
 const linkNameNode = computed(() =>
-  (node.value.children?.length ?? 0) === 4 ? node.value.children?.get(2) : null
+  (node.value.children?.length ?? 0) === 4 ? node.value.children?.get(2) : null,
 );
 
 const displayText = computed(
-  () => linkNameNode.value?.rawValue ?? linkAddress.value
+  () => linkNameNode.value?.children?.get(1).rawValue ?? linkAddress.value,
 );
 </script>
-
-<style lang="scss" scoped>
-.org-link {
-  color: var(--fg);
-  text-decoration: underline;
-  cursor: pointer;
-}
-</style>

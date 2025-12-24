@@ -79,13 +79,15 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     orgNode.value = node;
   };
 
-  const createFacetExtensions = (readonly: boolean): Extension[] => [
-    orgNodeGetterFacet.of(getOrgNode),
-    readonlyFacet.of(readonly),
-    inlineWidgetsFacet.of(editorStore.inlineWidgets),
-    multilineWidgetsFacet.of(editorStore.multilineWidgets),
-    lineClassesFacet.of(editorStore.lineClasses),
-  ];
+  const createFacetExtensions = (readonly: boolean): Extension[] => {
+    return [
+      orgNodeGetterFacet.of(getOrgNode),
+      readonlyFacet.of(readonly),
+      inlineWidgetsFacet.of(editorStore.inlineWidgets),
+      multilineWidgetsFacet.of(editorStore.multilineWidgets),
+      lineClassesFacet.of(editorStore.lineClasses),
+    ];
+  };
 
   const createState = (content: string): EditorState => {
     const readonly = options.readonly ?? false;
