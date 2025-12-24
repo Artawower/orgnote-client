@@ -259,7 +259,7 @@ body {
 
   // Editor
   --editor-max-width: 768px;
-  --editor-padding: var(--padding-xl) var(--padding-lg);
+  --editor-padding: var(--padding-xl) var(--padding-lg) 0 var(--padding-lg);
   --editor-cursor-color: var(--accent);
   --editor-cursor-width: 2px;
   --editor-selection-bg: var(--accent);
@@ -277,8 +277,6 @@ body {
     --modal-border: none;
     --modal-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
 
-    --footer-height: 60px;
-
     --tab-overview-container-padding: var(--padding-sm);
     --tab-overview-grid-gap: var(--gap-md);
     --tab-overview-grid-columns: 3;
@@ -294,6 +292,7 @@ body {
 @include mobile {
   body {
     --tab-overview-grid-columns: 2;
+    --footer-height: 52px;
   }
 }
 
