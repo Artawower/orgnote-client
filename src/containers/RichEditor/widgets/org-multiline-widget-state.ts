@@ -21,6 +21,7 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
   },
 
   update(multilineWidgets, tr) {
+    multilineWidgets = multilineWidgets.map(tr.changes);
     for (const e of tr.effects) {
       if (e.is(addMultilineWidgetEffect)) {
         let alreadyDecoratedNode: Decoration | undefined;
@@ -38,14 +39,14 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
             return !found;
           },
         });
+        const [startOffset, endOffset] = e.value.multilineWidget.showRangeOffset ?? [0, 0];
+        const start = e.value.orgNode.start + startOffset;
+        const end = e.value.orgNode.end + endOffset;
 
         multilineWidgets = multilineWidgets.update({
           add: [
             alreadyDecoratedNode
-              ? alreadyDecoratedNode.range(
-                  e.value.orgNode.start,
-                  e.value.orgNode.end
-                )
+              ? alreadyDecoratedNode.range(start, end)
               : OrgMultilineWidget.init(
                   e.value.view,
                   e.value.orgNode,
