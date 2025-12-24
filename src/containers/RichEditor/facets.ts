@@ -1,10 +1,6 @@
 import { Facet } from '@codemirror/state';
 import type { OrgNode } from 'org-mode-ast';
-import type {
-  InlineEmbeddedWidgets,
-  MultilineEmbeddedWidgets,
-  OrgLineClasses,
-} from 'orgnote-api';
+import type { InlineEmbeddedWidgets, MultilineEmbeddedWidgets, OrgLineClasses } from 'orgnote-api';
 
 export type OrgNodeGetter = () => OrgNode | null;
 
@@ -20,7 +16,10 @@ export const inlineWidgetsFacet = Facet.define<InlineEmbeddedWidgets, InlineEmbe
   combine: (inputs) => inputs.reduce((acc, widgets) => ({ ...acc, ...widgets }), {}),
 });
 
-export const multilineWidgetsFacet = Facet.define<MultilineEmbeddedWidgets, MultilineEmbeddedWidgets>({
+export const multilineWidgetsFacet = Facet.define<
+  MultilineEmbeddedWidgets,
+  MultilineEmbeddedWidgets
+>({
   combine: (inputs) => inputs.reduce((acc, widgets) => ({ ...acc, ...widgets }), {}),
 });
 

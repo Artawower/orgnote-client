@@ -50,7 +50,7 @@ export const orgMultilineWidgetField = StateField.define<DecorationSet>({
                   e.value.view,
                   e.value.orgNode,
                   e.value.rootNodeSrc,
-                  e.value.multilineWidget
+                  e.value.multilineWidget,
                 ),
           ],
         });

@@ -1,5 +1,5 @@
-import type { Component } from 'vue';
-import { createApp, getCurrentInstance } from 'vue';
+import type { Component, VNode } from 'vue';
+import { createApp, getCurrentInstance, defineComponent, isVNode } from 'vue';
 
 export interface DynamicComponentInstance {
   destroy: () => void;
@@ -10,11 +10,13 @@ export const useDynamicComponent = () => {
   const vueInstance = getCurrentInstance();
 
   const mount = (
-    cmp: Component,
+    cmp: Component | VNode,
     wrap: Element,
-    props?: Record<string, unknown>
+    props?: Record<string, unknown>,
   ): DynamicComponentInstance => {
-    const app = createApp(cmp, props);
+    const componentToMount = isVNode(cmp) ? defineComponent({ render: () => cmp }) : cmp;
+
+    const app = createApp(componentToMount, isVNode(cmp) ? undefined : props);
 
     if (vueInstance?.appContext) {
       Object.assign(app._context, vueInstance.appContext);

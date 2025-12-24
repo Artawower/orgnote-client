@@ -1,4 +1,4 @@
-import type { Extension, ExtensionManifest, WidgetMeta, EditorStore } from 'orgnote-api';
+import type { Extension, WidgetMeta, EditorStore } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
@@ -268,11 +268,4 @@ export const orgInlineMarkupExtension: Extension = {
   },
 };
 
-export const orgInlineMarkupManifest: ExtensionManifest = {
-  name: 'Inline markup',
-  description: 'Bundle of predefined inline markup widgets for editor.',
-  version: '0.0.1',
-  category: 'extension',
-  source: { type: 'builtin' },
-  keywords: ['editor', 'widgets'],
-};
+export { orgInlineMarkupManifest } from './manifest';

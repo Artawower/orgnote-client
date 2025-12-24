@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia';
-import { computed, shallowRef, type Component } from 'vue';
+import { computed, h, shallowRef, type Component } from 'vue';
 import type {
   InlineEmbeddedWidgets,
   MultilineEmbeddedWidgets,
   OrgLineClasses,
   WidgetBuilder,
-  EmbeddedWidgetBuilder,
   WidgetBuilderParams,
   EmbeddedWidget,
   EditorExtension,
@@ -15,6 +14,7 @@ import type {
 import { WidgetType } from 'orgnote-api';
 import type { NodeType } from 'org-mode-ast';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
+import MultilineWidgetWrapper from 'src/containers/RichEditor/widgets/MultilineWidgetWrapper.vue';
 
 const textToKebab = (text: string): string =>
   text.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -79,7 +79,7 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
 
   const createWidgetBuilder = (
     cmp: Component,
-    props: Record<string, unknown> = {}
+    props: Record<string, unknown> = {},
   ): WidgetBuilder => {
     return (params: WidgetBuilderParams): EmbeddedWidget => {
       const normalizedType = textToKebab(params.orgNode.type);
@@ -96,12 +96,34 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     };
   };
 
-  const createEmbeddedWidgetBuilder = (
+  const createMultilineWidgetBuilder = (
     cmp: Component,
-    props: Record<string, unknown> = {}
-  ): EmbeddedWidgetBuilder => {
-    return (wrap: HTMLElement, dynamicProps: Record<string, unknown> = {}) =>
-      getDynamicComponent().mount(cmp, wrap, { ...props, ...dynamicProps });
+    props: Record<string, unknown> = {},
+  ): WidgetBuilder => {
+    return (params: WidgetBuilderParams): EmbeddedWidget => {
+      const normalizedType = textToKebab(params.orgNode.type);
+      params.wrap.classList.add(`org-embedded-${normalizedType}`);
+
+      const wrappedComponent = h(
+        MultilineWidgetWrapper,
+        {
+          readonly: params.readonly,
+          suppressEdit: params.suppressEdit,
+          onEdit: () => params.onEditMode?.(),
+        },
+        () =>
+          h(cmp, {
+            ...props,
+            node: params.orgNode,
+            editorView: params.editorView,
+            rootNodeSrc: params.rootNodeSrc,
+            readonly: params.readonly,
+            onUpdate: (newVal: string) => params.onUpdateFn?.(newVal),
+          }),
+      );
+
+      return getDynamicComponent().mount(wrappedComponent, params.wrap);
+    };
   };
 
   const inlineWidgets = computed(() => widgetRegistry.value[WidgetType.Inline]);
@@ -118,6 +140,6 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     addExtensions,
     removeExtensions,
     createWidgetBuilder,
-    createEmbeddedWidgetBuilder,
+    createMultilineWidgetBuilder,
   };
 });

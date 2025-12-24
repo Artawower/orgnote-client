@@ -10,11 +10,7 @@ import type { ChangedRange } from '@lezer/common';
 import type { OrgNode } from 'org-mode-ast';
 import { walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/utils/has-intersection';
-import {
-  orgNodeGetterFacet,
-  readonlyFacet,
-  multilineWidgetsFacet,
-} from '../facets';
+import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
 
 let previousCaretPosition: number;
 
