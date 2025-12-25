@@ -25,6 +25,7 @@ export default defineConfig((ctx) => {
       'axios',
       'infrastructure',
       'api',
+      'highlightjs',
       {
         server: false,
         path: 'pane-snapshot',
