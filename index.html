@@ -164,6 +164,10 @@
       }
 
       window.addEventListener('error', function (event) {
+        if (window.__appBooted) {
+          return;
+        }
+
         window.__errorBuffer.capture(event.error, 'error', {
           url: event.filename,
           line: event.lineno,
@@ -174,6 +178,10 @@
       });
 
       window.addEventListener('unhandledrejection', function (event) {
+        if (window.__appBooted) {
+          return;
+        }
+
         window.__errorBuffer.capture(event.reason, 'rejection');
         console.error('[FALLBACK] Unhandled rejection:', event.reason);
         showMinimalErrorScreen();
