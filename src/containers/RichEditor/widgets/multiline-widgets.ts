@@ -12,9 +12,11 @@ import { walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/utils/has-intersection';
 import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
 
-let previousCaretPosition: number;
-
 export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) => {
+  if (!v.docChanged && !v.viewportChanged && !v.selectionSet) {
+    return;
+  }
+
   const getOrgNode = v.state.facet(orgNodeGetterFacet);
   const readonly = v.state.facet(readonlyFacet);
   const widgets = v.state.facet(multilineWidgetsFacet);
@@ -23,14 +25,9 @@ export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) 
   if (!orgNode) return;
 
   const currentCaretPosition = v.state.selection.main.head;
-  const caretPositionChanged = currentCaretPosition !== previousCaretPosition;
-  previousCaretPosition = currentCaretPosition;
-
-  if (!v.docChanged && !v.viewportChanged && !caretPositionChanged) {
-    return;
-  }
 
   const effects: StateEffect<OrgNode | AddWidgetEffect>[] = [];
+  const changedRanges = (v as unknown as { changedRanges?: ChangedRange[] }).changedRanges ?? [];
 
   walkTree(orgNode, (n: OrgNode): boolean => {
     const multilineEmbeddedWidget = widgets[n.type];
@@ -38,13 +35,10 @@ export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) 
       return false;
     }
 
-    const changedRanges = (v as unknown as { changedRanges: ChangedRange[] })
-      .changedRanges;
     const widgetRemoved = changedRanges.find((r) =>
-      hasIntersection(r.fromA, r.toA, n.start, n.end + 1)
+      hasIntersection(r.fromB, r.toB, n.start, n.end + 1),
     );
-    const caretIntoWidget =
-      currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
+    const caretIntoWidget = currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
 
     if (!readonly && (widgetRemoved || caretIntoWidget)) {
       effects.push(removeMultilineWidgetEffect.of(n));
@@ -65,11 +59,13 @@ export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) 
         view: v.view,
         rootNodeSrc: getOrgNode,
         multilineWidget: multilineEmbeddedWidget,
-      })
+      }),
     );
 
     return false;
   });
 
-  v.view.dispatch({ effects });
+  if (effects.length) {
+    v.view.dispatch({ effects });
+  }
 });

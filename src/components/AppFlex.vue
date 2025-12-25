@@ -16,7 +16,7 @@ const rootRef = ref<HTMLElement | null>(null);
 
 const props = withDefaults(
   defineProps<{
-    direction?: 'row' | 'column';
+    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
     justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
     align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
     gap?: StyleSize | ({} & string);
@@ -26,6 +26,9 @@ const props = withDefaults(
     // Direction shortcuts
     row?: boolean;
     column?: boolean;
+    rowReverse?: boolean;
+    columnReverse?: boolean;
+    reverse?: boolean;
 
     // Justify shortcuts
     start?: boolean;
@@ -51,6 +54,9 @@ const props = withDefaults(
     tag: 'div',
     row: false,
     column: false,
+    rowReverse: false,
+    columnReverse: false,
+    reverse: false,
     start: false,
     center: false,
     end: false,
@@ -84,8 +90,11 @@ const alignMap: Record<string, string> = {
 
 // Compute direction from shortcuts or prop
 const computedDirection = computed(() => {
-  if (props.column) return 'column';
-  if (props.row) return 'row';
+  if (props.columnReverse) return 'column-reverse';
+  if (props.rowReverse) return 'row-reverse';
+  if (props.column) return props.reverse ? 'column-reverse' : 'column';
+  if (props.row) return props.reverse ? 'row-reverse' : 'row';
+  if (props.reverse) return `${props.direction}-reverse`;
   return props.direction;
 });
 

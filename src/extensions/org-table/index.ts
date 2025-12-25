@@ -6,11 +6,11 @@ import OrgTable from './OrgTable.vue';
 
 export const orgTableExtension: Extension = {
   onMounted: async (api) => {
-    const { createMultilineWidgetBuilder, addWidgets } = api.core.useEditor();
+    const { addWidgets } = api.core.useEditor();
     addWidgets({
       type: WidgetType.Multiline,
       nodeType: NodeType.Table,
-      widgetBuilder: createMultilineWidgetBuilder(OrgTable),
+      component: OrgTable,
     });
   },
 

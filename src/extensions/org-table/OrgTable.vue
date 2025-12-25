@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { NodeType, type OrgNode } from 'org-mode-ast';
 import type { Header, Item } from 'vue3-easy-data-table';
 // @ts-expect-error no types for default export
@@ -31,35 +32,42 @@ import ContentRenderer from 'src/components/ContentRenderer.vue';
 
 const props = defineProps<{
   node: OrgNode;
+  nodeGetter?: () => OrgNode;
 }>();
 
-const headers: Header[] = (props.node.children?.first?.children ?? [])
-  .filter((n: OrgNode) => n.is(NodeType.TableCell))
-  .map((h: OrgNode) => {
-    const rawText = h.rawValue;
-    return {
-      value: rawText,
-      text: rawText,
-    };
-  });
+const currentNode = computed(() => props.nodeGetter?.() ?? props.node);
 
-const items: Item[] = (props.node.children ?? [])
-  .slice(1)
-  .filter((n: OrgNode) => n.is(NodeType.TableRow))
-  .map((row: OrgNode) => {
-    const children = row.children ?? [];
-    const item: Item = {};
+const headers = computed<Header[]>(() =>
+  (currentNode.value.children?.first?.children ?? [])
+    .filter((n: OrgNode) => n.is(NodeType.TableCell))
+    .map((h: OrgNode) => {
+      const rawText = h.rawValue;
+      return {
+        value: rawText,
+        text: rawText,
+      };
+    }),
+);
 
-    children
-      .filter((n: OrgNode) => n.is(NodeType.TableCell))
-      .forEach((c: OrgNode, i: number) => {
-        if (i < headers.length) {
-          item[headers[i]!.value] = c;
-        }
-      });
+const items = computed<Item[]>(() =>
+  (currentNode.value.children ?? [])
+    .slice(1)
+    .filter((n: OrgNode) => n.is(NodeType.TableRow))
+    .map((row: OrgNode) => {
+      const children = row.children ?? [];
+      const item: Item = {};
 
-    return item;
-  });
+      children
+        .filter((n: OrgNode) => n.is(NodeType.TableCell))
+        .forEach((c: OrgNode, i: number) => {
+          if (i < headers.value.length) {
+            item[headers.value[i]!.value] = c;
+          }
+        });
+
+      return item;
+    }),
+);
 </script>
 
 <style lang="scss">

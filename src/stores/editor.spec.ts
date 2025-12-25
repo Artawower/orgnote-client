@@ -283,61 +283,6 @@ test('useEditorStore.lineClasses: returns only lineClass registry', () => {
   expect(store.lineClasses[NodeType.Bold]).toBeUndefined();
 });
 
-test('useEditorStore.createWidgetBuilder: returns a function', () => {
-  const store = useEditorStore();
-  const TestComponent = { template: '<div></div>' };
-
-  const builder = store.createWidgetBuilder(TestComponent);
-
-  expect(typeof builder).toBe('function');
-});
-
-test('useEditorStore.createWidgetBuilder: adds org-embedded class to wrapper element', () => {
-  const store = useEditorStore();
-  const TestComponent = { template: '<div></div>' };
-  const builder = store.createWidgetBuilder(TestComponent);
-
-  const wrap = document.createElement('span');
-  const mockOrgNode = {
-    type: 'bold',
-    start: 0,
-    end: 5,
-  };
-
-  builder({
-    orgNode: mockOrgNode as never,
-    wrap,
-    editorView: {} as never,
-    rootNodeSrc: () => null,
-    readonly: false,
-  });
-
-  expect(wrap.classList.contains('org-embedded-bold')).toBe(true);
-});
-
-test('useEditorStore.createWidgetBuilder: converts camelCase type to kebab-case class', () => {
-  const store = useEditorStore();
-  const TestComponent = { template: '<div></div>' };
-  const builder = store.createWidgetBuilder(TestComponent);
-
-  const wrap = document.createElement('span');
-  const mockOrgNode = {
-    type: 'SrcBlock',
-    start: 0,
-    end: 5,
-  };
-
-  builder({
-    orgNode: mockOrgNode as never,
-    wrap,
-    editorView: {} as never,
-    rootNodeSrc: () => null,
-    readonly: false,
-  });
-
-  expect(wrap.classList.contains('org-embedded-src-block')).toBe(true);
-});
-
 test('useEditorStore.addExtensions: adds to extensions array', () => {
   const store = useEditorStore();
   const ext1 = { name: 'ext1' };

@@ -16,6 +16,8 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { api } from 'src/boot/api';
 import { setCursorToEOF } from './use-cursor';
 import { useEditorView } from './use-editor-view';
+import { to } from 'orgnote-api';
+import { reporter } from 'src/boot/report';
 
 const props = defineProps<{
   readonly?: boolean;
@@ -27,22 +29,11 @@ const editorRef = ref<HTMLDivElement>();
 const configStore = api.core.useConfig();
 const editorConfig = computed(() => configStore.config.editor);
 
-let isInternalUpdate = false;
-
-const handleContentUpdate = (content: string) => {
-  isInternalUpdate = true;
-  model.value = content;
-  isInternalUpdate = false;
-};
-
-const {
-  initView,
-  destroyView,
-  updateContent,
-  setReadonly,
-} = useEditorView({
+const { initView, destroyView, updateContent, setReadonly } = useEditorView({
   readonly: props.readonly,
-  onContentUpdate: handleContentUpdate,
+  onContentUpdate: (content: string) => {
+    model.value = content;
+  },
 });
 
 const initEditor = () => {
@@ -52,20 +43,24 @@ const initEditor = () => {
   setCursorToEOF(view);
 };
 
-onMounted(initEditor);
+const safeInitEditor = () => {
+  const res = to(initEditor)();
+  if (res.isErr()) {
+    reporter.reportError('Failed to initialize rich text editor', res.error);
+  }
+};
+
+onMounted(safeInitEditor);
 onUnmounted(destroyView);
 
 watch(
   () => model.value,
-  (newValue) => {
-    if (isInternalUpdate) return;
-    updateContent(newValue ?? '');
-  }
+  (newValue) => updateContent(newValue ?? ''),
 );
 
 watch(
   () => props.readonly,
-  (value) => setReadonly(value ?? false)
+  (value) => setReadonly(value ?? false),
 );
 </script>
 

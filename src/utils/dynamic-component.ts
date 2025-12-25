@@ -1,10 +1,17 @@
-import type { Component, VNode } from 'vue';
-import { createApp, getCurrentInstance, defineComponent, isVNode } from 'vue';
+import type { Component, VNode, App } from 'vue';
+import { createApp, defineComponent, isVNode, getCurrentInstance } from 'vue';
+import { to } from 'orgnote-api/utils';
+import { logger } from 'src/boot/logger';
 
 export interface DynamicComponentInstance {
   destroy: () => void;
   refresh: (...args: unknown[]) => void;
 }
+
+const noopInstance: DynamicComponentInstance = {
+  destroy: () => {},
+  refresh: () => {},
+};
 
 export const useDynamicComponent = () => {
   const vueInstance = getCurrentInstance();
@@ -14,20 +21,48 @@ export const useDynamicComponent = () => {
     wrap: Element,
     props?: Record<string, unknown>,
   ): DynamicComponentInstance => {
-    const componentToMount = isVNode(cmp) ? defineComponent({ render: () => cmp }) : cmp;
+    let app: App | null = null;
+    let destroyed = false;
 
-    const app = createApp(componentToMount, isVNode(cmp) ? undefined : props);
+    const componentToMount = isVNode(cmp) ? defineComponent({ render: () => cmp }) : cmp;
+    app = createApp(componentToMount, isVNode(cmp) ? undefined : props);
 
     if (vueInstance?.appContext) {
       Object.assign(app._context, vueInstance.appContext);
     }
 
-    app.mount(wrap);
+    app.config.errorHandler = (err, _instance, info) => {
+      if (destroyed) return;
+      logger.error('[Widget Runtime Error]', {
+        info,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+    };
+
+    app.config.warnHandler = (msg, _instance, trace) => {
+      if (destroyed) return;
+      logger.warn('[Widget Runtime Warn]', { msg, trace });
+    };
+
+    const [err] = to(() => app!.mount(wrap))();
+    if (err) {
+      logger.error('[Widget Mount Error]', {
+        message: err instanceof Error ? err.message : String(err),
+      });
+      return noopInstance;
+    }
 
     return {
-      destroy: () => app.unmount(),
+      destroy: () => {
+        if (!app || destroyed) return;
+        destroyed = true;
+        to(() => app!.unmount())();
+        app = null;
+      },
       refresh: (...args: unknown[]) => {
-        const exposed = app._instance?.exposed as { refresh?: (...args: unknown[]) => void };
+        if (destroyed) return;
+        const exposed = app?._instance?.exposed as { refresh?: (...args: unknown[]) => void };
         exposed?.refresh?.(...args);
       },
     };

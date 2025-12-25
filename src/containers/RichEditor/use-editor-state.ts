@@ -1,11 +1,13 @@
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { closeBrackets } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
-import { computed, shallowRef, watch } from 'vue';
-import type { OrgNode } from 'org-mode-ast';
+import { computed, shallowRef, watch, toValue } from 'vue';
+import type { OrgNode, NodeType } from 'org-mode-ast';
 import { api } from 'src/boot/api';
+import type { InlineEmbeddedWidgets, MultilineEmbeddedWidgets } from 'orgnote-api';
+import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 
 import {
   orgNodeGetterFacet,
@@ -66,6 +68,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const configStore = api.core.useConfig();
   const editorStore = api.core.useEditor();
   const editorConfig = computed(() => configStore.config.editor);
+  const { createWidgetBuilder, createMultilineWidgetBuilder } = useWidgetBuilder();
 
   const compartments = {
     readonly: new Compartment(),
@@ -79,13 +82,37 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     orgNode.value = node;
   };
 
+  const buildWidgets = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
+    widgets: T,
+    builderFn: typeof createWidgetBuilder,
+  ): T =>
+    Object.entries(widgets).reduce((acc, [nodeType, widget]) => {
+      if (!widget) return acc;
+      return {
+        ...acc,
+        [nodeType as NodeType]: {
+          ...widget,
+          widgetBuilder:
+            widget.component && !widget.widgetBuilder
+              ? builderFn(widget.component, widget.componentProps)
+              : widget.widgetBuilder,
+        },
+      };
+    }, {} as T);
+
+  const buildInlineWidgets = () =>
+    buildWidgets(toValue(editorStore.inlineWidgets), createWidgetBuilder);
+
+  const buildMultilineWidgets = () =>
+    buildWidgets(toValue(editorStore.multilineWidgets), createMultilineWidgetBuilder);
+
   const createFacetExtensions = (readonly: boolean): Extension[] => {
     return [
       orgNodeGetterFacet.of(getOrgNode),
       readonlyFacet.of(readonly),
-      inlineWidgetsFacet.of(editorStore.inlineWidgets),
-      multilineWidgetsFacet.of(editorStore.multilineWidgets),
-      lineClassesFacet.of(editorStore.lineClasses),
+      inlineWidgetsFacet.of(buildInlineWidgets()),
+      multilineWidgetsFacet.of(buildMultilineWidgets()),
+      lineClassesFacet.of(toValue(editorStore.lineClasses)),
     ];
   };
 
@@ -97,6 +124,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
       doc: content,
       extensions: [
         ...createBaseExtensions(options.editorViewGetter),
+        highlightActiveLine(),
         createUpdateListener(options.onContentUpdate),
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
         compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),

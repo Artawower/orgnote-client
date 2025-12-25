@@ -13,7 +13,7 @@ export class OrgInlineWidget extends BaseOrgWidget {
     orgNode: OrgNode,
     private readonly inlineWidget: InlineEmbeddedWidget,
     rootNodeSrc: () => OrgNode | null,
-    private readonly readonly: boolean
+    private readonly readonly: boolean,
   ) {
     super(view, rootNodeSrc, orgNode, inlineWidget);
   }
@@ -23,11 +23,9 @@ export class OrgInlineWidget extends BaseOrgWidget {
     orgNode: OrgNode,
     inlineWidget: InlineEmbeddedWidget,
     rootNodeSrc: () => OrgNode | null,
-    readonly: boolean
+    readonly: boolean,
   ): Range<Decoration> | undefined {
-    const realText = view.state.doc
-      .toString()
-      .slice(orgNode.start, orgNode.end);
+    const realText = view.state.doc.toString().slice(orgNode.start, orgNode.end);
 
     if (realText !== orgNode.rawValue) {
       return;
@@ -36,13 +34,7 @@ export class OrgInlineWidget extends BaseOrgWidget {
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
     return Decoration[inlineWidget.decorationType]({
-      widget: new OrgInlineWidget(
-        view,
-        orgNode,
-        inlineWidget,
-        rootNodeSrc,
-        readonly
-      ),
+      widget: new OrgInlineWidget(view, orgNode, inlineWidget, rootNodeSrc, readonly),
       side: inlineWidget.side,
       class: inlineWidget.classBuilder?.(orgNode),
       inclusive: inlineWidget.inclusive,
@@ -60,9 +52,8 @@ export class OrgInlineWidget extends BaseOrgWidget {
   }
 
   override toDOM(): HTMLElement {
-    const wrap = document.createElement(
-      this.inlineWidget.wrapComponent ?? 'span'
-    );
+    const wrap = document.createElement(this.inlineWidget.wrapComponent ?? 'span');
+
     this.widget = this.embeddedWidget.widgetBuilder?.({
       wrap,
       orgNode: this.orgNode,
@@ -71,6 +62,7 @@ export class OrgInlineWidget extends BaseOrgWidget {
       editorView: this.view as never,
       readonly: this.readonly,
     });
+
     return wrap;
   }
 

@@ -3,17 +3,15 @@ import type { Range } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import { Decoration } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
-import type { EmbeddedWidget, MultilineEmbeddedWidget } from 'orgnote-api';
+import type { MultilineEmbeddedWidget } from 'orgnote-api';
 import { readonlyFacet } from '../facets';
 
 export class OrgMultilineWidget extends BaseOrgWidget {
-  private widget: EmbeddedWidget | undefined;
-
   constructor(
     view: EditorView,
     orgNode: OrgNode,
     rootNodeSrc: () => OrgNode | null,
-    private readonly multilineWidget: MultilineEmbeddedWidget,
+    public readonly multilineWidget: MultilineEmbeddedWidget,
   ) {
     super(view, rootNodeSrc, orgNode, multilineWidget);
   }
@@ -34,56 +32,37 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   }
 
   public override eq(other: OrgMultilineWidget): boolean {
-    return (
-      other.orgNode.length === this.orgNode.length &&
-      other.orgNode.is(this.orgNode.type) &&
-      other.orgNode.rawValue === this.orgNode.rawValue
-    );
-  }
-
-  public eqByNode(orgNode: OrgNode): boolean {
-    return (
-      orgNode.length === this.orgNode.length &&
-      orgNode.is(this.orgNode.type) &&
-      orgNode.rawValue === this.orgNode.rawValue
-    );
+    return other.orgNode.is(this.orgNode.type) && other.orgNode.rawValue === this.orgNode.rawValue;
   }
 
   public sameNodeByOrgNode(orgNode: OrgNode): boolean {
-    if (orgNode.isNot(this.orgNode.type)) {
-      return false;
-    }
-    if (orgNode.rawValue === this.orgNode.rawValue) {
-      return true;
-    }
-    return orgNode.start === this.orgNode.start || orgNode.end === this.orgNode.end;
+    return (
+      orgNode.is(this.orgNode.type) &&
+      (orgNode.rawValue === this.orgNode.rawValue ||
+        orgNode.start === this.orgNode.start ||
+        orgNode.end === this.orgNode.end)
+    );
   }
 
   public override toDOM(): HTMLElement {
     const wrap = document.createElement('div');
-    const readonly = this.view.state.facet(readonlyFacet);
+    const normalizedType = this._orgNode.type.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+    wrap.classList.add(`org-embedded-${normalizedType}`);
 
-    this.widget = this.multilineWidget.widgetBuilder({
+    this.multilineWidget.widgetBuilder!({
       wrap,
-      orgNode: this.orgNode,
+      orgNode: this._orgNode,
       editorView: this.view as never,
       rootNodeSrc: this.rootNodeSrc,
-      readonly,
+      readonly: this.view.state.facet(readonlyFacet),
       suppressEdit: this.multilineWidget.suppressEdit,
       onUpdateFn: this.updateValue.bind(this),
-      onEditMode: this.enterEditMode.bind(this),
+      onEditMode: () =>
+        this.view.dispatch({
+          selection: { anchor: this._orgNode.end, head: this._orgNode.end },
+        }),
     });
 
     return wrap;
-  }
-
-  private enterEditMode(): void {
-    this.view.dispatch({
-      selection: { anchor: this.orgNode.end, head: this.orgNode.end },
-    });
-  }
-
-  public override destroy(): void {
-    this.widget?.destroy();
   }
 }

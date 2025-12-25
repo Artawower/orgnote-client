@@ -1,20 +1,22 @@
 <template>
   <div class="org-multiline-widget" @touchstart.stop.prevent @mousedown.stop.prevent>
-    <slot />
-    <action-button
-      v-if="!suppressEdit && !readonly"
-      class="org-widget-edit-badge"
-      icon="edit_note"
-      border
-      color="fg-muted"
-      size="sm"
-      @click="handleEditClick"
-    />
+    <slot :actionsId="actionsId" />
+    <app-flex row-reverse :id="actionsId" class="org-widget-actions" gap="sm">
+      <action-button
+        v-if="!suppressEdit && !readonly"
+        icon="edit_note"
+        color="fg-muted"
+        size="sm"
+        @click="handleEditClick"
+      />
+    </app-flex>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { v4 } from 'uuid';
 import ActionButton from 'src/components/ActionButton.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 
 defineProps<{
   suppressEdit?: boolean;
@@ -25,6 +27,8 @@ const emit = defineEmits<{
   edit: [];
 }>();
 
+const actionsId = `widget-actions-${v4()}`;
+
 const handleEditClick = (event: MouseEvent) => {
   event.preventDefault();
   emit('edit');
@@ -34,42 +38,34 @@ const handleEditClick = (event: MouseEvent) => {
 <style lang="scss" scoped>
 .org-multiline-widget {
   position: relative;
-}
-
-.org-widget-edit-badge {
-  position: absolute;
-  opacity: 0;
-  z-index: 1000;
-  right: 16px;
-  top: var(--gap-sm);
-}
-
-.org-widget-edit-badge:hover {
-  opacity: 1;
-}
-
-.org-multiline-widget {
   margin-top: var(--margin-md);
   width: 100%;
   overflow: auto;
 }
 
-.org-multiline-widget:hover .org-widget-edit-badge,
-.org-multiline-widget:active .org-widget-edit-badge {
+.org-widget-actions {
+  position: absolute;
+  top: var(--gap-sm);
+  right: var(--gap-sm);
+  z-index: 1000;
+  opacity: 0;
+}
+
+.org-multiline-widget:hover .org-widget-actions,
+.org-multiline-widget:active .org-widget-actions {
   opacity: 1;
 }
 
 @media (max-width: 768px) {
-  .org-widget-edit-badge {
+  .org-widget-actions {
     right: 8px;
     top: 8px;
     opacity: 1;
-    left: unset;
     display: none;
   }
 
-  .org-multiline-widget:hover .org-widget-edit-badge {
-    display: block;
+  .org-multiline-widget:hover .org-widget-actions {
+    display: flex;
   }
 }
 </style>

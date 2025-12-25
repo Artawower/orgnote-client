@@ -1,4 +1,4 @@
-import type { Extension, WidgetMeta, EditorStore } from 'orgnote-api';
+import type { Extension, WidgetMeta } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
@@ -17,9 +17,7 @@ import {
 } from 'src/components/org-nodes';
 import styles from './styles.css?raw';
 
-const createInlineWidgets = (
-  createWidgetBuilder: EditorStore['createWidgetBuilder'],
-): WidgetMeta[] => [
+const inlineWidgets: WidgetMeta[] = [
   {
     type: WidgetType.Inline,
     nodeType: NodeType.TodoKeyword,
@@ -37,42 +35,42 @@ const createInlineWidgets = (
     nodeType: NodeType.InlineCode,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgInlineCode),
+    component: OrgInlineCode,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Verbatim,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgInlineCode),
+    component: OrgInlineCode,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Indent,
     decorationType: 'replace',
     ignoreEditing: true,
-    widgetBuilder: createWidgetBuilder(OrgInvisible),
+    component: OrgInvisible,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.ListTag,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgListTag),
+    component: OrgListTag,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Date,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgDateTime),
+    component: OrgDateTime,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.TagList,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgTags),
+    component: OrgTags,
   },
   {
     type: WidgetType.Inline,
@@ -86,7 +84,7 @@ const createInlineWidgets = (
         !rawValue.startsWith('#+end_');
       return !!(orgNode.parent?.is(NodeType.Keyword) && notBlockKeyword);
     },
-    widgetBuilder: createWidgetBuilder(OrgInvisible),
+    component: OrgInvisible,
   },
   {
     type: WidgetType.Inline,
@@ -111,33 +109,33 @@ const createInlineWidgets = (
     type: WidgetType.Inline,
     nodeType: NodeType.HorizontalRule,
     decorationType: 'replace',
-    widgetBuilder: createWidgetBuilder(OrgHorizontalRule),
+    component: OrgHorizontalRule,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.RawLink,
     decorationType: 'replace',
     ignoreEvent: true,
-    widgetBuilder: createWidgetBuilder(OrgRawLink),
+    component: OrgRawLink,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Priority,
     decorationType: 'replace',
-    widgetBuilder: createWidgetBuilder(OrgPriority),
+    component: OrgPriority,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Checkbox,
     decorationType: 'replace',
-    widgetBuilder: createWidgetBuilder(OrgCheckbox),
+    component: OrgCheckbox,
     ignoreEvent: true,
   },
   {
     type: WidgetType.Inline,
     nodeType: NodeType.Link,
     decorationType: 'replace',
-    widgetBuilder: createWidgetBuilder(OrgLink),
+    component: OrgLink,
     ignoreEvent: true,
     satisfied: (orgNode: OrgNode) => orgNode.meta.linkType !== 'image',
   },
@@ -263,9 +261,7 @@ const lineClassWidgets: WidgetMeta[] = [
   },
 ];
 
-const getAllWidgets = (
-  createWidgetBuilder: EditorStore['createWidgetBuilder'],
-): WidgetMeta[] => [...createInlineWidgets(createWidgetBuilder), ...lineClassWidgets];
+const allWidgets: WidgetMeta[] = [...inlineWidgets, ...lineClassWidgets];
 
 const SCOPE_ID = 'org-inline-markup';
 
@@ -273,15 +269,15 @@ export const orgInlineMarkupExtension: Extension = {
   onMounted: async (api) => {
     api.utils.applyScopedStyles(SCOPE_ID, styles);
 
-    const { createWidgetBuilder, addWidgets } = api.core.useEditor();
-    addWidgets(...getAllWidgets(createWidgetBuilder));
+    const { addWidgets } = api.core.useEditor();
+    addWidgets(...allWidgets);
   },
 
   onUnmounted: async (api) => {
     api.utils.removeScopedStyles(SCOPE_ID);
 
-    const { createWidgetBuilder, removeWidget } = api.core.useEditor();
-    getAllWidgets(createWidgetBuilder).forEach((w) => removeWidget(w.nodeType));
+    const { removeWidget } = api.core.useEditor();
+    allWidgets.forEach((w) => removeWidget(w.nodeType));
   },
 };
 

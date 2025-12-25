@@ -8,12 +8,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
 
   const getEditorView = () => editorView;
 
-  const {
-    orgNode,
-    createState,
-    reconfigureReadonly,
-    setupWidgetsWatcher,
-  } = useEditorState({
+  const { orgNode, createState, reconfigureReadonly, setupWidgetsWatcher } = useEditorState({
     ...options,
     editorViewGetter: getEditorView,
   });
@@ -26,6 +21,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
 
     setupWidgetsWatcher(getEditorView);
 
+    editorView.focus();
     return editorView;
   };
 

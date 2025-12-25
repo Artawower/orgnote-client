@@ -1,4 +1,5 @@
 import { boot } from 'quasar/wrappers';
+import 'highlight.js/styles/atom-one-dark.css';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
 import hljsCommon from 'highlight.js/lib/common';
 

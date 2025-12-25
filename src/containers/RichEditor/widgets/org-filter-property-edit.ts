@@ -7,8 +7,7 @@ export const readOnlyTransactionFilter = EditorState.transactionFilter.of((tr) =
     return tr;
   }
 
-  const getOrgNode = tr.state.facet(orgNodeGetterFacet);
-  const orgNode = getOrgNode();
+  const orgNode = tr.state.facet(orgNodeGetterFacet)?.();
   if (!orgNode) return tr;
 
   let block = false;

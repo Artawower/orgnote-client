@@ -15,62 +15,54 @@ export interface AddWidgetEffect {
 export const addMultilineWidgetEffect = StateEffect.define<AddWidgetEffect>();
 export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
 
-export const orgMultilineWidgetField = StateField.define<DecorationSet>({
-  create() {
-    return Decoration.none;
-  },
-
-  update(multilineWidgets, tr) {
-    multilineWidgets = multilineWidgets.map(tr.changes);
-    for (const e of tr.effects) {
-      if (e.is(addMultilineWidgetEffect)) {
-        let alreadyDecoratedNode: Decoration | undefined;
-
-        multilineWidgets = multilineWidgets.update({
-          filter: (_f, _t, value) => {
-            const widget = value.spec.widget as OrgMultilineWidget | undefined;
-            if (!widget) {
-              return true;
-            }
-            const found = widget.eqByNode(e.value.orgNode);
-            if (found) {
-              alreadyDecoratedNode = value;
-            }
-            return !found;
-          },
-        });
-        const [startOffset, endOffset] = e.value.multilineWidget.showRangeOffset ?? [0, 0];
-        const start = e.value.orgNode.start + startOffset;
-        const end = e.value.orgNode.end + endOffset;
-
-        multilineWidgets = multilineWidgets.update({
-          add: [
-            alreadyDecoratedNode
-              ? alreadyDecoratedNode.range(start, end)
-              : OrgMultilineWidget.init(
-                  e.value.view,
-                  e.value.orgNode,
-                  e.value.rootNodeSrc,
-                  e.value.multilineWidget,
-                ),
-          ],
-        });
-      }
-
-      if (e.is(removeMultilineWidgetEffect)) {
-        multilineWidgets = multilineWidgets.update({
-          filter: (_f, _t, value) => {
-            const widget = value.spec.widget as OrgMultilineWidget | undefined;
-            if (!widget) {
-              return true;
-            }
-            return !widget.sameNodeByOrgNode(e.value);
-          },
-        });
-      }
+const hasWidgetAt = (
+  widgets: DecorationSet,
+  start: number,
+  end: number,
+  nodeType: string,
+): boolean => {
+  let exists = false;
+  widgets.between(start, end, (from, to, value) => {
+    const widget = value.spec.widget as OrgMultilineWidget | undefined;
+    if (widget?.orgNode.type === nodeType && from === start && to === end) {
+      exists = true;
     }
-    return multilineWidgets;
-  },
+  });
+  return exists;
+};
+
+const removeByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =>
+  widgets.update({
+    filter: (_f, _t, value) => {
+      const widget = value.spec.widget as OrgMultilineWidget | undefined;
+      return !widget?.sameNodeByOrgNode(orgNode);
+    },
+  });
+
+const handleAddEffect = (widgets: DecorationSet, effect: AddWidgetEffect): DecorationSet => {
+  const [startOffset, endOffset] = effect.multilineWidget.showRangeOffset ?? [0, 0];
+  const start = effect.orgNode.start + startOffset;
+  const end = effect.orgNode.end + endOffset;
+  const { type: nodeType } = effect.orgNode;
+
+  if (hasWidgetAt(widgets, start, end, nodeType)) {
+    return widgets;
+  }
+
+  return widgets.update({
+    add: [OrgMultilineWidget.init(effect.view, effect.orgNode, effect.rootNodeSrc, effect.multilineWidget)],
+  });
+};
+
+export const orgMultilineWidgetField = StateField.define<DecorationSet>({
+  create: () => Decoration.none,
+
+  update: (widgets, tr) =>
+    tr.effects.reduce((acc, e) => {
+      if (e.is(addMultilineWidgetEffect)) return handleAddEffect(acc, e.value);
+      if (e.is(removeMultilineWidgetEffect)) return removeByNode(acc, e.value);
+      return acc;
+    }, widgets.map(tr.changes)),
 
   provide: (f) => EditorView.decorations.from(f),
 });

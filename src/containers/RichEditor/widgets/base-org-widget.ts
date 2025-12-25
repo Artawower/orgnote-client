@@ -2,16 +2,23 @@ import type { CommonEmbeddedWidget } from 'orgnote-api';
 import type { EditorView } from '@codemirror/view';
 import { WidgetType } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
-import { walkTree } from 'org-mode-ast';
 
 export class BaseOrgWidget extends WidgetType {
   constructor(
     protected readonly view: EditorView,
     protected readonly rootNodeSrc: () => OrgNode | null,
-    protected readonly orgNode: OrgNode,
+    protected _orgNode: OrgNode,
     protected readonly embeddedWidget: CommonEmbeddedWidget,
   ) {
     super();
+  }
+
+  public get orgNode(): OrgNode {
+    return this._orgNode;
+  }
+
+  public updateOrgNode(orgNode: OrgNode): void {
+    this._orgNode = orgNode;
   }
 
   public toDOM(): HTMLElement {
@@ -19,10 +26,8 @@ export class BaseOrgWidget extends WidgetType {
   }
 
   protected updateValue(newVal: string): void {
-    const updateSchema = this.embeddedWidget.viewUpdater?.(
-      this.getActualNode(this.orgNode),
-      newVal,
-    );
+    const updateSchema = this.embeddedWidget.viewUpdater?.(this.orgNode, newVal);
+
     this.view.dispatch({
       changes: updateSchema ?? {
         from: this.orgNode.start,
@@ -30,21 +35,6 @@ export class BaseOrgWidget extends WidgetType {
         insert: newVal,
       },
     });
-  }
-
-  protected getActualNode(oldOrgNode: OrgNode): OrgNode {
-    const rootNode = this.rootNodeSrc();
-    if (!rootNode) return oldOrgNode;
-
-    let actualNode: OrgNode | undefined;
-    walkTree(rootNode, (n: OrgNode): boolean => {
-      if (n.start === oldOrgNode.start && n.end === oldOrgNode.end && n.is(oldOrgNode.type)) {
-        actualNode = n;
-        return true;
-      }
-      return false;
-    });
-    return actualNode ?? oldOrgNode;
   }
 
   public override ignoreEvent(event: Event): boolean {
