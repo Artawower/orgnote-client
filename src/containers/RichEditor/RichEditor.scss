@@ -1,3 +1,7 @@
+@mixin cm-hidden {
+  display: none;
+}
+
 .editor-wrapper {
   @include fit;
 
@@ -148,15 +152,19 @@
     .org-inline-code,
     .org-crossed {
       &.org-operator {
-        display: none;
+        @include cm-hidden;
       }
     }
 
     @for $i from 1 through 12 {
-      .org-headline-#{$i} {
-        &.org-operator {
-          display: none;
+      .cm-line:has(.org-headline-#{$i}.org-operator + .org-headline-#{$i}:not(.org-operator)) {
+        .org-headline-#{$i}.org-operator {
+          @include cm-hidden;
         }
+      }
+
+      .org-headline-#{$i}.org-operator {
+        color: var(--fg-muted);
       }
     }
 
@@ -165,7 +173,7 @@
     .org-keyword-filetags-line {
       &:not(.cm-activeLine) {
         .org-keyword:first-of-type {
-          display: none !important;
+          @include cm-hidden;
         }
       }
     }
@@ -223,11 +231,6 @@
 
       .cm-action-menu {
         display: none;
-      }
-
-      .cm-line {
-        padding-left: var(--block-padding-md);
-        padding-right: var(--block-padding-md);
       }
     }
   }
