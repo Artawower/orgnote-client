@@ -10,6 +10,28 @@ import { DEFAULT_PANE_PERSISTENCE_SAVE_DELAY } from 'src/constants/config';
 type RouterHook = () => void;
 type PaneStore = ReturnType<typeof api.core.usePane>;
 
+type FunctionKeys<T> = {
+  [Key in keyof T]-?: T[Key] extends (...args: never[]) => unknown ? Key : never;
+}[keyof T];
+
+type PaneActionName = FunctionKeys<PaneStore>;
+
+const SAVE_ACTIONS = [
+  'createPane',
+  'addTab',
+  'closeTab',
+  'moveTab',
+  'selectTab',
+  'setActivePane',
+  'closePane',
+  'restorePanesData',
+] as const satisfies readonly PaneActionName[];
+
+const SAVE_ACTION_SET = new Set<PaneActionName>(SAVE_ACTIONS);
+
+const shouldSaveAfterAction = (name: string): name is PaneActionName =>
+  SAVE_ACTION_SET.has(name as PaneActionName);
+
 const collectRoutersFromPanes = (paneStore: PaneStore): Router[] =>
   Object.values(paneStore.panes ?? {})
     .flatMap((paneRef) => Object.values(paneRef.value?.tabs.value ?? {}) as Tab[])
@@ -83,8 +105,11 @@ export const usePanePersistence = createGlobalState(() => {
   };
 
   const subscribeToStoreActions = (): RouterHook =>
-    paneStore.$onAction(({ after }) => {
-      after(() => {
+    paneStore.$onAction((params) => {
+      if (!shouldSaveAfterAction(params.name)) {
+        return;
+      }
+      params.after(() => {
         syncRouterHooks();
         scheduleSave();
       });
