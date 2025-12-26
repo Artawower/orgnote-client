@@ -4,6 +4,7 @@ import type { DecorationSet } from '@codemirror/view';
 import { Decoration, EditorView } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import type { MultilineEmbeddedWidget } from 'orgnote-api';
+import { hasIntersection } from 'src/utils/has-intersection';
 
 export interface AddWidgetEffect {
   orgNode: OrgNode;
@@ -17,9 +18,11 @@ export const removeMultilineWidgetEffect = StateEffect.define<OrgNode>();
 
 const removeByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =>
   widgets.update({
-    filter: (_f, _t, value) => {
+    filter: (from, to, value) => {
       const widget = value.spec.widget as OrgMultilineWidget | undefined;
-      return !widget?.sameNodeByOrgNode(orgNode);
+      if (!widget) return true;
+      if (widget.orgNode.isNot(orgNode.type)) return true;
+      return !hasIntersection(from, to, orgNode.start, orgNode.end);
     },
   });
 
@@ -27,26 +30,26 @@ const handleAddEffect = (widgets: DecorationSet, effect: AddWidgetEffect): Decor
   const [startOffset, endOffset] = effect.multilineWidget.showRangeOffset ?? [0, 0];
   const start = effect.orgNode.start + startOffset;
   const end = effect.orgNode.end + endOffset;
-  const { type: nodeType } = effect.orgNode;
 
-  let existingDecoration: Decoration | null = null;
-  let canReuse = false;
+  let existingWidget: OrgMultilineWidget | null = null;
   const withoutExisting = widgets.update({
-    filter: (_f, _t, value) => {
+    filter: (from, to, value) => {
       const widget = value.spec.widget as OrgMultilineWidget | undefined;
       if (!widget) return true;
-      if (!widget.sameNodeByOrgNode(effect.orgNode)) return true;
+      if (widget.orgNode.isNot(effect.orgNode.type)) return true;
+      if (!hasIntersection(from, to, start, end)) return true;
       if (widget.isDestroyed()) return false;
-      existingDecoration = value;
-      canReuse = true;
+      if (!widget.sameNodeByOrgNode(effect.orgNode)) return false;
+      existingWidget = widget;
       widget.updateOrgNode(effect.orgNode);
       return false;
     },
   });
 
   const decorationToAdd =
-    (canReuse ? existingDecoration?.range(start, end) : null) ??
-    OrgMultilineWidget.init(effect.view, effect.orgNode, effect.rootNodeSrc, effect.multilineWidget);
+    existingWidget
+      ? OrgMultilineWidget.createDecoration(existingWidget, effect.orgNode, effect.multilineWidget)
+      : OrgMultilineWidget.init(effect.view, effect.orgNode, effect.rootNodeSrc, effect.multilineWidget);
 
   return withoutExisting.update({
     add: [decorationToAdd],

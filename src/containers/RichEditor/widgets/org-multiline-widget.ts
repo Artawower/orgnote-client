@@ -25,9 +25,21 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     rootNodeSrc: () => OrgNode | null,
     multilineWidget: MultilineEmbeddedWidget,
   ): Range<Decoration> {
+    return OrgMultilineWidget.createDecoration(
+      new OrgMultilineWidget(editorView, orgNode, rootNodeSrc, multilineWidget),
+      orgNode,
+      multilineWidget,
+    );
+  }
+
+  public static createDecoration(
+    widget: OrgMultilineWidget,
+    orgNode: OrgNode,
+    multilineWidget: MultilineEmbeddedWidget,
+  ): Range<Decoration> {
     const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
     return Decoration.replace({
-      widget: new OrgMultilineWidget(editorView, orgNode, rootNodeSrc, multilineWidget),
+      widget,
       side: 0,
       inclusive: true,
       block: true,
@@ -54,12 +66,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   }
 
   public sameNodeByOrgNode(orgNode: OrgNode): boolean {
-    return (
-      orgNode.is(this.orgNode.type) &&
-      (orgNode.rawValue === this.orgNode.rawValue ||
-        orgNode.start === this.orgNode.start ||
-        orgNode.end === this.orgNode.end)
-    );
+    return orgNode.is(this.orgNode.type) && orgNode.rawValue === this.orgNode.rawValue;
   }
 
   public override toDOM(): HTMLElement {
