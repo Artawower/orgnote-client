@@ -2,6 +2,7 @@ import type { Extension, ExtensionMeta } from 'orgnote-api';
 import { orgInlineMarkupManifest } from './org-inline-markup/manifest';
 import { orgTableManifest } from './org-table/manifest';
 import { orgSrcBlockManifest } from './org-src-block/manifest';
+import { orgQuoteBlockManifest } from './org-quote-block/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -11,10 +12,13 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
   [orgTableManifest.name]: () => import('./org-table').then((m) => m.orgTableExtension),
   [orgSrcBlockManifest.name]: () =>
     import('./org-src-block').then((m) => m.orgSrcBlockExtension),
+  [orgQuoteBlockManifest.name]: () =>
+    import('./org-quote-block').then((m) => m.orgQuoteBlockExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgInlineMarkupManifest, active: true },
   { manifest: orgTableManifest, active: true },
   { manifest: orgSrcBlockManifest, active: true },
+  { manifest: orgQuoteBlockManifest, active: true },
 ];
