@@ -4,6 +4,7 @@ import { orgTableManifest } from './org-table/manifest';
 import { orgSrcBlockManifest } from './org-src-block/manifest';
 import { orgQuoteBlockManifest } from './org-quote-block/manifest';
 import { orgLatexBlockManifest } from './org-latex-block/manifest';
+import { orgPropertyDrawerManifest } from './org-property-drawer/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -17,6 +18,8 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
     import('./org-quote-block').then((m) => m.orgQuoteBlockExtension),
   [orgLatexBlockManifest.name]: () =>
     import('./org-latex-block').then((m) => m.orgLatexBlockExtension),
+  [orgPropertyDrawerManifest.name]: () =>
+    import('./org-property-drawer').then((m) => m.orgPropertyDrawerExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -25,4 +28,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgSrcBlockManifest, active: true },
   { manifest: orgQuoteBlockManifest, active: true },
   { manifest: orgLatexBlockManifest, active: true },
+  { manifest: orgPropertyDrawerManifest, active: true },
 ];
