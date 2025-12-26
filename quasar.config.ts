@@ -40,6 +40,7 @@ export default defineConfig((ctx) => {
       { path: 'files-watchers', server: false },
       { path: 'auth', server: false },
       { path: 'electron-deeplink', server: false },
+      { path: 'katex', server: false },
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css

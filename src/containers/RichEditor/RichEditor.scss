@@ -57,10 +57,13 @@
     .cm-scroller {
       overflow: auto;
       padding-bottom: var(--editor-padding-bottom);
+      max-width: 100%;
     }
 
     .cm-content {
       padding: 0;
+      max-width: 100%;
+      min-width: 0;
     }
 
     .cm-gutters,
@@ -103,6 +106,12 @@
       .org-link-url {
         display: inline !important;
       }
+    }
+
+    [class^='org-embedded-'] {
+      max-width: 100%;
+      overflow-x: auto;
+      box-sizing: border-box;
     }
 
     .cm-tag-name,

@@ -3,6 +3,7 @@ import { orgInlineMarkupManifest } from './org-inline-markup/manifest';
 import { orgTableManifest } from './org-table/manifest';
 import { orgSrcBlockManifest } from './org-src-block/manifest';
 import { orgQuoteBlockManifest } from './org-quote-block/manifest';
+import { orgLatexBlockManifest } from './org-latex-block/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -14,6 +15,8 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
     import('./org-src-block').then((m) => m.orgSrcBlockExtension),
   [orgQuoteBlockManifest.name]: () =>
     import('./org-quote-block').then((m) => m.orgQuoteBlockExtension),
+  [orgLatexBlockManifest.name]: () =>
+    import('./org-latex-block').then((m) => m.orgLatexBlockExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -21,4 +24,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgTableManifest, active: true },
   { manifest: orgSrcBlockManifest, active: true },
   { manifest: orgQuoteBlockManifest, active: true },
+  { manifest: orgLatexBlockManifest, active: true },
 ];
