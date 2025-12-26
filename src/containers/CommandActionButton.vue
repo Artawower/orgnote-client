@@ -4,6 +4,7 @@
     @click="execute"
     :icon="iconString"
     :size="size"
+    :aria-label="resolvedAriaLabel"
     classes="action-btn"
     :alignment="alignment"
   >
@@ -32,6 +33,7 @@ const props = withDefaults(
     size?: StyleSize;
     includeText?: boolean;
     text?: string;
+    ariaLabel?: string;
     data?: unknown;
   }>(),
   {
@@ -45,6 +47,13 @@ const commandsStore = useCommandsStore();
 const command = computed(() => commandsStore.get(props.command));
 
 const { iconString, iconComponent } = useResolvedIcon(computed(() => toValue(command.value?.icon)));
+
+const resolvedAriaLabel = computed(() => {
+  if (props.ariaLabel) return props.ariaLabel;
+  if (props.text) return props.text;
+  if (!command.value) return undefined;
+  return camelCaseToWords(command.value.command);
+});
 
 const execute = () => {
   commandsStore.execute(props.command, props.data);

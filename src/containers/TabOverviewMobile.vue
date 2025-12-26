@@ -1,8 +1,8 @@
 <template>
-  <PageWrapper>
-    <div class="tab-grid-container">
+  <page-wrapper>
+    <app-flex column-reverse class="tab-grid-container">
       <div class="tab-grid">
-        <TabLivePreview
+        <tab-live-preview
           v-for="tab in allTabs"
           :key="tab.id"
           :tab="tab"
@@ -11,12 +11,14 @@
           @close="closeTab(tab)"
         />
       </div>
-    </div>
+    </app-flex>
     <app-footer>
-      <command-action-button :command="DefaultCommands.NEW_TAB" include-text />
-      <command-action-button :command="DefaultCommands.CLOSE_MODAL" include-text text="Close" />
+      <app-flex between class="footer-container">
+        <command-action-button :command="DefaultCommands.NEW_TAB" aria-label="New tab" />
+        <command-action-button :command="DefaultCommands.CLOSE_MODAL" aria-label="Close" />
+      </app-flex>
     </app-footer>
-  </PageWrapper>
+  </page-wrapper>
 </template>
 
 <script setup lang="ts">
@@ -26,6 +28,7 @@ import { api } from 'src/boot/api';
 import TabLivePreview from 'src/components/TabLivePreview.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import AppFooter from 'src/components/AppFooter.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 import { DefaultCommands, type Tab } from 'orgnote-api';
 import CommandActionButton from './CommandActionButton.vue';
 import { storeToRefs } from 'pinia';
@@ -64,11 +67,13 @@ const closeTab = async (tab: Tab) => {
     padding: var(--tab-overview-container-padding);
     flex: 1;
     height: 100%;
+    width: 100%;
+    min-height: 0;
+    overflow-y: auto;
   }
 }
 
 .empty-state {
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -83,8 +88,13 @@ const closeTab = async (tab: Tab) => {
 }
 
 .tab-grid {
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(var(--tab-overview-grid-columns), 1fr);
   gap: var(--tab-overview-grid-gap);
+}
+
+.footer-container {
+  width: 100%;
 }
 </style>
