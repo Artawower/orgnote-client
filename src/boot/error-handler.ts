@@ -2,7 +2,7 @@ import { defineBoot } from '@quasar/app-vite/wrappers';
 import { reporter } from './report';
 import type { Router } from 'vue-router';
 import type { ComponentPublicInstance } from 'vue';
-import { RouteNames } from 'orgnote-api';
+import { RouteNames, isPresent } from 'orgnote-api';
 
 const extractComponentChain = (instance: ComponentPublicInstance | null): string[] => {
   const chain: string[] = [];
@@ -15,11 +15,52 @@ const extractComponentChain = (instance: ComponentPublicInstance | null): string
   return chain;
 };
 
-const handleError = (error: unknown, meta: Record<string, unknown>, router: Router): void => {
-  reporter.reportCritical(error, meta);
+const wrapError = (error: unknown, source: string): Error => {
+  if (error instanceof Error) {
+    return error;
+  }
+  
+  const message = isPresent(error) ? String(error) : `Unknown error from ${source}`;
+  const wrappedError = new Error(message);
+  wrappedError.cause = error;
+  return wrappedError;
+};
+
+const RESOURCE_TAGS = new Set(['IMG', 'SCRIPT', 'LINK', 'AUDIO', 'VIDEO', 'SOURCE']);
+
+const isResourceLoadError = (meta: Record<string, unknown>): boolean =>
+  typeof meta.targetTag === 'string' && RESOURCE_TAGS.has(meta.targetTag);
+
+const handleError = (
+  error: unknown,
+  meta: Record<string, unknown>,
+  router: Router,
+  source: string,
+): void => {
+  const wrappedError = wrapError(error, source);
+
+  const errorInfo: Record<string, unknown> = {
+    ...meta,
+    source,
+    originalErrorType: error?.constructor?.name ?? typeof error,
+    stack: wrappedError.stack,
+  };
+
+  if (!(error instanceof Error) && isPresent(error)) {
+    errorInfo.originalValue = String(error);
+  }
+
+  if (isResourceLoadError(meta)) {
+    reporter.reportWarning(wrappedError, {
+      message: `Failed to load resource: ${meta.targetTag}`,
+    });
+    return;
+  }
+
+  reporter.reportCritical(wrappedError, errorInfo);
 
   router.push({ name: RouteNames.Error }).catch(() => {
-    throw error;
+    throw wrappedError;
   });
 };
 
@@ -30,11 +71,20 @@ export default defineBoot(({ app, router, ssrContext }) => {
       (event) => {
         event.stopImmediatePropagation();
 
-        handleError(
-          event.error,
-          { url: event.filename, line: event.lineno, col: event.colno },
-          router,
-        );
+        const meta: Record<string, unknown> = {};
+        if (event.filename) meta.url = event.filename;
+        if (event.lineno) meta.line = event.lineno;
+        if (event.colno) meta.col = event.colno;
+        if (event.message) meta.eventMessage = event.message;
+        if (event.target && event.target !== window) {
+          const target = event.target as HTMLElement;
+          meta.targetTag = target.tagName;
+          if (target.tagName === 'IMG') meta.imgSrc = (target as HTMLImageElement).src?.slice(0, 200);
+          if (target.tagName === 'SCRIPT') meta.scriptSrc = (target as HTMLScriptElement).src;
+          if (target.tagName === 'LINK') meta.linkHref = (target as HTMLLinkElement).href;
+        }
+
+        handleError(event.error, meta, router, 'window.onerror');
       },
       { capture: true },
     );
@@ -44,7 +94,7 @@ export default defineBoot(({ app, router, ssrContext }) => {
       (event) => {
         event.stopImmediatePropagation();
 
-        handleError(event.reason, {}, router);
+        handleError(event.reason, {}, router, 'unhandledrejection');
       },
       { capture: true },
     );
@@ -53,22 +103,19 @@ export default defineBoot(({ app, router, ssrContext }) => {
   app.config.errorHandler = (err, instance, info): void => {
     const componentChain = extractComponentChain(instance);
 
-    reporter.reportCritical(err, {
-      context: `Vue: ${info}`,
-      component: componentChain[0],
-      componentChain,
-    });
-
-    router.push('/error').catch(() => {
-      throw err;
-    });
+    handleError(
+      err,
+      {
+        vueInfo: info,
+        component: componentChain[0],
+        componentChain,
+      },
+      router,
+      'Vue.errorHandler',
+    );
   };
 
   router.onError((error) => {
-    reporter.reportCritical(error, { context: 'Router' });
-
-    router.push('/error').catch(() => {
-      throw error;
-    });
+    handleError(error, {}, router, 'Router.onError');
   });
 });
