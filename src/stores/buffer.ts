@@ -9,8 +9,13 @@ import {
   type BufferGuard,
   type FileSystemChange,
 } from 'orgnote-api';
+import {
+  to,
+  uint8ArrayToBase64,
+  uint8ArrayToText,
+  textToUint8Array,
+} from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
-import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import type { ResultAsync } from 'neverthrow';
 import { errAsync, okAsync } from 'neverthrow';
@@ -38,7 +43,7 @@ const initValidationLastContent = (buffer: OrgBuffer): void => {
   if (!buffer.guard?.validation) {
     return;
   }
-  buffer.guard.validation.lastValidContent = buffer.content;
+  buffer.guard.validation.lastValidContent = buffer.text;
 };
 
 const isRecentlySaved = (buffer: OrgBuffer): boolean => {
@@ -63,24 +68,32 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
   const isEncryptionConfigValid = (): boolean => config.config.encryption.type !== 'disabled';
 
-  const encryptContent = (filePath: string, content: string): ResultAsync<string, Error> => {
+  const encryptContent = (
+    filePath: string,
+    content: Uint8Array,
+  ): ResultAsync<Uint8Array, Error> => {
     if (!isOrgGpgFile(filePath)) {
       return okAsync(content);
     }
     if (!isEncryptionConfigValid()) {
       return errAsync(new EncryptionConfigRequiredError());
     }
-    return to(encryption.encrypt)(content);
+    const text = uint8ArrayToText(content);
+    return to(encryption.encrypt)(text).map(textToUint8Array);
   };
 
-  const decryptContent = (filePath: string, content: string): ResultAsync<string, Error> => {
-    if (!content || !isOrgGpgFile(filePath)) {
+  const decryptContent = (
+    filePath: string,
+    content: Uint8Array,
+  ): ResultAsync<Uint8Array, Error> => {
+    if (!content.length || !isOrgGpgFile(filePath)) {
       return okAsync(content);
     }
     if (!isEncryptionConfigValid()) {
       return errAsync(new EncryptionConfigRequiredError());
     }
-    return to(encryption.decrypt)(content);
+    const text = uint8ArrayToText(content);
+    return to(encryption.decrypt)(text).map(textToUint8Array);
   };
 
   const writeBufferFile = async (buffer: OrgBuffer): Promise<boolean> => {
@@ -89,11 +102,11 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       return false;
     }
 
-    const contentToWrite = buffer.content;
+    const contentToWrite = new Uint8Array(buffer.rawContent);
     const result = await encryptContent(buffer.path, contentToWrite)
-      .andThen((content) => to(fm.currentFs!.writeFile)(buffer.path, content))
+      .andThen((content) => to(fm.currentFs!.writeFile)(buffer.path, content, 'binary'))
       .map(() => {
-        buffer.metadata.originalContent = contentToWrite;
+        buffer.metadata.originalRawContent = new Uint8Array(contentToWrite);
       });
 
     if (result.isErr()) {
@@ -111,11 +124,11 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     }
 
     const safeRead = to(fm.currentFs.readFile, 'Failed to load buffer content');
-    const result = await safeRead(buffer.path)
+    const result = await safeRead<'binary', Uint8Array>(buffer.path, 'binary')
       .andThen((content) => decryptContent(buffer.path, content))
       .map((content) => {
-        buffer.content = content;
-        buffer.metadata.originalContent = content;
+        buffer.rawContent = content;
+        buffer.metadata.originalRawContent = new Uint8Array(content);
       });
 
     if (result.isErr()) {
@@ -125,15 +138,23 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     }
   };
 
+  const areUint8ArraysEqual = (a: Uint8Array, b: Uint8Array): boolean => {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  };
+
   const isBufferDirty = (buffer: OrgBuffer): boolean => {
-    const original = buffer.metadata.originalContent;
-    const current = buffer.content;
+    const original = buffer.metadata.originalRawContent as Uint8Array | undefined;
+    const current = buffer.rawContent;
 
     if (original === undefined) {
-      return current !== '';
+      return current.length > 0;
     }
 
-    return current !== original;
+    return !areUint8ArraysEqual(current, original);
   };
 
   const saveBuffer = async (buffer: OrgBuffer): Promise<void> => {
@@ -180,11 +201,29 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     };
   };
 
-  const createEmptyBuffer = (path: string): OrgBuffer =>
-    reactive({
+  const createEmptyBuffer = (path: string): OrgBuffer => {
+    const state = reactive({
+      rawContent: new Uint8Array() as Uint8Array,
+    });
+
+    return reactive({
       path,
       title: extractTitleFromPath(path),
-      content: '',
+      get rawContent() {
+        return state.rawContent;
+      },
+      set rawContent(value: Uint8Array) {
+        state.rawContent = value;
+      },
+      get text() {
+        return uint8ArrayToText(state.rawContent);
+      },
+      get base64() {
+        return uint8ArrayToBase64(state.rawContent);
+      },
+      setText(value: string) {
+        state.rawContent = textToUint8Array(value);
+      },
       isSaving: false,
       errors: [],
       isLoading: true,
@@ -193,6 +232,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       metadata: {},
       guard: buildBufferGuard(path),
     });
+  };
 
   const validateBufferContent = (path: string, content: string) => {
     const fileGuardStore = useFileGuardStore();
@@ -216,7 +256,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
     validation.status = 'validating';
 
-    const result = await validateBufferContent(buffer.path, buffer.content);
+    const result = await validateBufferContent(buffer.path, buffer.text);
 
     if (result.isErr()) {
       validation.status = 'invalid';
@@ -234,7 +274,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     }
 
     await saveBuffer(buffer);
-    validation.lastValidContent = buffer.content;
+    validation.lastValidContent = buffer.text;
   };
 
   const setupValidatedAutoSave = (buffer: OrgBuffer): void => {
@@ -242,14 +282,14 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       () => validateAndSaveBuffer(buffer),
       getValidationDelayMs(),
     );
-    watch(() => buffer.content, debouncedValidateAndSave);
+    watch(() => buffer.rawContent, debouncedValidateAndSave);
   };
 
   const setupRegularAutoSave = (buffer: OrgBuffer): void => {
     const debouncedSave = debounce(() => saveBuffer(buffer), getSaveDelayMs());
     debouncedSavers.set(buffer.path, debouncedSave);
     watch(
-      () => buffer.content,
+      () => buffer.rawContent,
       () => debouncedSavers.get(buffer.path)?.(),
     );
   };

@@ -1,13 +1,13 @@
 <template>
   <component
-    v-if="readerComponent && buffer"
+    v-if="showReader"
     :is="readerComponent"
     :buffer="buffer"
-    :readonly="buffer.guard?.readonly"
+    :readonly="buffer!.guard?.readonly"
     @update:content="onContentUpdate"
   />
-  <file-not-supported v-else-if="buffer && !readerComponent" :path="currentFilePath" />
-  <loading-dots v-else />
+  <file-not-supported v-if="showNotSupported" :path="currentFilePath" />
+  <loading-dots v-if="showLoading" />
 </template>
 
 <script lang="ts" setup>
@@ -51,9 +51,13 @@ const readerComponent = computed<Component | undefined>(() => {
   return entry.component as Component;
 });
 
+const showReader = computed(() => readerComponent.value && buffer.value);
+const showNotSupported = computed(() => buffer.value && !readerComponent.value);
+const showLoading = computed(() => !showReader.value && !showNotSupported.value);
+
 const onContentUpdate = (content: string) => {
   if (buffer.value) {
-    buffer.value.content = content;
+    buffer.value.setText(content);
   }
 };
 </script>

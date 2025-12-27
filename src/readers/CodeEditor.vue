@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const content = computed({
-  get: () => props.buffer.content,
+  get: () => props.buffer.text,
   set: (value: string) => emit('update:content', value),
 });
 </script>

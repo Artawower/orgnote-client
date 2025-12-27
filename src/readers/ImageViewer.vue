@@ -1,6 +1,6 @@
 <template>
   <page-wrapper>
-    <img :src="imageSrc" :alt="buffer.title" />
+    <app-image :src="imageSrc" :alt="buffer.title" class="image-viewer" />
   </page-wrapper>
 </template>
 
@@ -8,6 +8,7 @@
 import { computed } from 'vue';
 import type { Buffer } from 'orgnote-api';
 import PageWrapper from 'src/components/PageWrapper.vue';
+import AppImage from 'src/components/AppImage.vue';
 
 const props = defineProps<{
   buffer: Buffer;
@@ -15,16 +16,16 @@ const props = defineProps<{
 }>();
 
 const imageSrc = computed(() => {
-  if (props.buffer.content.startsWith('data:')) {
-    return props.buffer.content;
+  const text = props.buffer.text;
+  if (text.startsWith('data:')) {
+    return text;
   }
-  return `data:image/*;base64,${props.buffer.content}`;
+  return `data:image/*;base64,${props.buffer.base64}`;
 });
 </script>
 
 <style lang="scss" scoped>
-img {
-  max-width: 100%;
+.image-viewer {
   max-height: 100%;
   object-fit: contain;
 }

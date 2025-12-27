@@ -1,12 +1,16 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import type { FileSystemChange } from 'orgnote-api';
+import { textToUint8Array, uint8ArrayToText } from 'orgnote-api/utils';
 
 import type { Mock } from 'vitest';
 
 let readFile: Mock;
 let writeFile: Mock;
 let fileWatcherCallbacks: Map<string, (change: FileSystemChange) => void>;
+
+const toBytes = (s: string): Uint8Array => textToUint8Array(s);
+const fromBytes = (b: Uint8Array): string => uint8ArrayToText(b);
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -64,7 +68,7 @@ const triggerExternalChange = (path: string, change: FileSystemChange): void => 
 };
 
 beforeEach(() => {
-  readFile = vi.fn().mockResolvedValue('test content');
+  readFile = vi.fn().mockResolvedValue(toBytes('test content'));
   writeFile = vi.fn().mockResolvedValue(undefined);
   fileWatcherCallbacks = new Map();
 
@@ -129,7 +133,7 @@ test('closeBuffer returns true and removes buffer when no changes', async () => 
 test('closeBuffer returns false when unsaved changes and force=false', async () => {
   const store = useBufferStore();
   const b = await store.getOrCreateBuffer('/test/file.org');
-  b.content = 'modified content';
+  b.setText('modified content');
   const closed = await store.closeBuffer('/test/file.org');
   expect(closed).toBe(false);
   expect(store.getBufferByPath('/test/file.org')).not.toBeNull();
@@ -138,7 +142,7 @@ test('closeBuffer returns false when unsaved changes and force=false', async () 
 test('closeBuffer returns true when unsaved changes and force=true', async () => {
   const store = useBufferStore();
   const b = await store.getOrCreateBuffer('/test/file.org');
-  b.content = 'modified content';
+  b.setText('modified content');
   const closed = await store.closeBuffer('/test/file.org', true);
   expect(closed).toBe(true);
   expect(store.getBufferByPath('/test/file.org')).toBeUndefined();
@@ -149,8 +153,8 @@ test('saveAllBuffers calls file system write for all buffers', async () => {
   writeFile.mockClear();
   const b1 = await store.getOrCreateBuffer('/test/file1.org');
   const b2 = await store.getOrCreateBuffer('/test/file2.org');
-  b1.content = 'data1';
-  b2.content = 'data2';
+  b1.setText('data1');
+  b2.setText('data2');
   await store.saveAllBuffers();
   const calls = (writeFile as Mock).mock.calls.map((args) => args[0]);
   expect(calls).toContain('/test/file1.org');
@@ -169,16 +173,16 @@ describe('race condition: content modification during save', () => {
 
     writeFile.mockImplementation(() => writePromise);
 
-    buffer.content = 'content-v1';
+    buffer.setText('content-v1');
 
     const savePromise = store.saveAllBuffers();
 
-    buffer.content = 'content-v2';
+    buffer.setText('content-v2');
 
     resolveWrite!();
     await savePromise;
 
-    expect(buffer.metadata.originalContent).toBe('content-v1');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('content-v1');
   });
 
   test('buffer is dirty after content change during save', async () => {
@@ -192,16 +196,17 @@ describe('race condition: content modification during save', () => {
 
     writeFile.mockImplementation(() => writePromise);
 
-    buffer.content = 'first-save';
+    buffer.setText('first-save');
 
     const savePromise = store.saveAllBuffers();
 
-    buffer.content = 'modified-during-save';
+    buffer.setText('modified-during-save');
 
     resolveWrite!();
     await savePromise;
 
-    const isDirty = buffer.content !== buffer.metadata.originalContent;
+    const originalText = fromBytes(buffer.metadata.originalRawContent as Uint8Array);
+    const isDirty = buffer.text !== originalText;
     expect(isDirty).toBe(true);
   });
 
@@ -209,18 +214,18 @@ describe('race condition: content modification during save', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    let capturedContent: string | undefined;
+    let capturedContent: Uint8Array | undefined;
 
-    writeFile.mockImplementation((path: string, content: string) => {
+    writeFile.mockImplementation((_path: string, content: Uint8Array) => {
       capturedContent = content;
       return Promise.resolve();
     });
 
-    buffer.content = 'snapshot-content';
+    buffer.setText('snapshot-content');
 
     await store.saveAllBuffers();
 
-    expect(capturedContent).toBe('snapshot-content');
+    expect(fromBytes(capturedContent!)).toBe('snapshot-content');
   });
 
   test('multiple rapid saves preserve correct originalContent', async () => {
@@ -229,17 +234,17 @@ describe('race condition: content modification during save', () => {
 
     writeFile.mockResolvedValue(undefined);
 
-    buffer.content = 'version-1';
+    buffer.setText('version-1');
     await store.saveAllBuffers();
-    expect(buffer.metadata.originalContent).toBe('version-1');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('version-1');
 
-    buffer.content = 'version-2';
+    buffer.setText('version-2');
     await store.saveAllBuffers();
-    expect(buffer.metadata.originalContent).toBe('version-2');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('version-2');
 
-    buffer.content = 'version-3';
+    buffer.setText('version-3');
     await store.saveAllBuffers();
-    expect(buffer.metadata.originalContent).toBe('version-3');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('version-3');
   });
 });
 
@@ -248,9 +253,9 @@ describe('external file changes: dirty buffer protection', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'user modifications';
+    buffer.setText('user modifications');
 
-    readFile.mockResolvedValue('external content');
+    readFile.mockResolvedValue(toBytes('external content'));
 
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
@@ -260,7 +265,7 @@ describe('external file changes: dirty buffer protection', () => {
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('user modifications');
+    expect(buffer.text).toBe('user modifications');
     expect(readFile).toHaveBeenCalledTimes(1);
   });
 
@@ -268,9 +273,9 @@ describe('external file changes: dirty buffer protection', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    expect(buffer.content).toBe('test content');
+    expect(buffer.text).toBe('test content');
 
-    readFile.mockResolvedValue('updated externally');
+    readFile.mockResolvedValue(toBytes('updated externally'));
 
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
@@ -279,7 +284,7 @@ describe('external file changes: dirty buffer protection', () => {
     });
 
     await vi.waitFor(() => {
-      expect(buffer.content).toBe('updated externally');
+      expect(buffer.text).toBe('updated externally');
     });
   });
 
@@ -287,7 +292,7 @@ describe('external file changes: dirty buffer protection', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'unsaved work';
+    buffer.setText('unsaved work');
 
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
@@ -316,15 +321,15 @@ describe('external file changes: dirty buffer protection', () => {
   test('dirty detection works with empty originalContent', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue('');
+    readFile.mockResolvedValue(toBytes(''));
 
     const buffer = await store.getOrCreateBuffer('/test/empty.org');
 
-    expect(buffer.content).toBe('');
+    expect(buffer.text).toBe('');
 
-    buffer.content = 'new content';
+    buffer.setText('new content');
 
-    readFile.mockResolvedValue('external update');
+    readFile.mockResolvedValue(toBytes('external update'));
 
     triggerExternalChange('/test/empty.org', {
       path: '/test/empty.org',
@@ -334,7 +339,7 @@ describe('external file changes: dirty buffer protection', () => {
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('new content');
+    expect(buffer.text).toBe('new content');
   });
 
   test('buffer becomes clean after save, then accepts external changes after window', async () => {
@@ -343,14 +348,14 @@ describe('external file changes: dirty buffer protection', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'modified';
+    buffer.setText('modified');
     await store.saveAllBuffers();
 
-    expect(buffer.content).toBe(buffer.metadata.originalContent);
+    expect(buffer.text).toBe(fromBytes(buffer.metadata.originalRawContent as Uint8Array));
 
     await vi.advanceTimersByTimeAsync(500);
 
-    readFile.mockResolvedValue('external after save');
+    readFile.mockResolvedValue(toBytes('external after save'));
 
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
@@ -360,7 +365,7 @@ describe('external file changes: dirty buffer protection', () => {
 
     await vi.advanceTimersByTimeAsync(100);
 
-    expect(buffer.content).toBe('external after save');
+    expect(buffer.text).toBe('external after save');
 
     vi.useRealTimers();
   });
@@ -369,10 +374,10 @@ describe('external file changes: dirty buffer protection', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'precious user work';
+    buffer.setText('precious user work');
 
     for (let i = 0; i < 5; i++) {
-      readFile.mockResolvedValue(`external version ${i}`);
+      readFile.mockResolvedValue(toBytes(`external version ${i}`));
       triggerExternalChange('/test/file.org', {
         path: '/test/file.org',
         type: 'modify',
@@ -382,7 +387,7 @@ describe('external file changes: dirty buffer protection', () => {
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('precious user work');
+    expect(buffer.text).toBe('precious user work');
   });
 });
 
@@ -390,13 +395,13 @@ describe('edge cases and boundary conditions', () => {
   test('whitespace-only changes are detected as dirty', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue('content');
+    readFile.mockResolvedValue(toBytes('content'));
 
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'content ';
+    buffer.setText('content ');
 
-    readFile.mockResolvedValue('external');
+    readFile.mockResolvedValue(toBytes('external'));
 
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
@@ -406,7 +411,7 @@ describe('edge cases and boundary conditions', () => {
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('content ');
+    expect(buffer.text).toBe('content ');
   });
 
   test('ignores external change while buffer is saving', async () => {
@@ -419,11 +424,11 @@ describe('edge cases and boundary conditions', () => {
     });
     writeFile.mockReturnValue(writePromise);
 
-    buffer.content = 'saving this';
+    buffer.setText('saving this');
 
     const savePromise = store.saveAllBuffers();
 
-    readFile.mockResolvedValue('external during save');
+    readFile.mockResolvedValue(toBytes('external during save'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -432,24 +437,27 @@ describe('edge cases and boundary conditions', () => {
 
     await Promise.resolve();
 
-    expect(buffer.content).toBe('saving this');
+    expect(buffer.text).toBe('saving this');
 
     resolveWrite();
     await savePromise;
 
-    expect(buffer.content).toBe('saving this');
+    expect(buffer.text).toBe('saving this');
   });
 
   test('empty string content is not treated as missing originalContent', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue('');
+    readFile.mockResolvedValue(toBytes(''));
 
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    expect(buffer.metadata.originalContent).toBe('');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('');
 
-    const isDirty = buffer.content !== (buffer.metadata.originalContent || '');
+    const originalText = buffer.metadata.originalRawContent
+      ? fromBytes(buffer.metadata.originalRawContent as Uint8Array)
+      : '';
+    const isDirty = buffer.text !== originalText;
     expect(isDirty).toBe(false);
   });
 
@@ -457,25 +465,26 @@ describe('edge cases and boundary conditions', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    const specialContent = '* TODO 日本語\n#+BEGIN_SRC\n<>&"\'\\n\\t\n#+END_SRC';
-    buffer.content = specialContent;
+    const specialContent = '* TODO Task\n#+BEGIN_SRC\n<>&"\'\\n\\t\n#+END_SRC';
+    buffer.setText(specialContent);
 
     await store.saveAllBuffers();
 
-    expect(writeFile).toHaveBeenCalledWith('/test/file.org', specialContent);
-    expect(buffer.metadata.originalContent).toBe(specialContent);
+    expect(writeFile).toHaveBeenCalledWith('/test/file.org', expect.any(Uint8Array), 'binary');
+    expect(buffer.text).toBe(specialContent);
   });
 
   test('very large content changes are handled correctly', async () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    const largeContent = 'x'.repeat(1_000_000);
-    buffer.content = largeContent;
+    const LARGE_CONTENT_SIZE = 1_000_000;
+    const largeContent = 'x'.repeat(LARGE_CONTENT_SIZE);
+    buffer.setText(largeContent);
 
     await store.saveAllBuffers();
 
-    expect(buffer.metadata.originalContent).toBe(largeContent);
+    expect(buffer.text).toBe(largeContent);
   });
 });
 
@@ -484,62 +493,64 @@ describe('stress tests: attempting to break the implementation', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    for (let i = 0; i < 100; i++) {
-      buffer.content = `version-${i}`;
+    const RAPID_CHANGES_COUNT = 100;
+    for (let i = 0; i < RAPID_CHANGES_COUNT; i++) {
+      buffer.setText(`version-${i}`);
     }
 
     await store.saveAllBuffers();
 
-    expect(buffer.metadata.originalContent).toBe('version-99');
-    expect(writeFile).toHaveBeenCalledWith('/test/file.org', 'version-99');
+    expect(buffer.text).toBe(`version-${RAPID_CHANGES_COUNT - 1}`);
+    expect(writeFile).toHaveBeenCalledWith('/test/file.org', expect.any(Uint8Array), 'binary');
   });
 
   test('content change immediately after save start does not corrupt originalContent', async () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    const savedContents: string[] = [];
-    writeFile.mockImplementation((_path: string, content: string) => {
+    const savedContents: Uint8Array[] = [];
+    writeFile.mockImplementation((_path: string, content: Uint8Array) => {
       savedContents.push(content);
       return Promise.resolve();
     });
 
-    buffer.content = 'A';
+    buffer.setText('A');
     const save1 = store.saveAllBuffers();
 
-    buffer.content = 'B';
+    buffer.setText('B');
     const save2 = store.saveAllBuffers();
 
-    buffer.content = 'C';
+    buffer.setText('C');
     const save3 = store.saveAllBuffers();
 
     await Promise.all([save1, save2, save3]);
 
-    expect(savedContents).toContain('A');
-    expect(savedContents).toContain('B');
-    expect(savedContents).toContain('C');
-    expect(buffer.metadata.originalContent).toBe('C');
+    const savedTexts = savedContents.map(fromBytes);
+    expect(savedTexts).toContain('A');
+    expect(savedTexts).toContain('B');
+    expect(savedTexts).toContain('C');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('C');
   });
 
   test('external change during rapid user edits is ignored', async () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'user edit 1';
+    buffer.setText('user edit 1');
 
     for (let i = 0; i < 10; i++) {
-      readFile.mockResolvedValue(`external ${i}`);
+      readFile.mockResolvedValue(toBytes(`external ${i}`));
       triggerExternalChange('/test/file.org', {
         path: '/test/file.org',
         type: 'modify',
         mtime: Date.now() + i,
       });
-      buffer.content = `user edit ${i + 2}`;
+      buffer.setText(`user edit ${i + 2}`);
     }
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('user edit 11');
+    expect(buffer.text).toBe('user edit 11');
   });
 
   test('alternating dirty/clean states handle external changes correctly', async () => {
@@ -548,55 +559,55 @@ describe('stress tests: attempting to break the implementation', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'dirty';
+    buffer.setText('dirty');
 
-    readFile.mockResolvedValue('external-1');
+    readFile.mockResolvedValue(toBytes('external-1'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
       mtime: Date.now(),
     });
     await vi.advanceTimersByTimeAsync(10);
-    expect(buffer.content).toBe('dirty');
+    expect(buffer.text).toBe('dirty');
 
     await store.saveAllBuffers();
     await vi.advanceTimersByTimeAsync(500);
 
-    readFile.mockResolvedValue('external-2');
+    readFile.mockResolvedValue(toBytes('external-2'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
       mtime: Date.now(),
     });
     await vi.advanceTimersByTimeAsync(10);
-    expect(buffer.content).toBe('external-2');
+    expect(buffer.text).toBe('external-2');
 
-    buffer.content = 'dirty again';
+    buffer.setText('dirty again');
 
-    readFile.mockResolvedValue('external-3');
+    readFile.mockResolvedValue(toBytes('external-3'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
       mtime: Date.now(),
     });
     await vi.advanceTimersByTimeAsync(10);
-    expect(buffer.content).toBe('dirty again');
+    expect(buffer.text).toBe('dirty again');
 
     vi.useRealTimers();
   });
 
-  test('null and undefined content edge cases', async () => {
+  test('empty content edge cases', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue(null as unknown as string);
+    readFile.mockResolvedValue(new Uint8Array());
 
     const buffer = await store.getOrCreateBuffer('/test/null.org');
 
-    expect(buffer.content).toBe(null);
+    expect(buffer.text).toBe('');
 
-    buffer.content = 'now has content';
+    buffer.setText('now has content');
 
-    readFile.mockResolvedValue('external');
+    readFile.mockResolvedValue(toBytes('external'));
     triggerExternalChange('/test/null.org', {
       path: '/test/null.org',
       type: 'modify',
@@ -605,21 +616,21 @@ describe('stress tests: attempting to break the implementation', () => {
 
     await vi.waitFor(() => Promise.resolve());
 
-    expect(buffer.content).toBe('now has content');
+    expect(buffer.text).toBe('now has content');
   });
 
   test('save failure does not update originalContent', async () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'attempting to save';
+    buffer.setText('attempting to save');
 
     writeFile.mockRejectedValue(new Error('Disk full'));
 
     await store.saveAllBuffers();
 
-    expect(buffer.metadata.originalContent).toBe('test content');
-    expect(buffer.content).toBe('attempting to save');
+    expect(fromBytes(buffer.metadata.originalRawContent as Uint8Array)).toBe('test content');
+    expect(buffer.text).toBe('attempting to save');
   });
 
   test('external changes ignored within save window, accepted after', async () => {
@@ -628,12 +639,12 @@ describe('stress tests: attempting to break the implementation', () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'saved content';
+    buffer.setText('saved content');
     await store.saveAllBuffers();
 
     await vi.advanceTimersByTimeAsync(100);
 
-    readFile.mockResolvedValue('during window');
+    readFile.mockResolvedValue(toBytes('during window'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -641,11 +652,11 @@ describe('stress tests: attempting to break the implementation', () => {
     });
     await vi.advanceTimersByTimeAsync(10);
 
-    expect(buffer.content).toBe('saved content');
+    expect(buffer.text).toBe('saved content');
 
     await vi.advanceTimersByTimeAsync(500);
 
-    readFile.mockResolvedValue('after window');
+    readFile.mockResolvedValue(toBytes('after window'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -653,7 +664,7 @@ describe('stress tests: attempting to break the implementation', () => {
     });
     await vi.advanceTimersByTimeAsync(10);
 
-    expect(buffer.content).toBe('after window');
+    expect(buffer.text).toBe('after window');
 
     vi.useRealTimers();
   });
@@ -661,14 +672,14 @@ describe('stress tests: attempting to break the implementation', () => {
   test('multiple buffers do not interfere with each other', async () => {
     const store = useBufferStore();
 
-    readFile.mockImplementation((path: string) => Promise.resolve(`content of ${path}`));
+    readFile.mockImplementation((path: string) => Promise.resolve(toBytes(`content of ${path}`)));
 
     const buffer1 = await store.getOrCreateBuffer('/test/file1.org');
     const buffer2 = await store.getOrCreateBuffer('/test/file2.org');
 
-    buffer1.content = 'modified file1';
+    buffer1.setText('modified file1');
 
-    readFile.mockResolvedValue('external for file2');
+    readFile.mockResolvedValue(toBytes('external for file2'));
     triggerExternalChange('/test/file2.org', {
       path: '/test/file2.org',
       type: 'modify',
@@ -676,65 +687,65 @@ describe('stress tests: attempting to break the implementation', () => {
     });
 
     await vi.waitFor(() => {
-      expect(buffer2.content).toBe('external for file2');
+      expect(buffer2.text).toBe('external for file2');
     });
 
-    expect(buffer1.content).toBe('modified file1');
+    expect(buffer1.text).toBe('modified file1');
   });
 });
 
-describe('Пареев: isBufferDirty с null content', () => {
-  test('buffer with null content and null originalContent should be clean', async () => {
+describe('isBufferDirty with empty content', () => {
+  test('buffer with empty content and empty originalContent should be clean', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue(null as unknown as string);
+    readFile.mockResolvedValue(new Uint8Array());
 
-    const buffer = await store.getOrCreateBuffer('/test/null.org');
+    const buffer = await store.getOrCreateBuffer('/test/empty.org');
 
-    expect(buffer.content).toBe(null);
-    expect(buffer.metadata.originalContent).toBe(null);
+    expect(buffer.text).toBe('');
+    expect(buffer.metadata.originalRawContent).toBeInstanceOf(Uint8Array);
 
-    const closed = await store.closeBuffer('/test/null.org');
+    const closed = await store.closeBuffer('/test/empty.org');
     expect(closed).toBe(true);
   });
 
-  test('buffer with null content should not trigger unnecessary save', async () => {
+  test('buffer with empty content should not trigger unnecessary save', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue(null as unknown as string);
+    readFile.mockResolvedValue(new Uint8Array());
     writeFile.mockClear();
 
-    const buffer = await store.getOrCreateBuffer('/test/null.org');
+    const buffer = await store.getOrCreateBuffer('/test/empty.org');
 
-    expect(buffer.content).toBe(null);
+    expect(buffer.text).toBe('');
 
     await store.saveAllBuffers();
 
     expect(writeFile).not.toHaveBeenCalled();
   });
 
-  test('changing null content to empty string should be detected as dirty', async () => {
+  test('changing empty content to non-empty should be detected as dirty', async () => {
     const store = useBufferStore();
 
-    readFile.mockResolvedValue(null as unknown as string);
+    readFile.mockResolvedValue(new Uint8Array());
 
-    const buffer = await store.getOrCreateBuffer('/test/null.org');
+    const buffer = await store.getOrCreateBuffer('/test/empty.org');
 
-    expect(buffer.content).toBe(null);
+    expect(buffer.text).toBe('');
 
-    buffer.content = '';
+    buffer.setText('new content');
 
-    const closed = await store.closeBuffer('/test/null.org');
+    const closed = await store.closeBuffer('/test/empty.org');
     expect(closed).toBe(false);
   });
 });
 
-describe('Пареев: lastSavedAt при неудачном сохранении', () => {
+describe('lastSavedAt on failed save', () => {
   test('failed save should not set lastSavedAt', async () => {
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'attempting to save';
+    buffer.setText('attempting to save');
 
     writeFile.mockRejectedValue(new Error('Disk full'));
 
@@ -751,13 +762,13 @@ describe('Пареев: lastSavedAt при неудачном сохранени
     const store = useBufferStore();
     const buffer = await store.getOrCreateBuffer('/test/file.org');
 
-    buffer.content = 'trying to save';
+    buffer.setText('trying to save');
 
     writeFile.mockRejectedValue(new Error('Disk full'));
 
     await store.saveAllBuffers();
 
-    readFile.mockResolvedValue('external update');
+    readFile.mockResolvedValue(toBytes('external update'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -766,7 +777,7 @@ describe('Пареев: lastSavedAt при неудачном сохранени
 
     await vi.advanceTimersByTimeAsync(10);
 
-    expect(buffer.content).toBe('trying to save');
+    expect(buffer.text).toBe('trying to save');
 
     vi.useRealTimers();
   });
@@ -779,18 +790,18 @@ describe('Пареев: lastSavedAt при неудачном сохранени
 
     writeFile.mockRejectedValue(new Error('Network error'));
 
-    buffer.content = 'failed save content';
+    buffer.setText('failed save content');
     await store.saveAllBuffers();
 
     await vi.advanceTimersByTimeAsync(50);
 
     writeFile.mockResolvedValue(undefined);
-    buffer.content = 'successful save';
+    buffer.setText('successful save');
     await store.saveAllBuffers();
 
     await vi.advanceTimersByTimeAsync(100);
 
-    readFile.mockResolvedValue('external during window');
+    readFile.mockResolvedValue(toBytes('external during window'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -798,11 +809,11 @@ describe('Пареев: lastSavedAt при неудачном сохранени
     });
     await vi.advanceTimersByTimeAsync(10);
 
-    expect(buffer.content).toBe('successful save');
+    expect(buffer.text).toBe('successful save');
 
     await vi.advanceTimersByTimeAsync(400);
 
-    readFile.mockResolvedValue('external after window');
+    readFile.mockResolvedValue(toBytes('external after window'));
     triggerExternalChange('/test/file.org', {
       path: '/test/file.org',
       type: 'modify',
@@ -810,7 +821,7 @@ describe('Пареев: lastSavedAt при неудачном сохранени
     });
     await vi.advanceTimersByTimeAsync(10);
 
-    expect(buffer.content).toBe('external after window');
+    expect(buffer.text).toBe('external after window');
 
     vi.useRealTimers();
   });

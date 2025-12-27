@@ -27,12 +27,12 @@ export function useNoteEditor(notePath: Ref<string | undefined>) {
   const noteText = computed({
     get: (): string => {
       const b = currentBuffer.value;
-      return b ? b.content : '';
+      return b ? b.text : '';
     },
     set: (val: string) => {
       const b = currentBuffer.value;
       if (!b) return;
-      b.content = val;
+      b.setText(val);
     },
   });
 
