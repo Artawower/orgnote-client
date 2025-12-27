@@ -37,27 +37,28 @@ const viewUpdater = (srcOrgNode: OrgNode, newText: string): ViewUpdateSchema => 
   };
 };
 
-const SCOPE_ID = 'org-src-block';
+const WIDGET_ID = 'org-src-block';
 
 export const orgSrcBlockExtension: Extension = {
   onMounted: async (api) => {
-    api.utils.applyScopedStyles(SCOPE_ID, styles);
+    api.utils.applyScopedStyles(WIDGET_ID, styles);
 
     const { addWidgets } = api.core.useEditor();
 
     addWidgets({
+      id: WIDGET_ID,
       type: WidgetType.Multiline,
       nodeType: NodeType.SrcBlock,
       component: OrgSrcBlock,
-      // TODO: rename
       viewUpdater,
+      priority: 0,
     });
   },
 
   onUnmounted: async (api) => {
-    api.utils.removeScopedStyles(SCOPE_ID);
+    api.utils.removeScopedStyles(WIDGET_ID);
     const { removeWidget } = api.core.useEditor();
-    removeWidget(NodeType.SrcBlock);
+    removeWidget(WIDGET_ID);
   },
 };
 

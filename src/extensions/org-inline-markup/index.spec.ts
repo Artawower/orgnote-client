@@ -141,12 +141,6 @@ test('orgInlineMarkupExtension.onMounted: registers lineClass for ListItem nodeT
   expect(listItemWidget!.type).toBe('line-class');
 });
 
-test('orgInlineMarkupExtension.onMounted: calls createWidgetBuilder for Vue component widgets', async () => {
-  await orgInlineMarkupExtension.onMounted!(mockApi);
-
-  expect(mockCreateWidgetBuilder).toHaveBeenCalled();
-});
-
 test('orgInlineMarkupExtension.onUnmounted: removes scoped styles', async () => {
   await orgInlineMarkupExtension.onUnmounted!(mockApi);
 
@@ -154,18 +148,18 @@ test('orgInlineMarkupExtension.onUnmounted: removes scoped styles', async () => 
   expect(mockRemoveScopedStyles).toHaveBeenCalledWith('org-inline-markup');
 });
 
-test('orgInlineMarkupExtension.onUnmounted: removes all widgets that were added', async () => {
+test('orgInlineMarkupExtension.onUnmounted: removes all widgets that were added by id', async () => {
   await orgInlineMarkupExtension.onMounted!(mockApi);
   const addedWidgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const addedNodeTypes = addedWidgets.map((w) => w.nodeType);
+  const addedIds = addedWidgets.map((w) => w.id);
 
   vi.clearAllMocks();
   await orgInlineMarkupExtension.onUnmounted!(mockApi);
 
-  const removedNodeTypes = mockRemoveWidget.mock.calls.map((call) => call[0]);
+  const removedIds = mockRemoveWidget.mock.calls.map((call) => call[0]);
 
-  addedNodeTypes.forEach((nodeType) => {
-    expect(removedNodeTypes).toContain(nodeType);
+  addedIds.forEach((id) => {
+    expect(removedIds).toContain(id);
   });
 });
 

@@ -22,6 +22,7 @@ const findFirstNode = (root: OrgNode, type: NodeType): OrgNode => {
 };
 
 const createWidget = (): MultilineEmbeddedWidget => ({
+  id: 'test-widget',
   widgetBuilder: () => ({
     destroy: () => {},
   }),

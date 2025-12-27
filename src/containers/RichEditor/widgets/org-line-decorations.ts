@@ -4,7 +4,7 @@ import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, ViewPlugin } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType, findParent, walkTree } from 'org-mode-ast';
-import type { OrgLineClasses } from 'orgnote-api';
+import type { OrgLineClasses, OrgLineClass } from 'orgnote-api';
 import { orgNodeGetterFacet, lineClassesFacet } from '../facets';
 
 const applyLineDecorationsForSrcParentBlock = (
@@ -27,6 +27,22 @@ const applyLineDecorationsForSrcParentBlock = (
   });
 };
 
+const collectLineClasses = (
+  widgets: OrgLineClass[] | undefined,
+  node: OrgNode,
+): string | undefined => {
+  if (!widgets?.length) return undefined;
+
+  const classes = widgets
+    .map((w) => {
+      const lineClass = typeof w.class === 'function' ? w.class(node) : w.class;
+      return lineClass;
+    })
+    .filter(Boolean);
+
+  return classes.length > 0 ? classes.join(' ') : undefined;
+};
+
 const buildLineDecorations = (
   orgNode: OrgNode | null,
   orgLineClasses: OrgLineClasses,
@@ -36,11 +52,7 @@ const buildLineDecorations = (
   const lineDecorations: Range<Decoration>[] = [];
 
   walkTree(orgNode, (n: OrgNode): boolean => {
-    const lineDecoration = orgLineClasses[n.type]?.class;
-    if (!lineDecoration) return false;
-
-    const lineClass = typeof lineDecoration === 'function' ? lineDecoration(n) : lineDecoration;
-
+    const lineClass = collectLineClasses(orgLineClasses[n.type], n);
     if (!lineClass) return false;
 
     applyLineDecorationsForSrcParentBlock(lineDecorations, n, lineClass);

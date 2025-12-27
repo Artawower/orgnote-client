@@ -3,20 +3,24 @@ import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import OrgQuoteBlock from './OrgQuoteBlock.vue';
 
+const WIDGET_ID = 'org-quote-block';
+
 export const orgQuoteBlockExtension: Extension = {
   onMounted: async (api) => {
     const { addWidgets } = api.core.useEditor();
 
     addWidgets({
+      id: WIDGET_ID,
       type: WidgetType.Multiline,
       nodeType: NodeType.QuoteBlock,
       component: OrgQuoteBlock,
+      priority: 0,
     });
   },
 
   onUnmounted: async (api) => {
     const { removeWidget } = api.core.useEditor();
-    removeWidget(NodeType.QuoteBlock);
+    removeWidget(WIDGET_ID);
   },
 };
 

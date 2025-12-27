@@ -7,15 +7,34 @@ import type {
   EditorExtension,
   WidgetMeta,
   EditorStore,
+  InlineEmbeddedWidget,
+  MultilineEmbeddedWidget,
+  OrgLineClass,
 } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
-import type { NodeType } from 'org-mode-ast';
 
 interface WidgetRegistry {
   [WidgetType.Inline]: InlineEmbeddedWidgets;
   [WidgetType.Multiline]: MultilineEmbeddedWidgets;
   [WidgetType.LineClass]: OrgLineClasses;
 }
+
+type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget | OrgLineClass;
+
+const filterWidgetById = <T extends Widget>(
+  widgets: Record<string, T[] | undefined>,
+  widgetId: string,
+): Record<string, T[] | undefined> => {
+  const result: Record<string, T[] | undefined> = {};
+  for (const [nodeType, widgetList] of Object.entries(widgets)) {
+    if (!widgetList) continue;
+    const filtered = widgetList.filter((w) => w.id !== widgetId);
+    if (filtered.length > 0) {
+      result[nodeType] = filtered;
+    }
+  }
+  return result;
+};
 
 export const useEditorStore = defineStore<'editor', EditorStore>('editor', () => {
   const widgetRegistry = shallowRef<WidgetRegistry>({
@@ -33,25 +52,22 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
       [WidgetType.LineClass]: { ...widgetRegistry.value[WidgetType.LineClass] },
     };
 
-    widgets.forEach(({ type, nodeType, ...widget }) => {
-      (newRegistry[type] as Record<string, unknown>)[nodeType] = widget;
+    widgets.forEach(({ type, nodeType, id, ...widget }) => {
+      const registry = newRegistry[type] as Record<string, Widget[]>;
+      const existingWidgets = registry[nodeType] ?? [];
+      const withoutDuplicate = existingWidgets.filter((w) => w.id !== id);
+      registry[nodeType] = [...withoutDuplicate, { id, ...widget } as Widget];
     });
 
     widgetRegistry.value = newRegistry;
   };
 
-  const removeWidget = (nodeType: NodeType): void => {
-    const newRegistry: WidgetRegistry = {
-      [WidgetType.Inline]: { ...widgetRegistry.value[WidgetType.Inline] },
-      [WidgetType.Multiline]: { ...widgetRegistry.value[WidgetType.Multiline] },
-      [WidgetType.LineClass]: { ...widgetRegistry.value[WidgetType.LineClass] },
+  const removeWidget = (widgetId: string): void => {
+    widgetRegistry.value = {
+      [WidgetType.Inline]: filterWidgetById(widgetRegistry.value[WidgetType.Inline], widgetId),
+      [WidgetType.Multiline]: filterWidgetById(widgetRegistry.value[WidgetType.Multiline], widgetId),
+      [WidgetType.LineClass]: filterWidgetById(widgetRegistry.value[WidgetType.LineClass], widgetId),
     };
-
-    delete newRegistry[WidgetType.Inline][nodeType];
-    delete newRegistry[WidgetType.Multiline][nodeType];
-    delete newRegistry[WidgetType.LineClass][nodeType];
-
-    widgetRegistry.value = newRegistry;
   };
 
   const addExtensions = (...newExtensions: EditorExtension[]): void => {

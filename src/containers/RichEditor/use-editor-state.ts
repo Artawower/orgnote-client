@@ -6,7 +6,12 @@ import { bracketMatching } from '@codemirror/language';
 import { computed, shallowRef, watch, toValue } from 'vue';
 import type { OrgNode, NodeType } from 'org-mode-ast';
 import { api } from 'src/boot/api';
-import type { InlineEmbeddedWidgets, MultilineEmbeddedWidgets } from 'orgnote-api';
+import type {
+  InlineEmbeddedWidgets,
+  MultilineEmbeddedWidgets,
+  InlineEmbeddedWidget,
+  MultilineEmbeddedWidget,
+} from 'orgnote-api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 
 import {
@@ -82,21 +87,23 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     orgNode.value = node;
   };
 
+  type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget;
+
   const buildWidgets = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
     widgets: T,
     builderFn: typeof createWidgetBuilder,
   ): T =>
-    Object.entries(widgets).reduce((acc, [nodeType, widget]) => {
-      if (!widget) return acc;
+    Object.entries(widgets).reduce((acc, [nodeType, widgetList]) => {
+      if (!widgetList) return acc;
       return {
         ...acc,
-        [nodeType as NodeType]: {
+        [nodeType as NodeType]: (widgetList as Widget[]).map((widget) => ({
           ...widget,
           widgetBuilder:
             widget.component && !widget.widgetBuilder
               ? builderFn(widget.component, widget.componentProps)
               : widget.widgetBuilder,
-        },
+        })),
       };
     }, {} as T);
 

@@ -4,22 +4,25 @@ import type { OrgNode } from 'org-mode-ast';
 import { NodeType } from 'org-mode-ast';
 import OrgImage from './OrgImage.vue';
 
+const WIDGET_ID = 'org-image';
+
 export const orgImageExtension: Extension = {
   onMounted: async (api) => {
     const { addWidgets } = api.core.useEditor();
 
     addWidgets({
+      id: WIDGET_ID,
       type: WidgetType.Multiline,
       nodeType: NodeType.Link,
       component: OrgImage,
       satisfied: (orgNode: OrgNode) => orgNode.meta?.linkType === 'image',
+      priority: 0,
     });
   },
 
-  onUnmounted: async () => {
-    // NOTE: Cannot safely remove widget for NodeType.Link as it would break
-    // other link widgets (e.g. inline links). Widget registry needs refactoring
-    // to support multiple widgets per NodeType with different satisfied conditions.
+  onUnmounted: async (api) => {
+    const { removeWidget } = api.core.useEditor();
+    removeWidget(WIDGET_ID);
   },
 };
 

@@ -11,6 +11,7 @@ import type { OrgNode } from 'org-mode-ast';
 import { walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/utils/has-intersection';
 import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
+import { findHighestPriorityWidget } from '../utils';
 
 export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) => {
   if (!v.docChanged && !v.viewportChanged && !v.selectionSet) {
@@ -30,7 +31,8 @@ export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) 
   const changedRanges = (v as unknown as { changedRanges?: ChangedRange[] }).changedRanges ?? [];
 
   walkTree(orgNode, (n: OrgNode): boolean => {
-    const multilineEmbeddedWidget = widgets[n.type];
+    const widgetList = widgets[n.type];
+    const multilineEmbeddedWidget = findHighestPriorityWidget(widgetList, n);
     if (!multilineEmbeddedWidget) {
       return false;
     }
@@ -42,14 +44,6 @@ export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) 
 
     if (!readonly && (widgetRemoved || caretIntoWidget)) {
       effects.push(removeMultilineWidgetEffect.of(n));
-      return false;
-    }
-
-    if (
-      !multilineEmbeddedWidget.suppressEdit &&
-      multilineEmbeddedWidget.satisfied &&
-      !multilineEmbeddedWidget.satisfied(n)
-    ) {
       return false;
     }
 

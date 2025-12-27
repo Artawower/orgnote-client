@@ -11,6 +11,7 @@ import {
   inlineWidgetsFacet,
   type OrgNodeGetter,
 } from '../facets';
+import { findHighestPriorityWidget } from '../utils';
 
 const buildDecorations = (
   view: EditorView,
@@ -36,11 +37,9 @@ const buildDecorations = (
     if (n.start > visibleEnd) return true;
     if (n.start < visibleStart) return false;
 
-    const inlineWidget = inlineWidgets[n.type];
+    const widgetList = inlineWidgets[n.type];
+    const inlineWidget = findHighestPriorityWidget(widgetList, n);
     if (!inlineWidget) return false;
-
-    const unsatisfied = inlineWidget.satisfied && !inlineWidget.satisfied(n);
-    if (unsatisfied) return false;
 
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
