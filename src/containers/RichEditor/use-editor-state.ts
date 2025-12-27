@@ -11,8 +11,10 @@ import type {
   MultilineEmbeddedWidgets,
   InlineEmbeddedWidget,
   MultilineEmbeddedWidget,
+  EditorExtension,
 } from 'orgnote-api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
+import { useDynamicComponent } from 'src/utils/dynamic-component';
 
 import {
   orgNodeGetterFacet,
@@ -74,10 +76,12 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const editorStore = api.core.useEditor();
   const editorConfig = computed(() => configStore.config.editor);
   const { createWidgetBuilder, createMultilineWidgetBuilder } = useWidgetBuilder();
+  const dynamicComponent = useDynamicComponent();
 
   const compartments = {
     readonly: new Compartment(),
     widgets: new Compartment(),
+    editorExtensions: new Compartment(),
   };
 
   const orgNode = shallowRef<OrgNode | null>(null);
@@ -123,6 +127,20 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     ];
   };
 
+  const buildEditorExtensions = (readonly: boolean): Extension[] => {
+    const extensions = toValue(editorStore.extensions) as EditorExtension[];
+
+    return extensions.map((ext) =>
+      ext({
+        orgNodeGetter: getOrgNode,
+        readonly,
+        showSpecialSymbols: editorConfig.value.showSpecialSymbols,
+        dynamicComponent,
+        editorViewGetter: options.editorViewGetter,
+      }),
+    );
+  };
+
   const createState = (content: string): EditorState => {
     const readonly = options.readonly ?? false;
     const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions();
@@ -135,6 +153,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         createUpdateListener(options.onContentUpdate),
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
         compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),
+        compartments.editorExtensions.of(buildEditorExtensions(readonly)),
         orgMode({
           wrap: editorLanguages,
           orgAstChanged: handleOrgNodeChanged,
@@ -150,13 +169,17 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   };
 
   const reconfigureWidgets = (view: EditorView): void => {
+    const readonly = options.readonly ?? false;
     const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions();
 
     view.dispatch({
-      effects: compartments.widgets.reconfigure([
-        ...createFacetExtensions(options.readonly ?? false),
-        ...widgetExtensions,
-      ]),
+      effects: [
+        compartments.widgets.reconfigure([
+          ...createFacetExtensions(readonly),
+          ...widgetExtensions,
+        ]),
+        compartments.editorExtensions.reconfigure(buildEditorExtensions(readonly)),
+      ],
     });
   };
 
@@ -167,6 +190,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         () => editorStore.inlineWidgets,
         () => editorStore.multilineWidgets,
         () => editorStore.lineClasses,
+        () => editorStore.extensions,
       ],
       () => {
         const view = viewGetter();
