@@ -3,7 +3,6 @@ export * from './org-multiline-widget-state';
 export * from './org-multiline-widget';
 export * from './org-inline-widget';
 export * from './multiline-widgets';
-export * from './menu-extension';
 export * from './org-filter-property-edit';
 export * from './org-line-decorations';
 export * from './base-org-widget';
