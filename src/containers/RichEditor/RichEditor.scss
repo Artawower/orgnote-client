@@ -223,6 +223,15 @@
       display: none !important;
     }
   }
+
+  .cm-foldPlaceholder {
+    padding-left: var(--padding-sm);
+    border: none;
+    font-weight: bold;
+    background: transparent;
+    color: var(--fg-muted);
+    font-size: 1.5em;
+  }
 }
 
 @include mobile {

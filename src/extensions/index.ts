@@ -8,6 +8,7 @@ import { orgPropertyDrawerManifest } from './org-property-drawer/manifest';
 import { orgHtmlBlockManifest } from './org-html-block/manifest';
 import { orgImageManifest } from './org-image/manifest';
 import { orgSmartEditingManifest } from './org-smart-editing/manifest';
+import { orgFoldingManifest } from './org-folding/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -28,6 +29,8 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
   [orgImageManifest.name]: () => import('./org-image').then((m) => m.orgImageExtension),
   [orgSmartEditingManifest.name]: () =>
     import('./org-smart-editing').then((m) => m.orgSmartEditingExtension),
+  [orgFoldingManifest.name]: () =>
+    import('./org-folding').then((m) => m.orgFoldingExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -40,4 +43,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgHtmlBlockManifest, active: true },
   { manifest: orgImageManifest, active: true },
   { manifest: orgSmartEditingManifest, active: true },
+  { manifest: orgFoldingManifest, active: true },
 ];
