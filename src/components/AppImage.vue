@@ -30,7 +30,7 @@ const initZoom = () => {
   if (!props.zoomable || !imgRef.value) return;
 
   zoom = mediumZoom(imgRef.value, {
-    background: 'var(--backdrop-bg)',
+    background: 'var(--backdrop-focus-bg)',
   });
 };
 
