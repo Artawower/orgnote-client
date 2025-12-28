@@ -1,18 +1,9 @@
 <template>
-  <div class="separator">
-    <!-- TODO: custom component -->
-    <q-separator />
-  </div>
+  <app-flex align-center class="full-height">
+    <q-separator class="full-width" />
+  </app-flex>
 </template>
 
-<style lang="scss" scoped>
-.separator {
-  display: flex;
-  align-items: center;
-  height: 100%;
-
-  hr {
-    width: 100%;
-  }
-}
-</style>
+<script setup lang="ts">
+import AppFlex from 'src/components/AppFlex.vue';
+</script>
