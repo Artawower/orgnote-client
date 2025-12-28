@@ -1,10 +1,8 @@
 import { h, type Component } from 'vue';
 import type { WidgetBuilder, WidgetBuilderParams, EmbeddedWidget } from 'orgnote-api';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
+import { toKebabCase } from 'src/utils/to-kebab-case';
 import MultilineWidgetWrapper from 'src/containers/RichEditor/widgets/MultilineWidgetWrapper.vue';
-
-const textToKebab = (text: string): string =>
-  text.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 
 export const useWidgetBuilder = () => {
   const dynamicComponent = useDynamicComponent();
@@ -14,7 +12,7 @@ export const useWidgetBuilder = () => {
     props: Record<string, unknown> = {},
   ): WidgetBuilder => {
     return (params: WidgetBuilderParams): EmbeddedWidget => {
-      const normalizedType = textToKebab(params.orgNode.type);
+      const normalizedType = toKebabCase(params.orgNode.type);
       params.wrap.classList.add(`org-embedded-${normalizedType}`);
 
       return dynamicComponent.mount(cmp, params.wrap, {
@@ -33,7 +31,7 @@ export const useWidgetBuilder = () => {
     props: Record<string, unknown> = {},
   ): WidgetBuilder => {
     return (params: WidgetBuilderParams): EmbeddedWidget => {
-      const normalizedType = textToKebab(params.orgNode.type);
+      const normalizedType = toKebabCase(params.orgNode.type);
       params.wrap.classList.add(`org-embedded-${normalizedType}`);
 
       const wrappedComponent = h(
