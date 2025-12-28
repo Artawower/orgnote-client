@@ -1,7 +1,7 @@
 <template>
   <app-flex class="completion-input" row between align-center gap="sm">
     <app-flex class="input" row start align-center gap="sm">
-      <app-icon name="keyboard_arrow_right" size="md"></app-icon>
+      <app-icon name="keyboard_arrow_right" size="md" color="fg"></app-icon>
       <app-input
         ref="appInputRef"
         @keypress.enter="handleCompletionInput"

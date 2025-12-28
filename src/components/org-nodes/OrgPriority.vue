@@ -1,13 +1,13 @@
 <template>
   <span class="org-priority" :class="`org-priority-${priorityLevel}`">
-    <!-- TODO: use our icon -->
-    <q-icon :name="icon" size="sm" />
+    <app-icon :name="icon" size="sm" />
   </span>
 </template>
 
 <script lang="ts" setup>
 import type { OrgNode } from 'org-mode-ast';
 import { computed } from 'vue';
+import AppIcon from '../AppIcon.vue';
 
 const props = defineProps<{
   node: OrgNode;
