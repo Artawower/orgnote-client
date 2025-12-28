@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import { computed, toRef } from 'vue';
+import { to } from 'orgnote-api/utils';
 import AppLink from 'src/components/AppLink.vue';
 
 const props = defineProps<{
@@ -16,14 +17,11 @@ const props = defineProps<{
 const node = toRef(props, 'node');
 const linkAddress = computed(() => node.value.value);
 
-const shortLink = computed(() => {
-  try {
-    const url = new URL(linkAddress.value);
-    return url.hostname;
-  } catch {
-    return linkAddress.value;
-  }
-});
+const parseUrl = to((url: string) => new URL(url).hostname);
+
+const shortLink = computed(() =>
+  parseUrl(linkAddress.value).unwrapOr(linkAddress.value),
+);
 </script>
 
 <style lang="scss" scoped>
