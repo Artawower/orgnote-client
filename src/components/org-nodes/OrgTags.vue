@@ -1,5 +1,5 @@
 <template>
-  <app-flex start class="org-tags" gap="sm">
+  <app-flex inline start class="org-tags" gap="sm">
     <app-badge
       v-for="tag in tags"
       @click="searchTag(tag)"
