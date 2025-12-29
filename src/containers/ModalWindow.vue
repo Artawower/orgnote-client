@@ -100,7 +100,6 @@ watch(modals, async (curr, prev) => {
   closeDialog();
 });
 
-// NOTE: https://stackoverflow.com/a/54267686
 const handleDialogClick = (e: MouseEvent) => {
   if (!modals.value.length) {
     return;
@@ -161,9 +160,13 @@ dialog {
       width: 100%;
       border-radius: 0;
       height: var(--screen-height);
-      top: 0;
-      bottom: 0;
+      top: var(--viewport-offset-top, 0px);
+      bottom: unset;
       margin: 0;
+    }
+
+    &:not(.mini)::backdrop {
+      display: none;
     }
 
     &.mini {
