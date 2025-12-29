@@ -1,52 +1,82 @@
-import { I18N, type FileReaderStore } from 'orgnote-api';
+import { RouteNames, type FileReaderStore, type FileReaderEntry } from 'orgnote-api';
 import { defineStore } from 'pinia';
-import { useNotificationsStore } from './notifications';
-import { i18n } from 'src/boot/i18n';
+import { shallowRef } from 'vue';
+import { usePaneStore } from './pane';
+import { useConfigStore } from './config';
+
+const DEFAULT_PRIORITY = 10;
+
+const sortByPriority = (a: FileReaderEntry, b: FileReaderEntry): number =>
+  (b.meta.priority ?? DEFAULT_PRIORITY) - (a.meta.priority ?? DEFAULT_PRIORITY);
+
+const findById = (readers: FileReaderEntry[], id: string): FileReaderEntry | undefined =>
+  readers.find((r) => r.meta.id === id);
+
+const getExtensionCandidates = (path: string): string[] => {
+  const fileName = path.split('/').pop() ?? '';
+  const parts = fileName.split('.').slice(1);
+  if (parts.length === 0) return [];
+  return parts.map((_, index) => parts.slice(index).join('.'));
+};
 
 export const useFileReaderStore = defineStore<string, FileReaderStore>(
   'file-reader',
   (): FileReaderStore => {
-    const readers = new Map<string, (path: string) => Promise<void>>();
-    const notifications = useNotificationsStore();
+    const readers = shallowRef<FileReaderEntry[]>([]);
 
-    const { t } = i18n.global;
+    const pane = usePaneStore();
+    const configStore = useConfigStore();
 
-    /**
-     * Adds a reader function for a specific file pattern
-     * @param readerMatch - The pattern to match against file paths
-     * @param reader - The reader function that handles the file
-     */
-    const addReader = (readerMatch: string, reader: (path: string) => Promise<void>): void => {
-      readers.set(readerMatch, reader);
+    const getPreferredReaderId = (path: string): string | undefined => {
+      const preferredReaders = configStore.config.fileReaders?.preferredReaders;
+      if (!preferredReaders) return undefined;
+
+      return getExtensionCandidates(path)
+        .map((extension) => preferredReaders[extension])
+        .find((id) => !!id);
     };
 
-    const addReaders = (newReaders: Record<string, (path: string) => Promise<void>>): void => {
-      Object.entries(newReaders).forEach(([pattern, reader]) => {
-        readers.set(pattern, reader);
+    const findPreferredReader = (
+      matching: FileReaderEntry[],
+      path: string,
+    ): FileReaderEntry | undefined => {
+      const preferredId = getPreferredReaderId(path);
+      if (!preferredId) return undefined;
+      return findById(matching, preferredId);
+    };
+
+    const register = (entry: FileReaderEntry): void => {
+      readers.value = [...readers.value, entry];
+    };
+
+    const unregister = (readerId: string): void => {
+      readers.value = readers.value.filter((r) => r.meta.id !== readerId);
+    };
+
+    const getReaders = (path: string): FileReaderEntry[] => {
+      return readers.value
+        .filter((r) => new RegExp(r.pattern).test(path))
+        .sort(sortByPriority);
+    };
+
+    const getReader = (path: string): FileReaderEntry | undefined => {
+      const matching = getReaders(path);
+      if (!matching.length) return undefined;
+      return findPreferredReader(matching, path) ?? matching[0];
+    };
+
+    const openFile = async (path: string): Promise<void> => {
+      await pane.navigate({
+        name: RouteNames.File,
+        params: { path },
       });
     };
 
-    /**
-     * Opens a file using the appropriate reader based on the file path
-     * @param path - Array of path segments to the file
-     */
-    const openFile = async (path: string): Promise<void> => {
-      const reader = Array.from(readers.keys()).find((pattern) => new RegExp(pattern).test(path));
-
-      if (!reader) {
-        notifications.notify({
-          message: `${t(I18N.NO_FILE_READER_FOR)} ${path}`,
-          level: 'warning',
-        });
-        return;
-      }
-
-      readers.get(reader)?.(path);
-    };
-
     return {
-      addReader,
-      addReaders,
+      register,
+      unregister,
+      getReaders,
+      getReader,
       openFile,
     };
   },

@@ -64,6 +64,8 @@ import { useFileWatcherStore } from 'src/stores/file-watcher';
 import { buildOrgNoteUrl } from 'src/utils/build-orgnote-url';
 import { useAuthStore } from 'src/stores/auth';
 import { useSyncStore } from 'src/stores/sync';
+import { useEditorStore } from 'src/stores/editor';
+import { useOrgBabelStore } from 'src/stores/org-babel';
 import { wsClient } from 'src/infrastructure/websocket-client';
 
 let api: OrgNoteApi;
@@ -100,6 +102,8 @@ async function initApi(app: App, router: Router): Promise<void> {
       useFileGuard: useFileGuardStore,
       useAuth: useAuthStore,
       useSync: useSyncStore,
+      useEditor: useEditorStore,
+      useBabel: useOrgBabelStore,
       app,
     },
     utils: {

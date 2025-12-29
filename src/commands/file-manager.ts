@@ -1,5 +1,5 @@
 import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { DefaultCommands, I18N, RouteNames, type Command } from 'orgnote-api';
+import { DefaultCommands, I18N, type Command } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { createFileCompletion } from 'src/composables/create-file-completion';
 import { createFolderCompletion } from 'src/composables/create-folder-completion';
@@ -133,25 +133,6 @@ export function getFileManagerCommands(): Command[] {
         }
         await fs.deleteFile(params.data.path);
         return;
-      },
-    },
-    {
-      command: DefaultCommands.OPEN_CODE_EDITOR,
-      title: DefaultCommands.OPEN_CODE_EDITOR,
-      group,
-      icon: 'code',
-      handler: async (api: OrgNoteApi, params?: CommandHandlerParams<{ path: string }>) => {
-        const paneStore = api.core.usePane();
-        const path = params?.data?.path;
-
-        if (!path) {
-          return;
-        }
-
-        await paneStore.navigate({
-          name: RouteNames.EditCode,
-          params: { path },
-        });
       },
     },
   ];

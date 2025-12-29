@@ -97,6 +97,7 @@ body {
 
   // Backdrop
   --backdrop-bg: rgba(0, 0, 0, 0.2);
+  --backdrop-focus-bg: rgba(0, 0, 0, 0.8);
 
   // Modal
   --modal-backdrop-bg: var(--backdrop-bg);
@@ -256,6 +257,27 @@ body {
   --notification-caption-opacity: 0.8;
 
   --notification-close-opacity: 0.7;
+
+  // Editor
+  --editor-max-width: 768px;
+  --editor-padding: var(--padding-xl) var(--padding-lg) 0 var(--padding-lg);
+  --editor-cursor-color: var(--accent);
+  --editor-cursor-width: 2px;
+  --editor-selection-bg: var(--accent);
+  --editor-selection-fg: var(--bg);
+  --editor-active-line-bg: transparent;
+  --editor-default-line-height: 1.6em;
+  --editor-headline-line-height: 1.4;
+
+  --inline-code-bg: var(--bg-elevated);
+  --inline-code-fg: var(--fg);
+
+  // Src blocks
+  --src-block-padding-x: var(--padding-md);
+  --src-footer-padding-y: var(--padding-sm);
+  --src-margin-y: var(--margin-md);
+
+  --org-list-item-bullet-margin-left: 20px;
 }
 
 @include desktop-below {
@@ -265,8 +287,6 @@ body {
     --modal-min-width: 100%;
     --modal-border: none;
     --modal-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-
-    --footer-height: 60px;
 
     --tab-overview-container-padding: var(--padding-sm);
     --tab-overview-grid-gap: var(--gap-md);
@@ -283,6 +303,7 @@ body {
 @include mobile {
   body {
     --tab-overview-grid-columns: 2;
+    --footer-height: 52px;
   }
 }
 

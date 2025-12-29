@@ -302,6 +302,8 @@
       }
 
       window.addEventListener('error', function (event) {
+        if (window.__appBooted) return;
+
         var details = extractErrorDetails(event);
         window.__errorBuffer.capture(details.value, details.type, details.meta);
         console.error('[FALLBACK] Uncaught error:', details.message);
@@ -309,6 +311,8 @@
       }, true);
 
       window.addEventListener('unhandledrejection', function (event) {
+        if (window.__appBooted) return;
+
         var details = extractRejectionDetails(event);
         window.__errorBuffer.capture(details.value, details.type, details.meta);
         console.error('[FALLBACK] Unhandled rejection:', details.message);

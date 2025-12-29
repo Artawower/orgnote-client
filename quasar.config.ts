@@ -25,6 +25,7 @@ export default defineConfig((ctx) => {
       'axios',
       'infrastructure',
       'api',
+      { server: false, path: 'highlightjs' },
       {
         server: false,
         path: 'pane-snapshot',
@@ -39,6 +40,7 @@ export default defineConfig((ctx) => {
       { path: 'files-watchers', server: false },
       { path: 'auth', server: false },
       { path: 'electron-deeplink', server: false },
+      { path: 'katex', server: false },
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css

@@ -48,16 +48,10 @@ export const createPaneRouter = async (tabId: string): Promise<Router> => {
         },
       },
       createBufferRoute({
-        basePath: 'edit-note',
-        parentName: 'OpenFile',
-        childName: RouteNames.EditNote,
-        component: () => import('src/pages/EditNote.vue'),
-      }),
-      createBufferRoute({
-        basePath: 'edit-code',
-        parentName: 'OpenCode',
-        childName: RouteNames.EditCode,
-        component: () => import('src/pages/EditCode.vue'),
+        basePath: 'file',
+        parentName: 'OpenFileReader',
+        childName: RouteNames.File,
+        component: () => import('src/pages/FilePage.vue'),
       }),
     ],
   });

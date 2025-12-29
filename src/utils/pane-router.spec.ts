@@ -3,17 +3,12 @@ import { createPaneRouter } from './pane-router';
 import { beforeEach, expect, test, vi } from 'vitest';
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
-// Mock the page imports
 vi.mock('src/pages/InitialPage.vue', () => ({
   default: { name: 'InitialPage' },
 }));
 
-vi.mock('src/pages/EditNote.vue', () => ({
-  default: { name: 'EditNote' },
-}));
-
-vi.mock('src/pages/EditCode.vue', () => ({
-  default: { name: 'EditCode' },
+vi.mock('src/pages/FilePage.vue', () => ({
+  default: { name: 'FilePage' },
 }));
 
 vi.mock('src/pages/AppBuffer.vue', () => ({
@@ -47,12 +42,12 @@ test('has initial page route configured', () => {
   expect(initialPageRoute?.meta?.titleGenerator).toBeDefined();
 });
 
-test('has edit note route configured', () => {
-  const editNoteRoute = router.getRoutes().find((route) => route.name === RouteNames.EditNote);
+test('has file route configured', () => {
+  const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
 
-  expect(editNoteRoute).toBeDefined();
-  expect(editNoteRoute?.path).toBe('/:paneId/edit-note/:path(.*)');
-  expect(editNoteRoute?.meta?.titleGenerator).toBeDefined();
+  expect(fileRoute).toBeDefined();
+  expect(fileRoute?.path).toBe('/:paneId/file/:path(.*)');
+  expect(fileRoute?.meta?.titleGenerator).toBeDefined();
 });
 
 test('initial page title generator returns empty string', () => {
@@ -81,9 +76,9 @@ test('initial page title generator returns empty string', () => {
   expect(titleGenerator(mockRoute)).toBe('');
 });
 
-test('edit note title generator extracts filename from path', () => {
-  const editNoteRoute = router.getRoutes().find((route) => route.name === RouteNames.EditNote);
-  const titleGenerator = editNoteRoute?.meta?.titleGenerator;
+test('file title generator extracts filename from path', () => {
+  const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
+  const titleGenerator = fileRoute?.meta?.titleGenerator;
 
   expect(titleGenerator).toBeDefined();
 
@@ -91,9 +86,9 @@ test('edit note title generator extracts filename from path', () => {
     params: { path: 'folder/subfolder/test-file.org' },
     query: {},
     hash: '',
-    fullPath: '/test/edit-note/folder/subfolder/test-file.org',
-    path: '/test/edit-note/folder/subfolder/test-file.org',
-    name: RouteNames.EditNote,
+    fullPath: '/test/file/folder/subfolder/test-file.org',
+    path: '/test/file/folder/subfolder/test-file.org',
+    name: RouteNames.File,
     matched: [],
     meta: {},
     redirectedFrom: undefined,
@@ -105,9 +100,9 @@ test('edit note title generator extracts filename from path', () => {
   expect(titleGenerator(mockRoute)).toBe('test-file.org');
 });
 
-test('edit note title generator returns empty string for empty path', () => {
-  const editNoteRoute = router.getRoutes().find((route) => route.name === RouteNames.EditNote);
-  const titleGenerator = editNoteRoute?.meta?.titleGenerator;
+test('file title generator returns empty string for empty path', () => {
+  const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
+  const titleGenerator = fileRoute?.meta?.titleGenerator;
 
   expect(titleGenerator).toBeDefined();
 
@@ -115,9 +110,9 @@ test('edit note title generator returns empty string for empty path', () => {
     params: { path: '' },
     query: {},
     hash: '',
-    fullPath: '/test/edit-note/',
-    path: '/test/edit-note/',
-    name: RouteNames.EditNote,
+    fullPath: '/test/file/',
+    path: '/test/file/',
+    name: RouteNames.File,
     matched: [],
     meta: {},
     redirectedFrom: undefined,
@@ -129,9 +124,9 @@ test('edit note title generator returns empty string for empty path', () => {
   expect(titleGenerator(mockRoute)).toBe('');
 });
 
-test('edit note title generator returns default title for path without filename', () => {
-  const editNoteRoute = router.getRoutes().find((route) => route.name === RouteNames.EditNote);
-  const titleGenerator = editNoteRoute?.meta?.titleGenerator;
+test('file title generator returns default title for path without filename', () => {
+  const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
+  const titleGenerator = fileRoute?.meta?.titleGenerator;
 
   expect(titleGenerator).toBeDefined();
 
@@ -139,9 +134,9 @@ test('edit note title generator returns default title for path without filename'
     params: { path: 'folder/' },
     query: {},
     hash: '',
-    fullPath: '/test/edit-note/folder/',
-    path: '/test/edit-note/folder/',
-    name: RouteNames.EditNote,
+    fullPath: '/test/file/folder/',
+    path: '/test/file/folder/',
+    name: RouteNames.File,
     matched: [],
     meta: {},
     redirectedFrom: undefined,
@@ -153,25 +148,25 @@ test('edit note title generator returns default title for path without filename'
   expect(titleGenerator(mockRoute)).toBe('Untitled');
 });
 
-test('can navigate to edit note route', async () => {
+test('can navigate to file route', async () => {
   const testPath = 'test/file.org';
 
   await router.push({
-    name: RouteNames.EditNote,
+    name: RouteNames.File,
     params: {
       paneId: testTabId,
       path: testPath,
     },
   });
 
-  expect(router.currentRoute.value.name).toBe(RouteNames.EditNote);
+  expect(router.currentRoute.value.name).toBe(RouteNames.File);
   expect(router.currentRoute.value.params.paneId).toBe(testTabId);
   expect(router.currentRoute.value.params.path).toBe(testPath);
 });
 
 test('can navigate back to initial page', async () => {
   await router.push({
-    name: RouteNames.EditNote,
+    name: RouteNames.File,
     params: {
       paneId: testTabId,
       path: 'test.org',
@@ -190,8 +185,8 @@ test('can navigate back to initial page', async () => {
 });
 
 test('handles complex file paths correctly', () => {
-  const editNoteRoute = router.getRoutes().find((route) => route.name === RouteNames.EditNote);
-  const titleGenerator = editNoteRoute?.meta?.titleGenerator;
+  const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
+  const titleGenerator = fileRoute?.meta?.titleGenerator;
 
   expect(titleGenerator).toBeDefined();
 
@@ -199,9 +194,9 @@ test('handles complex file paths correctly', () => {
     params: { path: 'documents/projects/2024/notes/meeting-notes.org' },
     query: {},
     hash: '',
-    fullPath: '/test/edit-note/documents/projects/2024/notes/meeting-notes.org',
-    path: '/test/edit-note/documents/projects/2024/notes/meeting-notes.org',
-    name: RouteNames.EditNote,
+    fullPath: '/test/file/documents/projects/2024/notes/meeting-notes.org',
+    path: '/test/file/documents/projects/2024/notes/meeting-notes.org',
+    name: RouteNames.File,
     matched: [],
     meta: {},
     redirectedFrom: undefined,
@@ -211,52 +206,4 @@ test('handles complex file paths correctly', () => {
     throw new Error('Expected titleGenerator to be defined');
   }
   expect(titleGenerator(complexPathRoute)).toBe('meeting-notes.org');
-});
-
-test('pane-router has edit code route configured', () => {
-  const editCodeRoute = router.getRoutes().find((route) => route.name === RouteNames.EditCode);
-
-  expect(editCodeRoute).toBeDefined();
-  expect(editCodeRoute?.path).toBe('/:paneId/edit-code/:path(.*)');
-  expect(editCodeRoute?.meta?.titleGenerator).toBeDefined();
-});
-
-test('pane-router edit code title generator extracts filename from path', () => {
-  const editCodeRoute = router.getRoutes().find((route) => route.name === RouteNames.EditCode);
-  const titleGenerator = editCodeRoute?.meta?.titleGenerator;
-
-  expect(titleGenerator).toBeDefined();
-
-  const mockRoute = {
-    params: { path: 'config/settings.toml' },
-    query: {},
-    hash: '',
-    fullPath: '/test/edit-code/config/settings.toml',
-    path: '/test/edit-code/config/settings.toml',
-    name: RouteNames.EditCode,
-    matched: [],
-    meta: {},
-    redirectedFrom: undefined,
-  } as RouteLocationNormalized;
-
-  if (!titleGenerator) {
-    throw new Error('Expected titleGenerator to be defined');
-  }
-  expect(titleGenerator(mockRoute)).toBe('settings.toml');
-});
-
-test('pane-router can navigate to edit code route', async () => {
-  const testPath = 'config/app.toml';
-
-  await router.push({
-    name: RouteNames.EditCode,
-    params: {
-      paneId: testTabId,
-      path: testPath,
-    },
-  });
-
-  expect(router.currentRoute.value.name).toBe(RouteNames.EditCode);
-  expect(router.currentRoute.value.params.paneId).toBe(testTabId);
-  expect(router.currentRoute.value.params.path).toBe(testPath);
 });

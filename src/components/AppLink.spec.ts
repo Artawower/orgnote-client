@@ -49,10 +49,10 @@ test('AppLink applies color class based on color prop', () => {
   expect(wrapper.find('a').classes()).toContain('color-green');
 });
 
-test('AppLink uses blue as default color', () => {
+test('AppLink uses accent as default color', () => {
   const wrapper = createWrapper();
 
-  expect(wrapper.find('a').classes()).toContain('color-blue');
+  expect(wrapper.find('a').classes()).toContain('color-accent');
 });
 
 test('AppLink applies underline class when underline prop is true', () => {

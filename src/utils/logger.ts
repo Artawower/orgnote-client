@@ -179,22 +179,6 @@ const mergeContext = (segments: Array<Record<string, unknown> | undefined>): Rec
 const hasEntries = (record?: Record<string, unknown>): record is Record<string, unknown> =>
   Boolean(record && Object.keys(record).length > 0);
 
-const buildRecord = (level: LogLevel, primary: unknown, extras: unknown[], bindings: Bindings): LogRecord => {
-  const timestamp = new Date();
-  const mergedContext = mergeContext([primary, ...extras].map(extractContext));
-  const record: LogRecord = {
-    ts: timestamp,
-    level,
-    message: toMessage(primary),
-    repeatCount: 1,
-    firstTs: timestamp,
-    lastTs: timestamp,
-  };
-  if (mergedContext) record.context = sanitizeObject(mergedContext);
-  if (hasEntries(bindings)) record.bindings = sanitizeObject(bindings);
-  return record;
-};
-
 const findStackTrace = (primary: unknown, extras: unknown[]): string | undefined => {
   const candidates = [primary, ...extras];
   for (const candidate of candidates) {
@@ -205,6 +189,30 @@ const findStackTrace = (primary: unknown, extras: unknown[]): string | undefined
     }
   }
   return undefined;
+};
+
+const buildRecord = (level: LogLevel, primary: unknown, extras: unknown[], bindings: Bindings): LogRecord => {
+  const timestamp = new Date();
+  const mergedContext = mergeContext([primary, ...extras].map(extractContext));
+  const stackTrace = findStackTrace(primary, extras);
+  
+  const record: LogRecord = {
+    ts: timestamp,
+    level,
+    message: toMessage(primary),
+    repeatCount: 1,
+    firstTs: timestamp,
+    lastTs: timestamp,
+  };
+  
+  const contextWithStack = mergedContext ? { ...mergedContext } : {};
+  if (stackTrace && !contextWithStack.stack) {
+    contextWithStack.stack = stackTrace;
+  }
+  
+  if (hasEntries(contextWithStack)) record.context = sanitizeObject(contextWithStack);
+  if (hasEntries(bindings)) record.bindings = sanitizeObject(bindings);
+  return record;
 };
 
 const shouldRecordLogs = (): boolean => !!process.env.CLIENT;

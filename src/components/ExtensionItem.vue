@@ -1,6 +1,6 @@
 <template>
   <div class="extension-item">
-    <app-spoiler style="--spoiler-max-height: unset">
+    <app-spoiler style="--spoiler-max-height: unset; --card-radius: 0">
       <template #title>
         <app-flex row between class="full-width">
           <app-flex gap="md" align="center">
@@ -44,6 +44,7 @@
               />
 
               <action-button
+                v-if="!isBuiltin"
                 @click.stop="$emit('delete', manifest.name)"
                 size="sm"
                 color="red"
@@ -175,6 +176,8 @@ const isActive = computed(() => {
   }
   return (props.extension as ExtensionMeta).active ?? false;
 });
+
+const isBuiltin = computed(() => manifest.value.source.type === 'builtin');
 
 const sourceLabel = computed(() => {
   const source = manifest.value.source;

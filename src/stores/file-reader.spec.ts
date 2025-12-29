@@ -1,106 +1,170 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useFileReaderStore } from './file-reader';
+import { defineComponent } from 'vue';
 
-const mockNotify = vi.fn();
+const mockNavigate = vi.fn();
+const mockConfig = {
+  fileReaders: {
+    preferredReaders: {} as Record<string, string>,
+  },
+};
 
-vi.mock('./notifications', () => ({
-  useNotificationsStore: () => ({
-    notify: mockNotify,
+vi.mock('./pane', () => ({
+  usePaneStore: () => ({
+    navigate: mockNavigate,
   }),
 }));
 
-vi.mock('src/boot/i18n', () => ({
-  i18n: {
-    global: {
-      t: (key: string) => key,
-    },
-  },
+vi.mock('./config', () => ({
+  useConfigStore: () => ({
+    config: mockConfig,
+  }),
 }));
+
+const createMockComponent = (name: string) =>
+  defineComponent({ name, template: '<div />' });
 
 beforeEach(() => {
   setActivePinia(createPinia());
-  mockNotify.mockClear();
+  mockNavigate.mockClear();
+  mockConfig.fileReaders.preferredReaders = {};
 });
 
-test('file-reader addReader registers a single reader correctly', async () => {
+test('file-reader register adds a reader correctly', () => {
   const fileReaderStore = useFileReaderStore();
-  const mockReader = vi.fn();
+  const mockComponent = createMockComponent('OrgReader');
 
-  fileReaderStore.addReader('\\.org$', mockReader);
-
-  await fileReaderStore.openFile('test.org');
-
-  expect(mockReader).toHaveBeenCalledWith('test.org');
-});
-
-test('file-reader addReaders registers multiple readers correctly', async () => {
-  const fileReaderStore = useFileReaderStore();
-  const orgReader = vi.fn();
-  const tomlReader = vi.fn();
-
-  fileReaderStore.addReaders({
-    '\\.org$': orgReader,
-    '\\.toml$': tomlReader,
+  fileReaderStore.register({
+    pattern: '\\.org$',
+    component: mockComponent,
+    meta: { id: 'test:org', name: 'Org Reader' },
   });
 
-  await fileReaderStore.openFile('config.toml');
-  expect(tomlReader).toHaveBeenCalledWith('config.toml');
+  const reader = fileReaderStore.getReader('test.org');
+  expect(reader).toBeDefined();
+  expect(reader?.meta.id).toBe('test:org');
+});
+
+test('file-reader getReaders returns all matching readers sorted by priority', () => {
+  const fileReaderStore = useFileReaderStore();
+
+  fileReaderStore.register({
+    pattern: '\\.org$',
+    component: createMockComponent('LowPriority'),
+    meta: { id: 'test:low', name: 'Low Priority', priority: 5 },
+  });
+
+  fileReaderStore.register({
+    pattern: '\\.org$',
+    component: createMockComponent('HighPriority'),
+    meta: { id: 'test:high', name: 'High Priority', priority: 20 },
+  });
+
+  const readers = fileReaderStore.getReaders('test.org');
+  expect(readers).toHaveLength(2);
+  expect(readers[0]?.meta.id).toBe('test:high');
+  expect(readers[1]?.meta.id).toBe('test:low');
+});
+
+test('file-reader getReader returns highest priority reader', () => {
+  const fileReaderStore = useFileReaderStore();
+
+  fileReaderStore.register({
+    pattern: '\\.md$',
+    component: createMockComponent('Default'),
+    meta: { id: 'builtin:md', name: 'Default', priority: 0 },
+  });
+
+  fileReaderStore.register({
+    pattern: '\\.md$',
+    component: createMockComponent('Extension'),
+    meta: { id: 'ext:md', name: 'Extension', priority: 10 },
+  });
+
+  const reader = fileReaderStore.getReader('readme.md');
+  expect(reader?.meta.id).toBe('ext:md');
+});
+
+test('file-reader config preferred reader overrides priority', () => {
+  const fileReaderStore = useFileReaderStore();
+
+  fileReaderStore.register({
+    pattern: '\\.md$',
+    component: createMockComponent('Low'),
+    meta: { id: 'test:low', name: 'Low', priority: 5 },
+  });
+
+  fileReaderStore.register({
+    pattern: '\\.md$',
+    component: createMockComponent('High'),
+    meta: { id: 'test:high', name: 'High', priority: 20 },
+  });
+
+  mockConfig.fileReaders.preferredReaders['md'] = 'test:low';
+
+  const reader = fileReaderStore.getReader('readme.md');
+  expect(reader?.meta.id).toBe('test:low');
+});
+
+test('file-reader handles compound extensions like org.gpg', () => {
+  const fileReaderStore = useFileReaderStore();
+
+  fileReaderStore.register({
+    pattern: '\\.org(\\.gpg)?$',
+    component: createMockComponent('Org'),
+    meta: { id: 'test:org', name: 'Org', priority: 10 },
+  });
+
+  fileReaderStore.register({
+    pattern: '\\.org(\\.gpg)?$',
+    component: createMockComponent('OrgAlt'),
+    meta: { id: 'test:org-alt', name: 'Org Alt', priority: 5 },
+  });
+
+  mockConfig.fileReaders.preferredReaders['org.gpg'] = 'test:org-alt';
+
+  const reader = fileReaderStore.getReader('secret.org.gpg');
+  expect(reader?.meta.id).toBe('test:org-alt');
+});
+
+test('file-reader unregister removes reader by id', () => {
+  const fileReaderStore = useFileReaderStore();
+
+  fileReaderStore.register({
+    pattern: '\\.org$',
+    component: createMockComponent('ToRemove'),
+    meta: { id: 'test:remove', name: 'To Remove' },
+  });
+
+  expect(fileReaderStore.getReader('test.org')).toBeDefined();
+
+  fileReaderStore.unregister('test:remove');
+
+  expect(fileReaderStore.getReader('test.org')).toBeUndefined();
+});
+
+test('file-reader openFile navigates to file page', async () => {
+  const fileReaderStore = useFileReaderStore();
 
   await fileReaderStore.openFile('notes.org');
-  expect(orgReader).toHaveBeenCalledWith('notes.org');
-});
 
-test('file-reader addReaders does not overwrite existing readers when patterns differ', async () => {
-  const fileReaderStore = useFileReaderStore();
-  const existingReader = vi.fn();
-  const newReader = vi.fn();
-
-  fileReaderStore.addReader('\\.md$', existingReader);
-  fileReaderStore.addReaders({
-    '\\.toml$': newReader,
-  });
-
-  await fileReaderStore.openFile('readme.md');
-  expect(existingReader).toHaveBeenCalledWith('readme.md');
-
-  await fileReaderStore.openFile('config.toml');
-  expect(newReader).toHaveBeenCalledWith('config.toml');
-});
-
-test('file-reader openFile shows notification when no reader matches', async () => {
-  const fileReaderStore = useFileReaderStore();
-
-  await fileReaderStore.openFile('unknown.xyz');
-
-  expect(mockNotify).toHaveBeenCalledWith({
-    message: expect.stringContaining('unknown.xyz'),
-    level: 'warning',
+  expect(mockNavigate).toHaveBeenCalledWith({
+    name: 'File',
+    params: { path: 'notes.org' },
   });
 });
 
-test('file-reader reader pattern matches correctly with regex', async () => {
+test('file-reader pattern matches correctly with regex', () => {
   const fileReaderStore = useFileReaderStore();
-  const configReader = vi.fn();
 
-  fileReaderStore.addReader('config.*\\.toml$', configReader);
-
-  await fileReaderStore.openFile('config.local.toml');
-  expect(configReader).toHaveBeenCalledWith('config.local.toml');
-});
-
-test('file-reader addReaders overwrites reader with same pattern', async () => {
-  const fileReaderStore = useFileReaderStore();
-  const firstReader = vi.fn();
-  const secondReader = vi.fn();
-
-  fileReaderStore.addReader('\\.toml$', firstReader);
-  fileReaderStore.addReaders({
-    '\\.toml$': secondReader,
+  fileReaderStore.register({
+    pattern: '\\.org(\\.gpg)?$',
+    component: createMockComponent('Org'),
+    meta: { id: 'test:org', name: 'Org' },
   });
 
-  await fileReaderStore.openFile('config.toml');
-
-  expect(firstReader).not.toHaveBeenCalled();
-  expect(secondReader).toHaveBeenCalledWith('config.toml');
+  expect(fileReaderStore.getReader('test.org')).toBeDefined();
+  expect(fileReaderStore.getReader('test.org.gpg')).toBeDefined();
+  expect(fileReaderStore.getReader('test.txt')).toBeUndefined();
 });

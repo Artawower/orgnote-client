@@ -47,17 +47,23 @@ const pickMessage = (v: unknown, fallback: string): string => {
     const innerMessage = v.response?.data?.message;
     return `${mainMessage}<br />${innerMessage}`;
   }
-  if (isError(v)) return v.message;
-  if (typeof v === 'string') return v;
-  if (isRecord(v) && typeof (v as { message?: unknown }).message === 'string')
-    return (v as { message: string }).message;
-  return fallback;
+  if (isError(v)) return v.message || v.name || fallback;
+  if (typeof v === 'string') return v || fallback;
+  if (isRecord(v)) {
+    const msg = (v as { message?: unknown }).message;
+    const name = (v as { name?: unknown }).name;
+    if (typeof msg === 'string' && msg) return msg;
+    if (typeof name === 'string' && name) return name;
+  }
+  if (!isPresent(v)) return String(v);
+  return String(v) || fallback;
 };
 const extractCauseDetails = (cause: unknown): unknown => {
   if (!isError(cause)) {
     return cause;
   }
   return {
+    name: cause.name,
     message: cause.message,
     stack: cause.stack,
     cause: cause.cause ? extractCauseDetails(cause.cause) : undefined,
@@ -65,13 +71,33 @@ const extractCauseDetails = (cause: unknown): unknown => {
 };
 
 const toLogContext = (v: unknown): Record<string, unknown> => {
-  if (!isError(v)) {
-    return { cause: v };
+  if (isError(v)) {
+    return {
+      name: v.name,
+      message: v.message,
+      stack: v.stack,
+      cause: v.cause ? extractCauseDetails(v.cause) : undefined,
+    };
   }
-  return {
-    cause: v.cause ? extractCauseDetails(v.cause) : undefined,
-    stack: v.stack,
-  };
+  
+  if (isRecord(v)) {
+    const result: Record<string, unknown> = {};
+    if ('name' in v) result.name = v.name;
+    if ('message' in v) result.message = v.message;
+    if ('stack' in v) result.stack = v.stack;
+    if ('cause' in v) result.cause = v.cause;
+    
+    if (Object.keys(result).length === 0) {
+      return { details: v };
+    }
+    return result;
+  }
+  
+  if (typeof v === 'string') {
+    return { message: v };
+  }
+  
+  return { rawValue: String(v) };
 };
 
 const createOnClick = (executeCommand: CommandExecutor) => () =>
@@ -174,8 +200,36 @@ const createErrorReporter = (
 
   reportCritical: (error: unknown, meta?: Record<string, unknown>): void => {
     const message = pickMessage(error, 'Critical error');
-    const context = { ...toLogContext(error), ...meta };
+    const errorContext = toLogContext(error);
+    
+    const metaStack = isRecord(meta) && typeof (meta as { stack?: unknown }).stack === 'string'
+      ? (meta as { stack: string }).stack
+      : undefined;
+    
+    let stack: string | undefined;
+    if (isError(error) && error.stack) {
+      stack = error.stack;
+    } else if (isRecord(error) && typeof (error as { stack?: unknown }).stack === 'string') {
+      stack = (error as { stack: string }).stack;
+    } else if (metaStack) {
+      stack = metaStack;
+    }
+    
+    const context = { 
+      ...errorContext, 
+      ...meta,
+      stack: stack ?? metaStack,
+      rawError: isError(error) ? undefined : String(error),
+    };
+    
     logger.error(`FATAL: ${message}`, context);
+    
+    if (stack) {
+      console.error('Critical error stack trace:', stack);
+    } else {
+      console.error('Critical error (no stack):', error, meta);
+    }
+    
     notifications.notify({
       message: `Critical error: ${message}`,
       level: 'danger',

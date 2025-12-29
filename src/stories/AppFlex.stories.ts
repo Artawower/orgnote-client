@@ -16,7 +16,7 @@ const meta: Meta<typeof AppFlex> = {
   argTypes: {
     direction: {
       control: 'select',
-      options: ['row', 'column'],
+      options: ['row', 'column', 'row-reverse', 'column-reverse'],
     },
     justify: {
       control: 'select',
@@ -103,6 +103,47 @@ export const GapSizes: Story = {
             default: `
               <div style="background: var(--primary); width: 30px; height: 30px;"></div>
               <div style="background: var(--secondary); width: 30px; height: 30px;"></div>
+            `,
+          },
+        })),
+      );
+      return { listItems };
+    },
+    template: '<story-list :items="listItems" />',
+  }),
+};
+
+export const RowReverse: Story = {
+  ...Template,
+  args: {
+    rowReverse: true,
+    justify: 'start',
+  },
+};
+
+export const ColumnReverse: Story = {
+  ...Template,
+  args: {
+    columnReverse: true,
+    align: 'start',
+  },
+};
+
+export const DirectionOptions: Story = {
+  render: (args) => ({
+    components: { StoryList, AppFlex },
+    setup() {
+      const options = ['row', 'column', 'row-reverse', 'column-reverse'] as const;
+      const listItems = computed(() =>
+        options.map((direction) => ({
+          component: AppFlex,
+          props: { ...args, direction, justify: 'start', align: 'start' },
+          description: direction,
+          slots: {
+            default: `
+              <div style="background: var(--primary); padding: 0.5rem; color: white;">1</div>
+              <div style="background: var(--secondary); padding: 0.5rem; color: white;">2</div>
+              <div style="background: var(--accent); padding: 0.5rem; color: white;">3</div>
             `,
           },
         })),
