@@ -58,8 +58,8 @@ const handleEditClick = (event: MouseEvent) => {
 
 @media (max-width: 768px) {
   .org-widget-actions {
-    right: 8px;
-    top: 8px;
+    right: var(--padding-md);
+    top: var(--padding-md);
     opacity: 1;
     display: none;
   }

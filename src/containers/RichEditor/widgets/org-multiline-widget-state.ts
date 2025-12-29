@@ -20,9 +20,12 @@ const removeByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =
   widgets.update({
     filter: (from, to, value) => {
       const widget = value.spec.widget as OrgMultilineWidget | undefined;
-      if (!widget) return true;
-      if (widget.orgNode.isNot(orgNode.type)) return true;
-      return !hasIntersection(from, to, orgNode.start, orgNode.end);
+      const isNotTargetWidget =
+        !widget ||
+        widget.orgNode.isNot(orgNode.type) ||
+        !hasIntersection(from, to, orgNode.start, orgNode.end);
+
+      return isNotTargetWidget;
     },
   });
 
@@ -35,11 +38,14 @@ const handleAddEffect = (widgets: DecorationSet, effect: AddWidgetEffect): Decor
   const withoutExisting = widgets.update({
     filter: (from, to, value) => {
       const widget = value.spec.widget as OrgMultilineWidget | undefined;
-      if (!widget) return true;
-      if (widget.orgNode.isNot(effect.orgNode.type)) return true;
-      if (!hasIntersection(from, to, start, end)) return true;
-      if (widget.isDestroyed()) return false;
-      if (!widget.sameNodeByOrgNode(effect.orgNode)) return false;
+      const isNotTargetWidget =
+        !widget ||
+        widget.orgNode.isNot(effect.orgNode.type) ||
+        !hasIntersection(from, to, start, end);
+
+      if (isNotTargetWidget) return true;
+      if (widget.isDestroyed() || !widget.sameNodeByOrgNode(effect.orgNode)) return false;
+
       existingWidget = widget;
       widget.updateOrgNode(effect.orgNode);
       return false;

@@ -2,9 +2,7 @@ import { orgTags } from './tags';
 import { HighlightStyle } from '@codemirror/language';
 import type { Tag } from '@lezer/highlight';
 import { tags } from '@lezer/highlight';
-
-const kebabIt = (str: string) =>
-  str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+import { toKebabCase } from 'src/utils/to-kebab-case';
 
 const highlightTagDefinitions = Object.entries(tags).filter(
   ([, val]) => typeof val !== 'function'
@@ -13,10 +11,10 @@ const highlightTagDefinitions = Object.entries(tags).filter(
 export const orgHighlightStyle = HighlightStyle.define([
   ...Object.entries(orgTags).map(([key, tag]) => ({
     tag,
-    class: `org-${kebabIt(key)}`,
+    class: `org-${toKebabCase(key)}`,
   })),
   ...highlightTagDefinitions.map(([key, tag]) => ({
     tag,
-    class: `cm-${kebabIt(key)}`,
+    class: `cm-${toKebabCase(key)}`,
   })),
 ]);

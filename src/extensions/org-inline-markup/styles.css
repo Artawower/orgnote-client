@@ -102,7 +102,7 @@
 }
 
 .org-headline-line {
-  padding-top: 16px !important;
+  padding-top: var(--padding-lg) !important;
 }
 
 /* Keywords & Comments */
@@ -115,7 +115,7 @@
 
 .org-keyword.org-operator {
   color: var(--accent);
-  padding: 4px;
+  padding: var(--padding-sm);
 }
 
 .org-property-drawer {
@@ -212,7 +212,7 @@
   left: -14px;
   display: inline-block;
   transform: scale(1.6);
-  width: 16px;
+  width: var(--padding-lg);
   user-select: none;
 }
 
@@ -246,7 +246,7 @@
 }
 
 .org-list-item-section-line {
-  margin-left: calc(var(--org-list-item-bullet-margin-left) + 16px);
+  margin-left: calc(var(--org-list-item-bullet-margin-left) + var(--padding-lg));
   position: relative;
 }
 

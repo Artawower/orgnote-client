@@ -19,11 +19,9 @@ const wrapError = (error: unknown, source: string): Error => {
   if (error instanceof Error) {
     return error;
   }
-  
+
   const message = isPresent(error) ? String(error) : `Unknown error from ${source}`;
-  const wrappedError = new Error(message);
-  wrappedError.cause = error;
-  return wrappedError;
+  return new Error(message, { cause: error });
 };
 
 const RESOURCE_TAGS = new Set(['IMG', 'SCRIPT', 'LINK', 'AUDIO', 'VIDEO', 'SOURCE']);

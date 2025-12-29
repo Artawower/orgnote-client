@@ -70,17 +70,17 @@ const items = computed<Item[]>(() =>
 );
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .org-table {
   --easy-table-border: var(--border-default);
   --easy-table-row-border: var(--border-default);
 
-  --easy-table-header-font-size: 14px;
+  --easy-table-header-font-size: var(--font-size-sm, 14px);
   --easy-table-header-font-color: var(--fg);
   --easy-table-header-background-color: var(--bg-secondary);
   --easy-table-header-item-padding: 10px 15px;
 
-  --easy-table-body-row-font-size: 14px;
+  --easy-table-body-row-font-size: var(--font-size-sm, 14px);
   --easy-table-body-row-font-color: var(--fg);
   --easy-table-body-row-background-color: var(--bg);
   --easy-table-body-row-hover-font-color: var(--fg);

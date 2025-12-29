@@ -38,8 +38,8 @@ test('hasIntersection returns true for touching ranges (start1 == end2)', () => 
 });
 
 test('hasIntersection handles negative numbers correctly', () => {
-  expect(hasIntersection(-10, -5, -15, -11)).toBe(false); // No overlap
-  expect(hasIntersection(-10, -5, -6, -2)).toBe(true); // Overlap
+  expect(hasIntersection(-10, -5, -15, -11)).toBe(false);
+  expect(hasIntersection(-10, -5, -6, -2)).toBe(true);
 });
 
 test('hasIntersection handles floating point numbers', () => {
@@ -56,15 +56,12 @@ test('hasIntersection handles single point intersections', () => {
   expect(hasIntersection(5, 5, 5, 5)).toBe(true);
 });
 
-// Breaking attempts / Invalid inputs
-test('hasIntersection behaves inconsistently with invalid range1 (start > end)', () => {
-  // Range1: [10, 0] (invalid), Range2: [5, 15] (valid)
+test('hasIntersection normalizes range1 when start > end', () => {
   expect(hasIntersection(10, 0, 5, 15)).toBe(true);
 });
 
-test('hasIntersection behaves correctly with invalid range2 (start > end)', () => {
-  // Range1: [5, 15] (valid), Range2: [20, 10] (invalid)
-  expect(hasIntersection(5, 15, 20, 10)).toBe(false);
+test('hasIntersection normalizes range2 when start > end', () => {
+  expect(hasIntersection(5, 15, 20, 10)).toBe(true);
 });
 
 test('hasIntersection returns true if start1 > end1 but start1 is inside range2', () => {

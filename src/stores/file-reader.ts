@@ -6,18 +6,18 @@ import { useConfigStore } from './config';
 
 const DEFAULT_PRIORITY = 10;
 
-const extractExtension = (path: string): string => {
-  const fileName = path.split('/').pop() ?? '';
-  const dotIndex = fileName.indexOf('.');
-  if (dotIndex === -1) return '';
-  return fileName.slice(dotIndex + 1);
-};
-
 const sortByPriority = (a: FileReaderEntry, b: FileReaderEntry): number =>
   (b.meta.priority ?? DEFAULT_PRIORITY) - (a.meta.priority ?? DEFAULT_PRIORITY);
 
 const findById = (readers: FileReaderEntry[], id: string): FileReaderEntry | undefined =>
   readers.find((r) => r.meta.id === id);
+
+const getExtensionCandidates = (path: string): string[] => {
+  const fileName = path.split('/').pop() ?? '';
+  const parts = fileName.split('.').slice(1);
+  if (parts.length === 0) return [];
+  return parts.map((_, index) => parts.slice(index).join('.'));
+};
 
 export const useFileReaderStore = defineStore<string, FileReaderStore>(
   'file-reader',
@@ -27,15 +27,20 @@ export const useFileReaderStore = defineStore<string, FileReaderStore>(
     const pane = usePaneStore();
     const configStore = useConfigStore();
 
-    const getPreferredReaderId = (extension: string): string | undefined =>
-      configStore.config.fileReaders?.preferredReaders?.[extension];
+    const getPreferredReaderId = (path: string): string | undefined => {
+      const preferredReaders = configStore.config.fileReaders?.preferredReaders;
+      if (!preferredReaders) return undefined;
+
+      return getExtensionCandidates(path)
+        .map((extension) => preferredReaders[extension])
+        .find((id) => !!id);
+    };
 
     const findPreferredReader = (
       matching: FileReaderEntry[],
       path: string,
     ): FileReaderEntry | undefined => {
-      const extension = extractExtension(path);
-      const preferredId = getPreferredReaderId(extension);
+      const preferredId = getPreferredReaderId(path);
       if (!preferredId) return undefined;
       return findById(matching, preferredId);
     };

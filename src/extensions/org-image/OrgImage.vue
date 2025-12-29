@@ -57,8 +57,7 @@ const isExternalUrl = (path: string): boolean =>
   path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:');
 
 const isValidPath = (path: string): boolean => {
-  if (!path) return false;
-  if (path.includes('..')) return false;
+  if (!path || path.includes('..')) return false;
   return true;
 };
 

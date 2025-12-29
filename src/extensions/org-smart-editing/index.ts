@@ -58,50 +58,70 @@ const createEnterCommand = (getOrgNode: () => OrgNode | null): StateCommand => {
   };
 };
 
+type SelectionInfo = {
+  from: number;
+  to: number;
+  hasSelection: boolean;
+  selectedText: string;
+};
+
+const getSelectionInfo = (view: EditorView): SelectionInfo => {
+  const { from, to } = view.state.selection.main;
+  const hasSelection = from !== to;
+  const selectedText = hasSelection ? view.state.doc.sliceString(from, to) : '';
+
+  return { from, to, hasSelection, selectedText };
+};
+
+const shouldSkipPair = (pair: PairConfig, view: EditorView, selection: SelectionInfo): boolean => {
+  if (pair.checkNotLineStart && isAtLineStart(view, selection.from)) return true;
+  if (isEscaped(view, selection.from)) return true;
+  if (!selection.hasSelection && !hasSpaceOrLineStartBefore(view, selection.from)) return true;
+
+  return false;
+};
+
+const isInsideSpecialContext = (
+  orgNode: OrgNode | null,
+  pos: number,
+  pair: PairConfig,
+): boolean =>
+  isInsideBlock(orgNode, pos) || isInsideVerbatim(orgNode, pos) || isInsideMarkup(orgNode, pos, pair);
+
+const buildPairInsert = (pair: PairConfig, selectedText: string): string => {
+  if (!selectedText) return `${pair.open}${pair.close}`;
+  return `${pair.open}${selectedText}${pair.close}`;
+};
+
+const getPairCursorPos = (pair: PairConfig, selection: SelectionInfo): number => {
+  if (!selection.hasSelection) return selection.from + pair.open.length;
+  return selection.from + pair.open.length + selection.selectedText.length + pair.close.length;
+};
+
+const dispatchPairInsert = (
+  view: EditorView,
+  selection: SelectionInfo,
+  insert: string,
+  cursorPos: number,
+): void => {
+  view.dispatch({
+    changes: { from: selection.from, to: selection.to, insert },
+    selection: { anchor: cursorPos },
+  });
+};
+
 const createPairHandler = (pair: PairConfig, getOrgNode: () => OrgNode | null) => {
   return (view: EditorView): boolean => {
-    const { state } = view;
-    const { from, to } = state.selection.main;
-    const hasSelection = from !== to;
-
-    if (pair.checkNotLineStart && isAtLineStart(view, from)) {
-      return false;
-    }
-
-    if (isEscaped(view, from)) {
-      return false;
-    }
-
-    if (!hasSelection && !hasSpaceOrLineStartBefore(view, from)) {
-      return false;
-    }
+    const selection = getSelectionInfo(view);
+    if (shouldSkipPair(pair, view, selection)) return false;
 
     const orgNode = getOrgNode();
+    if (isInsideSpecialContext(orgNode, selection.from, pair)) return false;
 
-    if (isInsideBlock(orgNode, from)) {
-      return false;
-    }
+    const insert = buildPairInsert(pair, selection.selectedText);
+    const cursorPos = getPairCursorPos(pair, selection);
 
-    if (isInsideVerbatim(orgNode, from)) {
-      return false;
-    }
-
-    if (isInsideMarkup(orgNode, from, pair)) {
-      return false;
-    }
-
-    const selectedText = hasSelection ? state.doc.sliceString(from, to) : '';
-
-    const insert = hasSelection
-      ? `${pair.open}${selectedText}${pair.close}`
-      : `${pair.open}${pair.close}`;
-
-    const cursorPos = hasSelection ? from + selectedText.length + 2 : from + 1;
-
-    view.dispatch({
-      changes: { from, to, insert },
-      selection: { anchor: cursorPos },
-    });
+    dispatchPairInsert(view, selection, insert, cursorPos);
 
     return true;
   };

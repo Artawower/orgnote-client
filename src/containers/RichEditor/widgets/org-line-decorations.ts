@@ -84,6 +84,7 @@ export const orgLineDecoration = ViewPlugin.fromClass(
     public update(update: ViewUpdate): void {
       const caretPosition = update.state.selection.main.head;
       const caretPositionChanged = this.lastPosition !== caretPosition;
+      this.lastPosition = caretPosition;
 
       if (update.docChanged || update.viewportChanged || caretPositionChanged) {
         this.decorations = this.buildDecorations(update.view);

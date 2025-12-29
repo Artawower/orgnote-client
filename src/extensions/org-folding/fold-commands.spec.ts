@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { test, expect, afterEach } from 'vitest';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { codeFolding } from '@codemirror/language';
@@ -21,12 +21,20 @@ import {
 } from './fold-commands';
 import { collectHeadlines, type HeadlineInfo } from './startup-options';
 
+const createdViews: EditorView[] = [];
+
+afterEach(() => {
+  createdViews.splice(0).forEach((view) => view.destroy());
+});
+
 const createEditorView = (doc: string): EditorView => {
   const state = EditorState.create({
     doc,
     extensions: [codeFolding()],
   });
-  return new EditorView({ state });
+  const view = new EditorView({ state });
+  createdViews.push(view);
+  return view;
 };
 
 const createOrgTree = (doc: string) => withMetaInfo(parse(doc));

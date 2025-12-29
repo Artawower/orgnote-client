@@ -282,14 +282,14 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       () => validateAndSaveBuffer(buffer),
       getValidationDelayMs(),
     );
-    watch(() => buffer.rawContent, debouncedValidateAndSave);
+    watch(() => buffer.base64, debouncedValidateAndSave);
   };
 
   const setupRegularAutoSave = (buffer: OrgBuffer): void => {
     const debouncedSave = debounce(() => saveBuffer(buffer), getSaveDelayMs());
     debouncedSavers.set(buffer.path, debouncedSave);
     watch(
-      () => buffer.rawContent,
+      () => buffer.base64,
       () => debouncedSavers.get(buffer.path)?.(),
     );
   };

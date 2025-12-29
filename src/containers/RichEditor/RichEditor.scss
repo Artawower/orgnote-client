@@ -92,7 +92,7 @@
       }
 
       > .org-quote-block:not(.org-keyword):first-child {
-        padding-left: 16px;
+        padding-left: var(--padding-lg);
         position: relative;
       }
     }
@@ -147,11 +147,6 @@
     .cm-attribute-value {
       color: var(--green);
     }
-
-    .cm-action-menu {
-      width: 48px;
-      left: -56px;
-    }
   }
 
   &.hide-special-symbols .cm-editor {
@@ -203,10 +198,6 @@
 
     .org-property-drawer,
     .org-operator,
-    .cm-action-menu {
-      display: none !important;
-    }
-
     .org-src-block-line {
       .org-keyword {
         display: none !important;
@@ -238,17 +229,13 @@
   .editor-wrapper {
     .cm-editor {
       .cm-gutters {
-        left: -16px !important;
+        left: calc(-1 * var(--padding-lg)) !important;
         position: absolute !important;
       }
 
       .cm-scroller {
         padding: var(--mobile-editor-padding);
         outline: none !important;
-      }
-
-      .cm-action-menu {
-        display: none;
       }
     }
   }

@@ -28,6 +28,8 @@ import { computed, ref, onMounted } from 'vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { copyToClipboard } from 'src/utils/clipboard';
 import { api } from 'src/boot/api';
+import { reporter } from 'src/boot/report';
+import { to } from 'orgnote-api/utils';
 import hljsVuePlugin from '@highlightjs/vue-plugin';
 
 const highlightjs = hljsVuePlugin.component;
@@ -62,23 +64,26 @@ const copySrc = () => {
 };
 
 const babelStore = api.core.useBabel();
-const notificationsStore = api.core.useNotifications();
 
 const language = computed(() => {
   const firstChild = currentNode.value.children?.first?.children?.first?.children;
   return firstChild?.length === 2 ? firstChild.last.rawValue.trim() : 'source code';
 });
 
+const executeCodeSafe = to(
+  (lang: string, code: string) => babelStore.execute(lang, code),
+  'Code execution failed',
+);
+
 const executeCode = async () => {
   const code = currentNode.value.children?.get(2)?.rawValue;
   if (!code) return;
 
-  try {
-    const res = await babelStore.execute(language.value, code);
-    emits('update', res);
-  } catch (e) {
-    notificationsStore.notify({ message: (e as Error).message, level: 'danger' });
-  }
+  const result = await executeCodeSafe(language.value, code);
+  result.match(
+    (res) => emits('update', res),
+    (err) => reporter.reportError(err),
+  );
 };
 </script>
 

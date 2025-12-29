@@ -28,7 +28,7 @@ export const isFolded = (view: EditorView, from: number, to: number): boolean =>
 };
 
 export const getFoldRangeForHeadline = (headline: HeadlineInfo): FoldRange => ({
-  from: headline.sectionStart - 1,
+  from: Math.max(0, headline.sectionStart - 1),
   to: headline.sectionEnd,
 });
 
