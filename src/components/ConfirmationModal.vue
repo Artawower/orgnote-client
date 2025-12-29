@@ -2,10 +2,8 @@
   <app-flex class="confirmation-modal" column start align-start gap="lg">
     <h5 v-if="title" class="title capitalize">{{ t(title) }}</h5>
 
-    <card-wrapper v-if="message">
-      <menu-item>
-        <div class="message capitalize">{{ t(message) }}</div>
-      </menu-item>
+    <card-wrapper v-if="message" padding>
+      <div class="message capitalize">{{ t(message) }}</div>
     </card-wrapper>
 
     <app-flex class="actions" :column="tabletBelow" end align-center :gap="actionsGap">
@@ -58,5 +56,10 @@ const actionsGap = computed((): 'sm' | 'md' => (tabletBelow.value ? 'sm' : 'md')
   & {
     width: 100%;
   }
+}
+
+.message {
+  color: var(--fg);
+  line-height: var(--line-height-md);
 }
 </style>
