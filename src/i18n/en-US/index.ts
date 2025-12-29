@@ -40,6 +40,7 @@ const eng: Record<string, string> = {
   [I18N.AUTH_ENTER_ACTIVATION_KEY]: 'Enter your activation key',
   [I18N.SUBSCRIPTION_KEY]: 'Subscription key',
   [I18N.ACTIVATE]: 'Activate',
+  [I18N.TABS_COUNT]: 'no tabs | {count} tab | {count} tabs',
 };
 
 export default eng;

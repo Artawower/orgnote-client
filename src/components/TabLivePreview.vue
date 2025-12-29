@@ -1,20 +1,19 @@
 <template>
-  <div class="tab-preview" :class="{ active }" @click="$emit('select')">
-    <app-flex class="preview-overlay" row between align-center>
-      <div class="tab-title">{{ title }}</div>
+  <app-flex @click="$emit('select')" class="preview-container" column align-center gap="sm">
+    <div class="tab-preview" :class="{ active }">
       <action-button
+        class="close-icon"
         icon="sym_o_close"
         size="sm"
-        color="bg"
         @click.stop="$emit('close')"
-        outline
         hover-color="violet"
       />
-    </app-flex>
-    <div class="preview-content">
-      <ScopedRouterView v-if="tab.router" :router="tab.router" class="scaled-router-view" />
+      <div class="preview-content">
+        <scoped-router-view v-if="tab.router" :router="tab.router" class="scaled-router-view" />
+      </div>
+      <div class="tab-title">{{ title }}</div>
     </div>
-  </div>
+  </app-flex>
 </template>
 
 <script setup lang="ts">
@@ -45,15 +44,19 @@ defineEmits<{
 </script>
 
 <style lang="scss" scoped>
+.preview-container {
+  cursor: pointer;
+}
+
 .tab-preview {
   border: var(--tab-preview-border);
+  position: relative;
   border-radius: var(--border-radius-lg);
   background: var(--bg);
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 0.85;
   overflow: hidden;
-  cursor: pointer;
   box-shadow: var(--shadow-md);
 
   &.active {
@@ -75,12 +78,6 @@ defineEmits<{
     width: 100%;
     position: absolute;
     height: var(--tab-preview-header-height);
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.6),
-      rgba(0, 0, 0, 0.3),
-      rgba(0, 0, 0, 0)
-    );
     z-index: 10;
     padding: var(--tab-preview-overlay-padding);
   }
@@ -90,17 +87,23 @@ defineEmits<{
   @include line-limit(1);
 
   & {
-    color: var(--bg);
-    font-size: var(--font-size-sm);
+    color: var(--fg-alt);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-medium);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     flex: 1;
-    margin-right: var(--margin-sm);
+    text-align: center;
   }
 }
 
 .preview-content {
   pointer-events: none;
   user-select: none;
+}
+
+.close-icon {
+  position: absolute;
+  top: var(--padding-md);
+  right: var(--padding-md);
+  z-index: 3;
 }
 </style>

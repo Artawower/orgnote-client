@@ -15,6 +15,7 @@
     <app-footer>
       <app-flex between class="footer-container">
         <command-action-button :command="DefaultCommands.NEW_TAB" aria-label="New tab" />
+        {{ $t(I18N.TABS_COUNT, allTabs.length) }}
         <command-action-button :command="DefaultCommands.CLOSE_MODAL" aria-label="Close" />
       </app-flex>
     </app-footer>
@@ -29,7 +30,7 @@ import TabLivePreview from 'src/components/TabLivePreview.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import AppFooter from 'src/components/AppFooter.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import { DefaultCommands, type Tab } from 'orgnote-api';
+import { DefaultCommands, I18N, type Tab } from 'orgnote-api';
 import CommandActionButton from './CommandActionButton.vue';
 import { storeToRefs } from 'pinia';
 

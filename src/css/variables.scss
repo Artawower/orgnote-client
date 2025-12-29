@@ -192,17 +192,9 @@ body {
   --tab-active-bg: var(--bg-elevated);
 
   // Tab overview
-  --tab-preview-active-border: 2px solid var(--accent);
-  --tab-preview-border: 2px solid var(--fg-muted);
-  --tab-preview-overlay-bg: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.6),
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 0, 0, 0)
-  );
-  --tab-preview-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --tab-preview-overlay-padding: 0 var(--padding-md);
-  --tab-preview-header-height: 40px;
+  --tab-preview-active-border: 3px solid var(--accent);
+  --tab-preview-border: 2px solid color-mix(in srgb, var(--fg-muted), var(--bg) 60%);
+  --tab-preview-text-shadow: unset;
 
   // Tab overview grid
   --tab-overview-container-padding: var(--padding-md);
