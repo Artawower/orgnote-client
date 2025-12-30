@@ -16,7 +16,13 @@
         <slot />
       </span>
     </app-flex>
-    <action-button @click.prevent.stop="emits('close')" icon="close" size="xs" color="fg-muted" />
+    <action-button
+      class="close-tab"
+      @click.prevent.stop="emits('close')"
+      icon="close"
+      size="xs"
+      color="fg-muted"
+    />
   </app-flex>
 </template>
 
@@ -73,6 +79,9 @@ const handleDragEnd = () => {
 </script>
 
 <style lang="scss" scoped>
+.close-tab {
+  opacity: 0;
+}
 .tab {
   & {
     padding: var(--tab-padding);
@@ -97,12 +106,23 @@ const handleDragEnd = () => {
   &.dragging {
     opacity: 0.5;
   }
+
+  &:hover,
+  &.active {
+    .close-tab {
+      opacity: 1;
+    }
+  }
 }
 
 .tab.active {
   border: var(--tab-active-border);
   color: var(--tab-active-fg);
   background: var(--tab-active-bg);
+
+  .label-text {
+    color: var(--tab-active-fg) !important;
+  }
 }
 
 .label-text {

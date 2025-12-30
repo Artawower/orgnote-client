@@ -40,6 +40,8 @@
   --default-fg: #adbac7;
   --default-fg-secondary: #adbac7;
   --default-fg-muted: #{$grey-6};
+  --default-bg-active: #252123;
+  --default-fg-active: #fafbf9;
 
   --violet: #b98df6;
 
@@ -60,10 +62,12 @@
   --default-bg-secondary: #ffffff;
   --default-bg-muted: #fafbfc;
   --default-bg-hover: #eff1f3;
-  --default-bg-elevated: #fafbfc;
+  --default-bg-elevated: #eff1f3;
   --default-fg: #34495e;
   --default-fg-secondary: #34495e;
   --default-fg-muted: #{$grey-5};
+  --default-bg-active: #34495e;
+  --default-fg-active: #fafbf9;
 
   // Tab overview for light theme
   --tab-preview-overlay-bg: linear-gradient(
@@ -86,4 +90,7 @@ body {
   --fg: var(--default-fg);
   --fg-muted: var(--default-fg-muted);
   --accent: var(--violet);
+
+  --bg-active: var(--default-bg-active);
+  --fg-active: var(--default-fg-active);
 }

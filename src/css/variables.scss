@@ -181,15 +181,15 @@ body {
   // Tab
   --tab-padding: var(--padding-md);
   --tab-height: 28px;
-  --tab-bg: var(--bg-muted);
+  --tab-bg: var(--bg-main);
   --tab-border: 0;
   --tab-border-radius: var(--border-radius-sm);
   --tab-fg: var(--fg-muted);
   --tab-width: 160px;
   --tab-active-border: 0;
   --tab-active-hover-bg: var(--bg-hover);
-  --tab-active-fg: var(--fg);
-  --tab-active-bg: var(--bg-elevated);
+  --tab-active-fg: var(--fg-active);
+  --tab-active-bg: var(--bg-active);
 
   // Tab overview
   --tab-preview-active-border: 3px solid var(--accent);
