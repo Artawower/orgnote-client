@@ -5,16 +5,12 @@
       :active="resize.isResizing.value"
       @resize-start="resize.handleResizeStart"
     />
-    <div class="right-panel-content">
-      <component
-        v-if="component"
-        :is="component"
-        v-bind="componentConfig?.componentProps || {}"
-      />
-    </div>
-    <app-flex class="right-panel-footer" center align-center gap="sm">
-      <command-action-button v-for="cmd of commands" :command="cmd" :key="cmd" />
+    <app-flex class="right-panel-actions" end align-center gap="sm">
+      <command-action-button v-for="cmd of commands" :command="cmd" :key="cmd" size="sm" />
     </app-flex>
+    <div class="right-panel-content">
+      <component v-if="component" :is="component" v-bind="componentConfig?.componentProps || {}" />
+    </div>
   </app-flex>
 </template>
 
@@ -25,10 +21,7 @@ import ResizeSplitter from 'src/components/ResizeSplitter.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useValueResize } from 'src/composables/use-value-resize';
-import {
-  RIGHT_PANEL_MIN_WIDTH,
-  RIGHT_PANEL_MAX_WIDTH,
-} from 'src/constants/right-panel';
+import { RIGHT_PANEL_MIN_WIDTH, RIGHT_PANEL_MAX_WIDTH } from 'src/constants/right-panel';
 
 const rightPanel = api.ui.useRightPanel();
 const { opened, width, commands, component, componentConfig } = storeToRefs(rightPanel);
@@ -51,14 +44,15 @@ const resize = useValueResize('horizontal', width, {
 }
 
 .right-panel-content {
+  width: 100%;
   flex: 1;
   overflow: auto;
-  padding: var(--gap-sm);
 }
 
-.right-panel-footer {
+.right-panel-actions {
+  width: 100%;
   padding: var(--gap-sm);
-  border-top: 1px solid var(--base-border);
+  border-bottom: var(--border-default);
   flex-shrink: 0;
 }
 </style>

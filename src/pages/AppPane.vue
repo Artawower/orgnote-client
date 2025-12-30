@@ -42,6 +42,7 @@
           </template>
           <template v-if="isTopRightPane" #right-actions>
             <command-action-button
+              v-if="!opened"
               :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
               size="sm"
             />
@@ -108,6 +109,7 @@ import type { Router } from 'vue-router';
 import ScopedRouterView from 'src/components/ScopedRouterView.vue';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import { isPresent, to } from 'orgnote-api/utils';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
   paneId: string;
@@ -140,7 +142,10 @@ const isPaneActive = computed(() => {
   return pane.activePaneId === props.paneId;
 });
 
+const isSinglePane = computed(() => Object.keys(pane.panes).length === 1);
+
 const isTopRightPane = computed(() => {
+  if (isSinglePane.value) return true;
   const position = layout.getPanePosition(props.paneId);
   return position?.horizontal === 'right' && position?.vertical !== 'bottom';
 });
@@ -345,6 +350,8 @@ const handleDrop = async (zone: DropZone): Promise<void> => {
     return;
   }
 };
+
+const { opened } = storeToRefs(api.ui.useRightPanel());
 </script>
 
 <style scoped>

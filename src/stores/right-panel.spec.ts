@@ -21,9 +21,9 @@ test('useRightPanelStore should initialize with closed state', () => {
   expect(store.opened).toBe(false);
 });
 
-test('useRightPanelStore should have TOGGLE_RIGHT_PANEL command by default', () => {
+test('useRightPanelStore should have TOGGLE_AST_DEBUGGER command by default', () => {
   const store = useRightPanelStore();
-  expect(store.commands).toContain(DefaultCommands.TOGGLE_RIGHT_PANEL);
+  expect(store.commands).toContain(DefaultCommands.TOGGLE_AST_DEBUGGER);
 });
 
 test('useRightPanelStore.setWidth should update width within bounds', () => {
