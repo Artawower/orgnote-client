@@ -90,6 +90,7 @@ export default defineConfig((ctx) => {
         AUTH_URL: process.env.VITE_AUTH_URL ?? '',
         WS_URL: process.env.VITE_WS_URL ?? '',
       },
+      sourcemap: process.env.VITE_SOURCEMAP === 'true',
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
@@ -114,10 +115,6 @@ export default defineConfig((ctx) => {
           },
         };
 
-        const enableSourceMaps = process.env.VITE_SOURCEMAP === 'true';
-        if (enableSourceMaps) {
-          viteConf.build.sourcemap = true;
-        }
       },
       // viteVuePluginOptions: {},
 
