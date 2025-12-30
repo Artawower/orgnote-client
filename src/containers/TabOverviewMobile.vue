@@ -12,12 +12,12 @@
         />
       </div>
     </app-flex>
-    <app-footer>
-      <app-flex between class="footer-container">
-        <command-action-button :command="DefaultCommands.NEW_TAB" aria-label="New tab" />
+    <app-footer between>
+      <command-action-button :command="DefaultCommands.NEW_TAB" aria-label="New tab" />
+      <span>
         {{ $t(I18N.TABS_COUNT, allTabs.length) }}
-        <command-action-button :command="DefaultCommands.CLOSE_MODAL" aria-label="Close" />
-      </app-flex>
+      </span>
+      <command-action-button :command="DefaultCommands.CLOSE_MODAL" aria-label="Close" />
     </app-footer>
   </page-wrapper>
 </template>

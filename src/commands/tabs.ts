@@ -44,6 +44,7 @@ export function getTabsCommands(): Command[] {
         );
         modal.open(TabOverviewMobile, {
           fullScreen: true,
+          noPadding: true,
         });
       },
     },

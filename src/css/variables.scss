@@ -57,7 +57,7 @@ body {
   // Footer
   --footer-height: 0px;
   --footer-border-top: 0;
-  --footer-padding: 0;
+  --footer-padding: 0 var(--padding-md);
   --footer-bg: var(--bg-secondary);
 
   // Sidebar
@@ -280,7 +280,7 @@ body {
     --modal-border: none;
     --modal-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
 
-    --tab-overview-container-padding: var(--padding-sm);
+    --tab-overview-container-padding: var(--padding-lg) var(--padding-md);
     --tab-overview-grid-gap: var(--gap-lg);
     --tab-overview-grid-columns: 3;
 

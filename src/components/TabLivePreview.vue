@@ -11,8 +11,8 @@
       <div class="preview-content">
         <scoped-router-view v-if="tab.router" :router="tab.router" class="scaled-router-view" />
       </div>
-      <div class="tab-title">{{ title }}</div>
     </div>
+    <div class="tab-title">{{ title }}</div>
   </app-flex>
 </template>
 
@@ -87,7 +87,7 @@ defineEmits<{
   @include line-limit(1);
 
   & {
-    color: var(--fg-alt);
+    color: var(--fg);
     font-size: var(--font-size-md);
     font-weight: var(--font-weight-medium);
     flex: 1;
