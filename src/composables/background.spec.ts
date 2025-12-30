@@ -31,7 +31,7 @@ vi.mock('quasar', () => ({
   Platform: {
     is: {
       nativeMobile: true,
-      android: false,
+      android: true,
       mobile: true,
       electron: false,
     },
