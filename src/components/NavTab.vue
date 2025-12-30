@@ -81,6 +81,8 @@ const handleDragEnd = () => {
     color: var(--tab-fg);
     border: var(--tab-border);
     width: var(--tab-width);
+    min-width: var(--tab-min-width, 120px);
+    flex-shrink: 0;
     cursor: pointer;
     height: var(--tab-height);
     box-sizing: border-box;

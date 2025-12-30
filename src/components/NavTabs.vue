@@ -21,11 +21,22 @@ import AppFlex from 'src/components/AppFlex.vue';
     padding: var(--padding-md);
     width: 100%;
     max-width: 100%;
+    overflow: hidden;
+  }
+
+  :deep(.flex-container) {
+    min-width: 0;
   }
 
   .content {
     & {
       overflow-x: auto;
+      min-width: 0;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 }

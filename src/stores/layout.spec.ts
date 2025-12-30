@@ -543,3 +543,66 @@ test('updateNodeSizes does nothing when layout is undefined', () => {
   layoutStore.updateNodeSizes('non-existent-id', [50, 50]);
   expect(layoutStore.layout).toBeUndefined();
 });
+
+test('getPanePosition returns center for single pane layout', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  await layoutStore.initLayout();
+  const paneId = paneStore.activePaneId!;
+
+  const position = layoutStore.getPanePosition(paneId);
+  expect(position).toEqual({ horizontal: 'center', vertical: 'center' });
+});
+
+test('getPanePosition returns correct positions for horizontal split', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  await layoutStore.initLayout();
+  const leftPaneId = paneStore.activePaneId!;
+  const rightPaneId = await layoutStore.splitPaneInLayout(leftPaneId, 'right');
+
+  expect(layoutStore.getPanePosition(leftPaneId)).toEqual({ horizontal: 'left', vertical: 'center' });
+  expect(layoutStore.getPanePosition(rightPaneId!)).toEqual({ horizontal: 'right', vertical: 'center' });
+});
+
+test('getPanePosition returns correct positions for vertical split', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  await layoutStore.initLayout();
+  const topPaneId = paneStore.activePaneId!;
+  const bottomPaneId = await layoutStore.splitPaneInLayout(topPaneId, 'bottom');
+
+  expect(layoutStore.getPanePosition(topPaneId)).toEqual({ horizontal: 'center', vertical: 'top' });
+  expect(layoutStore.getPanePosition(bottomPaneId!)).toEqual({ horizontal: 'center', vertical: 'bottom' });
+});
+
+test('getPanePosition returns correct positions for complex layout', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  await layoutStore.initLayout();
+  const leftPaneId = paneStore.activePaneId!;
+  const rightPaneId = await layoutStore.splitPaneInLayout(leftPaneId, 'right');
+  const bottomRightPaneId = await layoutStore.splitPaneInLayout(rightPaneId!, 'bottom');
+
+  expect(layoutStore.getPanePosition(leftPaneId)).toEqual({ horizontal: 'left', vertical: 'center' });
+  expect(layoutStore.getPanePosition(rightPaneId!)).toEqual({ horizontal: 'right', vertical: 'top' });
+  expect(layoutStore.getPanePosition(bottomRightPaneId!)).toEqual({ horizontal: 'right', vertical: 'bottom' });
+});
+
+test('getPanePosition returns undefined for non-existent pane', async () => {
+  const layoutStore = useLayoutStore();
+
+  await layoutStore.initLayout();
+
+  expect(layoutStore.getPanePosition('non-existent')).toBeUndefined();
+});
+
+test('getPanePosition returns undefined when layout is undefined', () => {
+  const layoutStore = useLayoutStore();
+
+  expect(layoutStore.getPanePosition('any-id')).toBeUndefined();
+});

@@ -38,7 +38,7 @@
         "neverthrow": "8.2.0",
         "notiwind": "2.1.0",
         "org-mode-ast": "0.11.8",
-        "orgnote-api": "0.40.27",
+        "orgnote-api": "0.40.28",
         "partysocket": "1.1.6",
         "pinia": "3.0.2",
         "pinia-plugin-persistedstate": "4.2.0",
@@ -1878,7 +1878,7 @@
 
     "org-mode-ast": ["org-mode-ast@0.11.8", "", {}, "sha512-nfE6FlXIxgIx4Mys83t9NQwTm5+5jRRkfspDtW338oebDru2EXU3JoTFTh/GCJFi2jgHg4Jk/lpn+vR3n7xc4g=="],
 
-    "orgnote-api": ["orgnote-api@0.40.27", "", { "dependencies": { "axios": "1.8.4", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.11.8", "partysocket": "1.1.6", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-YYu/6rvUuxDSp7ZsHqp1CEXjWS7zuaDlTBMs/G6r8NjkAkcFyY7r24Imz9SGt+p0C6DahzaqAub0qdHpOY+eNg=="],
+    "orgnote-api": ["orgnote-api@0.40.28", "", { "dependencies": { "axios": "1.8.4", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.11.8", "partysocket": "1.1.6", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-XSQfdZXaMhLYpfqoUDcZKbzhlE6DLq8VsFYko5+HqWXQgi+Ul5IpDBhaDLHNp5xgSh2LbPHOe/poFiXTmObluA=="],
 
     "os-tmpdir": ["os-tmpdir@1.0.2", "", {}, "sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g=="],
 

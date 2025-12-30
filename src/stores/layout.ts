@@ -4,6 +4,9 @@ import type {
   LayoutPaneNode,
   LayoutSnapshot,
   LayoutStore,
+  PanePosition,
+  HorizontalPosition,
+  VerticalPosition,
 } from 'orgnote-api';
 import { defineStore, storeToRefs } from 'pinia';
 import { v4 } from 'uuid';
@@ -347,6 +350,47 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
     });
   });
 
+  const getPanePosition = (paneId: string): PanePosition | undefined => {
+    if (!layout.value) return;
+    return findPanePosition(layout.value, paneId, { horizontal: 'center', vertical: 'center' });
+  };
+
+  const findPanePosition = (
+    node: LayoutNode,
+    paneId: string,
+    currentPosition: PanePosition,
+  ): PanePosition | undefined => {
+    if (node.type === 'pane') {
+      return node.paneId === paneId ? currentPosition : undefined;
+    }
+
+    for (let i = 0; i < node.children.length; i++) {
+      const child = node.children[i];
+      if (!child) continue;
+
+      const childPosition = getChildPosition(node, i, currentPosition);
+      const result = findPanePosition(child, paneId, childPosition);
+      if (result) return result;
+    }
+  };
+
+  const getChildPosition = (
+    node: LayoutNode & { type: 'split' },
+    childIndex: number,
+    currentPosition: PanePosition,
+  ): PanePosition => {
+    const isFirst = childIndex === 0;
+    const isLast = childIndex === node.children.length - 1;
+
+    if (node.orientation === 'horizontal') {
+      const horizontal: HorizontalPosition = isFirst ? 'left' : isLast ? 'right' : 'center';
+      return { ...currentPosition, horizontal };
+    }
+
+    const vertical: VerticalPosition = isFirst ? 'top' : isLast ? 'bottom' : 'center';
+    return { ...currentPosition, vertical };
+  };
+
   const store: LayoutStore = {
     layout,
     initLayout,
@@ -358,6 +402,7 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
     restoreLayout,
     getLayoutSnapshot,
     restoreLayoutSnapshot,
+    getPanePosition,
   };
 
   return store;

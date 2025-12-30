@@ -40,11 +40,10 @@
               :data="{ paneId: props.paneId }"
             />
           </template>
-          <template #right-actions>
+          <template v-if="isTopRightPane" #right-actions>
             <command-action-button
               :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
               size="sm"
-              :data="{ paneId: props.paneId }"
             />
           </template>
         </nav-tabs>
@@ -139,6 +138,11 @@ const activeTabId = computed(() => {
 
 const isPaneActive = computed(() => {
   return pane.activePaneId === props.paneId;
+});
+
+const isTopRightPane = computed(() => {
+  const position = layout.getPanePosition(props.paneId);
+  return position?.horizontal === 'right' && position?.vertical !== 'bottom';
 });
 
 const isTabActive = (tabId: string): boolean => {
