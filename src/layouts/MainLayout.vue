@@ -19,9 +19,7 @@
         <main-footer />
       </visibility-wrapper>
     </div>
-    <visibility-wrapper tablet-above>
-      <right-panel />
-    </visibility-wrapper>
+    <right-panel />
     <modal-window />
     <app-notifications v-show="!hasOpenModals" />
   </app-flex>
