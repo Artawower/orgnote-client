@@ -1,4 +1,4 @@
-import { clientOnly, nativeMobileOnly, electronOnly } from 'src/utils/platform-specific';
+import { clientOnly, nativeMobileOnly, electronOnly, androidOnly } from 'src/utils/platform-specific';
 import { getCssVar } from 'src/utils/css-utils';
 import type { BackgroundSettings } from 'orgnote-api';
 import { useConfigStore } from 'src/stores/config';
@@ -36,7 +36,7 @@ export const useBackgroundSettings = () => {
   });
 
   const setMobileBackground = nativeMobileOnly(async (bgColor?: string) => {
-    await Promise.all([setStatusBarBackground(bgColor), setBottomBarBackground(bgColor)]);
+    await Promise.all([setStatusBarBackground(bgColor), androidOnly(setBottomBarBackground)(bgColor)]);
   });
 
   const setBackground = async (bgColor?: string) => {
@@ -63,7 +63,7 @@ export const useBackgroundSettings = () => {
   };
 
   const bgSettings: BackgroundSettings = {
-    setBottomBarBackground: nativeMobileOnly(setBottomBarBackground),
+    setBottomBarBackground: androidOnly(setBottomBarBackground),
     setStatusBarBackground: nativeMobileOnly(setStatusBarBackground),
     setBackground: clientOnly(setBackground),
   };
