@@ -2,7 +2,9 @@ on:
   release:
     types: [published]
   workflow_dispatch:
-    
+
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -17,18 +19,18 @@ jobs:
       - name: Install dependencies
         run: |
           bun install --frozen-lockfile
-          bun add global @quasar/cli
-          npm install -g @quasar/cli
+          bun add -g @quasar/cli
       - name: Init environment
         run: |
           echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
 
-          cat <<EOT > .env.prod
-          DEUBG=true
-          API_URL=${{ secrets.API_URL }}
+          cat <<EOT > .env.build
+          DEBUG=true
+          VITE_API_URL=${{ secrets.API_URL }}
+          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
+          VITE_WS_URL=${{ secrets.WS_URL }}
           KEYPASS=${{ secrets.KEYPASS }}
           STOREPASS=${{ secrets.STOREPASS }}
-          AUTH_URL=${{ secrets.AUTH_URL }}
           EOT
 
       - name: Setup java
@@ -41,10 +43,12 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Setup minimal android version
-        run: ./setup-minimal-android-version.sh
+        run: ./deploy/setup-minimal-android-version.sh
 
       - name: Build
-        run: bun run build:android:aab
+        run: |
+          ./deploy/sync-capaticor-version.sh
+          bunx env-cmd -f ./.env.build quasar build -m capacitor -T android -- bundleRelease
 
       - name: Build android apk release
         run: |

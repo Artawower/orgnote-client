@@ -32,7 +32,7 @@
     "build:pwa": "env-cmd -f ./.env.prod quasar build -m pwa",
     "build:pwa:dev": "VITE_SOURCEMAP=true env-cmd -f ./.env.prod quasar build -m pwa",
     "build:android": "env-cmd -f ./.env.prod quasar build -m capacitor -T android -- bundleRelease",
-    "build:android:aab": "./deploy/sync-capaticor-version.sh && build:android",
+    "build:android:aab": "./deploy/sync-capaticor-version.sh && bun run build:android",
     "build:android:aab:sign": "bun run build:android:aab && ./sign-aab.sh",
     "build:android:apk:sign": "bun run build:android:aab && ./sign-apk.sh",
     "build:ios": "env-cmd -f ./.env.prod quasar build -m capacitor -T ios",

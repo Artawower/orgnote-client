@@ -95,32 +95,20 @@ jobs:
           bun add global @quasar/cli
       - name: Init environment
         run: |
-          cat <<EOT > .env.prod
+          cat <<EOT > .env.build
           DEBUG=${{ inputs.environment == 'dev' && 'true' || 'false' }}
           VITE_API_URL=${{ secrets.API_URL }}
           VITE_AUTH_URL=${{ secrets.AUTH_URL }}
           VITE_WS_URL=${{ secrets.WS_URL }}
           VITE_SOURCEMAP=${{ inputs.environment == 'dev' && 'true' || 'false' }}
           EOT
-          echo "=== .env.prod contents ==="
-          cat .env.prod
-          echo "=== end ==="
       - name: Build ssr
-        run: |
-          echo "=== Testing env-cmd ==="
-          bunx env-cmd -f ./.env.prod env | grep -i VITE || echo "VITE vars not found"
-          echo "=== Building ==="
-          bun run build:ssr
+        run: bunx env-cmd -f ./.env.build bun run build -m ssr
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Override capacitor dependency
-        uses: sergeysova/jq-action@v2
-        with:
-          cmd: 'jq ''. + {overrides: {"capacitor-folder-picker": {"@capacitor/core": "6.1.0"}}}'' ./dist/ssr/package.json > ./dist/ssr/tmp.json && mv -f ./dist/ssr/tmp.json ./dist/ssr/package.json'
-          multiline: true
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -136,20 +124,8 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
       - name: Trigger backend deployment
-        run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: token ${{ secrets.PAT }}" \
-            https://api.github.com/repos/artawower/orgnote-backend/dispatches \
-            -d '{"event_type":"${{ inputs.trigger_event }}"}')
-          
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
-          
-          echo "HTTP Status: $http_code"
-          echo "Response: $body"
-          
-          if [ "$http_code" != "204" ]; then
-            echo "Error: Expected 204, got $http_code"
-            exit 1
-          fi
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: artawower/orgnote-backend
+          event-type: ${{ inputs.trigger_event }}
