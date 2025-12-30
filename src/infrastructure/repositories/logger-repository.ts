@@ -33,7 +33,11 @@ export const createLoggerRepository = (db: Dexie): LoggerRepository => {
   };
 
   const bulkAdd = async (records: LogRecord[]): Promise<void> => {
-    const data = records.map(normalizeRecord);
+    const data = records.map((r) => {
+      const { id, ...withoutId } = normalizeRecord(r);
+      void id;
+      return withoutId;
+    });
     await store.bulkAdd(data);
   };
 
@@ -62,7 +66,9 @@ export const createLoggerRepository = (db: Dexie): LoggerRepository => {
     const collection = applyFilter(filter).reverse().sortBy('ts');
 
     return collection.then((arr) => {
-      const sorted = [...arr].sort((left, right) => resolveTimestamp(right) - resolveTimestamp(left));
+      const sorted = [...arr].sort(
+        (left, right) => resolveTimestamp(right) - resolveTimestamp(left),
+      );
       const start = offset < 0 ? 0 : offset;
       if (!limit || limit <= 0) return sorted.slice(start);
       return sorted.slice(start, start + limit);
