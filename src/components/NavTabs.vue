@@ -1,10 +1,13 @@
 <template>
-  <app-flex class="nav-tabs" row start align-center gap="xs">
-    <slot name="navigation" />
-    <app-flex class="content" row start align-center gap="xs">
-      <slot />
+  <app-flex class="nav-tabs" between>
+    <app-flex row start align-center gap="xs">
+      <slot name="navigation" />
+      <app-flex class="content" row start align-center gap="xs">
+        <slot />
+      </app-flex>
+      <slot name="actions" />
     </app-flex>
-    <slot name="actions" />
+    <slot name="right-actions" />
   </app-flex>
 </template>
 

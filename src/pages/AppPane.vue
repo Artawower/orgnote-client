@@ -40,6 +40,13 @@
               :data="{ paneId: props.paneId }"
             />
           </template>
+          <template #right-actions>
+            <command-action-button
+              :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
+              size="sm"
+              :data="{ paneId: props.paneId }"
+            />
+          </template>
         </nav-tabs>
       </template>
       <template #mobile-only>

@@ -11,12 +11,11 @@
           </template>
         </LayoutRenderer>
       </div>
-      <PaneSplitter
+      <ResizeSplitter
         v-if="index < layout.children.length - 1"
         :orientation="layout.orientation"
-        :sizes="normalizedSizes"
-        :split-index="index"
-        @resize="handleResize"
+        :active="resizeStates[index]?.isResizing.value ?? false"
+        @resize-start="(e) => resizeStates[index]?.handleResizeStart(e)"
       />
     </template>
   </div>
@@ -24,10 +23,13 @@
 
 <script lang="ts" setup>
 import type { LayoutNode, LayoutSplitNode } from 'orgnote-api';
-import PaneSplitter from 'src/components/PaneSplitter.vue';
-import { computed } from 'vue';
+import ResizeSplitter from 'src/components/ResizeSplitter.vue';
+import { computed, shallowRef, watch } from 'vue';
 import { api } from 'src/boot/api';
 import type { CSSProperties } from 'vue';
+import { usePaneResize } from 'src/composables/use-pane-resize';
+
+type ResizeState = ReturnType<typeof usePaneResize>;
 
 defineOptions({
   name: 'LayoutRenderer',
@@ -78,6 +80,31 @@ const handleResize = (newSizes: number[]): void => {
   if (props.layout.type !== 'split') return;
   layoutStore.updateNodeSizes(props.layout.id, newSizes);
 };
+
+const resizeStates = shallowRef<ResizeState[]>([]);
+
+const createResizeStates = (): void => {
+  if (props.layout.type !== 'split') {
+    resizeStates.value = [];
+    return;
+  }
+
+  const splitLayout = props.layout;
+  resizeStates.value = splitLayout.children
+    .slice(0, -1)
+    .map((_, index) =>
+      usePaneResize(splitLayout.orientation, () => normalizedSizes.value, index, handleResize),
+    );
+};
+
+watch(
+  () => {
+    if (props.layout.type !== 'split') return null;
+    return `${props.layout.children.length}-${props.layout.orientation}`;
+  },
+  createResizeStates,
+  { immediate: true },
+);
 </script>
 
 <style scoped lang="scss">

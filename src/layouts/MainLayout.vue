@@ -19,6 +19,9 @@
         <main-footer />
       </visibility-wrapper>
     </div>
+    <visibility-wrapper tablet-above>
+      <right-panel />
+    </visibility-wrapper>
     <modal-window />
     <app-notifications v-show="!hasOpenModals" />
   </app-flex>
@@ -27,6 +30,7 @@
 <script setup lang="ts">
 import MainFooter from 'src/containers/MainFooter.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
+import RightPanel from 'src/containers/RightPanel.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
 import AppNotifications from 'src/components/AppNotifications.vue';
 import { api } from 'src/boot/api';
