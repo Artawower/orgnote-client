@@ -9,7 +9,9 @@
         hover-color="violet"
       />
       <div class="preview-content">
-        <scoped-router-view v-if="tab.router" :router="tab.router" class="scaled-router-view" />
+        <div v-if="tab.router" class="scaled-router-view">
+          <scoped-router-view :router="tab.router" />
+        </div>
       </div>
     </div>
     <div class="tab-title">{{ title }}</div>
@@ -98,6 +100,12 @@ defineEmits<{
 .preview-content {
   pointer-events: none;
   user-select: none;
+
+  :deep(*) {
+    pointer-events: none !important;
+    user-select: none !important;
+    caret-color: transparent !important;
+  }
 }
 
 .close-icon {
