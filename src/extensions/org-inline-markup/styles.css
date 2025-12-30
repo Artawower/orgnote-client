@@ -228,7 +228,7 @@
 }
 
 .org-list-item-line.cm-activeLine {
-  min-height: var(--editor-default-line-height);
+  min-height: var(--editor-line-height);
 }
 
 .org-list-item-bullet-line {
@@ -268,7 +268,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: var(--editor-default-line-height);
+  height: var(--editor-line-height);
 }
 
 .org-horizontal-rule-line span {
