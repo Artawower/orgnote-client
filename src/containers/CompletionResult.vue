@@ -15,7 +15,7 @@
         <completion-result-item
           :item="item as CompletionCandidate"
           :index="index"
-          :selected="index === completion.activeCompletion!.selectedCandidateIndex"
+          :selected="index === activeCompletion?.selectedCandidateIndex"
           rounded
           @select="$emit('select')"
         />
@@ -41,21 +41,24 @@ defineEmits<{
 const completion = api.core.useCompletion();
 const { config } = storeToRefs(api.core.useConfig());
 
+const activeCompletion = computed(() => completion.activeCompletion);
+
 const getPagedResult = (from: number, size: number) => {
   const fakeRows = Object.freeze(new Array(size).fill(null));
   return fakeRows;
 };
 
 const itemHeight = computed(
-  () => completion.activeCompletion!.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
+  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
 );
 
 const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() => {
-  if (!completion.activeCompletion!.candidates || !config.value.completion.showGroup) {
-    return [completion.activeCompletion!.candidates ?? [], []];
+  const candidates = activeCompletion.value?.candidates;
+  if (!candidates || !config.value.completion.showGroup) {
+    return [candidates ?? [], []];
   }
 
-  return completion.activeCompletion!.candidates.reduce<[GroupedCompletionCandidate[], string[]]>(
+  return candidates.reduce<[GroupedCompletionCandidate[], string[]]>(
     (acc: [GroupedCompletionCandidate[], string[]], item: CompletionCandidate, index: number) => {
       const groupName = toValue(item.group) ?? '';
       const groupChanged = acc[1][acc[1].length - 1] !== groupName;
@@ -72,10 +75,10 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
 });
 
 const total = computed(
-  () => (completion.activeCompletion!.candidates?.length ?? 0) + groupedCandidates.value[1].length,
+  () => (activeCompletion.value?.candidates?.length ?? 0) + groupedCandidates.value[1].length,
 );
 
-const candidatesAvailable = computed(() =>
-  ['choice', 'input-choice'].includes(completion.activeCompletion!.type ?? ''),
-);
-</script>
+const candidatesAvailable = computed(() => {
+  const type = activeCompletion.value?.type;
+  return type ? ['choice', 'input-choice'].includes(type) : false;
+});</script>
