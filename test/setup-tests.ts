@@ -4,6 +4,7 @@ import { Quasar } from 'quasar';
 import iconSet from 'quasar/icon-set/material-icons.js';
 import { createPinia, setActivePinia } from 'pinia';
 
+process.env.CLIENT = 'true';
 const mockLogger = {
   error: vi.fn(),
   info: vi.fn(),

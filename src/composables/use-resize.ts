@@ -1,5 +1,6 @@
 import { ref, watch } from 'vue';
 import { useEventListener } from '@vueuse/core';
+import { clientOnly } from 'src/utils/platform-specific';
 
 export type ResizeOrientation = 'horizontal' | 'vertical';
 
@@ -30,13 +31,17 @@ export const useResize = (
     startPosition.value = orientation === 'horizontal' ? e.clientX : e.clientY;
   };
 
-  useEventListener(document, 'mousemove', onMouseMove);
-  useEventListener(document, 'mouseup', stopResize);
+  clientOnly(() => {
+    useEventListener(document, 'mousemove', onMouseMove);
+    useEventListener(document, 'mouseup', stopResize);
+  })();
 
   watch(isResizing, (resizing) => {
-    const cursor = orientation === 'horizontal' ? 'col-resize' : 'row-resize';
-    document.body.style.cursor = resizing ? cursor : '';
-    document.body.style.userSelect = resizing ? 'none' : '';
+    clientOnly(() => {
+      const cursor = orientation === 'horizontal' ? 'col-resize' : 'row-resize';
+      document.body.style.cursor = resizing ? cursor : '';
+      document.body.style.userSelect = resizing ? 'none' : '';
+    })();
   });
 
   return {
