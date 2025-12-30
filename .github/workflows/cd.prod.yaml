@@ -7,7 +7,7 @@ on:
 
 jobs:
   ci-cd:
-    uses: ./.github/workflows/ci.yaml
+    uses: ./.github/workflows/cd.base.yaml
     with:
       environment: deploy
       image_tag: latest
