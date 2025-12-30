@@ -10,6 +10,7 @@ import type {
   InlineEmbeddedWidget,
   MultilineEmbeddedWidget,
   OrgLineClass,
+  ActiveEditorContext,
 } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 
@@ -44,6 +45,7 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
   });
 
   const extensions = shallowRef<EditorExtension[]>([]);
+  const activeContext = shallowRef<ActiveEditorContext | null>(null);
 
   const addWidgets = (...widgets: WidgetMeta[]): void => {
     const newRegistry: WidgetRegistry = {
@@ -82,14 +84,31 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
   const multilineWidgets = computed(() => widgetRegistry.value[WidgetType.Multiline]);
   const lineClasses = computed(() => widgetRegistry.value[WidgetType.LineClass]);
 
+  const setActiveContext = (ctx: ActiveEditorContext): void => {
+    activeContext.value = ctx;
+  };
+
+  const updateActiveContext = (ctx: Partial<ActiveEditorContext>): void => {
+    if (!activeContext.value) return;
+    activeContext.value = { ...activeContext.value, ...ctx };
+  };
+
+  const clearActiveContext = (): void => {
+    activeContext.value = null;
+  };
+
   return {
     inlineWidgets,
     multilineWidgets,
     lineClasses,
     extensions,
+    activeContext,
     addWidgets,
     removeWidget,
     addExtensions,
     removeExtensions,
+    setActiveContext,
+    updateActiveContext,
+    clearActiveContext,
   };
 });

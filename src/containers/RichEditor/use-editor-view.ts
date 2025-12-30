@@ -1,4 +1,5 @@
 import { EditorView } from '@codemirror/view';
+import { api } from 'src/boot/api';
 import { useEditorState, type UseEditorStateOptions } from './use-editor-state';
 
 export type UseEditorViewOptions = Omit<UseEditorStateOptions, 'editorViewGetter'>;
@@ -7,6 +8,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
   let editorView: EditorView | undefined;
 
   const getEditorView = () => editorView;
+  const editorStore = api.core.useEditor();
 
   const { orgNode, createState, reconfigureReadonly, setupWidgetsWatcher } = useEditorState({
     ...options,
@@ -26,6 +28,10 @@ export const useEditorView = (options: UseEditorViewOptions) => {
   };
 
   const destroyView = (): void => {
+    const isActiveEditor = editorStore.activeContext?.editorViewGetter === getEditorView;
+    if (isActiveEditor) {
+      editorStore.clearActiveContext();
+    }
     editorView?.destroy();
     editorView = undefined;
   };

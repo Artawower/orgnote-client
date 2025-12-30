@@ -89,7 +89,26 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const handleOrgNodeChanged = (node: OrgNode) => {
     orgNode.value = node;
+    editorStore.updateActiveContext({ orgNode: node });
   };
+
+  const createCursorTracker = (): Extension =>
+    EditorView.updateListener.of((update) => {
+      if (!update.selectionSet) return;
+      editorStore.updateActiveContext({ cursorPosition: update.state.selection.main.head });
+    });
+
+  const createFocusHandler = (): Extension =>
+    EditorView.domEventHandlers({
+      focus: () => {
+        editorStore.setActiveContext({
+          orgNode: orgNode.value,
+          cursorPosition: 0,
+          editorViewGetter: options.editorViewGetter,
+        });
+        return false;
+      },
+    });
 
   type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget;
 
@@ -151,6 +170,8 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         ...createBaseExtensions(options.editorViewGetter),
         highlightActiveLine(),
         createUpdateListener(options.onContentUpdate),
+        createCursorTracker(),
+        createFocusHandler(),
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
         compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),
         compartments.editorExtensions.of(buildEditorExtensions(readonly)),
@@ -174,10 +195,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
     view.dispatch({
       effects: [
-        compartments.widgets.reconfigure([
-          ...createFacetExtensions(readonly),
-          ...widgetExtensions,
-        ]),
+        compartments.widgets.reconfigure([...createFacetExtensions(readonly), ...widgetExtensions]),
         compartments.editorExtensions.reconfigure(buildEditorExtensions(readonly)),
       ],
     });
