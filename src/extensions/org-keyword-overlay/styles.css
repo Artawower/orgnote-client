@@ -1,0 +1,29 @@
+.keyword-overlay.keyword-empty::after {
+  color: var(--fg-muted);
+  font-style: italic;
+  pointer-events: none;
+}
+
+.keyword-overlay.keyword-empty.keyword-title::after {
+  content: var(--keyword-placeholder-title, "Untitled");
+  font-size: 2rem;
+  font-weight: var(--headline-font-weight);
+  font-family: var(--headline-font-family);
+  line-height: var(--editor-headline-line-height);
+}
+
+.keyword-overlay.keyword-empty.keyword-author::after {
+  content: var(--keyword-placeholder-author, "Author name");
+}
+
+.keyword-overlay.keyword-empty.keyword-date::after {
+  content: var(--keyword-placeholder-date, "Date");
+}
+
+.keyword-overlay.keyword-empty.keyword-email::after {
+  content: var(--keyword-placeholder-email, "Email");
+}
+
+.keyword-overlay.keyword-empty.keyword-description::after {
+  content: var(--keyword-placeholder-description, "Description");
+}
