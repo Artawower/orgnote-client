@@ -3,7 +3,7 @@
     <NotificationGroup :group="NOTIFICATION_GROUP">
       <app-flex column gap="var(--notification-container-gap)" class="notifications-container">
         <Notification
-          v-slot="{ notifications, close }"
+          v-slot="{ notifications, close, hovering }"
           :max-notifications="maxNotifications"
           enter="notification-enter"
           enter-from="notification-enter-from"
@@ -23,6 +23,8 @@
               { clickable: !!notification.onClick },
             ]"
             @click="notification.onClick?.()"
+            @mouseenter="hovering(notification.id, true)"
+            @mouseleave="hovering(notification.id, false)"
           >
             <app-icon
               v-if="getNotificationIcon(notification)"
