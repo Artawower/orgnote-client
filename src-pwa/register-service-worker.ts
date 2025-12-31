@@ -1,41 +1,47 @@
 import { register } from 'register-service-worker';
+import { useNotificationsStore } from 'src/stores/notifications';
+import {
+  SKIP_WAITING_MESSAGE,
+  UPDATE_CHECK_INTERVAL_MS,
+  UPDATE_NOTIFICATION_ID,
+} from './constants';
 
-// The ready(), registered(), cached(), updatefound() and updated()
-// events passes a ServiceWorkerRegistration instance in their arguments.
-// ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
 
-register(process.env.SERVICE_WORKER_FILE, {
-  // The registrationOptions object will be passed as the second argument
-  // to ServiceWorkerContainer.register()
-  // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register#Parameter
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
 
-  // registrationOptions: { scope: './' },
+  const activateWaitingSW = (registration: ServiceWorkerRegistration) => {
+    registration.waiting?.postMessage({ type: SKIP_WAITING_MESSAGE });
+  };
 
-  ready (/* registration */) {
-    // console.log('Service worker is active.')
-  },
+  const showUpdateNotification = (registration: ServiceWorkerRegistration) => {
+    const notifications = useNotificationsStore();
 
-  registered (/* registration */) {
-    // console.log('Service worker has been registered.')
-  },
+    notifications.notify({
+      id: UPDATE_NOTIFICATION_ID,
+      message: 'New version available',
+      description: 'Click to update',
+      level: 'info',
+      timeout: 0,
+      onClick: () => activateWaitingSW(registration),
+    });
+  };
 
-  cached (/* registration */) {
-    // console.log('Content has been cached for offline use.')
-  },
+  register(process.env.SERVICE_WORKER_FILE, {
+    ready(registration) {
+      if (registration.waiting) {
+        activateWaitingSW(registration);
+      }
 
-  updatefound (/* registration */) {
-    // console.log('New content is downloading.')
-  },
-
-  updated (/* registration */) {
-    // console.log('New content is available; please refresh.')
-  },
-
-  offline () {
-    // console.log('No internet connection found. App is running in offline mode.')
-  },
-
-  error (/* err */) {
-    // console.error('Error during service worker registration:', err)
-  },
-});
+      setInterval(() => registration.update(), UPDATE_CHECK_INTERVAL_MS);
+    },
+    updated(registration) {
+      showUpdateNotification(registration);
+    },
+  });
+}

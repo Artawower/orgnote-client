@@ -1,35 +1,67 @@
-/*
- * This file (which will be your service worker)
- * is picked up by the build system ONLY if
- * quasar.config file > pwa > workboxMode is set to "InjectManifest"
- */
+import { clientsClaim } from 'workbox-core';
+import {
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+  precacheAndRoute,
+} from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { StaleWhileRevalidate } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import {
+  SKIP_WAITING_MESSAGE,
+  CACHE_MAX_ENTRIES,
+  CACHE_MAX_AGE_SECONDS,
+  STATIC_RESOURCES_CACHE_NAME,
+} from './constants';
 
 declare const self: ServiceWorkerGlobalScope &
   typeof globalThis & { skipWaiting: () => void };
 
-import { clientsClaim } from 'workbox-core';
-import {
-  precacheAndRoute,
-  cleanupOutdatedCaches,
-  createHandlerBoundToURL,
-} from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
+self.addEventListener('message', (event) => {
+  if (event.data?.type === SKIP_WAITING_MESSAGE) {
+    self.skipWaiting();
+  }
+});
 
-self.skipWaiting();
 clientsClaim();
 
-// Use with precache injection
 precacheAndRoute(self.__WB_MANIFEST);
 
 cleanupOutdatedCaches();
 
-// Non-SSR fallbacks to index.html
-// Production SSR fallbacks to offline.html (except for dev)
-if (process.env.MODE !== 'ssr' || process.env.PROD) {
+const isStaticAsset = ({ request }: { request: Request }) =>
+  request.method === 'GET' &&
+  (request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'font');
+
+registerRoute(
+  isStaticAsset,
+  new StaleWhileRevalidate({
+    cacheName: STATIC_RESOURCES_CACHE_NAME,
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({
+        maxEntries: CACHE_MAX_ENTRIES,
+        maxAgeSeconds: CACHE_MAX_AGE_SECONDS,
+      }),
+    ],
+  })
+);
+
+if (process.env.MODE !== 'ssr' && process.env.PROD) {
   registerRoute(
-    new NavigationRoute(
-      createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
-      { denylist: [new RegExp(process.env.PWA_SERVICE_WORKER_REGEX), /workbox-(.)*\.js$/] }
-    )
+    new NavigationRoute(createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML), {
+      denylist: [
+        /index\.html$/,
+        /api\/(.)*/,
+        /v1\/(.)*/,
+        /builds\/(.)*/,
+        /media\/(.)*/,
+        new RegExp(process.env.PWA_SERVICE_WORKER_REGEX),
+        /workbox-(.)*\.js$/,
+      ],
+    })
   );
 }
