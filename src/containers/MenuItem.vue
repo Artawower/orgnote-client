@@ -2,6 +2,7 @@
   <app-flex
     class="menu-item"
     role="button"
+    :aria-disabled="disabled"
     :class="[{ disabled }, type, `prefer-${prefer}`, `size-${size}`, { active }]"
     :style="{ '--menu-item-lines': lines, '--current-menu-item-height': itemHeight }"
     column
@@ -69,7 +70,7 @@ const props = withDefaults(
     lines: 1,
     prefer: 'left',
     size: 'auto',
-    flat: false,
+    flat: true,
     capitalize: true,
   },
 );
@@ -119,6 +120,12 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
   &:hover,
   &:active {
     background-color: var(--menu-item-hover-bg);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
 

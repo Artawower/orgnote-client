@@ -5,7 +5,15 @@
       <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
     </app-description>
 
+    <card-wrapper v-if="user && !user.active">
+      <menu-item type="warning" icon="warning">
+        {{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}
+      </menu-item>
+      <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
+    </card-wrapper>
+
     <api-settings />
+
     <card-wrapper>
       <command-menu-item
         :command="DefaultCommands.SYNC_FILES"
@@ -31,6 +39,7 @@ import { useI18n } from 'vue-i18n';
 import ApiSettings from './ApiSettings.vue';
 import SettingsScheme from './SettingsScheme.vue';
 import CommandMenuItem from './CommandMenuItem.vue';
+import MenuItem from './MenuItem.vue';
 
 const syncScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.synchronization);
 const settings = api.core.useSettings();

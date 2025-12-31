@@ -5,6 +5,7 @@
     :icon="resolvedIcon"
     :active="isActive"
     :narrow="isNarrow"
+    :disabled="disabled"
   >
     <slot>
       <div class="capitalize text-bold">{{ command?.command ? t(command.command) : '' }}</div>
@@ -33,6 +34,7 @@ const props = defineProps<{
   command: CommandName;
   data?: unknown;
   disableIcon?: boolean;
+  disabled?: boolean;
 }>();
 
 const slots = useSlots();
@@ -52,6 +54,9 @@ const isActive = computed(() => command?.isActive?.(api));
 const isNarrow = computed(() => command?.context?.narrow);
 
 const executeCommand = () => {
+  if (props.disabled) {
+    return;
+  }
   execute(props.command, props.data);
 };
 

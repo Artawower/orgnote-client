@@ -1,6 +1,6 @@
 <template>
   <app-flex class="api-settings" column start align-start gap="md">
-    <card-wrapper v-if="tokens.length">
+    <card-wrapper v-if="canManageTokens && tokens.length">
       <menu-item v-for="token of tokens" :key="token.id" type="plain" :capitalize="false">
         <span class="token-text">{{ token.token }}</span>
         <template #right>
@@ -29,7 +29,7 @@
     </card-wrapper>
 
     <card-wrapper>
-      <menu-item @click="createToken" type="info" :disabled="!canCreateToken">
+      <menu-item @click="createToken" type="info" :disabled="!canManageTokens">
         <div class="capitalize">{{ t(I18N.CREATE_NEW_TOKEN) }}</div>
       </menu-item>
     </card-wrapper>
@@ -53,7 +53,7 @@ const authStore = api.core.useAuth();
 const { tokens } = storeToRefs(settingsStore);
 const { user } = storeToRefs(authStore);
 
-const canCreateToken = computed(() => !!user.value);
+const canManageTokens = computed(() => !!user.value?.active);
 
 const { t } = useI18n({
   useScope: 'global',
