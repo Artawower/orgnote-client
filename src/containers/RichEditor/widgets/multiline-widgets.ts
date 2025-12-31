@@ -1,65 +1,123 @@
-import {
-  type AddWidgetEffect,
-  addMultilineWidgetEffect,
-  removeMultilineWidgetEffect,
-} from './org-multiline-widget-state';
-import type { StateEffect } from '@codemirror/state';
-import type { ViewUpdate } from '@codemirror/view';
-import { EditorView } from '@codemirror/view';
-import type { ChangedRange } from '@lezer/common';
+import { OrgMultilineWidget } from './org-multiline-widget';
+import type { Transaction } from '@codemirror/state';
+import { StateField, type EditorState } from '@codemirror/state';
+import type { DecorationSet } from '@codemirror/view';
+import { Decoration, EditorView } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/utils/has-intersection';
 import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
 import { findHighestPriorityWidget } from '../utils';
 
-export const orgMultilineWidgets = EditorView.updateListener.of((v: ViewUpdate) => {
-  if (!v.docChanged && !v.viewportChanged && !v.selectionSet) {
-    return;
-  }
+const removeWidgetByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =>
+  widgets.update({
+    filter: (from, to, value) => {
+      const widget = value.spec.widget as OrgMultilineWidget | undefined;
+      return (
+        !widget ||
+        widget.orgNode.isNot(orgNode.type) ||
+        !hasIntersection(from, to, orgNode.start, orgNode.end)
+      );
+    },
+  });
 
-  const getOrgNode = v.state.facet(orgNodeGetterFacet);
-  const readonly = v.state.facet(readonlyFacet);
-  const widgets = v.state.facet(multilineWidgetsFacet);
+const addOrUpdateWidget = (
+  widgets: DecorationSet,
+  state: EditorState,
+  orgNode: OrgNode,
+  rootNodeSrc: () => OrgNode | null,
+  multilineWidget: Parameters<typeof OrgMultilineWidget.init>[3],
+  editorViewRef: { current: EditorView | null },
+): DecorationSet => {
+  const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
+  const start = orgNode.start + startOffset;
+  const end = orgNode.end + endOffset;
 
+  let existingWidget: OrgMultilineWidget | null = null;
+
+  const withoutExisting = widgets.update({
+    filter: (from, to, value) => {
+      const widget = value.spec.widget as OrgMultilineWidget | undefined;
+      const isNotTargetWidget =
+        !widget || widget.orgNode.isNot(orgNode.type) || !hasIntersection(from, to, start, end);
+
+      if (isNotTargetWidget) return true;
+      if (widget.isDestroyed() || !widget.sameNodeByOrgNode(orgNode)) return false;
+
+      existingWidget = widget;
+      widget.updateOrgNode(orgNode);
+      return false;
+    },
+  });
+
+  if (!editorViewRef.current) return withoutExisting;
+
+  const decorationToAdd = existingWidget
+    ? OrgMultilineWidget.createDecoration(existingWidget, orgNode, multilineWidget)
+    : OrgMultilineWidget.init(editorViewRef.current, orgNode, rootNodeSrc, multilineWidget);
+
+  return withoutExisting.update({
+    add: [decorationToAdd],
+  });
+};
+
+const isOrgNodeSynced = (state: EditorState, orgNode: OrgNode | null): boolean => {
+  if (!orgNode) return false;
+  return orgNode.rawValue === state.doc.toString();
+};
+
+const buildDecorations = (
+  state: EditorState,
+  current: DecorationSet,
+  editorViewRef: { current: EditorView | null },
+): DecorationSet => {
+  const getOrgNode = state.facet(orgNodeGetterFacet);
+  const readonly = state.facet(readonlyFacet);
+  const widgets = state.facet(multilineWidgetsFacet);
   const orgNode = getOrgNode();
-  if (!orgNode) return;
 
-  const currentCaretPosition = v.state.selection.main.head;
+  if (!orgNode || !isOrgNodeSynced(state, orgNode)) return current;
 
-  const effects: StateEffect<OrgNode | AddWidgetEffect>[] = [];
-  const changedRanges = (v as unknown as { changedRanges?: ChangedRange[] }).changedRanges ?? [];
+  const currentCaretPosition = state.selection.main.head;
+  let result = current;
 
   walkTree(orgNode, (n: OrgNode): boolean => {
     const widgetList = widgets[n.type];
     const multilineEmbeddedWidget = findHighestPriorityWidget(widgetList, n);
-    if (!multilineEmbeddedWidget) {
-      return false;
-    }
 
-    const widgetRemoved = changedRanges.find((r) =>
-      hasIntersection(r.fromB, r.toB, n.start, n.end + 1),
-    );
+    if (!multilineEmbeddedWidget) return false;
+
     const caretIntoWidget = currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
+    const shouldRemove =
+      !readonly && !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
 
-    if (!readonly && (widgetRemoved || caretIntoWidget)) {
-      effects.push(removeMultilineWidgetEffect.of(n));
+    if (shouldRemove) {
+      result = removeWidgetByNode(result, n);
       return false;
     }
 
-    effects.push(
-      addMultilineWidgetEffect.of({
-        orgNode: n,
-        view: v.view,
-        rootNodeSrc: getOrgNode,
-        multilineWidget: multilineEmbeddedWidget,
-      }),
-    );
-
+    result = addOrUpdateWidget(result, state, n, getOrgNode, multilineEmbeddedWidget, editorViewRef);
     return false;
   });
 
-  if (effects.length) {
-    v.view.dispatch({ effects });
-  }
-});
+  return result;
+};
+
+const hasSignificantChanges = (tr: Transaction): boolean =>
+  tr.docChanged || tr.selection !== tr.startState.selection;
+
+export const createMultilineWidgetsField = (
+  editorViewRef: { current: EditorView | null },
+): StateField<DecorationSet> =>
+  StateField.define<DecorationSet>({
+    create: (state) => buildDecorations(state, Decoration.none, editorViewRef),
+
+    update: (decorations, tr) => {
+      if (!hasSignificantChanges(tr)) return decorations;
+
+      const mapped = tr.docChanged ? Decoration.none : decorations.map(tr.changes);
+      return buildDecorations(tr.state, mapped, editorViewRef);
+    },
+
+    provide: (field) => EditorView.decorations.from(field),
+  });

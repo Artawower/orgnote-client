@@ -1,5 +1,4 @@
 export * from './org-mode-decoration';
-export * from './org-multiline-widget-state';
 export * from './org-multiline-widget';
 export * from './org-inline-widget';
 export * from './multiline-widgets';

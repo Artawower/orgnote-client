@@ -26,11 +26,10 @@ import {
 } from './facets';
 import {
   orgInlineWidgets,
-  orgMultilineWidgetField,
   orgLineDecoration,
   readOnlyTransactionFilter,
 } from './widgets';
-import { orgMultilineWidgets } from './widgets/multiline-widgets';
+import { createMultilineWidgetsField } from './widgets/multiline-widgets';
 import { orgMode } from './org-parser';
 import { editorLanguages } from './editor-languages';
 
@@ -63,11 +62,12 @@ const createUpdateListener = (onUpdate: (content: string) => void): Extension =>
     onUpdate(update.state.doc.toString());
   });
 
-const createWidgetExtensions = (): Extension[] => [
-  orgMultilineWidgetField,
+const createWidgetExtensions = (
+  editorViewRef: { current: EditorView | null },
+): Extension[] => [
   readOnlyTransactionFilter,
   orgInlineWidgets,
-  orgMultilineWidgets,
+  createMultilineWidgetsField(editorViewRef),
   orgLineDecoration,
 ];
 
@@ -77,6 +77,8 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const editorConfig = computed(() => configStore.config.editor);
   const { createWidgetBuilder, createMultilineWidgetBuilder } = useWidgetBuilder();
   const dynamicComponent = useDynamicComponent();
+
+  const editorViewRef: { current: EditorView | null } = { current: null };
 
   const compartments = {
     readonly: new Compartment(),
@@ -162,7 +164,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const createState = (content: string): EditorState => {
     const readonly = options.readonly ?? false;
-    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions();
+    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions(editorViewRef);
 
     return EditorState.create({
       doc: content,
@@ -191,7 +193,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const reconfigureWidgets = (view: EditorView): void => {
     const readonly = options.readonly ?? false;
-    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions();
+    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions(editorViewRef);
 
     view.dispatch({
       effects: [
@@ -217,11 +219,16 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     );
   };
 
+  const setEditorView = (view: EditorView | null): void => {
+    editorViewRef.current = view;
+  };
+
   return {
     orgNode,
     createState,
     reconfigureReadonly,
     reconfigureWidgets,
     setupWidgetsWatcher,
+    setEditorView,
   };
 };
