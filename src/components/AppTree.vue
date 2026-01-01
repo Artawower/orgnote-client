@@ -79,8 +79,38 @@ const handleNodeClick = (node: T) => {
     padding: 0;
   }
 
+  :deep(.q-tree__node) {
+    padding: 0 0 0 22px;
+  }
+
   :deep(.q-tree__children) {
     padding-left: var(--padding-md);
+  }
+
+  :deep(.q-tree__node--parent) {
+    position: relative;
+  }
+
+  :deep(.q-tree__node--selected),
+  :deep(.q-tree__node-header),
+  :deep(.q-hoverable),
+  :deep(.q-focusable) {
+    position: unset !important;
+  }
+
+  :deep(.q-tree__node--selected) {
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      width: var(--padding-sm);
+      height: 100%;
+      background: var(--accent);
+      top: 0;
+      left: 0;
+      z-index: 5;
+      border-radius: var(--border-radius-md);
+    }
   }
 }
 
