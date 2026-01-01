@@ -41,6 +41,9 @@ const eng: Record<string, string> = {
   [I18N.SUBSCRIPTION_KEY]: 'Subscription key',
   [I18N.ACTIVATE]: 'Activate',
   [I18N.TABS_COUNT]: 'no tabs | {count} tab | {count} tabs',
+
+  [I18N.TOC_NO_ACTIVE_DOCUMENT]: 'No active document',
+  [I18N.TOC_NO_HEADLINES_FOUND]: 'No headlines found',
 };
 
 export default eng;

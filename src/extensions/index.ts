@@ -10,6 +10,7 @@ import { orgImageManifest } from './org-image/manifest';
 import { orgSmartEditingManifest } from './org-smart-editing/manifest';
 import { orgFoldingManifest } from './org-folding/manifest';
 import { orgKeywordOverlayManifest } from './org-keyword-overlay/manifest';
+import { orgTocManifest } from './org-toc/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -34,6 +35,7 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
     import('./org-folding').then((m) => m.orgFoldingExtension),
   [orgKeywordOverlayManifest.name]: () =>
     import('./org-keyword-overlay').then((m) => m.orgKeywordOverlayExtension),
+  [orgTocManifest.name]: () => import('./org-toc').then((m) => m.orgTocExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -48,4 +50,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgSmartEditingManifest, active: true },
   { manifest: orgFoldingManifest, active: true },
   { manifest: orgKeywordOverlayManifest, active: true },
+  { manifest: orgTocManifest, active: true },
 ];

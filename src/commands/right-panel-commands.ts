@@ -27,9 +27,11 @@ export function getRightPanelCommands(): Command[] {
           panel.open();
           return;
         }
-        const firstCommand = commands.value[0];
-        if (firstCommand) {
-          await api.core.useCommands().execute(firstCommand);
+        const firstContentCommand = commands.value.find(
+          (cmd) => cmd !== DefaultCommands.TOGGLE_RIGHT_PANEL,
+        );
+        if (firstContentCommand) {
+          await api.core.useCommands().execute(firstContentCommand);
         }
       },
     },

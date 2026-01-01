@@ -10,8 +10,8 @@ import {
 
 export const useRightPanelStore = defineStore<'rightPanel', RightPanelStore>('rightPanel', () => {
   const panel = usePanelState([
-    DefaultCommands.TOGGLE_AST_DEBUGGER,
     DefaultCommands.TOGGLE_RIGHT_PANEL,
+    DefaultCommands.TOGGLE_AST_DEBUGGER,
   ]);
 
   const width = ref(RIGHT_PANEL_DEFAULT_WIDTH);
