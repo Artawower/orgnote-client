@@ -1,8 +1,6 @@
 import type { Repositories } from 'orgnote-api';
 import { createDatabase } from './create-database';
 import { NOTE_REPOSITORY_NAME, NOTE_MIGRATIONS } from './note-info-repository';
-import { FILE_REPOSITORY_NAME, FILE_MIGRATIONS } from './file-repository';
-import { createFileRepository } from './file-repository';
 import { createNoteInfoRepository } from './note-info-repository';
 import {
   createLoggerRepository,
@@ -29,7 +27,6 @@ export const getDatabase = (): Dexie | undefined => database;
 export async function initRepositories(): Promise<Repositories> {
   const { db } = createDatabase([
     { storeName: NOTE_REPOSITORY_NAME, migrations: NOTE_MIGRATIONS },
-    { storeName: FILE_REPOSITORY_NAME, migrations: FILE_MIGRATIONS },
     { storeName: LOGGER_REPOSITORY_NAME, migrations: LOGGER_MIGRATIONS },
     { storeName: PANE_SNAPSHOT_REPOSITORY_NAME, migrations: PANE_SNAPSHOT_MIGRATIONS },
     { storeName: QUEUE_REPOSITORY_NAME, migrations: QUEUE_MIGRATIONS },
@@ -37,7 +34,6 @@ export async function initRepositories(): Promise<Repositories> {
   ]);
   database = db;
   return {
-    fileInfoRepository: createFileRepository(db),
     noteInfoRepository: createNoteInfoRepository(db),
     logRepository: createLoggerRepository(db),
     layoutSnapshotRepository: createLayoutSnapshotRepository(db),
