@@ -35,6 +35,7 @@ export default defineConfig((ctx) => {
       'default-file-readers',
       { path: 'default-cron-tasks', server: false },
       { path: 'default-queues', server: false },
+      { path: 'file-index', server: false },
       { path: 'extensions', server: false },
       { path: 'file-guards', server: false },
       { path: 'files-watchers', server: false },
@@ -114,7 +115,6 @@ export default defineConfig((ctx) => {
             keep_classnames: true,
           },
         };
-
       },
       // viteVuePluginOptions: {},
 
@@ -223,9 +223,7 @@ export default defineConfig((ctx) => {
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
       prodPort: 3000,
-      middlewares: [
-        'render',
-      ],
+      middlewares: ['render'],
       pwa: true,
     },
 

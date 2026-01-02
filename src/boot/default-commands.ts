@@ -13,6 +13,7 @@ import { useCommandsStore } from 'src/stores/command';
 import { getModalCommands } from 'src/commands/modal-commands';
 import { getDeveloperCommands } from 'src/commands/developer-commands';
 import { getRightPanelCommands } from 'src/commands/right-panel-commands';
+import { getSearchCommands } from 'src/commands/search-commands';
 
 export default defineBoot(async ({ router }) => {
   const commandsStore = useCommandsStore();
@@ -30,6 +31,7 @@ export default defineBoot(async ({ router }) => {
     ...getModalCommands(),
     ...getDeveloperCommands(),
     ...getRightPanelCommands(),
+    ...getSearchCommands(),
     ...createAuthCommands(router),
   );
 });

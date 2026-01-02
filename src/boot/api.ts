@@ -67,6 +67,8 @@ import { useAuthStore } from 'src/stores/auth';
 import { useSyncStore } from 'src/stores/sync';
 import { useEditorStore } from 'src/stores/editor';
 import { useOrgBabelStore } from 'src/stores/org-babel';
+import { useFileSearchStore } from 'src/stores/file-search';
+import { useFileMetaStore } from 'src/stores/file-meta';
 import { wsClient } from 'src/infrastructure/websocket-client';
 
 let api: OrgNoteApi;
@@ -105,6 +107,8 @@ async function initApi(app: App, router: Router): Promise<void> {
       useSync: useSyncStore,
       useEditor: useEditorStore,
       useBabel: useOrgBabelStore,
+      useFileSearch: useFileSearchStore,
+      useFileMeta: useFileMetaStore,
       app,
     },
     utils: {

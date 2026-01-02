@@ -3,7 +3,7 @@ import { SyncOperationType } from 'orgnote-api';
 import { toRaw } from 'vue';
 import { useQueueStore } from 'src/stores/queue';
 import type { SyncQueueTask } from 'src/models/sync-queue-task';
-import { SYNC_QUEUE_ID } from 'src/constants/sync-queue';
+import { SYNC_QUEUE_ID } from 'src/constants/queue-ids';
 
 const createSyncTasks = (plan: SyncPlan): SyncQueueTask[] => [
   ...plan.toUpload.map((data) => ({
