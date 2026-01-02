@@ -189,7 +189,7 @@ const { t } = useI18n({
 <style lang="scss" scoped>
 .file-manager {
   & {
-    height: 100%;
+    @include fit;
   }
 
   .files {

@@ -8,17 +8,17 @@
     align-start
   >
     <main-sidebar ref="sidebarRef" />
-    <div class="content">
+    <app-flex column class="content" start align-stretch>
       <visibility-wrapper tablet-below>
         <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
       </visibility-wrapper>
-      <safe-area fit>
+      <safe-area fit class="content-body">
         <router-view />
       </safe-area>
       <visibility-wrapper tablet-below>
         <main-footer />
       </visibility-wrapper>
-    </div>
+    </app-flex>
     <right-panel />
     <modal-window />
     <app-notifications v-show="!hasOpenModals" />
@@ -88,7 +88,13 @@ onMounted(() => {
 .content {
   height: 100%;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
+}
+
+.content-body {
+  flex: 1;
+  min-height: 0;
 }
 
 @include tablet-below {

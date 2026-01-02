@@ -1,6 +1,6 @@
 <template>
   <safe-area>
-    <app-flex class="sidebar" :class="{ opened }" row between align-center>
+    <app-flex class="sidebar" :class="{ opened, 'has-mini': mini }" row between align-center>
       <app-flex v-if="mini" class="mini" column between align-center>
         <div class="top">
           <slot name="mini-top" />
@@ -68,6 +68,14 @@ withDefaults(
       & {
         padding: var(--sidebar-padding);
         flex: 1;
+        width: var(--sidebar-width);
+      }
+    }
+  }
+
+  &.opened.has-mini {
+    .content {
+      & {
         width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
       }
     }

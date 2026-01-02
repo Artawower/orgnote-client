@@ -10,12 +10,14 @@
         <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
       </app-flex>
     </template>
-    <visibility-wrapper tablet-below>
-      <app-footer v-if="opened">
-        <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
-      </app-footer>
-    </visibility-wrapper>
-    <component :is="component" v-bind="componentConfig?.componentProps || {}"></component>
+    <app-flex column class="content-wrapper">
+      <component :is="component" v-bind="componentConfig?.componentProps || {}"></component>
+      <visibility-wrapper tablet-below>
+        <app-footer v-if="opened">
+          <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
+        </app-footer>
+      </visibility-wrapper>
+    </app-flex>
   </app-sidebar>
 </template>
 
@@ -45,6 +47,10 @@ const miniMode = screenDetector.tabletAbove;
   flex-direction: row-reverse;
   left: 0;
   bottom: 0;
+}
+
+.content-wrapper {
+  @include fit;
 }
 
 /* TODO: plugin */

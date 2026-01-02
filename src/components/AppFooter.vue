@@ -28,8 +28,6 @@ const props = withDefaults(
     border-top: var(--footer-border-top);
     padding: var(--footer-padding);
     padding-bottom: calc(var(--footer-padding-bottom, 0px) + var(--device-padding-bottom));
-    position: absolute;
-    bottom: 0;
     box-sizing: border-box;
   }
 }

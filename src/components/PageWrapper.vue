@@ -20,7 +20,6 @@ defineProps<{
   & {
     background: var(--bg);
     position: relative;
-    padding-bottom: var(--footer-height);
   }
 
   &.padding {
