@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import {
   RouteNames,
   RoutePaths,
@@ -8,7 +7,7 @@ import {
   type PersonalInfo,
   type OAuthProvider,
 } from 'orgnote-api';
-
+import { api } from 'src/boot/api';
 import { encodeAuthState, isAuthEnvironment, type AuthState } from 'orgnote-api';
 import { sdk } from 'src/boot/axios';
 import { to } from 'orgnote-api/utils';
@@ -35,8 +34,6 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
     const token = ref<string>('');
     const user = ref<PersonalInfo | null>(null);
     const provider = ref<OAuthProvider>('github');
-
-    const router = useRouter();
 
     const resetAuthInfo = () => {
       user.value = null;
@@ -153,7 +150,7 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
     const logout = async (): Promise<void> => {
       await to(() => sdk.auth.authLogoutGet())();
       resetAuthInfo();
-      router.push({ name: RouteNames.Home });
+      await api.vue.router.push({ name: RouteNames.Home });
     };
 
     const subscribe = async (subscriptionToken: string, email?: string): Promise<void> => {
@@ -170,7 +167,7 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
         await sdk.auth.authAccountDelete();
       }
       localStorage.clear();
-      router.push({ name: RouteNames.Home });
+      await api.vue.router.push({ name: RouteNames.Home });
       window.location.reload();
     };
 
