@@ -136,7 +136,8 @@ defineExpose({
   --vs-selected-color: var(--fg);
   --vs-dropdown-box-shadow: none;
   --vs-actions-padding: 0;
-  --vs-dropdown-option--active-bg: var(--default-bg-hover);
+  --vs-dropdown-option--active-bg: var(--bg-active);
+  --vs-dropdown-option--active-color: var(--fg-active);
 }
 
 .vs__search,
