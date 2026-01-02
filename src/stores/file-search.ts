@@ -52,21 +52,18 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     total: indexedIds.size,
   }));
 
-  const addToIndex = (file: FileMeta, content: string, headings?: string[]): void => {
+  const addToIndex = (file: FileMeta, content: string): void => {
     if (!file.id) return;
 
     if (indexedIds.has(file.id)) {
       index.remove(file.id);
     }
 
-    const headingsText = headings?.join(' ') ?? '';
-    const searchableContent = `${content} ${headingsText}`;
-
     index.add({
       id: file.id,
       title: file.title ?? '',
       description: file.description ?? '',
-      content: searchableContent,
+      content,
       tags: file.tags?.join(' ') ?? '',
     });
 
@@ -154,16 +151,11 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     return readPlainFile(filePath);
   };
 
-  interface ParsedFile {
-    meta: FileMeta;
-    headings: string[];
-  }
-
-  const parseFile = (content: string, filePath: string): ParsedFile => {
+  const parseFile = (content: string, filePath: string): FileMeta => {
     const root = withMetaInfo(parse(content));
     const orgMeta = root.meta;
 
-    const meta: FileMeta = {
+    return {
       id: orgMeta.id ?? filePath,
       filePath: filePath.split('/').filter(Boolean),
       title: orgMeta.title,
@@ -172,19 +164,15 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
       links: orgMeta.connectedNotes ? Object.keys(orgMeta.connectedNotes) : undefined,
       updatedAt: new Date().toISOString(),
     };
-
-    const headings = orgMeta.headings?.map((h) => h.title) ?? [];
-
-    return { meta, headings };
   };
 
   const processFile = async (filePath: string): Promise<void> => {
     const content = await readFileContent(filePath);
     if (!content) return;
 
-    const { meta, headings } = parseFile(content, filePath);
+    const meta = parseFile(content, filePath);
     await repositories.fileRepository.save(meta);
-    addToIndex(meta, content, headings);
+    addToIndex(meta, content);
 
     processedCount++;
     if (processedCount % SAVE_INDEX_EVERY_N !== 0) return;
@@ -308,8 +296,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
 
     if (!content || typeof content !== 'string') return;
 
-    const { headings } = parseFile(content, filePath);
-    addToIndex(file, content, headings);
+    addToIndex(file, content);
   };
 
   const loadIndex = async (): Promise<boolean> => {

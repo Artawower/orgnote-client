@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import {
   isOrgGpgFile,
+  isOrgFile,
   i18n,
   type BufferStore,
   type Buffer as OrgBuffer,
@@ -334,9 +335,26 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
   const allBuffers = computed(() => Array.from(buffers.value.values()));
 
+  const touchFileMeta = (path: string): void => {
+    if (!isOrgFile(path)) return;
+
+    const updateTouchedAt = async () => {
+      const filePath = path.split('/').filter(Boolean);
+      const file = await api.infrastructure.fileRepository.getByPath(filePath);
+      if (!file) return;
+      await api.infrastructure.fileRepository.save({ ...file, touchedAt: new Date().toISOString() });
+    };
+
+    updateTouchedAt().catch((cause) => {
+      const error = new Error(`Failed to update touchedAt for file: ${path}`, { cause });
+      reporter.reportError(error);
+    });
+  };
+
   const getOrCreateBuffer = async (path: string): Promise<OrgBuffer> => {
     const existing = buffers.value.get(path);
     if (existing) {
+      touchFileMeta(path);
       return incrementBufferReference(existing);
     }
 
@@ -346,6 +364,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     await loadBufferContent(buffer);
     initValidationLastContent(buffer);
     setupAutoSave(buffer);
+    touchFileMeta(path);
 
     const unwatch = setupFileWatcher(buffer);
     bufferUnwatchers.set(path, unwatch);

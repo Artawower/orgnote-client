@@ -30,9 +30,10 @@ import { api } from 'src/boot/api';
 import AsyncItemContainer from './AsyncItemContainer.vue';
 import CompletionResultItem from './CompletionResultItem.vue';
 import type { CompletionCandidate } from 'orgnote-api';
-import { computed, toValue } from 'vue';
+import { toValue, watch } from 'vue';
 import { DEFAULT_COMPLETIO_ITEM_HEIGHT } from 'src/constants/completion-item';
 import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
+import { computed } from 'vue';
 
 defineEmits<{
   select: [];
@@ -40,11 +41,51 @@ defineEmits<{
 
 const completion = api.core.useCompletion();
 const { config } = storeToRefs(api.core.useConfig());
+const { activeCompletion } = storeToRefs(completion);
 
-const activeCompletion = computed(() => completion.activeCompletion);
+const pendingRanges = new Set<string>();
+
+const buildRangeKey = (from: number, size: number): string => `${from}-${size}`;
+
+const resetPendingRanges = (): void => {
+  pendingRanges.clear();
+};
+
+watch(
+  () => [activeCompletion.value, activeCompletion.value?.searchQuery],
+  () => resetPendingRanges(),
+);
+
+const isRangeLoaded = (from: number, size: number): boolean => {
+  const candidates = activeCompletion.value?.candidates;
+  if (!candidates?.length) return false;
+  const range = candidates.slice(from, from + size);
+  if (range.length < size) return false;
+  return range.every(Boolean);
+};
+
+const isRangePending = (from: number, size: number): boolean =>
+  pendingRanges.has(buildRangeKey(from, size));
+
+const markRangePending = (from: number, size: number): void => {
+  pendingRanges.add(buildRangeKey(from, size));
+};
+
+const clearRangePending = (from: number, size: number): void => {
+  pendingRanges.delete(buildRangeKey(from, size));
+};
 
 const getPagedResult = (from: number, size: number) => {
   const fakeRows = Object.freeze(new Array(size).fill(null));
+
+  if (isRangeLoaded(from, size)) {
+    clearRangePending(from, size);
+    return fakeRows;
+  }
+  if (isRangePending(from, size)) return fakeRows;
+  markRangePending(from, size);
+  completion.search(size, from);
+
   return fakeRows;
 };
 
@@ -74,9 +115,11 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
   );
 });
 
-const total = computed(
-  () => (activeCompletion.value?.candidates?.length ?? 0) + groupedCandidates.value[1].length,
-);
+const total = computed(() => {
+  const serverTotal = activeCompletion.value?.total ?? 0;
+  const groupCount = groupedCandidates.value[1].length;
+  return serverTotal + groupCount;
+});
 
 const candidatesAvailable = computed(() => {
   const type = activeCompletion.value?.type;

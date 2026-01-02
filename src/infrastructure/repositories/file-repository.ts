@@ -44,18 +44,6 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     return collection.filter((f) => hasMatchingTag(f, tags));
   };
 
-  const collectResults = async (
-    collection: Collection<FileMeta, string>,
-    limit?: number,
-    offset = 0,
-  ): Promise<FileMeta[]> => {
-    const result: FileMeta[] = [];
-    const withOffset = offset > 0 ? collection.offset(offset) : collection;
-    const bounded = limit ? withOffset.limit(limit) : withOffset;
-    await bounded.each((f) => result.push(f));
-    return result;
-  };
-
   const getAll = async (options?: {
     limit?: number;
     offset?: number;
@@ -65,8 +53,10 @@ export const createFileRepository = (db: Dexie): FileRepository => {
 
     const baseCollection = store.orderBy('touchedAt').reverse().filter(isNotDeleted);
     const filtered = applyTagsFilter(baseCollection, tags);
+    const withOffset = offset > 0 ? filtered.offset(offset) : filtered;
+    const withLimit = limit ? withOffset.limit(limit) : withOffset;
 
-    return collectResults(filtered, limit, offset);
+    return withLimit.toArray();
   };
 
   const mergeWithExisting = (meta: FileMeta, existing: FileMeta): FileMeta => ({
@@ -74,6 +64,7 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     id: existing.id,
     createdAt: existing.createdAt,
     backlinks: existing.backlinks,
+    touchedAt: meta.touchedAt ?? existing.touchedAt ?? new Date().toISOString(),
   });
 
   const prepareForInsert = (meta: FileMeta): FileMeta => ({

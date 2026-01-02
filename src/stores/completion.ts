@@ -116,13 +116,10 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       () => !activeCompletion.value || isNullable(activeCompletion.value.total),
     );
 
-    const search = (limit?: number, offset: number = 0) => {
-      if (!activeCompletion.value) {
-        return;
-      }
-      if (activeCompletion.value.type === 'input') {
-        return;
-      }
+    const performSearch = (limit?: number, offset: number = 0) => {
+      if (!activeCompletion.value) return;
+      if (activeCompletion.value.type === 'input') return;
+
       const { config } = useConfigStore();
       limit = config.completion.defaultCompletionLimit;
 
@@ -141,18 +138,16 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
     };
 
     const setupCandidates = (r: CompletionSearchResult, offset: number): void => {
-      if (!activeCompletion.value) {
-        return;
-      }
+      if (!activeCompletion.value) return;
+
       if (!offset) {
         activeCompletion.value.candidates = r.result;
         activeCompletion.value.total = r.total;
         activeCompletion.value.selectedCandidateIndex = 0;
         return;
       }
-      if (!activeCompletion.value.candidates) {
-        return;
-      }
+      if (!activeCompletion.value.candidates) return;
+
       const indexedCandidates = [...activeCompletion.value.candidates];
       r.result.forEach((v, i) => {
         indexedCandidates[i + offset] = v;
@@ -161,11 +156,11 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       activeCompletion.value.total = r.total;
     };
 
-    const searchWithDebounce = debounce(search, DEFAULT_INPUT_DEBOUNCE);
+    const search = debounce(performSearch, DEFAULT_INPUT_DEBOUNCE, { leading: true });
 
     watch(
       () => activeCompletion.value?.searchQuery,
-      () => searchWithDebounce(),
+      () => search(),
     );
 
     const store: CompletionStore = {
@@ -176,7 +171,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       activeCompletion,
       nextCandidate,
       previousCandidate,
-      search: searchWithDebounce,
+      search,
     };
 
     return store;

@@ -1,10 +1,9 @@
 import { defineBoot } from '@quasar/app-vite/wrappers';
-import { DefaultCommands } from 'orgnote-api';
+import { DefaultCommands, isOrgFile } from 'orgnote-api';
+import type { FileSystemChange } from 'orgnote-api';
 import { useCommandsStore } from 'src/stores/command';
 import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import type { FileSystemChange } from 'orgnote-api';
-import { isOrgFile } from 'orgnote-api';
 import { useFileWatcherStore } from 'src/stores/file-watcher';
 import { useFileSearchStore } from 'src/stores/file-search';
 

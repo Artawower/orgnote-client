@@ -2,9 +2,9 @@
   <page-wrapper>
     <app-logo />
     <action-buttons vertical>
-      <command-action-button :command="DefaultCommands.CREATE_NOTE" include-text />
-      <command-action-button :command="DefaultCommands.SEARCH" include-text />
-      <command-action-button :command="DefaultCommands.CLOSE_TAB" include-text />
+      <command-action-button :command="DefaultCommands.CREATE_NOTE" include-text alignment="left" />
+      <command-action-button :command="DefaultCommands.SEARCH" include-text alignment="left" />
+      <command-action-button :command="DefaultCommands.CLOSE_TAB" include-text alignment="left" />
     </action-buttons>
   </page-wrapper>
 </template>

@@ -1,122 +1,174 @@
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { debounce } from './debounce';
-import { test, vi, expect } from 'vitest';
 
-test('debounce calls the function after the specified delay', async () => {
-  const mockFunction = vi.fn();
-  const debouncedFunction = debounce(mockFunction, 100);
-
-  debouncedFunction();
-
-  expect(mockFunction).not.toHaveBeenCalled();
-
-  await new Promise((resolve) => setTimeout(resolve, 150));
-
-  expect(mockFunction).toHaveBeenCalledTimes(1);
+beforeEach(() => {
+  vi.useFakeTimers();
 });
 
-test('debounce resets the timer if called repeatedly', async () => {
-  const mockFunction = vi.fn();
-  const debouncedFunction = debounce(mockFunction, 100);
-
-  debouncedFunction();
-
-  // Wait 50ms and call again to reset timer
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  debouncedFunction();
-
-  // Wait another 50ms and call again to reset timer
-  await new Promise((resolve) => setTimeout(resolve, 40));
-  debouncedFunction();
-
-  // Wait for the debounce delay to complete
-  await new Promise((resolve) => setTimeout(resolve, 150));
-
-  expect(mockFunction).toHaveBeenCalledTimes(1);
+afterEach(() => {
+  vi.useRealTimers();
 });
 
-test('debounce works with arguments', async () => {
-  const mockFunction = vi.fn();
-  const debouncedFunction = debounce(mockFunction, 100);
+test('debounce calls function after delay', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100);
 
-  debouncedFunction('test', 42);
+  debounced();
+  expect(fn).not.toHaveBeenCalled();
 
-  await new Promise((resolve) => setTimeout(resolve, 150));
-
-  expect(mockFunction).toHaveBeenCalledTimes(1);
-  expect(mockFunction).toHaveBeenCalledWith('test', 42);
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledTimes(1);
 });
 
-test('debounce does not call the function if canceled before delay', async () => {
-  const mockFunction = vi.fn();
-  const debouncedFunction = debounce(mockFunction, 100);
+test('debounce multiple rapid calls trigger single execution', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100);
 
-  debouncedFunction();
-  debouncedFunction(); // Call again to reset the timer
+  debounced();
+  debounced();
+  debounced();
+  debounced();
+  debounced();
 
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
-  expect(mockFunction).not.toHaveBeenCalled();
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledTimes(1);
 });
 
-test('debounce works with dynamic delay function', async () => {
-  const mockFunction = vi.fn();
-  const delayGetter = vi.fn(() => 100);
-  const debouncedFunction = debounce(mockFunction, delayGetter);
+test('debounce leading option calls immediately on first call', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100, { leading: true });
 
-  debouncedFunction();
-
-  expect(delayGetter).toHaveBeenCalledTimes(1);
-  expect(mockFunction).not.toHaveBeenCalled();
-
-  await new Promise((resolve) => setTimeout(resolve, 150));
-
-  expect(mockFunction).toHaveBeenCalledTimes(1);
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(1);
 });
 
-test('debounce calls delay getter on each invocation', async () => {
-  const mockFunction = vi.fn();
-  const delayRef = { value: 100 };
-  const delayGetter = vi.fn(() => delayRef.value);
-  const debouncedFunction = debounce(mockFunction, delayGetter);
+test('debounce leading prevents second immediate call within delay', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100, { leading: true });
 
-  // First call
-  debouncedFunction();
-  expect(delayGetter).toHaveBeenCalledTimes(1);
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(1);
 
-  // Second call (resets timer)
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  debouncedFunction();
-  expect(delayGetter).toHaveBeenCalledTimes(2);
-
-  // Third call (resets timer again)
-  await new Promise((resolve) => setTimeout(resolve, 30));
-  debouncedFunction();
-  expect(delayGetter).toHaveBeenCalledTimes(3);
-
-  // Wait for final execution
-  await new Promise((resolve) => setTimeout(resolve, 150));
-  expect(mockFunction).toHaveBeenCalledTimes(1);
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(1);
 });
 
-test('debounce uses updated delay from getter function', async () => {
-  const mockFunction = vi.fn();
-  const delayRef = { value: 200 };
-  const delayGetter = vi.fn(() => delayRef.value);
-  const debouncedFunction = debounce(mockFunction, delayGetter);
+test('debounce leading resets after delay', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100, { leading: true });
 
-  // First call with 200ms delay
-  debouncedFunction();
-  expect(delayGetter).toHaveBeenCalledTimes(1);
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(1);
 
-  // Change delay to 50ms
-  delayRef.value = 50;
+  vi.advanceTimersByTime(100);
 
-  // Second call should use new delay
-  await new Promise((resolve) => setTimeout(resolve, 30));
-  debouncedFunction();
-  expect(delayGetter).toHaveBeenCalledTimes(2);
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(2);
+});
 
-  // Should execute after 50ms from second call
-  await new Promise((resolve) => setTimeout(resolve, 70));
-  expect(mockFunction).toHaveBeenCalledTimes(1);
+test('debounce cancel prevents execution', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100);
+
+  debounced();
+  debounced.cancel();
+
+  vi.advanceTimersByTime(100);
+  expect(fn).not.toHaveBeenCalled();
+});
+
+test('debounce dynamic delay via function', () => {
+  const fn = vi.fn();
+  const getDelay = vi.fn(() => 200);
+  const debounced = debounce(fn, getDelay);
+
+  debounced();
+  expect(getDelay).toHaveBeenCalled();
+
+  vi.advanceTimersByTime(100);
+  expect(fn).not.toHaveBeenCalled();
+
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledTimes(1);
+});
+
+test('debounce zero delay calls function async', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 0);
+
+  debounced();
+  expect(fn).not.toHaveBeenCalled();
+
+  vi.advanceTimersByTime(0);
+  expect(fn).toHaveBeenCalledTimes(1);
+});
+
+test('debounce preserves function arguments', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100);
+
+  debounced('arg1', 42, { key: 'value' });
+
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledWith('arg1', 42, { key: 'value' });
+});
+
+test('debounce uses latest arguments on multiple calls', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100);
+
+  debounced('first');
+  debounced('second');
+  debounced('third');
+
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledWith('third');
+});
+
+test('debounce returns void', () => {
+  const fn = vi.fn(() => 'return value');
+  const debounced = debounce(fn, 100);
+
+  const result = debounced();
+  expect(result).toBeUndefined();
+});
+
+test('debounce default delay is 100ms', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn);
+
+  debounced();
+
+  vi.advanceTimersByTime(99);
+  expect(fn).not.toHaveBeenCalled();
+
+  vi.advanceTimersByTime(1);
+  expect(fn).toHaveBeenCalledTimes(1);
+});
+
+test('debounce cancel resets leading state', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100, { leading: true });
+
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(1);
+
+  debounced.cancel();
+
+  debounced();
+  expect(fn).toHaveBeenCalledTimes(2);
+});
+
+test('debounce trailing call after leading', () => {
+  const fn = vi.fn();
+  const debounced = debounce(fn, 100, { leading: true });
+
+  debounced('first');
+  expect(fn).toHaveBeenCalledWith('first');
+
+  debounced('second');
+
+  vi.advanceTimersByTime(100);
+  expect(fn).toHaveBeenCalledTimes(2);
+  expect(fn).toHaveBeenLastCalledWith('second');
 });
