@@ -3,14 +3,11 @@
 set -e
 
 CERTS_DIR=".certs"
-LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ip route get 1 | awk '{print $7}' 2>/dev/null || echo "")
+LOCAL_HOSTNAME=$(hostname)
+LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo "")
 
-if [ -z "$LOCAL_IP" ]; then
-  echo "❌ Could not detect local IP address"
-  exit 1
-fi
-
-echo "🔍 Detected local IP: $LOCAL_IP"
+echo "🔍 Hostname: $LOCAL_HOSTNAME.local"
+echo "🔍 IP: $LOCAL_IP"
 
 if ! command -v mkcert &> /dev/null; then
   echo "📦 Installing mkcert..."
@@ -33,19 +30,22 @@ fi
 
 mkdir -p "$CERTS_DIR"
 
-echo "📜 Generating certificates for localhost, 127.0.0.1, $LOCAL_IP..."
-mkcert -key-file "$CERTS_DIR/key.pem" -cert-file "$CERTS_DIR/cert.pem" localhost 127.0.0.1 "$LOCAL_IP"
+CERT_DOMAINS="localhost 127.0.0.1 $LOCAL_HOSTNAME.local"
+[ -n "$LOCAL_IP" ] && CERT_DOMAINS="$CERT_DOMAINS $LOCAL_IP"
+
+echo "📜 Generating certificates for: $CERT_DOMAINS"
+mkcert -key-file "$CERTS_DIR/key.pem" -cert-file "$CERTS_DIR/cert.pem" $CERT_DOMAINS
+
+CA_ROOT=$(mkcert -CAROOT)
 
 echo ""
-echo "✅ Certificates created in $CERTS_DIR/"
+echo "✅ Setup complete!"
 echo ""
-echo "📱 To debug on mobile device:"
-echo "   1. Run: bun run dev:pwa"
-echo "   2. Open on phone: https://$LOCAL_IP:3001"
-echo ""
-echo "⚠️  First time on mobile? Install the root CA certificate:"
-echo "   Root CA location: $(mkcert -CAROOT)/rootCA.pem"
-echo ""
-echo "   iOS: Send rootCA.pem to phone → Settings → General → VPN & Device Management → Install"
+echo "📱 Install root CA on your device:"
+echo "   iOS: AirDrop rootCA.pem → Install → Settings → General → About → Certificate Trust Settings → Enable"
 echo "   Android: Settings → Security → Install certificate from storage"
 echo ""
+echo "🚀 Run: bun run dev:ios"
+echo ""
+
+open "$CA_ROOT"
