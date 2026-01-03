@@ -1,4 +1,10 @@
-import { clientOnly, nativeMobileOnly, electronOnly, androidOnly } from 'src/utils/platform-specific';
+import {
+  clientOnly,
+  nativeMobileOnly,
+  electronOnly,
+  androidOnly,
+  iosOnly,
+} from 'src/utils/platform-specific';
 import { getCssVar } from 'src/utils/css-utils';
 import type { BackgroundSettings } from 'orgnote-api';
 import { useConfigStore } from 'src/stores/config';
@@ -28,6 +34,15 @@ export const useBackgroundSettings = () => {
     });
   };
 
+  const setWebViewBackground = iosOnly(async (bgColor?: string) => {
+    const backgroundColor = getCssVar(bgColor ?? 'bg');
+    if (!backgroundColor) {
+      return;
+    }
+    const { WebViewBackground } = await import('src/plugins/webview-background');
+    await WebViewBackground.setBackgroundColor({ color: backgroundColor });
+  });
+
   const setElectronBackground = electronOnly((bgColor?: string) => {
     const backgroundColor = getCssVar(bgColor ?? 'bg');
     if (backgroundColor) {
@@ -36,7 +51,11 @@ export const useBackgroundSettings = () => {
   });
 
   const setMobileBackground = nativeMobileOnly(async (bgColor?: string) => {
-    await Promise.all([setStatusBarBackground(bgColor), androidOnly(setBottomBarBackground)(bgColor)]);
+    await Promise.all([
+      setStatusBarBackground(bgColor),
+      androidOnly(setBottomBarBackground)(bgColor),
+      setWebViewBackground(bgColor),
+    ]);
   });
 
   const setBackground = async (bgColor?: string) => {

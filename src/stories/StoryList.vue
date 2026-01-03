@@ -18,7 +18,7 @@
                   v-slot:[slotName]
                 >
                   <component v-if="typeof slotContent === 'function'" :is="slotContent" />
-                  <span v-else v-html="slotContent" />
+                  <span v-else v-html-safe="slotContent" />
                 </template>
               </component>
             </td>

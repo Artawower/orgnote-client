@@ -4,7 +4,7 @@
       <span class="debugger-label">Cursor:</span>
       <span class="debugger-value">{{ cursorPosition }}</span>
     </div>
-    <div v-if="orgNode" class="debugger-tree" v-html="formattedTree" />
+    <div v-if="orgNode" v-html-safe="formattedTree" class="debugger-tree" />
     <div v-else class="debugger-empty">No active editor</div>
   </app-flex>
 </template>

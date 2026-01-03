@@ -110,7 +110,7 @@ const inlineWidgets: WidgetMeta[] = [
     },
     widgetBuilder: (params) => {
       const operator = params.orgNode.rawValue.trim();
-      params.wrap.innerHTML = operator === '-' ? '•' : '◦';
+      params.wrap.textContent = operator === '-' ? '•' : '◦';
       params.wrap.classList.add('org-list-bullet');
       return { destroy: () => {} };
     },

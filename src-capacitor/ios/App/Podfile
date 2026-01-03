@@ -22,6 +22,7 @@ end
 target 'App' do
   capacitor_pods
   # Add your Pods here
+  pod 'WebViewBackgroundPlugin', :path => '../../plugins/webview-background/ios'
 end
 
 post_install do |installer|

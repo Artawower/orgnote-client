@@ -3,12 +3,13 @@
   "appName": "OrgNote",
   "webDir": "www",
   "ios": {
-    "minVersion": "14.0"
+    "minVersion": "14.0",
+    "backgroundColor": "#ffffff"
   },
   "server": {
     "androidScheme": "https",
     "iosScheme": "capacitor",
-    "url": "https://192.168.100.2:3002",
+    "url": "https://192.168.100.2:3003",
     "cleartext": true
   },
   "plugins": {

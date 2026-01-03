@@ -1,5 +1,5 @@
 <template>
-  <div class="org-html-block" v-html="htmlContent" />
+  <div v-html-safe="htmlContent" class="org-html-block" />
 </template>
 
 <script setup lang="ts">

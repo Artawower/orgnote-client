@@ -34,7 +34,7 @@
             />
             <app-flex column start align-start gap="xs" class="notification-content">
               <span class="notification-message">
-                <span v-html="notification.title"></span>
+                <span v-html-safe="notification.title"></span>
                 <app-badge
                   v-if="notification.count && notification.count > 1"
                   :label="String(notification.count)"

@@ -59,7 +59,17 @@ export class QueueStore implements Store<unknown> {
       .catch((err) => cb(err, []));
   }
 
-  putTask(taskId: string, task: IncomingTask, _priority: number, cb: (err: unknown) => void) {
+  putTask(
+    taskId: string,
+    task: IncomingTask | undefined,
+    _priority: number,
+    cb: (err: unknown) => void,
+  ) {
+    if (!task) {
+      cb(new Error(`putTask called with undefined task for id: ${taskId}`));
+      return;
+    }
+
     const payload = safeClone(task.payload);
 
     const queueTask: QueueTask = {
