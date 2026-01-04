@@ -5,6 +5,8 @@ import { defineConfig } from '#q-app/wrappers';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs';
 
+const DEFAULT_DEV_PORT = 3001;
+
 export default defineConfig((ctx) => {
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
@@ -156,13 +158,16 @@ export default defineConfig((ctx) => {
       // https: true,
       host: '0.0.0.0',
       https:
-        fs.existsSync('.certs/key.pem') && fs.existsSync('.certs/cert.pem')
+        process.env.VITE_DISABLE_HTTPS !== 'true' &&
+        fs.existsSync('.certs/key.pem') &&
+        fs.existsSync('.certs/cert.pem')
           ? {
               key: fs.readFileSync('.certs/key.pem'),
               cert: fs.readFileSync('.certs/cert.pem'),
             }
           : undefined,
-      port: 3001,
+      port: Number(process.env.VITE_DEV_PORT) || DEFAULT_DEV_PORT,
+      strictPort: true,
       open: {
         app: { name: 'arc' },
       },

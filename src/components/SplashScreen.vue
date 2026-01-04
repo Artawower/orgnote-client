@@ -91,4 +91,8 @@ h5 {
 .q-linear-progress {
   width: 40%;
 }
+
+.title {
+  text-align: center;
+}
 </style>

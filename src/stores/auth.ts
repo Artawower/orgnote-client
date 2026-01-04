@@ -62,9 +62,22 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
       return redirectUrl;
     };
 
+    const openExternalBrowser = async (url: string): Promise<void> => {
+      await platformMatch({
+        ios: async () => {
+          const { InAppBrowser } = await import('@capacitor/inappbrowser');
+          await InAppBrowser.openInExternalBrowser({ url });
+        },
+        default: async () => {
+          const { Browser } = await import('@capacitor/browser');
+          await Browser.open({ url });
+        },
+      });
+    };
+
     const authViaNativeMobile = async (authProvider: string, state: AuthState): Promise<void> => {
       const redirectUrl = await fetchAuthRedirectUrl(authProvider, state);
-      window.open(redirectUrl, '_system');
+      await openExternalBrowser(redirectUrl);
     };
 
     const authViaElectron = async (authUrl: string): Promise<void> => {
