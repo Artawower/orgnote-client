@@ -9,8 +9,8 @@
   "server": {
     "androidScheme": "https",
     "iosScheme": "capacitor",
-    "cleartext": true,
-    "url": "https://192.168.100.2:3001"
+    "url": "https://192.168.100.2:3002",
+    "cleartext": true
   },
   "plugins": {
     "SplashScreen": {

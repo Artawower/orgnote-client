@@ -21,6 +21,8 @@ export function useViewportBehavior(cb?: Callback) {
     viewportHeight.value = screenHeight;
     keyboardOpened.value = Math.abs(window.innerHeight - screenHeight) > 80;
 
+    document.body.classList.toggle('keyboard-opened', keyboardOpened.value);
+
     const singleVh = screenHeight * 0.01;
     document.documentElement.style.setProperty('--vh', `${singleVh}px`);
     document.documentElement.style.setProperty('--screen-height', `${screenHeight}px`);

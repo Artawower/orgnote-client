@@ -23,12 +23,18 @@ const props = withDefaults(
 .footer {
   & {
     width: 100%;
-    height: var(--footer-height);
+    min-height: var(--footer-height);
     background: var(--footer-bg);
     border-top: var(--footer-border-top);
     padding: var(--footer-padding);
-    padding-bottom: calc(var(--footer-padding-bottom, 0px) + var(--device-padding-bottom));
+    padding-bottom: calc(
+      var(--footer-padding-bottom, 0px) + max(env(safe-area-inset-bottom, 0px), var(--device-padding-bottom))
+    );
     box-sizing: border-box;
+  }
+
+  body.keyboard-opened & {
+    padding-bottom: var(--footer-padding-bottom, 0px);
   }
 }
 </style>

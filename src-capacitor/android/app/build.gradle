@@ -42,6 +42,12 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+
+    constraints {
+        implementation('androidx.browser:browser:1.8.0') {
+            because 'browser 1.9.0 requires compileSdk 36 and AGP 8.9.1'
+        }
+    }
 }
 
 apply from: 'capacitor.build.gradle'
