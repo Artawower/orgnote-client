@@ -23,8 +23,7 @@
       "
     >
       <app-flex
-        :tag="SafeArea"
-        :enabled="!m.config?.mini"
+        :tag="m.config?.mini ? 'div' : SafeArea"
         column
         start
         align-stretch
@@ -149,7 +148,6 @@ dialog {
 
 :deep(.safe-area) {
   & {
-    flex: 1 1 auto;
     min-height: 0;
   }
 }
@@ -219,5 +217,9 @@ dialog.full-screen {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.safe-area-wrapper {
+  height: 100%;
 }
 </style>

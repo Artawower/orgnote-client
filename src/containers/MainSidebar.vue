@@ -11,11 +11,17 @@
       </app-flex>
     </template>
     <app-flex column class="content-wrapper">
-      <component :is="component" v-bind="componentConfig?.componentProps || {}"></component>
+      <component
+        :is="component"
+        v-bind="componentConfig?.componentProps || {}"
+        class="sidebar-content"
+      ></component>
       <visibility-wrapper tablet-below>
-        <app-footer v-if="opened">
-          <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
-        </app-footer>
+        <safe-area bottom>
+          <app-footer v-if="opened">
+            <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
+          </app-footer>
+        </safe-area>
       </visibility-wrapper>
     </app-flex>
   </app-sidebar>
@@ -30,6 +36,7 @@ import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import SafeArea from 'src/components/SafeArea.vue';
 
 const { commands, footerCommands, opened, component, componentConfig } = storeToRefs(
   api.ui.useSidebar(),
@@ -50,7 +57,13 @@ const miniMode = screenDetector.tabletAbove;
 }
 
 .content-wrapper {
-  @include fit;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-content {
+  flex: 1;
 }
 
 /* TODO: plugin */

@@ -8,7 +8,7 @@
         @click.stop="$emit('close')"
         hover-color="violet"
       />
-      <div class="preview-content">
+      <div class="preview-content" inert>
         <div v-if="tab.router" class="scaled-router-view">
           <scoped-router-view :router="tab.router" />
         </div>
@@ -101,10 +101,17 @@ defineEmits<{
   pointer-events: none;
   user-select: none;
 
+  --device-padding-bottom: 0px;
+  --title-bar-height: 0px;
+
   :deep(*) {
     pointer-events: none !important;
     user-select: none !important;
     caret-color: transparent !important;
+  }
+
+  :deep(.safe-area) {
+    padding: 0 !important;
   }
 }
 

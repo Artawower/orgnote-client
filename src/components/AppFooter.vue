@@ -1,7 +1,9 @@
 <template>
-  <app-flex class="footer" row align-center :justify="props.justify">
-    <slot />
-  </app-flex>
+  <div :class="{ float }" class="footer-wrapper">
+    <app-flex class="footer" row :justify="props.justify">
+      <slot />
+    </app-flex>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -12,6 +14,7 @@ type FlexJustify = InstanceType<typeof AppFlex>['$props']['justify'];
 const props = withDefaults(
   defineProps<{
     justify?: FlexJustify;
+    float?: boolean;
   }>(),
   {
     justify: 'center',
@@ -20,6 +23,16 @@ const props = withDefaults(
 </script>
 
 <style lang="scss" scoped>
+.footer-wrapper {
+  & {
+    width: 100%;
+  }
+}
+
+.float {
+  padding: var(--footer-wrapper-padding);
+}
+
 .footer {
   & {
     width: 100%;
@@ -27,9 +40,7 @@ const props = withDefaults(
     background: var(--footer-bg);
     border-top: var(--footer-border-top);
     padding: var(--footer-padding);
-    padding-bottom: calc(
-      var(--footer-padding-bottom, 0px) + max(env(safe-area-inset-bottom, 0px), var(--device-padding-bottom))
-    );
+    border-radius: var(--footer-border-radius);
     box-sizing: border-box;
   }
 

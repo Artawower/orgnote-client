@@ -1,19 +1,19 @@
 <template>
-  <safe-area>
-    <app-flex class="sidebar" :class="{ opened, 'has-mini': mini }" row between align-center>
-      <app-flex v-if="mini" class="mini" column between align-center>
-        <div class="top">
-          <slot name="mini-top" />
-        </div>
-        <div class="footer">
-          <slot name="mini-footer" />
-        </div>
-      </app-flex>
+  <app-flex class="sidebar" :class="{ opened, 'has-mini': mini }" row between align-stretch>
+    <app-flex v-if="mini" class="mini" column between align-center>
+      <div class="top">
+        <slot name="mini-top" />
+      </div>
+      <div class="footer">
+        <slot name="mini-footer" />
+      </div>
+    </app-flex>
+    <safe-area top class="safe-area-content">
       <div class="content">
         <slot />
       </div>
-    </app-flex>
-  </safe-area>
+    </safe-area>
+  </app-flex>
 </template>
 
 <script lang="ts" setup>
@@ -45,8 +45,7 @@ withDefaults(
     border-right: var(--sidebar-border-right);
     background: var(--sidebar-bg);
     position: relative;
-    height: 100dvh;
-    height: calc(var(--full-height) - var(--device-padding-top, 0px) - env(safe-area-inset-top));
+    height: 100%;
 
     * {
       color: var(--sidebar-fg);
@@ -66,7 +65,7 @@ withDefaults(
   &.opened {
     .content {
       & {
-        padding: var(--sidebar-padding);
+        padding: 0px var(--sidebar-padding);
         flex: 1;
         width: var(--sidebar-width);
       }
@@ -83,10 +82,20 @@ withDefaults(
 
   .content {
     & {
-      height: 100%;
+      flex: 1;
+      min-height: 0;
       width: 0;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
+  }
+
+  .safe-area-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 }
 </style>

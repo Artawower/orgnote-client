@@ -37,6 +37,7 @@ body {
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 16px;
+  --border-radius-xl: 32px;
 
   // Default borders
   --border-default: 1px solid var(--bg-elevated);
@@ -57,7 +58,9 @@ body {
   // Footer
   --footer-height: 0px;
   --footer-border-top: 0;
-  --footer-padding: 0 var(--padding-md);
+  --footer-border-radius: var(--border-radius-xl);
+  --footer-wrapper-padding: var(--padding-lg);
+  --footer-padding: var(--padding-md);
   --footer-bg: var(--bg-secondary);
 
   // Sidebar
@@ -293,20 +296,27 @@ body {
   }
 }
 
+@include tablet-below {
+  body {
+    --footer-padding: var(--padding-md) var(--padding-lg);
+  }
+}
+
 @include mobile {
   body {
     --tab-overview-grid-columns: 2;
     --footer-height: 52px;
+
+    --btn-action-md-size: 46px;
   }
 }
 
 @include native-mobile {
-  --footer-padding: 0 0 24px 0;
-  --device-padding-bottom: 18px;
+  --device-padding-bottom: 14px;
 }
 
-body.standalone {
-  --device-padding-bottom: 24px;
+body.keyboard-opened {
+  --device-padding-bottom: 0px;
 }
 
 body.electron.platform-mac {

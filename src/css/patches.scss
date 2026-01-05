@@ -24,11 +24,6 @@ dialog {
   height: 100%;
 }
 
-body,
-dialog:not(.mini) {
-  padding-bottom: var(--device-padding-bottom);
-}
-
 .q-menu {
   border-radius: var(--card-radius);
   box-shadow: unset;

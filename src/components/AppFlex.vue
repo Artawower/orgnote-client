@@ -1,11 +1,11 @@
 <template>
-  <component :is="tag" ref="rootRef" class="flex-container" v-bind="$attrs">
+  <component :is="tag" ref="rootRef" class="flex" :class="classes" :style="styles" v-bind="$attrs">
     <slot />
   </component>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref, type CSSProperties } from 'vue';
 import { type StyleSize, STYLE_SIZES } from 'orgnote-api';
 
 defineOptions({
@@ -23,14 +23,12 @@ const props = withDefaults(
     inline?: boolean;
     tag?: string | object;
 
-    // Direction shortcuts
     row?: boolean;
     column?: boolean;
     rowReverse?: boolean;
     columnReverse?: boolean;
     reverse?: boolean;
 
-    // Justify shortcuts
     start?: boolean;
     center?: boolean;
     end?: boolean;
@@ -38,7 +36,6 @@ const props = withDefaults(
     around?: boolean;
     evenly?: boolean;
 
-    // Align shortcuts (with align- prefix)
     alignStart?: boolean;
     alignCenter?: boolean;
     alignEnd?: boolean;
@@ -71,24 +68,6 @@ const props = withDefaults(
   },
 );
 
-const justifyMap: Record<string, string> = {
-  start: 'flex-start',
-  end: 'flex-end',
-  between: 'space-between',
-  around: 'space-around',
-  evenly: 'space-evenly',
-  center: 'center',
-};
-
-const alignMap: Record<string, string> = {
-  start: 'flex-start',
-  end: 'flex-end',
-  center: 'center',
-  stretch: 'stretch',
-  baseline: 'baseline',
-};
-
-// Compute direction from shortcuts or prop
 const computedDirection = computed(() => {
   if (props.columnReverse) return 'column-reverse';
   if (props.rowReverse) return 'row-reverse';
@@ -98,7 +77,6 @@ const computedDirection = computed(() => {
   return props.direction;
 });
 
-// Compute justify from shortcuts or prop
 const computedJustify = computed(() => {
   if (props.start) return 'start';
   if (props.center) return 'center';
@@ -109,7 +87,6 @@ const computedJustify = computed(() => {
   return props.justify;
 });
 
-// Compute align from shortcuts or prop
 const computedAlign = computed(() => {
   if (props.alignStart) return 'start';
   if (props.alignCenter) return 'center';
@@ -119,45 +96,61 @@ const computedAlign = computed(() => {
   return props.align;
 });
 
-const cssJustify = computed(() => {
-  return justifyMap[computedJustify.value] ?? computedJustify.value;
-});
+const classes = computed(() => [
+  `d-${computedDirection.value}`,
+  `j-${computedJustify.value}`,
+  `a-${computedAlign.value}`,
+  props.inline && 'inline',
+  STYLE_SIZES.includes(props.gap as StyleSize) && `gap-${props.gap}`,
+]);
 
-const cssAlign = computed(() => {
-  return alignMap[computedAlign.value] ?? computedAlign.value;
-});
-
-const cssGap = computed(() => {
-  if (STYLE_SIZES.includes(props.gap as StyleSize)) {
-    return `var(--gap-${props.gap})`;
+const styles = computed<CSSProperties | undefined>(() => {
+  if (props.gap === '0px' || STYLE_SIZES.includes(props.gap as StyleSize)) {
+    return undefined;
   }
-  return props.gap;
+  return { gap: props.gap };
 });
 
-const display = computed(() => (props.inline ? 'inline-flex' : 'flex'));
-
-// Expose computed values for testing
 defineExpose({
   get $el() {
     return rootRef.value;
   },
-  // Exposed for testing
   computedDirection,
   computedJustify,
   computedAlign,
-  cssJustify,
-  cssAlign,
-  cssGap,
-  display,
 });
 </script>
 
 <style lang="scss" scoped>
-.flex-container {
-  display: v-bind(display);
-  flex-direction: v-bind(computedDirection);
-  justify-content: v-bind(cssJustify);
-  align-items: v-bind(cssAlign);
-  gap: v-bind(cssGap);
+.flex {
+  display: flex;
+
+  &.inline {
+    display: inline-flex;
+  }
+
+  &.d-row { flex-direction: row; }
+  &.d-column { flex-direction: column; }
+  &.d-row-reverse { flex-direction: row-reverse; }
+  &.d-column-reverse { flex-direction: column-reverse; }
+
+  &.j-start { justify-content: flex-start; }
+  &.j-center { justify-content: center; }
+  &.j-end { justify-content: flex-end; }
+  &.j-between { justify-content: space-between; }
+  &.j-around { justify-content: space-around; }
+  &.j-evenly { justify-content: space-evenly; }
+
+  &.a-start { align-items: flex-start; }
+  &.a-center { align-items: center; }
+  &.a-end { align-items: flex-end; }
+  &.a-stretch { align-items: stretch; }
+  &.a-baseline { align-items: baseline; }
+
+  &.gap-xs { gap: var(--gap-xs); }
+  &.gap-sm { gap: var(--gap-sm); }
+  &.gap-md { gap: var(--gap-md); }
+  &.gap-lg { gap: var(--gap-lg); }
+  &.gap-xl { gap: var(--gap-xl); }
 }
 </style>

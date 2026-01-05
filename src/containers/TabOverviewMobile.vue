@@ -12,7 +12,7 @@
         />
       </div>
     </app-flex>
-    <app-footer between>
+    <app-footer justify="between" float>
       <command-action-button :command="DefaultCommands.NEW_TAB" aria-label="New tab" />
       <span>
         {{ $t(I18N.TABS_COUNT, allTabs.length) }}

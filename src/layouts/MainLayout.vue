@@ -12,11 +12,13 @@
       <visibility-wrapper tablet-below>
         <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
       </visibility-wrapper>
-      <safe-area fit class="content-body">
+      <safe-area top class="content-body">
         <router-view />
       </safe-area>
       <visibility-wrapper tablet-below>
-        <main-footer />
+        <safe-area bottom>
+          <main-footer />
+        </safe-area>
       </visibility-wrapper>
     </app-flex>
     <right-panel />
