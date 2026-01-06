@@ -7,7 +7,6 @@
 
   .rich-editor {
     max-width: var(--editor-max-width);
-    padding: var(--editor-padding);
     height: 100%;
     margin: auto;
   }
@@ -52,13 +51,12 @@
 
     .cm-scroller {
       overflow: auto;
-      padding-bottom: var(--scaffold-footer-height, 0px);
       max-width: 100%;
     }
 
     .cm-content {
-      padding: 0;
-      padding-bottom: var(--scaffold-footer-height);
+      padding: var(--editor-padding);
+      padding-bottom: var(--floating-footer-height, 0px);
       max-width: 100%;
       min-width: 0;
       caret-color: var(--editor-cursor-color);

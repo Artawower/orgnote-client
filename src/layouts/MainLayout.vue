@@ -12,17 +12,12 @@
       <visibility-wrapper tablet-below>
         <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
       </visibility-wrapper>
-      <app-scaffold class="content-body">
-        <template #header>
-          <safe-area top />
-        </template>
-
+      <safe-area top class="content-body">
         <router-view />
-
-        <template v-if="tabletBelow" #footer>
-          <main-footer />
-        </template>
-      </app-scaffold>
+      </safe-area>
+      <visibility-wrapper tablet-below>
+        <main-footer />
+      </visibility-wrapper>
     </app-flex>
     <right-panel />
     <modal-window />
@@ -36,7 +31,6 @@ import MainSidebar from 'src/containers/MainSidebar.vue';
 import RightPanel from 'src/containers/RightPanel.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
 import AppNotifications from 'src/components/AppNotifications.vue';
-import AppScaffold from 'src/components/AppScaffold.vue';
 import { api } from 'src/boot/api';
 import { ref, computed, onMounted } from 'vue';
 import { mobileOnly } from 'src/utils/platform-specific';
