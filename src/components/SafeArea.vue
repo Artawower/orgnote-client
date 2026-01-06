@@ -41,4 +41,8 @@ const classes = computed(() => ({
     padding-bottom: var(--device-padding-bottom, env(safe-area-inset-bottom, 0px));
   }
 }
+
+:global(body.keyboard-opened) .safe-area.bottom {
+  padding-bottom: 0;
+}
 </style>

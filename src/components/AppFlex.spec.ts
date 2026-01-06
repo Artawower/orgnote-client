@@ -28,7 +28,7 @@ describe('AppFlex', () => {
 
   test('renders with flex class', () => {
     const wrapper = createWrapper();
-    expect(wrapper.classes()).toContain('flex');
+    expect(wrapper.classes()).toContain('flex-container');
   });
 
   test('has correct default classes', () => {
@@ -125,14 +125,14 @@ describe('AppFlex', () => {
 
   test('custom tag renders correctly', () => {
     const wrapper = createWrapper({ tag: 'section' });
-    expect(wrapper.find('section.flex').exists()).toBe(true);
+    expect(wrapper.find('section.flex-container').exists()).toBe(true);
   });
 
   test('exposes $el as HTMLElement', () => {
     const wrapper = createWrapper();
     const exposed = getExposed(wrapper);
     expect(exposed.$el).toBeInstanceOf(HTMLElement);
-    expect(exposed.$el?.classList.contains('flex')).toBe(true);
+    expect(exposed.$el?.classList.contains('flex-container')).toBe(true);
   });
 
   test('complex combination works', () => {

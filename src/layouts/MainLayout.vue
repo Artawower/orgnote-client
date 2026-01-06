@@ -16,9 +16,7 @@
         <router-view />
       </safe-area>
       <visibility-wrapper tablet-below>
-        <safe-area bottom>
-          <main-footer />
-        </safe-area>
+        <main-footer />
       </visibility-wrapper>
     </app-flex>
     <right-panel />

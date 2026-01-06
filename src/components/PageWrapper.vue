@@ -1,5 +1,5 @@
 <template>
-  <app-flex class="page" :class="{ padding, constrained }" column start align-start>
+  <app-flex class="page" :class="{ padding, constrained }" column center>
     <slot />
   </app-flex>
 </template>

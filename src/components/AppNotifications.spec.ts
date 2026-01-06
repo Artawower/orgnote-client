@@ -21,17 +21,17 @@ vi.mock('notiwind', () => ({
   },
   Notification: {
     name: 'Notification',
-    template: '<div class="mock-notification"><slot :notifications="notifications" :close="close" /></div>',
+    template:
+      '<div class="mock-notification"><slot :notifications="getNotifications()" :close="close" :hovering="hovering" /></div>',
     props: ['maxNotifications', 'enter', 'enterFrom', 'enterTo', 'leave', 'leaveFrom', 'leaveTo'],
-    computed: {
-      notifications() {
+    methods: {
+      getNotifications() {
         return mockNotifications;
       },
-    },
-    methods: {
       close(id: number) {
         mockClose(id);
       },
+      hovering() {},
     },
   },
 }));
@@ -45,6 +45,16 @@ const mountComponent = (props = {}) => {
   return mount(AppNotifications, {
     props,
     global: {
+      directives: {
+        'html-safe': {
+          mounted(el: HTMLElement, binding: { value: string }) {
+            el.innerHTML = binding.value ?? '';
+          },
+          updated(el: HTMLElement, binding: { value: string }) {
+            el.innerHTML = binding.value ?? '';
+          },
+        },
+      },
       stubs: {
         AppFlex: {
           template: '<div class="app-flex"><slot /></div>',

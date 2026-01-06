@@ -59,9 +59,10 @@ body {
   --footer-height: 0px;
   --footer-border-top: 0;
   --footer-border-radius: var(--border-radius-xl);
-  --footer-wrapper-padding: var(--padding-lg);
+  --footer-wrapper-padding: var(--padding-sm) var(--padding-lg);
   --footer-padding: var(--padding-md);
   --footer-bg: var(--bg-secondary);
+  --floating-footer-height: 0px;
 
   // Sidebar
   --sidebar-width: 360px;
@@ -220,13 +221,12 @@ body {
   --uploader-info-radius: 16px;
 
   // Spoiler
-
   --spoiler-max-height: 400px;
 
-  // layout
+  // Layout
   --layout-gap: 0;
 
-  // badge
+  // Badge
   --badge-radius: 6px;
 
   // Notifications
@@ -299,6 +299,9 @@ body {
 @include tablet-below {
   body {
     --footer-padding: var(--padding-md) var(--padding-lg);
+    --floating-footer-height: calc(
+      var(--footer-height) + var(--footer-wrapper-padding) * 2 + var(--device-padding-bottom, 0px)
+    );
   }
 }
 

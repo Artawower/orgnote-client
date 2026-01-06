@@ -1,5 +1,12 @@
 <template>
-  <component :is="tag" ref="rootRef" class="flex" :class="classes" :style="styles" v-bind="$attrs">
+  <component
+    :is="tag"
+    ref="rootRef"
+    class="flex-container"
+    :class="classes"
+    :style="styles"
+    v-bind="$attrs"
+  >
     <slot />
   </component>
 </template>
@@ -122,35 +129,75 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-.flex {
+.flex-container {
   display: flex;
 
   &.inline {
     display: inline-flex;
   }
 
-  &.d-row { flex-direction: row; }
-  &.d-column { flex-direction: column; }
-  &.d-row-reverse { flex-direction: row-reverse; }
-  &.d-column-reverse { flex-direction: column-reverse; }
+  &.d-row {
+    flex-direction: row;
+  }
+  &.d-column {
+    flex-direction: column;
+  }
+  &.d-row-reverse {
+    flex-direction: row-reverse;
+  }
+  &.d-column-reverse {
+    flex-direction: column-reverse;
+  }
 
-  &.j-start { justify-content: flex-start; }
-  &.j-center { justify-content: center; }
-  &.j-end { justify-content: flex-end; }
-  &.j-between { justify-content: space-between; }
-  &.j-around { justify-content: space-around; }
-  &.j-evenly { justify-content: space-evenly; }
+  &.j-start {
+    justify-content: flex-start;
+  }
+  &.j-center {
+    justify-content: center;
+  }
+  &.j-end {
+    justify-content: flex-end;
+  }
+  &.j-between {
+    justify-content: space-between;
+  }
+  &.j-around {
+    justify-content: space-around;
+  }
+  &.j-evenly {
+    justify-content: space-evenly;
+  }
 
-  &.a-start { align-items: flex-start; }
-  &.a-center { align-items: center; }
-  &.a-end { align-items: flex-end; }
-  &.a-stretch { align-items: stretch; }
-  &.a-baseline { align-items: baseline; }
+  &.a-start {
+    align-items: flex-start;
+  }
+  &.a-center {
+    align-items: center;
+  }
+  &.a-end {
+    align-items: flex-end;
+  }
+  &.a-stretch {
+    align-items: stretch;
+  }
+  &.a-baseline {
+    align-items: baseline;
+  }
 
-  &.gap-xs { gap: var(--gap-xs); }
-  &.gap-sm { gap: var(--gap-sm); }
-  &.gap-md { gap: var(--gap-md); }
-  &.gap-lg { gap: var(--gap-lg); }
-  &.gap-xl { gap: var(--gap-xl); }
+  &.gap-xs {
+    gap: var(--gap-xs);
+  }
+  &.gap-sm {
+    gap: var(--gap-sm);
+  }
+  &.gap-md {
+    gap: var(--gap-md);
+  }
+  &.gap-lg {
+    gap: var(--gap-lg);
+  }
+  &.gap-xl {
+    gap: var(--gap-xl);
+  }
 }
 </style>

@@ -26,6 +26,7 @@ const props = withDefaults(
 .footer-wrapper {
   & {
     width: 100%;
+    background: transparent;
   }
 }
 
@@ -42,10 +43,6 @@ const props = withDefaults(
     padding: var(--footer-padding);
     border-radius: var(--footer-border-radius);
     box-sizing: border-box;
-  }
-
-  body.keyboard-opened & {
-    padding-bottom: var(--footer-padding-bottom, 0px);
   }
 }
 </style>
