@@ -26,10 +26,6 @@
       border-left-width: var(--editor-cursor-width) !important;
     }
 
-    .cm-content {
-      caret-color: var(--editor-cursor-color);
-    }
-
     .cm-selectionBackground,
     &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
       background-color: var(--editor-selection-bg) !important;
@@ -56,14 +52,16 @@
 
     .cm-scroller {
       overflow: auto;
-      padding-bottom: var(--editor-padding-bottom);
+      padding-bottom: var(--scaffold-footer-height, 0px);
       max-width: 100%;
     }
 
     .cm-content {
       padding: 0;
+      padding-bottom: var(--scaffold-footer-height);
       max-width: 100%;
       min-width: 0;
+      caret-color: var(--editor-cursor-color);
     }
 
     .cm-gutters,

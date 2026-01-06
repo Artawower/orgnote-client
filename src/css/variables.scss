@@ -55,11 +55,17 @@ body {
   --gap-lg: 24px;
   --gap-xl: 32px;
 
+  // Header
+  --header-height: 0px;
+  --floating-header-height: 0px;
+
   // Footer
   --footer-height: 0px;
   --footer-border-top: 0;
   --footer-border-radius: var(--border-radius-xl);
-  --footer-wrapper-padding: var(--padding-sm) var(--padding-lg);
+  --footer-wrapper-padding-y: var(--padding-sm);
+  --footer-wrapper-padding-x: var(--padding-lg);
+  --footer-wrapper-padding: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x);
   --footer-padding: var(--padding-md);
   --footer-bg: var(--bg-secondary);
   --floating-footer-height: 0px;
@@ -300,7 +306,8 @@ body {
   body {
     --footer-padding: var(--padding-md) var(--padding-lg);
     --floating-footer-height: calc(
-      var(--footer-height) + var(--footer-wrapper-padding) * 2 + var(--device-padding-bottom, 0px)
+      var(--footer-height) + var(--footer-wrapper-padding-y) * 2 +
+        var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
     );
   }
 }
