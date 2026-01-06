@@ -98,4 +98,14 @@ withDefaults(
     flex-direction: column;
   }
 }
+
+@include tablet-below {
+  .sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+  }
+}
 </style>
