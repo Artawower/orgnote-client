@@ -56,7 +56,7 @@
 
     .cm-content {
       padding: var(--editor-padding);
-      padding-bottom: var(--floating-footer-height, 0px);
+      padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
       max-width: 100%;
       min-width: 0;
       caret-color: var(--editor-cursor-color);
@@ -230,7 +230,6 @@
       }
 
       .cm-scroller {
-        padding: var(--mobile-editor-padding);
         outline: none !important;
       }
     }

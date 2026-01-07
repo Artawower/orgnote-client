@@ -21,7 +21,7 @@ import AppFlex from 'src/components/AppFlex.vue';
     padding: var(--padding-md);
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
   }
 
   :deep(.flex-container) {

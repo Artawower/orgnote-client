@@ -257,7 +257,7 @@ body {
 
   // Editor
   --editor-max-width: 768px;
-  --editor-padding: var(--padding-xl) var(--padding-lg) 0 var(--padding-lg);
+  --editor-padding: var(--padding-xl) var(--padding-lg) var(--padding-lg) var(--padding-lg);
   --editor-cursor-color: var(--accent);
   --editor-cursor-width: 2px;
   --editor-selection-bg: var(--accent);
@@ -300,11 +300,6 @@ body {
 
 @include tablet-below {
   body {
-    --footer-padding: var(--padding-md) var(--padding-lg);
-    --floating-footer-height: calc(
-      var(--footer-height) + var(--footer-wrapper-padding-y) * 2 +
-        var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
-    );
   }
 }
 
@@ -312,6 +307,11 @@ body {
   body {
     --tab-overview-grid-columns: 2;
     --footer-height: 52px;
+    --footer-padding: var(--padding-md) var(--padding-lg);
+    --floating-footer-height: calc(
+      var(--footer-height) + var(--footer-wrapper-padding-y) * 2 +
+        var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
+    );
 
     --btn-action-md-size: 46px;
   }

@@ -1,9 +1,62 @@
 <template>
-  <div class="pane-container" v-if="currentPane" @click="handlePaneClick">
-    <visibility-wrapper>
-      <template #desktop-above>
-        <nav-tabs>
-          <template #navigation>
+  <container-layout
+    v-if="currentPane"
+    class="pane-container"
+    :body-scroll="false"
+    @click="handlePaneClick"
+  >
+    <template #header>
+      <visibility-wrapper>
+        <template #desktop-above>
+          <nav-tabs>
+            <template #navigation>
+              <action-button
+                icon="keyboard_arrow_left"
+                size="sm"
+                color="fg-muted"
+                :disabled="!canGoBack"
+                @click="handleNavigation('back')"
+              />
+              <action-button
+                icon="keyboard_arrow_right"
+                size="sm"
+                color="fg-muted"
+                :disabled="!canGoForward"
+                @click="handleNavigation('forward')"
+              />
+            </template>
+            <nav-tab
+              v-for="tab of tabs"
+              @click="handleTabSelect(tab.id)"
+              @close="handleTabClose(tab.id)"
+              @dragstart="handleDragStart"
+              @dragend="handleDragEnd"
+              icon="description"
+              :key="tab.id"
+              :active="isTabActive(tab.id)"
+              :tab-id="tab.id"
+              :pane-id="props.paneId"
+            >
+              {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
+            </nav-tab>
+            <template #actions>
+              <command-action-button
+                :command="DefaultCommands.NEW_TAB"
+                size="sm"
+                :data="{ paneId: props.paneId }"
+              />
+            </template>
+            <template v-if="isTopRightPane" #right-actions>
+              <command-action-button
+                v-if="!opened"
+                :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
+                size="sm"
+              />
+            </template>
+          </nav-tabs>
+        </template>
+        <template #mobile-only>
+          <div class="mobile-tab-header">
             <action-button
               icon="keyboard_arrow_left"
               size="sm"
@@ -18,76 +71,34 @@
               :disabled="!canGoForward"
               @click="handleNavigation('forward')"
             />
-          </template>
-          <nav-tab
-            v-for="tab of tabs"
-            @click="handleTabSelect(tab.id)"
-            @close="handleTabClose(tab.id)"
-            @dragstart="handleDragStart"
-            @dragend="handleDragEnd"
-            icon="description"
-            :key="tab.id"
-            :active="isTabActive(tab.id)"
-            :tab-id="tab.id"
-            :pane-id="props.paneId"
-          >
-            {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
-          </nav-tab>
-          <template #actions>
+            <div class="mobile-tab-title">
+              {{
+                activeTab?.router.currentRoute.value
+                  ? generateTabTitle(activeTab.router.currentRoute.value)
+                  : activeTab?.title
+              }}
+            </div>
+            <command-action-button :command="DefaultCommands.SHOW_TAB_SWITCHER" size="sm" />
             <command-action-button
               :command="DefaultCommands.NEW_TAB"
               size="sm"
               :data="{ paneId: props.paneId }"
             />
-          </template>
-          <template v-if="isTopRightPane" #right-actions>
-            <command-action-button
-              v-if="!opened"
-              :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
-              size="sm"
-            />
-          </template>
-        </nav-tabs>
-      </template>
-      <template #mobile-only>
-        <div class="mobile-tab-header">
-          <action-button
-            icon="keyboard_arrow_left"
-            size="sm"
-            color="fg-muted"
-            :disabled="!canGoBack"
-            @click="handleNavigation('back')"
-          />
-          <action-button
-            icon="keyboard_arrow_right"
-            size="sm"
-            color="fg-muted"
-            :disabled="!canGoForward"
-            @click="handleNavigation('forward')"
-          />
-          <div class="mobile-tab-title">
-            {{
-              activeTab?.router.currentRoute.value
-                ? generateTabTitle(activeTab.router.currentRoute.value)
-                : activeTab?.title
-            }}
           </div>
-          <command-action-button :command="DefaultCommands.SHOW_TAB_SWITCHER" size="sm" />
-          <command-action-button
-            :command="DefaultCommands.NEW_TAB"
-            size="sm"
-            :data="{ paneId: props.paneId }"
-          />
-        </div>
-      </template>
-    </visibility-wrapper>
-    <ScopedRouterView v-if="resolvedRouter" :router="resolvedRouter" :key="activeTabId || ''" />
+        </template>
+      </visibility-wrapper>
+    </template>
+
+    <template #body>
+      <ScopedRouterView v-if="resolvedRouter" :router="resolvedRouter" :key="activeTabId || ''" />
+    </template>
+
     <drop-zone-overlay
       :visible="pane.isDraggingTab"
       v-model:active-zone="currentDropZone"
       @drop="handleDrop"
     />
-  </div>
+  </container-layout>
 </template>
 
 <script lang="ts" setup>
@@ -110,6 +121,7 @@ import ScopedRouterView from 'src/components/ScopedRouterView.vue';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import { isPresent, to } from 'orgnote-api/utils';
 import { storeToRefs } from 'pinia';
+import ContainerLayout from 'src/components/ContainerLayout.vue';
 
 const props = defineProps<{
   paneId: string;
@@ -357,8 +369,6 @@ const { opened } = storeToRefs(api.ui.useRightPanel());
 <style scoped>
 .pane-container {
   position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .mobile-tab-header {
