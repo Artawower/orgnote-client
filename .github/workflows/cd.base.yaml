@@ -108,6 +108,16 @@ jobs:
           EOT
       - name: Build ssr
         run: bunx env-cmd -f ./.env.build bun run build -m ssr
+      - name: Start SSR server
+        run: |
+          cd dist/ssr
+          npm install
+          node index.js &
+          sleep 10
+      - name: SSR health check
+        uses: pchalupa/site-health-check@v1.0.2
+        with:
+          url: 'http://localhost:3000'
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
