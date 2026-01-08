@@ -35,7 +35,7 @@ const getPlatformValue = (key: PlatformType): boolean => {
   if (key === 'pwa') {
     return !!process.env.CLIENT && 'serviceWorker' in navigator;
   }
-  return !!Platform.is[key as keyof typeof Platform.is];
+  return !!Platform.is?.[key as keyof typeof Platform.is];
 };
 
 const createPlatformIs = (): Record<PlatformType, boolean> => {
