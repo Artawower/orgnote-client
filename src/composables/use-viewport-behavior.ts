@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, readonly, type Ref } from 'vue';
 import { platform, platformMatch } from 'src/utils/platform-detection';
 import { to } from 'orgnote-api/utils';
 
@@ -7,10 +7,29 @@ interface ViewportInfo {
   keyboardOpened: boolean;
 }
 
-type Callback = (info: ViewportInfo) => void;
+type ViewportCallback = (info: ViewportInfo) => void;
 
 const KEYBOARD_HEIGHT_THRESHOLD = 80;
 const VH_MULTIPLIER = 0.01;
+
+const globalKeyboardOpened = ref(false);
+
+export function useKeyboardState(): { keyboardOpened: Readonly<Ref<boolean>> } {
+  return { keyboardOpened: readonly(globalKeyboardOpened) };
+}
+
+const setKeyboardOpened = (opened: boolean, localRef: Ref<boolean>): void => {
+  globalKeyboardOpened.value = opened;
+  localRef.value = opened;
+  document.body.classList.toggle('keyboard-opened', opened);
+};
+
+const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): void => {
+  const singleVh = screenHeight * VH_MULTIPLIER;
+  document.documentElement.style.setProperty('--vh', `${singleVh}px`);
+  document.documentElement.style.setProperty('--screen-height', `${screenHeight}px`);
+  document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
+};
 
 const findScrollableAncestor = (element: Element | null): HTMLElement | null => {
   if (!element || element === document.documentElement) return null;
@@ -24,13 +43,6 @@ const findScrollableAncestor = (element: Element | null): HTMLElement | null => 
   }
 
   return findScrollableAncestor(element.parentElement);
-};
-
-const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): void => {
-  const singleVh = screenHeight * VH_MULTIPLIER;
-  document.documentElement.style.setProperty('--vh', `${singleVh}px`);
-  document.documentElement.style.setProperty('--screen-height', `${screenHeight}px`);
-  document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
 };
 
 const createTouchScrollPreventer = () => {
@@ -55,8 +67,7 @@ const createTouchScrollPreventer = () => {
 
     const touch = e.touches[0];
     if (!touch) return;
-    const touchY = touch.clientY;
-    const deltaY = touchStartY - touchY;
+    const deltaY = touchStartY - touch.clientY;
     const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
 
     const isAtTop = scrollTop <= 0 && deltaY < 0;
@@ -70,55 +81,84 @@ const createTouchScrollPreventer = () => {
   return { handleTouchStart, preventTouchScroll };
 };
 
-export function useViewportBehavior(cb?: Callback) {
-  const isIOSSafari = platform.is.ios && platform.is.safari;
-  const viewportHeight = ref<number>(0);
-  const keyboardOpened = ref<boolean>(false);
-  let rafId = 0;
-  let keyboardShowListener: { remove: () => Promise<void> } | null = null;
-  let keyboardHideListener: { remove: () => Promise<void> } | null = null;
-
-  const { handleTouchStart, preventTouchScroll } = createTouchScrollPreventer();
-
-  const setKeyboardOpened = (opened: boolean) => {
-    keyboardOpened.value = opened;
-    document.body.classList.toggle('keyboard-opened', opened);
-  };
-
-  const measure = () => {
+const createViewportMeasurer = (
+  viewportHeight: Ref<number>,
+  keyboardOpened: Ref<boolean>,
+  cb?: ViewportCallback,
+) => {
+  return () => {
     const screenHeight = window.visualViewport?.height ?? window.innerHeight;
     const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
     viewportHeight.value = screenHeight;
 
     if (!platform.is.capacitor) {
       const opened = Math.abs(window.innerHeight - screenHeight) > KEYBOARD_HEIGHT_THRESHOLD;
-      setKeyboardOpened(opened);
+      setKeyboardOpened(opened, keyboardOpened);
     }
 
     updateCssVariables(screenHeight, viewportOffsetTop);
     cb?.({ viewportHeight: screenHeight, keyboardOpened: keyboardOpened.value });
   };
+};
+
+const createScheduler = (measureFn: () => void) => {
+  let rafId = 0;
 
   const schedule = () => {
     if (rafId) return;
     rafId = requestAnimationFrame(() => {
       rafId = 0;
-      measure();
+      measureFn();
     });
   };
 
-  const setupCapacitorKeyboard = async () => {
-    const keyboardModule = await to(() => import('@capacitor/keyboard'))();
-    if (keyboardModule.isErr()) return;
+  const cancel = () => cancelAnimationFrame(rafId);
 
-    const { Keyboard } = keyboardModule.value;
-    keyboardShowListener = await Keyboard.addListener('keyboardWillShow', () => {
-      setKeyboardOpened(true);
-    });
-    keyboardHideListener = await Keyboard.addListener('keyboardWillHide', () => {
-      setKeyboardOpened(false);
-    });
+  return { schedule, cancel };
+};
+
+const setupCapacitorKeyboardListeners = async (keyboardOpened: Ref<boolean>) => {
+  const keyboardModule = await to(() => import('@capacitor/keyboard'))();
+  if (keyboardModule.isErr()) return { cleanup: () => {} };
+
+  const { Keyboard } = keyboardModule.value;
+  const showListener = await Keyboard.addListener('keyboardWillShow', () => {
+    setKeyboardOpened(true, keyboardOpened);
+  });
+  const hideListener = await Keyboard.addListener('keyboardWillHide', () => {
+    setKeyboardOpened(false, keyboardOpened);
+  });
+
+  return {
+    cleanup: () => {
+      showListener.remove();
+      hideListener.remove();
+    },
   };
+};
+
+const setupIOSSafariScrollFix = () => {
+  const { handleTouchStart, preventTouchScroll } = createTouchScrollPreventer();
+
+  document.addEventListener('touchstart', handleTouchStart, { passive: true });
+  document.addEventListener('touchmove', preventTouchScroll, { passive: false });
+
+  return () => {
+    document.removeEventListener('touchstart', handleTouchStart);
+    document.removeEventListener('touchmove', preventTouchScroll);
+  };
+};
+
+export function useViewportBehavior(cb?: ViewportCallback) {
+  const isIOSSafari = platform.is.ios && platform.is.safari;
+  const viewportHeight = ref<number>(0);
+  const keyboardOpened = ref<boolean>(false);
+
+  const measure = createViewportMeasurer(viewportHeight, keyboardOpened, cb);
+  const { schedule, cancel: cancelScheduler } = createScheduler(measure);
+
+  let capacitorCleanup: (() => void) | undefined;
+  let safariCleanup: (() => void) | undefined;
 
   onMounted(() => {
     measure();
@@ -126,29 +166,24 @@ export function useViewportBehavior(cb?: Callback) {
     window.addEventListener('orientationchange', schedule);
 
     platformMatch({
-      capacitor: setupCapacitorKeyboard,
+      capacitor: async () => {
+        const result = await setupCapacitorKeyboardListeners(keyboardOpened);
+        capacitorCleanup = result.cleanup;
+      },
       default: () => {},
     });
 
     if (isIOSSafari) {
-      document.addEventListener('touchstart', handleTouchStart, { passive: true });
-      document.addEventListener('touchmove', preventTouchScroll, { passive: false });
+      safariCleanup = setupIOSSafariScrollFix();
     }
   });
 
   onUnmounted(() => {
     window.visualViewport?.removeEventListener('resize', schedule);
     window.removeEventListener('orientationchange', schedule);
-
-    if (isIOSSafari) {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', preventTouchScroll);
-    }
-
-    keyboardShowListener?.remove();
-    keyboardHideListener?.remove();
-
-    cancelAnimationFrame(rafId);
+    safariCleanup?.();
+    capacitorCleanup?.();
+    cancelScheduler();
   });
 
   return { viewportHeight, keyboardOpened };

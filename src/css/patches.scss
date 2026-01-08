@@ -4,14 +4,14 @@ dialog {
   overscroll-behavior: none;
   overflow: hidden;
   touch-action: none;
-  // max-height: calc(var(--vh, 1vh) * 100);
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  height: var(--screen-height);
+  height: 100vh;
+  height: 100dvh;
   box-sizing: border-box;
   background: var(--bg);
 }

@@ -157,8 +157,9 @@ dialog {
     &:not(.mini) {
       width: 100%;
       border-radius: 0;
-      height: var(--screen-height);
-      top: var(--viewport-offset-top, 0px);
+      height: 100vh;
+      height: 100dvh;
+      top: 0;
       bottom: unset;
       margin: 0;
     }

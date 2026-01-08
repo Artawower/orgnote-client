@@ -14,6 +14,7 @@
       </visibility-wrapper>
       <safe-area top class="content-body">
         <router-view />
+        <editor-actions-toolbar />
       </safe-area>
       <visibility-wrapper tablet-below>
         <main-footer />
@@ -31,6 +32,7 @@ import MainSidebar from 'src/containers/MainSidebar.vue';
 import RightPanel from 'src/containers/RightPanel.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
 import AppNotifications from 'src/components/AppNotifications.vue';
+import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
 import { api } from 'src/boot/api';
 import { ref, computed, onMounted } from 'vue';
 import { mobileOnly } from 'src/utils/platform-specific';

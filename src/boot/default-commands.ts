@@ -1,6 +1,7 @@
 import { defineBoot } from '@quasar/app-vite/wrappers';
 import { createAuthCommands } from 'src/commands/auth-commands';
 import { getCompletionCommands } from 'src/commands/completion';
+import { getEditorCommands } from 'src/commands/editor-commands';
 import { getFileManagerCommands } from 'src/commands/file-manager';
 import { getGlobalCommands } from 'src/commands/global-commands';
 import { getNoteCommands } from 'src/commands/note-commands';
@@ -32,6 +33,7 @@ export default defineBoot(async ({ router }) => {
     ...getDeveloperCommands(),
     ...getRightPanelCommands(),
     ...getSearchCommands(),
+    ...getEditorCommands(),
     ...createAuthCommands(router),
   );
 });
