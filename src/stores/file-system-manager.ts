@@ -45,7 +45,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
 
     const useFs = async (fsName: string): Promise<void> => {
       const info = registeredFileSystems.value[fsName];
-      if (!info) {
+      if (!info || info.name === currentFsName.value) {
         return;
       }
 

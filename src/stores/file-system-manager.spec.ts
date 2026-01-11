@@ -258,3 +258,183 @@ test('currentFs uses the same initialized FS instance', async () => {
   expect(created.length).toBe(1);
   expect(toRaw(store.currentFs)).toBe(created[0]);
 });
+
+test('useFs does not reinitialize when selecting the same filesystem', async () => {
+  const initSpy = vi.fn(async () => ({ root: '/' }));
+
+  const fsInfo: FileSystemInfo = {
+    name: 'tracked-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: initSpy,
+      mount: vi.fn(async () => true),
+    }),
+    type: 'web',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfo);
+
+  await store.useFs('tracked-fs');
+  expect(initSpy).toHaveBeenCalledTimes(1);
+
+  await store.useFs('tracked-fs');
+  await store.useFs('tracked-fs');
+  await store.useFs('tracked-fs');
+
+  expect(initSpy).toHaveBeenCalledTimes(1);
+});
+
+test('useFs skips initialization when filesystem is already active', async () => {
+  const initSpy = vi.fn(async () => ({ root: '/vault' }));
+
+  const fsInfo: FileSystemInfo = {
+    name: 'already-active-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: initSpy,
+      mount: vi.fn(async () => true),
+    }),
+    type: 'web',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfo);
+
+  const settingsStore = useSettingsStore();
+  settingsStore.settings.vault = '/initial';
+
+  await store.useFs('already-active-fs');
+
+  expect(store.currentFsName).toBe('already-active-fs');
+  expect(settingsStore.settings.vault).toBe('/vault');
+  expect(initSpy).toHaveBeenCalledTimes(1);
+
+  settingsStore.settings.vault = '/should-not-change';
+
+  await store.useFs('already-active-fs');
+
+  expect(initSpy).toHaveBeenCalledTimes(1);
+  expect(settingsStore.settings.vault).toBe('/should-not-change');
+});
+
+test('useFs allows switching between different filesystems', async () => {
+  const initSpyA = vi.fn(async () => ({ root: '/a' }));
+  const initSpyB = vi.fn(async () => ({ root: '/b' }));
+
+  const fsInfoA: FileSystemInfo = {
+    name: 'fs-a',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: initSpyA,
+      mount: vi.fn(async () => true),
+    }),
+    type: 'web',
+  };
+
+  const fsInfoB: FileSystemInfo = {
+    name: 'fs-b',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: initSpyB,
+      mount: vi.fn(async () => true),
+    }),
+    type: 'desktop',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfoA);
+  store.register(fsInfoB);
+
+  await store.useFs('fs-a');
+  expect(store.currentFsName).toBe('fs-a');
+  expect(initSpyA).toHaveBeenCalledTimes(1);
+  expect(initSpyB).toHaveBeenCalledTimes(0);
+
+  await store.useFs('fs-b');
+  expect(store.currentFsName).toBe('fs-b');
+  expect(initSpyA).toHaveBeenCalledTimes(1);
+  expect(initSpyB).toHaveBeenCalledTimes(1);
+
+  await store.useFs('fs-a');
+  expect(store.currentFsName).toBe('fs-a');
+  expect(initSpyA).toHaveBeenCalledTimes(2);
+  expect(initSpyB).toHaveBeenCalledTimes(1);
+});
+
+test('useFs maintains currentFsName when called with same name repeatedly', async () => {
+  const initSpy = vi.fn(async () => ({ root: '/' }));
+
+  const fsInfo: FileSystemInfo = {
+    name: 'stable-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: initSpy,
+      mount: vi.fn(async () => true),
+    }),
+    type: 'web',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfo);
+
+  await store.useFs('stable-fs');
+
+  const nameAfterFirstCall = store.currentFsName;
+
+  await store.useFs('stable-fs');
+  await store.useFs('stable-fs');
+
+  expect(store.currentFsName).toBe(nameAfterFirstCall);
+  expect(store.currentFsName).toBe('stable-fs');
+});
