@@ -15,18 +15,25 @@ import WebKit
             return
         }
         
+        guard let uiColor = UIColor(hex: color) else {
+            call.reject("Invalid hex color format: \(color). Expected 6 or 8 character hex string (e.g., #RRGGBB or #RRGGBBAA)")
+            return
+        }
+        
         DispatchQueue.main.async { [weak self] in
             guard let webView = self?.webView else {
                 call.reject("WebView not available")
                 return
             }
             
-            let uiColor = UIColor(hex: color) ?? .white
-            
             webView.isOpaque = false
             webView.backgroundColor = uiColor
             webView.scrollView.backgroundColor = uiColor
             self?.bridge?.viewController?.view.backgroundColor = uiColor
+            
+            if let window = self?.bridge?.viewController?.view.window {
+                window.backgroundColor = uiColor
+            }
             
             call.resolve()
         }

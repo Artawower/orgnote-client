@@ -75,7 +75,10 @@ export const useThemeStore = defineStore<'theme', ThemeStore>('theme', () => {
 
   watch(
     () => config.value.ui.theme,
-    () => syncQuasarDarkMode(),
+    async () => {
+      syncQuasarDarkMode();
+      await syncBackgroundSettings();
+    },
   );
 
   const safeHandleThemeChange = to(
