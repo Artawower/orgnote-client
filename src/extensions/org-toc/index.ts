@@ -19,7 +19,7 @@ export const orgTocExtension: Extension = {
   onMounted: async (api) => {
     registeredCommand = createCommand();
     api.core.useCommands().add(registeredCommand);
-    api.ui.useRightPanel().addCommand(COMMAND_NAME);
+    api.ui.usePinnedCommands().addCommand('right-sidebar', COMMAND_NAME);
   },
 
   onUnmounted: async (api) => {
@@ -27,7 +27,7 @@ export const orgTocExtension: Extension = {
       api.core.useCommands().remove(registeredCommand);
       registeredCommand = null;
     }
-    api.ui.useRightPanel().removeCommand(COMMAND_NAME);
+    api.ui.usePinnedCommands().removeCommand('right-sidebar', COMMAND_NAME);
   },
 };
 

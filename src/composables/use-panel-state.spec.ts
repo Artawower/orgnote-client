@@ -10,16 +10,6 @@ test('usePanelState should initialize with closed state', () => {
   expect(panel.opened.value).toBe(false);
 });
 
-test('usePanelState should initialize with empty commands by default', () => {
-  const panel = usePanelState();
-  expect(panel.commands.value).toEqual([]);
-});
-
-test('usePanelState should initialize with provided default commands', () => {
-  const panel = usePanelState(['cmd1', 'cmd2']);
-  expect(panel.commands.value).toEqual(['cmd1', 'cmd2']);
-});
-
 test('usePanelState should initialize with undefined component', () => {
   const panel = usePanelState();
   expect(panel.component.value).toBeUndefined();
@@ -101,43 +91,6 @@ test('usePanelState.openComponent should open different component', () => {
 
   expect(panel.component.value).toBe(component2);
   expect(panel.opened.value).toBe(true);
-});
-
-test('usePanelState.addCommand should add new command', () => {
-  const panel = usePanelState();
-  panel.addCommand('new-command');
-  expect(panel.commands.value).toContain('new-command');
-});
-
-test('usePanelState.addCommand should not add duplicate command', () => {
-  const panel = usePanelState(['existing']);
-  panel.addCommand('existing');
-  expect(panel.commands.value).toEqual(['existing']);
-});
-
-test('usePanelState.addCommand should preserve order of commands', () => {
-  const panel = usePanelState(['first']);
-  panel.addCommand('second');
-  panel.addCommand('third');
-  expect(panel.commands.value).toEqual(['first', 'second', 'third']);
-});
-
-test('usePanelState.removeCommand should remove existing command', () => {
-  const panel = usePanelState(['cmd1', 'cmd2', 'cmd3']);
-  panel.removeCommand('cmd2');
-  expect(panel.commands.value).toEqual(['cmd1', 'cmd3']);
-});
-
-test('usePanelState.removeCommand should do nothing for non-existent command', () => {
-  const panel = usePanelState(['cmd1', 'cmd2']);
-  panel.removeCommand('non-existent');
-  expect(panel.commands.value).toEqual(['cmd1', 'cmd2']);
-});
-
-test('usePanelState.removeCommand should handle empty commands array', () => {
-  const panel = usePanelState();
-  panel.removeCommand('any');
-  expect(panel.commands.value).toEqual([]);
 });
 
 test('usePanelState should allow multiple open/close cycles', () => {

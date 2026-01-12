@@ -32,7 +32,7 @@ import { useThemeStore } from 'src/stores/theme';
 import { useBackgroundSettings } from 'src/composables/background';
 import { useSidebarStore } from 'src/stores/sidebar';
 import { useRightPanelStore } from 'src/stores/right-panel';
-import { useToolbarStore } from 'src/stores/toolbar';
+import { usePinnedCommandsStore } from 'src/stores/pinned-commands';
 import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
 import { useSettingsUiStore } from 'src/stores/settings-ui';
@@ -147,7 +147,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useBackgroundSettings,
       useSidebar: useSidebarStore,
       useRightPanel: useRightPanelStore,
-      useToolbar: useToolbarStore,
+      usePinnedCommands: usePinnedCommandsStore,
       useModal: useModalStore,
       useSettingsUi: useSettingsUiStore,
       useConfirmationModal,

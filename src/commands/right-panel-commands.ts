@@ -18,7 +18,7 @@ export function getRightPanelCommands(): Command[] {
       ),
       handler: async (api: OrgNoteApi) => {
         const panel = api.ui.useRightPanel();
-        const { opened, component, commands } = storeToRefs(panel);
+        const { opened, component } = storeToRefs(panel);
         if (opened.value) {
           panel.close();
           return;
@@ -27,6 +27,7 @@ export function getRightPanelCommands(): Command[] {
           panel.open();
           return;
         }
+        const commands = api.ui.usePinnedCommands().getCommands('right-sidebar');
         const firstContentCommand = commands.value.find(
           (cmd) => cmd !== DefaultCommands.TOGGLE_RIGHT_PANEL,
         );

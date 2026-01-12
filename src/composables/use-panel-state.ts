@@ -1,11 +1,10 @@
 import { ref, shallowRef } from 'vue';
-import type { ComponentConfig, VueComponent, CommandName } from 'orgnote-api';
+import type { ComponentConfig, VueComponent } from 'orgnote-api';
 
-export const usePanelState = (defaultCommands: CommandName[] = []) => {
+export const usePanelState = () => {
   const opened = ref(false);
   const component = shallowRef<VueComponent>();
   const componentConfig = shallowRef<ComponentConfig<VueComponent>>();
-  const commands = ref<CommandName[]>(defaultCommands);
 
   const open = () => {
     opened.value = true;
@@ -25,31 +24,13 @@ export const usePanelState = (defaultCommands: CommandName[] = []) => {
     open();
   };
 
-  const addCommand = (command: CommandName) => {
-    if (commands.value.includes(command)) {
-      return;
-    }
-    commands.value.push(command);
-  };
-
-  const removeCommand = (command: CommandName) => {
-    const index = commands.value.indexOf(command);
-    if (index === -1) {
-      return;
-    }
-    commands.value.splice(index, 1);
-  };
-
   return {
     opened,
     component,
     componentConfig,
-    commands,
     open,
     close,
     toggle,
     openComponent,
-    addCommand,
-    removeCommand,
   };
 };

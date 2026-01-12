@@ -45,7 +45,8 @@ import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { computed } from 'vue';
 
 const rightPanel = api.ui.useRightPanel();
-const { opened, width, commands, component, componentConfig } = storeToRefs(rightPanel);
+const { opened, width, component, componentConfig } = storeToRefs(rightPanel);
+const commands = api.ui.usePinnedCommands().getCommands('right-sidebar');
 const { tabletBelow } = useScreenDetection();
 
 const panelStyle = computed(() => (tabletBelow.value ? {} : { width: `${width.value}px` }));

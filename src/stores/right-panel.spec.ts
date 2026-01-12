@@ -2,7 +2,6 @@ import { test, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useRightPanelStore } from './right-panel';
 import { defineComponent } from 'vue';
-import { DefaultCommands } from 'orgnote-api';
 
 const createMockComponent = (name: string) =>
   defineComponent({ name, template: '<div />' });
@@ -19,11 +18,6 @@ test('useRightPanelStore should initialize with default width 300', () => {
 test('useRightPanelStore should initialize with closed state', () => {
   const store = useRightPanelStore();
   expect(store.opened).toBe(false);
-});
-
-test('useRightPanelStore should have TOGGLE_AST_DEBUGGER command by default', () => {
-  const store = useRightPanelStore();
-  expect(store.commands).toContain(DefaultCommands.TOGGLE_AST_DEBUGGER);
 });
 
 test('useRightPanelStore.setWidth should update width within bounds', () => {
@@ -116,19 +110,6 @@ test('useRightPanelStore.openComponent should set component and open panel', () 
 
   expect(store.component).toBe(mockComponent);
   expect(store.opened).toBe(true);
-});
-
-test('useRightPanelStore.addCommand should add new command', () => {
-  const store = useRightPanelStore();
-  store.addCommand('custom-command');
-  expect(store.commands).toContain('custom-command');
-});
-
-test('useRightPanelStore.removeCommand should remove existing command', () => {
-  const store = useRightPanelStore();
-  store.addCommand('temp-command');
-  store.removeCommand('temp-command');
-  expect(store.commands).not.toContain('temp-command');
 });
 
 test('useRightPanelStore should persist state across multiple accesses', () => {

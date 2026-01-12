@@ -2,7 +2,7 @@
   <app-sidebar :mini="miniMode" :opened="opened">
     <template #mini-top>
       <app-flex class="command-list" column start align-start gap="sm">
-        <command-action-button v-for="cmd of commands" :command="cmd" :key="cmd" />
+        <command-action-button v-for="cmd of sidebarCommands" :command="cmd" :key="cmd" />
       </app-flex>
     </template>
     <template #mini-footer>
@@ -38,9 +38,10 @@ import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 
-const { commands, footerCommands, opened, component, componentConfig } = storeToRefs(
-  api.ui.useSidebar(),
-);
+const { opened, component, componentConfig } = storeToRefs(api.ui.useSidebar());
+const pinnedCommands = api.ui.usePinnedCommands();
+const sidebarCommands = pinnedCommands.getCommands('sidebar');
+const footerCommands = pinnedCommands.getCommands('sidebar-footer');
 const screenDetector = useScreenDetection();
 const miniMode = screenDetector.tabletAbove;
 </script>
@@ -65,22 +66,4 @@ const miniMode = screenDetector.tabletAbove;
 .sidebar-content {
   flex: 1;
 }
-
-/* TODO: plugin */
-/* Plugin */
-/* --sidebar-bg: var(--fg); */
-
-/* ::v-deep(*) {
-   color: var(--bg) !important;
-   }
-
-   ::v-deep() {
-   .action-btn:hover {
-   div {
-   i {
-   color: var(--fg) !important;
-   }
-   }
-   }
-   } */
 </style>

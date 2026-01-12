@@ -13,7 +13,7 @@ import CommandActionButton from './CommandActionButton.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 
-const toolbarCommands = api.ui.useToolbar().commands;
+const toolbarCommands = api.ui.usePinnedCommands().getCommands('edit-toolbar');
 
 const { tabletBelow } = useScreenDetection();
 

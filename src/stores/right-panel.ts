@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { DefaultCommands, type RightPanelStore } from 'orgnote-api';
+import { type RightPanelStore } from 'orgnote-api';
 import { usePanelState } from 'src/composables/use-panel-state';
 import {
   RIGHT_PANEL_MIN_WIDTH,
@@ -9,10 +9,7 @@ import {
 } from 'src/constants/right-panel';
 
 export const useRightPanelStore = defineStore<'rightPanel', RightPanelStore>('rightPanel', () => {
-  const panel = usePanelState([
-    DefaultCommands.TOGGLE_RIGHT_PANEL,
-    DefaultCommands.TOGGLE_AST_DEBUGGER,
-  ]);
+  const panel = usePanelState();
 
   const width = ref(RIGHT_PANEL_DEFAULT_WIDTH);
 

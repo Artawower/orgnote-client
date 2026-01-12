@@ -15,7 +15,6 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { DefaultCommands } from 'orgnote-api';
 import { isPresent } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import CommandActionButton from './CommandActionButton.vue';
@@ -33,31 +32,7 @@ const shouldShow = computed(
   () => tabletBelow.value && isEditorActive.value && keyboardOpened.value,
 );
 
-const editorCommands = [
-  DefaultCommands.EDITOR_HIDE_KEYBOARD,
-  DefaultCommands.EDITOR_UNDO,
-  DefaultCommands.EDITOR_REDO,
-  DefaultCommands.EDITOR_INSERT_HEADLINE,
-  DefaultCommands.EDITOR_INSERT_BOLD,
-  DefaultCommands.EDITOR_INSERT_ITALIC,
-  DefaultCommands.EDITOR_INSERT_STRIKETHROUGH,
-  DefaultCommands.EDITOR_INSERT_INLINE_CODE,
-  DefaultCommands.EDITOR_INSERT_LINK,
-  DefaultCommands.EDITOR_INSERT_INTERNAL_LINK,
-  DefaultCommands.EDITOR_INSERT_IMAGE,
-  DefaultCommands.EDITOR_INSERT_CODE_BLOCK,
-  DefaultCommands.EDITOR_INSERT_QUOTE,
-  DefaultCommands.EDITOR_INSERT_LATEX,
-  DefaultCommands.EDITOR_INSERT_BULLET_LIST,
-  DefaultCommands.EDITOR_INSERT_NUMERIC_LIST,
-  DefaultCommands.EDITOR_INSERT_CHECK_LIST,
-  DefaultCommands.EDITOR_INSERT_CHECKBOX,
-  DefaultCommands.EDITOR_INSERT_TABLE,
-  DefaultCommands.EDITOR_INSERT_HORIZONTAL_RULE,
-  DefaultCommands.EDITOR_INSERT_TAG,
-  DefaultCommands.EDITOR_INSERT_DATETIME,
-  DefaultCommands.EDITOR_INSERT_HTML_BLOCK,
-];
+const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
 </script>
 
 <style lang="scss" scoped>
