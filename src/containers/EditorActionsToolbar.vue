@@ -1,6 +1,6 @@
 <template>
   <app-flex v-if="shouldShow" row flex-end a-center gap="xs" class="editor-actions-toolbar">
-    <app-flex class="editor-actions" row center a-center gap="xs" @touchstart.stop @mousedown.stop>
+    <app-flex class="editor-actions" row start a-center gap="xs" @touchstart.stop @mousedown.stop>
       <command-action-button v-for="cmd of editorCommands" :key="cmd" :command="cmd" size="md" />
     </app-flex>
     <command-action-button :command="DefaultCommands.EDITOR_HIDE_KEYBOARD" size="md" />
