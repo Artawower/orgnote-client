@@ -1,17 +1,18 @@
 <template>
-  <app-flex
-    class="main-layout"
-    v-touch-swipe.mouse.left="mobileOnly(sidebar.close)"
-    v-touch-swipe.mouse.right="mobileOnly(sidebar.open)"
-    direction="row"
-    start
-    align-start
+  <sidebars-layout
+    :left-opened="leftOpened"
+    :right-opened="rightOpened"
+    :is-mobile="tabletBelow"
+    @open-left="sidebar.open()"
+    @close-left="sidebar.close()"
+    @open-right="rightPanel.open()"
+    @close-right="rightPanel.close()"
   >
-    <main-sidebar ref="sidebarRef" />
+    <template #left>
+      <main-sidebar />
+    </template>
+
     <app-flex column class="content" start align-stretch>
-      <visibility-wrapper tablet-below>
-        <div @click="closeMainSidebar" v-if="sidebar.opened" class="backdrop"></div>
-      </visibility-wrapper>
       <safe-area top class="content-body">
         <router-view />
         <editor-actions-toolbar />
@@ -20,45 +21,47 @@
         <main-footer />
       </visibility-wrapper>
     </app-flex>
-    <right-panel />
-    <modal-window />
-    <app-notifications v-show="!hasOpenModals" />
-  </app-flex>
+
+    <template #right>
+      <right-panel-content />
+    </template>
+  </sidebars-layout>
+
+  <modal-window />
+  <app-notifications v-show="!hasOpenModals" />
 </template>
 
 <script setup lang="ts">
 import MainFooter from 'src/containers/MainFooter.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
-import RightPanel from 'src/containers/RightPanel.vue';
+import RightPanelContent from 'src/containers/RightPanelContent.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
 import AppNotifications from 'src/components/AppNotifications.vue';
 import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
+import SidebarsLayout from 'src/components/SidebarsLayout.vue';
 import { api } from 'src/boot/api';
-import { ref, computed, onMounted } from 'vue';
-import { mobileOnly } from 'src/utils/platform-specific';
+import { computed, onMounted } from 'vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reporter } from 'src/boot/report';
 import { RouteNames } from 'orgnote-api';
+import { storeToRefs } from 'pinia';
 
 const route = useRoute();
 const router = useRouter();
 
 const sidebar = api.ui.useSidebar();
-const sidebarRef = ref(null);
+const { opened: leftOpened } = storeToRefs(sidebar);
+
+const rightPanel = api.ui.useRightPanel();
+const { opened: rightOpened } = storeToRefs(rightPanel);
 
 const { tabletBelow } = api.ui.useScreenDetection();
 
 const modal = api.ui.useModal();
 const hasOpenModals = computed(() => modal.modals.length > 0);
-
-const closeMainSidebar = () => {
-  if (tabletBelow.value) {
-    sidebar.close();
-  }
-};
 
 const handleErrorFromQuery = (): void => {
   const errorMessage = route.query.error;
@@ -83,10 +86,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.main-layout {
-  @include fit();
-}
-
 .content {
   height: 100%;
   flex: 1;
@@ -97,19 +96,5 @@ onMounted(() => {
 .content-body {
   flex: 1;
   min-height: 0;
-}
-
-@include tablet-below {
-  .backdrop {
-    position: absolute;
-    background-color: var(--backdrop-bg);
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-  }
-}
-
-.page {
-  flex-direction: row;
 }
 </style>

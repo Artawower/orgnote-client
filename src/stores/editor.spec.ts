@@ -412,3 +412,163 @@ test('useEditorStore.addWidgets: handles repeated calls simulating HMR', () => {
   expect(store.inlineWidgets[NodeType.Bold]?.length).toBe(1);
   expect(store.multilineWidgets[NodeType.SrcBlock]?.length).toBe(1);
 });
+
+test('useEditorStore.activeContext: is null by default', () => {
+  const store = useEditorStore();
+  expect(store.activeContext).toBeNull();
+});
+
+test('useEditorStore.setActiveContext: sets active context', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 10,
+    selection: 'test selection',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+
+  expect(store.activeContext).toEqual(mockContext);
+});
+
+test('useEditorStore.updateActiveContext: updates partial context', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: '',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+  store.updateActiveContext({ cursorPosition: 25, selection: 'updated' });
+
+  expect(store.activeContext?.cursorPosition).toBe(25);
+  expect(store.activeContext?.selection).toBe('updated');
+});
+
+test('useEditorStore.updateActiveContext: does nothing when activeContext is null', () => {
+  const store = useEditorStore();
+
+  expect(() => store.updateActiveContext({ cursorPosition: 10 })).not.toThrow();
+  expect(store.activeContext).toBeNull();
+});
+
+test('useEditorStore.clearActiveContext: sets activeContext to null', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 10,
+    selection: 'test',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+  store.clearActiveContext();
+
+  expect(store.activeContext).toBeNull();
+});
+
+test('useEditorStore.selection: returns empty string when no active context', () => {
+  const store = useEditorStore();
+  expect(store.selection).toBe('');
+});
+
+test('useEditorStore.selection: returns selection from active context', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: 'selected text',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+
+  expect(store.selection).toBe('selected text');
+});
+
+test('useEditorStore.hasSelection: returns false when no active context', () => {
+  const store = useEditorStore();
+  expect(store.hasSelection).toBe(false);
+});
+
+test('useEditorStore.hasSelection: returns false when selection is empty', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: '',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+
+  expect(store.hasSelection).toBe(false);
+});
+
+test('useEditorStore.hasSelection: returns true when selection is not empty', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: 'some text',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+
+  expect(store.hasSelection).toBe(true);
+});
+
+test('useEditorStore.selection: updates reactively when context changes', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: 'initial',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+  expect(store.selection).toBe('initial');
+
+  store.updateActiveContext({ selection: 'updated selection' });
+  expect(store.selection).toBe('updated selection');
+});
+
+test('useEditorStore.hasSelection: updates reactively when selection changes', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: '',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+  expect(store.hasSelection).toBe(false);
+
+  store.updateActiveContext({ selection: 'now has selection' });
+  expect(store.hasSelection).toBe(true);
+
+  store.updateActiveContext({ selection: '' });
+  expect(store.hasSelection).toBe(false);
+});
+
+test('useEditorStore.selection: returns empty string after clearActiveContext', () => {
+  const store = useEditorStore();
+  const mockContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: 'test',
+    editorViewGetter: vi.fn(),
+  };
+
+  store.setActiveContext(mockContext);
+  store.clearActiveContext();
+
+  expect(store.selection).toBe('');
+  expect(store.hasSelection).toBe(false);
+});

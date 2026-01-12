@@ -97,7 +97,13 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const createCursorTracker = (): Extension =>
     EditorView.updateListener.of((update) => {
       if (!update.selectionSet) return;
-      editorStore.updateActiveContext({ cursorPosition: update.state.selection.main.head });
+      const { from, to, head } = update.state.selection.main;
+      const selection = from !== to ? update.state.sliceDoc(from, to) : '';
+
+      editorStore.updateActiveContext({
+        cursorPosition: head,
+        selection,
+      });
     });
 
   const createFocusHandler = (): Extension =>
@@ -106,8 +112,27 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         editorStore.setActiveContext({
           orgNode: orgNode.value,
           cursorPosition: 0,
+          selection: '',
           editorViewGetter: options.editorViewGetter,
         });
+        return false;
+      },
+      blur: () => {
+        editorStore.updateActiveContext({ selection: '' });
+        return false;
+      },
+      touchstart: (evt, view) => {
+        const { from, to } = view.state.selection.main;
+        if (from !== to) {
+          evt.stopPropagation();
+        }
+        return false;
+      },
+      touchmove: (evt, view) => {
+        const { from, to } = view.state.selection.main;
+        if (from !== to) {
+          evt.stopPropagation();
+        }
         return false;
       },
     });

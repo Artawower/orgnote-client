@@ -101,11 +101,14 @@ withDefaults(
 
 @include tablet-below {
   .sidebar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 2;
+    width: var(--sidebar-width);
+    height: 100%;
+
+    .content {
+      padding: 0px var(--sidebar-padding);
+      flex: 1;
+      width: 100%;
+    }
   }
 }
 </style>

@@ -84,6 +84,9 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
   const multilineWidgets = computed(() => widgetRegistry.value[WidgetType.Multiline]);
   const lineClasses = computed(() => widgetRegistry.value[WidgetType.LineClass]);
 
+  const selection = computed(() => activeContext.value?.selection ?? '');
+  const hasSelection = computed(() => selection.value.length > 0);
+
   const setActiveContext = (ctx: ActiveEditorContext): void => {
     activeContext.value = ctx;
   };
@@ -110,5 +113,7 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     setActiveContext,
     updateActiveContext,
     clearActiveContext,
+    selection,
+    hasSelection,
   };
 });
