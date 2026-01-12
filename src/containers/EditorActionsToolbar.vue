@@ -1,15 +1,9 @@
 <template>
-  <app-flex
-    row
-    center
-    a-center
-    gap="xs"
-    v-if="shouldShow"
-    class="editor-actions-toolbar"
-    @touchstart.stop
-    @mousedown.stop
-  >
-    <command-action-button v-for="cmd of editorCommands" :key="cmd" :command="cmd" size="md" />
+  <app-flex v-if="shouldShow" row flex-end a-center gap="xs" class="editor-actions-toolbar">
+    <app-flex class="editor-actions" row center a-center gap="xs" @touchstart.stop @mousedown.stop>
+      <command-action-button v-for="cmd of editorCommands" :key="cmd" :command="cmd" size="md" />
+    </app-flex>
+    <command-action-button :command="DefaultCommands.EDITOR_HIDE_KEYBOARD" size="md" />
   </app-flex>
 </template>
 
@@ -21,6 +15,7 @@ import CommandActionButton from './CommandActionButton.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 import AppFlex from 'src/components/AppFlex.vue';
+import { DefaultCommands } from 'orgnote-api';
 
 const editorStore = api.core.useEditor();
 const { keyboardOpened } = useKeyboardState();
@@ -55,5 +50,8 @@ const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
   &::-webkit-scrollbar {
     display: none;
   }
+}
+.editor-actions {
+  overflow-x: auto;
 }
 </style>

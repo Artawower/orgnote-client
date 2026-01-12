@@ -22,10 +22,7 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.SETTINGS,
     DefaultCommands.TOGGLE_SIDEBAR,
   ],
-  'right-sidebar': [
-    DefaultCommands.TOGGLE_RIGHT_PANEL,
-    DefaultCommands.TOGGLE_AST_DEBUGGER,
-  ],
+  'right-sidebar': [DefaultCommands.TOGGLE_RIGHT_PANEL, DefaultCommands.TOGGLE_AST_DEBUGGER],
   'edit-toolbar': [
     DefaultCommands.TOGGLE_SIDEBAR,
     DefaultCommands.CREATE_NOTE,
@@ -34,7 +31,6 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.SHOW_TAB_SWITCHER,
   ],
   'editor-actions': [
-    DefaultCommands.EDITOR_HIDE_KEYBOARD,
     DefaultCommands.EDITOR_UNDO,
     DefaultCommands.EDITOR_REDO,
     DefaultCommands.EDITOR_INSERT_HEADLINE,
