@@ -13,15 +13,31 @@ const KEYBOARD_HEIGHT_THRESHOLD = 80;
 const VH_MULTIPLIER = 0.01;
 
 const globalKeyboardOpened = ref(false);
+const globalKeyboardHeight = ref(0);
+let initialViewportHeight = 0;
 
-export function useKeyboardState(): { keyboardOpened: Readonly<Ref<boolean>> } {
-  return { keyboardOpened: readonly(globalKeyboardOpened) };
+export function useKeyboardState(): {
+  keyboardOpened: Readonly<Ref<boolean>>;
+  keyboardHeight: Readonly<Ref<number>>;
+} {
+  return {
+    keyboardOpened: readonly(globalKeyboardOpened),
+    keyboardHeight: readonly(globalKeyboardHeight),
+  };
 }
 
-const setKeyboardOpened = (opened: boolean, localRef: Ref<boolean>): void => {
+const setKeyboardState = (opened: boolean, height: number): void => {
   globalKeyboardOpened.value = opened;
-  localRef.value = opened;
+  globalKeyboardHeight.value = height;
   document.body.classList.toggle('keyboard-opened', opened);
+  document.documentElement.style.setProperty('--keyboard-height', `${height}px`);
+};
+
+const captureInitialViewportHeight = (force = false): void => {
+  if (initialViewportHeight === 0 || force) {
+    initialViewportHeight = window.innerHeight;
+    document.documentElement.style.setProperty('--initial-viewport-height', `${initialViewportHeight}px`);
+  }
 };
 
 const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): void => {
@@ -83,7 +99,6 @@ const createTouchScrollPreventer = () => {
 
 const createViewportMeasurer = (
   viewportHeight: Ref<number>,
-  keyboardOpened: Ref<boolean>,
   cb?: ViewportCallback,
 ) => {
   return () => {
@@ -92,12 +107,13 @@ const createViewportMeasurer = (
     viewportHeight.value = screenHeight;
 
     if (!platform.is.capacitor) {
-      const opened = Math.abs(window.innerHeight - screenHeight) > KEYBOARD_HEIGHT_THRESHOLD;
-      setKeyboardOpened(opened, keyboardOpened);
+      const height = Math.max(0, window.innerHeight - screenHeight);
+      const opened = height > KEYBOARD_HEIGHT_THRESHOLD;
+      setKeyboardState(opened, opened ? height : 0);
+      updateCssVariables(screenHeight, viewportOffsetTop);
     }
 
-    updateCssVariables(screenHeight, viewportOffsetTop);
-    cb?.({ viewportHeight: screenHeight, keyboardOpened: keyboardOpened.value });
+    cb?.({ viewportHeight: screenHeight, keyboardOpened: globalKeyboardOpened.value });
   };
 };
 
@@ -117,16 +133,16 @@ const createScheduler = (measureFn: () => void) => {
   return { schedule, cancel };
 };
 
-const setupCapacitorKeyboardListeners = async (keyboardOpened: Ref<boolean>) => {
+const setupCapacitorKeyboardListeners = async () => {
   const keyboardModule = await to(() => import('@capacitor/keyboard'))();
   if (keyboardModule.isErr()) return { cleanup: () => {} };
 
   const { Keyboard } = keyboardModule.value;
-  const showListener = await Keyboard.addListener('keyboardWillShow', () => {
-    setKeyboardOpened(true, keyboardOpened);
+  const showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
+    setKeyboardState(true, info.keyboardHeight);
   });
   const hideListener = await Keyboard.addListener('keyboardWillHide', () => {
-    setKeyboardOpened(false, keyboardOpened);
+    setKeyboardState(false, 0);
   });
 
   return {
@@ -152,22 +168,29 @@ const setupIOSSafariScrollFix = () => {
 export function useViewportBehavior(cb?: ViewportCallback) {
   const isIOSSafari = platform.is.ios && platform.is.safari;
   const viewportHeight = ref<number>(0);
-  const keyboardOpened = ref<boolean>(false);
 
-  const measure = createViewportMeasurer(viewportHeight, keyboardOpened, cb);
+  const measure = createViewportMeasurer(viewportHeight, cb);
   const { schedule, cancel: cancelScheduler } = createScheduler(measure);
 
   let capacitorCleanup: (() => void) | undefined;
   let safariCleanup: (() => void) | undefined;
 
+  const handleOrientationChange = () => {
+    setTimeout(() => {
+      captureInitialViewportHeight(true);
+      schedule();
+    }, 100);
+  };
+
   onMounted(() => {
+    captureInitialViewportHeight();
     measure();
     window.visualViewport?.addEventListener('resize', schedule);
-    window.addEventListener('orientationchange', schedule);
+    window.addEventListener('orientationchange', handleOrientationChange);
 
     platformMatch({
       capacitor: async () => {
-        const result = await setupCapacitorKeyboardListeners(keyboardOpened);
+        const result = await setupCapacitorKeyboardListeners();
         capacitorCleanup = result.cleanup;
       },
       default: () => {},
@@ -180,11 +203,11 @@ export function useViewportBehavior(cb?: ViewportCallback) {
 
   onUnmounted(() => {
     window.visualViewport?.removeEventListener('resize', schedule);
-    window.removeEventListener('orientationchange', schedule);
+    window.removeEventListener('orientationchange', handleOrientationChange);
     safariCleanup?.();
     capacitorCleanup?.();
     cancelScheduler();
   });
 
-  return { viewportHeight, keyboardOpened };
+  return { viewportHeight, keyboardOpened: readonly(globalKeyboardOpened), keyboardHeight: readonly(globalKeyboardHeight) };
 }

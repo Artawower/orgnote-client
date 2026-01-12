@@ -18,29 +18,31 @@ import AppFlex from 'src/components/AppFlex.vue';
 import { DefaultCommands } from 'orgnote-api';
 
 const editorStore = api.core.useEditor();
-const { keyboardOpened } = useKeyboardState();
+const { keyboardOpened, keyboardHeight } = useKeyboardState();
 const { tabletBelow } = useScreenDetection();
 
 const isEditorActive = computed(() => isPresent(editorStore.activeContext));
 
 const shouldShow = computed(
-  () => tabletBelow.value && isEditorActive.value && keyboardOpened.value,
+  () => tabletBelow.value && isEditorActive.value && keyboardOpened.value && keyboardHeight.value > 0,
 );
 
 const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
 </script>
 
 <style lang="scss" scoped>
+$toolbar-height: 44px;
+
 .editor-actions-toolbar {
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
   width: 100%;
-  height: var(--footer-height);
-  position: absolute;
-  bottom: 0;
+  height: $toolbar-height;
+  position: fixed;
   left: 0;
   right: 0;
+  top: calc(var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px) - #{$toolbar-height});
   padding: 0 var(--padding-sm);
   box-sizing: border-box;
   scrollbar-width: none;
@@ -51,6 +53,7 @@ const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
     display: none;
   }
 }
+
 .editor-actions {
   overflow-x: auto;
 }
