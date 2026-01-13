@@ -38,6 +38,25 @@ const hasInputSelection = (): boolean => {
 
 const hasTextSelection = (): boolean => hasWindowSelection() || hasInputSelection();
 
+const isHorizontallyScrollable = (element: Element): boolean => {
+  const style = window.getComputedStyle(element);
+  const overflowX = style.overflowX;
+  const canScroll = overflowX === 'auto' || overflowX === 'scroll';
+  const hasScrollableContent = element.scrollWidth > element.clientWidth;
+  return canScroll && hasScrollableContent;
+};
+
+const isInsideHorizontalScroll = (target: EventTarget | null): boolean => {
+  if (!(target instanceof Element)) return false;
+
+  let current: Element | null = target;
+  while (current) {
+    if (isHorizontallyScrollable(current)) return true;
+    current = current.parentElement;
+  }
+  return false;
+};
+
 const getFirstTouch = (evt: TouchEvent): Touch | undefined => evt.touches[0];
 
 const getChangedTouch = (evt: TouchEvent): Touch | undefined => evt.changedTouches[0];
@@ -83,6 +102,7 @@ export const useGlobalSwipe = (options: UseGlobalSwipeOptions) => {
   const handleTouchStart = (evt: TouchEvent) => {
     if (!enabled()) return;
     if (hasTextSelection()) return;
+    if (isInsideHorizontalScroll(evt.target)) return;
 
     const touch = getFirstTouch(evt);
     if (!touch) return;

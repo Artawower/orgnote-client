@@ -1,6 +1,14 @@
 <template>
-  <app-flex v-if="shouldShow" row flex-end a-center gap="md" class="editor-actions-toolbar">
-    <app-flex class="editor-actions" row start a-center gap="xs" @touchstart.stop @mousedown.stop>
+  <app-flex
+    v-if="shouldShow"
+    row
+    flex-end
+    a-center
+    gap="md"
+    class="editor-actions-toolbar"
+    @mousedown.prevent
+  >
+    <app-flex class="editor-actions" row start a-center gap="xs">
       <command-action-button
         v-for="cmd of editorCommands"
         :key="cmd"

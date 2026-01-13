@@ -321,3 +321,100 @@ test('useGlobalSwipe should handle touchend without touchstart', () => {
   expect(onPan).not.toHaveBeenCalled();
   wrapper.unmount();
 });
+
+test('useGlobalSwipe should not call onPan when touch starts inside horizontally scrollable element', () => {
+  const onPan = vi.fn();
+
+  const scrollableContainer = document.createElement('div');
+  Object.defineProperty(scrollableContainer, 'scrollWidth', { value: 500, configurable: true });
+  Object.defineProperty(scrollableContainer, 'clientWidth', { value: 300, configurable: true });
+  scrollableContainer.style.overflowX = 'auto';
+  document.body.appendChild(scrollableContainer);
+
+  const wrapper = mount(createTestComponent(onPan, () => true));
+
+  const touchEvent = createTouchEvent('touchstart', 100, 100);
+  Object.defineProperty(touchEvent, 'target', { value: scrollableContainer, configurable: true });
+  document.dispatchEvent(touchEvent);
+
+  dispatchTouchEvent('touchmove', 150, 100);
+
+  expect(onPan).not.toHaveBeenCalled();
+
+  document.body.removeChild(scrollableContainer);
+  wrapper.unmount();
+});
+
+test('useGlobalSwipe should not call onPan when touch starts inside child of horizontally scrollable element', () => {
+  const onPan = vi.fn();
+
+  const scrollableContainer = document.createElement('div');
+  Object.defineProperty(scrollableContainer, 'scrollWidth', { value: 500, configurable: true });
+  Object.defineProperty(scrollableContainer, 'clientWidth', { value: 300, configurable: true });
+  scrollableContainer.style.overflowX = 'scroll';
+
+  const childElement = document.createElement('button');
+  scrollableContainer.appendChild(childElement);
+  document.body.appendChild(scrollableContainer);
+
+  const wrapper = mount(createTestComponent(onPan, () => true));
+
+  const touchEvent = createTouchEvent('touchstart', 100, 100);
+  Object.defineProperty(touchEvent, 'target', { value: childElement, configurable: true });
+  document.dispatchEvent(touchEvent);
+
+  dispatchTouchEvent('touchmove', 150, 100);
+
+  expect(onPan).not.toHaveBeenCalled();
+
+  document.body.removeChild(scrollableContainer);
+  wrapper.unmount();
+});
+
+test('useGlobalSwipe should call onPan when element has overflow-x but no scrollable content', () => {
+  const onPan = vi.fn();
+
+  const container = document.createElement('div');
+  Object.defineProperty(container, 'scrollWidth', { value: 300, configurable: true });
+  Object.defineProperty(container, 'clientWidth', { value: 300, configurable: true });
+  container.style.overflowX = 'auto';
+  document.body.appendChild(container);
+
+  const wrapper = mount(createTestComponent(onPan, () => true));
+
+  const touchEvent = createTouchEvent('touchstart', 100, 100);
+  Object.defineProperty(touchEvent, 'target', { value: container, configurable: true });
+  document.dispatchEvent(touchEvent);
+
+  const moveEvent = createTouchEvent('touchmove', 150, 100);
+  document.dispatchEvent(moveEvent);
+
+  expect(onPan).toHaveBeenCalled();
+
+  document.body.removeChild(container);
+  wrapper.unmount();
+});
+
+test('useGlobalSwipe should call onPan when element is not horizontally scrollable', () => {
+  const onPan = vi.fn();
+
+  const container = document.createElement('div');
+  Object.defineProperty(container, 'scrollWidth', { value: 500, configurable: true });
+  Object.defineProperty(container, 'clientWidth', { value: 300, configurable: true });
+  container.style.overflowX = 'hidden';
+  document.body.appendChild(container);
+
+  const wrapper = mount(createTestComponent(onPan, () => true));
+
+  const touchEvent = createTouchEvent('touchstart', 100, 100);
+  Object.defineProperty(touchEvent, 'target', { value: container, configurable: true });
+  document.dispatchEvent(touchEvent);
+
+  const moveEvent = createTouchEvent('touchmove', 150, 100);
+  document.dispatchEvent(moveEvent);
+
+  expect(onPan).toHaveBeenCalled();
+
+  document.body.removeChild(container);
+  wrapper.unmount();
+});
