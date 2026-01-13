@@ -6,10 +6,10 @@ const COMMAND_NAME = DefaultCommands.OPEN_OUTLINE;
 
 const createCommand = (): Command => ({
   command: COMMAND_NAME,
-  group: 'right panel',
+  group: 'right sidebar',
   icon: 'sym_o_format_list_bulleted',
   handler: (api: OrgNoteApi) => {
-    api.ui.useRightPanel().openComponent(OrgToc);
+    api.ui.useRightSidebar().openComponent(OrgToc);
   },
 });
 

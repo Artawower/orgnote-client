@@ -62,8 +62,28 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
         // TODO: feat/stable-beta also make as ref
         return sidebarStore.opened ? 'arrow_circle_left' : 'menu';
       },
-      handler: () => {
+      handler: (api) => {
+        if (!sidebarStore.opened) {
+          api.core.useCommands().execute(DefaultCommands.EDITOR_HIDE_KEYBOARD);
+        }
         sidebarStore.toggle();
+      },
+    },
+    {
+      command: DefaultCommands.CLOSE_SIDEBAR,
+      group: 'global',
+      icon: 'arrow_circle_left',
+      handler: () => {
+        sidebarStore.close();
+      },
+    },
+    {
+      command: DefaultCommands.OPEN_SIDEBAR,
+      group: 'global',
+      icon: 'menu',
+      handler: (api) => {
+        api.core.useCommands().execute(DefaultCommands.EDITOR_HIDE_KEYBOARD);
+        sidebarStore.open();
       },
     },
     {

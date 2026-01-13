@@ -3,10 +3,10 @@
     :left-opened="leftOpened"
     :right-opened="rightOpened"
     :is-mobile="tabletBelow"
-    @open-left="sidebar.open()"
-    @close-left="sidebar.close()"
-    @open-right="rightPanel.open()"
-    @close-right="rightPanel.close()"
+    @open-left="commandsStore.execute(DefaultCommands.OPEN_SIDEBAR)"
+    @close-left="commandsStore.execute(DefaultCommands.CLOSE_SIDEBAR)"
+    @open-right="commandsStore.execute(DefaultCommands.OPEN_RIGHT_SIDEBAR)"
+    @close-right="commandsStore.execute(DefaultCommands.CLOSE_RIGHT_SIDEBAR)"
   >
     <template #left>
       <main-sidebar />
@@ -23,7 +23,7 @@
     </app-flex>
 
     <template #right>
-      <right-panel-content />
+      <right-sidebar-content />
     </template>
   </sidebars-layout>
 
@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import MainFooter from 'src/containers/MainFooter.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
-import RightPanelContent from 'src/containers/RightPanelContent.vue';
+import RightSidebarContent from 'src/containers/RightSidebarContent.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
 import AppNotifications from 'src/components/AppNotifications.vue';
 import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
@@ -46,8 +46,11 @@ import SafeArea from 'src/components/SafeArea.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reporter } from 'src/boot/report';
-import { RouteNames } from 'orgnote-api';
+import { DefaultCommands, RouteNames } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
+import { useCommandsStore } from 'src/stores/command';
+
+const commandsStore = useCommandsStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -55,8 +58,8 @@ const router = useRouter();
 const sidebar = api.ui.useSidebar();
 const { opened: leftOpened } = storeToRefs(sidebar);
 
-const rightPanel = api.ui.useRightPanel();
-const { opened: rightOpened } = storeToRefs(rightPanel);
+const rightSidebar = api.ui.useRightSidebar();
+const { opened: rightOpened } = storeToRefs(rightSidebar);
 
 const { tabletBelow } = api.ui.useScreenDetection();
 

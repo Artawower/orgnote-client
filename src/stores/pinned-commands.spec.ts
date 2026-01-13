@@ -25,7 +25,7 @@ test('usePinnedCommandsStore should initialize sidebar-footer with default comma
 test('usePinnedCommandsStore should initialize right-sidebar with default commands', () => {
   const store = usePinnedCommandsStore();
   const commands = store.getCommands('right-sidebar');
-  expect(commands.value).toContain(DefaultCommands.TOGGLE_RIGHT_PANEL);
+  expect(commands.value).toContain(DefaultCommands.TOGGLE_RIGHT_SIDEBAR);
   expect(commands.value).toContain(DefaultCommands.TOGGLE_AST_DEBUGGER);
 });
 

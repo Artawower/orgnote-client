@@ -13,7 +13,7 @@ import { getThemeCommands } from 'src/commands/theme-commands';
 import { useCommandsStore } from 'src/stores/command';
 import { getModalCommands } from 'src/commands/modal-commands';
 import { getDeveloperCommands } from 'src/commands/developer-commands';
-import { getRightPanelCommands } from 'src/commands/right-panel-commands';
+import { getRightSidebarCommands } from 'src/commands/right-sidebar-commands';
 import { getSearchCommands } from 'src/commands/search-commands';
 
 export default defineBoot(async ({ router }) => {
@@ -31,7 +31,7 @@ export default defineBoot(async ({ router }) => {
     ...getNoteCommands(),
     ...getModalCommands(),
     ...getDeveloperCommands(),
-    ...getRightPanelCommands(),
+    ...getRightSidebarCommands(),
     ...getSearchCommands(),
     ...getEditorCommands(),
     ...createAuthCommands(router),

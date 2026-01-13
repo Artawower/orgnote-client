@@ -1,12 +1,12 @@
 <template>
   <template v-if="opened">
-    <div v-if="tabletBelow" class="backdrop" @click="rightPanel.close" />
+    <div v-if="tabletBelow" class="backdrop" @click="rightSidebar.close" />
     <app-flex
       :reverse="tabletBelow"
-      class="right-panel"
+      class="right-sidebar"
       :class="{ mobile: tabletBelow }"
       column
-      :style="panelStyle"
+      :style="sidebarStyle"
     >
       <resize-splitter
         v-if="!tabletBelow"
@@ -14,7 +14,7 @@
         :active="resize.isResizing.value"
         @resize-start="resize.handleResizeStart"
       />
-      <app-flex class="right-panel-actions" end align-center gap="sm">
+      <app-flex class="right-sidebar-actions" end align-center gap="sm">
         <command-action-button
           v-for="cmd of commands"
           :command="cmd"
@@ -22,7 +22,7 @@
           :size="tabletBelow ? 'md' : 'sm'"
         />
       </app-flex>
-      <div class="right-panel-content">
+      <div class="right-sidebar-content">
         <component
           v-if="component"
           :is="component"
@@ -40,20 +40,20 @@ import ResizeSplitter from 'src/components/ResizeSplitter.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useValueResize } from 'src/composables/use-value-resize';
-import { RIGHT_PANEL_MIN_WIDTH, RIGHT_PANEL_MAX_WIDTH } from 'src/constants/right-panel';
+import { RIGHT_SIDEBAR_MIN_WIDTH, RIGHT_SIDEBAR_MAX_WIDTH } from 'src/constants/right-sidebar';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { computed } from 'vue';
 
-const rightPanel = api.ui.useRightPanel();
-const { opened, width, component, componentConfig } = storeToRefs(rightPanel);
+const rightSidebar = api.ui.useRightSidebar();
+const { opened, width, component, componentConfig } = storeToRefs(rightSidebar);
 const commands = api.ui.usePinnedCommands().getCommands('right-sidebar');
 const { tabletBelow } = useScreenDetection();
 
-const panelStyle = computed(() => (tabletBelow.value ? {} : { width: `${width.value}px` }));
+const sidebarStyle = computed(() => (tabletBelow.value ? {} : { width: `${width.value}px` }));
 
 const resize = useValueResize('horizontal', width, {
-  min: RIGHT_PANEL_MIN_WIDTH,
-  max: RIGHT_PANEL_MAX_WIDTH,
+  min: RIGHT_SIDEBAR_MIN_WIDTH,
+  max: RIGHT_SIDEBAR_MAX_WIDTH,
   reverse: true,
   unit: 'pixel',
 });
@@ -67,7 +67,7 @@ const resize = useValueResize('horizontal', width, {
   z-index: 10;
 }
 
-.right-panel {
+.right-sidebar {
   position: relative;
   height: 100%;
   background: var(--sidebar-bg);
@@ -84,13 +84,13 @@ const resize = useValueResize('horizontal', width, {
   }
 }
 
-.right-panel-content {
+.right-sidebar-content {
   width: 100%;
   flex: 1;
   overflow: auto;
 }
 
-.right-panel-actions {
+.right-sidebar-actions {
   width: 100%;
   padding: var(--gap-sm);
   border-bottom: var(--border-default);

@@ -49,7 +49,7 @@
             <template v-if="isTopRightPane" #right-actions>
               <command-action-button
                 v-if="!opened"
-                :command="DefaultCommands.TOGGLE_RIGHT_PANEL"
+                :command="DefaultCommands.TOGGLE_RIGHT_SIDEBAR"
                 size="sm"
               />
             </template>
@@ -363,7 +363,7 @@ const handleDrop = async (zone: DropZone): Promise<void> => {
   }
 };
 
-const { opened } = storeToRefs(api.ui.useRightPanel());
+const { opened } = storeToRefs(api.ui.useRightSidebar());
 </script>
 
 <style scoped>

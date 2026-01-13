@@ -1,3 +1,0 @@
-export const RIGHT_PANEL_MIN_WIDTH = 200;
-export const RIGHT_PANEL_MAX_WIDTH = 600;
-export const RIGHT_PANEL_DEFAULT_WIDTH = 300;

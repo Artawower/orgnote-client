@@ -74,6 +74,7 @@ $toolbar-height: calc(52px + var(--footer-wrapper-padding-y, 0px));
 .editor-actions {
   overflow-x: auto;
   padding: 0 var(--padding-md);
+  touch-action: pan-x;
   @include hide-scrollbar;
 }
 

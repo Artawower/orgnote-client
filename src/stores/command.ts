@@ -80,5 +80,7 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     commands,
     execute,
     afterExecute,
+    // TODO: dev add effects
+    // addEffect('before', TARGET_COMMAND, () => action | Command)
   };
 });
