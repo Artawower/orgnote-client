@@ -87,8 +87,16 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
   const selection = computed(() => activeContext.value?.selection ?? '');
   const hasSelection = computed(() => selection.value.length > 0);
 
-  const setActiveContext = (ctx: ActiveEditorContext): void => {
-    activeContext.value = ctx;
+  const DEFAULT_ACTIVE_CONTEXT: ActiveEditorContext = {
+    orgNode: null,
+    cursorPosition: 0,
+    selection: '',
+    editorViewGetter: () => undefined,
+    focused: false,
+  };
+
+  const setActiveContext = (ctx: Partial<ActiveEditorContext>): void => {
+    activeContext.value = { ...DEFAULT_ACTIVE_CONTEXT, ...ctx };
   };
 
   const updateActiveContext = (ctx: Partial<ActiveEditorContext>): void => {

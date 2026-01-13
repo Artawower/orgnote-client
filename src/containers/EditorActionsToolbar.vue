@@ -9,22 +9,20 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { isPresent } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import CommandActionButton from './CommandActionButton.vue';
-import { useScreenDetection } from 'src/composables/use-screen-detection';
-import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 import AppFlex from 'src/components/AppFlex.vue';
 import { DefaultCommands } from 'orgnote-api';
 
 const editorStore = api.core.useEditor();
-const { keyboardOpened, keyboardHeight } = useKeyboardState();
-const { tabletBelow } = useScreenDetection();
+const { keyboardOpened, keyboardHeight } = api.ui.useKeyboardState();
+const { tabletBelow } = api.ui.useScreenDetection();
 
-const isEditorActive = computed(() => isPresent(editorStore.activeContext));
+const isEditorFocused = computed(() => editorStore.activeContext?.focused === true);
 
 const shouldShow = computed(
-  () => tabletBelow.value && isEditorActive.value && keyboardOpened.value && keyboardHeight.value > 0,
+  () =>
+    tabletBelow.value && isEditorFocused.value && keyboardOpened.value && keyboardHeight.value > 0,
 );
 
 const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
@@ -42,7 +40,9 @@ $toolbar-height: 44px;
   position: fixed;
   left: 0;
   right: 0;
-  top: calc(var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px) - #{$toolbar-height});
+  top: calc(
+    var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px) - #{$toolbar-height}
+  );
   padding: 0 var(--padding-sm);
   box-sizing: border-box;
   scrollbar-width: none;

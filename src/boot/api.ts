@@ -46,6 +46,7 @@ import { useLayoutStore } from 'src/stores/layout';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { useFileManagerStore } from 'src/stores/file-manager';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
+import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 import { useConfigStore } from 'src/stores/config';
 import { useNotificationsStore } from 'src/stores/notifications';
 import { useFileReaderStore } from 'src/stores/file-reader';
@@ -152,6 +153,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useSettingsUi: useSettingsUiStore,
       useConfirmationModal,
       useScreenDetection,
+      useKeyboardState,
       useContextMenu: useContextMenuStore,
       useTheme: useThemeStore,
     },

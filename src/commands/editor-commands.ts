@@ -7,6 +7,8 @@ import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
 import { blurEditor } from 'src/utils/editor-primitives';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
+const isKeyboardClosed = (api: OrgNoteApi): boolean =>
+  !api.ui.useKeyboardState().keyboardOpened.value;
 
 const getActiveEditorView = (api: OrgNoteApi): EditorView | undefined => {
   const editorStore = api.core.useEditor();
@@ -267,7 +269,7 @@ export const getEditorCommands = (): Command[] => {
       command: DefaultCommands.EDITOR_HIDE_KEYBOARD,
       icon: 'sym_o_keyboard_hide',
       group: EDITOR_COMMAND_GROUP,
-      hide: isEditorNotActive,
+      hide: isKeyboardClosed,
       handler: (api) => withEditorView(api, blurEditor),
     },
   ];

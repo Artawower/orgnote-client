@@ -7,15 +7,31 @@
     role="textbox"
     aria-label="Note editor"
     aria-multiline="true"
+    @focus="handleFocus"
+    @blur="handleBlur"
   ></textarea>
 </template>
 
 <script lang="ts" setup>
+import { api } from 'src/boot/api';
+
 defineProps<{
   readonly?: boolean;
 }>();
 
 const model = defineModel<string>();
+
+const editorStore = api.core.useEditor();
+
+const handleFocus = () => {
+  editorStore.setActiveContext({
+    focused: true,
+  });
+};
+
+const handleBlur = () => {
+  editorStore.clearActiveContext();
+};
 </script>
 
 <style lang="scss" scoped>

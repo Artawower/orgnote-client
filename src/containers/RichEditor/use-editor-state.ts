@@ -114,11 +114,12 @@ export const useEditorState = (options: UseEditorStateOptions) => {
           cursorPosition: 0,
           selection: '',
           editorViewGetter: options.editorViewGetter,
+          focused: true,
         });
         return false;
       },
       blur: () => {
-        editorStore.updateActiveContext({ selection: '' });
+        editorStore.clearActiveContext();
         return false;
       },
       touchstart: (evt, view) => {
