@@ -17,7 +17,7 @@
         <router-view />
         <editor-actions-toolbar />
       </safe-area>
-      <visibility-wrapper tablet-below>
+      <visibility-wrapper v-if="!keyboardOpened" tablet-below>
         <main-footer />
       </visibility-wrapper>
     </app-flex>
@@ -49,6 +49,7 @@ import { reporter } from 'src/boot/report';
 import { DefaultCommands, RouteNames } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { useCommandsStore } from 'src/stores/command';
+import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 
 const commandsStore = useCommandsStore();
 
@@ -86,6 +87,8 @@ onMounted(() => {
   handleErrorFromQuery();
   checkFileSystemAvailability();
 });
+
+const { keyboardOpened } = useKeyboardState();
 </script>
 
 <style lang="scss" scoped>

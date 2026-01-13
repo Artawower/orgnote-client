@@ -47,6 +47,7 @@ const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): vo
   document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
 };
 
+
 const findScrollableAncestor = (element: Element | null): HTMLElement | null => {
   if (!element || element === document.documentElement) return null;
 
@@ -111,6 +112,16 @@ const createViewportMeasurer = (
       const opened = height > KEYBOARD_HEIGHT_THRESHOLD;
       setKeyboardState(opened, opened ? height : 0);
       updateCssVariables(screenHeight, viewportOffsetTop);
+
+      if (!platform.is.ios) return;
+      const heightValue = `${screenHeight}px`;
+      document.documentElement.style.setProperty('height', heightValue, 'important');
+      document.documentElement.style.setProperty('max-height', heightValue, 'important');
+      document.body.style.setProperty('height', heightValue, 'important');
+      document.body.style.setProperty('max-height', heightValue, 'important');
+      if (opened) {
+        window.scrollTo(0, 0);
+      }
     }
 
     cb?.({ viewportHeight: screenHeight, keyboardOpened: globalKeyboardOpened.value });

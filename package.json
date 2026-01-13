@@ -14,7 +14,7 @@
     "dev:android:local": "adb reverse tcp:8000 tcp:8000 && adb reverse tcp:3000 tcp:3000 && env-cmd -f ./.env quasar dev -m capacitor -T android",
     "dev:pwa": "env-cmd -f ./.env quasar dev -m pwa",
     "setup:certs": "./scripts/setup-local-certs.sh",
-    "dev:pwa:preview": "env-cmd -f ./.env quasar build -m pwa && npx @quasar/cli serve dist/pwa --https --cert .certs/cert.pem --key .certs/key.pem --port 3001 --hostname 0.0.0.0 --history",
+    "dev:pwa:preview": "env-cmd -f ./.env quasar build -m pwa && npx @quasar/cli serve dist/pwa --https --cert .certs/cert.pem --key .certs/key.pem --port 3002 --hostname 0.0.0.0 --history",
     "dev:ssr": "quasar dev -m ssr",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android -- -d",
     "dev:ios": "env-cmd -f ./.env.ios quasar dev -m capacitor -T ios",
