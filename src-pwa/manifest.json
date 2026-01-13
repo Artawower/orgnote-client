@@ -2,8 +2,9 @@
   "name": "Org Note",
   "short_name": "Org Note",
   "orientation": "portrait",
+  "start_url": "/?fullscreen=true",
   "background_color": "#9356E8",
-  "theme_color": "#9356E8",
+  "theme_color": "#ffffff",
   "categories": ["books", "education", "lifestyle", "productivity", "utilities"],
   "display": "fullscreen",
   "icons": [
