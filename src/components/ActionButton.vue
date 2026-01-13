@@ -1,7 +1,7 @@
 <template>
   <button
     @click="onButtonClick"
-    :class="[`icon-${size}`, active, { outline, border, text: slots.text }, props.classes]"
+    :class="[`icon-${size}`, active, { outline, border, text: slots.text, 'hover-effect': hoverEffect }, props.classes]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
       '--btn-action-hover-color': safeHoverColor,
@@ -29,21 +29,24 @@ import type { StyleSize, ThemeVariable } from 'orgnote-api';
 
 export type ButtonAlignment = 'center' | 'space-between' | 'left' | 'right';
 
+export interface ActionButtonProps {
+  icon?: string;
+  active?: boolean;
+  size?: StyleSize;
+  color?: ThemeVariable;
+  fireIcon?: string;
+  fireColor?: ThemeVariable;
+  outline?: boolean;
+  hoverColor?: ThemeVariable;
+  hoverEffect?: boolean;
+  border?: boolean;
+  classes?: string;
+  copyText?: string;
+  alignment?: ButtonAlignment;
+}
+
 const props = withDefaults(
-  defineProps<{
-    icon?: string;
-    active?: boolean;
-    size?: StyleSize;
-    color?: ThemeVariable;
-    fireIcon?: string;
-    fireColor?: ThemeVariable;
-    outline?: boolean;
-    hoverColor?: ThemeVariable;
-    border?: boolean;
-    classes?: string;
-    copyText?: string;
-    alignment?: ButtonAlignment;
-  }>(),
+  defineProps<ActionButtonProps>(),
   {
     active: false,
     size: 'md',
@@ -51,6 +54,7 @@ const props = withDefaults(
     classes: '',
     fireColor: 'red',
     alignment: 'center',
+    hoverEffect: true,
   },
 );
 
@@ -133,7 +137,7 @@ button {
     width: var(--btn-action-text-width);
   }
 
-  &:not(.outline) {
+  &.hover-effect:not(.outline) {
     &:hover,
     &:active {
       background: var(--btn-action-hover-bg);
@@ -151,7 +155,7 @@ button {
     border-color: var(--action-border-color, var(--border-default));
   }
 
-  &:hover {
+  &.hover-effect:hover {
     border-color: color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black);
 
     .icon {

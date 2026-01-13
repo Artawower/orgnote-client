@@ -1,9 +1,21 @@
 <template>
-  <app-flex v-if="shouldShow" row flex-end a-center gap="xs" class="editor-actions-toolbar">
+  <app-flex v-if="shouldShow" row flex-end a-center gap="md" class="editor-actions-toolbar">
     <app-flex class="editor-actions" row start a-center gap="xs" @touchstart.stop @mousedown.stop>
-      <command-action-button v-for="cmd of editorCommands" :key="cmd" :command="cmd" size="md" />
+      <command-action-button
+        v-for="cmd of editorCommands"
+        :key="cmd"
+        :command="cmd"
+        size="md"
+        :hover-effect="false"
+      />
     </app-flex>
-    <command-action-button :command="DefaultCommands.EDITOR_HIDE_KEYBOARD" size="md" />
+    <div class="fixed-editor-actions">
+      <command-action-button
+        :hover-effect="false"
+        :command="DefaultCommands.EDITOR_HIDE_KEYBOARD"
+        size="md"
+      />
+    </div>
   </app-flex>
 </template>
 
@@ -29,9 +41,11 @@ const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
 </script>
 
 <style lang="scss" scoped>
-$toolbar-height: 44px;
+$toolbar-height: calc(52px + var(--footer-wrapper-padding-y, 0px));
 
 .editor-actions-toolbar {
+  @include hide-scrollbar;
+
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
@@ -43,18 +57,21 @@ $toolbar-height: 44px;
   top: calc(
     var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px) - #{$toolbar-height}
   );
-  padding: 0 var(--padding-sm);
-  box-sizing: border-box;
-  scrollbar-width: none;
-  z-index: 100;
-  background: var(--bg-secondary);
+  padding: var(--footer-wrapper-padding-x) calc(var(--footer-wrapper-padding-x) / 2);
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  box-sizing: border-box;
+  z-index: 100;
 }
 
 .editor-actions {
   overflow-x: auto;
+  padding: 0 var(--padding-md);
+  @include hide-scrollbar;
+}
+
+.editor-actions,
+.fixed-editor-actions {
+  border-radius: var(--footer-border-radius);
+  background: var(--bg-secondary);
 }
 </style>

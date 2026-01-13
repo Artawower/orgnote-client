@@ -1,12 +1,10 @@
 <template>
   <action-button
     v-if="command && !command.hide?.(api)"
+    v-bind="$attrs"
     @click="execute"
     :icon="iconString"
-    :size="size"
     :aria-label="resolvedAriaLabel"
-    classes="action-btn"
-    :alignment="alignment"
   >
     <template v-if="iconComponent" #icon>
       <component :is="iconComponent" />
@@ -18,29 +16,25 @@
 </template>
 
 <script lang="ts" setup>
-import ActionButton, { type ButtonAlignment } from 'src/components/ActionButton.vue';
-import type { CommandName, StyleSize } from 'orgnote-api';
+import ActionButton from 'src/components/ActionButton.vue';
+import type { CommandName } from 'orgnote-api';
 import { useCommandsStore } from 'src/stores/command';
 import { computed, toValue } from 'vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { useResolvedIcon } from 'src/composables/use-resolved-icon';
 
-const props = withDefaults(
-  defineProps<{
-    command: CommandName;
-    alignment?: ButtonAlignment;
-    size?: StyleSize;
-    includeText?: boolean;
-    text?: string;
-    ariaLabel?: string;
-    data?: unknown;
-  }>(),
-  {
-    size: 'md',
-    alignment: 'center',
-  },
-);
+defineOptions({
+  inheritAttrs: false,
+});
+
+const props = defineProps<{
+  command: CommandName;
+  includeText?: boolean;
+  text?: string;
+  ariaLabel?: string;
+  data?: unknown;
+}>();
 
 const commandsStore = useCommandsStore();
 
