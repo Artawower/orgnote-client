@@ -75,7 +75,6 @@ import { nextTick, watch } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppFlex from 'src/components/AppFlex.vue';
-
 const modal = api.ui.useModal();
 const { modals } = storeToRefs(modal);
 
@@ -157,9 +156,9 @@ dialog {
     &:not(.mini) {
       width: 100%;
       border-radius: 0;
-      height: 100vh;
-      height: 100dvh;
-      top: 0;
+      height: var(--screen-height, 100dvh) !important;
+      max-height: var(--screen-height, 100dvh) !important;
+      top: var(--viewport-offset-top, 0px) !important;
       bottom: unset;
       margin: 0;
     }

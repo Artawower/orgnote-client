@@ -14,15 +14,18 @@ const VH_MULTIPLIER = 0.01;
 
 const globalKeyboardOpened = ref(false);
 const globalKeyboardHeight = ref(0);
+const globalViewportHeight = ref(0);
 let initialViewportHeight = 0;
 
 export function useKeyboardState(): {
   keyboardOpened: Readonly<Ref<boolean>>;
   keyboardHeight: Readonly<Ref<number>>;
+  viewportHeight: Readonly<Ref<number>>;
 } {
   return {
     keyboardOpened: readonly(globalKeyboardOpened),
     keyboardHeight: readonly(globalKeyboardHeight),
+    viewportHeight: readonly(globalViewportHeight),
   };
 }
 
@@ -106,6 +109,7 @@ const createViewportMeasurer = (
     const screenHeight = window.visualViewport?.height ?? window.innerHeight;
     const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
     viewportHeight.value = screenHeight;
+    globalViewportHeight.value = screenHeight;
 
     if (!platform.is.capacitor) {
       const height = Math.max(0, window.innerHeight - screenHeight);
