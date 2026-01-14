@@ -55,6 +55,7 @@
     "@codemirror/autocomplete": "6.20.0",
     "@codemirror/commands": "6.10.1",
     "@codemirror/language": "6.12.1",
+    "@codemirror/search": "^6.6.0",
     "@codemirror/state": "6.5.3",
     "@codemirror/view": "6.39.5",
     "@es-git/fetch-mixin": "0.10.0",

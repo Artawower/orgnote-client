@@ -1,6 +1,6 @@
 <template>
-  <app-flex class="completion-input" row between align-center gap="sm">
-    <app-flex class="input" row start align-center gap="sm">
+  <app-flex class="completion-input" row between align-center>
+    <app-flex class="input" row start align-center>
       <app-icon name="keyboard_arrow_right" size="md" color="fg"></app-icon>
       <app-input
         ref="appInputRef"
@@ -17,7 +17,7 @@
         size="sm"
       ></action-button>
     </visibility-wrapper>
-    <action-button @click="completion.close()" icon="close" size="sm"></action-button>
+    <action-button @click="completion.close()" icon="close" size="md"></action-button>
   </app-flex>
 </template>
 
