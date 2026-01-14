@@ -119,7 +119,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         return false;
       },
       blur: () => {
-        editorStore.clearActiveContext();
+        editorStore.updateActiveContext({ focused: false });
         return false;
       },
       touchstart: (evt, view) => {
