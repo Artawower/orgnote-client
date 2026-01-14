@@ -48,7 +48,7 @@ const colorClass = computed(() => `color-${props.color}`);
 }
 
 @each $color
-  in (blue, green, red, yellow, orange, magenta, cyan, violet, teal, fg, fg-muted, accent)
+  in ('blue', 'green', 'red', 'yellow', 'orange', 'magenta', 'cyan', 'violet', 'teal', 'fg', 'fg-muted', 'accent')
 {
   .app-link.color-#{$color} {
     color: var(--#{$color});
