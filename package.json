@@ -71,6 +71,7 @@
     "@quasar/cli": "2.5.0",
     "@quasar/extras": "1.16.17",
     "@uiw/codemirror-extensions-langs": "4.25.4",
+    "@uiw/codemirror-theme-github": "^4.25.4",
     "@vueuse/core": "13.1.0",
     "axios": "1.8.4",
     "better-queue": "3.8.12",
