@@ -128,6 +128,8 @@ const { t } = useI18n({
 
 @include desktop {
   .completion-wrapper {
+    height: auto;
+
     &:not(.full-screen) {
       max-height: var(--completion-max-height, 68vh);
     }

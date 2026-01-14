@@ -223,4 +223,18 @@ dialog.full-screen {
 .safe-area-wrapper {
   height: 100%;
 }
+
+@include desktop {
+  .safe-area-wrapper {
+    height: auto;
+  }
+
+  .modal-content {
+    flex: 0 1 auto;
+  }
+
+  .content {
+    flex: 0 1 auto;
+  }
+}
 </style>
