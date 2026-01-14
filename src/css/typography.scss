@@ -1,17 +1,15 @@
 @import 'mixins';
 
 @font-face {
-  font-family: 'Jetbrains Mono';
-  src:
-    url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2')
-      format('woff2'),
-    url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono/web/woff/JetBrainsMono-Regular.woff')
-      format('woff');
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'Menlo';
   src: url('./fonts/Menlo-Regular.ttf') format('truetype');
+  font-display: swap;
 }
 
 body {
