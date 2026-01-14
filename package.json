@@ -136,6 +136,7 @@
     "@vue/test-utils": "2.4.6",
     "@vue/typescript-plugin": "3.1.5",
     "autoprefixer": "10.4.21",
+    "baseline-browser-mapping": "^2.9.14",
     "electron": "35.2.0",
     "env-cmd": "10.1.0",
     "eslint": "9.25.1",
