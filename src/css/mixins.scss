@@ -91,7 +91,7 @@
 }
 
 @mixin tablet-below {
-  @media (max-width: calc($desktop - 1px)) {
+  @media (max-width: calc($tablet - 1px)) {
     @content;
   }
 }
