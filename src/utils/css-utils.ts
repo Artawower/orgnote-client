@@ -60,7 +60,7 @@ export const getCssNumericProperty: GetCssNumericProperty = (element, propertyNa
 };
 
 export const applyCSSVariables: ApplyCSSVariables<string> = clientOnly(
-  (variables: { [key: string]: string | number | undefined }) => {
+  (variables: { [key in string]?: string | number }) => {
     const body = document.querySelector('body') as HTMLElement;
     Object.keys(variables).forEach((k) => {
       const value = variables[k];
