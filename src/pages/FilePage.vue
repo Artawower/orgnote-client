@@ -1,13 +1,17 @@
 <template>
-  <component
-    v-if="showReader"
-    :is="readerComponent"
-    :buffer="buffer"
-    :readonly="buffer!.guard?.readonly"
-    @update:content="onContentUpdate"
-  />
-  <file-not-supported v-if="showNotSupported" :path="currentFilePath" />
-  <loading-dots v-if="showLoading" />
+  <div class="file-page">
+    <main-header v-if="tabletBelow" class="file-page-header" />
+    <component
+      class="file-page-content"
+      v-if="showReader"
+      :is="readerComponent"
+      :buffer="buffer"
+      :readonly="buffer!.guard?.readonly"
+      @update:content="onContentUpdate"
+    />
+    <file-not-supported v-if="showNotSupported" :path="currentFilePath" />
+    <loading-dots v-if="showLoading" />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -18,6 +22,7 @@ import { api } from 'src/boot/api';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import FileNotSupported from 'src/components/FileNotSupported.vue';
+import MainHeader from 'src/containers/MainHeader.vue';
 
 const router = inject<ShallowRef<Router>>(TAB_ROUTER_KEY);
 
@@ -60,4 +65,26 @@ const onContentUpdate = (content: string) => {
     buffer.value.setText(content);
   }
 };
+
+const { tabletBelow } = api.ui.useScreenDetection();
 </script>
+
+<style scoped>
+.file-page {
+  position: relative;
+  height: 100%;
+  --content-top-offset: var(--header-height);
+}
+
+.file-page-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.file-page-content {
+  height: 100%;
+}
+</style>

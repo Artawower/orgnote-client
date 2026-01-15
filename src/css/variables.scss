@@ -2,6 +2,15 @@
 @use 'quasar.variables' as a;
 
 body {
+  // Safe Area
+  --safe-area-top: max(env(safe-area-inset-top, 0px), var(--title-bar-height, 0px));
+  --safe-area-bottom: var(--device-padding-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  // Content offset (for floating headers)
+  --content-top-offset: 0px;
+
   --padding-xs: 2px;
   --padding-sm: 4px;
   --padding-md: 8px;
@@ -38,6 +47,7 @@ body {
   --border-radius-md: 8px;
   --border-radius-lg: 16px;
   --border-radius-xl: 32px;
+  --border-radius-factor: 0.45;
 
   // Default borders
   --border-default: 1px solid var(--bg-elevated);
@@ -54,6 +64,27 @@ body {
   --gap-md: 16px;
   --gap-lg: 24px;
   --gap-xl: 32px;
+
+  // Header
+  --header-height: 44px;
+  --header-bg: transparent;
+  --header-border: none;
+  --header-border-radius: 0;
+  --header-padding: var(--padding-sm) var(--padding-md);
+
+  // Header wrapper
+  --header-wrapper-bg: transparent;
+  --header-wrapper-border-radius: 0;
+  --header-wrapper-padding-y: var(--padding-lg);
+  --header-wrapper-padding-x: var(--padding-lg);
+  --header-wrapper-padding: var(--header-wrapper-padding-y) var(--header-wrapper-padding-x);
+
+  // Header items (left/center/right sections)
+  --header-item-bg: var(--bg-secondary);
+  --header-item-border: none;
+  --header-item-height: 46px;
+  --header-item-border-radius: calc(var(--header-item-height) * var(--border-radius-factor, 0.45));
+  --header-item-padding: var(--padding-md) var(--padding-lg);
 
   // Footer
   --footer-height: 0px;
@@ -314,6 +345,8 @@ body {
     );
 
     --btn-action-md-size: 46px;
+
+    --header-height: 44px;
   }
 }
 

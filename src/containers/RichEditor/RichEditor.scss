@@ -57,6 +57,7 @@
 
     .cm-content {
       padding: var(--editor-padding);
+      padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
       padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
       max-width: 100%;
       min-width: 0;

@@ -13,8 +13,8 @@
     </template>
 
     <app-flex column class="content" start align-stretch>
-      <safe-area top class="content-body">
-        <router-view />
+      <safe-area class="content-body">
+        <router-view class="content-view" />
         <editor-actions-toolbar />
       </safe-area>
       <visibility-wrapper v-if="!keyboardOpened" tablet-below>
