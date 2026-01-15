@@ -60,10 +60,12 @@ export const getCssNumericProperty: GetCssNumericProperty = (element, propertyNa
 };
 
 export const applyCSSVariables: ApplyCSSVariables<string> = clientOnly(
-  (variables: Record<string, string>) => {
+  (variables: { [key: string]: string | number | undefined }) => {
     const body = document.querySelector('body') as HTMLElement;
     Object.keys(variables).forEach((k) => {
-      body.style.setProperty(`--${toKebabCase(k)}`, `${variables[k]}`);
+      const value = variables[k];
+      if (value === undefined) return;
+      body.style.setProperty(`--${toKebabCase(k)}`, `${value}`);
     });
   },
   undefined,
