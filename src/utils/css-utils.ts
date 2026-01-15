@@ -12,86 +12,80 @@ import type {
 } from 'orgnote-api';
 
 import { toKebabCase } from './to-kebab-case';
-
-export const getCssVar: GetCssVar = (varName) => {
-  const root = document.body;
-  const normalizedName = normalizeCssVariable(varName);
-  const computedStyle = getComputedStyle(root);
-  return computedStyle.getPropertyValue(normalizedName);
-};
-
-export const getCssTheme: GetCssTheme = (variableNames) => {
-  return variableNames.reduce(
-    (acc, cur) => {
-      const variable = toKebabCase(cur);
-      const cssValue = getCssVar(variable);
-      if (!cssValue) {
-        return acc;
-      }
-      acc[cur as ThemeVariable] = cssValue;
-      return acc;
-    },
-    {} as { [key in ThemeVariable]?: string },
-  );
-};
-
-export const getNumericCssVar: GetNumericCssVar = (varName) => {
-  const normalizedName = normalizeCssVariable(varName);
-  const value = getCssVar(normalizedName);
-  if (!value) return;
-  const n = value.replace(/[^\d.]/g, '');
-  return +n;
-};
-
-export const getCssProperty: GetCssProperty = (element, propertyName) => {
-  const defaultView = document.defaultView;
-  if (!defaultView) return;
-  const computedStyle = defaultView.getComputedStyle(element, null);
-  return computedStyle.getPropertyValue(propertyName);
-};
-
-export const getCssNumericProperty: GetCssNumericProperty = (element, propertyName) => {
-  const value = getCssProperty(element, propertyName);
-  if (!value) return;
-  const n = value.replace(/[^\d.]/g, '');
-  return +n;
-};
-
-export const applyCSSVariables: ApplyCSSVariables<string> = (variables) => {
-  const body = document.querySelector('body') as HTMLElement;
-  Object.keys(variables).forEach((k) => {
-    body.style.setProperty(`--${toKebabCase(k)}`, `${variables[k as string]}`);
-  });
-};
-
-export const resetCSSVariables: ResetCSSVariables<string> = (variables) => {
-  const body = document.body;
-  variables.forEach((k) => {
-    const kebabedVarName = toKebabCase(k);
-    body.style.removeProperty(`--${kebabedVarName}`);
-  });
-};
+import { clientOnly } from './platform-specific';
 
 export const normalizeCssVariable = (variable: string) => {
   return variable.startsWith('--') ? variable : `--${variable}`;
 };
 
 export const getCssVariableName = (variable: string): string => {
-  if (!variable) {
-    return variable;
-  }
+  if (!variable) return variable;
   return `var(${normalizeCssVariable(variable)})`;
 };
 
-export const applyScopedStyles: ApplyScopedStyles = (scopeName, styles) => {
-  removeScopedStyles(scopeName);
-  const styleElement = document.createElement('style');
-  styleElement.setAttribute('id', scopeName);
-  styleElement.textContent = styles;
-  document.head.appendChild(styleElement);
+export const getCssVar: GetCssVar = clientOnly((varName: string) => {
+  const normalizedName = normalizeCssVariable(varName);
+  return getComputedStyle(document.body).getPropertyValue(normalizedName);
+}, '');
+
+export const getCssTheme: GetCssTheme = (variableNames) =>
+  variableNames.reduce(
+    (acc, cur) => {
+      const cssValue = getCssVar(toKebabCase(cur));
+      if (cssValue) acc[cur as ThemeVariable] = cssValue;
+      return acc;
+    },
+    {} as { [key in ThemeVariable]?: string },
+  );
+
+export const getNumericCssVar: GetNumericCssVar = (varName) => {
+  const value = getCssVar(normalizeCssVariable(varName));
+  if (!value) return;
+  return +value.replace(/[^\d.]/g, '');
 };
 
-export const removeScopedStyles: RemoveScopedStyles = (scopeName) => {
-  const styleElement = document.getElementById(scopeName);
-  styleElement?.remove();
+export const getCssProperty: GetCssProperty = clientOnly(
+  (element: Element, propertyName: string) => {
+    const defaultView = document.defaultView;
+    if (!defaultView) return;
+    return defaultView.getComputedStyle(element, null).getPropertyValue(propertyName);
+  },
+  undefined,
+);
+
+export const getCssNumericProperty: GetCssNumericProperty = (element, propertyName) => {
+  const value = getCssProperty(element, propertyName);
+  if (!value) return;
+  return +value.replace(/[^\d.]/g, '');
 };
+
+export const applyCSSVariables: ApplyCSSVariables<string> = clientOnly(
+  (variables: Record<string, string>) => {
+    const body = document.querySelector('body') as HTMLElement;
+    Object.keys(variables).forEach((k) => {
+      body.style.setProperty(`--${toKebabCase(k)}`, `${variables[k]}`);
+    });
+  },
+  undefined,
+);
+
+export const resetCSSVariables: ResetCSSVariables<string> = clientOnly((variables: string[]) => {
+  variables.forEach((k) => {
+    document.body.style.removeProperty(`--${toKebabCase(k)}`);
+  });
+}, undefined);
+
+export const removeScopedStyles: RemoveScopedStyles = clientOnly((scopeName: string) => {
+  document.getElementById(scopeName)?.remove();
+}, undefined);
+
+export const applyScopedStyles: ApplyScopedStyles = clientOnly(
+  (scopeName: string, styles: string) => {
+    removeScopedStyles(scopeName);
+    const styleElement = document.createElement('style');
+    styleElement.setAttribute('id', scopeName);
+    styleElement.textContent = styles;
+    document.head.appendChild(styleElement);
+  },
+  undefined,
+);
