@@ -52,6 +52,7 @@
     .cm-scroller {
       overflow: auto;
       max-width: 100%;
+      font-family: var(--editor-font-family-main);
     }
 
     .cm-content {

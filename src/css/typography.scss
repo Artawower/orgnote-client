@@ -17,14 +17,13 @@ body {
   --font-size-md: 16px;
   --font-size-lg: 22px;
 
-  --main-font-family:
-    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, 'Apple Color Emoji',
+  --main-font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
     Arial, sans-serif;
-  --editor-font-family-main: 'Menlo', charter, Georgia, Cambria, 'Roboto', Times, serif;
+  --editor-font-family-main: Menlo, charter, Georgia, Cambria, Times, serif;
   --paragraph-font-family: var(--main-font-family);
-  --headline-font-family: 'Roboto', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --headline-font-family: var(--main-font-family);
   --headline-font-weight: var(--font-weight-extra-bold);
-  --code-font-family: monospace, monospace;
+  --code-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --code-font-size: var(--font-size-sm);
 
   --description-font-family: var(--main-font-family);
@@ -41,27 +40,6 @@ h4,
 h5,
 h6 {
   font-family: var(--headline-font-family);
-}
-
-p,
-div,
-span,
-input {
-  font-family: var(--paragraph-font-family);
-}
-
-p,
-span,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-input,
-ul,
-li {
-  color: var(--fg);
 }
 
 .color-white {

@@ -77,8 +77,8 @@ watch(
 
   :deep(.cm-editor) {
     height: 100%;
-    font-family: var(--editor-font-family-code);
-    font-size: var(--font-size-md);
+    font-family: var(--code-font-family);
+    font-size: var(--code-font-size);
     background: var(--bg);
 
     &.cm-focused {
@@ -89,6 +89,7 @@ watch(
   :deep(.cm-scroller) {
     overflow: auto;
     padding: var(--padding-md);
+    font-family: var(--code-font-family);
   }
 
   :deep(.cm-content) {

@@ -114,6 +114,8 @@ section {
 
 body {
   line-height: 1;
+  color: var(--fg);
+  font-family: var(--main-font-family);
 }
 
 blockquote,
@@ -399,14 +401,6 @@ textarea {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-}
-
-html,
-button,
-input,
-select,
-textarea {
-  color: #222;
 }
 
 ::-moz-selection {

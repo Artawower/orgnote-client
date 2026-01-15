@@ -1,6 +1,8 @@
 <template>
   <div class="settings-scheme">
-    <h5 v-if="name" class="capitalize description">{{ name.toUpperCase() }}</h5>
+    <app-description v-if="name" padded>
+      {{ name.toUpperCase() }}
+    </app-description>
     <app-flex
       v-if="
         scheme.type === 'union' && conditionalKey && Object.keys(conditionalOption ?? {}).length
@@ -48,6 +50,7 @@ import { storeToRefs } from 'pinia';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { isPresent } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
+import AppDescription from 'src/components/AppDescription.vue';
 
 const props = defineProps<{
   path: keyof OrgNoteConfig;

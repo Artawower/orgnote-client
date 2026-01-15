@@ -23,10 +23,19 @@ withDefaults(
 
 <style lang="scss">
 .card-wrapper {
-  & {
+  border-radius: var(--card-radius);
+  width: 100%;
+
+  > :first-child {
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+  }
+
+  > :last-child {
+    border-radius: 0 0 var(--card-radius) var(--card-radius);
+  }
+
+  > :only-child {
     border-radius: var(--card-radius);
-    clip-path: inset(0 round var(--card-radius));
-    width: 100%;
   }
 
   &.padding {
@@ -50,7 +59,7 @@ withDefaults(
       background: color-mix(in srgb, $color, var(--bg) 80%) !important;
       border-color: $color;
 
-      ::v-deep(li::marker) {
+      :deep(li::marker) {
         color: color-mix(in srgb, $color, var(--bg) 40%) !important;
       }
     }

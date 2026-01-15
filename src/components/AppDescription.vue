@@ -26,7 +26,7 @@ const { t } = useI18n({
   margin: 0;
 
   &.padded {
-    padding: var(--padding-md) 0;
+    padding: var(--description-padding);
   }
 }
 

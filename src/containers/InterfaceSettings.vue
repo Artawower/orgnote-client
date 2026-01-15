@@ -2,6 +2,10 @@
   <div class="interface-settings">
     <settings-scheme :name="t(I18N.COMMON)" :scheme="commonScheme" path="ui"></settings-scheme>
     <settings-scheme :name="t(I18N.THEMES)" :scheme="themeScheme" path="ui"></settings-scheme>
+    <app-description padded>
+      {{ t(I18N.FONTS).toUpperCase() }}
+    </app-description>
+    <font-settings />
     <settings-scheme :name="t(I18N.EDITOR)" :scheme="editorScheme" path="editor"></settings-scheme>
     <settings-scheme
       :name="t(I18N.COMPLETION)"
@@ -13,9 +17,11 @@
 
 <script lang="ts" setup>
 import SettingsScheme from './SettingsScheme.vue';
+import FontSettings from './FontSettings.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N, ORG_NOTE_CONFIG_SCHEMA } from 'orgnote-api';
 import { omitSchemeKeys, pickSchemeKeys, valibotScheme } from 'src/models/valibot-scheme';
+import AppDescription from 'src/components/AppDescription.vue';
 
 const { t } = useI18n({
   useScope: 'global',
@@ -23,7 +29,10 @@ const { t } = useI18n({
 });
 
 const themeKeys = ['theme', 'darkThemeName', 'lightThemeName'] as const;
-const commonScheme = omitSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...themeKeys]);
+const fontKeys = ['fonts'] as const;
+const excludedFromCommon = [...themeKeys, ...fontKeys] as const;
+
+const commonScheme = omitSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...excludedFromCommon]);
 const themeScheme = pickSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...themeKeys]);
 
 const editorScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.editor);

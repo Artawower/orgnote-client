@@ -70,6 +70,7 @@ import { useEditorStore } from 'src/stores/editor';
 import { useOrgBabelStore } from 'src/stores/org-babel';
 import { useFileSearchStore } from 'src/stores/file-search';
 import { useFileMetaStore } from 'src/stores/file-meta';
+import { useFontStore } from 'src/stores/fonts';
 import { wsClient } from 'src/infrastructure/websocket-client';
 
 let api: OrgNoteApi;
@@ -144,6 +145,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       buildOrgNoteUrl,
     },
     ui: {
+      useFonts: useFontStore,
       useSplashScreen,
       useBackgroundSettings,
       useSidebar: useSidebarStore,
@@ -165,6 +167,7 @@ async function initApi(app: App, router: Router): Promise<void> {
 
 const syncConfigurations = async (api: OrgNoteApi) => {
   await api.core.useConfig().sync();
+  await api.ui.useFonts().sync();
 };
 
 export default defineBoot(async ({ app, store, router }) => {

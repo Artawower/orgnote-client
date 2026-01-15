@@ -1,5 +1,6 @@
 <template>
-  <div class="app-dropdown" v-bind="$attrs">
+  <app-flex row gap="md" class="app-dropdown" v-bind="$attrs">
+    <span v-if="label" class="dropdown-label">{{ label }}</span>
     <v-select
       ref="selectRef"
       v-model="model"
@@ -45,7 +46,7 @@
     <div v-if="slots.append" class="append-slot">
       <slot name="append" />
     </div>
-  </div>
+  </app-flex>
 </template>
 
 <script setup lang="ts" generic="T = unknown">
@@ -55,6 +56,7 @@ import { isPresent } from 'orgnote-api/utils';
 import VSelect from 'vue-select';
 import AppIcon from 'src/components/AppIcon.vue';
 import type { StyleVariant } from 'orgnote-api';
+import AppFlex from './AppFlex.vue';
 import 'vue-select/dist/vue-select.css';
 
 interface Props {
@@ -62,6 +64,7 @@ interface Props {
   optionLabel?: string;
   optionValue?: string | ((opt: T) => unknown);
   placeholder?: string;
+  label?: string;
   type?: StyleVariant;
   disable?: boolean;
   multiple?: boolean;
@@ -121,15 +124,30 @@ defineExpose({
 <style lang="scss">
 .app-dropdown {
   width: 100%;
+  border-radius: var(--menu-item-radius);
+  max-height: var(--menu-item-height);
+
+  &:hover {
+    background-color: var(--menu-item-hover-bg);
+  }
+
+  .dropdown-label {
+    min-width: 180px;
+    padding: var(--menu-item-padding);
+    white-space: nowrap;
+  }
+
+  .app-select {
+    flex: 1;
+  }
 }
 
 .app-select {
   padding: var(--menu-item-padding);
-  border-radius: var(--menu-item-radius);
   --vs-border-width: 0;
-  background: var(--bg-elevated);
+  background: transparent;
   --vs-dropdown-bg: var(--bg-elevated);
-  --vs-search-input-bg: var(--bg-elevated);
+  --vs-search-input-bg: transparent;
   --vs-dropdown-option-padding: var(--menu-item-padding);
   --vs-dropdown-option-color: var(--fg);
   --vs-search-input-color: var(--fg);
@@ -138,6 +156,11 @@ defineExpose({
   --vs-actions-padding: 0;
   --vs-dropdown-option--active-bg: var(--bg-active);
   --vs-dropdown-option--active-color: var(--fg-active);
+
+  .vs__dropdown-menu {
+    border-radius: var(--card-radius);
+    overflow: hidden;
+  }
 }
 
 .vs__search,

@@ -1,4 +1,5 @@
 import type { OrgNoteConfig } from 'orgnote-api';
+import { DEFAULT_FONT_FAMILIES } from './fonts';
 
 export const DEFAULT_PANE_PERSISTENCE_SAVE_DELAY = 500;
 
@@ -41,6 +42,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
     dropZoneEdgeRatio: 0.25,
+    fonts: { ...DEFAULT_FONT_FAMILIES },
   },
   extensions: {
     sources: ['https://github.com/Artawower/orgnote-extensions'],
