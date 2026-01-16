@@ -36,7 +36,7 @@ const fileReader = api.core.useFileReader();
 const buffer = computed<OrgBuffer | undefined>(() => {
   const path = currentFilePath.value;
   if (!path) return;
-  return buffers.getBufferByPath(path);
+  return buffers.getBufferByUri(path);
 });
 
 const readerEntry = computed(() => {

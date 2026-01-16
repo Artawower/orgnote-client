@@ -35,6 +35,7 @@ export default defineConfig((ctx) => {
       },
       'default-commands',
       'viewport-patch',
+      'default-buffer-providers',
       'default-file-readers',
       { path: 'default-cron-tasks', server: false },
       { path: 'default-queues', server: false },

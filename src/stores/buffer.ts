@@ -2,37 +2,23 @@ import { defineStore } from 'pinia';
 import { computed, reactive, ref, watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import {
-  isOrgGpgFile,
   isOrgFile,
   i18n,
+  parseBufferUri,
   type BufferStore,
   type Buffer as OrgBuffer,
   type BufferGuard,
   type FileSystemChange,
+  type BufferScheme,
+  type BufferProvider,
 } from 'orgnote-api';
-import {
-  to,
-  uint8ArrayToBase64,
-  uint8ArrayToText,
-  textToUint8Array,
-} from 'orgnote-api/utils';
+import { uint8ArrayToBase64, uint8ArrayToText, textToUint8Array, to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import type { ResultAsync } from 'neverthrow';
-import { errAsync, okAsync } from 'neverthrow';
 import { useFileGuardStore } from './file-guard';
-import { useFileWatcherStore } from './file-watcher';
 import { DEFAULT_SAVE_DELAY_MS, DEFAULT_VALIDATION_DELAY_MS } from 'src/constants/config';
 
 const SAVE_IGNORE_WINDOW_MS = 300;
-
-class EncryptionConfigRequiredError extends Error {
-  constructor() {
-    super('Encryption configuration is required to handle encrypted files.');
-  }
-}
-
-const extractTitleFromPath = (path: string): string => path.split('/').pop() || 'Untitled';
 
 const incrementBufferReference = (buffer: OrgBuffer): OrgBuffer => {
   buffer.referenceCount += 1;
@@ -58,94 +44,23 @@ const isRecentlySaved = (buffer: OrgBuffer): boolean => {
 const shouldIgnoreExternalChange = (buffer: OrgBuffer): boolean =>
   buffer.isSaving || isRecentlySaved(buffer);
 
+const areUint8ArraysEqual = (a: Uint8Array, b: Uint8Array): boolean => {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+};
+
 export const useBufferStore = defineStore<string, BufferStore>('buffers', (): BufferStore => {
   const buffers = ref<Map<string, OrgBuffer>>(new Map());
   const debouncedSavers = new Map<string, () => void>();
   const bufferUnwatchers = new Map<string, () => void>();
 
-  const fm = api.core.useFileSystemManager();
-  const encryption = api.core.useEncryption();
+  const providerStore = api.core.useBufferProviders();
   const config = api.core.useConfig();
 
-  const isEncryptionConfigValid = (): boolean => config.config.encryption.type !== 'disabled';
-
-  const encryptContent = (
-    filePath: string,
-    content: Uint8Array,
-  ): ResultAsync<Uint8Array, Error> => {
-    if (!isOrgGpgFile(filePath)) {
-      return okAsync(content);
-    }
-    if (!isEncryptionConfigValid()) {
-      return errAsync(new EncryptionConfigRequiredError());
-    }
-    const text = uint8ArrayToText(content);
-    return to(encryption.encrypt)(text).map(textToUint8Array);
-  };
-
-  const decryptContent = (
-    filePath: string,
-    content: Uint8Array,
-  ): ResultAsync<Uint8Array, Error> => {
-    if (!content.length || !isOrgGpgFile(filePath)) {
-      return okAsync(content);
-    }
-    if (!isEncryptionConfigValid()) {
-      return errAsync(new EncryptionConfigRequiredError());
-    }
-    const text = uint8ArrayToText(content);
-    return to(encryption.decrypt)(text).map(textToUint8Array);
-  };
-
-  const writeBufferFile = async (buffer: OrgBuffer): Promise<boolean> => {
-    if (!fm.currentFs) {
-      reporter.reportError(new Error('No file system selected'));
-      return false;
-    }
-
-    const contentToWrite = new Uint8Array(buffer.rawContent);
-    const result = await encryptContent(buffer.path, contentToWrite)
-      .andThen((content) => to(fm.currentFs!.writeFile)(buffer.path, content, 'binary'))
-      .map(() => {
-        buffer.metadata.originalRawContent = new Uint8Array(contentToWrite);
-      });
-
-    if (result.isErr()) {
-      reporter.reportError(new Error(`Failed to save: ${buffer.path}`, { cause: result.error }));
-      return false;
-    }
-
-    return true;
-  };
-
-  const readBufferFile = async (buffer: OrgBuffer): Promise<void> => {
-    if (!fm.currentFs) {
-      reporter.reportError(new Error('No file system selected'));
-      return;
-    }
-
-    const safeRead = to(fm.currentFs.readFile, 'Failed to load buffer content');
-    const result = await safeRead<'binary', Uint8Array>(buffer.path, 'binary')
-      .andThen((content) => decryptContent(buffer.path, content))
-      .map((content) => {
-        buffer.rawContent = content;
-        buffer.metadata.originalRawContent = new Uint8Array(content);
-      });
-
-    if (result.isErr()) {
-      const errMsg = `Failed to load: ${buffer.path}`;
-      reporter.reportError(new Error(errMsg, { cause: result.error }));
-      buffer.errors.push(errMsg, result.error.message);
-    }
-  };
-
-  const areUint8ArraysEqual = (a: Uint8Array, b: Uint8Array): boolean => {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-      if (a[i] !== b[i]) return false;
-    }
-    return true;
-  };
+  const getProvider = (scheme: BufferScheme): BufferProvider | undefined => providerStore.get(scheme);
 
   const isBufferDirty = (buffer: OrgBuffer): boolean => {
     const original = buffer.metadata.originalRawContent as Uint8Array | undefined;
@@ -159,23 +74,56 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
   };
 
   const saveBuffer = async (buffer: OrgBuffer): Promise<void> => {
-    if (!isBufferDirty(buffer)) {
+    const provider = getProvider(buffer.scheme);
+    if (!isBufferDirty(buffer) || !provider?.write) {
       return;
     }
 
     buffer.isSaving = true;
-    const success = await writeBufferFile(buffer);
 
-    if (success) {
-      buffer.metadata.lastSavedAt = Date.now();
+    const contentToWrite = new Uint8Array(buffer.rawContent);
+    const result = await to(provider.write.bind(provider), `Failed to save: ${buffer.uri}`)(
+      buffer.path,
+      contentToWrite,
+    );
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      buffer.isSaving = false;
+      return;
     }
+
+    buffer.metadata.originalRawContent = new Uint8Array(contentToWrite);
+    buffer.metadata.lastSavedAt = Date.now();
 
     buffer.isSaving = false;
   };
 
   const loadBufferContent = async (buffer: OrgBuffer): Promise<void> => {
     buffer.isLoading = true;
-    await readBufferFile(buffer);
+
+    const provider = getProvider(buffer.scheme);
+    if (!provider) {
+      const errorMsg = `No provider registered for scheme: ${buffer.scheme}`;
+      reporter.reportError(new Error(errorMsg));
+      buffer.errors.push(errorMsg);
+      buffer.isLoading = false;
+      return;
+    }
+
+    const result = await to(provider.read.bind(provider), `Failed to load: ${buffer.uri}`)(
+      buffer.path,
+    );
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      buffer.errors.push(result.error.message);
+      buffer.isLoading = false;
+      return;
+    }
+
+    buffer.rawContent = result.value;
+    buffer.metadata.originalRawContent = new Uint8Array(result.value);
     buffer.isLoading = false;
   };
 
@@ -184,32 +132,52 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
   const getValidationDelayMs = (): number =>
     config.config.editor.validationDelayMs ?? DEFAULT_VALIDATION_DELAY_MS;
 
-  const buildBufferGuard = (path: string): BufferGuard | undefined => {
+  const buildBufferGuard = (
+    uri: string,
+    scheme: BufferScheme,
+    path: string,
+  ): BufferGuard | undefined => {
+    const provider = providerStore.get(scheme);
+    const isProviderReadonly = !provider?.write;
+
     const fileGuardStore = useFileGuardStore();
-    const isReadonly = fileGuardStore.isReadOnly(path);
+    const isGuardReadonly = fileGuardStore.isReadOnly(path);
     const hasValidator = !!fileGuardStore.getGuard(path)?.validator;
+
+    const isReadonly = isProviderReadonly || isGuardReadonly;
 
     if (!isReadonly && !hasValidator) {
       return undefined;
     }
 
+    const reason = isProviderReadonly
+      ? i18n.BUFFER_READONLY
+      : fileGuardStore.getReadOnlyReason(path);
+
     return {
       readonly: isReadonly,
-      reason: fileGuardStore.getReadOnlyReason(path),
+      reason,
       validation: hasValidator
         ? { status: 'idle', errors: [], lastValidContent: undefined }
         : undefined,
     };
   };
 
-  const createEmptyBuffer = (path: string): OrgBuffer => {
+  const createEmptyBuffer = (uri: string, scheme: BufferScheme, path: string): OrgBuffer => {
+    const provider = providerStore.get(scheme);
+    const context = provider?.getContext?.(path);
+
     const state = reactive({
       rawContent: new Uint8Array() as Uint8Array,
     });
 
+    const defaultTitle = path.split('/').pop() || 'Untitled';
+
     return reactive({
+      uri,
+      scheme,
       path,
-      title: extractTitleFromPath(path),
+      title: context?.title ?? defaultTitle,
       get rawContent() {
         return state.rawContent;
       },
@@ -231,17 +199,13 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       lastAccessed: new Date(),
       referenceCount: 1,
       metadata: {},
-      guard: buildBufferGuard(path),
+      guard: buildBufferGuard(uri, scheme, path),
     });
   };
 
-  const validateBufferContent = (path: string, content: string) => {
+  const validateBufferContent = async (path: string, content: string) => {
     const fileGuardStore = useFileGuardStore();
-    const safeValidate = to(
-      fileGuardStore.validate.bind(fileGuardStore),
-      `Validation failed for "${path}"`,
-    );
-    return safeValidate(path, content);
+    return fileGuardStore.validate(path, content);
   };
 
   const formatValidationErrors = (errors: Array<{ message: string }>): string =>
@@ -257,7 +221,10 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
     validation.status = 'validating';
 
-    const result = await validateBufferContent(buffer.path, buffer.text);
+    const result = await to(validateBufferContent, `Validation failed for: ${buffer.uri}`)(
+      buffer.path,
+      buffer.text,
+    );
 
     if (result.isErr()) {
       validation.status = 'invalid';
@@ -288,10 +255,10 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
   const setupRegularAutoSave = (buffer: OrgBuffer): void => {
     const debouncedSave = debounce(() => saveBuffer(buffer), getSaveDelayMs());
-    debouncedSavers.set(buffer.path, debouncedSave);
+    debouncedSavers.set(buffer.uri, debouncedSave);
     watch(
       () => buffer.base64,
-      () => debouncedSavers.get(buffer.path)?.(),
+      () => debouncedSavers.get(buffer.uri)?.(),
     );
   };
 
@@ -299,12 +266,9 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     if (buffer.guard?.readonly) {
       return;
     }
-
     if (buffer.guard?.validation) {
-      setupValidatedAutoSave(buffer);
-      return;
+      return setupValidatedAutoSave(buffer);
     }
-
     setupRegularAutoSave(buffer);
   };
 
@@ -312,11 +276,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     buffer: OrgBuffer,
     change: FileSystemChange,
   ): Promise<void> => {
-    if (shouldIgnoreExternalChange(buffer)) {
-      return;
-    }
-
-    if (isBufferDirty(buffer)) {
+    if (shouldIgnoreExternalChange(buffer) || isBufferDirty(buffer)) {
       return;
     }
 
@@ -328,86 +288,101 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     await loadBufferContent(buffer);
   };
 
-  const setupFileWatcher = (buffer: OrgBuffer): (() => void) => {
-    const fileWatcher = useFileWatcherStore();
-    return fileWatcher.watch(buffer.path, (change) => void handleExternalChange(buffer, change));
+  const setupWatcher = (buffer: OrgBuffer): (() => void) | undefined => {
+    const provider = providerStore.get(buffer.scheme);
+    if (!provider?.watch) {
+      return undefined;
+    }
+    return provider.watch(buffer.path, (change) => void handleExternalChange(buffer, change));
   };
 
   const allBuffers = computed(() => Array.from(buffers.value.values()));
 
-  const touchFileMeta = (path: string): void => {
+  const touchFileMeta = async (path: string): Promise<void> => {
     if (!isOrgFile(path)) return;
 
-    const updateTouchedAt = async () => {
-      const filePath = path.split('/').filter(Boolean);
-      const file = await api.infrastructure.fileRepository.getByPath(filePath);
-      if (!file) return;
-      await api.infrastructure.fileRepository.save({ ...file, touchedAt: new Date().toISOString() });
-    };
+    const filePath = path.split('/').filter(Boolean);
+    const file = await api.infrastructure.fileRepository.getByPath(filePath);
+    if (!file) return;
 
-    updateTouchedAt().catch((cause) => {
-      const error = new Error(`Failed to update touchedAt for file: ${path}`, { cause });
-      reporter.reportError(error);
+    const result = await to(
+      api.infrastructure.fileRepository.save.bind(api.infrastructure.fileRepository),
+      `Failed to update touchedAt for file: ${path}`,
+    )({
+      ...file,
+      touchedAt: new Date().toISOString(),
     });
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+    }
   };
 
-  const getOrCreateBuffer = async (path: string): Promise<OrgBuffer> => {
-    const existing = buffers.value.get(path);
+  const getOrCreateBuffer = async (uri: string): Promise<OrgBuffer> => {
+    const { scheme, path, raw } = parseBufferUri(uri);
+
+    const existing = buffers.value.get(raw);
     if (existing) {
-      touchFileMeta(path);
+      void touchFileMeta(existing.path);
       return incrementBufferReference(existing);
     }
-
-    const buffer = createEmptyBuffer(path);
-    buffers.value.set(path, buffer);
+    const buffer = createEmptyBuffer(raw, scheme, path);
+    buffers.value.set(raw, buffer);
 
     await loadBufferContent(buffer);
     initValidationLastContent(buffer);
     setupAutoSave(buffer);
-    touchFileMeta(path);
+    void touchFileMeta(path);
 
-    const unwatch = setupFileWatcher(buffer);
-    bufferUnwatchers.set(path, unwatch);
+    const unwatch = setupWatcher(buffer);
+    if (unwatch) {
+      bufferUnwatchers.set(raw, unwatch);
+    }
 
     return buffer;
   };
 
-  const releaseBuffer = (path: string): void => {
-    const buffer = buffers.value.get(path);
+  const releaseBuffer = (uri: string): void => {
+    const { raw } = parseBufferUri(uri);
+    const buffer = buffers.value.get(raw);
     if (!buffer) {
       return;
     }
     buffer.referenceCount = Math.max(0, buffer.referenceCount - 1);
   };
 
-  const getBufferByPath = (path: string): OrgBuffer | undefined => buffers.value.get(path);
+  const getBufferByUri = (uri: string): OrgBuffer | undefined => {
+    const { raw } = parseBufferUri(uri);
+    return buffers.value.get(raw);
+  };
 
-  const saveBufferByPath = async (path: string): Promise<void> => {
-    const buffer = getBufferByPath(path);
+  const saveBufferByUri = async (uri: string): Promise<void> => {
+    const buffer = getBufferByUri(uri);
     if (!buffer) {
       return;
     }
     await saveBuffer(buffer);
   };
 
-  const closeBuffer = async (path: string, force = false): Promise<boolean> => {
-    const buffer = getBufferByPath(path);
+  const stopWatch = (uri: string): void => {
+    bufferUnwatchers.get(uri)?.();
+    bufferUnwatchers.delete(uri);
+  };
+
+  const closeBuffer = async (uri: string, force = false): Promise<boolean> => {
+    const { raw } = parseBufferUri(uri);
+    const buffer = buffers.value.get(raw);
     if (!buffer) {
       return true;
     }
     if (isBufferDirty(buffer) && !force) {
       return false;
     }
-    await saveBufferByPath(path);
-    buffers.value.delete(path);
-    debouncedSavers.delete(path);
-    stopWatch(path);
+    await saveBufferByUri(raw);
+    buffers.value.delete(raw);
+    debouncedSavers.delete(raw);
+    stopWatch(raw);
     return true;
-  };
-
-  const stopWatch = (path: string): void => {
-    bufferUnwatchers.get(path)?.();
-    bufferUnwatchers.delete(path);
   };
 
   const saveAllBuffers = async (): Promise<void> => {
@@ -417,19 +392,17 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
   const cleanupUnusedBuffers = (): void => {
     allBuffers.value
       .filter((b) => b.referenceCount === 0)
-      .forEach((b) => void closeBuffer(b.path, true));
+      .forEach((b) => void closeBuffer(b.uri, true));
   };
 
-  const store: BufferStore = {
+  return {
     buffers,
     allBuffers,
     getOrCreateBuffer,
     releaseBuffer,
     closeBuffer,
-    getBufferByPath,
+    getBufferByUri,
     saveAllBuffers,
     cleanup: cleanupUnusedBuffers,
   };
-
-  return store;
 });

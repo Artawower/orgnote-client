@@ -30,7 +30,7 @@ const cleanup = () => {
   const buf = activeBuffer.value;
   activeBuffer.value = undefined;
   if (!buf) return;
-  buffers.releaseBuffer(buf.path);
+  buffers.releaseBuffer(buf.uri);
 };
 
 watch(

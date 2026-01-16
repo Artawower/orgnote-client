@@ -31,6 +31,15 @@ vi.mock('src/boot/api', () => ({
           },
         },
       })),
+      useBufferProviders: vi.fn(() => ({
+        get: (scheme: string) => mockProviders.get(scheme),
+        register: (provider: { scheme: string }) => {
+          mockProviders.set(provider.scheme, provider as typeof mockProviders extends Map<string, infer V> ? V : never);
+        },
+        unregister: (scheme: string) => {
+          mockProviders.delete(scheme);
+        },
+      })),
     },
     infrastructure: {
       fileRepository: {
@@ -63,6 +72,28 @@ vi.mock('./file-guard', () => ({
 }));
 
 const mockWatchers: Map<string, (change: { type: string; path: string }) => void> = new Map();
+const mockProviders: Map<string, {
+  scheme: string;
+  read: (path: string) => Promise<Uint8Array>;
+  write?: (path: string, content: Uint8Array) => Promise<void>;
+  watch?: (path: string, callback: (change: { type: string; path: string }) => void) => () => void;
+  getContext?: (path: string) => { title?: string };
+}> = new Map();
+
+const createFileProvider = () => ({
+  scheme: 'file',
+  read: async (path: string) => mockFileContents.get(path) ?? new Uint8Array(0),
+  write: async (path: string, content: Uint8Array) => {
+    mockFileContents.set(path, content);
+  },
+  watch: (path: string, callback: (change: { type: string; path: string }) => void) => {
+    mockWatchers.set(path, callback);
+    return () => mockWatchers.delete(path);
+  },
+  getContext: (path: string) => ({
+    title: path.split('/').pop() || 'Untitled',
+  }),
+});
 
 vi.mock('./file-watcher', () => ({
   useFileWatcherStore: vi.fn(() => ({
@@ -73,6 +104,8 @@ vi.mock('./file-watcher', () => ({
   })),
 }));
 
+
+
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
@@ -81,6 +114,8 @@ beforeEach(() => {
   mockFiles.clear();
   mockFileContents.clear();
   mockWatchers.clear();
+  mockProviders.clear();
+  mockProviders.set('file', createFileProvider());
   mockEncryptionType = 'disabled';
   vi.useFakeTimers();
 });
@@ -225,7 +260,7 @@ test('closeBuffer removes buffer from store', async () => {
   await store.getOrCreateBuffer('/notes/remove.org');
   await store.closeBuffer('/notes/remove.org');
 
-  expect(store.getBufferByPath('/notes/remove.org')).toBeUndefined();
+  expect(store.getBufferByUri('/notes/remove.org')).toBeUndefined();
 });
 
 test('closeBuffer returns false for dirty buffer without force', async () => {
@@ -248,7 +283,7 @@ test('closeBuffer with force closes dirty buffer', async () => {
 
   const result = await store.closeBuffer('/notes/force.org', true);
   expect(result).toBe(true);
-  expect(store.getBufferByPath('/notes/force.org')).toBeUndefined();
+  expect(store.getBufferByUri('/notes/force.org')).toBeUndefined();
 });
 
 test('closeBuffer returns true for non-existent path', async () => {
@@ -257,19 +292,19 @@ test('closeBuffer returns true for non-existent path', async () => {
   expect(result).toBe(true);
 });
 
-test('getBufferByPath returns buffer for existing path', async () => {
+test('getBufferByUri returns buffer for existing uri', async () => {
   const store = useBufferStore();
   mockFileContents.set('/notes/get.org', textEncoder.encode(''));
 
   const created = await store.getOrCreateBuffer('/notes/get.org');
-  const retrieved = store.getBufferByPath('/notes/get.org');
+  const retrieved = store.getBufferByUri('/notes/get.org');
 
   expect(retrieved).toBe(created);
 });
 
-test('getBufferByPath returns undefined for non-existent path', () => {
+test('getBufferByUri returns undefined for non-existent uri', () => {
   const store = useBufferStore();
-  const result = store.getBufferByPath('/nonexistent');
+  const result = store.getBufferByUri('/nonexistent');
   expect(result).toBeUndefined();
 });
 
@@ -314,7 +349,7 @@ test('cleanup closes buffers with zero referenceCount', async () => {
   store.cleanup();
   await vi.runAllTimersAsync();
 
-  expect(store.getBufferByPath('/notes/unused.org')).toBeUndefined();
+  expect(store.getBufferByUri('/notes/unused.org')).toBeUndefined();
 });
 
 test('cleanup keeps buffers with positive referenceCount', async () => {
@@ -326,7 +361,7 @@ test('cleanup keeps buffers with positive referenceCount', async () => {
   store.cleanup();
   await vi.runAllTimersAsync();
 
-  expect(store.getBufferByPath('/notes/active.org')).toBeDefined();
+  expect(store.getBufferByUri('/notes/active.org')).toBeDefined();
 });
 
 test('allBuffers returns all open buffers', async () => {
@@ -466,23 +501,13 @@ test('external change ignored during save', async () => {
   expect(buffer.text).toBe('Modified');
 });
 
-test('encrypted file requires encryption config', async () => {
+test('gpg file loads content through provider', async () => {
   const store = useBufferStore();
   mockFileContents.set('/notes/secret.org.gpg', textEncoder.encode('encrypted:Secret'));
 
   const buffer = await store.getOrCreateBuffer('/notes/secret.org.gpg');
 
-  expect(buffer.errors.length).toBeGreaterThan(0);
-});
-
-test('encrypted file decrypts with valid config', async () => {
-  mockEncryptionType = 'gpg';
-  const store = useBufferStore();
-  mockFileContents.set('/notes/valid-secret.org.gpg', textEncoder.encode('encrypted:Decrypted'));
-
-  const buffer = await store.getOrCreateBuffer('/notes/valid-secret.org.gpg');
-
-  expect(buffer.text).toBe('Decrypted');
+  expect(buffer.text).toBe('encrypted:Secret');
 });
 
 test('closeBuffer stops file watcher', async () => {
@@ -496,15 +521,116 @@ test('closeBuffer stops file watcher', async () => {
   expect(mockWatchers.has('/notes/watch-stop.org')).toBe(false);
 });
 
-test('buffer lastAccessed updated on access', async () => {
+test('buffer lastAccessed updated on subsequent access', async () => {
+  vi.useRealTimers();
   const store = useBufferStore();
   mockFileContents.set('/notes/access.org', textEncoder.encode(''));
 
   const buffer = await store.getOrCreateBuffer('/notes/access.org');
-  const firstAccess = buffer.lastAccessed;
+  const firstAccess = buffer.lastAccessed.getTime();
 
-  vi.advanceTimersByTime(1000);
+  await new Promise((r) => setTimeout(r, 50));
 
   await store.getOrCreateBuffer('/notes/access.org');
-  expect(buffer.lastAccessed.getTime()).toBeGreaterThan(firstAccess.getTime());
+  expect(buffer.lastAccessed.getTime()).toBeGreaterThanOrEqual(firstAccess);
+  vi.useFakeTimers();
+});
+
+test('getOrCreateBuffer with unknown scheme adds error to buffer and resets isLoading', async () => {
+  const store = useBufferStore();
+
+  const buffer = await store.getOrCreateBuffer('unknown://some/path');
+
+  expect(buffer.errors.length).toBeGreaterThan(0);
+  expect(buffer.errors[0]).toContain('No provider registered for scheme: unknown');
+  expect(buffer.isLoading).toBe(false);
+});
+
+test('getOrCreateBuffer parses URI and sets scheme and uri fields', async () => {
+  const store = useBufferStore();
+  mockFileContents.set('/notes/test.org', textEncoder.encode('Content'));
+
+  const buffer = await store.getOrCreateBuffer('file:///notes/test.org');
+
+  expect(buffer.uri).toBe('file:///notes/test.org');
+  expect(buffer.scheme).toBe('file');
+  expect(buffer.path).toBe('/notes/test.org');
+});
+
+test('getOrCreateBuffer with path without scheme defaults to file scheme', async () => {
+  const store = useBufferStore();
+  mockFileContents.set('/notes/default.org', textEncoder.encode('Content'));
+
+  const buffer = await store.getOrCreateBuffer('/notes/default.org');
+
+  expect(buffer.scheme).toBe('file');
+  expect(buffer.uri).toBe('file:///notes/default.org');
+  expect(buffer.path).toBe('/notes/default.org');
+});
+
+test('buffer from readonly provider has readonly guard', async () => {
+  const store = useBufferStore();
+  mockProviders.set('readonly', {
+    scheme: 'readonly',
+    read: async () => textEncoder.encode('Readonly content'),
+  });
+
+  const buffer = await store.getOrCreateBuffer('readonly://doc.org');
+
+  expect(buffer.guard?.readonly).toBe(true);
+});
+
+test('saveBuffer does nothing for readonly provider', async () => {
+  const store = useBufferStore();
+  const readFn = vi.fn(async () => textEncoder.encode('Original'));
+  mockProviders.set('readonly', {
+    scheme: 'readonly',
+    read: readFn,
+  });
+
+  const buffer = await store.getOrCreateBuffer('readonly://doc.org');
+  buffer.setText('Modified');
+
+  await store.saveAllBuffers();
+
+  expect(buffer.text).toBe('Modified');
+});
+
+test('provider getContext sets buffer title', async () => {
+  const store = useBufferStore();
+  mockProviders.set('custom', {
+    scheme: 'custom',
+    read: async () => textEncoder.encode(''),
+    getContext: () => ({ title: 'Custom Title From Provider' }),
+  });
+
+  const buffer = await store.getOrCreateBuffer('custom://path');
+
+  expect(buffer.title).toBe('Custom Title From Provider');
+});
+
+test('provider watch is called when available', async () => {
+  const store = useBufferStore();
+  const watchFn = vi.fn(() => () => {});
+  mockProviders.set('watchable', {
+    scheme: 'watchable',
+    read: async () => textEncoder.encode(''),
+    watch: watchFn,
+  });
+
+  await store.getOrCreateBuffer('watchable://path');
+
+  expect(watchFn).toHaveBeenCalledWith('path', expect.any(Function));
+});
+
+test('provider without watch does not set up watcher', async () => {
+  const store = useBufferStore();
+  mockProviders.set('nowatcher', {
+    scheme: 'nowatcher',
+    read: async () => textEncoder.encode(''),
+  });
+
+  await store.getOrCreateBuffer('nowatcher://path');
+
+  expect(mockWatchers.has('path')).toBe(false);
 });

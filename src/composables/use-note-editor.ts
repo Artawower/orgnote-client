@@ -1,25 +1,25 @@
 import { api } from 'src/boot/api';
 import { computed, onMounted, onUnmounted, watch, type Ref } from 'vue';
 
-export function useNoteEditor(notePath: Ref<string | undefined>) {
+export function useNoteEditor(noteUri: Ref<string | undefined>) {
   const store = api.core.useBuffers();
 
   const currentBuffer = computed(() => {
-    if (!notePath.value) return null;
-    return store.getBufferByPath(notePath.value);
+    if (!noteUri.value) return null;
+    return store.getBufferByUri(noteUri.value);
   });
 
   onMounted(async () => {
-    if (!notePath.value) return;
-    await store.getOrCreateBuffer(notePath.value);
+    if (!noteUri.value) return;
+    await store.getOrCreateBuffer(noteUri.value);
   });
 
   onUnmounted(() => {
-    if (!notePath.value) return;
-    store.releaseBuffer(notePath.value);
+    if (!noteUri.value) return;
+    store.releaseBuffer(noteUri.value);
   });
 
-  watch(notePath, async (next, prev) => {
+  watch(noteUri, async (next, prev) => {
     if (prev) store.releaseBuffer(prev);
     if (next) await store.getOrCreateBuffer(next);
   });
@@ -47,13 +47,13 @@ export function useNoteEditor(notePath: Ref<string | undefined>) {
   });
 
   const saveBuffer = async (): Promise<void> => {
-    if (!notePath.value || !currentBuffer.value) return;
+    if (!noteUri.value || !currentBuffer.value) return;
     return store.saveAllBuffers();
   };
 
   const closeBuffer = async (force = false): Promise<boolean> => {
-    if (!notePath.value) return true;
-    return store.closeBuffer(notePath.value, force);
+    if (!noteUri.value) return true;
+    return store.closeBuffer(noteUri.value, force);
   };
 
   return {
