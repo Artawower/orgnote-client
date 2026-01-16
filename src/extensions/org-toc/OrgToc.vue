@@ -63,6 +63,8 @@ const isValidPosition = (pos: number, docLength: number): boolean =>
 const isValidRange = (start: number, end: number, docLength: number): boolean =>
   isValidPosition(start, docLength) && isValidPosition(end, docLength) && start <= end;
 
+const { tabletBelow } = api.ui.useScreenDetection();
+
 const navigateTo = (node: TocTreeNode) => {
   const editorView = activeContext.value?.editorViewGetter();
   if (!editorView) return;
@@ -83,6 +85,10 @@ const navigateTo = (node: TocTreeNode) => {
       effects: EditorView.scrollIntoView(position, { y: 'start', yMargin: SCROLL_Y_MARGIN }),
     });
   });
+
+  if (tabletBelow.value) {
+    api.ui.useRightSidebar().close();
+  }
 };
 </script>
 
