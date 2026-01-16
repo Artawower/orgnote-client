@@ -51,7 +51,11 @@ const onMouseDown = (e: MouseEvent): void => {
     height: 100%;
     cursor: col-resize;
 
-    &:hover,
+    @include hover {
+      background: var(--splitter-hover-bg);
+      transform: scaleX(var(--splitter-hover-scale));
+    }
+
     &.active {
       background: var(--splitter-hover-bg);
       transform: scaleX(var(--splitter-hover-scale));
@@ -63,7 +67,11 @@ const onMouseDown = (e: MouseEvent): void => {
     height: var(--splitter-size);
     cursor: row-resize;
 
-    &:hover,
+    @include hover {
+      background: var(--splitter-hover-bg);
+      transform: scaleY(var(--splitter-hover-scale));
+    }
+
     &.active {
       background: var(--splitter-hover-bg);
       transform: scaleY(var(--splitter-hover-scale));

@@ -67,7 +67,7 @@ const toggle = (): void => {
 .spoiler {
   transition: background-color 0.2s ease;
 
-  &:hover {
+  @include hover {
     background-color: var(--menu-item-hover-bg);
   }
 }

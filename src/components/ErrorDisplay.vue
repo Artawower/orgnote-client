@@ -85,8 +85,10 @@ const errorText = computed(() => {
   background: color-mix(in srgb, var(--red), transparent 95%);
   padding: var(--padding-lg);
 
-  &:hover .copy-button {
-    opacity: 1;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover .copy-button {
+      opacity: 1;
+    }
   }
 }
 

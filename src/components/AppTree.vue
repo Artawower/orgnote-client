@@ -123,7 +123,7 @@ const handleNodeClick = (node: T) => {
   border-radius: var(--border-radius-sm);
   width: 100%;
 
-  &:hover {
+  @include hover {
     background-color: var(--menu-item-hover-bg);
   }
 

@@ -192,10 +192,12 @@ const inputSchemeType = computed(() => inputTypes.includes(actualType.value));
   background-color: var(--menu-item-hover-bg);
 }
 
-.menu-item:hover {
-  .action-btn {
-    opacity: 1;
-    pointer-events: auto;
+@media (hover: hover) and (pointer: fine) {
+  .menu-item:hover {
+    .action-btn {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 }
 
@@ -214,8 +216,10 @@ textarea {
   }
 }
 
-.menu-item:hover .optional-controls .reset-btn {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .menu-item:hover .optional-controls .reset-btn {
+    opacity: 1;
+  }
 }
 
 .optional-indicator {

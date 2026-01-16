@@ -38,7 +38,7 @@ const colorClass = computed(() => `color-${props.color}`);
   cursor: pointer;
   transition: opacity 0.2s ease;
 
-  &:hover {
+  @include hover {
     text-decoration: underline;
   }
 

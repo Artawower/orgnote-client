@@ -156,7 +156,7 @@ const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification
     cursor: pointer;
     transition: filter 0.2s;
 
-    &:hover {
+    @include hover {
       filter: brightness(1.1);
     }
   }

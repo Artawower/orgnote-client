@@ -165,3 +165,11 @@ $type-colors: (
     display: none;
   }
 }
+
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @content;
+    }
+  }
+}

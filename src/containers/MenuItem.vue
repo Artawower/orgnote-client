@@ -117,7 +117,10 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
     padding: var(--menu-item-padding);
   }
 
-  &:hover,
+  @include hover {
+    background-color: var(--menu-item-hover-bg);
+  }
+
   &:active {
     background-color: var(--menu-item-hover-bg);
   }

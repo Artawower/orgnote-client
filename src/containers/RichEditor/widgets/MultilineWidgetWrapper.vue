@@ -51,7 +51,12 @@ const handleEditClick = (event: MouseEvent) => {
   opacity: 0;
 }
 
-.org-multiline-widget:hover .org-widget-actions,
+@media (hover: hover) and (pointer: fine) {
+  .org-multiline-widget:hover .org-widget-actions {
+    opacity: 1;
+  }
+}
+
 .org-multiline-widget:active .org-widget-actions {
   opacity: 1;
 }
@@ -64,8 +69,10 @@ const handleEditClick = (event: MouseEvent) => {
     display: none;
   }
 
-  .org-multiline-widget:hover .org-widget-actions {
-    display: flex;
+  @media (hover: hover) and (pointer: fine) {
+    .org-multiline-widget:hover .org-widget-actions {
+      display: flex;
+    }
   }
 }
 </style>

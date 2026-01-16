@@ -99,15 +99,22 @@ const handleDragEnd = () => {
     user-select: none;
   }
 
-  &:not(.active):hover {
-    background: var(--tab-active-hover-bg);
+  &:not(.active) {
+    @include hover {
+      background: var(--tab-active-hover-bg);
+    }
   }
 
   &.dragging {
     opacity: 0.5;
   }
 
-  &:hover,
+  @include hover {
+    .close-tab {
+      opacity: 1;
+    }
+  }
+
   &.active {
     .close-tab {
       opacity: 1;

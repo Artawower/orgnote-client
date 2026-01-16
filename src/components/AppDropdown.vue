@@ -127,8 +127,10 @@ defineExpose({
   border-radius: var(--menu-item-radius);
   max-height: var(--menu-item-height);
 
-  &:hover {
-    background-color: var(--menu-item-hover-bg);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: var(--menu-item-hover-bg);
+    }
   }
 
   .dropdown-label {

@@ -164,8 +164,10 @@ $level-colors: (
   }
 
   @each $level, $color in $level-colors {
-    &.#{$level}:hover {
-      background: color-mix(in srgb, $color, transparent 95%);
+    @media (hover: hover) and (pointer: fine) {
+      &.#{$level}:hover {
+        background: color-mix(in srgb, $color, transparent 95%);
+      }
     }
   }
 }

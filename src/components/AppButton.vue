@@ -48,7 +48,7 @@ button {
 
       color: var(--bg);
 
-      &:hover {
+      @include hover {
         background: color-mix(in srgb, $color, var(--bg) 5%) !important;
       }
     }

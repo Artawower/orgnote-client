@@ -138,7 +138,11 @@ button {
   }
 
   &.hover-effect:not(.outline) {
-    &:hover,
+    @include hover {
+      background: var(--btn-action-hover-bg);
+      filter: brightness(var(--btn-action-hover-brightness));
+    }
+
     &:active {
       background: var(--btn-action-hover-bg);
       filter: brightness(var(--btn-action-hover-brightness));
@@ -155,14 +159,16 @@ button {
     border-color: var(--action-border-color, var(--border-default));
   }
 
-  &.hover-effect:hover {
-    border-color: color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black);
+  &.hover-effect {
+    @include hover {
+      border-color: color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black);
 
-    .icon {
-      color: var(
-        --btn-action-hover-color,
-        color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black)
-      ) !important;
+      .icon {
+        color: var(
+          --btn-action-hover-color,
+          color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black)
+        ) !important;
+      }
     }
   }
 }

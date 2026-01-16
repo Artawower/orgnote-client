@@ -92,9 +92,11 @@ const createToken = () => {
 }
 
 .menu-item {
-  &:hover {
-    .actions {
-      opacity: 1;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      .actions {
+        opacity: 1;
+      }
     }
   }
 }

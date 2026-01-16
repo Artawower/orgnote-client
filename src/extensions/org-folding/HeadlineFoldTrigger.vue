@@ -58,7 +58,9 @@ watch(() => props.headline, updateFoldState);
   opacity: 1;
 }
 
-.headline-fold-trigger:hover {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .headline-fold-trigger:hover {
+    opacity: 1;
+  }
 }
 </style>
