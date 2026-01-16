@@ -3,9 +3,10 @@ import { mount } from '@vue/test-utils';
 import AppSidebar from './AppSidebar.vue';
 import { nextTick } from 'vue';
 
-test('renders slots correctly', () => {
+test('AppSidebar renders slots correctly', () => {
   const wrapper = mount(AppSidebar, {
     props: {
+      side: 'left',
       opened: true,
       mini: true,
     },
@@ -20,63 +21,62 @@ test('renders slots correctly', () => {
   expect(wrapper.text()).toContain('Footer Content');
 });
 
-test('applies "mini" class when the mini prop is true', () => {
+test('AppSidebar applies mini-section when the mini prop is true', () => {
   const wrapper = mount(AppSidebar, {
-    props: { mini: true },
+    props: { side: 'left', mini: true },
   });
 
-  expect(wrapper.find('.mini').exists()).toBe(true);
+  expect(wrapper.find('.mini-section').exists()).toBe(true);
 });
 
-test('does not render "mini" when mini prop is false', () => {
+test('AppSidebar does not render mini-section when mini prop is false', () => {
   const wrapper = mount(AppSidebar, {
-    props: { mini: false },
+    props: { side: 'left', mini: false },
   });
 
-  expect(wrapper.find('.mini').exists()).toBe(false);
+  expect(wrapper.find('.mini-section').exists()).toBe(false);
 });
 
-test('applies the correct class based on "opened" prop', () => {
+test('AppSidebar applies the correct class based on opened prop', () => {
   const wrapper = mount(AppSidebar, {
-    props: { opened: true },
+    props: { side: 'left', opened: true },
   });
 
-  expect(wrapper.find('.sidebar').classes()).toContain('opened');
+  expect(wrapper.find('.app-sidebar').classes()).toContain('opened');
 });
 
-test('does not apply "opened" class when prop is false', () => {
+test('AppSidebar does not apply opened class when prop is false', () => {
   const wrapper = mount(AppSidebar, {
-    props: { opened: false },
+    props: { side: 'left', opened: false },
   });
 
-  expect(wrapper.find('.sidebar').classes()).not.toContain('opened');
+  expect(wrapper.find('.app-sidebar').classes()).not.toContain('opened');
 });
 
-test('renders content section when "opened" is true', () => {
+test('AppSidebar renders content section when opened is true', () => {
   const wrapper = mount(AppSidebar, {
-    props: { opened: true },
+    props: { side: 'left', opened: true },
   });
 
   expect(wrapper.find('.content').exists()).toBe(true);
 });
 
-test('adds or removes "opened" class based on prop', async () => {
+test('AppSidebar adds or removes opened class based on prop', async () => {
   const wrapper = mount(AppSidebar, {
-    props: { opened: true },
+    props: { side: 'left', opened: true },
   });
 
-  expect(wrapper.find('.sidebar').classes()).toContain('opened');
+  expect(wrapper.find('.app-sidebar').classes()).toContain('opened');
 
   await wrapper.setProps({ opened: false });
   await nextTick();
 
-  expect(wrapper.find('.sidebar').classes()).not.toContain('opened');
+  expect(wrapper.find('.app-sidebar').classes()).not.toContain('opened');
 });
 
-// TODO: Styles does not applied for some reason, prbably it's correspond to happy-dom
-test.skip('content section is hidden when "opened" is false', async () => {
+test.skip('AppSidebar content section is hidden when opened is false', async () => {
   const wrapper = mount(AppSidebar, {
-    props: { opened: false },
+    props: { side: 'left', opened: false },
   });
 
   await nextTick();
@@ -87,9 +87,10 @@ test.skip('content section is hidden when "opened" is false', async () => {
   expect(computedStyle.width).toBe('0px');
 });
 
-test('does not render slots when mini is false', () => {
+test('AppSidebar does not render mini slots when mini is false', () => {
   const wrapper = mount(AppSidebar, {
     props: {
+      side: 'left',
       opened: true,
       mini: false,
     },
@@ -103,4 +104,20 @@ test('does not render slots when mini is false', () => {
   expect(wrapper.text()).toContain('Default Content');
   expect(wrapper.text()).not.toContain('Footer Content');
   expect(wrapper.text()).not.toContain('TOP');
+});
+
+test('AppSidebar applies left class when side is left', () => {
+  const wrapper = mount(AppSidebar, {
+    props: { side: 'left' },
+  });
+
+  expect(wrapper.find('.app-sidebar').classes()).toContain('left');
+});
+
+test('AppSidebar applies right class when side is right', () => {
+  const wrapper = mount(AppSidebar, {
+    props: { side: 'right' },
+  });
+
+  expect(wrapper.find('.app-sidebar').classes()).toContain('right');
 });

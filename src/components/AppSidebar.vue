@@ -1,114 +1,195 @@
 <template>
-  <app-flex class="sidebar" :class="{ opened, 'has-mini': mini }" row between align-stretch>
-    <app-flex v-if="mini" class="mini" column between align-center>
-      <div class="top">
+  <div
+    ref="sidebarRef"
+    class="app-sidebar"
+    :class="[side, { opened, 'has-mini': mini, resizable }]"
+    :style="sidebarStyle"
+  >
+    <resize-splitter
+      v-if="resizable && opened"
+      class="splitter"
+      absolute
+      :active="resize.isResizing.value"
+      @resize-start="resize.handleResizeStart"
+    />
+
+    <app-flex v-if="mini" class="mini-section" column between align-center>
+      <div class="mini-top">
         <slot name="mini-top" />
       </div>
-      <div class="footer">
+      <div class="mini-footer">
         <slot name="mini-footer" />
       </div>
     </app-flex>
-    <safe-area top class="safe-area-content">
-      <div class="content">
-        <slot />
+
+    <safe-area top class="main-section">
+      <div v-if="$slots.header" class="header">
+        <slot name="header" />
       </div>
+      <app-flex column start align-stretch class="content">
+        <slot />
+      </app-flex>
+      <safe-area v-if="$slots.footer" bottom class="footer">
+        <slot name="footer" />
+      </safe-area>
     </safe-area>
-  </app-flex>
+  </div>
 </template>
 
 <script lang="ts" setup>
+import { computed, ref } from 'vue';
 import SafeArea from './SafeArea.vue';
-import AppFlex from 'src/components/AppFlex.vue';
+import AppFlex from './AppFlex.vue';
+import ResizeSplitter from './ResizeSplitter.vue';
+import { useValueResize } from 'src/composables/use-value-resize';
+import { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from 'src/constants/sidebar';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    mini?: boolean;
-    position?: 'left' | 'right';
+    side?: 'left' | 'right';
     opened?: boolean;
+    mini?: boolean;
+    resizable?: boolean;
+    minWidth?: number;
+    maxWidth?: number;
   }>(),
   {
-    mini: false,
-    position: 'left',
+    side: 'left',
     opened: true,
+    mini: false,
+    resizable: false,
+    minWidth: SIDEBAR_MIN_WIDTH,
+    maxWidth: SIDEBAR_MAX_WIDTH,
   },
 );
+
+const width = defineModel<number>('width');
+const sidebarRef = ref<HTMLElement>();
+
+const internalWidth = computed({
+  get: () => width.value ?? sidebarRef.value?.offsetWidth ?? 0,
+  set: (v: number) => (width.value = v),
+});
+
+const resize = useValueResize('horizontal', internalWidth, {
+  min: props.minWidth,
+  max: props.maxWidth,
+  reverse: props.side === 'right',
+  unit: 'pixel',
+});
+
+const sidebarStyle = computed(() => {
+  if (!props.resizable || !width.value) return undefined;
+  return { '--sidebar-content-width': `${width.value}px` };
+});
 </script>
 
 <style lang="scss" scoped>
-.sidebar {
+.app-sidebar {
   --btn-action-hover-bg: var(--sidebar-hover-bg);
   --bg-hover: var(--sidebar-hover-bg);
   --menu-item-hover-bg: var(--sidebar-hover-bg);
   --placeholder-fg: var(--sidebar-fg-muted);
 
-  & {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+  background: var(--sidebar-bg);
+  overflow: hidden;
+
+  * {
+    color: var(--sidebar-fg);
+  }
+
+  &.left {
     border-right: var(--sidebar-border-right);
-    background: var(--sidebar-bg);
-    position: relative;
-    height: 100%;
 
-    * {
-      color: var(--sidebar-fg);
+    .splitter {
+      right: 0;
+      left: auto;
     }
   }
 
-  .mini {
-    & {
-      width: var(--sidebar-mini-width);
-      height: 100vh;
-      height: 100dvh;
-      height: var(--full-height);
-      padding: var(--sidebar-padding);
-    }
-  }
+  &.right {
+    border-left: var(--sidebar-border-right);
 
-  &.opened {
-    .content {
-      & {
-        padding: 0px var(--sidebar-padding);
-        flex: 1;
-        width: var(--sidebar-width);
-      }
+    .splitter {
+      left: 0;
+      right: auto;
     }
-  }
-
-  &.opened.has-mini {
-    .content {
-      & {
-        width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
-      }
-    }
-  }
-
-  .content {
-    & {
-      flex: 1;
-      min-height: 0;
-      width: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-  }
-
-  .safe-area-content {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
   }
 }
 
-@include tablet-below {
-  .sidebar {
-    width: var(--sidebar-width);
-    height: 100%;
+.mini-section {
+  width: var(--sidebar-mini-width);
+  height: var(--full-height);
+  padding: var(--sidebar-padding);
+  flex-shrink: 0;
+}
 
-    .content {
-      padding: 0px var(--sidebar-padding);
-      flex: 1;
-      width: 100%;
-    }
+.main-section {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-sidebar.opened .main-section {
+  width: var(--sidebar-width);
+}
+
+.app-sidebar.opened.has-mini .main-section {
+  width: calc(var(--sidebar-width) - var(--sidebar-mini-width));
+}
+
+.app-sidebar.opened.resizable .main-section {
+  width: var(--sidebar-content-width, var(--sidebar-width));
+}
+
+.app-sidebar.opened.resizable.has-mini .main-section {
+  width: calc(var(--sidebar-content-width, var(--sidebar-width)) - var(--sidebar-mini-width));
+}
+
+.app-sidebar:not(.opened) .main-section {
+  width: 0;
+}
+
+.header {
+  flex-shrink: 0;
+  padding: var(--sidebar-padding);
+  border-bottom: var(--border-default);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 var(--sidebar-padding);
+}
+
+.footer {
+  flex-shrink: 0;
+  border-top: var(--border-default);
+}
+
+@include tablet-below {
+  .app-sidebar {
+    width: 100%;
+  }
+
+  .app-sidebar.opened .main-section,
+  .app-sidebar.opened.has-mini .main-section,
+  .app-sidebar.opened.resizable .main-section,
+  .app-sidebar.opened.resizable.has-mini .main-section {
+    width: 100%;
+  }
+
+  .app-sidebar.has-mini .main-section {
+    width: calc(100% - var(--sidebar-mini-width));
   }
 }
 </style>
