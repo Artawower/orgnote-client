@@ -20,11 +20,7 @@
       />
     </app-flex>
     <div class="right-sidebar-body">
-      <component
-        v-if="component"
-        :is="component"
-        v-bind="componentConfig?.componentProps || {}"
-      />
+      <component v-if="component" :is="component" v-bind="componentConfig?.componentProps || {}" />
     </div>
   </app-flex>
 </template>
@@ -62,6 +58,8 @@ const resize = useValueResize('horizontal', width, {
   background: var(--sidebar-bg);
   border-left: var(--sidebar-border-right);
   overflow: hidden;
+  padding-bottom: var(--safe-area-bottom);
+  padding-top: var(--safe-area-top);
 }
 
 .right-sidebar-body {
