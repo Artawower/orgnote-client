@@ -17,9 +17,11 @@
         class="sidebar-content"
       />
       <visibility-wrapper tablet-below>
-        <app-footer v-if="opened">
-          <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
-        </app-footer>
+        <safe-area bottom>
+          <app-footer v-if="opened">
+            <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
+          </app-footer>
+        </safe-area>
       </visibility-wrapper>
     </app-flex>
   </app-sidebar>
@@ -34,6 +36,7 @@ import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import SafeArea from 'src/components/SafeArea.vue';
 
 const { opened, component, componentConfig } = storeToRefs(api.ui.useSidebar());
 const pinnedCommands = api.ui.usePinnedCommands();
