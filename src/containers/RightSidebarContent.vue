@@ -70,7 +70,7 @@ const resize = useValueResize('horizontal', width, {
 
 .right-sidebar-actions {
   width: 100%;
-  padding: var(--gap-sm);
+  padding: var(--padding-md) var(--padding-lg);
   border-bottom: var(--border-default);
   flex-shrink: 0;
 }
