@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { api } from 'src/boot/api';
 import { setCursorToEOF } from './use-cursor';
 import { useEditorView } from './use-editor-view';
@@ -60,7 +60,7 @@ watch(
 
 watch(
   () => props.readonly,
-  (value) => setReadonly(value ?? false),
+  (value) => nextTick(() => setReadonly(value ?? false)),
 );
 </script>
 

@@ -6,7 +6,7 @@ const getFileName = (filePath: string[]): string => filePath.at(-1) ?? 'Untitled
 
 const fileToCandidate = (
   file: FileMeta,
-  fileReader: ReturnType<OrgNoteApi['core']['useFileReader']>,
+  bufferViewer: ReturnType<OrgNoteApi['core']['useBufferViewer']>,
   completion: ReturnType<OrgNoteApi['core']['useCompletion']>,
 ): CompletionCandidate<FileMeta> => ({
   icon: 'sym_o_description',
@@ -14,7 +14,7 @@ const fileToCandidate = (
   description: formatDescription(file),
   data: file,
   commandHandler: () => {
-    fileReader.openFile(join('/', ...file.filePath));
+    bufferViewer.open(join('/', ...file.filePath));
     completion.close();
   },
 });
@@ -26,7 +26,7 @@ const searchFiles = async (
   offset?: number,
 ): Promise<CompletionSearchResult<FileMeta>> => {
   const fileSearch = api.core.useFileSearch();
-  const fileReader = api.core.useFileReader();
+  const bufferViewer = api.core.useBufferViewer();
   const completion = api.core.useCompletion();
 
   const files = await fileSearch.search(filter, { limit, offset });
@@ -35,7 +35,7 @@ const searchFiles = async (
 
   return {
     total: isMatchingQuery ? lastResult.total : files.length,
-    result: files.map((file) => fileToCandidate(file, fileReader, completion)),
+    result: files.map((file) => fileToCandidate(file, bufferViewer, completion)),
   };
 };
 
@@ -45,7 +45,7 @@ const getRecentFiles = async (
   offset?: number,
 ): Promise<CompletionSearchResult<FileMeta>> => {
   const fileMeta = api.core.useFileMeta();
-  const fileReader = api.core.useFileReader();
+  const bufferViewer = api.core.useBufferViewer();
   const completion = api.core.useCompletion();
 
   const files = await fileMeta.getAll({ limit, offset });
@@ -53,7 +53,7 @@ const getRecentFiles = async (
 
   return {
     total,
-    result: files.map((file) => fileToCandidate(file, fileReader, completion)),
+    result: files.map((file) => fileToCandidate(file, bufferViewer, completion)),
   };
 };
 

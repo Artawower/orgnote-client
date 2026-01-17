@@ -2,9 +2,9 @@ import { defineBoot } from '@quasar/app-vite/wrappers';
 import { api } from './api';
 
 export default defineBoot(() => {
-  const fileReader = api.core.useFileReader();
+  const bufferViewer = api.core.useBufferViewer();
 
-  fileReader.register({
+  bufferViewer.register({
     pattern: '\\.org(\\.gpg)?$',
     component: () => import('src/readers/OrgEditor.vue'),
     meta: {
@@ -15,7 +15,7 @@ export default defineBoot(() => {
     },
   });
 
-  fileReader.register({
+  bufferViewer.register({
     pattern: '\\.org(\\.gpg)?$',
     component: () => import('src/readers/OrgTextEditor.vue'),
     meta: {
@@ -26,7 +26,7 @@ export default defineBoot(() => {
     },
   });
 
-  fileReader.register({
+  bufferViewer.register({
     pattern: '\\.(ts|js|jsx|tsx|json|toml|yaml|yml)$',
     component: () => import('src/readers/CodeEditor.vue'),
     meta: {
@@ -37,7 +37,7 @@ export default defineBoot(() => {
     },
   });
 
-  fileReader.register({
+  bufferViewer.register({
     pattern: '\\.(png|jpg|jpeg|gif|webp|svg)$',
     component: () => import('src/readers/ImageViewer.vue'),
     meta: {
@@ -48,7 +48,7 @@ export default defineBoot(() => {
     },
   });
 
-  fileReader.register({
+  bufferViewer.register({
     pattern: '.*',
     component: () => import('src/readers/CodeEditor.vue'),
     meta: {

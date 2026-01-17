@@ -49,7 +49,7 @@ import { useScreenDetection } from 'src/composables/use-screen-detection';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 import { useConfigStore } from 'src/stores/config';
 import { useNotificationsStore } from 'src/stores/notifications';
-import { useFileReaderStore } from 'src/stores/file-reader';
+import { useBufferViewerStore } from 'src/stores/buffer-viewer';
 import { useBufferStore } from 'src/stores/buffer';
 import { useBufferProviderStore } from 'src/stores/buffer-provider';
 import { useLogStore } from 'src/stores/log';
@@ -97,7 +97,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useFileManager: useFileManagerStore,
       useConfig: useConfigStore,
       useNotifications: useNotificationsStore,
-      useFileReader: useFileReaderStore,
+      useBufferViewer: useBufferViewerStore,
       useBuffers: useBufferStore,
       useBufferProviders: useBufferProviderStore,
       useLog: useLogStore,

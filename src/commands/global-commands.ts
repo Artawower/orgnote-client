@@ -4,15 +4,13 @@ import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
 import { clientOnly } from 'src/utils/platform-specific';
-import type { Router } from 'vue-router';
 import LogsContainer from 'src/containers/LogsContainer.vue';
 import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function getGlobalCommands({ router }: { router?: Router } = {}): Command[] {
+export function getGlobalCommands(): Command[] {
   const sidebarStore = api.ui.useSidebar();
   const modalStore = api.ui.useModal();
   const commands: Command[] = [
@@ -90,8 +88,8 @@ export function getGlobalCommands({ router }: { router?: Router } = {}): Command
       command: DefaultCommands.PROJECT_INFO,
       icon: 'o_info',
       group: 'global',
-      handler: () => {
-        // modalStore.open(ProjectInfo),
+      handler: (api) => {
+        api.core.useBufferViewer().open('remote:///docs/info.org');
       },
     },
     {

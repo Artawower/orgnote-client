@@ -16,8 +16,8 @@ export function getNoteCommands(): Command[] {
           return;
         }
 
-        const fileReader = api.core.useFileReader();
-        await fileReader.openFile(path);
+        const bufferViewer = api.core.useBufferViewer();
+        await bufferViewer.open(path);
       },
     },
   ];

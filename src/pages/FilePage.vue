@@ -4,7 +4,7 @@
     <component
       class="file-page-content"
       v-if="showReader"
-      :is="readerComponent"
+      :is="viewerComponent"
       :buffer="buffer"
       :readonly="buffer!.guard?.readonly"
       @update:content="onContentUpdate"
@@ -16,37 +16,46 @@
 
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, inject, type ShallowRef, type Component } from 'vue';
-import type { Router } from 'vue-router';
+import type { Router, RouteLocationNormalizedLoaded } from 'vue-router';
 import type { Buffer as OrgBuffer } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import FileNotSupported from 'src/components/FileNotSupported.vue';
 import MainHeader from 'src/containers/MainHeader.vue';
+import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 
 const router = inject<ShallowRef<Router>>(TAB_ROUTER_KEY);
 
-const currentFilePath = computed(() => {
-  return router?.value?.currentRoute.value.params.path as string | undefined;
+const currentRoute = computed<RouteLocationNormalizedLoaded | undefined>(
+  () => router?.value?.currentRoute.value,
+);
+
+const currentFilePath = computed(() => currentRoute.value?.params.path as string | undefined);
+
+const currentBufferUri = computed(() => {
+  const route = currentRoute.value;
+  if (!route) return;
+  return extractPathFromRoute(route);
 });
 
 const buffers = api.core.useBuffers();
-const fileReader = api.core.useFileReader();
+const bufferViewer = api.core.useBufferViewer();
 
 const buffer = computed<OrgBuffer | undefined>(() => {
-  const path = currentFilePath.value;
-  if (!path) return;
-  return buffers.getBufferByUri(path);
+  const uri = currentBufferUri.value;
+  if (!uri) return;
+  return buffers.getBufferByUri(uri);
 });
 
-const readerEntry = computed(() => {
+const viewerEntry = computed(() => {
   const path = currentFilePath.value;
   if (!path) return undefined;
-  return fileReader.getReader(path);
+  return bufferViewer.getViewer(path);
 });
 
-const readerComponent = computed<Component | undefined>(() => {
-  const entry = readerEntry.value;
+const viewerComponent = computed<Component | undefined>(() => {
+  const entry = viewerEntry.value;
   if (!entry) return undefined;
 
   if (typeof entry.component === 'function') {
@@ -56,8 +65,8 @@ const readerComponent = computed<Component | undefined>(() => {
   return entry.component as Component;
 });
 
-const showReader = computed(() => readerComponent.value && buffer.value);
-const showNotSupported = computed(() => buffer.value && !readerComponent.value);
+const showReader = computed(() => viewerComponent.value && buffer.value);
+const showNotSupported = computed(() => buffer.value && !viewerComponent.value);
 const showLoading = computed(() => !showReader.value && !showNotSupported.value);
 
 const onContentUpdate = (content: string) => {

@@ -8,7 +8,7 @@ let readDir: Mock;
 let fileManagerPath: ReturnType<typeof ref<string>>;
 let watcherCallbacks: Map<string, (change: FileSystemChange) => void>;
 let fileWatcherWatch: Mock;
-let openFile: Mock;
+let bufferViewerOpen: Mock;
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -22,7 +22,7 @@ vi.mock('src/boot/api', () => ({
       useFileManager: () => ({ path: fileManagerPath }),
       useFileSystem: () => ({ readDir }),
       useFileWatcher: () => ({ watch: fileWatcherWatch }),
-      useFileReader: () => ({ openFile }),
+      useBufferViewer: () => ({ open: bufferViewerOpen }),
       usePane: () => ({ activeTab: undefined }),
     },
     ui: {
@@ -62,7 +62,7 @@ describe('FileManager', () => {
       return () => watcherCallbacks.delete(path);
     });
 
-    openFile = vi.fn();
+    bufferViewerOpen = vi.fn();
   });
 
   afterEach(() => {

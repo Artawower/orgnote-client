@@ -5,8 +5,7 @@ import { ref } from 'vue';
 
 const mockFiles: FileMeta[] = [];
 let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let capturedCompletionConfig: CompletionConfig<any> | null = null;
+let capturedCompletionConfig: CompletionConfig<FileMeta, void> | null = null;
 
 const createMockApi = (): OrgNoteApi => {
   const mockCompletion = {
@@ -41,8 +40,8 @@ const createMockApi = (): OrgNoteApi => {
     count: vi.fn(async () => mockFiles.length),
   };
 
-  const mockFileReader = {
-    openFile: vi.fn(),
+  const mockBufferViewer = {
+    open: vi.fn(),
   };
 
   return {
@@ -50,7 +49,7 @@ const createMockApi = (): OrgNoteApi => {
       useCompletion: vi.fn(() => mockCompletion),
       useFileSearch: vi.fn(() => mockFileSearch),
       useFileMeta: vi.fn(() => mockFileMeta),
-      useFileReader: vi.fn(() => mockFileReader),
+      useBufferViewer: vi.fn(() => mockBufferViewer),
     },
   } as unknown as OrgNoteApi;
 };
@@ -221,7 +220,7 @@ test('candidate description includes tags', async () => {
   expect(result.result[0]!.description).toContain('#important');
 });
 
-test('candidate commandHandler opens file', async () => {
+test('candidate commandHandler opens buffer', async () => {
   const api = createMockApi();
 
   mockFiles.push({ id: '1', filePath: ['folder', 'test.org'], title: 'Test' });
@@ -231,7 +230,7 @@ test('candidate commandHandler opens file', async () => {
   const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
   result.result[0]!.commandHandler(api);
 
-  expect(api.core.useFileReader().openFile).toHaveBeenCalledWith('/folder/test.org');
+  expect(api.core.useBufferViewer().open).toHaveBeenCalledWith('/folder/test.org');
 });
 
 test('candidate commandHandler closes completion', async () => {

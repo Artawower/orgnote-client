@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
   refreshFiles.cancel();
 });
 
-const fileReader = api.core.useFileReader();
+const bufferViewer = api.core.useBufferViewer();
 const sidebar = api.ui.useSidebar();
 const paneStore = api.core.usePane();
 
@@ -149,7 +149,7 @@ const handleFileClick = async (f: DiskFile) => {
     return;
   }
 
-  fileReader.openFile(f.path);
+  bufferViewer.open(f.path);
   closeMobileSidebar();
 };
 

@@ -1,7 +1,19 @@
+import { buildBufferUri, RouteNames, type BufferScheme } from 'orgnote-api';
 import type { RouteLocationNormalizedLoaded } from 'vue-router';
 
-const normalizePathParam = (path: string | string[]): string => {
-  return Array.isArray(path) ? path.join('/') : path;
+const ROUTE_SCHEME_MAPPING: Record<string, BufferScheme> = {
+  [RouteNames.File]: 'file',
+  [RouteNames.Remote]: 'remote',
+};
+
+const DEFAULT_SCHEME: BufferScheme = 'file';
+
+const normalizePathParam = (path: string | string[]): string =>
+  Array.isArray(path) ? path.join('/') : path;
+
+const getSchemeFromRoute = (route: RouteLocationNormalizedLoaded): BufferScheme => {
+  const routeName = route.name?.toString() ?? '';
+  return ROUTE_SCHEME_MAPPING[routeName] ?? DEFAULT_SCHEME;
 };
 
 export const extractPathFromRoute = (route: RouteLocationNormalizedLoaded): string | undefined => {
@@ -10,5 +22,8 @@ export const extractPathFromRoute = (route: RouteLocationNormalizedLoaded): stri
   const path = route.params.path;
   const normalized = normalizePathParam(path);
 
-  return normalized.length > 0 ? normalized : undefined;
+  if (normalized.length === 0) return;
+
+  const scheme = getSchemeFromRoute(route);
+  return buildBufferUri(scheme, normalized);
 };
