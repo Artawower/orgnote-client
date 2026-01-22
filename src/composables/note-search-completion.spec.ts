@@ -5,7 +5,7 @@ import { ref } from 'vue';
 
 const mockFiles: FileMeta[] = [];
 let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
-let capturedCompletionConfig: CompletionConfig<FileMeta, void> | null = null;
+let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
 
 const createMockApi = (): OrgNoteApi => {
   const mockCompletion = {
@@ -24,7 +24,10 @@ const createMockApi = (): OrgNoteApi => {
           f.tags?.some((t) => t.toLowerCase().includes(query.toLowerCase())),
       );
       mockSearchResult = {
-        files: filtered.slice(options?.offset ?? 0, (options?.offset ?? 0) + (options?.limit ?? 20)),
+        files: filtered.slice(
+          options?.offset ?? 0,
+          (options?.offset ?? 0) + (options?.limit ?? 20),
+        ),
         total: filtered.length,
         query,
       };
@@ -98,7 +101,11 @@ test('itemsGetter returns recent files for empty query', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(2);
   expect(result.total).toBe(2);
@@ -114,7 +121,11 @@ test('itemsGetter searches files with non-empty query', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('Meeting', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    'Meeting',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(1);
   expect(result.result[0]!.title).toBe('Meeting Notes');
@@ -129,7 +140,11 @@ test('itemsGetter respects limit parameter', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 5, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    5,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(5);
 });
@@ -143,7 +158,11 @@ test('itemsGetter respects offset parameter', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 5, 3)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    5,
+    3,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(5);
   expect((result.result[0]!.data as FileMeta)?.id).toBe('3');
@@ -156,7 +175,11 @@ test('candidate has correct icon', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.icon).toBe('sym_o_description');
 });
@@ -168,7 +191,11 @@ test('candidate uses title from file', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.title).toBe('My Title');
 });
@@ -180,7 +207,11 @@ test('candidate uses filename when no title', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.title).toBe('untitled.org');
 });
@@ -197,7 +228,11 @@ test('candidate description includes file description', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.description).toContain('This is a description');
 });
@@ -214,7 +249,11 @@ test('candidate description includes tags', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.description).toContain('#work');
   expect(result.result[0]!.description).toContain('#important');
@@ -227,7 +266,11 @@ test('candidate commandHandler opens buffer', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
   result.result[0]!.commandHandler(api);
 
   expect(api.core.useBufferViewer().open).toHaveBeenCalledWith('/folder/test.org');
@@ -240,7 +283,11 @@ test('candidate commandHandler closes completion', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
   result.result[0]!.commandHandler(api);
 
   expect(api.core.useCompletion().close).toHaveBeenCalled();
@@ -259,7 +306,11 @@ test('candidate contains original file data', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.data).toEqual(file);
 });
@@ -273,7 +324,11 @@ test('search returns total from lastSearchResult', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('Meeting', 10, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    'Meeting',
+    10,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.total).toBeGreaterThan(0);
 });
@@ -287,7 +342,11 @@ test('empty query returns total from count', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 10, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    10,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.total).toBe(50);
 });
@@ -299,7 +358,11 @@ test('whitespace-only query returns recent files', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('   ', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '   ',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(1);
 });
@@ -314,7 +377,11 @@ test('search by tags returns matching files', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('work', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    'work',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result).toHaveLength(1);
   expect((result.result[0]!.data as FileMeta)?.tags).toContain('work');
@@ -327,7 +394,11 @@ test('candidate description handles missing description and tags', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.description).toBe('');
 });
@@ -345,7 +416,11 @@ test('candidate description combines description and tags', async () => {
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
 
   expect(result.result[0]!.description).toContain('A description');
   expect(result.result[0]!.description).toContain('#tag1');
