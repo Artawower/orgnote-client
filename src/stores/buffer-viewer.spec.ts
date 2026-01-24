@@ -326,13 +326,13 @@ test('open navigates to file route for memory scheme', async () => {
   });
 });
 
-test('open navigates to file route for embedded scheme', async () => {
+test('open navigates to embedded route for embedded scheme', async () => {
   const store = useBufferViewerStore();
 
   await store.open('embedded:///docs/about.org');
 
   expect(mockNavigate).toHaveBeenCalledWith({
-    name: 'File',
+    name: 'Embedded',
     params: { path: '/docs/about.org' },
   });
 });

@@ -50,6 +50,14 @@ test('has file route configured', () => {
   expect(fileRoute?.meta?.titleGenerator).toBeDefined();
 });
 
+test('has embedded route configured', () => {
+  const embeddedRoute = router.getRoutes().find((route) => route.name === RouteNames.Embedded);
+
+  expect(embeddedRoute).toBeDefined();
+  expect(embeddedRoute?.path).toBe('/:paneId/embedded/:path(.*)');
+  expect(embeddedRoute?.meta?.titleGenerator).toBeDefined();
+});
+
 test('initial page title generator returns empty string', () => {
   const initialPageRoute = router
     .getRoutes()

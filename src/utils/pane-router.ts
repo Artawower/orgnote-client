@@ -59,6 +59,12 @@ export const createPaneRouter = async (tabId: string): Promise<Router> => {
         childName: RouteNames.Remote,
         component: () => import('src/pages/FilePage.vue'),
       }),
+      createBufferRoute({
+        basePath: 'embedded',
+        parentName: 'OpenEmbeddedReader',
+        childName: RouteNames.Embedded,
+        component: () => import('src/pages/FilePage.vue'),
+      }),
     ],
   });
 

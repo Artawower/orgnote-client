@@ -31,6 +31,12 @@ test('should build remote URI from Remote route', () => {
   expect(result).toBe('remote:///docs/info.org');
 });
 
+test('should build embedded URI from Embedded route', () => {
+  const route = createMockRoute({ path: '/docs/embedded.org' }, 'Embedded');
+  const result = extractPathFromRoute(route);
+  expect(result).toBe('embedded:///docs/embedded.org');
+});
+
 test('should extract path from array param', () => {
   const route = createMockRoute({ path: ['notes', 'folder', 'file.org'] }, 'File');
   const result = extractPathFromRoute(route);

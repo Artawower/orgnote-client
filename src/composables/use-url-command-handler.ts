@@ -100,9 +100,9 @@ async function handleAuthDeepLink(url: string, router: Router): Promise<void> {
   await router.push(route);
 }
 
-function parseExecuteParam(
+const parseExecuteParam = (
   param: LocationQueryValue | LocationQueryValue[] | undefined,
-): ExecutePayload | undefined {
+): ExecutePayload | undefined => {
   if (!param || typeof param !== 'string') {
     return;
   }
@@ -124,7 +124,7 @@ function parseExecuteParam(
   }
 
   return result.value;
-}
+};
 
 function isValidPayload(value: unknown): value is ExecutePayload {
   if (!isPresent(value) || typeof value !== 'object') return false;
@@ -151,6 +151,11 @@ function parseDeepLink(url: string): ExecutePayload | undefined {
 
 async function executeCommand(command: string, data: Record<string, string>): Promise<boolean> {
   const commands = api.core.useCommands();
+  const targetCommand = commands.get(command);
+
+  if (!targetCommand || targetCommand.hide?.(api)) {
+    return false;
+  }
 
   const safeExecute = to(
     () => commands.execute(command, data),
