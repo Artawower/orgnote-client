@@ -182,7 +182,14 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   };
 
   const getPanesData = (): PaneSnapshot[] => {
-    return Object.values(panes.value).map((paneRef) => createPaneSnapshot(paneRef.value));
+    const snapshots = Object.values(panes.value).map((paneRef) =>
+      createPaneSnapshot(paneRef.value),
+    );
+    return snapshots.filter((s) => s.tabs.length > 0);
+  };
+
+  const isEmbeddedTab = (tab: Tab): boolean => {
+    return tab.router.currentRoute.value.name === RouteNames.Embedded;
   };
 
   const restorePanesData = async (snapshot: PaneSnapshot[]): Promise<void> => {
@@ -271,10 +278,17 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   };
 
   const createPaneSnapshot = (pane: Pane): PaneSnapshot => {
-    const tabSnapshots = Object.values(pane.tabs.value).map(createTabSnapshot);
+    const tabSnapshots = Object.values(pane.tabs.value)
+      .filter((tab) => !isEmbeddedTab(tab))
+      .map(createTabSnapshot);
+
+    const activeTabId = tabSnapshots.some((t) => t.id === pane.activeTabId)
+      ? pane.activeTabId
+      : tabSnapshots[0]?.id || '';
+
     return {
       id: pane.id,
-      activeTabId: pane.activeTabId,
+      activeTabId,
       tabs: tabSnapshots,
     };
   };
@@ -431,8 +445,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     router: Router,
     routeLocation: TabSnapshot['routeLocation'],
   ): Promise<void> => {
-    const hasMatchingRoute =
-      routeLocation.name && router.hasRoute(routeLocation.name as string);
+    const hasMatchingRoute = routeLocation.name && router.hasRoute(routeLocation.name as string);
 
     if (!hasMatchingRoute) {
       return;
@@ -488,6 +501,9 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     const newPanes = { ...panes.value };
     delete newPanes[paneId];
     panes.value = newPanes;
+    if (activePaneId.value === paneId) {
+      activePaneId.value = Object.keys(panes.value)[0];
+    }
   };
 
   const getTabFromPane = (paneId: string, tabId: string): Tab | undefined => {

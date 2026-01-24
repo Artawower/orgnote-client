@@ -127,7 +127,7 @@ test('useUrlCommandHandler fails fast on invalid JSON payload', async () => {
   app.unmount();
 });
 
-test('useUrlCommandHandler does not execute hidden commands', async () => {
+test('useUrlCommandHandler executes command regardless of hide property', async () => {
   mockGetCommand.mockReturnValue({ command: 'hidden', hide: () => true });
   mockRouteQuery.value = { execute: JSON.stringify({ command: 'hidden' }) };
 
@@ -135,7 +135,7 @@ test('useUrlCommandHandler does not execute hidden commands', async () => {
 
   await flushPromises();
 
-  expect(mockExecute).not.toHaveBeenCalled();
+  expect(mockExecute).toHaveBeenCalledWith('hidden', {});
 
   app.unmount();
 });

@@ -107,7 +107,10 @@ const parseExecuteParam = (
     return;
   }
 
-  const safeJsonParse = to(() => JSON.parse(param) as unknown, `Failed to parse execute parameter`);
+  const safeJsonParse = to(
+    () => JSON.parse(param) as unknown,
+    `Failed to parse execute parameter`,
+  );
 
   const result = safeJsonParse();
 
@@ -153,7 +156,7 @@ async function executeCommand(command: string, data: Record<string, string>): Pr
   const commands = api.core.useCommands();
   const targetCommand = commands.get(command);
 
-  if (!targetCommand || targetCommand.hide?.(api)) {
+  if (!targetCommand) {
     return false;
   }
 

@@ -3,7 +3,26 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useLayoutStore } from './layout';
 import { usePaneStore } from './pane';
 import type { LayoutSnapshot } from 'orgnote-api';
+import { RouteNames } from 'orgnote-api';
 import { isPresent } from 'orgnote-api/utils';
+
+const createMockRouter = () => ({
+  push: vi.fn(),
+  hasRoute: vi.fn(() => true),
+  currentRoute: {
+    value: {
+      path: '/',
+      params: {},
+      query: {},
+      hash: '',
+      name: RouteNames.InitialPage,
+    },
+  },
+});
+
+vi.mock('src/utils/pane-router', () => ({
+  createPaneRouter: vi.fn(() => Promise.resolve(createMockRouter())),
+}));
 
 vi.mock('src/boot/repositories', () => ({
   repositories: {
@@ -435,7 +454,7 @@ test('should restore activePaneId from snapshot', async () => {
   expect(paneStore.activePaneId).toBe(pane1.id);
 });
 
-test('should clear panes before restore', async () => {
+test('should init layout during restore if snapshot panes are empty', async () => {
   const layoutStore = useLayoutStore();
   const paneStore = usePaneStore();
 
@@ -452,7 +471,7 @@ test('should clear panes before restore', async () => {
 
   await layoutStore.restoreLayoutSnapshot(snapshot);
 
-  expect(Object.keys(paneStore.panes)).toHaveLength(0);
+  expect(Object.keys(paneStore.panes)).toHaveLength(1);
 });
 
 test('should init layout when no snapshot available', async () => {
@@ -605,4 +624,35 @@ test('getPanePosition returns undefined when layout is undefined', () => {
   const layoutStore = useLayoutStore();
 
   expect(layoutStore.getPanePosition('any-id')).toBeUndefined();
+});
+
+test('should return undefined snapshot if no valid panes exist', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+  await layoutStore.initLayout();
+  
+  const paneId = paneStore.activePaneId!;
+  const pane = paneStore.panes[paneId]!;
+  const tab = Object.values(pane.value.tabs.value)[0]!;
+  tab.router.currentRoute.value.name = RouteNames.Embedded;
+
+  const snapshot = layoutStore.getLayoutSnapshot();
+  expect(snapshot).toBeUndefined();
+});
+
+test('should auto-init layout during restore if snapshot has no panes', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  const emptySnapshot: LayoutSnapshot = {
+    panes: [],
+    activePaneId: '',
+    timestamp: Date.now(),
+    layout: { type: 'pane', id: '1', paneId: '1' },
+  };
+
+  await layoutStore.restoreLayoutSnapshot(emptySnapshot);
+
+  expect(Object.keys(paneStore.panes)).toHaveLength(1);
+  expect(paneStore.activePaneId).toBeTruthy();
 });

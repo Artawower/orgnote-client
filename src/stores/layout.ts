@@ -66,6 +66,8 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
     if (!layout.value) return;
 
     const panesData = paneStore.getPanesData();
+    if (panesData.length === 0) return;
+
     return {
       panes: panesData,
       activePaneId: activePaneId.value || '',
@@ -116,6 +118,11 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
   };
 
   const restoreLayoutSnapshot = async (snapshot: LayoutSnapshot): Promise<void> => {
+    if (snapshot.panes.length === 0) {
+      await safeInitLayout();
+      return;
+    }
+
     clearPanes();
 
     await paneStore.restorePanesData(snapshot.panes);
