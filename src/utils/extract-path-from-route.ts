@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router';
 const ROUTE_SCHEME_MAPPING: Record<string, BufferScheme> = {
   [RouteNames.File]: 'file',
   [RouteNames.Remote]: 'remote',
+  [RouteNames.Embedded]: 'embedded',
 };
 
 const DEFAULT_SCHEME: BufferScheme = 'file';

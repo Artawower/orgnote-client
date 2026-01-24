@@ -52,6 +52,7 @@ import { useNotificationsStore } from 'src/stores/notifications';
 import { useBufferViewerStore } from 'src/stores/buffer-viewer';
 import { useBufferStore } from 'src/stores/buffer';
 import { useBufferProviderStore } from 'src/stores/buffer-provider';
+import { useEmbeddedBufferStore } from 'src/stores/embedded-buffer';
 import { useLogStore } from 'src/stores/log';
 import type { Router } from 'vue-router';
 import { logger } from './logger';
@@ -113,6 +114,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useBabel: useOrgBabelStore,
       useFileSearch: useFileSearchStore,
       useFileMeta: useFileMetaStore,
+      useEmbeddedBuffer: useEmbeddedBufferStore,
       app,
     },
     utils: {

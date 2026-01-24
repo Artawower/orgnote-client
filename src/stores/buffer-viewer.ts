@@ -15,7 +15,7 @@ const getRouteNameForScheme = (scheme: string): string => {
     remote: RouteNames.Remote,
     memory: RouteNames.File,
     shared: RouteNames.File,
-    embedded: RouteNames.File,
+    embedded: RouteNames.Embedded,
   };
   return mapping[scheme] ?? RouteNames.File;
 };

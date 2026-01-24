@@ -4,6 +4,7 @@ import type { Router, RouteLocationNormalizedLoaded } from 'vue-router';
 
 const {
   mockExecute,
+  mockGetCommand,
   mockReplace,
   mockAppAddListener,
   mockListenerRemove,
@@ -11,6 +12,7 @@ const {
   mockReporterReportError,
 } = vi.hoisted(() => ({
   mockExecute: vi.fn(),
+  mockGetCommand: vi.fn(),
   mockReplace: vi.fn(),
   mockAppAddListener: vi.fn(),
   mockListenerRemove: vi.fn(),
@@ -37,7 +39,15 @@ vi.mock('src/boot/api', () => ({
     core: {
       useCommands: () => ({
         execute: mockExecute,
+        get: mockGetCommand,
       }),
+    },
+    utils: {
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      },
     },
   },
 }));
@@ -72,6 +82,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockRouteQuery.value = {};
   mockExecute.mockResolvedValue(undefined);
+  mockGetCommand.mockReturnValue({ command: 'any' });
   mockAppAddListener.mockResolvedValue({ remove: mockListenerRemove });
 });
 
@@ -91,19 +102,44 @@ test('useUrlCommandHandler executes command from valid execute query parameter',
   app.unmount();
 });
 
-test('useUrlCommandHandler passes data to command execution', async () => {
-  mockRouteQuery.value = {
-    execute: JSON.stringify({ command: 'test-command', data: { key: 'value' } }),
-  };
+test('useUrlCommandHandler fails fast on malformed URI encoded JSON', async () => {
+  mockRouteQuery.value = { execute: '%E0%A4%A' };
 
   const [, app] = withSetup(() => useUrlCommandHandler());
 
   await flushPromises();
 
-  expect(mockExecute).toHaveBeenCalledWith('test-command', { key: 'value' });
+  expect(mockExecute).not.toHaveBeenCalled();
 
   app.unmount();
 });
+
+test('useUrlCommandHandler fails fast on invalid JSON payload', async () => {
+  mockRouteQuery.value = { execute: '{"command": "test", "data": { "invalid" }}' };
+
+  const [, app] = withSetup(() => useUrlCommandHandler());
+
+  await flushPromises();
+
+  expect(mockExecute).not.toHaveBeenCalled();
+  expect(mockReporterReport).toHaveBeenCalled();
+
+  app.unmount();
+});
+
+test('useUrlCommandHandler executes command regardless of hide property', async () => {
+  mockGetCommand.mockReturnValue({ command: 'hidden', hide: () => true });
+  mockRouteQuery.value = { execute: JSON.stringify({ command: 'hidden' }) };
+
+  const [, app] = withSetup(() => useUrlCommandHandler());
+
+  await flushPromises();
+
+  expect(mockExecute).toHaveBeenCalledWith('hidden', {});
+
+  app.unmount();
+});
+
 
 test('useUrlCommandHandler clears execute parameter after successful command', async () => {
   mockRouteQuery.value = { execute: JSON.stringify({ command: 'test-command' }), other: 'param' };

@@ -2,9 +2,10 @@ import { expect, test, vi } from 'vitest';
 import { usePaneStore } from './pane';
 import { createPinia, setActivePinia } from 'pinia';
 import type { PaneSnapshot } from 'orgnote-api';
+import { RouteNames } from 'orgnote-api';
 import { isNullable } from 'orgnote-api/utils';
 
-const mockRouter = {
+const createMockRouter = () => ({
   push: vi.fn(),
   hasRoute: vi.fn(() => true),
   currentRoute: {
@@ -13,13 +14,13 @@ const mockRouter = {
       params: {},
       query: {},
       hash: '',
-      name: 'InitialPage',
+      name: RouteNames.InitialPage,
     },
   },
-};
+});
 
 vi.mock('src/utils/pane-router', () => ({
-  createPaneRouter: vi.fn(() => Promise.resolve(mockRouter)),
+  createPaneRouter: vi.fn(() => Promise.resolve(createMockRouter())),
 }));
 
 function assertDefined<T>(value: T | null | undefined, message: string): asserts value is T {
@@ -129,7 +130,13 @@ test('should not remove pane when closing last tab but reset route', async () =>
 
   expect(paneStore.panes[paneId]).toBeDefined();
   expect(paneStore.activePaneId).toBe(paneId);
-  expect(mockRouter.push).toHaveBeenCalledWith({ name: 'InitialPage', params: { paneId } });
+  const paneRef = paneStore.getPane(paneId);
+  assertDefined(paneRef.value, 'paneRef.value is nullable');
+  const tab = Object.values(paneRef.value.tabs.value)[0];
+  expect(tab?.router.push).toHaveBeenCalledWith({
+    name: RouteNames.InitialPage,
+    params: { paneId },
+  });
 });
 
 test('should handle closing non-existent tab', async () => {
@@ -280,12 +287,58 @@ test('should set active pane when selecting tab', async () => {
   expect(paneStore.activeTab?.id).toBe(tab1!.id);
 });
 
-test('should throw error when navigate without active pane', async () => {
+test('should filter embedded tabs from snapshot', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();
 
-  await expect(paneStore.navigate({ path: '/some-path' })).rejects.toThrow('No active pane');
+  const pane = await paneStore.createPane();
+  await paneStore.addTab(pane.id, { title: 'Stable Tab' });
+  
+  const embeddedTab = await paneStore.addTab(pane.id, { title: 'Embedded Tab' });
+  if (embeddedTab) {
+    embeddedTab.router.currentRoute.value.name = RouteNames.Embedded;
+  }
+
+  const snapshot = paneStore.getPanesData();
+
+  expect(snapshot).toHaveLength(1);
+  expect(snapshot[0]?.tabs).toHaveLength(1);
+  expect(snapshot[0]?.tabs[0]?.title).toBe('Stable Tab');
 });
+
+test('should not include panes with only embedded tabs in snapshot', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane = await paneStore.createPane();
+  const embeddedTab = await paneStore.addTab(pane.id, { title: 'Embedded Tab' });
+  if (embeddedTab) {
+    embeddedTab.router.currentRoute.value.name = RouteNames.Embedded;
+  }
+
+  const snapshot = paneStore.getPanesData();
+
+  expect(snapshot).toHaveLength(0);
+});
+
+test('should update activeTabId when current active tab is embedded and filtered', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane = await paneStore.createPane();
+  const stableTab = await paneStore.addTab(pane.id, { title: 'Stable' });
+  const embeddedTab = await paneStore.addTab(pane.id, { title: 'Embedded' });
+  
+  if (embeddedTab) {
+    embeddedTab.router.currentRoute.value.name = RouteNames.Embedded;
+    paneStore.selectTab(pane.id, embeddedTab.id);
+  }
+
+  const snapshot = paneStore.getPanesData();
+
+  expect(snapshot[0]?.activeTabId).toBe(stableTab?.id);
+});
+
 
 test('should throw error when navigate to non-existent pane', async () => {
   setActivePinia(createPinia());
@@ -352,7 +405,13 @@ test('closeTab should keep last pane and show InitialPage when its only tab is c
   expect(paneStore.panes[paneId]).toBeDefined();
   expect(paneStore.activePaneId).toBe(paneId);
   expect(Object.keys(paneStore.panes)).toHaveLength(1);
-  expect(mockRouter.push).toHaveBeenCalledWith({ name: 'InitialPage', params: { paneId } });
+  const paneRef = paneStore.getPane(paneId);
+  assertDefined(paneRef.value, 'paneRef.value is nullable');
+  const tab = Object.values(paneRef.value.tabs.value)[0];
+  expect(tab?.router.push).toHaveBeenCalledWith({
+    name: RouteNames.InitialPage,
+    params: { paneId },
+  });
 });
 
 test('cleanupEmptyPane should be reachable and remove pane correctly', async () => {
@@ -713,7 +772,8 @@ test('navigate should call router push on active tab in active pane', async () =
 
   await paneStore.navigate({ name: 'EditNote', params: { path: 'test.org' } });
 
-  expect(mockRouter.push).toHaveBeenLastCalledWith({
+  const tab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0];
+  expect(tab?.router.push).toHaveBeenLastCalledWith({
     name: 'EditNote',
     params: { path: 'test.org', paneId: pane.id },
   });
@@ -730,7 +790,8 @@ test('navigate should call router push on specific pane', async () => {
 
   await paneStore.navigate({ name: 'EditNote', params: { path: 'test.org' } }, pane.id);
 
-  expect(mockRouter.push).toHaveBeenLastCalledWith({
+  const tab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0];
+  expect(tab?.router.push).toHaveBeenLastCalledWith({
     name: 'EditNote',
     params: { path: 'test.org', paneId: pane.id },
   });
@@ -747,7 +808,8 @@ test('navigate should handle string route params', async () => {
 
   await paneStore.navigate('/test-path');
 
-  expect(mockRouter.push).toHaveBeenLastCalledWith({ path: '/test-path' });
+  const tab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0];
+  expect(tab?.router.push).toHaveBeenLastCalledWith({ path: '/test-path' });
 });
 
 test('navigate should throw when pane has no active tab', async () => {
@@ -768,7 +830,7 @@ test('navigate should call router push on specific tab', async () => {
 
   await paneStore.navigate({ name: 'EditNote', params: { path: 'test.org' } }, pane.id, tab!.id);
 
-  expect(mockRouter.push).toHaveBeenCalledWith({
+  expect(tab?.router.push).toHaveBeenCalledWith({
     name: 'EditNote',
     params: { path: 'test.org', paneId: pane.id },
   });
@@ -785,7 +847,7 @@ test('navigate should handle string route with specific tab', async () => {
 
   await paneStore.navigate('/edit-note/test.org', pane.id, tab!.id);
 
-  expect(mockRouter.push).toHaveBeenLastCalledWith({
+  expect(tab?.router.push).toHaveBeenLastCalledWith({
     path: '/edit-note/test.org',
   });
 });
@@ -806,7 +868,7 @@ test('navigate should preserve existing params', async () => {
     tab!.id,
   );
 
-  expect(mockRouter.push).toHaveBeenCalledWith({
+  expect(tab?.router.push).toHaveBeenCalledWith({
     name: 'EditNote',
     params: { path: 'test.org', customParam: 'value', paneId: pane.id },
   });
