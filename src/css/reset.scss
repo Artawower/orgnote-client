@@ -112,7 +112,8 @@ section {
   display: block;
 }
 
-body {
+body,
+dialog {
   line-height: 1;
   color: var(--fg);
   font-family: var(--main-font-family);
