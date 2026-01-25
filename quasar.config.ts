@@ -181,10 +181,12 @@ export default defineConfig((ctx) => {
         '/media': {
           target: process.env.API_URL || 'http://localhost:8000',
         },
-        '/ws': {
+        '/api/ws': {
           target: process.env.API_URL || 'http://localhost:8000',
           changeOrigin: true,
           ws: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api\/ws/, '/ws'),
         },
       },
       headers: {
