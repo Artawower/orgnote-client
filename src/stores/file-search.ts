@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Document, type EnrichedDocumentSearchResults } from 'flexsearch';
-import type { FileMeta, FileSearchStore, FileIndexMeta, StoredIndex } from 'orgnote-api';
+import type { DiskFile, FileMeta, FileSearchStore, FileIndexMeta, StoredIndex } from 'orgnote-api';
 import { isOrgFile, isOrgGpgFile, to } from 'orgnote-api';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
@@ -40,7 +40,6 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   const indexedIds = new Set<string>();
   const indexMetaMap = new Map<string, FileIndexMeta>();
   const isSearching = ref(false);
-  // TODO: fix/stable-sync since we already have a queue, it could be redundand to have additional flag
   const isIndexing = ref(false);
   const lastSearchResult = ref<FileSearchStore['lastSearchResult']['value']>(null);
 
@@ -285,53 +284,75 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     return needsIndex;
   };
 
-  const scanDirectory = async (
-    dirPath: string,
-    queue: ReturnType<typeof useQueueStore>,
-  ): Promise<void> => {
+  const readDirectoryEntries = async (dirPath: string): Promise<DiskFile[] | null> => {
     const fs = useFileSystemStore();
     const readResult = await to(() => fs.readDir(dirPath))();
 
     if (readResult.isErr()) {
       logger.error('search index failed to read directory', { dirPath, error: readResult.error });
+      return null;
+    }
+
+    return readResult.value ?? null;
+  };
+
+  const scanSubdirectory = async (
+    entryPath: string,
+    queue: ReturnType<typeof useQueueStore>,
+  ): Promise<void> => {
+    const scanResult = await to(() => scanDirectory(entryPath, queue))();
+    if (scanResult.isOk()) return;
+
+    logger.error('search index failed to scan directory', {
+      dirPath: entryPath,
+      error: scanResult.error,
+    });
+  };
+
+  const scanFileEntry = async (
+    entryPath: string,
+    entry: DiskFile,
+    queue: ReturnType<typeof useQueueStore>,
+  ): Promise<void> => {
+    if (!isOrgFile(entry.name)) return;
+
+    const shouldIndexResult = await to(() => shouldIndexFile(entryPath))();
+    if (shouldIndexResult.isErr()) {
+      logger.error('search index failed to check if file needs indexing', {
+        filePath: entryPath,
+        error: shouldIndexResult.error,
+      });
       return;
     }
 
-    const entries = readResult.value;
+    if (!shouldIndexResult.value) return;
+
+    await enqueueIndexTask(queue, entryPath);
+  };
+
+  const scanEntry = async (
+    dirPath: string,
+    entry: DiskFile,
+    queue: ReturnType<typeof useQueueStore>,
+  ): Promise<void> => {
+    const entryPath = buildEntryPath(dirPath, entry.name);
+
+    if (entry.type === 'directory') {
+      await scanSubdirectory(entryPath, queue);
+      return;
+    }
+
+    await scanFileEntry(entryPath, entry, queue);
+  };
+
+  const scanDirectory = async (
+    dirPath: string,
+    queue: ReturnType<typeof useQueueStore>,
+  ): Promise<void> => {
+    const entries = await readDirectoryEntries(dirPath);
     if (!entries) return;
 
-    const scanPromises = entries.map(async (entry) => {
-      const entryPath = buildEntryPath(dirPath, entry.name);
-
-      if (entry.type === 'directory') {
-        const scanResult = await to(() => scanDirectory(entryPath, queue))();
-        if (scanResult.isErr()) {
-          logger.error('search index failed to scan directory', {
-            dirPath: entryPath,
-            error: scanResult.error,
-          });
-        }
-        return;
-      }
-
-      if (!isOrgFile(entry.name)) return;
-
-      const shouldIndexResult = await to(() => shouldIndexFile(entryPath))();
-      if (shouldIndexResult.isErr()) {
-        logger.error('search index failed to check if file needs indexing', {
-          filePath: entryPath,
-          error: shouldIndexResult.error,
-        });
-        return;
-      }
-
-      const needsIndex = shouldIndexResult.value;
-      if (!needsIndex) return;
-
-      await enqueueIndexTask(queue, entryPath);
-    });
-
-    await Promise.all(scanPromises);
+    await Promise.all(entries.map((entry) => scanEntry(dirPath, entry, queue)));
   };
 
   const ensureIndexLoaded = async (): Promise<void> => {
