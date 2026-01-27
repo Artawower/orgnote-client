@@ -14,6 +14,7 @@ const getTaskPath = (task: SyncQueueTask): string => {
   return task.data.path;
 };
 
+
 const processSyncTask = async (task: SyncQueueTask, ctx: SyncContext): Promise<void> => {
   const processors: Record<SyncOperationType, () => Promise<void>> = {
     [SyncOperationType.Upload]: () => processUpload(task.data as LocalFile, ctx),

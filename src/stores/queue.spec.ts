@@ -49,7 +49,6 @@ const { createMockQueue, mockQueueConstructor, mockQueueRepository } = vi.hoiste
     getLock: vi.fn(),
     getRunningTasks: vi.fn(),
     clear: vi.fn(),
-    setStatus: vi.fn(),
   };
 
   return { createMockQueue, mockQueueConstructor, mockQueueRepository };
@@ -77,7 +76,7 @@ import type { QueueTask } from 'orgnote-api';
 const createMockTask = (overrides: Partial<QueueTask> = {}): QueueTask => ({
   id: 'task-1',
   payload: { data: 'test' },
-  queueId: 'default',
+  queueId: 'test-queue',
   added: Date.now(),
   ...overrides,
 });
@@ -93,7 +92,6 @@ beforeEach(() => {
   mockQueueRepository.getLock.mockReset().mockResolvedValue(undefined);
   mockQueueRepository.getRunningTasks.mockReset().mockResolvedValue({});
   mockQueueRepository.clear.mockReset().mockResolvedValue(undefined);
-  mockQueueRepository.setStatus.mockReset().mockResolvedValue(undefined);
 
   mockQueueConstructor.mockClear();
   mockQueueConstructor.mockImplementation(() => createMockQueue());
@@ -141,7 +139,7 @@ test('useQueueStore getQueue returns queue after registration', () => {
 
 test('useQueueStore add returns task id', async () => {
   const store = useQueueStore();
-  const taskId = await store.add({ data: 'test' });
+  const taskId = await store.add('test-queue', { data: 'test' });
 
   expect(taskId).toBeDefined();
   expect(typeof taskId).toBe('string');
@@ -150,17 +148,17 @@ test('useQueueStore add returns task id', async () => {
 
 test('useQueueStore add creates queue if not exists', async () => {
   const store = useQueueStore();
-  expect(store.queueIds).not.toContain('default');
+  expect(store.queueIds).not.toContain('test-queue');
 
-  await store.add({ data: 'test' });
+  await store.add('test-queue', { data: 'test' });
 
-  expect(store.queueIds).toContain('default');
+  expect(store.queueIds).toContain('test-queue');
 });
 
 test('useQueueStore add uses specified queueId', async () => {
   const store = useQueueStore();
 
-  await store.add({ data: 'test' }, undefined, 'custom-queue');
+  await store.add('custom-queue', { data: 'test' });
 
   expect(store.queueIds).toContain('custom-queue');
 });
@@ -170,9 +168,9 @@ test('useQueueStore get delegates to repository', async () => {
   const mockTask = createMockTask();
   mockQueueRepository.get.mockResolvedValue(mockTask);
 
-  const task = await store.get('task-1');
+  const task = await store.get('test-queue', 'task-1');
 
-  expect(mockQueueRepository.get).toHaveBeenCalledWith('task-1');
+  expect(mockQueueRepository.get).toHaveBeenCalledWith('test-queue');
   expect(task).toEqual(mockTask);
 });
 
@@ -180,7 +178,7 @@ test('useQueueStore get returns undefined when task not found', async () => {
   const store = useQueueStore();
   mockQueueRepository.get.mockResolvedValue(undefined);
 
-  const task = await store.get('non-existent');
+  const task = await store.get('test-queue', 'non-existent');
 
   expect(task).toBeUndefined();
 });
@@ -196,19 +194,11 @@ test('useQueueStore getAll delegates to repository with queueId', async () => {
   expect(tasks).toEqual(mockTasks);
 });
 
-test('useQueueStore getAll uses default queueId', async () => {
-  const store = useQueueStore();
-
-  await store.getAll();
-
-  expect(mockQueueRepository.getAll).toHaveBeenCalledWith('default');
-});
-
 test('useQueueStore remove cancels task in queue', async () => {
   const store = useQueueStore();
   store.register('test-queue');
 
-  await store.remove('task-1', 'test-queue');
+  await store.remove('test-queue', 'task-1');
 
   const queue = store.getQueue('test-queue') as MockQueue | undefined;
   expect(queue?.cancel).toHaveBeenCalled();

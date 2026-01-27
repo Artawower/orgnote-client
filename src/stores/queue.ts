@@ -10,22 +10,54 @@ import type {
   QueueCreationOptions,
   QueueTaskOptions,
   QueueStats,
+  DeduplicationStrategy,
 } from 'orgnote-api';
+import { logger } from 'src/boot/logger';
+
+const DEFAULT_DEDUPLICATION_STRATEGY: DeduplicationStrategy = 'replace';
 
 const createProcessFn = (options: QueueCreationOptions) => {
   return options.process ?? ((_task: unknown, cb: (err?: unknown) => void) => cb());
 };
 
 const registerQueueEvents = (queue: Queue) => {
-  const updateStatus = (taskId: string, status: string) =>
-    repositories.queueRepository.setStatus(taskId, status);
+  const updateQueueStatus = (taskId: string, status: QueueTask['status']) =>
+    repositories.queueRepository.update(taskId, { status });
 
-  queue.on('task_finish', (taskId: string) => updateStatus(taskId, 'completed'));
-  queue.on('task_failed', (taskId: string) => updateStatus(taskId, 'failed'));
+  queue.on('task_finish', (taskId: string) => updateQueueStatus(taskId, 'completed'));
+  queue.on('task_failed', (taskId: string) => updateQueueStatus(taskId, 'failed'));
 };
+
+type DeduplicationHandler = (existing: QueueTask) => Promise<string>;
+
+const createDeduplicationHandlers = (
+  queueId: string,
+): Record<DeduplicationStrategy, DeduplicationHandler> => ({
+  skip: async (existing) => {
+    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, skipping`);
+    return existing.id;
+  },
+
+  replace: async (existing) => {
+    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, replacing`);
+    await repositories.queueRepository.delete(existing.id, true);
+    return '';
+  },
+
+  moveToEnd: async (existing) => {
+    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, moving to end`);
+    const newPriority = Date.now();
+    await repositories.queueRepository.update(existing.id, {
+      priority: newPriority,
+      added: newPriority,
+    });
+    return existing.id;
+  },
+});
 
 export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
   const queues = ref<Map<string, Queue>>(new Map());
+  const queueConfigs = ref<Map<string, QueueCreationOptions>>(new Map());
   const queueIds = ref<string[]>([]);
 
   const addQueueId = (queueId: string) => {
@@ -37,8 +69,12 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     queueIds.value = queueIds.value.filter((id) => id !== queueId);
   };
 
-  const getQueue = (queueId: string = 'default'): Queue | undefined => {
+  const getQueue = (queueId: string): Queue | undefined => {
     return queues.value.get(queueId);
+  };
+
+  const getQueueOptions = (queueId: string): QueueCreationOptions => {
+    return queueConfigs.value.get(queueId) ?? {};
   };
 
   const register = (queueId: string, options: QueueCreationOptions = {}): Queue => {
@@ -61,12 +97,13 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
 
     registerQueueEvents(queue);
     queues.value.set(queueId, queue);
+    queueConfigs.value.set(queueId, options);
     addQueueId(queueId);
 
     return queue;
   };
 
-  const ensureQueue = (queueId: string = 'default'): Queue => {
+  const ensureQueue = (queueId: string): Queue => {
     const queue = getQueue(queueId);
     if (queue) {
       return queue;
@@ -74,27 +111,43 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     return register(queueId);
   };
 
-  const add = (
-    payload: unknown,
-    options?: QueueTaskOptions,
-    queueId: string = 'default',
-  ): Promise<string> => {
-    const queue = ensureQueue(queueId);
-    const id = crypto.randomUUID();
-    const task = { id, payload, ...options };
-    queue.push(task);
-    return Promise.resolve(id);
+  const handleDeduplication = async (id: string, queueId: string): Promise<string | null> => {
+    const existing = await repositories.queueRepository.get(id);
+
+    if (!existing || existing.queueId !== queueId || existing.deletedAt) return null;
+
+    const config = getQueueOptions(queueId);
+    const strategy = config.deduplicationStrategy ?? DEFAULT_DEDUPLICATION_STRATEGY;
+
+    const handlers = createDeduplicationHandlers(queueId);
+    const handler = handlers[strategy];
+
+    return await handler(existing);
+  };
+
+  const add = (queueId: string, payload: unknown, options?: QueueTaskOptions): Promise<string> => {
+    return (async () => {
+      const queue = ensureQueue(queueId);
+      const id = options?.id ?? crypto.randomUUID();
+
+      const existingTaskId = await handleDeduplication(id, queueId);
+      if (existingTaskId) {
+        return existingTaskId;
+      }
+      queue.push({ id, payload });
+      return id;
+    })();
   };
 
   const get = (taskId: string): Promise<QueueTask | undefined> => {
     return repositories.queueRepository.get(taskId);
   };
 
-  const getAll = (queueId: string = 'default'): Promise<QueueTask[]> => {
+  const getAll = (queueId: string): Promise<QueueTask[]> => {
     return repositories.queueRepository.getAll(queueId);
   };
 
-  const cancel = (taskId: string, queueId: string = 'default'): Promise<void> => {
+  const cancel = (queueId: string, taskId: string): Promise<void> => {
     return new Promise((resolve) => {
       ensureQueue(queueId).cancel(taskId, () => resolve());
     });
@@ -102,15 +155,15 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
 
   const remove = cancel;
 
-  const pause = (queueId: string = 'default'): void => {
+  const pause = (queueId: string): void => {
     ensureQueue(queueId).pause();
   };
 
-  const resume = (queueId: string = 'default'): void => {
+  const resume = (queueId: string): void => {
     ensureQueue(queueId).resume();
   };
 
-  const destroy = (queueId: string = 'default'): void => {
+  const destroy = (queueId: string): void => {
     const queue = getQueue(queueId);
     if (!queue) {
       return;
@@ -118,14 +171,15 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     queue.removeAllListeners();
     queue.destroy(() => null);
     queues.value.delete(queueId);
+    queueConfigs.value.delete(queueId);
     removeQueueId(queueId);
   };
 
-  const unregister = (queueId: string = 'default'): void => {
+  const unregister = (queueId: string): void => {
     destroy(queueId);
   };
 
-  const clear = async (queueId: string = 'default'): Promise<void> => {
+  const clear = async (queueId: string): Promise<void> => {
     await pauseQueue(queueId);
     await repositories.queueRepository.clear(queueId);
     const queue = getQueue(queueId);
@@ -140,6 +194,8 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
       return;
     }
 
+    logger.warn(`PAUSE QUEUE: ${queueId}`);
+
     queue.pause();
     const tasks = await repositories.queueRepository.getAll(queueId);
     await Promise.all(
@@ -149,7 +205,7 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     );
   };
 
-  const getStats = (queueId: string = 'default'): Promise<QueueStats> => {
+  const getStats = (queueId: string): Promise<QueueStats> => {
     const stats = ensureQueue(queueId).getStats();
     return Promise.resolve({ ...stats });
   };

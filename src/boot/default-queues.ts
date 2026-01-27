@@ -63,6 +63,7 @@ export default boot(() => {
     maxRetries: 2,
     retryDelay: 1000,
     failTaskOnProcessException: true,
+    deduplicationStrategy: 'replace',
     process: createQueueTaskProcessor(provider),
   });
 
@@ -71,6 +72,7 @@ export default boot(() => {
     maxRetries: 2,
     retryDelay: 1000,
     failTaskOnProcessException: true,
+    deduplicationStrategy: 'replace',
     process: createIndexProcessor(),
   });
 });

@@ -16,7 +16,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     validationDelayMs: DEFAULT_VALIDATION_DELAY_MS,
   },
   developer: {
-    developerMode: false,
+    developerMode: Boolean(process.env.DEV),
     maximumLogsCount: 1000,
     storeQueueTasksMinutes: 60,
     corsProxy: 'https://org-note.com/cors/',
