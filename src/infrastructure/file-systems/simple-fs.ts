@@ -1,5 +1,7 @@
 import Dexie from 'dexie';
-import type { DiskFile, FileSystem } from 'orgnote-api';
+import { v4 } from 'uuid';
+import type { DiskFile, FileSystem, FileSystemChange, FileSystemChangeType } from 'orgnote-api';
+import { reporter } from 'src/boot/report';
 import {
   ErrorDirectoryNotFound,
   ErrorFileNotFound,
@@ -14,6 +16,8 @@ import { desktopOnly } from 'src/utils/platform-specific';
 
 type File = DiskFile & { content?: string | Uint8Array };
 
+type WatchListener = (change: FileSystemChange) => void;
+
 class ErrorDirectoryAlreadyExist extends Error {
   constructor(path: string) {
     super(`Directory already exists: ${path}`);
@@ -22,13 +26,36 @@ class ErrorDirectoryAlreadyExist extends Error {
 
 export const SIMPLE_FS_NAME = 'simple-fs';
 
+const buildChange = (
+  path: string,
+  type: FileSystemChangeType,
+  mtime?: number,
+): FileSystemChange => ({
+  path,
+  type,
+  mtime,
+});
+
+const notifyListeners = (listeners: Map<string, WatchListener>, change: FileSystemChange): void => {
+  listeners.forEach((listener) => {
+    const result = to(listener)(change);
+    if (result.isOk()) {
+      return;
+    }
+    reporter.reportError(new Error('simple-fs watch listener failed', { cause: result.error }));
+  });
+};
+
 export const useSimpleFs = (): FileSystem => {
   const db = new Dexie(SIMPLE_FS_NAME);
   const storeName = 'root';
   db.version(1).stores({
-    [storeName]: 'path,mtime,ctime,atime,name,type', // Primary key and indexed props
+    [storeName]: 'path,mtime,ctime,atime,name,type',
   });
   const fs = db.table<File, string>(storeName);
+  const listeners = new Map<string, WatchListener>();
+
+  const createListenerId = (): string => v4();
 
   const readFile: FileSystem['readFile'] = async <
     T extends 'utf8' | 'binary' = 'utf8',
@@ -61,6 +88,20 @@ export const useSimpleFs = (): FileSystem => {
     return raw;
   };
 
+  const emitCreateOrModify = (path: string, previous?: DiskFile): void => {
+    const type: FileSystemChangeType = previous ? 'modify' : 'create';
+    const mtime = previous?.mtime ?? Date.now();
+    notifyListeners(listeners, buildChange(path, type, mtime));
+  };
+
+  const emitDelete = (path: string): void => {
+    notifyListeners(listeners, buildChange(path, 'delete'));
+  };
+
+  const emitRename = (path: string, previousPath: string): void => {
+    notifyListeners(listeners, { path, previousPath, type: 'rename' });
+  };
+
   const writeFile: FileSystem['writeFile'] = async (
     path,
     content,
@@ -81,6 +122,8 @@ export const useSimpleFs = (): FileSystem => {
       content,
       path,
     });
+
+    emitCreateOrModify(path, existingFile);
   };
 
   const recursiveMkdir = async (path: string) => {
@@ -102,6 +145,7 @@ export const useSimpleFs = (): FileSystem => {
 
     const filesToRename = await getFilesToRename(oldPath);
     await updateFilePaths(filesToRename, oldPath, newPath);
+    emitRename(newPath, oldPath);
   };
 
   const getFilesToRename = async (oldPath: string): Promise<string[]> => {
@@ -133,6 +177,7 @@ export const useSimpleFs = (): FileSystem => {
   const deleteFile: FileSystem['deleteFile'] = async (path: string) => {
     path = toAbsolutePath(path);
     await fs.delete(path);
+    emitDelete(path);
   };
 
   const readDir: FileSystem['readDir'] = async (path: string) => {
@@ -157,6 +202,7 @@ export const useSimpleFs = (): FileSystem => {
   const rmdir: FileSystem['rmdir'] = async (path: string) => {
     if (path === '/') {
       await fs.clear();
+      emitDelete(path);
       await init?.();
       return;
     }
@@ -166,8 +212,14 @@ export const useSimpleFs = (): FileSystem => {
     // TODO: master throw error if file is not dir
 
     const nestedFilesPaths: string[] = [];
-    await fs.each((f) => (f.path.startsWith(path) ? nestedFilesPaths.push(f.path) : null));
+    await fs.each((f) => {
+      if (!f.path.startsWith(path)) {
+        return;
+      }
+      nestedFilesPaths.push(f.path);
+    });
     await Promise.all(nestedFilesPaths.map((p) => fs.delete(p)));
+    emitDelete(path);
   };
 
   const mkdir: FileSystem['mkdir'] = async (path: string) => {
@@ -176,6 +228,7 @@ export const useSimpleFs = (): FileSystem => {
       throw new ErrorDirectoryAlreadyExist(path);
     }
     // TODO: master update atime/mtime for all parent directories
+
     await fs.add({
       size: 0,
       mtime: Date.now(),
@@ -185,6 +238,7 @@ export const useSimpleFs = (): FileSystem => {
       type: 'directory',
       path,
     });
+    emitCreateOrModify(path);
   };
 
   const isDirExist: FileSystem['isDirExist'] = async (path: string) => {
@@ -208,6 +262,10 @@ export const useSimpleFs = (): FileSystem => {
       atime: atime ? new Date(atime).getTime() : undefined,
       mtime: mtime ? new Date(mtime).getTime() : undefined,
     });
+
+    if (mtime) {
+      notifyListeners(listeners, buildChange(path, 'modify', new Date(mtime).getTime()));
+    }
   };
 
   const fileInfo: FileSystem['fileInfo'] = async (path: string): Promise<DiskFile | undefined> => {
@@ -225,6 +283,17 @@ export const useSimpleFs = (): FileSystem => {
 
     return {
       root: '/',
+    };
+  };
+
+  const watch: FileSystem['watch'] = (listener) => {
+    const id = createListenerId();
+    listeners.set(id, listener);
+
+    return {
+      stop: () => {
+        listeners.delete(id);
+      },
     };
   };
 
@@ -246,5 +315,6 @@ export const useSimpleFs = (): FileSystem => {
     utimeSync: utimeSync,
     init,
     wipe,
+    watch,
   };
 };
