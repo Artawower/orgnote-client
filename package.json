@@ -154,7 +154,7 @@
     "typescript": "5.8.3",
     "vite": "6.3.2",
     "vite-plugin-checker": "0.9.1",
-    "vitest": "3.1.2",
+    "vitest": "4.0.18",
     "vue-tsc": "2.2.8",
     "workbox-build": "^7.3.0",
     "workbox-cacheable-response": "^7.3.0",

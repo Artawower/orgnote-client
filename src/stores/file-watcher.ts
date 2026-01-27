@@ -1,17 +1,19 @@
 import { defineStore } from 'pinia';
 import { ref, shallowRef } from 'vue';
-import type {
-  DiskFile,
-  FileSystemChange,
-  FileSystemChangeType,
-  FileWatcherListener,
-  FileWatcherStartOptions,
-  FileWatcherStore,
-  FileWatcherWatchOptions,
-  WatcherHandle,
+import {
+  to,
+  type DiskFile,
+  type FileSystemChange,
+  type FileSystemChangeType,
+  type FileWatcherListener,
+  type FileWatcherStartOptions,
+  type FileWatcherStore,
+  type FileWatcherWatchOptions,
+  type WatcherHandle,
 } from 'orgnote-api';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { useFileSystemStore } from './file-system';
+import { reporter } from 'src/boot/report';
 
 type PathFilter = (path: string) => boolean;
 
@@ -25,6 +27,8 @@ interface PathSubscription {
 
 // TODO: feat/sockets move to config
 const DEFAULT_INTERVAL = 3000;
+const BACKOFF_MULTIPLIER = 2;
+const MAX_BACKOFF_MULTIPLIER = 8;
 
 const createChange = (
   path: string,
@@ -55,6 +59,9 @@ const computeChanges = (current: Snapshot, previous: Snapshot): FileSystemChange
   ...detectModifiedFiles(current, previous),
   ...detectDeletedFiles(current, previous),
 ];
+
+const isValidInterval = (value?: number): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0;
 
 const fileToSnapshotEntry = (file: DiskFile): [string, number] => [file.path, file.mtime];
 
@@ -136,9 +143,14 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     const snapshot = shallowRef<Snapshot>(new Map());
     const subscriptions = ref<PathSubscription[]>([]);
 
-    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let nativeWatcherHandle: WatcherHandle | null = null;
     let currentOptions: FileWatcherStartOptions = {};
+    let isScanning = false;
+    let idleScans = 0;
+    let currentInterval = DEFAULT_INTERVAL;
+    let baseInterval = DEFAULT_INTERVAL;
+    let maxInterval = DEFAULT_INTERVAL * MAX_BACKOFF_MULTIPLIER;
 
     const notifySubscribers = (change: FileSystemChange): void => {
       const matching = findMatchingSubscriptions(change, subscriptions.value);
@@ -159,13 +171,40 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       notifySubscribers(change);
     };
 
-    const scan = async (): Promise<void> => {
+    const performScan = async (): Promise<{ changes: number; files: number }> => {
       const previousSnapshot = snapshot.value;
       const currentSnapshot = await buildSnapshot(fs, currentOptions.fileFilter);
       const detected = computeChanges(currentSnapshot, previousSnapshot);
 
       snapshot.value = currentSnapshot;
       detected.forEach(notifySubscribers);
+
+      return {
+        changes: detected.length,
+        files: currentSnapshot.size,
+      };
+    };
+
+    const buildScanResult = async (): Promise<{ changes: number; files: number } | null> => {
+      const result = await to(performScan)();
+      if (result.isOk()) {
+        return result.value;
+      }
+      reporter.reportResult(result, 'file watcher scan failed');
+      return null;
+    };
+
+    const scan = async (): Promise<number | null> => {
+      if (isScanning) {
+        return null;
+      }
+      isScanning = true;
+      const result = await buildScanResult();
+      isScanning = false;
+      if (!result) {
+        return null;
+      }
+      return result.changes;
     };
 
     const startNativeWatch = async (): Promise<boolean> => {
@@ -178,10 +217,34 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       return true;
     };
 
+    const updateInterval = (changes: number | null): void => {
+      if (changes && changes > 0) {
+        idleScans = 0;
+        currentInterval = baseInterval;
+        return;
+      }
+      idleScans += 1;
+      currentInterval = Math.min(baseInterval * BACKOFF_MULTIPLIER ** idleScans, maxInterval);
+    };
+
+    const scheduleNext = (delay: number): void => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(async () => {
+        const changes = await scan();
+        updateInterval(changes);
+        scheduleNext(currentInterval);
+      }, delay);
+    };
+
     const startPolling = (): void => {
-      const interval = currentOptions.interval ?? DEFAULT_INTERVAL;
-      intervalId = setInterval(() => void scan(), interval);
-      void scan();
+      baseInterval = currentOptions.interval ?? DEFAULT_INTERVAL;
+      maxInterval = baseInterval * MAX_BACKOFF_MULTIPLIER;
+      currentInterval = baseInterval;
+      idleScans = 0;
+
+      scheduleNext(0);
     };
 
     const start = async (options: FileWatcherStartOptions = {}): Promise<void> => {
@@ -189,7 +252,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
         return;
       }
 
-      currentOptions = options;
+      currentOptions = normalizeStartOptions(options);
       isWatching.value = true;
 
       const nativeStarted = await startNativeWatch();
@@ -209,11 +272,11 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     };
 
     const stopPolling = (): void => {
-      if (!intervalId) {
+      if (!timeoutId) {
         return;
       }
-      clearInterval(intervalId);
-      intervalId = null;
+      clearTimeout(timeoutId);
+      timeoutId = null;
     };
 
     const stop = async (): Promise<void> => {
@@ -252,3 +315,30 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     return store;
   },
 );
+const normalizeInterval = (interval?: number): number => {
+  if (isValidInterval(interval)) {
+    return interval;
+  }
+  if (interval === undefined) {
+    return DEFAULT_INTERVAL;
+  }
+  reporter.reportWarning(new Error('file watcher invalid interval'));
+  return DEFAULT_INTERVAL;
+};
+
+const normalizeFileFilter = (filter?: PathFilter): PathFilter | undefined => {
+  if (!filter) {
+    return undefined;
+  }
+  if (typeof filter === 'function') {
+    return filter;
+  }
+  reporter.reportWarning(new Error('file watcher invalid file filter'));
+  return undefined;
+};
+
+const normalizeStartOptions = (options: FileWatcherStartOptions): FileWatcherStartOptions => ({
+  ...options,
+  interval: normalizeInterval(options.interval),
+  fileFilter: normalizeFileFilter(options.fileFilter),
+});
