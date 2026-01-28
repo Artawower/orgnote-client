@@ -1,52 +1,52 @@
 <template>
   <app-flex class="file-manager" :class="{ compact }" column start align-start gap="md">
-    <div class="files">
-      <div class="actions">
-        <action-buttons horizontal :position="compact ? 'left' : 'right'">
-          <action-button
-            @click="emits('dirPicked', targetPath)"
-            v-if="pickDir"
-            icon="sym_o_folder_check_2"
-          >
-            <template #text>{{ t(I18N.PICK_FOLDER) }}</template>
-          </action-button>
+    <div class="actions">
+      <action-buttons horizontal :position="compact ? 'left' : 'right'">
+        <action-button
+          @click="emits('dirPicked', targetPath)"
+          v-if="pickDir"
+          icon="sym_o_folder_check_2"
+        >
+          <template #text>{{ t(I18N.PICK_FOLDER) }}</template>
+        </action-button>
 
-          <command-action-button
-            v-if="compact"
-            :command="DefaultCommands.MAXIMIZE_FILE_MANAGER"
-            :size="iconSize"
-          >
-          </command-action-button>
-          <command-action-button
-            v-if="!compact"
-            :command="DefaultCommands.CREATE_NOTE"
-            :size="iconSize"
-          ></command-action-button>
-          <command-action-button :command="DefaultCommands.CREATE_FOLDER" :size="iconSize">
-          </command-action-button>
-          <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
-        </action-buttons>
-      </div>
-      <card-wrapper type="clear">
-        <menu-item :size="menuItemSize">
-          <search-input
-            :size="compact ? 'xs' : 'sm'"
-            v-model="searchQuery"
-            :placeholder="I18N.SEARCH"
-          />
-        </menu-item>
-        <menu-item :size="menuItemSize">
-          <app-flex class="file-path" row start align-center>
-            {{ targetPath ?? '/' }}
-          </app-flex>
-        </menu-item>
-
-        <file-manager-item
-          v-if="targetPath && targetPath !== '/'"
-          @click="moveUp"
-          root
-          :size="menuItemSize"
+        <command-action-button
+          v-if="compact"
+          :command="DefaultCommands.MAXIMIZE_FILE_MANAGER"
+          :size="iconSize"
+        >
+        </command-action-button>
+        <command-action-button
+          v-if="!compact"
+          :command="DefaultCommands.CREATE_NOTE"
+          :size="iconSize"
+        ></command-action-button>
+        <command-action-button :command="DefaultCommands.CREATE_FOLDER" :size="iconSize">
+        </command-action-button>
+        <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
+      </action-buttons>
+    </div>
+    <card-wrapper type="clear" class="file-manager-wrapper">
+      <menu-item :size="menuItemSize">
+        <search-input
+          :size="compact ? 'xs' : 'sm'"
+          v-model="searchQuery"
+          :placeholder="I18N.SEARCH"
         />
+      </menu-item>
+      <menu-item :size="menuItemSize">
+        <app-flex class="file-path" row start align-center>
+          {{ targetPath ?? '/' }}
+        </app-flex>
+      </menu-item>
+
+      <file-manager-item
+        v-if="targetPath && targetPath !== '/'"
+        @click="moveUp"
+        root
+        :size="menuItemSize"
+      />
+      <div class="file-list">
         <file-manager-item
           :highlight="searchHighlightKeywords"
           @click="handleFileClick(f)"
@@ -56,8 +56,8 @@
           :size="menuItemSize"
           :active="isActiveFile(f)"
         />
-      </card-wrapper>
-    </div>
+      </div>
+    </card-wrapper>
   </app-flex>
 </template>
 
@@ -187,13 +187,17 @@ const { t } = useI18n({
 </script>
 
 <style lang="scss" scoped>
+.file-manager-wrapper {
+  @include flexify(column, flex-start);
+
+  min-height: 0;
+}
+
 .file-manager {
   & {
     @include fit;
-  }
 
-  .files {
-    flex: 1;
+    padding: var(--sidebar-padding);
   }
 
   div {
@@ -201,14 +205,15 @@ const { t } = useI18n({
   }
 }
 
+.file-list {
+  overflow: auto;
+}
+
 .file-path {
   & {
+    height: 100%;
     color: var(--fg-muted);
     flex: 1;
   }
-}
-
-.actions {
-  padding-bottom: var(--padding-sm);
 }
 </style>
