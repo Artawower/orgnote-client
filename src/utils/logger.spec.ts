@@ -19,7 +19,10 @@ vi.mock('spectrallogs', () => {
 
 vi.mock('spectrallogs/web', () => {
   const MockSpectralWeb = createMockSpectral();
-  return { SpectralLoggerWeb: MockSpectralWeb };
+  class MockWeb extends MockSpectralWeb {
+    configure = vi.fn();
+  }
+  return { SpectralLoggerWeb: MockWeb, default: new MockWeb() };
 });
 
 let logger: ReturnType<typeof createSpectralLogger>;

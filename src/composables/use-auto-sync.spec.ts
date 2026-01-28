@@ -13,15 +13,19 @@ const flushWatchers = async () => {
 };
 
 let userRef: Ref<User>;
-let sync: ReturnType<typeof vi.fn>;
-let onError: ReturnType<typeof vi.fn>;
+let syncMock: ReturnType<typeof vi.fn>;
+let onErrorMock: ReturnType<typeof vi.fn>;
 let deps: UseAutoSyncDeps;
 
 beforeEach(() => {
   userRef = ref<User>(null);
-  sync = vi.fn().mockResolvedValue(undefined);
-  onError = vi.fn();
-  deps = { userRef, sync, onError };
+  syncMock = vi.fn().mockResolvedValue(undefined);
+  onErrorMock = vi.fn();
+  deps = {
+    userRef,
+    sync: syncMock as UseAutoSyncDeps['sync'],
+    onError: onErrorMock as UseAutoSyncDeps['onError'],
+  };
 });
 
 test('useAutoSync: triggers sync when user becomes active', async () => {
@@ -30,7 +34,7 @@ test('useAutoSync: triggers sync when user becomes active', async () => {
   userRef.value = createUser('true');
   await flushWatchers();
 
-  expect(sync).toHaveBeenCalledTimes(1);
+  expect(syncMock).toHaveBeenCalledTimes(1);
 });
 
 test('useAutoSync: triggers sync on transition from inactive to active', async () => {
@@ -40,7 +44,7 @@ test('useAutoSync: triggers sync on transition from inactive to active', async (
   userRef.value = createUser('true');
   await flushWatchers();
 
-  expect(sync).toHaveBeenCalledTimes(1);
+  expect(syncMock).toHaveBeenCalledTimes(1);
 });
 
 test('useAutoSync: does not trigger sync when user was already active', async () => {
@@ -50,8 +54,7 @@ test('useAutoSync: does not trigger sync when user was already active', async ()
   userRef.value = createUser('yes');
   await flushWatchers();
 
-  expect(sync).not.toHaveBeenCalled();
-});
+  expect(syncMock).not.toHaveBeenCalled();});
 
 test('useAutoSync: does not trigger sync when user becomes inactive', async () => {
   useAutoSync(deps);
@@ -59,8 +62,7 @@ test('useAutoSync: does not trigger sync when user becomes inactive', async () =
   userRef.value = createUser(undefined);
   await flushWatchers();
 
-  expect(sync).not.toHaveBeenCalled();
-});
+  expect(syncMock).not.toHaveBeenCalled();});
 
 test('useAutoSync: does not trigger sync on logout', async () => {
   userRef.value = createUser('true');
@@ -69,18 +71,17 @@ test('useAutoSync: does not trigger sync on logout', async () => {
   userRef.value = null;
   await flushWatchers();
 
-  expect(sync).not.toHaveBeenCalled();
-});
+  expect(syncMock).not.toHaveBeenCalled();});
 
 test('useAutoSync: calls onError when sync fails', async () => {
   const error = new Error('Sync failed');
-  sync.mockRejectedValueOnce(error);
+  syncMock.mockRejectedValueOnce(error);
   useAutoSync(deps);
 
   userRef.value = createUser('true');
   await flushWatchers();
 
-  expect(onError).toHaveBeenCalledWith(error);
+  expect(onErrorMock).toHaveBeenCalledWith(error);
 });
 
 test('useAutoSync: triggers sync on each transition to active state', async () => {
@@ -88,14 +89,14 @@ test('useAutoSync: triggers sync on each transition to active state', async () =
 
   userRef.value = createUser('true');
   await flushWatchers();
-  expect(sync).toHaveBeenCalledTimes(1);
+  expect(syncMock).toHaveBeenCalledTimes(1);
 
   userRef.value = createUser(undefined);
   await flushWatchers();
 
   userRef.value = createUser('true');
   await flushWatchers();
-  expect(sync).toHaveBeenCalledTimes(2);
+  expect(syncMock).toHaveBeenCalledTimes(2);
 });
 
 test('useAutoSync: returns stop handle that stops watching', async () => {
@@ -105,5 +106,4 @@ test('useAutoSync: returns stop handle that stops watching', async () => {
   userRef.value = createUser('true');
   await flushWatchers();
 
-  expect(sync).not.toHaveBeenCalled();
-});
+  expect(syncMock).not.toHaveBeenCalled();});

@@ -13,7 +13,7 @@ const createMockRepository = (): QueueRepository => ({
   getLock: vi.fn().mockResolvedValue(undefined),
   getRunningTasks: vi.fn().mockResolvedValue({}),
   clear: vi.fn().mockResolvedValue(undefined),
-  setStatus: vi.fn().mockResolvedValue(undefined),
+  update: vi.fn().mockResolvedValue(undefined),
 });
 
 const createQueueTask = (overrides: Partial<QueueTask> = {}): QueueTask => ({

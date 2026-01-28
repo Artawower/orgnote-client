@@ -51,6 +51,10 @@ export const createQueueRepository = (db: Dexie): QueueRepository => {
       .toArray();
   };
 
+  const update = async (id: string, updates: Partial<QueueTask>): Promise<void> => {
+    await store.update(id, updates);
+  };
+
   const del = async (id: string, force = false): Promise<void> => {
     if (force) {
       await store.delete(id);
@@ -145,21 +149,17 @@ export const createQueueRepository = (db: Dexie): QueueRepository => {
     return arrayToMap(tasks);
   };
 
-  const setStatus = async (id: string, status: string): Promise<void> => {
-    await store.update(id, { status });
-  };
-
   return {
     add,
     get,
     getAll,
     delete: del,
+    update,
     lock,
     release,
     takeFirstN,
     getLock,
     getRunningTasks,
     clear,
-    setStatus,
   };
 };

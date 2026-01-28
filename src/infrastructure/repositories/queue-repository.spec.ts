@@ -96,7 +96,7 @@ test('createQueueRepository delete preserves final status', async () => {
   for (const finalStatus of FINAL_STATUSES) {
     const task = createMockTask();
     await repository.add(task);
-    await repository.setStatus(task.id, finalStatus);
+    await repository.update(task.id, { status: finalStatus });
 
     await repository.delete(task.id);
 
@@ -154,7 +154,7 @@ test('createQueueRepository release preserves final status', async () => {
   for (const finalStatus of FINAL_STATUSES) {
     const task = createMockTask({ lockId: 'some-lock', started: Date.now() });
     await repository.add(task);
-    await repository.setStatus(task.id, finalStatus);
+    await repository.update(task.id, { status: finalStatus });
 
     await repository.release(task.id);
 
@@ -237,7 +237,7 @@ test('createQueueRepository takeFirstN skips non-pending tasks', async () => {
 
   await repository.add(processingTask);
   await repository.add(pendingTask);
-  await repository.setStatus(processingTask.id, 'processing');
+  await repository.update(processingTask.id, { status: 'processing' });
 
   const lockId = await repository.takeFirstN(2, 'test');
 
@@ -316,11 +316,11 @@ test('createQueueRepository getRunningTasks filters by queueId', async () => {
   expect(result[task1.id]).toBeDefined();
 });
 
-test('createQueueRepository setStatus updates task status', async () => {
+test('createQueueRepository update modifies task status', async () => {
   const task = createMockTask({ status: 'pending' });
   await repository.add(task);
 
-  await repository.setStatus(task.id, 'completed');
+  await repository.update(task.id, { status: 'completed' });
 
   const result = await repository.get(task.id);
   expect(result?.status).toBe('completed');

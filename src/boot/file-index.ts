@@ -10,7 +10,6 @@ import { useFileSearchStore } from 'src/stores/file-search';
 const pendingChanges: FileSystemChange[] = [];
 
 export default defineBoot(async ({ store }) => {
-  await initSearch();
   setupIndexingWatcher();
 
   const fileWatcher = useFileWatcherStore(store);
@@ -25,20 +24,23 @@ export default defineBoot(async ({ store }) => {
     },
     { immediate: true },
   );
+
+  initSearch();
 });
 
 const initSearch = async (): Promise<void> => {
   const commandsStore = useCommandsStore();
-  await commandsStore.execute(DefaultCommands.INIT_SEARCH_INDEX);
+  commandsStore.execute(DefaultCommands.INIT_SEARCH_INDEX);
 };
 
 const setupIndexingWatcher = (): void => {
   const fileSearch = useFileSearchStore();
   const { isIndexing } = storeToRefs(fileSearch);
 
-  watch(isIndexing, async (indexing) => {
-    if (indexing) return;
-    await processPendingChanges();
+  watch(isIndexing, async (isCurrentlyIndexing) => {
+    if (!isCurrentlyIndexing) {
+      await processPendingChanges();
+    }
   });
 };
 

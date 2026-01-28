@@ -83,9 +83,8 @@ test('enqueuePlanOperations enqueues upload tasks', () => {
   expect(count).toBe(2);
   expect(mockAdd).toHaveBeenCalledTimes(2);
   expect(mockAdd).toHaveBeenCalledWith(
-    expect.objectContaining({ type: SyncOperationType.Upload, data: plan.toUpload[0] }),
-    undefined,
     'sync',
+    expect.objectContaining({ type: SyncOperationType.Upload, data: plan.toUpload[0] }),
   );
 });
 
@@ -97,9 +96,8 @@ test('enqueuePlanOperations enqueues download tasks', () => {
 
   expect(count).toBe(1);
   expect(mockAdd).toHaveBeenCalledWith(
-    expect.objectContaining({ type: SyncOperationType.Download, data: plan.toDownload[0] }),
-    undefined,
     'sync',
+    expect.objectContaining({ type: SyncOperationType.Download, data: plan.toDownload[0] }),
   );
 });
 
@@ -111,9 +109,8 @@ test('enqueuePlanOperations enqueues deleteLocal tasks', () => {
 
   expect(count).toBe(2);
   expect(mockAdd).toHaveBeenCalledWith(
-    expect.objectContaining({ type: SyncOperationType.DeleteLocal, data: '/file1.org' }),
-    undefined,
     'sync',
+    expect.objectContaining({ type: SyncOperationType.DeleteLocal, data: '/file1.org' }),
   );
 });
 
@@ -125,9 +122,8 @@ test('enqueuePlanOperations enqueues deleteRemote tasks', () => {
 
   expect(count).toBe(1);
   expect(mockAdd).toHaveBeenCalledWith(
-    expect.objectContaining({ type: SyncOperationType.DeleteRemote, data: '/file1.org' }),
-    undefined,
     'sync',
+    expect.objectContaining({ type: SyncOperationType.DeleteRemote, data: '/file1.org' }),
   );
 });
 
@@ -152,8 +148,7 @@ test('enqueuePlanOperations includes serverTime in each task', () => {
   enqueuePlanOperations(plan);
 
   expect(mockAdd).toHaveBeenCalledWith(
-    expect.objectContaining({ serverTime: '2024-06-15T12:00:00Z' }),
-    undefined,
     'sync',
+    expect.objectContaining({ serverTime: '2024-06-15T12:00:00Z' }),
   );
 });

@@ -1,5 +1,6 @@
 import type { OrgNoteApi, LogLevel, LogRecord } from 'orgnote-api';
-import { SpectralLoggerWeb } from 'spectrallogs/web';
+import spec, { type SpectralLoggerWeb } from 'spectrallogs/web';
+import type { SpectralConfigOptionsWeb } from 'spectrallogs/web';
 import createRedact from '@pinojs/redact';
 import { submitLogRecord } from 'src/stores/log-dispatcher';
 import { isPresent, isNullable, to } from 'orgnote-api/utils';
@@ -14,6 +15,8 @@ const spectralMethodMap: Record<LogLevel, 'error' | 'warn' | 'info' | 'debug'> =
   debug: 'debug',
   trace: 'debug',
 };
+
+const DEBUG_ENABLED = process.env.DEV === true || process.env.NODE_ENV !== 'production';
 
 const SECRET_PLACEHOLDER = '***';
 const EMAIL_REGEX = /([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/gi;
@@ -143,7 +146,8 @@ const toMessage = (value: unknown): string => {
   if (value instanceof Error) return sanitizeString(`${value.name}: ${value.message}`);
   if (value === undefined) return 'undefined';
   if (isNullable(value)) return 'null';
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint')
+    return String(value);
   if (typeof value === 'symbol') return value.toString();
   if (!isPresent(value)) return '';
   const safeStringify = to(() => JSON.stringify(value));
@@ -170,10 +174,17 @@ const extractContext = (value: unknown): Record<string, unknown> | undefined => 
   return value as Record<string, unknown>;
 };
 
-const mergeContext = (segments: Array<Record<string, unknown> | undefined>): Record<string, unknown> | undefined => {
-  const validSegments = segments.filter((segment): segment is Record<string, unknown> => Boolean(segment));
+const mergeContext = (
+  segments: Array<Record<string, unknown> | undefined>,
+): Record<string, unknown> | undefined => {
+  const validSegments = segments.filter((segment): segment is Record<string, unknown> =>
+    Boolean(segment),
+  );
   if (!validSegments.length) return undefined;
-  return validSegments.reduce<Record<string, unknown>>((acc, segment) => ({ ...acc, ...segment }), {});
+  return validSegments.reduce<Record<string, unknown>>(
+    (acc, segment) => ({ ...acc, ...segment }),
+    {},
+  );
 };
 
 const hasEntries = (record?: Record<string, unknown>): record is Record<string, unknown> =>
@@ -191,11 +202,16 @@ const findStackTrace = (primary: unknown, extras: unknown[]): string | undefined
   return undefined;
 };
 
-const buildRecord = (level: LogLevel, primary: unknown, extras: unknown[], bindings: Bindings): LogRecord => {
+const buildRecord = (
+  level: LogLevel,
+  primary: unknown,
+  extras: unknown[],
+  bindings: Bindings,
+): LogRecord => {
   const timestamp = new Date();
   const mergedContext = mergeContext([primary, ...extras].map(extractContext));
   const stackTrace = findStackTrace(primary, extras);
-  
+
   const record: LogRecord = {
     ts: timestamp,
     level,
@@ -204,18 +220,23 @@ const buildRecord = (level: LogLevel, primary: unknown, extras: unknown[], bindi
     firstTs: timestamp,
     lastTs: timestamp,
   };
-  
+
   const contextWithStack = mergedContext ? { ...mergedContext } : {};
   if (stackTrace && !contextWithStack.stack) {
     contextWithStack.stack = stackTrace;
   }
-  
+
   if (hasEntries(contextWithStack)) record.context = sanitizeObject(contextWithStack);
   if (hasEntries(bindings)) record.bindings = sanitizeObject(bindings);
   return record;
 };
 
 const shouldRecordLogs = (): boolean => !!process.env.CLIENT;
+
+const shouldRecordLevel = (level: LogLevel): boolean => {
+  if (!DEBUG_ENABLED && (level === 'debug' || level === 'trace')) return false;
+  return true;
+};
 
 const createLoggerAdapter = (base: SpectralLoggerWeb, bindings: Bindings = {}): Logger => {
   const emit = (level: LogLevel, primary: unknown, extras: unknown[]): void => {
@@ -224,10 +245,10 @@ const createLoggerAdapter = (base: SpectralLoggerWeb, bindings: Bindings = {}): 
     const target = base[method] as (message: string) => void;
     const stackTrace = findStackTrace(primary, extras);
     target.call(base, spectralMessage);
-    if (stackTrace && (level === 'error' || process.env.DEV)) {
+    if (stackTrace && (level === 'error' || DEBUG_ENABLED)) {
       console.error(stackTrace);
     }
-    if (!shouldRecordLogs()) return;
+    if (!shouldRecordLogs() || !shouldRecordLevel(level)) return;
     const record = buildRecord(level, primary, extras, bindings);
     submitLogRecord(record);
   };
@@ -238,13 +259,14 @@ const createLoggerAdapter = (base: SpectralLoggerWeb, bindings: Bindings = {}): 
     warn: (msg: unknown, ...args: unknown[]) => emit('warn', msg, args),
     debug: (msg: unknown, ...args: unknown[]) => emit('debug', msg, args),
     trace: (msg: unknown, ...args: unknown[]) => emit('trace', msg, args),
-    child: (extraBindings: Bindings) => createLoggerAdapter(base, { ...bindings, ...extraBindings }),
+    child: (extraBindings: Bindings) =>
+      createLoggerAdapter(base, { ...bindings, ...extraBindings }),
   };
 };
 
 const createSpectralLogger = (): Logger => {
-  const spectralInstance = new SpectralLoggerWeb();
-  return createLoggerAdapter(spectralInstance);
+  spec.configure({ debugMode: DEBUG_ENABLED } as SpectralConfigOptionsWeb);
+  return createLoggerAdapter(spec);
 };
 
 export { createSpectralLogger, toMessage, extractContext, mergeContext, buildRecord };

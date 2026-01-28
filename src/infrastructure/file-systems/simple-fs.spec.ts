@@ -1,108 +1,227 @@
 import 'fake-indexeddb/auto';
-import { describe, test, expect, beforeEach, afterEach } from 'vitest';
+import { test, expect, afterEach } from 'vitest';
 import { useSimpleFs } from './simple-fs';
-import type { FileSystem } from 'orgnote-api';
+import type { FileSystem, FileSystemChange } from 'orgnote-api';
 import Dexie from 'dexie';
 
-describe('simple-fs', () => {
-  let fs: FileSystem;
+const createFileSystem = (): FileSystem => useSimpleFs();
 
-  beforeEach(() => {
-    fs = useSimpleFs();
-  });
+const ensureInitialized = async (fs: FileSystem): Promise<void> => {
+  await fs.init?.({});
+};
 
-  afterEach(async () => {
-    await Dexie.delete('simple-fs');
-  });
+const safeWatch = async (fs: FileSystem, handler: (change: FileSystemChange) => void) => {
+  const handle = await fs.watch?.(handler);
+  if (!handle) {
+    throw new Error('Expected watch handle');
+  }
+  return handle;
+};
 
-  describe('init', () => {
-    test('should create root directory on first initialization', async () => {
-      const result = await fs.init?.({});
+afterEach(async () => {
+  await Dexie.delete('simple-fs');
+});
 
-      expect(result).toEqual({ root: '/' });
-      expect(await fs.isDirExist('/')).toBe(true);
-    });
+test('simple-fs init creates root directory on first initialization', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  const result = await fs.init?.({});
 
-    test('should succeed when called multiple times (idempotent)', async () => {
-      await fs.init?.({});
-      const secondResult = await fs.init?.({});
+  expect(result).toEqual({ root: '/' });
+  expect(await fs.isDirExist('/')).toBe(true);
+});
 
-      expect(secondResult).toEqual({ root: '/' });
-      expect(await fs.isDirExist('/')).toBe(true);
-    });
+test('simple-fs init succeeds when called multiple times', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  const secondResult = await fs.init?.({});
 
-    test('should not throw ErrorDirectoryAlreadyExist on repeated init calls', async () => {
-      await fs.init?.({});
+  expect(secondResult).toEqual({ root: '/' });
+  expect(await fs.isDirExist('/')).toBe(true);
+});
 
-      await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
-      await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
-      await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
-    });
+test('simple-fs init does not throw on repeated calls', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
 
-    test('should preserve existing files after re-initialization', async () => {
-      await fs.init?.({});
-      await fs.writeFile('/test-file.txt', 'test content');
+  await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
+  await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
+  await expect(fs.init?.({})).resolves.toEqual({ root: '/' });
+});
 
-      await fs.init?.({});
+test('simple-fs init preserves existing files after re-initialization', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.writeFile('/test-file.txt', 'test content');
 
-      const content = await fs.readFile('/test-file.txt');
-      expect(content).toBe('test content');
-    });
+  await fs.init?.({});
 
-    test('should preserve nested directory structure after re-initialization', async () => {
-      await fs.init?.({});
-      await fs.mkdir('/nested');
-      await fs.writeFile('/nested/file.txt', 'nested content');
+  const content = await fs.readFile('/test-file.txt');
+  expect(content).toBe('test content');
+});
 
-      await fs.init?.({});
+test('simple-fs init preserves nested directory structure after re-initialization', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.mkdir('/nested');
+  await fs.writeFile('/nested/file.txt', 'nested content');
 
-      expect(await fs.isDirExist('/nested')).toBe(true);
-      const content = await fs.readFile('/nested/file.txt');
-      expect(content).toBe('nested content');
-    });
-  });
+  await fs.init?.({});
 
-  describe('mkdir', () => {
-    beforeEach(async () => {
-      await fs.init?.({});
-    });
+  expect(await fs.isDirExist('/nested')).toBe(true);
+  const content = await fs.readFile('/nested/file.txt');
+  expect(content).toBe('nested content');
+});
 
-    test('should throw error when creating directory that already exists', async () => {
-      await fs.mkdir('/existing-dir');
+test('simple-fs mkdir throws when creating directory that already exists', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.mkdir('/existing-dir');
 
-      await expect(fs.mkdir('/existing-dir')).rejects.toThrow('Directory already exists');
-    });
+  await expect(fs.mkdir('/existing-dir')).rejects.toThrow('Directory already exists');
+});
 
-    test('should create new directory successfully', async () => {
-      await fs.mkdir('/new-dir');
+test('simple-fs mkdir creates new directory successfully', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.mkdir('/new-dir');
 
-      expect(await fs.isDirExist('/new-dir')).toBe(true);
-    });
-  });
+  expect(await fs.isDirExist('/new-dir')).toBe(true);
+});
 
-  describe('file operations after multiple inits', () => {
-    test('should allow normal file operations after repeated init', async () => {
-      await fs.init?.({});
-      await fs.init?.({});
-      await fs.init?.({});
+test('simple-fs file operations work after repeated init', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.init?.({});
+  await fs.init?.({});
 
-      await fs.writeFile('/after-inits.txt', 'works');
-      const content = await fs.readFile('/after-inits.txt');
+  await fs.writeFile('/after-inits.txt', 'works');
+  const content = await fs.readFile('/after-inits.txt');
 
-      expect(content).toBe('works');
-    });
+  expect(content).toBe('works');
+});
 
-    test('should maintain filesystem consistency through init cycles', async () => {
-      await fs.init?.({});
-      await fs.writeFile('/file1.txt', 'content1');
+test('simple-fs file operations preserve consistency through init cycles', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.writeFile('/file1.txt', 'content1');
 
-      await fs.init?.({});
-      await fs.writeFile('/file2.txt', 'content2');
+  await fs.init?.({});
+  await fs.writeFile('/file2.txt', 'content2');
 
-      await fs.init?.({});
+  await fs.init?.({});
 
-      expect(await fs.readFile('/file1.txt')).toBe('content1');
-      expect(await fs.readFile('/file2.txt')).toBe('content2');
-    });
+  expect(await fs.readFile('/file1.txt')).toBe('content1');
+  expect(await fs.readFile('/file2.txt')).toBe('content2');
+});
+
+test('simple-fs watch emits create and delete changes', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.writeFile('/note.org', 'value');
+  await fs.deleteFile('/note.org');
+
+  await handle?.stop();
+
+  expect(changes.map((change) => change.type)).toEqual(['create', 'delete']);
+});
+
+test('simple-fs watch emits modify when file is updated', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.writeFile('/note.org', 'value');
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.writeFile('/note.org', 'new value');
+
+  await handle.stop();
+
+  expect(changes[0]?.type).toBe('modify');
+});
+
+test('simple-fs watch emits create for directory', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.mkdir('/notes');
+
+  await handle?.stop();
+
+  expect(changes[0]?.path).toBe('/notes');
+  expect(changes[0]?.type).toBe('create');
+});
+
+test('simple-fs watch emits delete for directory', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.mkdir('/notes');
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.rmdir('/notes');
+
+  await handle?.stop();
+
+  expect(changes[0]?.path).toBe('/notes');
+  expect(changes[0]?.type).toBe('delete');
+});
+
+test('simple-fs watch supports multiple listeners', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+
+  const changes1: FileSystemChange[] = [];
+  const changes2: FileSystemChange[] = [];
+  const handle1 = await safeWatch(fs, (change) => changes1.push(change));
+  const handle2 = await safeWatch(fs, (change) => changes2.push(change));
+
+  await fs.writeFile('/note.org', 'value');
+  await handle1?.stop();
+  await fs.writeFile('/note-2.org', 'value');
+  await handle2?.stop();
+
+  expect(changes1.length).toBe(1);
+  expect(changes2.length).toBe(2);
+});
+
+test('simple-fs watch stops emitting after stop', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.writeFile('/note.org', 'value');
+  await handle?.stop();
+  await fs.writeFile('/note-2.org', 'value');
+
+  expect(changes.map((change) => change.path)).toEqual(['/note.org']);
+});
+
+test('simple-fs watch emits rename with previous path', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+  await fs.writeFile('/note.org', 'value');
+
+  const changes: FileSystemChange[] = [];
+  const handle = await safeWatch(fs, (change) => changes.push(change));
+
+  await fs.rename('/note.org', '/note-2.org');
+  await handle?.stop();
+
+  expect(changes[0]).toEqual({
+    path: '/note-2.org',
+    previousPath: '/note.org',
+    type: 'rename',
   });
 });
