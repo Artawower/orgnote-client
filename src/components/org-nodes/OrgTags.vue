@@ -15,6 +15,7 @@
 <script lang="ts" setup>
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
+import { DefaultCommands } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -29,10 +30,8 @@ const tags = computed<string[]>(
 );
 
 const searchTag = (tag: string) => {
-  api.core.useNotifications().notify({
-    message: 'Tag search not implemented yet.',
-    description: tag,
-  });
+  const commands = api.core.useCommands();
+  commands.execute(DefaultCommands.SEARCH, { searchText: tag });
 };
 </script>
 

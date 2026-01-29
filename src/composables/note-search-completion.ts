@@ -1,4 +1,9 @@
-import type { FileMeta, OrgNoteApi, CompletionSearchResult, CompletionCandidate } from 'orgnote-api';
+import type {
+  FileMeta,
+  OrgNoteApi,
+  CompletionSearchResult,
+  CompletionCandidate,
+} from 'orgnote-api';
 import { I18N, join } from 'orgnote-api';
 import { unref } from 'vue';
 
@@ -84,11 +89,15 @@ const formatDescription = (file: FileMeta): string => {
   return parts.join('\n');
 };
 
-export const useNoteSearchCompletion = async (api: OrgNoteApi): Promise<void> => {
+export const useNoteSearchCompletion = async (
+  api: OrgNoteApi,
+  searchText: string = '',
+): Promise<void> => {
   const completion = api.core.useCompletion();
 
   await completion.open<FileMeta, void>({
     type: 'choice',
+    searchText,
     placeholder: I18N.SEARCH,
     itemsGetter: createSearchItemsGetter(api),
   });
