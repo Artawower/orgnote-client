@@ -14,6 +14,7 @@ export const orgTableExtension: Extension = {
       nodeType: NodeType.Table,
       component: OrgTable,
       priority: 0,
+      ignoreEvent: true,
     });
   },
 

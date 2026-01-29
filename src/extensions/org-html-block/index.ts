@@ -15,6 +15,7 @@ export const orgHtmlBlockExtension: Extension = {
       nodeType: NodeType.HtmlBlock,
       component: OrgHtmlBlock,
       priority: 0,
+      ignoreEvent: true,
     });
   },
 

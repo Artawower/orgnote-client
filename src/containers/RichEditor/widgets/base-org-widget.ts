@@ -37,11 +37,7 @@ export class BaseOrgWidget extends WidgetType {
     });
   }
 
-  public override ignoreEvent(event: Event): boolean {
-    if (this.embeddedWidget.ignoreEvent) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
+  public override ignoreEvent(): boolean {
     return !!this.embeddedWidget.ignoreEvent;
   }
 }

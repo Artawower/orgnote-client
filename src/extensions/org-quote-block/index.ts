@@ -15,6 +15,7 @@ export const orgQuoteBlockExtension: Extension = {
       nodeType: NodeType.QuoteBlock,
       component: OrgQuoteBlock,
       priority: 0,
+      ignoreEvent: true,
     });
   },
 

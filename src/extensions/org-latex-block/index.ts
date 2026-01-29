@@ -17,6 +17,7 @@ export const orgLatexBlockExtension: Extension = {
         nodeType: NodeType.ExportBlock,
         component: OrgLatexBlock,
         priority: 0,
+        ignoreEvent: true,
       },
       {
         id: WIDGET_ID_ENV,
@@ -24,6 +25,7 @@ export const orgLatexBlockExtension: Extension = {
         nodeType: NodeType.LatexEnvironment,
         component: OrgLatexBlock,
         priority: 0,
+        ignoreEvent: true,
       },
     );
   },

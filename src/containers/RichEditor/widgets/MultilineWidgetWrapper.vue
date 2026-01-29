@@ -1,5 +1,5 @@
 <template>
-  <div class="org-multiline-widget" @touchstart.stop.prevent @mousedown.stop.prevent>
+  <div class="org-multiline-widget">
     <slot :actionsId="actionsId" />
     <app-flex row-reverse :id="actionsId" class="org-widget-actions" gap="sm">
       <action-button

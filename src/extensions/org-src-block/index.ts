@@ -52,6 +52,7 @@ export const orgSrcBlockExtension: Extension = {
       component: OrgSrcBlock,
       viewUpdater,
       priority: 0,
+      ignoreEvent: true,
     });
   },
 
