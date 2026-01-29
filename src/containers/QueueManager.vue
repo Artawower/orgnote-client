@@ -53,13 +53,21 @@
     <template #body>
       <card-wrapper class="queue-tasks">
         <empty-state v-if="tasks.length === 0" :title="$t(i18n.NOT_FOUND)" />
-        <QueueTaskComponent
+        <q-virtual-scroll
           v-else
-          v-for="task in tasks"
-          :key="task.id"
-          :task="task"
-          @cancel="cancelTask"
-        />
+          :items="tasks"
+          :virtual-scroll-item-size="64"
+          :virtual-scroll-slice-size="20"
+          v-slot="{ item }"
+          class="full-height"
+        >
+          <QueueTaskComponent
+            :key="item.id"
+            :task="item"
+            @cancel="cancelTask"
+            @select="selectTask"
+          />
+        </q-virtual-scroll>
       </card-wrapper>
     </template>
 
@@ -82,6 +90,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
 import QueueTaskComponent from 'src/components/QueueTask.vue';
+import TaskDetailsModal from 'src/components/TaskDetailsModal.vue';
 import MenuItem from './MenuItem.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppGrid from 'src/components/AppGrid.vue';
@@ -134,6 +143,21 @@ const clearQueue = async () => {
 const cancelTask = async (taskId: string) => {
   await queueStore.remove(taskId, selectedQueue.value);
   await refresh();
+};
+
+const selectTask = (taskId: string) => {
+  const task = tasks.value.find((t) => t.id === taskId);
+  if (!task) return;
+
+  const modal = api.ui.useModal();
+  modal.open(TaskDetailsModal, {
+    title: i18n.TASK_DETAILS,
+    modalProps: { task },
+    modalEmits: {
+      cancel: (id: string) => cancelTask(id),
+      close: () => modal.close(),
+    },
+  });
 };
 
 onMounted(() => {
