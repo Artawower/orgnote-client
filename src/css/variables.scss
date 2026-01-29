@@ -306,6 +306,30 @@ body {
   --src-margin-y: var(--margin-md);
 
   --org-list-item-bullet-margin-left: 20px;
+
+  // Checkbox
+  --checkbox-size: 20px;
+  --checkbox-color: var(--accent);
+  --checkbox-radius: var(--border-radius-sm);
+  --checkbox-transition-speed: 150ms;
+
+  --checkbox-border-width: 1px;
+  --checkbox-border-color: var(--fg);
+
+  --checkbox-bg-unchecked: transparent;
+  --checkbox-bg-checked: var(--checkbox-color);
+  --checkbox-bg-hover-unchecked: rgba(55, 53, 47, 0.08);
+  --checkbox-bg-hover-checked: var(--checkbox-color);
+
+  --checkbox-icon-color: #ffffff;
+  --checkbox-icon-stroke: 3.5;
+  --checkbox-icon-size: 80%;
+  --checkbox-icon-transform-unchecked: scale(0);
+  --checkbox-icon-transform-checked: scale(1);
+
+  --checkbox-disabled-opacity: 0.5;
+  --checkbox-focus-shadow: 0 0 0 2px var(--accent);
+  --checkbox-hover-filter: brightness(0.9);
 }
 
 @include desktop-below {

@@ -93,6 +93,11 @@
         padding-left: var(--padding-lg);
         position: relative;
       }
+
+      &:has(.org-embedded-checkbox) {
+        display: flex;
+        align-items: center;
+      }
     }
 
     .cm-line:not(.org-src-block-line, .org-headline-line) {
