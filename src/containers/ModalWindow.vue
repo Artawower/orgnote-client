@@ -225,15 +225,15 @@ dialog.full-screen {
 
 @include desktop {
   .safe-area-wrapper {
-    height: auto;
+    height: 100%;
   }
 
   .modal-content {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
   }
 
   .content {
-    flex: 0 1 auto;
+    flex: 1;
   }
 }
 </style>
