@@ -300,6 +300,9 @@ body {
   --inline-code-bg: var(--bg-elevated);
   --inline-code-fg: var(--fg);
 
+  // Editor line
+  --editor-line-left-padding: 6px;
+
   // Src blocks
   --src-block-padding-x: var(--padding-md);
   --src-footer-padding-y: var(--padding-sm);

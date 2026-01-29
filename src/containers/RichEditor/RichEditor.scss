@@ -83,6 +83,10 @@
     }
 
     .cm-line {
+      & {
+        padding: 0 0 0 var(--editor-line-left-padding);
+      }
+
       &:not(.org-headline-line),
       &:not(.org-keyword-title-line) {
         white-space: pre-wrap;
