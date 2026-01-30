@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.41.1",
+  "version": "0.41.6",
   "description": "Org Roam implementation for web and mobile devices.",
   "author": "OrgNote <app.orgnote@gmail.com>",
   "private": true,
@@ -15,7 +15,6 @@
     "@capacitor/keyboard": "^7.0.1",
     "@capacitor/splash-screen": "^7.0.1",
     "@capacitor/status-bar": "^7.0.1",
-    "@hugotomazi/capacitor-navigation-bar": "^4.0.1",
-    "@jcesarmobile/ssl-skip": "^0.4.0"
+    "@hugotomazi/capacitor-navigation-bar": "^4.0.1"
   }
 }
