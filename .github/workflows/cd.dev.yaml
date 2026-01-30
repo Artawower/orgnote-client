@@ -57,6 +57,16 @@ jobs:
       prerelease: true
     secrets: inherit
 
+  docker-deploy:
+    name: Docker Build and Deploy
+    needs: [ci-checks]
+    uses: ./.github/workflows/cd.base.yaml
+    with:
+      environment: dev
+      image_tag: dev
+      trigger_event: trigger-deploy-dev
+    secrets: inherit
+
   create-prerelease:
     name: Create Pre-release
     needs: [build-android, check-version-changed]
