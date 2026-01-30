@@ -4,12 +4,94 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - 'package.json'
+
+permissions:
+  contents: write
 
 jobs:
-  ci-cd:
-    uses: ./.github/workflows/cd.base.yaml
+  ci-checks:
+    uses: ./.github/workflows/ci-checks.yaml
+
+  check-version-changed:
+    name: Check version changed
+    runs-on: ubuntu-latest
+    needs: [ci-checks]
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get current version
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+
+      - name: Check if version changed
+        id: check
+        run: |
+          PREV_VERSION=$(git show HEAD~1:package.json | jq -r '.version')
+          CURR_VERSION=$(jq -r '.version' package.json)
+          if [ "$PREV_VERSION" != "$CURR_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Version changed: $PREV_VERSION → $CURR_VERSION"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Version not changed"
+          fi
+
+  build-android:
+    name: Build Android APK
+    needs: [check-version-changed]
+    if: needs.check-version-changed.outputs.changed == 'true'
+    uses: ./.github/workflows/build-android.yaml
     with:
       environment: dev
-      image_tag: dev
-      trigger_event: trigger-deploy-dev
+      version: ${{ needs.check-version-changed.outputs.version }}-dev
+      prerelease: true
     secrets: inherit
+
+  create-prerelease:
+    name: Create Pre-release
+    needs: [build-android, check-version-changed]
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
+          path: ./apk
+
+      - name: Create or update pre-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.check-version-changed.outputs.version }}-dev
+          name: "Dev Build v${{ needs.check-version-changed.outputs.version }}"
+          body: |
+            Automated dev build from `${{ github.sha }}`
+
+            **Version:** ${{ needs.check-version-changed.outputs.version }}
+            **Branch:** dev
+            **Commit:** ${{ github.sha }}
+          prerelease: true
+          files: ./apk/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete old dev releases
+        uses: dev-drprasad/delete-older-releases@v0.3.2
+        with:
+          keep_latest: 5
+          delete_tag_pattern: -dev
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

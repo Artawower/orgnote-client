@@ -7,59 +7,38 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  get-version:
+    name: Get version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  build-android:
+    name: Build Android APK
+    needs: [get-version]
+    uses: ./.github/workflows/build-android.yaml
+    with:
+      environment: deploy
+      version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
+      prerelease: false
+
+  upload-release-asset:
     name: Upload Release Asset
+    needs: [build-android, get-version]
     runs-on: ubuntu-latest
     environment: deploy
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
         with:
-          bun-version: latest
-      - name: Install dependencies
-        run: |
-          bun install --frozen-lockfile
-          bun add -g @quasar/cli
-      - name: Init environment
-        run: |
-          echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
-
-          cat <<EOT > .env.build
-          DEBUG=true
-          VITE_API_URL=${{ secrets.API_URL }}
-          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
-          VITE_WS_URL=${{ secrets.WS_URL }}
-          KEYPASS=${{ secrets.KEYPASS }}
-          STOREPASS=${{ secrets.STOREPASS }}
-          EOT
-
-      - name: Setup java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '17'
-
-      - name: Setup android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup minimal android version
-        run: ./deploy/setup-minimal-android-version.sh
-
-      - name: Build
-        run: |
-          ./deploy/sync-capaticor-version.sh
-          bunx env-cmd -f ./.env.build quasar build -m capacitor -T android -- bundleRelease
-
-      - name: Build android apk release
-        run: |
-          echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
-          version=${{ github.event.release.tag_name }}
-          mkdir -p ./dist/build
-          cd ./dist/capacitor/android/apk/release
-          /usr/local/lib/android/sdk/build-tools/34.0.0/zipalign -v 4 app-release-unsigned.apk orgnote-${{ github.event.release.tag_name }}.apk
-          /usr/local/lib/android/sdk/build-tools/34.0.0/apksigner sign --ks ../../../../../org-note-release.keystore --ks-pass pass:${{ secrets.STOREPASS }} --ks-key-alias sb orgnote-${{ github.event.release.tag_name }}.apk
-          cd -
-
+          name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
+          path: ./dist/capacitor/android/apk/release
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -67,45 +46,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/capacitor/android/apk/release/orgnote-${{ github.event.release.tag_name }}.apk
-          asset_name: orgnote-${{ github.event.release.tag_name }}.apk
+          asset_path: ./dist/capacitor/android/apk/release/orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
+          asset_name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
           asset_content_type: application/octet-stream
-
-
-  # This action was replaced by creating dockerhub image
-  # deploy:
-  #   name: Deploy
-  #   runs-on: ubuntu-latest
-  #   environment: deploy
-  #   steps:
-  #     - name: List environment variables
-  #       run: env
-  #     - name: ssh deploy
-  #       uses: fifsky/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.SSH_HOST }}
-  #         user: ${{ secrets.SSH_USER }}
-  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         command: |
-  #           bash
-  #           cd ${{ secrets.SSH_TARGET }}
-  #           ls
-  #           eval $(ssh-agent -s)
-  #           ssh-add ~/.ssh/sb-client
-  #           cd ~/orgnote/orgnote-client
-  #           echo ${{ secrets.KEYSTORE }} | base64 -d > org-note-release.keystore
-
-  #           cat <<EOT > .env.prod
-  #           DEUBG=true
-  #           API_URL=${{ secrets.API_URL }}
-  #           KEYPASS=${{ secrets.KEYPASS }}
-  #           STOREPASS=${{ secrets.STOREPASS }}
-  #           AUTH_URL=${{ secrets.AUTH_URL }}
-  #           EOT
-  #           git checkout master
-  #           git fetch --all
-  #           git reset --hard origin/master
-  #           docker system prune -f
-  #           docker compose up --build
-  #           exit
-  #         args: '-tt -vvv'

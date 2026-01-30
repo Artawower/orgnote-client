@@ -1,0 +1,95 @@
+name: Build Android APK
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      version:
+        required: true
+        type: string
+        description: 'Version string for the APK filename'
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease build'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add -g @quasar/cli
+
+      - name: Decode keystore
+        run: |
+          printf '%s' "${{ secrets.KEYSTORE }}" | base64 -d > deploy/org-note-release.keystore
+
+      - name: Init environment
+        run: |
+          cat <<EOT > .env.build
+          DEBUG=${{ inputs.prerelease && 'true' || 'false' }}
+          VITE_API_URL=${{ secrets.API_URL }}
+          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
+          VITE_WS_URL=${{ secrets.WS_URL }}
+          KEYPASS=${{ secrets.STOREPASS }}
+          STOREPASS=${{ secrets.STOREPASS }}
+          EOT
+
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup minimal android version
+        run: ./deploy/setup-minimal-android-version.sh
+
+      - name: Sync version
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: ./deploy/sync-capaticor-version.sh
+
+      - name: Build Android
+        run: bunx env-cmd -f ./.env.build quasar build -m capacitor -T android -- bundleRelease
+
+      - name: Sign APK
+        run: |
+          VERSION="${{ inputs.version }}"
+          mkdir -p ./dist/build
+          cd ./dist/capacitor/android/apk/release
+          $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 app-release-unsigned.apk orgnote-${VERSION}.apk
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks ../../../../../deploy/org-note-release.keystore \
+            --ks-pass pass:${{ secrets.STOREPASS }} \
+            --ks-key-alias sb orgnote-${VERSION}.apk
+          cd -
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orgnote-${{ inputs.version }}.apk
+          path: ./dist/capacitor/android/apk/release/orgnote-${{ inputs.version }}.apk
+          retention-days: ${{ inputs.prerelease && 7 || 30 }}
