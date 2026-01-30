@@ -8,7 +8,9 @@
   },
   "server": {
     "androidScheme": "https",
-    "iosScheme": "capacitor"
+    "iosScheme": "capacitor",
+    "url": "https://192.168.100.4:3002",
+    "cleartext": true
   },
   "plugins": {
     "SplashScreen": {

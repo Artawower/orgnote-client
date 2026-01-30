@@ -21,12 +21,24 @@ export interface SafPlugin {
   mkdir(options: { uri: string; path: string[] }): Promise<{ uri: string }>;
 }
 
+const wrapPlugin = <T extends object>(plugin: T): T => {
+  return new Proxy(plugin, {
+    get(target, prop) {
+      if (prop === 'then') {
+        return undefined;
+      }
+      return Reflect.get(target, prop);
+    },
+  });
+};
+
 let androidSafInstance: SafPlugin | null = null;
 
 export const getAndroidSaf = async (): Promise<SafPlugin> => {
   if (!androidSafInstance) {
     const { registerPlugin } = await import('@capacitor/core');
-    androidSafInstance = registerPlugin<SafPlugin>('SafPlugin');
+    const plugin = registerPlugin<SafPlugin>('SafPlugin');
+    androidSafInstance = wrapPlugin(plugin);
   }
   return androidSafInstance;
 };
