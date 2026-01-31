@@ -12,6 +12,11 @@ vi.mock('src/boot/api', () => ({
     ui: {
       useModal: vi.fn(() => mockModal),
     },
+    core: {
+      useNotifications: vi.fn(() => ({
+        notifications: ref([]),
+      })),
+    },
   },
 }));
 

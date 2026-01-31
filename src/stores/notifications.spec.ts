@@ -78,7 +78,7 @@ test('NotificationsStore notify generates id when not provided', () => {
 
   store.notify({ message: 'Test' });
 
-  expect(store.notifications[0]?.config.id).toMatch(/^notification-\d+$/);
+  expect(store.notifications[0]?.config.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 });
 
 test('NotificationsStore notify uses provided id', () => {
@@ -263,4 +263,174 @@ test('NotificationsStore hideAll calls dismiss and clears dismiss function', () 
   expect(mockDismiss2).toHaveBeenCalled();
   expect(store.notifications[0]?.dismiss).toBeUndefined();
   expect(store.notifications[1]?.dismiss).toBeUndefined();
+});
+
+test('NotificationsStore notify returns notification id', () => {
+  const store = useNotificationsStore();
+
+  const id = store.notify({ message: 'Test', id: 'custom-id' });
+
+  expect(id).toBe('custom-id');
+});
+
+test('NotificationsStore notify returns generated id when not provided', () => {
+  const store = useNotificationsStore();
+
+  const id = store.notify({ message: 'Test' });
+
+  expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+});
+
+test('NotificationsStore update changes notification config', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', description: 'Original description' });
+
+  store.update('test-id', { description: 'Updated description' });
+
+  expect(store.notifications[0]?.config.description).toBe('Updated description');
+});
+
+test('NotificationsStore update preserves unchanged fields', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', level: 'info', icon: 'info' });
+
+  store.update('test-id', { description: 'New description' });
+
+  expect(store.notifications[0]?.config.message).toBe('Test');
+  expect(store.notifications[0]?.config.level).toBe('info');
+  expect(store.notifications[0]?.config.icon).toBe('info');
+  expect(store.notifications[0]?.config.description).toBe('New description');
+});
+
+test('NotificationsStore update ignores message field', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Original', id: 'test-id' });
+
+  store.update('test-id', { message: 'Should be ignored', description: 'Updated' });
+
+  expect(store.notifications[0]?.config.message).toBe('Original');
+  expect(store.notifications[0]?.config.description).toBe('Updated');
+});
+
+test('NotificationsStore update does nothing for non-existent id', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id' });
+
+  store.update('non-existent', { description: 'Updated' });
+
+  expect(store.notifications[0]?.config.description).toBeUndefined();
+});
+
+test('NotificationsStore update allows changing level', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', level: 'info' });
+
+  store.update('test-id', { level: 'danger' });
+
+  expect(store.notifications[0]?.config.level).toBe('danger');
+});
+
+test('NotificationsStore update allows changing icon', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', icon: 'info' });
+
+  store.update('test-id', { icon: 'success' });
+
+  expect(store.notifications[0]?.config.icon).toBe('success');
+});
+
+test('NotificationsStore update allows changing timeout', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', timeout: 3000 });
+
+  store.update('test-id', { timeout: 10000 });
+
+  expect(store.notifications[0]?.config.timeout).toBe(10000);
+});
+
+test('NotificationsStore update allows changing onClick handler', () => {
+  const store = useNotificationsStore();
+  const newClickHandler = vi.fn();
+
+  store.notify({ message: 'Test', id: 'test-id' });
+
+  store.update('test-id', { onClick: newClickHandler });
+
+  expect(store.notifications[0]?.config.onClick).toBe(newClickHandler);
+});
+
+test('NotificationsStore update allows changing closable', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', closable: true });
+
+  store.update('test-id', { closable: false });
+
+  expect(store.notifications[0]?.config.closable).toBe(false);
+});
+
+test('NotificationsStore update allows changing iconEnabled', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', iconEnabled: true });
+
+  store.update('test-id', { iconEnabled: false });
+
+  expect(store.notifications[0]?.config.iconEnabled).toBe(false);
+});
+
+test('NotificationsStore update allows changing group', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', group: true });
+
+  store.update('test-id', { group: false });
+
+  expect(store.notifications[0]?.config.group).toBe(false);
+});
+
+test('NotificationsStore multiple updates accumulate changes', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id', level: 'info' });
+
+  store.update('test-id', { description: 'First update' });
+  store.update('test-id', { level: 'warning' });
+  store.update('test-id', { icon: 'alert' });
+
+  expect(store.notifications[0]?.config.description).toBe('First update');
+  expect(store.notifications[0]?.config.level).toBe('warning');
+  expect(store.notifications[0]?.config.icon).toBe('alert');
+});
+
+test('NotificationsStore update preserves notification identity in array', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'Test', id: 'test-id' });
+  const originalNotification = store.notifications[0];
+
+  store.update('test-id', { description: 'Updated' });
+
+  expect(store.notifications[0]).toBe(originalNotification);
+});
+
+test('NotificationsStore update updates correct notification when multiple exist', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First', id: 'id-1', description: 'Original 1' });
+  store.notify({ message: 'Second', id: 'id-2', description: 'Original 2' });
+  store.notify({ message: 'Third', id: 'id-3', description: 'Original 3' });
+
+  store.update('id-2', { description: 'Updated 2' });
+
+  expect(store.notifications[0]?.config.description).toBe('Original 1');
+  expect(store.notifications[1]?.config.description).toBe('Updated 2');
+  expect(store.notifications[2]?.config.description).toBe('Original 3');
 });

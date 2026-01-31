@@ -5,11 +5,6 @@ import { notify as notiwindNotify } from 'notiwind';
 import { useConfigStore } from './config';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
 
-let notificationCounter = 0;
-
-const getNotificationKey = (config: NotificationConfig): string =>
-  `${config.message}::${config.description ?? ''}::${config.level ?? 'info'}`;
-
 export const useNotificationsStore = defineStore<'notifications', NotificationsStore>(
   'notifications',
   (): NotificationsStore => {
@@ -18,11 +13,12 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
 
     const { config } = storeToRefs(useConfigStore());
 
-    const notify = (notificationConfig: NotificationConfig): void => {
-      const id = notificationConfig.id ?? `notification-${++notificationCounter}`;
+    const notify = (notificationConfig: NotificationConfig): string => {
+      const id = notificationConfig.id ?? crypto.randomUUID();
+
       const timeout = notificationConfig.timeout ?? config.value.ui.notificationTimeout ?? 5000;
       const shouldGroup = notificationConfig.group !== false;
-      const groupKey = getNotificationKey(notificationConfig);
+      const groupKey = id;
 
       if (shouldGroup) {
         const currentCount = groupCounts.value.get(groupKey) ?? 0;
@@ -38,7 +34,7 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
           text: notificationConfig.description,
           type: notificationConfig.level ?? 'info',
           count,
-          groupKey: shouldGroup ? groupKey : undefined,
+          groupKey,
           closable: notificationConfig.closable ?? true,
           icon: notificationConfig.icon,
           iconEnabled: notificationConfig.iconEnabled ?? true,
@@ -56,6 +52,8 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
         icon: notificationConfig.icon,
         iconEnabled: notificationConfig.iconEnabled ?? true,
       });
+
+      return id;
     };
 
     const clear = (): void => {
@@ -72,9 +70,8 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
 
     const markAsRead = (notificationId: string): void => {
       const notification = notifications.value.find((n) => n.config.id === notificationId);
-      if (notification) {
-        notification.read = true;
-      }
+      if (!notification) return;
+      notification.read = true;
     };
 
     const hideAll = (): void => {
@@ -84,8 +81,19 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       });
     };
 
+    const update = (notificationId: string, updates: Partial<NotificationConfig>): void => {
+      const notification = notifications.value.find((n) => n.config.id === notificationId);
+      if (!notification) return;
+
+      const { message, ...safeUpdates } = updates;
+      void message;
+
+      notification.config = { ...notification.config, ...safeUpdates };
+    };
+
     return {
       notify,
+      update,
       clear,
       hideAll,
       delete: deleteNotification,

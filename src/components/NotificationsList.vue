@@ -3,7 +3,7 @@
     <NotificationGroup :group="NOTIFICATION_GROUP">
       <app-flex column gap="var(--notification-container-gap)" class="notifications-container">
         <Notification
-          v-slot="{ notifications, close, hovering }"
+          v-slot="{ notifications: notiwindNotifications, close, hovering }"
           :max-notifications="maxNotifications"
           enter="notification-enter"
           enter-from="notification-enter-from"
@@ -13,7 +13,7 @@
           leave-to="notification-leave-to"
         >
           <app-flex
-            v-for="notification in groupByKey(notifications)"
+            v-for="notification in groupByKey(notiwindNotifications)"
             :key="notification.id"
             gap="sm"
             align-center
@@ -34,7 +34,7 @@
             />
             <app-flex column start align-start gap="xs" class="notification-content">
               <span class="notification-message">
-                <span v-html-safe="notification.title"></span>
+                <span v-html-safe="getNotificationTitle(notification)"></span>
                 <app-badge
                   v-if="notification.count && notification.count > 1"
                   :label="String(notification.count)"
@@ -43,8 +43,8 @@
                   class="notification-badge"
                 />
               </span>
-              <span v-if="notification.text" class="notification-caption">
-                {{ notification.text }}
+              <span v-if="getNotificationText(notification)" class="notification-caption">
+                {{ getNotificationText(notification) }}
               </span>
             </app-flex>
             <action-button
@@ -62,24 +62,15 @@
 </template>
 
 <script setup lang="ts">
+// TODO: Need to recreate notifications for handling ref-like objects
 import type { ThemeVariable } from 'orgnote-api';
 import { NotificationGroup, Notification } from 'notiwind';
+
 import ActionButton from './ActionButton.vue';
 import AppBadge from './AppBadge.vue';
 import AppFlex from './AppFlex.vue';
 import AppIcon from './AppIcon.vue';
-import { STYLE_VARIANT_ICONS } from 'src/constants/style-variant-icons';
-import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
-
-withDefaults(
-  defineProps<{
-    maxNotifications?: number;
-  }>(),
-  {
-    maxNotifications: 5,
-  },
-);
 
 interface NotiwindNotification {
   id: number;
@@ -96,19 +87,18 @@ interface NotiwindNotification {
   [key: string]: unknown;
 }
 
-const getNotificationIcon = (notification: NotiwindNotification): string | undefined => {
-  if (notification.icon) return notification.icon;
-  if (!notification.iconEnabled) return undefined;
-  const type = (notification.type ?? 'info') as keyof typeof STYLE_VARIANT_ICONS;
-  return STYLE_VARIANT_ICONS[type];
-};
-
-const getNotificationIconColor = (
-  notification: NotiwindNotification,
-): ThemeVariable | undefined => {
-  const type = (notification.type ?? 'info') as keyof typeof CARD_TYPE_TO_BACKGROUND;
-  return CARD_TYPE_TO_BACKGROUND[type];
-};
+withDefaults(
+  defineProps<{
+    maxNotifications?: number;
+    getNotificationIcon: (notification: NotiwindNotification) => string | undefined;
+    getNotificationTitle: (notification: NotiwindNotification) => string;
+    getNotificationText: (notification: NotiwindNotification) => string | undefined;
+    getNotificationIconColor: (notification: NotiwindNotification) => ThemeVariable | undefined;
+  }>(),
+  {
+    maxNotifications: 5,
+  },
+);
 
 const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification[] => {
   const seen = notifications.reduce((acc, n) => {
@@ -120,7 +110,7 @@ const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification
       return acc;
     }
 
-    existing.count = n.count;
+    Object.assign(existing, n);
     return acc;
   }, new Map<string, NotiwindNotification>());
 

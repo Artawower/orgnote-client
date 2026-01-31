@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import AppNotifications from 'src/components/AppNotifications.vue';
+import AppNotifications from 'src/containers/AppNotifications.vue';
 import { useNotificationsStore } from 'src/stores/notifications';
 
 const meta: Meta<typeof AppNotifications> = {
