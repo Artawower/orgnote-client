@@ -16,7 +16,7 @@ const mockLogger = {
 };
 
 const mockNotifications: ErrorReporterNotifications = {
-  notify: vi.fn<(config: NotificationConfig) => void>(),
+  notify: vi.fn<(config: NotificationConfig) => string>().mockReturnValue('test-id'),
 };
 
 const mockExecuteCommand = vi.fn();

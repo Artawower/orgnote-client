@@ -36,7 +36,7 @@ import MainFooter from 'src/containers/MainFooter.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
 import RightSidebarContent from 'src/containers/RightSidebarContent.vue';
 import ModalWindow from 'src/containers/ModalWindow.vue';
-import AppNotifications from 'src/components/AppNotifications.vue';
+import AppNotifications from 'src/containers/AppNotifications.vue';
 import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
 import SidebarsLayout from 'src/components/SidebarsLayout.vue';
 import { api } from 'src/boot/api';

@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { test, expect, vi, beforeEach } from 'vitest';
-import AppNotifications from './AppNotifications.vue';
+import NotificationsList from './NotificationsList.vue';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
 
 const mockClose = vi.fn();
@@ -41,9 +41,20 @@ beforeEach(() => {
   resetMockNotifications();
 });
 
+const defaultProps = {
+  getNotificationIcon: (n: { icon?: string; iconEnabled?: boolean; type?: string }) => {
+    if (n.icon) return n.icon;
+    if (n.iconEnabled === false) return undefined;
+    return n.type === 'danger' ? 'error' : 'info';
+  },
+  getNotificationTitle: (n: { title?: string }) => n.title ?? '',
+  getNotificationText: (n: { text?: string }) => n.text,
+  getNotificationIconColor: () => undefined,
+};
+
 const mountComponent = (props = {}) => {
-  return mount(AppNotifications, {
-    props,
+  return mount(NotificationsList, {
+    props: { ...defaultProps, ...props },
     global: {
       directives: {
         'html-safe': {
@@ -78,7 +89,7 @@ const mountComponent = (props = {}) => {
   });
 };
 
-test('AppNotifications renders notification group with correct group name', () => {
+test('NotificationsList renders notification group with correct group name', () => {
   const wrapper = mountComponent();
   const notificationGroup = wrapper.findComponent({ name: 'NotificationGroup' });
 
@@ -86,27 +97,27 @@ test('AppNotifications renders notification group with correct group name', () =
   expect(notificationGroup.props('group')).toBe(NOTIFICATION_GROUP);
 });
 
-test('AppNotifications renders notification with title', () => {
+test('NotificationsList renders notification with title', () => {
   const wrapper = mountComponent();
 
   expect(wrapper.text()).toContain('Test notification');
 });
 
-test('AppNotifications applies correct type class to notification item', () => {
+test('NotificationsList applies correct type class to notification item', () => {
   const wrapper = mountComponent();
   const notificationItem = wrapper.find('.notification-item');
 
   expect(notificationItem.classes()).toContain('notification-info');
 });
 
-test('AppNotifications shows close button by default', () => {
+test('NotificationsList shows close button by default', () => {
   const wrapper = mountComponent();
   const closeButton = wrapper.find('.notification-close');
 
   expect(closeButton.exists()).toBe(true);
 });
 
-test('AppNotifications close button calls close with notification id', async () => {
+test('NotificationsList close button calls close with notification id', async () => {
   const wrapper = mountComponent();
   const closeButton = wrapper.find('.action-button');
 
@@ -115,7 +126,7 @@ test('AppNotifications close button calls close with notification id', async () 
   expect(mockClose).toHaveBeenCalledWith(1);
 });
 
-test('AppNotifications applies clickable class when onClick provided', async () => {
+test('NotificationsList applies clickable class when onClick provided', async () => {
   mockNotifications[0] = {
     ...mockNotifications[0],
     onClick: vi.fn(),
@@ -127,7 +138,7 @@ test('AppNotifications applies clickable class when onClick provided', async () 
   expect(notificationItem.classes()).toContain('clickable');
 });
 
-test('AppNotifications calls onClick when notification clicked', async () => {
+test('NotificationsList calls onClick when notification clicked', async () => {
   const onClickMock = vi.fn();
   mockNotifications[0] = {
     ...mockNotifications[0],
@@ -142,7 +153,7 @@ test('AppNotifications calls onClick when notification clicked', async () => {
   expect(onClickMock).toHaveBeenCalled();
 });
 
-test('AppNotifications renders notification text when provided', () => {
+test('NotificationsList renders notification text when provided', () => {
   mockNotifications[0] = {
     ...mockNotifications[0],
     text: 'Additional description',
@@ -153,7 +164,7 @@ test('AppNotifications renders notification text when provided', () => {
   expect(wrapper.text()).toContain('Additional description');
 });
 
-test('AppNotifications renders badge when count > 1', () => {
+test('NotificationsList renders badge when count > 1', () => {
   mockNotifications[0] = {
     ...mockNotifications[0],
     count: 5,
@@ -166,7 +177,7 @@ test('AppNotifications renders badge when count > 1', () => {
   expect(badge.text()).toBe('5');
 });
 
-test('AppNotifications does not render badge when count is 1', () => {
+test('NotificationsList does not render badge when count is 1', () => {
   mockNotifications[0] = {
     id: 1,
     group: NOTIFICATION_GROUP,
@@ -181,7 +192,7 @@ test('AppNotifications does not render badge when count is 1', () => {
   expect(badge.exists()).toBe(false);
 });
 
-test('AppNotifications hides close button when closable is false', () => {
+test('NotificationsList hides close button when closable is false', () => {
   mockNotifications[0] = {
     id: 1,
     group: NOTIFICATION_GROUP,
@@ -196,7 +207,7 @@ test('AppNotifications hides close button when closable is false', () => {
   expect(closeButton.exists()).toBe(false);
 });
 
-test('AppNotifications renders icon when custom icon provided', () => {
+test('NotificationsList renders icon when custom icon provided', () => {
   mockNotifications[0] = {
     id: 1,
     group: NOTIFICATION_GROUP,
@@ -211,7 +222,7 @@ test('AppNotifications renders icon when custom icon provided', () => {
   expect(icon.exists()).toBe(true);
 });
 
-test('AppNotifications renders default icon when iconEnabled is true', () => {
+test('NotificationsList renders default icon when iconEnabled is true', () => {
   mockNotifications[0] = {
     id: 1,
     group: NOTIFICATION_GROUP,
@@ -226,7 +237,7 @@ test('AppNotifications renders default icon when iconEnabled is true', () => {
   expect(icon.exists()).toBe(true);
 });
 
-test('AppNotifications does not render icon when iconEnabled is false and no custom icon', () => {
+test('NotificationsList does not render icon when iconEnabled is false and no custom icon', () => {
   mockNotifications[0] = {
     id: 1,
     group: NOTIFICATION_GROUP,
@@ -241,7 +252,7 @@ test('AppNotifications does not render icon when iconEnabled is false and no cus
   expect(icon.exists()).toBe(false);
 });
 
-test('AppNotifications groups notifications by groupKey', () => {
+test('NotificationsList groups notifications by groupKey', () => {
   mockNotifications.length = 0;
   mockNotifications.push(
     { id: 1, group: NOTIFICATION_GROUP, title: 'First', groupKey: 'same-key', count: 1 },
@@ -255,7 +266,7 @@ test('AppNotifications groups notifications by groupKey', () => {
   expect(wrapper.find('.notification-badge').text()).toBe('2');
 });
 
-test('AppNotifications keeps notifications without groupKey separate', () => {
+test('NotificationsList keeps notifications without groupKey separate', () => {
   mockNotifications.length = 0;
   mockNotifications.push(
     { id: 1, group: NOTIFICATION_GROUP, title: 'First' },
@@ -268,14 +279,14 @@ test('AppNotifications keeps notifications without groupKey separate', () => {
   expect(items).toHaveLength(2);
 });
 
-test('AppNotifications accepts maxNotifications prop', () => {
+test('NotificationsList accepts maxNotifications prop', () => {
   const wrapper = mountComponent({ maxNotifications: 3 });
   const notification = wrapper.findComponent({ name: 'Notification' });
 
   expect(notification.props('maxNotifications')).toBe(3);
 });
 
-test('AppNotifications uses default maxNotifications of 5', () => {
+test('NotificationsList uses default maxNotifications of 5', () => {
   const wrapper = mountComponent();
   const notification = wrapper.findComponent({ name: 'Notification' });
 
