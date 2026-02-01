@@ -75,6 +75,7 @@ const formattedTree = computed(() => {
   white-space: pre-wrap;
   word-break: break-word;
   line-height: var(--line-height-md);
+  width: 100%;
 
   :deep(.highlighted-range) {
     background-color: var(--yellow);
