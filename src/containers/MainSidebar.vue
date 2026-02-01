@@ -18,7 +18,7 @@
       />
       <visibility-wrapper tablet-below>
         <safe-area bottom>
-          <app-footer v-if="opened">
+          <app-footer v-if="opened" class="sidebar-footer">
             <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
           </app-footer>
         </safe-area>
@@ -64,5 +64,12 @@ const { tabletAbove } = useScreenDetection();
 
 .sidebar-content {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sidebar-footer {
+  padding: var(--footer-wrapper-padding);
+  padding-top: 0;
 }
 </style>
