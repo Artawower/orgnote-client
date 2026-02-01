@@ -39,7 +39,10 @@ const setKeyboardState = (opened: boolean, height: number): void => {
 const captureInitialViewportHeight = (force = false): void => {
   if (initialViewportHeight === 0 || force) {
     initialViewportHeight = window.innerHeight;
-    document.documentElement.style.setProperty('--initial-viewport-height', `${initialViewportHeight}px`);
+    document.documentElement.style.setProperty(
+      '--initial-viewport-height',
+      `${initialViewportHeight}px`,
+    );
   }
 };
 
@@ -50,14 +53,17 @@ const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): vo
   document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
 };
 
-
 const findScrollableAncestor = (element: Element | null): HTMLElement | null => {
   if (!element || element === document.documentElement) return null;
 
   if (element instanceof HTMLElement) {
-    const { overflowY } = getComputedStyle(element);
-    const isScrollable = overflowY === 'auto' || overflowY === 'scroll';
-    if (isScrollable && element.scrollHeight > element.clientHeight) {
+    const { overflowY, overflowX } = getComputedStyle(element);
+    const isVerticallyScrollable = overflowY === 'auto' || overflowY === 'scroll';
+    const isHorizontallyScrollable = overflowX === 'auto' || overflowX === 'scroll';
+    if (isVerticallyScrollable && element.scrollHeight > element.clientHeight) {
+      return element;
+    }
+    if (isHorizontallyScrollable && element.scrollWidth > element.clientWidth) {
       return element;
     }
   }
@@ -66,11 +72,13 @@ const findScrollableAncestor = (element: Element | null): HTMLElement | null => 
 };
 
 const createTouchScrollPreventer = () => {
+  let touchStartX = 0;
   let touchStartY = 0;
 
   const handleTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;
+    touchStartX = touch.clientX;
     touchStartY = touch.clientY;
   };
 
@@ -87,7 +95,16 @@ const createTouchScrollPreventer = () => {
 
     const touch = e.touches[0];
     if (!touch) return;
+    const deltaX = touchStartX - touch.clientX;
     const deltaY = touchStartY - touch.clientY;
+
+    const { overflowX } = getComputedStyle(scrollableElement);
+    const isHorizontallyScrollable = overflowX === 'auto' || overflowX === 'scroll';
+
+    if (isHorizontallyScrollable && Math.abs(deltaX) > Math.abs(deltaY)) {
+      return;
+    }
+
     const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
 
     const isAtTop = scrollTop <= 0 && deltaY < 0;
@@ -101,10 +118,7 @@ const createTouchScrollPreventer = () => {
   return { handleTouchStart, preventTouchScroll };
 };
 
-const createViewportMeasurer = (
-  viewportHeight: Ref<number>,
-  cb?: ViewportCallback,
-) => {
+const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallback) => {
   return () => {
     const screenHeight = window.visualViewport?.height ?? window.innerHeight;
     const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
@@ -224,5 +238,9 @@ export function useViewportBehavior(cb?: ViewportCallback) {
     cancelScheduler();
   });
 
-  return { viewportHeight, keyboardOpened: readonly(globalKeyboardOpened), keyboardHeight: readonly(globalKeyboardHeight) };
+  return {
+    viewportHeight,
+    keyboardOpened: readonly(globalKeyboardOpened),
+    keyboardHeight: readonly(globalKeyboardHeight),
+  };
 }
