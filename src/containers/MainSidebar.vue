@@ -11,17 +11,15 @@
       </app-flex>
     </template>
     <app-flex column class="content-wrapper">
-      <component
-        :is="component"
-        v-bind="componentConfig?.componentProps || {}"
-        class="sidebar-content"
-      />
+      <div class="sidebar-content">
+        <component :is="component" v-bind="componentConfig?.componentProps || {}" />
+      </div>
       <visibility-wrapper tablet-below>
-        <safe-area bottom>
-          <app-footer v-if="opened" class="sidebar-footer">
+        <floating-footer>
+          <app-footer v-if="opened" class="sidebar-footer" float>
             <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
           </app-footer>
-        </safe-area>
+        </floating-footer>
       </visibility-wrapper>
     </app-flex>
   </app-sidebar>
@@ -36,7 +34,7 @@ import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import SafeArea from 'src/components/SafeArea.vue';
+import FloatingFooter from 'src/components/FloatingFooter.vue';
 
 const { opened, component, componentConfig } = storeToRefs(api.ui.useSidebar());
 const pinnedCommands = api.ui.usePinnedCommands();
@@ -46,8 +44,8 @@ const { tabletAbove } = useScreenDetection();
 </script>
 
 <style lang="scss" scoped>
-.sidebar {
-  position: relative;
+.app-sidebar {
+  --scroll-bottom-padding: var(--floating-padding-bottom);
 }
 
 .footer {
@@ -65,6 +63,7 @@ const { tabletAbove } = useScreenDetection();
 .sidebar-content {
   flex: 1;
   min-height: 0;
+  width: 100%;
   overflow-y: auto;
 }
 

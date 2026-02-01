@@ -26,26 +26,28 @@
         <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
       </action-buttons>
     </div>
-    <card-wrapper type="clear" class="file-manager-wrapper">
-      <menu-item :size="menuItemSize">
-        <search-input
-          :size="compact ? 'xs' : 'sm'"
-          v-model="searchQuery"
-          :placeholder="I18N.SEARCH"
-        />
-      </menu-item>
-      <menu-item :size="menuItemSize">
-        <app-flex class="file-path" row start align-center>
-          {{ targetPath ?? '/' }}
-        </app-flex>
-      </menu-item>
+    <div class="file-manager-wrapper">
+      <div class="file-manager-header">
+        <menu-item :size="menuItemSize">
+          <search-input
+            :size="compact ? 'xs' : 'sm'"
+            v-model="searchQuery"
+            :placeholder="I18N.SEARCH"
+          />
+        </menu-item>
+        <menu-item :size="menuItemSize">
+          <app-flex class="file-path" row start align-center>
+            {{ targetPath ?? '/' }}
+          </app-flex>
+        </menu-item>
 
-      <file-manager-item
-        v-if="targetPath && targetPath !== '/'"
-        @click="moveUp"
-        root
-        :size="menuItemSize"
-      />
+        <file-manager-item
+          v-if="targetPath && targetPath !== '/'"
+          @click="moveUp"
+          root
+          :size="menuItemSize"
+        />
+      </div>
       <div class="file-list">
         <file-manager-item
           :highlight="searchHighlightKeywords"
@@ -57,7 +59,7 @@
           :active="isActiveFile(f)"
         />
       </div>
-    </card-wrapper>
+    </div>
   </app-flex>
 </template>
 
@@ -67,7 +69,6 @@ import { DefaultCommands, getParentDir, I18N, join, withRoot } from 'orgnote-api
 import type { DiskFile } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import FileManagerItem from './FileManagerItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButtons from 'src/components/ActionButtons.vue';
@@ -93,7 +94,7 @@ const emits = defineEmits<{
   (e: 'dirPicked', path: string): void;
 }>();
 
-const menuItemSize = computed(() => (props.compact ? 'sm' : 'auto'));
+const menuItemSize = computed(() => (props.compact ? 'md' : 'auto'));
 
 const { path: targetPath } = storeToRefs(api.core.useFileManager());
 if (props.path) {
@@ -187,17 +188,25 @@ const { t } = useI18n({
 </script>
 
 <style lang="scss" scoped>
+.actions,
+.file-manager-header,
+.file-list {
+  padding: 0 var(--padding-lg);
+}
+
+.file-list {
+  padding-bottom: var(--scroll-bottom-padding, 0);
+}
+
 .file-manager-wrapper {
   @include flexify(column, flex-start);
 
-  min-height: 0;
+  overflow: hidden;
 }
 
 .file-manager {
   & {
     @include fit;
-
-    padding: var(--sidebar-padding);
   }
 
   div {

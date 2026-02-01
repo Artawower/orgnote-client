@@ -96,6 +96,10 @@ body {
   --footer-padding: var(--padding-md);
   --footer-bg: var(--bg-secondary);
   --floating-footer-height: 0px;
+  --floating-padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
+
+  // Special offset for floating footer
+  --scroll-bottom-padding: 0px;
 
   // Sidebar
   --sidebar-width: 360px;

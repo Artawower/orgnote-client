@@ -58,7 +58,7 @@
     .cm-content {
       padding: var(--editor-padding);
       padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
-      padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
+      padding-bottom: var(--floating-padding-bottom);
       max-width: 100%;
       min-width: 0;
       caret-color: var(--editor-cursor-color);

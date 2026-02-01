@@ -168,7 +168,6 @@ const sidebarStyle = computed(() => {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 0 var(--sidebar-padding);
 }
 
 .footer {
