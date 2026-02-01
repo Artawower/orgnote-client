@@ -15,6 +15,7 @@ import type {
 } from 'orgnote-api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
+import { getNumericCssVar } from 'src/utils/css-utils';
 
 import {
   orgNodeGetterFacet,
@@ -24,11 +25,7 @@ import {
   lineClassesFacet,
   type OrgNodeGetter,
 } from './facets';
-import {
-  orgInlineWidgets,
-  orgLineDecoration,
-  readOnlyTransactionFilter,
-} from './widgets';
+import { orgInlineWidgets, orgLineDecoration, readOnlyTransactionFilter } from './widgets';
 import { createMultilineWidgetsField } from './widgets/multiline-widgets';
 import { orgMode } from './org-parser';
 import { editorLanguages } from './editor-languages';
@@ -62,14 +59,25 @@ const createUpdateListener = (onUpdate: (content: string) => void): Extension =>
     onUpdate(update.state.doc.toString());
   });
 
-const createWidgetExtensions = (
-  editorViewRef: { current: EditorView | null },
-): Extension[] => [
+const createWidgetExtensions = (editorViewRef: { current: EditorView | null }): Extension[] => [
   readOnlyTransactionFilter,
   orgInlineWidgets,
   createMultilineWidgetsField(editorViewRef),
   orgLineDecoration,
 ];
+
+const getToolbarHeight = (): number => {
+  const toolbarHeight = getNumericCssVar('--editor-toolbar-height') ?? 52;
+  const footerPadding = getNumericCssVar('--footer-wrapper-padding-y') ?? 0;
+  const additionalOffset = 8;
+  return toolbarHeight + footerPadding + additionalOffset;
+};
+
+const createScrollMarginsExtension = (keyboardOpened: boolean, isMobile: boolean): Extension =>
+  EditorView.scrollMargins.of(() => {
+    if (!isMobile || !keyboardOpened) return null;
+    return { bottom: getToolbarHeight() };
+  });
 
 export const useEditorState = (options: UseEditorStateOptions) => {
   const configStore = api.core.useConfig();
@@ -77,6 +85,8 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const editorConfig = computed(() => configStore.config.editor);
   const { createWidgetBuilder, createMultilineWidgetBuilder } = useWidgetBuilder();
   const dynamicComponent = useDynamicComponent();
+  const { keyboardOpened } = api.ui.useKeyboardState();
+  const { tabletBelow } = api.ui.useScreenDetection();
 
   const editorViewRef: { current: EditorView | null } = { current: null };
 
@@ -84,6 +94,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     readonly: new Compartment(),
     widgets: new Compartment(),
     editorExtensions: new Compartment(),
+    scrollMargins: new Compartment(),
   };
 
   const orgNode = shallowRef<OrgNode | null>(null);
@@ -190,7 +201,9 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const createState = (content: string): EditorState => {
     const readonly = options.readonly ?? false;
-    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions(editorViewRef);
+    const widgetExtensions = editorConfig.value.showSpecialSymbols
+      ? []
+      : createWidgetExtensions(editorViewRef);
 
     return EditorState.create({
       doc: content,
@@ -203,6 +216,9 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
         compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),
         compartments.editorExtensions.of(buildEditorExtensions(readonly)),
+        compartments.scrollMargins.of(
+          createScrollMarginsExtension(keyboardOpened.value, tabletBelow.value),
+        ),
         orgMode({
           wrap: editorLanguages,
           orgAstChanged: handleOrgNodeChanged,
@@ -219,7 +235,9 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const reconfigureWidgets = (view: EditorView): void => {
     const readonly = options.readonly ?? false;
-    const widgetExtensions = editorConfig.value.showSpecialSymbols ? [] : createWidgetExtensions(editorViewRef);
+    const widgetExtensions = editorConfig.value.showSpecialSymbols
+      ? []
+      : createWidgetExtensions(editorViewRef);
 
     view.dispatch({
       effects: [
@@ -245,6 +263,20 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     );
   };
 
+  const setupScrollMarginsWatcher = (viewGetter: () => EditorView | undefined): void => {
+    watch([keyboardOpened, tabletBelow], () => {
+      const view = viewGetter();
+      if (!view) return;
+      const scrollMarginsExtension = createScrollMarginsExtension(
+        keyboardOpened.value,
+        tabletBelow.value,
+      );
+      view.dispatch({
+        effects: compartments.scrollMargins.reconfigure(scrollMarginsExtension),
+      });
+    });
+  };
+
   const setEditorView = (view: EditorView | null): void => {
     editorViewRef.current = view;
   };
@@ -255,6 +287,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     reconfigureReadonly,
     reconfigureWidgets,
     setupWidgetsWatcher,
+    setupScrollMarginsWatcher,
     setEditorView,
   };
 };

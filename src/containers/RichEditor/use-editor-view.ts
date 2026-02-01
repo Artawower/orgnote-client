@@ -10,7 +10,14 @@ export const useEditorView = (options: UseEditorViewOptions) => {
   const getEditorView = () => editorView;
   const editorStore = api.core.useEditor();
 
-  const { orgNode, createState, reconfigureReadonly, setupWidgetsWatcher, setEditorView } = useEditorState({
+  const {
+    orgNode,
+    createState,
+    reconfigureReadonly,
+    setupWidgetsWatcher,
+    setupScrollMarginsWatcher,
+    setEditorView,
+  } = useEditorState({
     ...options,
     editorViewGetter: getEditorView,
   });
@@ -24,6 +31,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     setEditorView(editorView);
     editorView.dispatch({});
     setupWidgetsWatcher(getEditorView);
+    setupScrollMarginsWatcher(getEditorView);
 
     editorView.focus();
     return editorView;

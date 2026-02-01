@@ -49,7 +49,7 @@ const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
 </script>
 
 <style lang="scss" scoped>
-$toolbar-height: calc(52px + var(--footer-wrapper-padding-y, 0px));
+$toolbar-height: calc(var(--editor-toolbar-height) + var(--footer-wrapper-padding-y, 0px));
 
 .editor-actions-toolbar {
   @include hide-scrollbar;
