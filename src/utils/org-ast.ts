@@ -9,12 +9,16 @@ export const findNodeAtLine = (
   if (!orgNode?.children) return undefined;
 
   for (const child of orgNode.children) {
-    if (child.start > lineStart) continue;
-    if (child.end <= lineStart) continue;
+    if (child.start < lineStart) {
+      const nested = findNodeAtLine(child, lineStart);
+      if (nested) return nested;
+      continue;
+    }
 
     if (child.is(...TOGGLEABLE_TYPES)) return child;
 
-    return findNodeAtLine(child, lineStart);
+    const nested = findNodeAtLine(child, lineStart);
+    if (nested) return nested;
   }
 
   return undefined;

@@ -117,6 +117,23 @@ test('createOrgEditing toggleHeadline inserts prefix on plain text', () => {
   expect(dispatchCalls[0]?.changes?.insert).toBe('* ');
 });
 
+
+test('createOrgEditing toggleHeadline should not affect headline when cursor is on different line', () => {
+  const doc = '* Title\n\nAnother text';
+  const caretPos = 9;
+  const { view, dispatchCalls } = createMockView(doc, caretPos);
+  const orgNode = createOrgNode(doc);
+
+  const editor = createOrgEditing(view, orgNode);
+  editor.toggleHeadline();
+
+  const firstChange = dispatchCalls[0]?.changes;
+  if (firstChange) {
+    const touchesFirstLineHeadline = firstChange.from <= 2 && firstChange.to >= 0;
+    expect(touchesFirstLineHeadline).toBe(false);
+  }
+});
+
 test('createOrgEditing toggleBulletList removes bullet prefix', () => {
   const doc = '- list item';
   const { view, dispatchCalls } = createMockView(doc, 5);
