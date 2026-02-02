@@ -34,7 +34,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   },
   ui: {
     showUserProfiles: true,
-    theme: 'light',
+    theme: 'auto',
     darkThemeName: null,
     lightThemeName: null,
     enableAnimations: true,
