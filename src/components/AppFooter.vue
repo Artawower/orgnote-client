@@ -39,10 +39,15 @@ const props = withDefaults(
     width: 100%;
     min-height: var(--footer-height);
     background: var(--footer-bg);
+    border: var(--footer-border);
     border-top: var(--footer-border-top);
     padding: var(--footer-padding);
     border-radius: var(--footer-border-radius);
     box-sizing: border-box;
+    -webkit-backdrop-filter: var(--footer-backdrop-filter);
+    backdrop-filter: var(--footer-backdrop-filter);
+    background-clip: padding-box;
+    box-shadow: var(--footer-box-shadow);
   }
 }
 </style>

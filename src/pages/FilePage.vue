@@ -88,6 +88,7 @@ const { tabletBelow } = api.ui.useScreenDetection();
 .file-page-header {
   position: absolute;
   top: 0;
+  top: var(--header-top);
   left: 0;
   right: 0;
   z-index: 1;

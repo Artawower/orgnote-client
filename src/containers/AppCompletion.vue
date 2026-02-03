@@ -115,6 +115,21 @@ const { t } = useI18n({
 @include desktop-below {
   .completion-wrapper {
     @include completion-fullframe();
+    position: relative;
+
+    :deep(.layout-header) {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      margin: 0 var(--completion-header-margin) var(--completion-header-margin);
+      border-top: none;
+    }
+
+    :deep(.layout-body) {
+      padding-bottom: var(--completion-header-offset);
+    }
 
     &.input-only {
       height: auto;
@@ -123,6 +138,16 @@ const { t } = useI18n({
         display: none;
       }
     }
+  }
+
+  .header {
+    background: var(--completion-header-bg);
+    -webkit-backdrop-filter: var(--completion-header-backdrop-filter);
+    backdrop-filter: var(--completion-header-backdrop-filter);
+    background-clip: padding-box;
+    box-shadow: var(--completion-header-box-shadow);
+    border: var(--completion-header-border);
+    border-radius: var(--completion-header-border-radius);
   }
 }
 

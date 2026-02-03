@@ -45,6 +45,11 @@
 
   --violet: #b98df6;
 
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 0, 0, 0.2),
+    inset 1px 1px 1px 0 rgba(255, 255, 255, 0.15), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.1);
+
   // Tab overview for dark theme
   --tab-preview-overlay-bg: linear-gradient(
     to bottom,
@@ -68,6 +73,11 @@
   --default-fg-muted: #{$grey-5};
   --default-bg-active: #34495e;
   --default-fg-active: #fafbf9;
+
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 0, 0, 0.06),
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
 
   // Tab overview for light theme
   --tab-preview-overlay-bg: linear-gradient(

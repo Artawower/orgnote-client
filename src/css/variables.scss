@@ -65,12 +65,16 @@ body {
   --gap-lg: 24px;
   --gap-xl: 32px;
 
+  --glass-backdrop-filter: blur(3px);
+  --glass-border: none;
+
   // Header
   --header-height: 44px;
   --header-bg: transparent;
   --header-border: none;
   --header-border-radius: 0;
   --header-padding: var(--padding-sm) var(--padding-md);
+  --header-top: var(--padding-md);
 
   // Header wrapper
   --header-wrapper-bg: transparent;
@@ -80,11 +84,13 @@ body {
   --header-wrapper-padding: var(--header-wrapper-padding-y) var(--header-wrapper-padding-x);
 
   // Header items (left/center/right sections)
-  --header-item-bg: var(--bg-secondary);
-  --header-item-border: none;
+  --header-item-bg: var(--glass-bg);
+  --header-item-border: var(--glass-border);
   --header-item-height: 46px;
   --header-item-border-radius: calc(var(--header-item-height) * var(--border-radius-factor, 0.45));
   --header-item-padding: var(--padding-md) var(--padding-lg);
+  --header-item-backdrop-filter: var(--glass-backdrop-filter);
+  --header-item-box-shadow: var(--glass-box-shadow);
 
   // Footer
   --footer-height: 0px;
@@ -94,7 +100,11 @@ body {
   --footer-wrapper-padding-x: var(--padding-lg);
   --footer-wrapper-padding: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x);
   --footer-padding: var(--padding-md);
-  --footer-bg: var(--bg-secondary);
+  --footer-bg: var(--glass-bg);
+  --footer-backdrop-filter: var(--glass-backdrop-filter);
+  --footer-box-shadow: var(--glass-box-shadow);
+  --footer-border: var(--glass-border);
+
   --floating-footer-height: 0px;
   --floating-padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
 
@@ -203,6 +213,15 @@ body {
   --completion-item-hover-bg: var(--bg-elevated);
   --completion-item-radius: var(--border-radius-md);
   --completion-item-padding: 10px;
+
+  // Completion header (mobile floating glass input)
+  --completion-header-bg: var(--glass-bg);
+  --completion-header-backdrop-filter: var(--glass-backdrop-filter);
+  --completion-header-box-shadow: var(--glass-box-shadow);
+  --completion-header-border: var(--glass-border);
+  --completion-header-border-radius: var(--border-radius-xl);
+  --completion-header-margin: var(--padding-md);
+  --completion-header-offset: 72px;
 
   // Inputs
   --placeholder-fg: var(--fg-muted);
