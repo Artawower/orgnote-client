@@ -156,9 +156,9 @@ dialog {
     &:not(.mini) {
       width: 100%;
       border-radius: 0;
-      height: var(--screen-height, 100dvh) !important;
-      max-height: var(--screen-height, 100dvh) !important;
-      top: var(--viewport-offset-top, 0px) !important;
+      height: var(--screen-height, 100vh) !important;
+      max-height: var(--screen-height, 100vh) !important;
+      top: 0 !important;
       bottom: unset;
       margin: 0;
     }

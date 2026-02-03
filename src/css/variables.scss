@@ -133,8 +133,7 @@ body {
   // Platform specific value
   --device-padding-bottom: 0px;
   --title-bar-height: 0px;
-  --full-height: 100vh;
-  --full-height: 100dvh;
+  --full-height: var(--screen-height, 100vh);
 
   // Backdrop
   --backdrop-bg: rgba(0, 0, 0, 0.2);
@@ -392,6 +391,5 @@ body.keyboard-opened {
 
 body.electron.platform-mac {
   --title-bar-height: 32px;
-  --full-height: calc(100vh - var(--title-bar-height));
-  --full-height: calc(100dvh - var(--title-bar-height));
+  --full-height: calc(var(--screen-height, 100vh) - var(--title-bar-height));
 }

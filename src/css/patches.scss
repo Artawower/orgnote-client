@@ -10,8 +10,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  height: 100dvh;
+  height: var(--screen-height, 100vh);
+  max-height: var(--screen-height, 100vh);
   box-sizing: border-box;
   background: var(--bg);
 }

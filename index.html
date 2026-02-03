@@ -9,7 +9,7 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta
       name="viewport"
-      content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>"
+      content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor || ctx.mode.pwa) { %>, viewport-fit=cover<% } %>"
     />
 
     <link rel="icon" type="image/png" sizes="128x128" href="icons/favicon-128x128.png" />
@@ -19,7 +19,11 @@
     <link rel="icon" type="image/ico" href="favicon.ico" />
     <% if (ctx.mode.pwa) { %>
     <meta name="theme-color" content="<%= pwaManifest.theme_color %>" />
-    <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="<%= pwaManifest.theme_color %>" />
+    <link
+      rel="mask-icon"
+      href="icons/safari-pinned-tab.svg"
+      color="<%= pwaManifest.theme_color %>"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png" />
@@ -30,8 +34,20 @@
     <link rel="apple-touch-icon" sizes="167x167" href="icons/apple-icon-167x167.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180x180.png" />
     <% } %>
-    <link rel="preload" href="src/css/fonts/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="src/css/fonts/Menlo-Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <link
+      rel="preload"
+      href="src/css/fonts/JetBrainsMono-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="src/css/fonts/Menlo-Regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
   </head>
   <body style="background-color: var(--bg, #9356e8)">
     <script>
@@ -286,7 +302,8 @@
       function isNonFatalRejectionReason(reason) {
         if (reason === null || reason === undefined) return true;
         var name = reason && typeof reason === 'object' ? reason.name : null;
-        if (name === 'AbortError' || name === 'CanceledError' || name === 'CancelledError') return true;
+        if (name === 'AbortError' || name === 'CanceledError' || name === 'CancelledError')
+          return true;
         var message = toReadableMessage(reason);
         return message.indexOf('Failed to fetch') !== -1 || message.indexOf('NetworkError') !== -1;
       }
@@ -298,7 +315,8 @@
 
       function isFatalErrorEvent(event, details) {
         if (event && event.message && event.message.trim() === 'Script error.') return false;
-        if (event && event.error && event.error.stack && isSameOriginStack(event.error.stack)) return true;
+        if (event && event.error && event.error.stack && isSameOriginStack(event.error.stack))
+          return true;
         if (details.meta && details.meta.url && isSameOriginUrl(details.meta.url)) return true;
         return false;
       }
@@ -316,14 +334,18 @@
         return isFatalErrorEvent(event, details);
       }
 
-      window.addEventListener('error', function (event) {
-        if (window.__appBooted) return;
+      window.addEventListener(
+        'error',
+        function (event) {
+          if (window.__appBooted) return;
 
-        var details = extractErrorDetails(event);
-        window.__errorBuffer.capture(details.value, details.type, details.meta);
-        console.error('[FALLBACK] Uncaught error:', details.message);
-        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
-      }, true);
+          var details = extractErrorDetails(event);
+          window.__errorBuffer.capture(details.value, details.type, details.meta);
+          console.error('[FALLBACK] Uncaught error:', details.message);
+          if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
+        },
+        true,
+      );
 
       window.addEventListener('unhandledrejection', function (event) {
         if (window.__appBooted) return;

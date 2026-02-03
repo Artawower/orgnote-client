@@ -126,17 +126,15 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
     globalViewportHeight.value = screenHeight;
 
     if (!platform.is.capacitor) {
-      const height = Math.max(0, window.innerHeight - screenHeight);
+      const baseHeight = initialViewportHeight || window.innerHeight;
+      const height = Math.max(0, baseHeight - screenHeight);
       const opened = height > KEYBOARD_HEIGHT_THRESHOLD;
       setKeyboardState(opened, opened ? height : 0);
-      updateCssVariables(screenHeight, viewportOffsetTop);
+
+      const effectiveHeight = opened ? screenHeight : baseHeight;
+      updateCssVariables(effectiveHeight, viewportOffsetTop);
 
       if (!platform.is.ios) return;
-      const heightValue = `${screenHeight}px`;
-      document.documentElement.style.setProperty('height', heightValue, 'important');
-      document.documentElement.style.setProperty('max-height', heightValue, 'important');
-      document.body.style.setProperty('height', heightValue, 'important');
-      document.body.style.setProperty('max-height', heightValue, 'important');
       if (opened) {
         window.scrollTo(0, 0);
       }
