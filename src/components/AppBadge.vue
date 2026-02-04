@@ -62,7 +62,7 @@ const iconSize = computed(() => ICON_SIZE_MAP[props.size ?? 'md']);
 <style lang="scss" scoped>
 .app-badge {
   gap: var(--badge-gap, 4px);
-  @include fontify(var(--font-size-base, 16px), var(--font-weight-bold, 700), var(--fg, #000));
+  @include fontify(var(--font-size-base, 16px), var(--font-weight-medium, 700), var(--fg, #000));
   border: 1px solid transparent;
   line-height: 1;
   min-height: unset;
@@ -76,26 +76,26 @@ const iconSize = computed(() => ICON_SIZE_MAP[props.size ?? 'md']);
   }
 
   &.size-xs {
-    @include fontify(var(--font-size-xs, 12px), var(--font-weight-bold, 700));
+    @include fontify(var(--font-size-xs, 12px), var(--font-weight-medium, 700));
     padding: var(--padding-xs) calc(var(--padding-xs) * 2);
 
     min-height: 1.2em;
   }
 
   &.size-sm {
-    @include fontify(var(--font-size-sm, 14px), var(--font-weight-bold, 700));
+    @include fontify(var(--font-size-sm, 14px), var(--font-weight-medium, 700));
     padding: var(--padding-sm, 4px) calc(var(--padding-sm, 4px) * 2);
     min-height: 1.4em;
   }
 
   &.size-md {
-    @include fontify(var(--font-size-base, 16px), var(--font-weight-bold, 700));
+    @include fontify(var(--font-size-base, 16px), var(--font-weight-medium, 700));
     padding: var(--padding-md, 8px);
     min-height: 1.6em;
   }
 
   &.size-lg {
-    @include fontify(var(--font-size-lg, 20px), var(--font-weight-bold, 700));
+    @include fontify(var(--font-size-lg, 20px), var(--font-weight-medium, 700));
     padding: var(--padding-md, 8px) var(--padding-lg, 16px);
     min-height: 2em;
   }

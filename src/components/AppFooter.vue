@@ -51,5 +51,6 @@ const props = withDefaults(
   }
 
   --btn-action-radius: calc(var(--footer-border-radius) - var(--padding-md));
+  @include glass-btn;
 }
 </style>

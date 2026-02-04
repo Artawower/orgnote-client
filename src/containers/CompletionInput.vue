@@ -75,11 +75,11 @@ defineExpose({
 
 <style lang="scss" scoped>
 .completion-input {
+  flex: 1;
+  @include glass-btn;
 }
 
 .input {
-  & {
-    width: 100%;
-  }
+  width: 100%;
 }
 </style>

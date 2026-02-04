@@ -36,10 +36,10 @@ const bgColor = computed(() => props.background && getCssVariableName(props.back
 const color = computed(() => (props.color ? getCssVariableName(props.color) : undefined));
 
 const iconSizeMap: { [key in StyleSize]?: string } = {
-  xs: '1em',
-  sm: '1.2em',
-  md: '1.6em',
-  lg: '3em',
+  xs: '0.875em',
+  sm: '1.125em',
+  md: '1.375em',
+  lg: '1.75em',
 };
 
 const predefinedSizes = ['xs', 'sm', 'md', 'lg'];

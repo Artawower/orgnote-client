@@ -179,11 +179,11 @@ $level-colors: (
 }
 
 .number {
-  @include fontify(var(--font-size-xs), var(--font-weight-bold), var(--fg));
+  @include fontify(var(--font-size-xs), var(--font-weight-medium), var(--fg));
 }
 
 .repeat {
-  @include fontify(var(--font-size-xs), var(--font-weight-bold), var(--fg));
+  @include fontify(var(--font-size-xs), var(--font-weight-medium), var(--fg));
 
   & {
     margin-left: auto;
@@ -223,7 +223,7 @@ pre {
 }
 
 .label {
-  @include fontify(var(--font-size-sm), var(--font-weight-bold), var(--fg));
+  @include fontify(var(--font-size-sm), var(--font-weight-medium), var(--fg));
 
   & {
     display: block;

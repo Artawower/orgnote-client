@@ -83,13 +83,13 @@ const formattedValue = computed(() => labelFormatters[props.labelFormat]());
 
 .app-progress-label {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-medium);
   color: var(--fg);
 }
 
 .app-progress-value {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-medium);
   color: var(--fg-muted);
 }
 

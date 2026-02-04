@@ -47,7 +47,7 @@ withDefaults(
 }
 
 .info-card-title {
-  @include fontify(var(--font-size-lg), var(--font-weight-bold), var(--variant-color));
+  @include fontify(var(--font-size-lg), var(--font-weight-medium), var(--variant-color));
 }
 
 .info-card-description {

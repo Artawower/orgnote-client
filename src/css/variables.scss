@@ -68,6 +68,9 @@ body {
   --glass-backdrop-filter: blur(3px);
   --glass-border: none;
 
+  // Shared glass bar height
+  --bar-height: 49px;
+
   // Header
   --header-height: 44px;
   --header-bg: transparent;
@@ -86,12 +89,11 @@ body {
   // Header items (left/center/right sections)
   --header-item-bg: var(--glass-bg);
   --header-item-border: var(--glass-border);
-  --header-item-height: 46px;
+  --header-item-height: var(--bar-height);
   --header-item-border-radius: calc(var(--header-item-height) * var(--border-radius-factor, 0.45));
-  --header-item-padding: var(--padding-md) var(--padding-lg);
+  --header-item-padding: 0;
   --header-item-backdrop-filter: var(--glass-backdrop-filter);
   --header-item-box-shadow: var(--glass-box-shadow);
-
 
   // Footer
   --footer-height: 0px;
@@ -100,12 +102,11 @@ body {
   --footer-wrapper-padding-y: var(--padding-lg);
   --footer-wrapper-padding-x: var(--padding-lg);
   --footer-wrapper-padding: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x);
-  --footer-padding: var(--padding-md);
+  --footer-padding: 0 var(--padding-md);
   --footer-bg: var(--glass-bg);
   --footer-backdrop-filter: var(--glass-backdrop-filter);
   --footer-box-shadow: var(--glass-box-shadow);
   --footer-border: var(--glass-border);
-
 
   --floating-footer-height: 0px;
   --floating-padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
@@ -130,10 +131,14 @@ body {
   --btn-action-bg: var(--bg);
   --btn-action-hover-bg: var(--bg-hover);
   --btn-action-hover-brightness: 100%;
-  --btn-action-xs-size: 14px;
-  --btn-action-sm-size: 26px;
-  --btn-action-md-size: 40px;
-  --btn-action-lg-size: 48px;
+  --btn-action-hover-opacity: 1;
+  --btn-action-hover-scale: 1;
+  --btn-action-active-scale: 0.95;
+  --btn-action-transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), filter 0.15s ease;
+  --btn-action-xs-size: 22px;
+  --btn-action-sm-size: 28px;
+  --btn-action-md-size: 34px;
+  --btn-action-lg-size: 50px;
   --btn-action-border: none;
   --btn-action-active-fg: var(--accent);
   --btn-action-text-width: 180px;
@@ -214,7 +219,7 @@ body {
   --completion-footer-height: 24px;
   --completion-item-hover-bg: var(--bg-elevated);
   --completion-item-radius: var(--border-radius-md);
-  --completion-item-padding: 10px;
+  --completion-item-padding: var(--padding-md);
 
   // Completion header (mobile floating glass input)
   --completion-header-bg: var(--glass-bg);
@@ -222,8 +227,11 @@ body {
   --completion-header-box-shadow: var(--glass-box-shadow);
   --completion-header-border: var(--glass-border);
   --completion-header-border-radius: var(--border-radius-xl);
-  --completion-header-margin: var(--padding-md);
-  --completion-header-offset: 72px;
+  --completion-header-height: var(--bar-height);
+  --completion-header-margin: var(--padding-lg);
+  --completion-header-offset: calc(
+    var(--completion-header-height) + 2 * var(--completion-header-margin)
+  );
 
   // Inputs
   --placeholder-fg: var(--fg-muted);
@@ -377,7 +385,7 @@ body {
     --notification-container-left: var(--padding-md);
     --notification-max-width: none;
     --notification-min-width: none;
-    --footer-height: 52px;
+    --footer-height: var(--bar-height);
   }
 }
 
@@ -389,14 +397,14 @@ body {
 @include mobile {
   body {
     --tab-overview-grid-columns: 2;
-    --footer-height: 52px;
-    --footer-padding: var(--padding-md) var(--padding-lg);
+    --footer-padding: 0 var(--padding-lg);
     --floating-footer-height: calc(
       var(--footer-height) + var(--footer-wrapper-padding-y) * 2 +
         var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
     );
 
-    --btn-action-md-size: 46px;
+    --btn-action-sm-size: 34px;
+    --btn-action-md-size: 44px;
 
     --header-height: 44px;
   }

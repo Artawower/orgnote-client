@@ -173,3 +173,10 @@ $type-colors: (
     }
   }
 }
+
+@mixin glass-btn {
+  --btn-action-hover-bg: transparent;
+  --btn-action-hover-brightness: 1.15;
+  --btn-action-hover-scale: 1.05;
+  --btn-action-active-scale: 0.92;
+}

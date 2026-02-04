@@ -97,8 +97,14 @@ button {
     background: transparent;
   }
 
+  &.icon-xs,
+  &.icon-sm,
+  &.icon-md,
+  &.icon-lg {
+    padding: 0;
+  }
+
   &.icon-xs {
-    padding: var(--padding-xs);
     width: var(--btn-action-xs-size);
     height: var(--btn-action-xs-size);
     min-width: var(--btn-action-xs-size);
@@ -107,7 +113,6 @@ button {
   }
 
   &.icon-sm {
-    padding: var(--padding-sm);
     width: var(--btn-action-sm-size);
     height: var(--btn-action-sm-size);
     min-width: var(--btn-action-sm-size);
@@ -116,7 +121,6 @@ button {
   }
 
   &.icon-md {
-    padding: var(--padding-sm);
     width: var(--btn-action-md-size);
     height: var(--btn-action-md-size);
     min-width: var(--btn-action-md-size);
@@ -125,7 +129,6 @@ button {
   }
 
   &.icon-lg {
-    padding: var(--padding-lg);
     width: var(--btn-action-lg-size);
     height: var(--btn-action-lg-size);
     min-width: var(--btn-action-lg-size);
@@ -137,15 +140,21 @@ button {
     width: var(--btn-action-text-width);
   }
 
+  & {
+    transition: var(--btn-action-transition);
+  }
+
   &.hover-effect:not(.outline) {
     @include hover {
       background: var(--btn-action-hover-bg);
       filter: brightness(var(--btn-action-hover-brightness));
+      transform: scale(var(--btn-action-hover-scale));
     }
 
     &:active {
       background: var(--btn-action-hover-bg);
       filter: brightness(var(--btn-action-hover-brightness));
+      transform: scale(var(--btn-action-active-scale));
     }
   }
 

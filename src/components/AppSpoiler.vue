@@ -81,7 +81,7 @@ const toggle = (): void => {
 }
 
 .spoiler-title {
-  @include fontify(var(--font-size-base), var(--font-weight-bold), var(--fg));
+  @include fontify(var(--font-size-base), var(--font-weight-medium), var(--fg));
 
   & {
     flex: 1;

@@ -25,7 +25,7 @@
   >
     <component v-if="iconComponent" :is="iconComponent" size="sm" />
     <app-icon v-else-if="iconString" :name="iconString" size="sm" />
-    <div class="text-bold color-main">
+    <div class="text-medium color-main">
       <div class="line-limit-1">
         {{ resolvedTitle }}
       </div>

@@ -1,7 +1,7 @@
 <template>
   <app-flex row space-between :class="{ float }" class="header-wrapper">
     <app-flex class="header" row align-center>
-      <app-flex v-if="$slots.left" class="header-left float" row align-center gap="sm">
+      <app-flex v-if="$slots.left" class="header-left float" row align-center center gap="sm">
         <slot name="left" />
       </app-flex>
       <app-flex v-if="$slots.center" class="header-center float" row center align-center>
@@ -9,7 +9,7 @@
           <app-title v-if="title" :level="5" no-margin>{{ title }}</app-title>
         </slot>
       </app-flex>
-      <app-flex v-if="$slots.right" class="header-right float" row align-center end gap="sm">
+      <app-flex v-if="$slots.right" class="header-right float" row align-center center gap="sm">
         <slot name="right" />
       </app-flex>
     </app-flex>
@@ -51,6 +51,7 @@ defineProps<{
 .header-left,
 .header-center,
 .header-right {
+  min-width: var(--header-item-height);
   height: var(--header-item-height);
   background: var(--header-item-bg);
   border: var(--header-item-border);
@@ -62,6 +63,7 @@ defineProps<{
   box-shadow: var(--header-item-box-shadow);
 
   --btn-action-radius: calc(var(--header-item-border-radius) - var(--padding-md));
+  @include glass-btn;
 }
 
 .header-left {

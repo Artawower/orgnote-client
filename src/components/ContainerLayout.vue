@@ -79,7 +79,6 @@ const slots = useSlots();
 
     &.border {
       border-bottom: none;
-      border-top: var(--border-default);
     }
   }
 

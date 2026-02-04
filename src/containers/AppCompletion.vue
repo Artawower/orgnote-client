@@ -8,9 +8,9 @@
     body-scroll
   >
     <template #header>
-      <div class="header">
+      <app-flex class="header" row align-center>
         <completion-input ref="completionInputRef" :placeholder="placeholder" />
-      </div>
+      </app-flex>
     </template>
     <template v-if="!isInputOnly" #body>
       <div class="body">
@@ -89,7 +89,11 @@ const { t } = useI18n({
   }
 }
 
-.header,
+.header {
+  padding: 0 var(--completion-padding);
+  height: var(--completion-header-height);
+}
+
 .body {
   padding: var(--completion-padding);
 }

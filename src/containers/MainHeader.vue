@@ -1,6 +1,8 @@
 <template>
   <app-header>
-    <template #center> {{ panes.activeTab?.title }} </template>
+    <template #center>
+      <span class="header-title">{{ panes.activeTab?.title }}</span>
+    </template>
     <template #right>
       <command-action-button
         v-for="c of rightCommands"
@@ -23,3 +25,9 @@ const rightCommands = pinnedCommandsStore.getCommands('right-header');
 
 const panes = api.core.usePane();
 </script>
+
+<style lang="scss" scoped>
+.header-title {
+  padding: 0 var(--padding-lg);
+}
+</style>
