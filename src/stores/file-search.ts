@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { Document, type EnrichedDocumentSearchResults } from 'flexsearch';
-import type { DiskFile, FileMeta, FileSearchStore, FileIndexMeta, StoredIndex } from 'orgnote-api';
+import type { DiskFile, FileMeta, FileSearchStore, FileIndexMeta, StoredIndex, QueueStatus } from 'orgnote-api';
 import { isOrgFile, isOrgGpgFile, to } from 'orgnote-api';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
@@ -206,6 +206,8 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
 
   const buildIndexTaskId = (filePath: string): string => `file:${filePath}`;
 
+  const ACTIVE_TASK_STATUSES: Set<QueueStatus> = new Set(['pending', 'processing']);
+
   const hasQueuedIndexTask = async (taskId: string): Promise<boolean> => {
     const queueRepository = repositories.queueRepository;
     if (!queueRepository) return false;
@@ -214,6 +216,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     if (!existing) return false;
     if (existing.queueId !== INDEX_QUEUE_ID) return false;
     if (existing.deletedAt) return false;
+    if (!existing.status || !ACTIVE_TASK_STATUSES.has(existing.status)) return false;
     return true;
   };
 

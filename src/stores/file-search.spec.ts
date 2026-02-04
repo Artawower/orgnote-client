@@ -34,12 +34,16 @@ vi.mock('src/boot/repositories', () => ({
         mockKeyValue.delete(key);
       }),
     },
+    queueRepository: {
+      get: vi.fn(async (id: string) => mockQueueTasksDB.get(id)),
+    },
   },
 }));
 
 const mockFileContents: Map<string, string> = new Map();
 const mockFileInfos: Map<string, { mtime: string }> = new Map();
 const mockDirEntries: Map<string, DiskFile[]> = new Map();
+const mockQueueTasksDB: Map<string, Record<string, unknown>> = new Map();
 
 vi.mock('src/stores/file-system', () => ({
   useFileSystemStore: vi.fn(() => ({
@@ -88,6 +92,7 @@ beforeEach(() => {
   mockFileInfos.clear();
   mockDirEntries.clear();
   mockQueueTasks.length = 0;
+  mockQueueTasksDB.clear();
 });
 
 afterEach(() => {
@@ -562,4 +567,140 @@ test('processFile creates correct filePath array', async () => {
 
   const saved = Array.from(mockFiles.values())[0]!;
   expect(saved.filePath).toEqual(['folder', 'subfolder', 'note.org']);
+});
+
+test('indexFile re-queues file when existing task is completed', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'completed',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('indexFile re-queues file when existing task is failed', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'failed',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('indexFile re-queues file when existing task is canceled', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'canceled',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('indexFile skips file when existing task is pending', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'pending',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(0);
+});
+
+test('indexFile skips file when existing task is processing', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'processing',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(0);
+});
+
+test('indexFile ignores completed tasks from different queue', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'sync',
+    status: 'pending',
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('indexFile ignores deleted tasks', async () => {
+  const store = useFileSearchStore();
+
+  mockQueueTasksDB.set('file:/notes/test.org', {
+    id: 'file:/notes/test.org',
+    queueId: 'content-index',
+    status: 'pending',
+    deletedAt: Date.now(),
+    payload: { filePath: '/notes/test.org' },
+    added: Date.now(),
+  });
+
+  await store.indexFile('/notes/test.org');
+  expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('indexFile succeeds on retry after initial empty file', async () => {
+  const store = useFileSearchStore();
+
+  await store.indexFile('/notes/new.org');
+  expect(mockQueueTasks).toHaveLength(1);
+
+  await store.processFile('/notes/new.org');
+  expect(mockFiles.size).toBe(0);
+
+  mockQueueTasksDB.set('file:/notes/new.org', {
+    id: 'file:/notes/new.org',
+    queueId: 'content-index',
+    status: 'completed',
+    payload: { filePath: '/notes/new.org' },
+    added: Date.now(),
+  });
+
+  mockFileContents.set('/notes/new.org', '#+TITLE: New Note\nActual content');
+  mockQueueTasks.length = 0;
+
+  await store.indexFile('/notes/new.org');
+  expect(mockQueueTasks).toHaveLength(1);
+
+  await store.processFile('/notes/new.org');
+  expect(mockFiles.size).toBe(1);
+
+  const saved = Array.from(mockFiles.values())[0]!;
+  expect(saved.title).toBe('Parsed Title');
 });
