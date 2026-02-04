@@ -89,7 +89,7 @@ button {
 
   & {
     padding: var(--btn-action-padding);
-    border-radius: var(--btn-action-radius);
+    border-radius: var(--btn-action-radius, var(--border-radius-md));
     color: var(--btn-action-fg);
     cursor: pointer;
     border: var(--btn-action-border);
@@ -103,7 +103,7 @@ button {
     height: var(--btn-action-xs-size);
     min-width: var(--btn-action-xs-size);
     min-height: var(--btn-action-xs-size);
-    border-radius: var(--border-radius-xs);
+    border-radius: var(--btn-action-radius, var(--border-radius-xs));
   }
 
   &.icon-sm {
@@ -112,7 +112,7 @@ button {
     height: var(--btn-action-sm-size);
     min-width: var(--btn-action-sm-size);
     min-height: var(--btn-action-sm-size);
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--btn-action-radius, var(--border-radius-sm));
   }
 
   &.icon-md {
@@ -121,7 +121,7 @@ button {
     height: var(--btn-action-md-size);
     min-width: var(--btn-action-md-size);
     min-height: var(--btn-action-md-size);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--btn-action-radius, var(--border-radius-md));
   }
 
   &.icon-lg {
@@ -130,7 +130,7 @@ button {
     height: var(--btn-action-lg-size);
     min-width: var(--btn-action-lg-size);
     min-height: var(--btn-action-lg-size);
-    border-radius: var(--border-radius-lg);
+    border-radius: var(--btn-action-radius, var(--border-radius-lg));
   }
 
   &.text {

@@ -60,6 +60,8 @@ defineProps<{
   backdrop-filter: var(--header-item-backdrop-filter);
   background-clip: padding-box;
   box-shadow: var(--header-item-box-shadow);
+
+  --btn-action-radius: calc(var(--header-item-border-radius) - var(--padding-md));
 }
 
 .header-left {

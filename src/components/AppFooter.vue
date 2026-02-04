@@ -49,5 +49,7 @@ const props = withDefaults(
     background-clip: padding-box;
     box-shadow: var(--footer-box-shadow);
   }
+
+  --btn-action-radius: calc(var(--footer-border-radius) - var(--padding-md));
 }
 </style>
