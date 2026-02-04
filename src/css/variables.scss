@@ -319,7 +319,7 @@ body {
   --notification-close-opacity: 0.7;
 
   // Editor
-  --editor-toolbar-height: 52px;
+  --editor-toolbar-height: var(--bar-height);
   --editor-max-width: 768px;
   --editor-padding: var(--padding-xl) var(--padding-lg) var(--padding-lg) var(--padding-lg);
   --editor-cursor-color: var(--accent);

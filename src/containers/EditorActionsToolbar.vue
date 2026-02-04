@@ -14,12 +14,10 @@
         :key="cmd"
         :command="cmd"
         size="md"
-        :hover-effect="false"
       />
     </app-flex>
     <div class="fixed-editor-actions">
       <command-action-button
-        :hover-effect="false"
         :command="DefaultCommands.EDITOR_HIDE_KEYBOARD"
         size="md"
       />
@@ -73,14 +71,27 @@ $toolbar-height: calc(var(--editor-toolbar-height) + var(--footer-wrapper-paddin
 
 .editor-actions {
   overflow-x: auto;
-  padding: 0 var(--padding-md);
   touch-action: pan-x;
   @include hide-scrollbar;
+}
+
+.fixed-editor-actions {
+  min-width: var(--bar-height);
+  justify-content: center;
+  display: flex;
 }
 
 .editor-actions,
 .fixed-editor-actions {
   border-radius: var(--footer-border-radius);
-  background: var(--bg-secondary);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-backdrop-filter);
+  backdrop-filter: var(--glass-backdrop-filter);
+  background-clip: padding-box;
+  border: var(--glass-border);
+  box-shadow: var(--glass-box-shadow);
+  height: var(--bar-height);
+  align-items: center;
+  @include glass-btn;
 }
 </style>
