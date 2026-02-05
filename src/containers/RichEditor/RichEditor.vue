@@ -21,6 +21,7 @@ import { reporter } from 'src/boot/report';
 
 const props = defineProps<{
   readonly?: boolean;
+  filePath?: string;
 }>();
 
 const model = defineModel<string>();
@@ -31,6 +32,7 @@ const editorConfig = computed(() => configStore.config.editor);
 
 const { initView, destroyView, updateContent, setReadonly } = useEditorView({
   readonly: props.readonly,
+  filePath: props.filePath,
   onContentUpdate: (content: string) => {
     model.value = content;
   },

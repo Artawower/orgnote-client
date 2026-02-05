@@ -1,5 +1,5 @@
 import type { Command, OrgNoteApi, FileMeta } from 'orgnote-api';
-import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n } from 'orgnote-api';
+import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
@@ -130,6 +130,16 @@ export const getEditorCommands = (): Command[] => {
 
         const file = await api.utils.uploadFile({ accept: 'image/*' });
         if (!file) return;
+
+        const currentPath = api.core.useEditor().activeContext?.filePath;
+        if (!currentPath) return;
+
+        const targetDir = getParentDir(currentPath);
+        const targetPath = join(targetDir, file.name);
+
+        const fileSystem = api.core.useFileSystem();
+        const content = new Uint8Array(await file.arrayBuffer());
+        await fileSystem.writeFile(targetPath, content);
 
         orgEditor.insertImage(file.name);
       },

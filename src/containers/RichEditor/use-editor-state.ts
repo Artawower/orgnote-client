@@ -32,6 +32,7 @@ import { editorLanguages } from './editor-languages';
 
 export interface UseEditorStateOptions {
   readonly?: boolean;
+  filePath?: string;
   editorViewGetter: () => EditorView | undefined;
   onContentUpdate: (content: string) => void;
 }
@@ -125,6 +126,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
           cursorPosition: 0,
           selection: '',
           editorViewGetter: options.editorViewGetter,
+          filePath: options.filePath,
           focused: true,
         });
         return false;
