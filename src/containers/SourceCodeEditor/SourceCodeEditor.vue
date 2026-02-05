@@ -89,7 +89,12 @@ watch(
   :deep(.cm-scroller) {
     overflow: auto;
     padding: var(--padding-md);
+    padding-bottom: var(--floating-padding-bottom);
     font-family: var(--code-font-family);
+
+    @include tablet-below {
+      padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
+    }
   }
 
   :deep(.cm-content) {

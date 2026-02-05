@@ -10,10 +10,15 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: var(--screen-height, 100vh);
-  max-height: var(--screen-height, 100vh);
+  height: 100vh;
+  max-height: 100vh;
   box-sizing: border-box;
   background: var(--bg);
+
+  @include tablet-below {
+    height: var(--screen-height, 100vh);
+    max-height: var(--screen-height, 100vh);
+  }
 }
 
 dialog {
