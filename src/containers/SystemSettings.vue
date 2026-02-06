@@ -2,16 +2,16 @@
   <app-flex class="system-settings" column start align-start gap="sm">
     <card-wrapper>
       <menu-item @click="execute(DefaultCommands.DELETE_ALL_DATA)" type="danger">
-        <div class="capitalize text-bold">{{ t(I18N.CLEAR_ALL_LOCAL_DATA) }}</div>
+        <div class="capitalize text-medium">{{ t(I18N.CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
       <menu-item @click="execute(DefaultCommands.DELETE_ALL_NOTES)" type="danger">
-        <div class="capitalize text-bold">{{ t(I18N.DELETE_ALL_NOTES) }}</div>
+        <div class="capitalize text-medium">{{ t(I18N.DELETE_ALL_NOTES) }}</div>
       </menu-item>
     </card-wrapper>
     <app-description :text="I18N.PURGE_DATA_WARNING" padded />
     <card-wrapper>
       <menu-item @click="execute(DefaultCommands.DELETE_ACCOUNT)" type="danger">
-        <div class="capitalize text-bold">{{ t(I18N.REMOVE_ACCOUNT) }}</div>
+        <div class="capitalize text-medium">{{ t(I18N.REMOVE_ACCOUNT) }}</div>
       </menu-item>
     </card-wrapper>
     <app-description :text="I18N.REMOVE_ACCOUNT_WARNING" padded />

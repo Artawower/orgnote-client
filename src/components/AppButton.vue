@@ -1,5 +1,5 @@
 <template>
-  <button :class="{ outline, [type]: type }" class="text-bold">
+  <button :class="{ outline, [type]: type }" class="text-medium">
     <slot />
   </button>
 </template>

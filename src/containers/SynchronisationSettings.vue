@@ -20,7 +20,7 @@
         type="danger"
         :disabled="!user || !user.active"
       >
-        <div class="capitalize text-bold">{{ t(I18N.FORCE_SYNC) }}</div>
+        <div class="capitalize text-medium">{{ t(I18N.FORCE_SYNC) }}</div>
       </command-menu-item>
     </card-wrapper>
     <app-description>{{ t(I18N.FORCE_SYNC_DESCRIPTION) }}</app-description>

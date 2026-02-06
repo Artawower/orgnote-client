@@ -3,7 +3,7 @@
     <app-flex column start align-start gap="md" class="card-inner">
       <app-flex v-if="hasTitle" class="card-header" row start align-center gap="sm">
         <app-icon v-if="shouldShowIcon" size="sm" :name="computedIcon" :color="background" />
-        <h5 class="card-title text-bold" :style="{ color: bg }">
+        <h5 class="card-title text-medium" :style="{ color: bg }">
           <slot name="cardTitle">{{ title }}</slot>
         </h5>
       </app-flex>

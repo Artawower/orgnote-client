@@ -51,7 +51,7 @@
     :key="name"
     :prefer="inputSchemeType ? 'right' : 'left'"
   >
-    <div v-if="!metadata?.textarea" class="capitalize text-bold menu-item-content">
+    <div v-if="!metadata?.textarea" class="capitalize text-medium menu-item-content">
       {{ camelCaseToWords(name) }}
     </div>
     <template #right>

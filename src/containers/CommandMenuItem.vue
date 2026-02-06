@@ -8,7 +8,7 @@
     :disabled="disabled"
   >
     <slot>
-      <div class="capitalize text-bold">{{ command?.command ? t(command.command) : '' }}</div>
+      <div class="capitalize text-medium">{{ command?.command ? t(command.command) : '' }}</div>
     </slot>
     <template v-if="slots.right" #right>
       <slot name="right" />

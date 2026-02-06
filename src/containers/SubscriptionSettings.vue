@@ -16,7 +16,7 @@
           />
         </menu-item>
         <menu-item @click="activate" :disabled="!activationKey" type="info">
-          <div class="capitalize text-bold">{{ t(I18N.ACTIVATE) }}</div>
+          <div class="capitalize text-medium">{{ t(I18N.ACTIVATE) }}</div>
         </menu-item>
       </card-wrapper>
 
