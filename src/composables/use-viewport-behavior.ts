@@ -53,17 +53,24 @@ const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): vo
   document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
 };
 
+const getScrollability = (element: HTMLElement): { vertical: boolean; horizontal: boolean } => {
+  const { overflowY, overflowX } = getComputedStyle(element);
+  const vertical =
+    (overflowY === 'auto' || overflowY === 'scroll') &&
+    element.scrollHeight > element.clientHeight;
+  const horizontal =
+    (overflowX === 'auto' || overflowX === 'scroll') &&
+    element.scrollWidth > element.clientWidth;
+
+  return { vertical, horizontal };
+};
+
 const findScrollableAncestor = (element: Element | null): HTMLElement | null => {
   if (!element || element === document.documentElement) return null;
 
   if (element instanceof HTMLElement) {
-    const { overflowY, overflowX } = getComputedStyle(element);
-    const isVerticallyScrollable = overflowY === 'auto' || overflowY === 'scroll';
-    const isHorizontallyScrollable = overflowX === 'auto' || overflowX === 'scroll';
-    if (isVerticallyScrollable && element.scrollHeight > element.clientHeight) {
-      return element;
-    }
-    if (isHorizontallyScrollable && element.scrollWidth > element.clientWidth) {
+    const { vertical, horizontal } = getScrollability(element);
+    if (vertical || horizontal) {
       return element;
     }
   }
@@ -87,7 +94,6 @@ const createTouchScrollPreventer = () => {
     if (!(target instanceof Element)) return;
 
     const scrollableElement = findScrollableAncestor(target);
-
     if (!scrollableElement) {
       e.preventDefault();
       return;
@@ -97,16 +103,12 @@ const createTouchScrollPreventer = () => {
     if (!touch) return;
     const deltaX = touchStartX - touch.clientX;
     const deltaY = touchStartY - touch.clientY;
+    const { vertical, horizontal } = getScrollability(scrollableElement);
 
-    const { overflowX } = getComputedStyle(scrollableElement);
-    const isHorizontallyScrollable = overflowX === 'auto' || overflowX === 'scroll';
-
-    if (isHorizontallyScrollable && Math.abs(deltaX) > Math.abs(deltaY)) {
-      return;
-    }
+    if (horizontal && Math.abs(deltaX) > Math.abs(deltaY)) return;
+    if (!vertical) return;
 
     const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
-
     const isAtTop = scrollTop <= 0 && deltaY < 0;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight && deltaY > 0;
 

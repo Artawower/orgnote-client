@@ -40,7 +40,6 @@ const handleEditClick = (event: MouseEvent) => {
   position: relative;
   margin-top: var(--margin-md);
   width: 100%;
-  overflow: auto;
 }
 
 .org-widget-actions {

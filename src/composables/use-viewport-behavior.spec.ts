@@ -1,0 +1,110 @@
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { defineComponent } from 'vue';
+import { useViewportBehavior } from './use-viewport-behavior';
+
+vi.mock('src/utils/platform-detection', () => ({
+  platform: { is: { ios: true, safari: true, capacitor: false } },
+  platformMatch: async (handlers: { default: () => unknown }) => handlers.default(),
+}));
+
+const createTouchEvent = (
+  type: 'touchstart' | 'touchmove' | 'touchend',
+  x: number,
+  y: number,
+  target?: Element,
+): TouchEvent => {
+  const touch = { clientX: x, clientY: y } as Touch;
+  const touchList = {
+    0: touch,
+    length: 1,
+    item: () => touch,
+    [Symbol.iterator]: function* () {
+      yield touch;
+    },
+  } as unknown as TouchList;
+
+  const event = {
+    type,
+    touches: type === 'touchend' ? ({ length: 0 } as TouchList) : touchList,
+    changedTouches: touchList,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    bubbles: true,
+    cancelable: true,
+    composedPath: () => (target ? [target] : []),
+  } as unknown as TouchEvent;
+
+  if (target) {
+    Object.defineProperty(event, 'target', { value: target, configurable: true });
+  }
+
+  return event;
+};
+
+const createTestComponent = () =>
+  defineComponent({
+    setup() {
+      useViewportBehavior();
+      return () => null;
+    },
+  });
+
+beforeEach(() => {
+  Object.defineProperty(window, 'visualViewport', {
+    value: {
+      height: 800,
+      offsetTop: 0,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    },
+    configurable: true,
+  });
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+test('useViewportBehavior should not prevent default for horizontal-only scroll target', () => {
+  const scrollable = document.createElement('div');
+  scrollable.style.overflowX = 'auto';
+  scrollable.style.overflowY = 'hidden';
+  Object.defineProperty(scrollable, 'scrollWidth', { value: 500, configurable: true });
+  Object.defineProperty(scrollable, 'clientWidth', { value: 300, configurable: true });
+  Object.defineProperty(scrollable, 'scrollHeight', { value: 100, configurable: true });
+  Object.defineProperty(scrollable, 'clientHeight', { value: 100, configurable: true });
+  document.body.appendChild(scrollable);
+
+  const wrapper = mount(createTestComponent());
+
+  document.dispatchEvent(createTouchEvent('touchstart', 100, 100, scrollable));
+  const moveEvent = createTouchEvent('touchmove', 100, 150, scrollable);
+  document.dispatchEvent(moveEvent);
+
+  expect(moveEvent.preventDefault).not.toHaveBeenCalled();
+
+  document.body.removeChild(scrollable);
+  wrapper.unmount();
+});
+
+test('useViewportBehavior should prevent default at vertical boundary', () => {
+  const scrollable = document.createElement('div');
+  scrollable.style.overflowY = 'auto';
+  scrollable.style.overflowX = 'hidden';
+  Object.defineProperty(scrollable, 'scrollHeight', { value: 500, configurable: true });
+  Object.defineProperty(scrollable, 'clientHeight', { value: 300, configurable: true });
+  Object.defineProperty(scrollable, 'scrollTop', { value: 0, configurable: true });
+  document.body.appendChild(scrollable);
+
+  const wrapper = mount(createTestComponent());
+
+  document.dispatchEvent(createTouchEvent('touchstart', 100, 100, scrollable));
+  const moveEvent = createTouchEvent('touchmove', 100, 150, scrollable);
+  document.dispatchEvent(moveEvent);
+
+  expect(moveEvent.preventDefault).toHaveBeenCalled();
+
+  document.body.removeChild(scrollable);
+  wrapper.unmount();
+});
