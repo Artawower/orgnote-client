@@ -1,5 +1,6 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import type { CompletionCandidate, CompletionSearchResult } from 'orgnote-api';
 import { useCompletionStore } from './completion';
 
 const mockModalClose = vi.fn();
@@ -370,16 +371,17 @@ test('search handles async itemsGetter', async () => {
   expect(store.activeCompletion?.total).toBe(1);
 });
 
-test('search handles sync itemsGetter', () => {
+test('search handles sync itemsGetter', async () => {
   const store = useCompletionStore();
 
   store.open({
     type: 'choice',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    itemsGetter: () => ({ result: [{ title: 'Sync Result' }], total: 1 }) as any,
+    itemsGetter: () => ({ result: [{ title: 'Sync Result', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
   });
 
   vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
 
   expect(store.activeCompletion?.candidates).toHaveLength(1);
 });
@@ -485,16 +487,223 @@ test('activeCompletion is undefined when no completions', () => {
   expect(store.activeCompletion).toBeUndefined();
 });
 
-test('search updates total from result', async () => {
+test('search updates total from processed candidates length', async () => {
   const store = useCompletionStore();
+  const candidates: CompletionCandidate<unknown>[] = [
+    { title: 'a', data: {}, commandHandler: vi.fn() },
+    { title: 'b', data: {}, commandHandler: vi.fn() },
+  ];
+  const searchResult: CompletionSearchResult<unknown> = {
+    result: candidates,
+    total: 100,
+  };
+
+  store.registerInterceptor({
+    name: 'filter-interceptor',
+    target: 'filter-test',
+    handler: (candidates) => candidates.slice(0, 1),
+  });
 
   store.open({
+    name: 'filter-test',
     type: 'choice',
-    itemsGetter: () => Promise.resolve({ result: [], total: 42 }),
+    itemsGetter: () => Promise.resolve(searchResult),
   });
 
   vi.advanceTimersByTime(100);
   await vi.runAllTimersAsync();
 
-  expect(store.activeCompletion?.total).toBe(42);
+  expect(store.activeCompletion?.total).toBe(1);
+});
+
+test('search keeps total when interceptor only reorders', async () => {
+  const store = useCompletionStore();
+  const candidates: CompletionCandidate<unknown>[] = [
+    { title: 'a', data: {}, commandHandler: vi.fn() },
+    { title: 'b', data: {}, commandHandler: vi.fn() },
+  ];
+  const searchResult: CompletionSearchResult<unknown> = {
+    result: candidates,
+    total: 100,
+  };
+
+  store.registerInterceptor({
+    name: 'reorder-interceptor',
+    target: 'total-test',
+    handler: (candidates) => [...candidates].reverse(),
+  });
+
+  store.open({
+    name: 'total-test',
+    type: 'choice',
+    itemsGetter: () => Promise.resolve(searchResult),
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  expect(store.activeCompletion?.total).toBe(100);
+});
+
+test('registerInterceptor adds interceptor', () => {
+  const store = useCompletionStore();
+
+  const unregister = store.registerInterceptor({
+    name: 'test-interceptor',
+    target: 'test-completion',
+    handler: (candidates) => candidates,
+  });
+
+  expect(typeof unregister).toBe('function');
+});
+
+test('registerInterceptor returns unregister function', () => {
+  const store = useCompletionStore();
+
+  const unregister = store.registerInterceptor({
+    name: 'test-interceptor',
+    target: 'test-completion',
+    handler: (candidates) => candidates,
+  });
+
+  expect(() => unregister()).not.toThrow();
+});
+
+
+
+test('interceptor is applied to matching completion name', async () => {
+  const store = useCompletionStore();
+  const interceptorFn = vi.fn((candidates) => [
+    ...candidates,
+    { title: 'Added by interceptor', data: {}, commandHandler: vi.fn() },
+  ]);
+
+  store.registerInterceptor({
+    name: 'test-interceptor',
+    target: 'test-completion',
+    handler: interceptorFn,
+  });
+
+  store.open({
+    name: 'test-completion',
+    type: 'choice',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsGetter: () => ({ result: [{ title: 'Original', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  expect(interceptorFn).toHaveBeenCalled();
+  expect(store.activeCompletion?.candidates).toHaveLength(2);
+});
+
+test('interceptor is not applied to non-matching completion name', async () => {
+  const store = useCompletionStore();
+  const interceptorFn = vi.fn((candidates) => candidates);
+
+  store.registerInterceptor({
+    name: 'test-interceptor',
+    target: 'other-completion',
+    handler: interceptorFn,
+  });
+
+  store.open({
+    name: 'test-completion',
+    type: 'choice',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsGetter: () => ({ result: [{ title: 'Original', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  expect(interceptorFn).not.toHaveBeenCalled();
+});
+
+test('interceptor with wildcard target matches all completions', async () => {
+  const store = useCompletionStore();
+  const interceptorFn = vi.fn((candidates) => candidates);
+
+  store.registerInterceptor({
+    name: 'test-interceptor',
+    target: '*',
+    handler: interceptorFn,
+  });
+
+  store.open({
+    name: 'any-completion',
+    type: 'choice',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsGetter: () => ({ result: [{ title: 'Original', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  expect(interceptorFn).toHaveBeenCalled();
+});
+
+test('interceptor with array target matches multiple completion names', async () => {
+  const store = useCompletionStore();
+  const interceptorFn = vi.fn((candidates) => candidates);
+
+  store.registerInterceptor({
+    name: 'test-interceptor',
+    target: ['completion-a', 'completion-b'],
+    handler: interceptorFn,
+  });
+
+  store.open({
+    name: 'completion-b',
+    type: 'choice',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsGetter: () => ({ result: [{ title: 'Original', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  expect(interceptorFn).toHaveBeenCalled();
+});
+
+test('multiple interceptors are applied in priority order', async () => {
+  const store = useCompletionStore();
+  const callOrder: string[] = [];
+
+  const unregisterLow = store.registerInterceptor({
+    name: 'low-priority',
+    target: 'priority-test',
+    priority: 10,
+    handler: (candidates) => {
+      callOrder.push('low');
+      return candidates;
+    },
+  });
+
+  const unregisterHigh = store.registerInterceptor({
+    name: 'high-priority',
+    target: 'priority-test',
+    priority: 100,
+    handler: (candidates) => {
+      callOrder.push('high');
+      return candidates;
+    },
+  });
+
+  store.open({
+    name: 'priority-test',
+    type: 'choice',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsGetter: () => ({ result: [{ title: 'Original', data: {}, commandHandler: vi.fn() }], total: 1 }) as any,
+  });
+
+  vi.advanceTimersByTime(100);
+  await vi.runAllTimersAsync();
+
+  const firstInterceptorCall = callOrder.slice(0, 2);
+  expect(firstInterceptorCall).toEqual(['high', 'low']);
+
+  unregisterLow();
+  unregisterHigh();
 });

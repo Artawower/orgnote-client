@@ -4,7 +4,7 @@ import { selectCommand } from 'src/utils/select-command';
 const toggleCommandsHandler = async (api: OrgNoteApi) => {
   const command = await selectCommand(api, I18N.EXECUTE_COMMAND);
   if (command && command.command) {
-    api.core.useCommands().execute(command.command);
+    await api.core.useCommands().execute(command.command, undefined, { interactive: true });
   }
 };
 

@@ -1,9 +1,15 @@
-import type { Completion, CompletionSearchResult } from 'orgnote-api';
+import type {
+  Completion,
+  CompletionSearchResult,
+  CompletionInterceptor,
+  CompletionCandidate,
+  CompletionInterceptorContext,
+} from 'orgnote-api';
 import { type CompletionConfig, type CompletionStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useModalStore } from './modal';
 import AppCompletion from 'src/containers/AppCompletion.vue';
-import { computed, shallowRef, shallowReactive } from 'vue';
+import { computed, shallowRef, shallowReactive, ref } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
@@ -11,14 +17,27 @@ import { createPromise } from 'src/utils/create-promise';
 import { useConfigStore } from './config';
 import { isNullable } from 'orgnote-api/utils';
 
+const interceptorMatchesTarget = (
+  interceptorTarget: CompletionInterceptor['target'],
+  completionName: string,
+): boolean => {
+  if (interceptorTarget === '*') return true;
+  if (Array.isArray(interceptorTarget)) return interceptorTarget.includes(completionName);
+  return interceptorTarget === completionName;
+};
+
+const sortInterceptorsByPriority = <T>(
+  interceptors: CompletionInterceptor<T>[],
+): CompletionInterceptor<T>[] =>
+  [...interceptors].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
 export const useCompletionStore = defineStore<'completion-store', CompletionStore>(
   'completion-store',
   () => {
     const modal = useModalStore();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let lastModalConfig: CompletionConfig<any> | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const openedCompletions = shallowRef<Completion<any>[]>([]);
+    let lastModalConfig: CompletionConfig<unknown> | undefined;
+    const openedCompletions = shallowRef<Completion<unknown>[]>([]);
+    const interceptors = ref<CompletionInterceptor<unknown>[]>([]);
 
     const open = async <TItem, TReturn = void>(
       config: CompletionConfig<TItem>,
@@ -34,10 +53,11 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
         },
       });
 
-      const [result, resolve] = createPromise();
-      const completion = shallowReactive({
-        ...config,
-        searchQuery: config.searchText ?? '',
+      const [result, resolve] = createPromise<TReturn>();
+      const completionConfig = config as CompletionConfig<unknown>;
+      const completion = shallowReactive<Completion<unknown>>({
+        ...completionConfig,
+        searchQuery: completionConfig.searchText ?? '',
         result,
       });
 
@@ -47,7 +67,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       const res = await closed;
       resolve(res);
 
-      lastModalConfig = config;
+      lastModalConfig = completionConfig;
       return res;
     };
 
@@ -137,23 +157,49 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       setupCandidates(res as CompletionSearchResult, offset);
     };
 
-    const setupCandidates = (r: CompletionSearchResult, offset: number): void => {
+    const applyInterceptors = async (
+      candidates: CompletionCandidate[],
+      completionName: string,
+      searchQuery: string,
+    ): Promise<CompletionCandidate[]> => {
+      const matchingInterceptors = interceptors.value.filter((i) =>
+        interceptorMatchesTarget(i.target, completionName),
+      );
+      const sortedInterceptors = sortInterceptorsByPriority(matchingInterceptors);
+      const context: CompletionInterceptorContext = { completionName, searchQuery };
+
+      return await sortedInterceptors.reduce(
+        async (prev, interceptor) => interceptor.handler(await prev, context),
+        Promise.resolve(candidates),
+      );
+    };
+
+    const setupCandidates = async (r: CompletionSearchResult, offset: number): Promise<void> => {
+      const completion = activeCompletion.value;
+      if (!completion) return;
+
+      const completionName = completion.name ?? '';
+      const searchQuery = completion.searchQuery;
+      const processedCandidates = await applyInterceptors(r.result, completionName, searchQuery);
+
       if (!activeCompletion.value) return;
 
+      const isLengthChanged = processedCandidates.length !== r.result.length;
+
       if (!offset) {
-        activeCompletion.value.candidates = r.result;
-        activeCompletion.value.total = r.total;
+        activeCompletion.value.candidates = processedCandidates;
+        activeCompletion.value.total = isLengthChanged ? processedCandidates.length : r.total;
         activeCompletion.value.selectedCandidateIndex = 0;
         return;
       }
       if (!activeCompletion.value.candidates) return;
 
       const indexedCandidates = [...activeCompletion.value.candidates];
-      r.result.forEach((v, i) => {
+      processedCandidates.forEach((v, i) => {
         indexedCandidates[i + offset] = v;
       });
       activeCompletion.value.candidates = indexedCandidates;
-      activeCompletion.value.total = r.total;
+      activeCompletion.value.total = isLengthChanged ? indexedCandidates.length : r.total;
     };
 
     const search = debounce(performSearch, DEFAULT_INPUT_DEBOUNCE, { leading: true });
@@ -162,6 +208,15 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       () => activeCompletion.value?.searchQuery,
       () => search(),
     );
+
+    const registerInterceptor = <T = unknown>(
+      interceptor: CompletionInterceptor<T>,
+    ): (() => void) => {
+      interceptors.value = [...interceptors.value, interceptor as CompletionInterceptor<unknown>];
+      return () => {
+        interceptors.value = interceptors.value.filter((i) => i !== interceptor);
+      };
+    };
 
     const store: CompletionStore = {
       restore,
@@ -172,6 +227,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       nextCandidate,
       previousCandidate,
       search,
+      registerInterceptor,
     };
 
     return store;

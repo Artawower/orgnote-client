@@ -1,6 +1,7 @@
 import { type OrgNoteApi, type Command, type CompletionCandidate, I18N } from 'orgnote-api';
 import Fuse from 'fuse.js';
 import { toValue } from 'vue';
+import { getCandidateTitle } from './completion-candidate-title';
 
 const getValueByPath = (obj: CompletionCandidate<Command>, path: string | string[]): string => {
   const key = Array.isArray(path) ? path[0] : path;
@@ -32,10 +33,7 @@ const isCommandVisible = (command: Command, api: OrgNoteApi): boolean => {
   return !command.hide(api);
 };
 
-const commandToCandidate = (
-  command: Command,
-  api: OrgNoteApi,
-): CompletionCandidate<Command> => ({
+const commandToCandidate = (command: Command, api: OrgNoteApi): CompletionCandidate<Command> => ({
   data: command,
   group: command.group,
   icon: command.icon,
@@ -46,6 +44,12 @@ const commandToCandidate = (
   },
 });
 
+const sortCandidatesAlphabetically = (
+  candidates: CompletionCandidate<Command>[],
+): CompletionCandidate<Command>[] => {
+  return [...candidates].sort((a, b) => getCandidateTitle(a).localeCompare(getCandidateTitle(b)));
+};
+
 export async function selectCommand(
   api: OrgNoteApi,
   placeholder?: string,
@@ -55,16 +59,18 @@ export async function selectCommand(
 
   const visibleCommands = commands.filter((c) => isCommandVisible(c, api));
   const candidates = visibleCommands.map((c) => commandToCandidate(c, api));
+  const sortedCandidates = sortCandidatesAlphabetically(candidates);
 
-  const fuse = new Fuse(candidates, {
+  const fuse = new Fuse(sortedCandidates, {
     threshold,
     keys: ['title', 'description', 'group', 'data.command'],
     getFn: getValueByPath,
   });
 
   const selected = await api.core.useCompletion().open<Command, Command>({
+    name: 'commands',
     itemsGetter: (query) => {
-      const res = query ? fuse.search(query).map((r) => r.item) : candidates;
+      const res = query ? fuse.search(query).map((r) => r.item) : sortedCandidates;
       return {
         result: res,
         total: res.length,
