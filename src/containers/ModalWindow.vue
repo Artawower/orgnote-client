@@ -5,7 +5,7 @@
       column
       start
       align-stretch
-      @mousedown="handleDialogClick"
+      @click="handleDialogClick"
       @close="modal.close()"
       :class="{
         mini: m.config?.mini,
@@ -80,7 +80,11 @@ const { modals } = storeToRefs(modal);
 
 const modalDialogRefs = ref<HTMLDialogElement[]>([]);
 
+const BACKDROP_CLOSE_GUARD_MS = 400;
+let lastOpenedAt = 0;
+
 const initDialog = async () => {
+  lastOpenedAt = Date.now();
   await nextTick();
   modalDialogRefs.value[modals.value.length - 1]?.showModal();
 };
@@ -100,6 +104,9 @@ watch(modals, async (curr, prev) => {
 
 const handleDialogClick = (e: MouseEvent) => {
   if (!modals.value.length) {
+    return;
+  }
+  if (Date.now() - lastOpenedAt < BACKDROP_CLOSE_GUARD_MS) {
     return;
   }
   const target = e.target as HTMLDialogElement;

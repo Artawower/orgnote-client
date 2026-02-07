@@ -1,7 +1,7 @@
 <template>
   <div
     ref="wrapperRef"
-    v-touch-hold.mouse="handleTrigger"
+    v-touch-hold.mouse:500="handleTrigger"
     class="context-menu-trigger"
     @contextmenu.stop.prevent="handleTrigger"
   >
