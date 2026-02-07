@@ -319,7 +319,7 @@ test('ContextMenu mobile modal close callback calls modal.close', async () => {
 
   await wrapper.find('.context-menu-trigger').trigger('contextmenu');
 
-  const modalOpenCall = vi.mocked(api.ui.useModal().open).mock.calls[0];
+  const modalOpenCall = vi.mocked(api.ui.useModal().open).mock.calls[0]!;
   const modalEmits = modalOpenCall[1]?.modalEmits as { close: () => void };
   modalEmits.close();
 

@@ -40,6 +40,8 @@ const eng: Record<string, string> = {
   [I18N.AUTH_ENTER_ACTIVATION_KEY]: 'Enter your activation key',
   [I18N.SUBSCRIPTION_KEY]: 'Subscription key',
   [I18N.ACTIVATE]: 'Activate',
+  [I18N.CANCEL]: 'Cancel',
+  [I18N.ACTIVATION_FAILED]: 'Activation failed. Please check your key and try again.',
   [I18N.TABS_COUNT]: 'no tabs | {count} tab | {count} tabs',
 
   [I18N.TOC_NO_ACTIVE_DOCUMENT]: 'No active document',

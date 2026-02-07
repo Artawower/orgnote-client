@@ -166,13 +166,14 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
       await api.vue.router.push({ name: RouteNames.Home });
     };
 
-    const subscribe = async (subscriptionToken: string, email?: string): Promise<void> => {
+    const subscribe = async (subscriptionToken: string, email?: string): Promise<boolean> => {
       const sub = await to(sdk.auth.authSubscribePost)({ token: subscriptionToken, email });
       if (sub.isErr()) {
         reporter.reportError(sub.error);
-        return;
+        return false;
       }
       await verifyUser();
+      return true;
     };
 
     const removeUserAccount = async (): Promise<void> => {

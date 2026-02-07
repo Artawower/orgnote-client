@@ -39,6 +39,24 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: `/${RoutePaths.AUTH_ACTIVATE}`,
+    name: RouteNames.ActivationPage,
+    component: () => import('pages/ActivationPage.vue'),
+    meta: {
+      programmaticalNavigation: false,
+    },
+    beforeEnter: () => {
+      if (isServer()) {
+        return true;
+      }
+      const user = api.core.useAuth().user;
+      if (user?.active) {
+        return { name: RouteNames.Home };
+      }
+      return true;
+    },
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     beforeEnter: () => {
