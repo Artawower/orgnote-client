@@ -81,6 +81,10 @@ export function getGlobalCommands(): Command[] {
       icon: 'menu',
       handler: (api) => {
         api.core.useCommands().execute(DefaultCommands.EDITOR_HIDE_KEYBOARD);
+        if (!sidebarStore.component) {
+          api.core.useCommands().execute(DefaultCommands.TOGGLE_FILE_MANAGER);
+          return;
+        }
         sidebarStore.open();
       },
     },
