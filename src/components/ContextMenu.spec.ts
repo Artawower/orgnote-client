@@ -40,8 +40,14 @@ vi.mock('quasar', () => {
       hide: vi.fn(),
     },
   };
+  const TouchHoldMock = {
+    name: 'touch-hold',
+    beforeMount: vi.fn(),
+    beforeUnmount: vi.fn(),
+  };
   return {
     QMenu: QMenuMock,
+    TouchHold: TouchHoldMock,
   };
 });
 
@@ -131,5 +137,191 @@ test('does not open anything if disabled', async () => {
 
   await wrapper.find('.context-menu-trigger').trigger('contextmenu');
   expect(api.ui.useModal().open).not.toHaveBeenCalled();
+});
 
+test('ContextMenu opens modal on touch hold for mobile', () => {
+  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
+
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  const vm = wrapper.vm as unknown as { handleTrigger: () => void };
+  vm.handleTrigger();
+
+  expect(api.ui.useModal().open).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      mini: true,
+      position: 'bottom',
+    }),
+  );
+  expect(wrapper.emitted('open')).toBeTruthy();
+});
+
+test('ContextMenu touch hold does not open when disabled', () => {
+  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
+
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+      disabled: true,
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  const vm = wrapper.vm as unknown as { handleTrigger: () => void };
+  vm.handleTrigger();
+
+  expect(api.ui.useModal().open).not.toHaveBeenCalled();
+});
+
+test('ContextMenu exposed open emits open event and shows QMenu', () => {
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  wrapper.vm.open();
+
+  expect(wrapper.emitted('open')).toHaveLength(1);
+  const qMenu = wrapper.findComponent(QMenu);
+  expect(qMenu.exists()).toBe(true);
+});
+
+test('ContextMenu exposed close calls QMenu hide', () => {
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  wrapper.vm.close();
+
+  const qMenu = wrapper.findComponent(QMenu);
+  expect(qMenu.exists()).toBe(true);
+});
+
+test('ContextMenu passes group to getContextMenuActions', () => {
+  mount(ContextMenu, {
+    props: {
+      group: 'custom-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  expect(api.ui.useContextMenu().getContextMenuActions).toHaveBeenCalledWith('custom-group');
+});
+
+test('ContextMenu passes data prop to modal on mobile', async () => {
+  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
+
+  const testData = { path: '/notes/test.org' };
+
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+      data: testData,
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
+
+  expect(api.ui.useModal().open).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({
+      modalProps: expect.objectContaining({
+        data: testData,
+      }),
+    }),
+  );
+});
+
+test('ContextMenu emits open on desktop contextmenu', async () => {
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
+
+  expect(wrapper.emitted('open')).toHaveLength(1);
+});
+
+test('ContextMenu QMenu hide event calls close', async () => {
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  const qMenu = wrapper.findComponent(QMenu);
+  await qMenu.vm.$emit('hide');
+
+  expect(qMenu.exists()).toBe(true);
+});
+
+test('ContextMenu mobile modal close callback calls modal.close', async () => {
+  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
+
+  const wrapper = mount(ContextMenu, {
+    props: {
+      group: 'test-group',
+    },
+    global: {
+      stubs: {
+        MenuList: true,
+      },
+    },
+  });
+
+  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
+
+  const modalOpenCall = vi.mocked(api.ui.useModal().open).mock.calls[0];
+  const modalEmits = modalOpenCall[1]?.modalEmits as { close: () => void };
+  modalEmits.close();
+
+  expect(api.ui.useModal().close).toHaveBeenCalled();
 });

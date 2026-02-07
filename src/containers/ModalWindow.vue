@@ -171,6 +171,8 @@ dialog {
       top: unset;
       bottom: 0;
       width: 100%;
+      height: fit-content;
+      max-height: 60vh;
     }
   }
 }
@@ -221,6 +223,22 @@ dialog.full-screen {
 
 .safe-area-wrapper {
   height: 100%;
+}
+
+@include desktop-below {
+  dialog.mini {
+    .safe-area-wrapper {
+      height: auto;
+    }
+
+    .modal-content {
+      flex: 0 0 auto;
+    }
+
+    .content {
+      flex: 0 0 auto;
+    }
+  }
 }
 
 @include desktop {

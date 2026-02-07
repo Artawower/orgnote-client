@@ -1,5 +1,10 @@
 <template>
-  <div ref="wrapperRef" class="context-menu-trigger" @contextmenu.stop.prevent="handleContextMenu">
+  <div
+    ref="wrapperRef"
+    v-touch-hold.mouse="handleTrigger"
+    class="context-menu-trigger"
+    @contextmenu.stop.prevent="handleTrigger"
+  >
     <slot />
     <q-menu
       v-if="!disabled && !desktopBelow"
@@ -39,24 +44,28 @@ const modal = api.ui.useModal();
 
 const actions = computed<MenuAction[]>(() => contextMenuStore.getContextMenuActions(props.group));
 
-const handleContextMenu = () => {
+const handleTrigger = () => {
   if (props.disabled) return;
   if (desktopBelow.value) {
-    emit('open');
-    modal.open(MenuList, {
-      mini: true,
-      position: 'bottom',
-      modalProps: {
-        actions: actions.value,
-        data: props.data,
-      },
-      modalEmits: {
-        close: () => modal.close(),
-      },
-    });
+    openMobileMenu();
     return;
   }
   open();
+};
+
+const openMobileMenu = () => {
+  emit('open');
+  modal.open(MenuList, {
+    mini: true,
+    position: 'bottom',
+    modalProps: {
+      actions: actions.value,
+      data: props.data,
+    },
+    modalEmits: {
+      close: () => modal.close(),
+    },
+  });
 };
 
 const open = () => {
@@ -77,5 +86,8 @@ defineExpose({
 <style lang="scss" scoped>
 .context-menu-trigger {
   display: contents;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 </style>
