@@ -7,6 +7,14 @@ import OrgAstDebugger from 'src/components/OrgAstDebugger.vue';
 
 const group = 'right sidebar';
 
+const isCommandVisible = (command: Command, api: OrgNoteApi): boolean => {
+  if (command.system) {
+    return false;
+  }
+
+  return !command.hide?.(api);
+};
+
 export function getRightSidebarCommands(): Command[] {
   const rightSidebar = api.ui.useRightSidebar();
   return [
@@ -33,12 +41,26 @@ export function getRightSidebarCommands(): Command[] {
         }
 
         const pinnedCommands = api.ui.usePinnedCommands().getCommands('right-sidebar');
-        const firstContentCommand = pinnedCommands.value.find(
-          (cmd) => cmd !== DefaultCommands.TOGGLE_RIGHT_SIDEBAR,
-        );
-        if (firstContentCommand) {
-          await api.core.useCommands().execute(firstContentCommand);
+
+        const firstVisibleContentCommand = pinnedCommands.value.find((cmdName) => {
+          if (cmdName === DefaultCommands.TOGGLE_RIGHT_SIDEBAR) {
+            return false;
+          }
+
+          const resolved = commands.get(cmdName);
+          if (!resolved) {
+            return false;
+          }
+
+          return isCommandVisible(resolved, api);
+        });
+
+        if (firstVisibleContentCommand) {
+          await commands.execute(firstVisibleContentCommand);
+          return;
         }
+
+        sidebar.open();
       },
     },
     {
@@ -62,6 +84,7 @@ export function getRightSidebarCommands(): Command[] {
     {
       command: DefaultCommands.TOGGLE_AST_DEBUGGER,
       group,
+      hide: (api) => !api.core.useConfig().config.developer.developerMode,
       icon: 'sym_o_code',
       handler: (api: OrgNoteApi) => {
         const sidebar = api.ui.useRightSidebar();
