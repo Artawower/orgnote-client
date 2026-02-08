@@ -657,10 +657,92 @@ test('reportCritical uses meta.stack when Error has undefined stack', () => {
 
   errorReporter.reportCritical(error, meta);
 
-  expect(mockLogger.error).toHaveBeenCalledWith(
+   expect(mockLogger.error).toHaveBeenCalledWith(
     'FATAL: No stack error',
     expect.objectContaining({
       stack: 'Error\n    at fallbackLocation (fallback.js:1:1)',
     }),
   );
+});
+
+test('reportWarning suppresses notification when minLevel is error', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'error');
+  reporter.reportWarning(new Error('Suppressed warning'));
+
+  expect(mockLogger.warn).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).not.toHaveBeenCalled();
+});
+
+test('reportInfo suppresses notification when minLevel is warn', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'warn');
+  reporter.reportInfo(new Error('Suppressed info'));
+
+  expect(mockLogger.info).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).not.toHaveBeenCalled();
+});
+
+test('reportError shows notification when minLevel is error', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'error');
+  reporter.reportError(new Error('Visible error'));
+
+  expect(mockLogger.error).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).toHaveBeenCalledOnce();
+});
+
+test('reportWarning shows notification when minLevel is warn', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'warn');
+  reporter.reportWarning(new Error('Visible warning'));
+
+  expect(mockLogger.warn).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).toHaveBeenCalledOnce();
+});
+
+test('reportCritical always shows notification regardless of minLevel', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'error');
+  reporter.reportCritical(new Error('Always visible'));
+
+  expect(mockLogger.error).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).toHaveBeenCalledOnce();
+});
+
+test('report suppresses notification when options.level is below minLevel', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'error');
+  reporter.report(new Error('Downgraded'), { level: 'warn' });
+
+  expect(mockLogger.warn).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).not.toHaveBeenCalled();
+});
+
+test('reportResult suppresses notification when minLevel is error and level is warn', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'error');
+  reporter.reportResult({ error: 'reason' }, 'Failed', { level: 'warn' });
+
+  expect(mockLogger.warn).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).not.toHaveBeenCalled();
+});
+
+test('reportResult shows notification when level meets minLevel', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'warn');
+  reporter.reportResult({ error: 'reason' }, 'Failed');
+
+  expect(mockLogger.error).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).toHaveBeenCalledOnce();
+});
+
+test('report suppresses notification when options.level is debug and minLevel is info', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'info');
+  reporter.report(new Error('Debug msg'), { level: 'debug' });
+
+  expect(mockLogger.debug).toHaveBeenCalledOnce();
+  expect(mockNotifications.notify).not.toHaveBeenCalled();
+});
+
+test('all notifications show when minLevel is trace', () => {
+  const reporter = createErrorReporter(mockLogger, mockNotifications, mockExecuteCommand, () => 'trace');
+
+  reporter.reportError(new Error('e'));
+  reporter.reportWarning(new Error('w'));
+  reporter.reportInfo(new Error('i'));
+
+  expect(mockNotifications.notify).toHaveBeenCalledTimes(3);
 });

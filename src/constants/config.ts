@@ -1,5 +1,7 @@
-import type { OrgNoteConfig } from 'orgnote-api';
+import type { LogLevel, OrgNoteConfig } from 'orgnote-api';
 import { DEFAULT_FONT_FAMILIES } from './fonts';
+
+export const DEFAULT_MIN_NOTIFICATION_LEVEL: LogLevel = process.env.DEV ? 'info' : 'error';
 
 export const DEFAULT_PANE_PERSISTENCE_SAVE_DELAY = 500;
 
@@ -39,6 +41,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     lightThemeName: null,
     enableAnimations: true,
     notificationTimeout: 5000,
+    minNotificationLevel: DEFAULT_MIN_NOTIFICATION_LEVEL,
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
     dropZoneEdgeRatio: 0.25,

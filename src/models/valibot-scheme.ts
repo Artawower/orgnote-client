@@ -16,9 +16,7 @@ export interface ValibotScheme {
   pipe?: ValibotMetadata[];
   entries?: { [key: string]: ValibotScheme };
   literal?: string;
-  wrapped?: {
-    type: string;
-  };
+  wrapped?: ValibotScheme;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

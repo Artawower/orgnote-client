@@ -1,6 +1,6 @@
-import { DefaultCommands, isPresent, type OrgNoteApi } from 'orgnote-api';
+import { DefaultCommands, isPresent, type OrgNoteApi, type LogLevel } from 'orgnote-api';
 
-type LogLevel = 'error' | 'warn' | 'info';
+type MinLevelProvider = () => LogLevel;
 type Logger = OrgNoteApi['utils']['logger'];
 type ErrorReporterNotifications = Pick<
   ReturnType<OrgNoteApi['core']['useNotifications']>,
@@ -15,7 +15,20 @@ const LOG_LEVEL_TO_VARIANT: Record<LogLevel, 'danger' | 'warning' | 'info'> = {
   error: 'danger',
   warn: 'warning',
   info: 'info',
+  debug: 'info',
+  trace: 'info',
 };
+
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+  trace: 4,
+};
+
+const shouldNotify = (level: LogLevel, minLevel: LogLevel): boolean =>
+  LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[minLevel];
 
 const toStyleVariant = (level: LogLevel) => LOG_LEVEL_TO_VARIANT[level];
 
@@ -109,12 +122,14 @@ const createReportFunction =
     notifications: ErrorReporterNotifications,
     level: LogLevel,
     executeCommand: CommandExecutor,
+    getMinLevel: MinLevelProvider,
   ) =>
   (error: unknown, options?: ReportOptions): void => {
     const message = pickMessage(error, 'Unknown error');
     const context = toLogContext(error);
     const lvl = options?.level ?? level;
     logger[lvl](message, context);
+    if (!shouldNotify(lvl, getMinLevel())) return;
     const base: NotificationConfig = {
       message,
       level: toStyleVariant(lvl),
@@ -138,6 +153,7 @@ const createReportResultFunction =
     notifications: ErrorReporterNotifications,
     level: LogLevel,
     executeCommand: CommandExecutor,
+    getMinLevel: MinLevelProvider,
   ) =>
   <E>(result: ResultWithError<E>, message: string, options?: ReportOptions): void => {
     const error = new Error(message, { cause: result.error });
@@ -146,6 +162,7 @@ const createReportResultFunction =
       cause: error.cause,
       stack: error.stack,
     });
+    if (!shouldNotify(lvl, getMinLevel())) return;
     const base: NotificationConfig = {
       message: error.message,
       level: toStyleVariant(lvl),
@@ -163,13 +180,16 @@ const createReportResultFunction =
     notifications.notify(finalConfig);
   };
 
+const DEFAULT_MIN_LEVEL: LogLevel = 'info';
+
 const createErrorReporter = (
   logger: Logger,
   notifications: ErrorReporterNotifications,
   executeCommand: CommandExecutor,
+  getMinLevel: MinLevelProvider = () => DEFAULT_MIN_LEVEL,
 ) => ({
   report: (error: unknown, options?: ReportOptions): void => {
-    const reportFn = createReportFunction(logger, notifications, 'error', executeCommand);
+    const reportFn = createReportFunction(logger, notifications, 'error', executeCommand, getMinLevel);
     reportFn(error, options);
   },
 
@@ -179,22 +199,23 @@ const createErrorReporter = (
       notifications,
       'error',
       executeCommand,
+      getMinLevel,
     );
     reportResultFn(result, message, options);
   },
 
   reportError: (error: unknown, notification?: NotificationConfig): void => {
-    const reportFn = createReportFunction(logger, notifications, 'error', executeCommand);
+    const reportFn = createReportFunction(logger, notifications, 'error', executeCommand, getMinLevel);
     reportFn(error, { notification });
   },
 
   reportWarning: (error: unknown, notification?: NotificationConfig): void => {
-    const reportFn = createReportFunction(logger, notifications, 'warn', executeCommand);
+    const reportFn = createReportFunction(logger, notifications, 'warn', executeCommand, getMinLevel);
     reportFn(error, { notification });
   },
 
   reportInfo: (error: unknown, notification?: NotificationConfig): void => {
-    const reportFn = createReportFunction(logger, notifications, 'info', executeCommand);
+    const reportFn = createReportFunction(logger, notifications, 'info', executeCommand, getMinLevel);
     reportFn(error, { notification });
   },
 

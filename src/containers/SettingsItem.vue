@@ -141,19 +141,23 @@ const { t } = useI18n({
   inheritLocale: true,
 });
 
-const actualType = computed(() => {
-  if (props.scheme.type === 'optional' && props.scheme.wrapped) {
-    return props.scheme.wrapped.type;
-  }
-  return props.scheme.type;
+const isLiteralUnion = (s: ValibotScheme): boolean =>
+  s.type === 'union' && !!s.options?.length && s.options.every((o) => o.type === 'literal');
+
+const normalizedScheme = computed((): ValibotScheme => {
+  if (props.scheme.type !== 'optional' || !props.scheme.wrapped) return props.scheme;
+  return props.scheme.wrapped;
 });
 
-const actualScheme = computed(() => {
-  if (props.scheme.type === 'optional' && props.scheme.wrapped) {
-    return { ...props.scheme.wrapped, options: props.scheme.options };
-  }
-  return props.scheme;
+const actualType = computed(() => {
+  const s = normalizedScheme.value;
+  if (isLiteralUnion(s)) return 'union';
+  if (s.type !== 'union') return s.type;
+  const primaryOption = s.options?.find((o) => o.type !== 'literal');
+  return primaryOption?.type ?? s.type;
 });
+
+const actualScheme = normalizedScheme;
 
 const isOptional = computed(() => props.scheme.type === 'optional');
 

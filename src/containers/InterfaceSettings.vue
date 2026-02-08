@@ -1,6 +1,7 @@
 <template>
   <div class="interface-settings">
     <settings-scheme :name="t(I18N.COMMON)" :scheme="commonScheme" path="ui"></settings-scheme>
+    <settings-scheme :name="t(I18N.NOTIFICATIONS)" :scheme="notificationScheme" path="ui"></settings-scheme>
     <settings-scheme :name="t(I18N.THEMES)" :scheme="themeScheme" path="ui"></settings-scheme>
     <app-description padded>
       {{ t(I18N.FONTS).toUpperCase() }}
@@ -30,9 +31,11 @@ const { t } = useI18n({
 
 const themeKeys = ['theme', 'darkThemeName', 'lightThemeName'] as const;
 const fontKeys = ['fonts'] as const;
-const excludedFromCommon = [...themeKeys, ...fontKeys] as const;
+const notificationKeys = ['notificationTimeout', 'minNotificationLevel'] as const;
+const excludedFromCommon = [...themeKeys, ...fontKeys, ...notificationKeys] as const;
 
 const commonScheme = omitSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...excludedFromCommon]);
+const notificationScheme = pickSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...notificationKeys]);
 const themeScheme = pickSchemeKeys(ORG_NOTE_CONFIG_SCHEMA.entries.ui, [...themeKeys]);
 
 const editorScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.editor);
