@@ -29,5 +29,6 @@ const panes = api.core.usePane();
 <style lang="scss" scoped>
 .header-title {
   padding: 0 var(--padding-lg);
+  user-select: none;
 }
 </style>
