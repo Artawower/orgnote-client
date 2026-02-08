@@ -28,36 +28,39 @@
     </div>
     <div class="file-manager-wrapper">
       <div class="file-manager-header">
-        <menu-item :size="menuItemSize">
-          <search-input
-            :size="compact ? 'xs' : 'sm'"
-            v-model="searchQuery"
-            :placeholder="I18N.SEARCH"
-          />
-        </menu-item>
-        <menu-item :size="menuItemSize">
-          <app-flex class="file-path" row start align-center>
-            {{ targetPath ?? '/' }}
-          </app-flex>
-        </menu-item>
-
-        <file-manager-item
-          v-if="targetPath && targetPath !== '/'"
-          @click="moveUp"
-          root
-          :size="menuItemSize"
-        />
+        <card-wrapper>
+          <menu-item :size="menuItemSize">
+            <search-input
+              :size="compact ? 'xs' : 'sm'"
+              v-model="searchQuery"
+              :placeholder="I18N.SEARCH"
+            />
+          </menu-item>
+          <menu-item :size="menuItemSize">
+            <app-flex class="file-path" row start align-center>
+              {{ targetPath ?? '/' }}
+            </app-flex>
+          </menu-item>
+        </card-wrapper>
       </div>
       <div class="file-list">
-        <file-manager-item
-          :highlight="searchHighlightKeywords"
-          @click="handleFileClick(f)"
-          v-for="f of searchFiles"
-          :key="f.path"
-          :file="f"
-          :size="menuItemSize"
-          :active="isActiveFile(f)"
-        />
+        <card-wrapper>
+          <file-manager-item
+            v-if="targetPath && targetPath !== '/'"
+            @click="moveUp"
+            root
+            :size="menuItemSize"
+          />
+          <file-manager-item
+            :highlight="searchHighlightKeywords"
+            @click="handleFileClick(f)"
+            v-for="f of searchFiles"
+            :key="f.path"
+            :file="f"
+            :size="menuItemSize"
+            :active="isActiveFile(f)"
+          />
+        </card-wrapper>
       </div>
     </div>
   </app-flex>
@@ -79,6 +82,7 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import AppFlex from 'src/components/AppFlex.vue';
+import CardWrapper from 'src/components/CardWrapper.vue';
 import { debounce } from 'src/utils/debounce';
 
 const props = defineProps<{
@@ -199,7 +203,7 @@ const { t } = useI18n({
 }
 
 .file-manager-wrapper {
-  @include flexify(column, flex-start);
+  @include flexify(column, flex-start, center, var(--gap-md));
 
   overflow: hidden;
 }
@@ -216,6 +220,10 @@ const { t } = useI18n({
 
 .file-list {
   overflow: auto;
+
+  :deep(.card-wrapper) {
+    overflow: hidden;
+  }
 }
 
 .file-path {
