@@ -10,7 +10,7 @@
     <template v-for="h of headers" #[`header-${h.value}`]="slotProps" :key="h.value">
       <span class="header-text">
         {{ slotProps.value }}
-        <q-tooltip :delay="200">
+        <q-tooltip :delay="tooltipDelay">
           <span class="color-reverse">{{ slotProps.value }}</span>
         </q-tooltip>
       </span>
@@ -27,13 +27,18 @@ import { NodeType, type OrgNode } from 'org-mode-ast';
 import type { Header, Item } from 'vue3-easy-data-table';
 // @ts-expect-error no types for default export
 import EasyDataTable from 'vue3-easy-data-table';
+import { storeToRefs } from 'pinia';
 
 import ContentRenderer from 'src/components/ContentRenderer.vue';
+import { useConfigStore } from 'src/stores/config';
 
 const props = defineProps<{
   node: OrgNode;
   nodeGetter?: () => OrgNode;
 }>();
+
+const { config } = storeToRefs(useConfigStore());
+const tooltipDelay = computed(() => config.value.ui.tooltipDelay);
 
 const currentNode = computed(() => props.nodeGetter?.() ?? props.node);
 

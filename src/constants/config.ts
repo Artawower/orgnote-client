@@ -4,6 +4,7 @@ import { DEFAULT_FONT_FAMILIES } from './fonts';
 export const DEFAULT_MIN_NOTIFICATION_LEVEL: LogLevel = process.env.DEV ? 'info' : 'error';
 
 export const DEFAULT_PANE_PERSISTENCE_SAVE_DELAY = 500;
+export const DEFAULT_TOOLTIP_DELAY = 300;
 
 export const DEFAULT_FUST_THRESHOLD = 0.4;
 
@@ -41,6 +42,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     lightThemeName: null,
     enableAnimations: true,
     notificationTimeout: 5000,
+    tooltipDelay: DEFAULT_TOOLTIP_DELAY,
     minNotificationLevel: DEFAULT_MIN_NOTIFICATION_LEVEL,
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,

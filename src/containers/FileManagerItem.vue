@@ -21,6 +21,7 @@
               :autoEscape="true"
               :textToHighlight="file?.name ?? ''"
             />
+            <q-tooltip :delay="tooltipDelay">{{ file?.name }}</q-tooltip>
           </template>
         </div>
       </app-flex>
@@ -39,6 +40,8 @@ import { computed } from 'vue';
 import { ROOT_SYSTEM_FILE_PATH } from 'src/constants/root-system-file-path';
 import { api } from 'src/boot/api';
 import AppFlex from 'src/components/AppFlex.vue';
+import { useConfigStore } from 'src/stores/config';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
   highlight?: string[];
@@ -49,6 +52,8 @@ const props = defineProps<{
 }>();
 
 const fm = api.core.useFileManager();
+const { config } = storeToRefs(useConfigStore());
+const tooltipDelay = computed(() => config.value.ui.tooltipDelay);
 
 const contextMenuGroup = computed<MenuGroup>(() =>
   props.file?.type === 'directory' ? 'dir' : 'file',
@@ -64,4 +69,18 @@ const handleContextMenuOpen = () => {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+:deep(.left) {
+  overflow: hidden;
+}
+
+.file-info {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
