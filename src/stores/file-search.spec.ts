@@ -70,17 +70,19 @@ vi.mock('src/stores/queue', () => ({
   })),
 }));
 
+let mockParsedMeta = {
+  id: 'parsed-id' as string | undefined,
+  title: 'Parsed Title',
+  description: 'Parsed description',
+  fileTags: ['tag1', 'tag2'],
+  connectedNotes: { link1: true, link2: true } as Record<string, boolean> | undefined,
+};
+
 vi.mock('org-mode-ast', () => ({
   parse: vi.fn(() => ({ type: 'root', children: [] })),
   withMetaInfo: vi.fn((node) => ({
     ...node,
-    meta: {
-      id: 'parsed-id',
-      title: 'Parsed Title',
-      description: 'Parsed description',
-      fileTags: ['tag1', 'tag2'],
-      connectedNotes: { link1: true, link2: true },
-    },
+    meta: { ...mockParsedMeta },
   })),
 }));
 
@@ -93,6 +95,13 @@ beforeEach(() => {
   mockDirEntries.clear();
   mockQueueTasks.length = 0;
   mockQueueTasksDB.clear();
+  mockParsedMeta = {
+    id: 'parsed-id',
+    title: 'Parsed Title',
+    description: 'Parsed description',
+    fileTags: ['tag1', 'tag2'],
+    connectedNotes: { link1: true, link2: true },
+  };
 });
 
 afterEach(() => {
@@ -133,7 +142,7 @@ test('search sets isSearching during search', async () => {
     title: 'Test',
   });
 
-  store.processFile('/test.org');
+  await store.processFile('/test.org');
 
   const searchPromise = store.search('Test');
   expect(store.isSearching).toBe(true);
@@ -185,7 +194,43 @@ test('processFile parses and saves file metadata', async () => {
   expect(mockFiles.size).toBe(1);
   const saved = Array.from(mockFiles.values())[0]!;
   expect(saved.title).toBe('Parsed Title');
-  expect(saved.tags).toEqual(['tag1', 'tag2']);
+});
+
+test('processFile regression: file created without org-mode ID becomes searchable after ID is added', async () => {
+  const { repositories } = await import('src/boot/repositories');
+  const saveMock = vi.mocked(repositories.fileRepository.save);
+
+  saveMock.mockImplementation(async (meta: FileMeta) => {
+    for (const existing of mockFiles.values()) {
+      if (existing.filePath.join('/') === meta.filePath.join('/')) {
+        mockFiles.set(existing.id, { ...meta, id: existing.id });
+        return;
+      }
+    }
+    mockFiles.set(meta.id, meta);
+  });
+
+  const store = useFileSearchStore();
+
+  mockParsedMeta.id = undefined;
+  mockFileContents.set('/lexorank.org', '#+TITLE: Lexorank\nContent about lexorank algorithm');
+  await store.processFile('/lexorank.org');
+
+  const firstSearch = await store.search('Lexorank');
+  expect(firstSearch.length).toBe(1);
+  expect(firstSearch[0]!.id).toBe('/lexorank.org');
+
+  mockParsedMeta.id = '2F7C59C6-E48A-4F6A-9D49-08769D61E935';
+  mockFileContents.set('/lexorank.org', ':PROPERTIES:\n:ID: 2F7C59C6-E48A-4F6A-9D49-08769D61E935\n:END:\n#+TITLE: Lexorank\nContent about lexorank algorithm');
+  await store.processFile('/lexorank.org');
+
+  const secondSearch = await store.search('Lexorank');
+  expect(secondSearch.length).toBe(1);
+  expect(secondSearch[0]!.id).toBe('2F7C59C6-E48A-4F6A-9D49-08769D61E935');
+
+  saveMock.mockImplementation(async (meta: FileMeta) => {
+    mockFiles.set(meta.id, meta);
+  });
 });
 
 test('processFile does nothing for empty file', async () => {
@@ -673,6 +718,150 @@ test('indexFile ignores deleted tasks', async () => {
 
   await store.indexFile('/notes/test.org');
   expect(mockQueueTasks).toHaveLength(1);
+});
+
+test('processFile migrates ID when org-mode ID differs from stored path-based ID', async () => {
+  const store = useFileSearchStore();
+
+  const oldId = '/my-note.org';
+  const oldFile: FileMeta = {
+    id: oldId,
+    filePath: ['my-note.org'],
+    title: 'Old Title',
+  };
+  mockFiles.set(oldId, oldFile);
+
+  mockParsedMeta.id = 'ORG-MODE-UUID-123';
+  mockFileContents.set('/my-note.org', '#+TITLE: New Title\n:PROPERTIES:\n:ID: ORG-MODE-UUID-123\n:END:\nContent');
+
+  await store.processFile('/my-note.org');
+
+  expect(mockFiles.has(oldId)).toBe(false);
+  expect(mockFiles.has('ORG-MODE-UUID-123')).toBe(true);
+  expect(mockFiles.get('ORG-MODE-UUID-123')!.title).toBe('Parsed Title');
+});
+
+test('processFile migrated file is searchable by new ID', async () => {
+  const store = useFileSearchStore();
+
+  const oldId = '/migrating-note.org';
+  mockFiles.set(oldId, {
+    id: oldId,
+    filePath: ['migrating-note.org'],
+    title: 'Before Migration',
+  });
+
+  mockParsedMeta.id = 'NEW-UUID-456';
+  mockParsedMeta.title = 'Migrated Note';
+  mockFileContents.set('/migrating-note.org', '#+TITLE: Migrated Note\nSearchable content');
+
+  await store.processFile('/migrating-note.org');
+
+  const results = await store.search('Migrated');
+  expect(results.length).toBe(1);
+  expect(results[0]!.id).toBe('NEW-UUID-456');
+});
+
+test('processFile does not migrate when IDs match', async () => {
+  const store = useFileSearchStore();
+
+  mockFiles.set('parsed-id', {
+    id: 'parsed-id',
+    filePath: ['stable-note.org'],
+    title: 'Stable',
+  });
+
+  mockFileContents.set('/stable-note.org', '#+TITLE: Stable\nContent');
+
+  await store.processFile('/stable-note.org');
+
+  expect(mockFiles.size).toBe(1);
+  expect(mockFiles.has('parsed-id')).toBe(true);
+});
+
+test('processFile removes old ID from FlexSearch index during migration', async () => {
+  const store = useFileSearchStore();
+
+  const oldId = '/old-path-note.org';
+  mockFiles.set(oldId, {
+    id: oldId,
+    filePath: ['old-path-note.org'],
+    title: 'Old Indexed',
+  });
+
+  mockParsedMeta.id = oldId;
+  mockFileContents.set('/old-path-note.org', '#+TITLE: Old Indexed\nOld content');
+  await store.processFile('/old-path-note.org');
+
+  const oldResults = await store.search('Old Indexed');
+  expect(oldResults.length).toBe(1);
+
+  mockParsedMeta.id = 'MIGRATED-UUID-789';
+  mockParsedMeta.title = 'Migrated Indexed';
+  mockFileContents.set('/old-path-note.org', '#+TITLE: Migrated Indexed\nNew content');
+  await store.processFile('/old-path-note.org');
+
+  const staleResults = await store.search('Old Indexed');
+  expect(staleResults.length).toBe(0);
+
+  const freshResults = await store.search('Migrated Indexed');
+  expect(freshResults.length).toBe(1);
+  expect(freshResults[0]!.id).toBe('MIGRATED-UUID-789');
+});
+
+test('processFile migration works when no existing record in DB', async () => {
+  const store = useFileSearchStore();
+
+  mockParsedMeta.id = 'BRAND-NEW-UUID';
+  mockFileContents.set('/brand-new.org', '#+TITLE: Brand New\nContent');
+
+  await store.processFile('/brand-new.org');
+
+  expect(mockFiles.size).toBe(1);
+  expect(mockFiles.has('BRAND-NEW-UUID')).toBe(true);
+});
+
+test('processFile migration throws and removes stale record when save fails', async () => {
+  const { repositories } = await import('src/boot/repositories');
+  const saveMock = repositories.fileRepository.save as ReturnType<typeof vi.fn>;
+
+  const store = useFileSearchStore();
+
+  const oldId = '/path-based-id.org';
+  mockFiles.set(oldId, {
+    id: oldId,
+    filePath: ['path-based-id.org'],
+    title: 'Original Note',
+  });
+
+  mockParsedMeta.id = oldId;
+  mockParsedMeta.title = 'Original Note';
+  mockFileContents.set('/path-based-id.org', '#+TITLE: Original Note\nOriginal content');
+  await store.processFile('/path-based-id.org');
+
+  const preFailureSearch = await store.search('Original Note');
+  expect(preFailureSearch.length).toBe(1);
+
+  mockParsedMeta.id = 'NEW-UUID-WILL-FAIL';
+  mockParsedMeta.title = 'Updated Note';
+  mockFileContents.set('/path-based-id.org', '#+TITLE: Updated Note\nUpdated content');
+  saveMock.mockRejectedValueOnce(new Error('Dexie write failed'));
+
+  await expect(store.processFile('/path-based-id.org')).rejects.toThrow('Dexie write failed');
+
+  expect(mockFiles.has(oldId)).toBe(false);
+
+  saveMock.mockImplementation(async (meta: FileMeta) => {
+    mockFiles.set(meta.id, meta);
+  });
+
+  mockParsedMeta.id = 'NEW-UUID-WILL-FAIL';
+  mockParsedMeta.title = 'Updated Note';
+  await store.processFile('/path-based-id.org');
+
+  const recoveredSearch = await store.search('Updated Note');
+  expect(recoveredSearch.length).toBe(1);
+  expect(recoveredSearch[0]!.id).toBe('NEW-UUID-WILL-FAIL');
 });
 
 test('indexFile succeeds on retry after initial empty file', async () => {

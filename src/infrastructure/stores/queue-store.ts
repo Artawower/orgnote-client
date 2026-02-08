@@ -65,8 +65,8 @@ export class QueueStore implements Store<unknown> {
     _priority: number,
     cb: (err: unknown) => void,
   ) {
-    if (!task) {
-      cb(new Error(`putTask called with undefined task for id: ${taskId}`));
+    if (!task || typeof task !== 'object' || !('payload' in task)) {
+      cb(new Error(`Invalid task shape for putTask: ${typeof task}`));
       return;
     }
 
@@ -100,7 +100,6 @@ export class QueueStore implements Store<unknown> {
           cb(null, {});
           return;
         }
-
         cb(null, tasks);
       })
       .catch((err) => cb(err, {}));
@@ -128,13 +127,30 @@ export class QueueStore implements Store<unknown> {
       .catch((err) => cb(err));
   }
 
-  getRunningTasks(cb: (err: unknown, tasks: { [id: string]: QueueTask }) => void) {
+  getRunningTasks(
+    cb: (err: unknown, tasks: Record<string, Record<string, unknown>>) => void,
+  ) {
     this.repo
       .getRunningTasks(this.queueName)
       .then((tasks) => {
-        cb(null, tasks);
+        cb(null, this.groupByLockId(tasks));
       })
       .catch((err) => cb(err, {}));
+  }
+
+  private groupByLockId(
+    flatTasks: Record<string, QueueTask>,
+  ): Record<string, Record<string, unknown>> {
+    const grouped: Record<string, Record<string, unknown>> = {};
+
+    Object.values(flatTasks).forEach((task) => {
+      if (!task.lockId) return;
+      const lockGroup = grouped[task.lockId] ?? {};
+      lockGroup[task.id] = task;
+      grouped[task.lockId] = lockGroup;
+    });
+
+    return grouped;
   }
 
   takeLastN(_n: number, cb: (err: unknown, lockId: string) => void) {

@@ -174,11 +174,21 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     };
   };
 
+  const removeStaleRecord = async (meta: FileMeta): Promise<void> => {
+    const existingByPath = await repositories.fileRepository.getByPath(meta.filePath);
+    if (!existingByPath || existingByPath.id === meta.id) return;
+
+    removeFromIndex(existingByPath.id);
+    await repositories.fileRepository.delete(existingByPath.id);
+  };
+
   const processFile = async (filePath: string): Promise<void> => {
     const content = await readFileContent(filePath);
     if (!content) return;
 
     const meta = parseFile(content, filePath);
+    await removeStaleRecord(meta);
+
     await repositories.fileRepository.save(meta);
     addToIndex(meta, content);
     await updateIndexMeta(meta.id, filePath);
