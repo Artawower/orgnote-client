@@ -38,5 +38,12 @@ const searchTag = (tag: string) => {
 <style lang="scss" scoped>
 .org-tag {
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.org-tags {
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 </style>
