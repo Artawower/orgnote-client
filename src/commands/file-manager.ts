@@ -97,6 +97,27 @@ export function getFileManagerCommands(): Command[] {
       },
     },
     {
+      command: DefaultCommands.SHOW_MOBILE_FILE_SEARCH,
+      group,
+      icon: 'search',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        fm.mobileFileSearchActive = true;
+      },
+      hide: (api: OrgNoteApi) => !api.ui.useScreenDetection().tabletBelow.value,
+    },
+    {
+      command: DefaultCommands.HIDE_MOBILE_FILE_SEARCH,
+      group,
+      icon: 'close',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        fm.mobileFileSearchActive = false;
+        fm.searchQuery = '';
+      },
+      hide: (api: OrgNoteApi) => !api.ui.useScreenDetection().tabletBelow.value,
+    },
+    {
       command: DefaultCommands.DELETE_FILE,
       group,
       icon: 'sym_o_delete',

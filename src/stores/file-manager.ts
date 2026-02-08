@@ -10,6 +10,8 @@ import { DEFAULT_FOLDER_NAME } from 'src/constants/default-folder-name';
 export const useFileManagerStore = defineStore<string, FileManagerStore>('file-manager', () => {
   const path = ref<string>('/');
   const focusFile = shallowRef<DiskFile | undefined>();
+  const searchQuery = ref<string>('');
+  const mobileFileSearchActive = ref<boolean>(false);
 
   const fs = useFileSystemStore();
 
@@ -61,6 +63,8 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   const store: FileManagerStore = {
     path,
     focusFile,
+    searchQuery,
+    mobileFileSearchActive,
     deleteFile,
     createFile,
     createFolder,

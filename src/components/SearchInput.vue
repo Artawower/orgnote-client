@@ -1,15 +1,33 @@
 <template>
-  <app-flex class="search-input" row between align-center gap="sm">
-    <input :name="name" :type="type" v-model="model" :placeholder="placeholder && t(placeholder)" />
-    <action-button @click="model = ''" icon="sym_o_backspace" :size="size" />
+  <app-flex class="search-input" :class="[appearance, { 'no-icon': !icon }]" row between align-center gap="sm">
+    <app-icon v-if="icon" :name="icon" size="md" color="fg" />
+    <app-input
+      ref="appInputRef"
+      v-model="model"
+      :name="name"
+      :type="type"
+      :placeholder="placeholder && t(placeholder)"
+    />
+    <slot name="actions" />
+    <action-button
+      v-if="clearable && model"
+      @click="model = ''"
+      icon="sym_o_backspace"
+      :size="size"
+    />
   </app-flex>
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ActionButton from './ActionButton.vue';
+import AppFlex from './AppFlex.vue';
+import AppIcon from './AppIcon.vue';
+import AppInput from './AppInput.vue';
 import type { StyleSize } from 'orgnote-api';
-import AppFlex from 'src/components/AppFlex.vue';
+
+type InputAppearance = 'glass' | 'flat';
 
 withDefaults(
   defineProps<{
@@ -18,39 +36,54 @@ withDefaults(
     type?: string;
     clearable?: boolean;
     size?: StyleSize;
+    icon?: string;
+    appearance?: InputAppearance;
   }>(),
   {
     type: 'text',
     clearable: true,
     size: 'sm',
+    appearance: 'flat',
   },
 );
 
-const model = defineModel();
+const model = defineModel<string>();
 
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
 });
+
+const appInputRef = ref<InstanceType<typeof AppInput> | undefined>();
+
+const focus = () => {
+  appInputRef.value?.focus?.();
+};
+
+defineExpose({
+  focus,
+});
 </script>
 
 <style lang="scss" scoped>
 .search-input {
-  & {
-    width: 100%;
-  }
-}
+  width: 100%;
+  @include glass-btn;
 
-input {
-  @include reset-input;
+  &.glass {
+    height: var(--bar-height);
+    padding: 0 var(--padding-md);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-backdrop-filter);
+    backdrop-filter: var(--glass-backdrop-filter);
+    background-clip: padding-box;
+    box-shadow: var(--glass-box-shadow);
+    border: var(--glass-border);
+    border-radius: var(--border-radius-xl);
 
-  & {
-    height: 100%;
-    flex: 1;
-  }
-
-  &::placeholder {
-    color: var(--placeholder-fg);
+    &.no-icon {
+      padding-left: var(--padding-lg);
+    }
   }
 }
 </style>

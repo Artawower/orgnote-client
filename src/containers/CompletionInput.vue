@@ -1,35 +1,33 @@
 <template>
-  <app-flex class="completion-input" row between align-center>
-    <app-flex class="input" row start align-center>
-      <app-icon name="keyboard_arrow_right" size="md" color="fg"></app-icon>
-      <app-input
-        ref="appInputRef"
-        @keypress.enter="handleCompletionInput"
-        v-model="completion.activeCompletion!.searchQuery"
-        :placeholder="placeholder"
-      ></app-input>
-    </app-flex>
-
-    <visibility-wrapper desktop-above>
-      <action-button
-        @click="toggleFullScreen"
-        :icon="config?.fullScreen ? 'sym_o_close_fullscreen' : 'open_in_full'"
-        size="sm"
-      ></action-button>
-    </visibility-wrapper>
-    <action-button @click="completion.close()" icon="close" size="md"></action-button>
-  </app-flex>
+  <search-input
+    ref="searchInputRef"
+    class="completion-input"
+    v-model="completion.activeCompletion!.searchQuery"
+    :placeholder="placeholder"
+    icon="keyboard_arrow_right"
+    :clearable="false"
+    @keypress.enter="handleCompletionInput"
+  >
+    <template #actions>
+      <visibility-wrapper desktop-above>
+        <action-button
+          @click="toggleFullScreen"
+          :icon="config?.fullScreen ? 'sym_o_close_fullscreen' : 'open_in_full'"
+          size="sm"
+        />
+      </visibility-wrapper>
+      <action-button @click="completion.close()" icon="close" size="md" />
+    </template>
+  </search-input>
 </template>
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
-import AppIcon from 'src/components/AppIcon.vue';
-import AppInput from 'src/components/AppInput.vue';
+import SearchInput from 'src/components/SearchInput.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import { ref } from 'vue';
-import AppFlex from 'src/components/AppFlex.vue';
 
 defineProps<{
   placeholder?: string;
@@ -62,10 +60,10 @@ const handleCompletionInput = () => {
   }
 };
 
-const appInputRef = ref<InstanceType<typeof AppInput> | null>(null);
+const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
 const focusInput = () => {
-  appInputRef.value?.focus?.();
+  searchInputRef.value?.focus?.();
 };
 
 defineExpose({
@@ -76,10 +74,5 @@ defineExpose({
 <style lang="scss" scoped>
 .completion-input {
   flex: 1;
-  @include glass-btn;
-}
-
-.input {
-  width: 100%;
 }
 </style>

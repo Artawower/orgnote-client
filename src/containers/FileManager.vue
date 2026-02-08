@@ -29,7 +29,7 @@
     <div class="file-manager-wrapper">
       <div class="file-manager-header">
         <card-wrapper>
-          <menu-item :size="menuItemSize">
+          <menu-item v-if="showHeaderSearch" :size="menuItemSize">
             <search-input
               :size="compact ? 'xs' : 'sm'"
               v-model="searchQuery"
@@ -100,14 +100,13 @@ const emits = defineEmits<{
 
 const menuItemSize = computed(() => (props.compact ? 'md' : 'auto'));
 
-const { path: targetPath } = storeToRefs(api.core.useFileManager());
+const { path: targetPath, searchQuery } = storeToRefs(api.core.useFileManager());
 if (props.path) {
   targetPath.value = props.path;
 }
 const fs = api.core.useFileSystem();
 
 const files = ref<DiskFile[]>([]);
-const searchQuery = ref<string>('');
 const searchHighlightKeywords = computed(() => searchQuery.value.split(' '));
 const searchFiles = computed(() =>
   files.value.filter((f) =>
@@ -159,6 +158,9 @@ const handleFileClick = async (f: DiskFile) => {
 };
 
 const { tabletBelow } = api.ui.useScreenDetection();
+
+const showHeaderSearch = computed(() => !props.compact || !tabletBelow.value);
+
 const closeMobileSidebar = () => {
   if (tabletBelow.value) {
     sidebar.close();

@@ -1,14 +1,17 @@
 import { describe, expect, test, beforeEach, afterEach, vi } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
+import { mount, shallowMount } from '@vue/test-utils';
 import { ref, nextTick } from 'vue';
 import type { DiskFile, FileSystemChange } from 'orgnote-api';
 import type { Mock } from 'vitest';
 
 let readDir: Mock;
 let fileManagerPath: ReturnType<typeof ref<string>>;
+let fileManagerSearchQuery: ReturnType<typeof ref<string>>;
+let fileManagerMobileFileSearchActive: ReturnType<typeof ref<boolean>>;
 let watcherCallbacks: Map<string, (change: FileSystemChange) => void>;
 let fileWatcherWatch: Mock;
 let bufferViewerOpen: Mock;
+let tabletBelow: ReturnType<typeof ref<boolean>>;
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -19,7 +22,7 @@ vi.mock('vue-i18n', () => ({
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
-      useFileManager: () => ({ path: fileManagerPath }),
+      useFileManager: () => ({ path: fileManagerPath, searchQuery: fileManagerSearchQuery, mobileFileSearchActive: fileManagerMobileFileSearchActive }),
       useFileSystem: () => ({ readDir }),
       useFileWatcher: () => ({ watch: fileWatcherWatch }),
       useBufferViewer: () => ({ open: bufferViewerOpen }),
@@ -27,7 +30,16 @@ vi.mock('src/boot/api', () => ({
     },
     ui: {
       useSidebar: () => ({ close: vi.fn() }),
-      useScreenDetection: () => ({ tabletBelow: ref(false) }),
+      useScreenDetection: () => ({ tabletBelow }),
+      useContextMenu: () => ({
+        show: vi.fn(),
+        hide: vi.fn(),
+        visible: ref(false),
+      }),
+      useModal: () => ({
+        open: vi.fn(),
+        close: vi.fn(),
+      }),
     },
   },
 }));
@@ -53,6 +65,9 @@ describe('FileManager', () => {
     vi.useFakeTimers();
 
     fileManagerPath = ref('/initial');
+    fileManagerSearchQuery = ref('');
+    fileManagerMobileFileSearchActive = ref(false);
+    tabletBelow = ref(false);
     watcherCallbacks = new Map();
 
     readDir = vi.fn(async () => [createDiskFile({ path: '/initial/a.org', name: 'a.org' })]);
@@ -117,5 +132,50 @@ describe('FileManager', () => {
     await flushDebounce();
 
     expect(readDir).toHaveBeenCalledTimes(1);
+  });
+
+  test('FileManager shows header search on desktop regardless of compact', async () => {
+    tabletBelow.value = false;
+    const wrapper = mount(FileManager, {
+      props: { path: '/initial', compact: true },
+    });
+    await nextTick();
+
+    const searchInput = wrapper.findComponent({ name: 'SearchInput' });
+    expect(searchInput.exists()).toBe(true);
+  });
+
+  test('FileManager hides header search on mobile when compact', async () => {
+    tabletBelow.value = true;
+    const wrapper = mount(FileManager, {
+      props: { path: '/initial', compact: true },
+    });
+    await nextTick();
+
+    const searchInput = wrapper.findComponent({ name: 'SearchInput' });
+    expect(searchInput.exists()).toBe(false);
+  });
+
+  test('FileManager shows header search on mobile when not compact', async () => {
+    tabletBelow.value = true;
+    const wrapper = mount(FileManager, {
+      props: { path: '/initial', compact: false },
+    });
+    await nextTick();
+
+    const searchInput = wrapper.findComponent({ name: 'SearchInput' });
+    expect(searchInput.exists()).toBe(true);
+  });
+
+  test('FileManager uses store search query for filtering', async () => {
+    fileManagerSearchQuery.value = 'test-query';
+    const wrapper = mount(FileManager, {
+      props: { path: '/initial' },
+    });
+    await nextTick();
+
+    const searchInput = wrapper.findComponent({ name: 'SearchInput' });
+    expect(searchInput.exists()).toBe(true);
+    expect(searchInput.props('modelValue')).toBe('test-query');
   });
 });
