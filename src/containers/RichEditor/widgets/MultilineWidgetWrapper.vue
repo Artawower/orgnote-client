@@ -65,13 +65,7 @@ const handleEditClick = (event: MouseEvent) => {
     right: var(--padding-md);
     top: var(--padding-md);
     opacity: 1;
-    display: none;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .org-multiline-widget:hover .org-widget-actions {
-      display: flex;
-    }
+    display: flex;
   }
 }
 </style>
