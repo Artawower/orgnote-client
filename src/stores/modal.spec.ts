@@ -1,7 +1,8 @@
 import { test, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { storeToRefs } from 'pinia';
 import { useModalStore } from './modal';
-import { defineComponent } from 'vue';
+import { defineComponent, markRaw } from 'vue';
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -70,4 +71,82 @@ test('closeAll method clears the stack and closes the modal', () => {
 
   expect(store.component).toBeUndefined();
   expect(store.config).toBeUndefined();
+});
+
+test('ModalStore close on empty opened store keeps array reference', () => {
+  const store = useModalStore();
+  const { modals } = storeToRefs(store);
+  const modalComponent = markRaw({ template: '<div>ModalContent</div>' });
+
+  void store.open(modalComponent);
+  store.close();
+
+  const referenceAfterFirstClose = modals.value;
+
+  store.close();
+
+  expect(modals.value).toBe(referenceAfterFirstClose);
+  expect(modals.value.length).toBe(0);
+});
+
+test('ModalStore close on never-opened store keeps initial array reference', () => {
+  const store = useModalStore();
+  const { modals } = storeToRefs(store);
+  const initialReference = modals.value;
+
+  store.close();
+
+  expect(modals.value).toBe(initialReference);
+  expect(modals.value.length).toBe(0);
+});
+
+test('ModalStore close resolves promise then open new modal works', async () => {
+  const store = useModalStore();
+  const modalA = markRaw(defineComponent({ template: '<div>A</div>' }));
+  const modalB = markRaw(defineComponent({ template: '<div>B</div>' }));
+
+  const closedA = store.open<string>(modalA);
+
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(modalA);
+
+  store.close('selected-command');
+
+  const resultA = await closedA;
+  expect(resultA).toBe('selected-command');
+  expect(store.modals.length).toBe(0);
+
+  store.open(modalB, { title: 'System Info', wide: true });
+
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(modalB);
+  expect(store.title).toBe('System Info');
+});
+
+test('ModalStore sequential close and reopen preserves stack integrity', async () => {
+  const store = useModalStore();
+  const completion = markRaw(defineComponent({ template: '<div>Completion</div>' }));
+  const systemInfo = markRaw(defineComponent({ template: '<div>SystemInfo</div>' }));
+  const logs = markRaw(defineComponent({ template: '<div>Logs</div>' }));
+
+  const closed1 = store.open<string>(completion, { position: 'top' });
+  store.close('cmd-1');
+  const result1 = await closed1;
+  expect(result1).toBe('cmd-1');
+
+  const closed2 = store.open(systemInfo, { title: 'Info', wide: true });
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(systemInfo);
+
+  store.close();
+  await closed2;
+
+  const closed3 = store.open(logs, { title: 'Logs' });
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(logs);
+  expect(store.title).toBe('Logs');
+
+  store.close();
+  await closed3;
+  expect(store.modals.length).toBe(0);
 });

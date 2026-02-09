@@ -6,7 +6,7 @@
       start
       align-stretch
       @click="handleDialogClick"
-      @close="modal.close()"
+      @cancel.prevent="modal.close()"
       :class="{
         mini: m.config?.mini,
         [`position-${m.config?.position ?? 'center'}`]: m.config?.position ?? 'center',
@@ -90,7 +90,12 @@ const initDialog = async () => {
 };
 
 const closeDialog = () => {
-  modalDialogRefs.value.splice(modals.value.length - 1, 1);
+  const lastRefIndex = modalDialogRefs.value.length - 1;
+  const dialogEl = modalDialogRefs.value[lastRefIndex];
+  if (dialogEl?.open) {
+    dialogEl.close();
+  }
+  modalDialogRefs.value.splice(lastRefIndex, 1);
 };
 
 watch(modals, async (curr, prev) => {

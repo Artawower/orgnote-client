@@ -35,6 +35,9 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
   };
 
   const close = <TReturn = unknown>(data?: TReturn) => {
+    if (!modals.value.length) {
+      return;
+    }
     modals.value = modals.value.slice(0, modals.value.length - 1);
     resolvers.pop()?.(data);
   };

@@ -55,6 +55,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  wrapper.unmount();
   vi.restoreAllMocks();
 });
 
@@ -201,4 +202,35 @@ test('removing a modal from modals closes/removes that dialog', async () => {
   await wrapper.vm.$nextTick();
   dialogs = wrapper.findAll('dialog');
   expect(dialogs.length).toBe(1);
+});
+
+test('ModalWindow removing modal calls native dialog close before unmount', async () => {
+  const showModalSpy = vi
+    .spyOn(HTMLDialogElement.prototype, 'showModal')
+    .mockImplementation(vi.fn());
+  const closeSpy = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(vi.fn());
+
+  mockModal.modals.value = [
+    {
+      component: markRaw({ template: '<div>ModalForClose</div>' }),
+      config: {},
+    },
+  ];
+
+  await nextTick();
+  await nextTick();
+
+  expect(showModalSpy).toHaveBeenCalled();
+
+  const dialogElement = wrapper.find('dialog').element as HTMLDialogElement;
+  Object.defineProperty(dialogElement, 'open', {
+    value: true,
+    writable: true,
+    configurable: true,
+  });
+
+  mockModal.modals.value = [];
+  await nextTick();
+
+  expect(closeSpy).toHaveBeenCalled();
 });
