@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper>
+  <page-wrapper centered>
     <app-flex column-reverse class="tab-grid-container">
       <div class="tab-grid">
         <tab-live-preview

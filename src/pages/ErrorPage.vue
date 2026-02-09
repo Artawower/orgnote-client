@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper padding constrained>
+  <page-wrapper padding constrained centered>
     <safe-area fit>
       <container-layout gap="lg" :body-scroll="false">
         <template #header>

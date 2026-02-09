@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper>
+  <page-wrapper centered>
     <app-logo />
     <action-buttons vertical>
       <command-action-button :command="DefaultCommands.CREATE_NOTE" include-text alignment="left" />

@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper>
+  <page-wrapper centered>
     <visibility-wrapper v-if="layout">
       <template #desktop-below>
         <app-pane v-if="activePaneId" :pane-id="activePaneId" />

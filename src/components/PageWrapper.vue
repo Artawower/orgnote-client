@@ -1,5 +1,11 @@
 <template>
-  <app-flex class="page" :class="{ padding, constrained }" column center>
+  <app-flex
+    class="page"
+    :class="{ padding, constrained }"
+    column
+    :center="centered"
+    :align="centered ? 'center' : 'stretch'"
+  >
     <slot />
   </app-flex>
 </template>
@@ -7,10 +13,16 @@
 <script lang="ts" setup>
 import AppFlex from 'src/components/AppFlex.vue';
 
-defineProps<{
-  padding?: boolean;
-  constrained?: boolean;
-}>();
+withDefaults(
+  defineProps<{
+    padding?: boolean;
+    constrained?: boolean;
+    centered?: boolean;
+  }>(),
+  {
+    centered: false,
+  },
+);
 </script>
 
 <style lang="scss" scoped>

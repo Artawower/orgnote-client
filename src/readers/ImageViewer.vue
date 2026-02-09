@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper>
+  <page-wrapper centered>
     <app-image :src="imageSrc" :alt="buffer.title" class="image-viewer" />
   </page-wrapper>
 </template>
