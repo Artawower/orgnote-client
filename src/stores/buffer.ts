@@ -329,6 +329,10 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     const { scheme, path, raw } = parseBufferUri(uri);
 
     const existing = buffers.value.get(raw);
+    if (existing?.errors.length) {
+      existing.errors = [];
+      await loadBufferContent(existing);
+    }
     if (existing) {
       void touchFileMeta(existing.path);
       return incrementBufferReference(existing);
