@@ -150,3 +150,49 @@ test('ModalStore sequential close and reopen preserves stack integrity', async (
   await closed3;
   expect(store.modals.length).toBe(0);
 });
+
+test('ModalStore close then immediate open produces correct stack', () => {
+  const store = useModalStore();
+  const modalA = markRaw(defineComponent({ template: '<div>A</div>' }));
+  const modalB = markRaw(defineComponent({ template: '<div>B</div>' }));
+
+  store.open(modalA, { title: 'Modal A' });
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(modalA);
+
+  store.close();
+  store.open(modalB, { title: 'Modal B' });
+
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(modalB);
+  expect(store.title).toBe('Modal B');
+});
+
+test('ModalStore close then immediate open resolves first modal promise', async () => {
+  const store = useModalStore();
+  const modalA = markRaw(defineComponent({ template: '<div>A</div>' }));
+  const modalB = markRaw(defineComponent({ template: '<div>B</div>' }));
+
+  const closedA = store.open<string>(modalA);
+
+  store.close('result-from-a');
+  store.open(modalB);
+
+  const resultA = await closedA;
+  expect(resultA).toBe('result-from-a');
+});
+
+test('ModalStore close then immediate open with same component creates fresh modal', () => {
+  const store = useModalStore();
+  const modalA = markRaw(defineComponent({ template: '<div>A</div>' }));
+
+  const firstPromise = store.open(modalA, { title: 'First' });
+  store.close();
+
+  const secondPromise = store.open(modalA, { title: 'Second' });
+
+  expect(store.modals.length).toBe(1);
+  expect(store.component).toBe(modalA);
+  expect(store.title).toBe('Second');
+  expect(secondPromise).not.toBe(firstPromise);
+});

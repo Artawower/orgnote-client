@@ -99,12 +99,24 @@ const closeDialog = () => {
 };
 
 watch(modals, async (curr, prev) => {
-  const modalAdded = prev.length < curr.length;
+  const modalAdded = curr.length > prev.length;
+  const modalRemoved = curr.length < prev.length;
+  const modalSwapped = curr.length === prev.length && curr.length > 0;
+
   if (modalAdded) {
     await initDialog();
     return;
   }
-  closeDialog();
+
+  if (modalSwapped) {
+    closeDialog();
+    await initDialog();
+    return;
+  }
+
+  if (modalRemoved) {
+    closeDialog();
+  }
 });
 
 const handleDialogClick = (e: MouseEvent) => {
