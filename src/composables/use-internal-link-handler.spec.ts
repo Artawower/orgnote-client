@@ -15,6 +15,7 @@ const {
 }));
 
 let mockActiveContext: { filePath?: string } | null = null;
+let mockEditorConfig: { autoCreateMissingNotes?: boolean } = { autoCreateMissingNotes: true };
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -34,6 +35,11 @@ vi.mock('src/boot/api', () => ({
           return mockActiveContext;
         },
       }),
+      useConfig: () => ({
+        get config() {
+          return { editor: mockEditorConfig };
+        },
+      }),
     },
   },
 }));
@@ -49,6 +55,7 @@ import { useInternalLinkHandler } from './use-internal-link-handler';
 beforeEach(() => {
   vi.clearAllMocks();
   mockActiveContext = { filePath: 'notes/current.org' };
+  mockEditorConfig = { autoCreateMissingNotes: true };
   mockGetById.mockResolvedValue({ filePath: ['notes', 'existing.org'] });
   mockWriteFile.mockResolvedValue(undefined);
   mockSave.mockResolvedValue(undefined);
@@ -140,4 +147,23 @@ test('useInternalLinkHandler handleClick opens created note buffer URI', async (
   const uri = mockOpen.mock.calls[0]?.[0] as string;
   expect(uri).toContain('file://');
   expect(uri).toMatch(/Created Note/);
+});
+
+test('useInternalLinkHandler handleClick skips creation when autoCreateMissingNotes is false', async () => {
+  mockGetById.mockResolvedValue(undefined);
+  mockEditorConfig = { autoCreateMissingNotes: false };
+  const { handleClick } = useInternalLinkHandler();
+  await handleClick('abc', 'Title');
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockSave).not.toHaveBeenCalled();
+  expect(mockOpen).not.toHaveBeenCalled();
+});
+
+test('useInternalLinkHandler handleClick skips creation when autoCreateMissingNotes is undefined', async () => {
+  mockGetById.mockResolvedValue(undefined);
+  mockEditorConfig = {};
+  const { handleClick } = useInternalLinkHandler();
+  await handleClick('abc', 'Title');
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockOpen).not.toHaveBeenCalled();
 });

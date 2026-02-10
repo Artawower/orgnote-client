@@ -17,6 +17,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     showPropertyDrawer: true,
     saveDelayMs: DEFAULT_SAVE_DELAY_MS,
     validationDelayMs: DEFAULT_VALIDATION_DELAY_MS,
+    autoCreateMissingNotes: true,
   },
   developer: {
     developerMode: Boolean(process.env.DEV),

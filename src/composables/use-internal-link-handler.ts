@@ -32,6 +32,9 @@ export const useInternalLinkHandler = () => {
       api.core.useBufferViewer().open(result.value);
       return;
     }
+    if (!api.core.useConfig().config.editor.autoCreateMissingNotes) {
+      return;
+    }
     const currentFilePath = api.core.useEditor().activeContext?.filePath;
     if (!currentFilePath) {
       reporter.reportError(new Error('Cannot create note: current file path unknown'));
