@@ -20,6 +20,13 @@ import { DEFAULT_SAVE_DELAY_MS, DEFAULT_VALIDATION_DELAY_MS } from 'src/constant
 
 const SAVE_IGNORE_WINDOW_MS = 300;
 
+const extractErrorMessage = (error: unknown): string => {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause;
+  if (cause instanceof Error) return cause.message;
+  return error.message;
+};
+
 const incrementBufferReference = (buffer: OrgBuffer): OrgBuffer => {
   buffer.referenceCount += 1;
   buffer.lastAccessed = new Date();
@@ -117,7 +124,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
     if (result.isErr()) {
       reporter.reportError(result.error);
-      buffer.errors.push(result.error.message);
+      buffer.errors.push(extractErrorMessage(result.error));
       buffer.isLoading = false;
       return;
     }

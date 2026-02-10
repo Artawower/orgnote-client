@@ -9,7 +9,9 @@ import { useFileWatcherStore } from 'src/stores/file-watcher';
 
 class EncryptionConfigRequiredError extends Error {
   constructor() {
-    super('Encryption configuration is required to handle encrypted files.');
+    super(
+      'This file is encrypted. Please configure encryption in Settings → Encryption to decrypt it.',
+    );
   }
 }
 
