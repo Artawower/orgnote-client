@@ -127,6 +127,10 @@ const { t } = useI18n({
 </script>
 
 <style lang="scss" scoped>
+dialog:not([open]) {
+  display: none;
+}
+
 dialog {
   & {
     min-width: var(--modal-min-width);
