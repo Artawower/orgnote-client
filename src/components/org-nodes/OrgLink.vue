@@ -13,9 +13,8 @@
 import type { OrgNode } from 'org-mode-ast';
 import AppLink from 'src/components/AppLink.vue';
 import { computed, toRef } from 'vue';
-import { isInternalLink, extractInternalId, resolveInternalNoteUri } from 'src/utils/org-link';
-import { api } from 'src/boot/api';
-import { reporter } from 'src/boot/report';
+import { isInternalLink, extractInternalId } from 'src/utils/org-link';
+import { useInternalLinkHandler } from 'src/composables/use-internal-link-handler';
 
 const props = defineProps<{
   node: OrgNode;
@@ -50,16 +49,11 @@ const displayText = computed(
   () => linkNameNode.value?.children?.get(1).rawValue ?? linkAddress.value,
 );
 
+const { handleClick: handleInternalLink } = useInternalLinkHandler();
+
 const handleClick = async (event: MouseEvent): Promise<void> => {
   if (!internal.value) return;
   event.preventDefault();
-  const noteId = extractInternalId(linkAddress.value);
-  const result = await resolveInternalNoteUri(noteId, api.core.useFileMeta().getById);
-  if (result.isErr()) {
-    reporter.reportError(result.error);
-    return;
-  }
-  if (!result.value) return;
-  api.core.useBufferViewer().open(result.value);
+  await handleInternalLink(extractInternalId(linkAddress.value), displayText.value);
 };
 </script>
