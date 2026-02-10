@@ -55,20 +55,20 @@
             </template>
           </nav-tabs>
         </template>
-        <template #mobile-only>
+        <template #mobile>
           <div class="mobile-tab-header">
             <action-button
+              v-if="canGoBack"
               icon="keyboard_arrow_left"
               size="sm"
               color="fg-muted"
-              :disabled="!canGoBack"
               @click="handleNavigation('back')"
             />
             <action-button
+              v-if="canGoForward"
               icon="keyboard_arrow_right"
               size="sm"
               color="fg-muted"
-              :disabled="!canGoForward"
               @click="handleNavigation('forward')"
             />
             <div class="mobile-tab-title">
@@ -119,9 +119,9 @@ import type { Router } from 'vue-router';
 
 import ScopedRouterView from 'src/components/ScopedRouterView.vue';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
-import { isPresent, to } from 'orgnote-api/utils';
 import { storeToRefs } from 'pinia';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
+import { useTabHistory } from 'src/composables/use-tab-history';
 
 const props = defineProps<{
   paneId: string;
@@ -203,93 +203,7 @@ watch(activeTab, initTabRouter, { immediate: true });
 
 provide(TAB_ROUTER_KEY, tabRouter);
 
-const currentRoute = computed(() => tabRouter.value?.currentRoute.value);
-
-// Per-tab route history tracking
-const routeHistory = shallowRef<string[]>([]);
-const historyIndex = shallowRef(-1);
-
-const initHistory = () => {
-  const full = tabRouter.value?.currentRoute.value.fullPath;
-  if (!full) {
-    routeHistory.value = [];
-    historyIndex.value = -1;
-    return;
-  }
-  routeHistory.value = [full];
-  historyIndex.value = 0;
-};
-
-initHistory();
-watch(
-  activeTab,
-  () => {
-    initHistory();
-  },
-  { immediate: true },
-);
-
-watch(
-  currentRoute,
-  (newRoute, oldRoute) => {
-    if (!newRoute || !oldRoute) return;
-    if (newRoute.fullPath === oldRoute.fullPath) return;
-
-    const hist = routeHistory.value;
-    const idx = historyIndex.value;
-    const prev = idx > 0 ? hist[idx - 1] : null;
-    if (prev === newRoute.fullPath) {
-      historyIndex.value = idx - 1;
-      return;
-    }
-    const next = idx < hist.length - 1 ? hist[idx + 1] : null;
-    if (next === newRoute.fullPath) {
-      historyIndex.value = idx + 1;
-      return;
-    }
-
-    routeHistory.value = hist.slice(0, idx + 1).concat(newRoute.fullPath);
-    historyIndex.value = idx + 1;
-  },
-  { flush: 'sync' },
-);
-
-const canGoBack = computed(() => {
-  return isPresent(tabRouter.value) && historyIndex.value > 0;
-});
-
-const canGoForward = computed(() => {
-  return isPresent(tabRouter.value) && historyIndex.value < routeHistory.value.length - 1;
-});
-
-const handleNavigation = (direction: 'back' | 'forward') => {
-  const safeNavigate = to(() => {
-    if (!tabRouter.value) {
-      api.core.useNotifications().notify({
-        message: 'Router not available',
-        level: 'danger',
-      });
-      return;
-    }
-
-    if (direction === 'back') {
-      if (!canGoBack.value) return;
-      tabRouter.value.back();
-      return;
-    }
-    if (!canGoForward.value) return;
-    tabRouter.value.forward();
-  });
-
-  const result = safeNavigate();
-  if (result.isErr()) {
-    const errorMessage = result.error instanceof Error ? result.error.message : 'Unknown error';
-    api.core.useNotifications().notify({
-      message: `Navigation failed: ${errorMessage}`,
-      level: 'danger',
-    });
-  }
-};
+const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
 
 const handleDragStart = (payload: { tabId: string; paneId: string }) => {
   setTimeout(() => {
