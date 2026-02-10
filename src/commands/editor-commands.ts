@@ -1,5 +1,6 @@
-import type { Command, OrgNoteApi, FileMeta } from 'orgnote-api';
+import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
 import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
+import { createFileItemsGetter } from 'src/composables/note-search-completion';
 import { to } from 'orgnote-api/utils';
 import { redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
@@ -93,29 +94,22 @@ export const getEditorCommands = (): Command[] => {
         if (!orgEditor) return;
 
         const completionStore = api.core.useCompletion();
-        const fileSearchStore = api.core.useFileSearch();
+
+        const mapFile = (file: FileMeta): CompletionCandidate<FileMeta> => ({
+          title: file.title ?? file.filePath.at(-1) ?? i18n.UNTITLED,
+          description: file.filePath.join('/'),
+          icon: 'sym_o_article',
+          data: file,
+          commandHandler: () => {
+            orgEditor.insertInternalLink(file.id ?? '', file.title ?? '');
+            completionStore.close();
+          },
+        });
 
         completionStore.open<FileMeta, void>({
+          type: 'choice',
           placeholder: i18n.PICK_NOTE_TO_LINK,
-          itemsGetter: async (filter, limit, offset) => {
-            const files = await fileSearchStore.search(filter, { limit, offset });
-            const lastResult = fileSearchStore.lastSearchResult;
-            const isMatchingQuery = lastResult?.query === filter;
-
-            return {
-              total: isMatchingQuery ? lastResult.total : files.length,
-              result: files.map((file) => ({
-                title: file.title ?? file.filePath.at(-1) ?? i18n.UNTITLED,
-                description: file.filePath.join('/'),
-                icon: 'sym_o_article',
-                data: file,
-                commandHandler: () => {
-                  orgEditor.insertInternalLink(file.id ?? '', file.title ?? '');
-                  completionStore.close();
-                },
-              })),
-            };
-          },
+          itemsGetter: createFileItemsGetter(api, mapFile),
         });
       },
     },

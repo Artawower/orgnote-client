@@ -1,0 +1,202 @@
+import { test, expect, vi, beforeEach } from 'vitest';
+import { getEditorCommands } from './editor-commands';
+import { DefaultCommands } from 'orgnote-api';
+import type { OrgNoteApi, FileMeta, CompletionConfig, CompletionSearchResult } from 'orgnote-api';
+import { ref } from 'vue';
+
+let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
+
+const mockFiles: FileMeta[] = [];
+let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
+
+const mockInsertInternalLink = vi.fn();
+const mockCompletionClose = vi.fn();
+
+const mockCompletion = {
+  open: vi.fn(async (config: CompletionConfig<FileMeta>) => {
+    capturedCompletionConfig = config;
+  }),
+  close: mockCompletionClose,
+};
+
+const mockFileSearch = {
+  search: vi.fn(async (query: string, options?: { limit?: number; offset?: number }) => {
+    const filtered = mockFiles.filter(
+      (f) =>
+        f.title?.toLowerCase().includes(query.toLowerCase()) ||
+        f.description?.toLowerCase().includes(query.toLowerCase()),
+    );
+    mockSearchResult = {
+      files: filtered.slice(options?.offset ?? 0, (options?.offset ?? 0) + (options?.limit ?? 20)),
+      total: filtered.length,
+      query,
+    };
+    return mockSearchResult.files;
+  }),
+  lastSearchResult: ref(mockSearchResult),
+};
+
+const mockFileMeta = {
+  getAll: vi.fn(async (options?: { limit?: number; offset?: number }) => {
+    return mockFiles.slice(options?.offset ?? 0, (options?.offset ?? 0) + (options?.limit ?? 20));
+  }),
+  count: vi.fn(async () => mockFiles.length),
+};
+
+vi.mock('src/composables/use-org-editor', () => ({
+  useOrgEditor: () => ({
+    orgEditor: {
+      insertInternalLink: mockInsertInternalLink,
+    },
+    withOrgEditor: vi.fn(),
+  }),
+  isEditorActive: () => true,
+}));
+
+vi.mock('src/utils/editor-primitives', () => ({
+  blurEditor: vi.fn(),
+}));
+
+const createMockApi = (): OrgNoteApi =>
+  ({
+    core: {
+      useCompletion: () => mockCompletion,
+      useFileSearch: () => mockFileSearch,
+      useFileMeta: () => mockFileMeta,
+      useEditor: () => ({
+        activeContext: {
+          editorViewGetter: () => ({}),
+          orgNode: undefined,
+        },
+      }),
+    },
+    ui: {
+      useKeyboardState: () => ({ keyboardOpened: ref(false) }),
+    },
+  }) as unknown as OrgNoteApi;
+
+const findInternalLinkCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_INSERT_INTERNAL_LINK)!;
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockFiles.length = 0;
+  mockSearchResult = null;
+  capturedCompletionConfig = null;
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK opens completion with type choice', async () => {
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  expect(capturedCompletionConfig?.type).toBe('choice');
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK returns files for empty query', async () => {
+  mockFiles.push(
+    { id: '1', filePath: ['note1.org'], title: 'Note 1' },
+    { id: '2', filePath: ['note2.org'], title: 'Note 2' },
+  );
+
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult<FileMeta>;
+
+  expect(result.result).toHaveLength(2);
+  expect(result.total).toBe(2);
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK returns files for whitespace query', async () => {
+  mockFiles.push({ id: '1', filePath: ['note.org'], title: 'Note' });
+
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '   ',
+    20,
+    0,
+  )) as CompletionSearchResult<FileMeta>;
+
+  expect(result.result).toHaveLength(1);
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK searches files with non-empty query', async () => {
+  mockFiles.push(
+    { id: '1', filePath: ['meeting.org'], title: 'Meeting Notes' },
+    { id: '2', filePath: ['todo.org'], title: 'Todo List' },
+  );
+
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    'Meeting',
+    20,
+    0,
+  )) as CompletionSearchResult<FileMeta>;
+
+  expect(result.result).toHaveLength(1);
+  expect(result.result[0]!.title).toBe('Meeting Notes');
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK candidate inserts internal link on select', async () => {
+  mockFiles.push({ id: 'note-id-1', filePath: ['test.org'], title: 'Test Title' });
+
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult<FileMeta>;
+
+  result.result[0]!.commandHandler(result.result[0]!.data);
+
+  expect(mockInsertInternalLink).toHaveBeenCalledWith('note-id-1', 'Test Title');
+  expect(mockCompletionClose).toHaveBeenCalled();
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK candidate uses filename when no title', async () => {
+  mockFiles.push({ id: '1', filePath: ['folder', 'untitled.org'], title: undefined });
+
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult<FileMeta>;
+
+  expect(result.result[0]!.title).toBe('untitled.org');
+});
+
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK sets placeholder', async () => {
+  const api = createMockApi();
+  const command = findInternalLinkCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  expect(capturedCompletionConfig?.placeholder).toBeDefined();
+});

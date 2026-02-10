@@ -9,73 +9,7 @@ import { unref } from 'vue';
 
 const getFileName = (filePath: string[]): string => filePath.at(-1) ?? 'Untitled';
 
-const fileToCandidate = (
-  file: FileMeta,
-  bufferViewer: ReturnType<OrgNoteApi['core']['useBufferViewer']>,
-  completion: ReturnType<OrgNoteApi['core']['useCompletion']>,
-): CompletionCandidate<FileMeta> => ({
-  icon: 'sym_o_description',
-  title: file.title ?? getFileName(file.filePath),
-  description: formatDescription(file),
-  data: file,
-  commandHandler: () => {
-    bufferViewer.open(join('/', ...file.filePath));
-    completion.close();
-  },
-});
-
-const searchFiles = async (
-  api: OrgNoteApi,
-  filter: string,
-  limit?: number,
-  offset?: number,
-): Promise<CompletionSearchResult<FileMeta>> => {
-  const fileSearch = api.core.useFileSearch();
-  const bufferViewer = api.core.useBufferViewer();
-  const completion = api.core.useCompletion();
-
-  const files = await fileSearch.search(filter, { limit, offset });
-  const lastResult = unref(fileSearch.lastSearchResult);
-  const isMatchingQuery = lastResult?.query === filter;
-
-  return {
-    total: isMatchingQuery ? lastResult.total : files.length,
-    result: files.map((file) => fileToCandidate(file, bufferViewer, completion)),
-  };
-};
-
-const getRecentFiles = async (
-  api: OrgNoteApi,
-  limit?: number,
-  offset?: number,
-): Promise<CompletionSearchResult<FileMeta>> => {
-  const fileMeta = api.core.useFileMeta();
-  const bufferViewer = api.core.useBufferViewer();
-  const completion = api.core.useCompletion();
-
-  const files = await fileMeta.getAll({ limit, offset });
-  const total = await fileMeta.count();
-
-  return {
-    total,
-    result: files.map((file) => fileToCandidate(file, bufferViewer, completion)),
-  };
-};
-
-const createSearchItemsGetter = (api: OrgNoteApi) => {
-  return async (
-    filter: string,
-    limit?: number,
-    offset?: number,
-  ): Promise<CompletionSearchResult<FileMeta>> => {
-    if (!filter.trim()) {
-      return getRecentFiles(api, limit, offset);
-    }
-    return searchFiles(api, filter, limit, offset);
-  };
-};
-
-const formatDescription = (file: FileMeta): string => {
+export const formatFileDescription = (file: FileMeta): string => {
   const parts: string[] = [];
 
   if (file.description) {
@@ -89,16 +23,76 @@ const formatDescription = (file: FileMeta): string => {
   return parts.join('\n');
 };
 
+export const createFileItemsGetter = (
+  api: OrgNoteApi,
+  mapFile: (file: FileMeta) => CompletionCandidate<FileMeta>,
+): ((
+  filter: string,
+  limit?: number,
+  offset?: number,
+) => Promise<CompletionSearchResult<FileMeta>>) => {
+  const searchFiles = async (
+    filter: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<CompletionSearchResult<FileMeta>> => {
+    const fileSearch = api.core.useFileSearch();
+    const files = await fileSearch.search(filter, { limit, offset });
+    const lastResult = unref(fileSearch.lastSearchResult);
+    const isMatchingQuery = lastResult?.query === filter;
+
+    return {
+      total: isMatchingQuery ? lastResult.total : files.length,
+      result: files.map(mapFile),
+    };
+  };
+
+  const getRecentFiles = async (
+    limit?: number,
+    offset?: number,
+  ): Promise<CompletionSearchResult<FileMeta>> => {
+    const fileMeta = api.core.useFileMeta();
+    const files = await fileMeta.getAll({ limit, offset });
+    const total = await fileMeta.count();
+
+    return {
+      total,
+      result: files.map(mapFile),
+    };
+  };
+
+  return async (
+    filter: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<CompletionSearchResult<FileMeta>> => {
+    if (!filter.trim()) return getRecentFiles(limit, offset);
+    return searchFiles(filter, limit, offset);
+  };
+};
+
 export const useNoteSearchCompletion = async (
   api: OrgNoteApi,
   searchText: string = '',
 ): Promise<void> => {
   const completion = api.core.useCompletion();
+  const bufferViewer = api.core.useBufferViewer();
+
+  const mapFile = (file: FileMeta): CompletionCandidate<FileMeta> => ({
+    icon: 'sym_o_description',
+    title: file.title ?? getFileName(file.filePath),
+    description: formatFileDescription(file),
+    data: file,
+    commandHandler: () => {
+      bufferViewer.open(join('/', ...file.filePath));
+      completion.close();
+    },
+  });
 
   await completion.open<FileMeta, void>({
     type: 'choice',
     searchText,
     placeholder: I18N.SEARCH,
-    itemsGetter: createSearchItemsGetter(api),
+    itemsGetter: createFileItemsGetter(api, mapFile),
   });
 };
