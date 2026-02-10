@@ -38,8 +38,7 @@ const decryptContent = (filePath: string, content: Uint8Array): ResultAsync<Uint
   if (!isEncryptionConfigValid()) {
     return errAsync(new EncryptionConfigRequiredError());
   }
-  const text = uint8ArrayToText(content);
-  return to(api.core.useEncryption().decrypt)(text).map(textToUint8Array);
+  return to(api.core.useEncryption().decrypt)(content).map(textToUint8Array);
 };
 
 export const createFileSystemBufferProvider = (): BufferProvider => ({
