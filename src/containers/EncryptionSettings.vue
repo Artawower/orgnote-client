@@ -28,7 +28,9 @@ import MenuItem from './MenuItem.vue';
 import SettingsScheme from './SettingsScheme.vue';
 import { valibotScheme } from 'src/models/valibot-scheme';
 
-const encryptionScheme = valibotScheme({ ...ORG_NOTE_CONFIG_SCHEMA.entries.encryption });
+const encryptionIntersect = ORG_NOTE_CONFIG_SCHEMA.entries.encryption;
+const unionScheme = encryptionIntersect.options.find((o: { type: string }) => o.type === 'union');
+const encryptionScheme = valibotScheme(unionScheme ?? encryptionIntersect);
 
 const { config } = storeToRefs(api.core.useConfig());
 
