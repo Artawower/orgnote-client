@@ -1,11 +1,12 @@
 import { test, expect, beforeEach, vi, afterEach } from 'vitest';
 import type * as VueI18n from 'vue-i18n';
 import { mount } from '@vue/test-utils';
-import ModalWindow from './ModalWindow.vue';
+import ModalContainer from './ModalContainer.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { ref, markRaw } from 'vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { nextTick } from 'vue';
+import type { Modal } from 'orgnote-api';
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -32,18 +33,19 @@ vi.mock('vue-i18n', async () => {
 });
 
 let wrapper: ReturnType<typeof mount>;
+let nextId = 0;
 const mockModal = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modals: ref<any[]>([]),
+  modals: ref<Modal[]>([]),
   config: ref({}),
   close: vi.fn(),
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  nextId = 0;
   mockModal.modals.value = [];
   mockModal.close.mockClear();
-  wrapper = mount(ModalWindow, {
+  wrapper = mount(ModalContainer, {
     global: {
       plugins: [
         createTestingPinia({
@@ -67,6 +69,7 @@ test('renders no dialogs when modals is empty', async () => {
 test('modal-wide class applied when config.wide enabled', async () => {
   mockModal.modals.value = [
     {
+      id: ++nextId,
       component: markRaw({ template: '<div>WideModal</div>' }),
       config: { wide: true },
     },
@@ -80,6 +83,7 @@ test('modal-wide class applied when config.wide enabled', async () => {
 test('modal-wide class absent when config.wide disabled', async () => {
   mockModal.modals.value = [
     {
+      id: ++nextId,
       component: markRaw({ template: '<div>NormalModal</div>' }),
       config: { wide: false },
     },
@@ -92,6 +96,7 @@ test('modal-wide class absent when config.wide disabled', async () => {
 
 test('renders a single dialog when modals has 1 item', async () => {
   mockModal.modals.value.push({
+    id: ++nextId,
     component: markRaw({ template: '<div>ModalOne</div>' }),
     config: { title: 'Modal One', closable: true },
   });
@@ -102,8 +107,8 @@ test('renders a single dialog when modals has 1 item', async () => {
 
 test('renders multiple dialogs when multiple items in modals', async () => {
   mockModal.modals.value.push(
-    { component: markRaw({ template: '<div>ModalOne</div>' }), config: {} },
-    { component: markRaw({ template: '<div>ModalTwo</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>ModalOne</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>ModalTwo</div>' }), config: {} },
   );
   await wrapper.vm.$nextTick();
   const dialogs = wrapper.findAll('dialog');
@@ -114,6 +119,7 @@ test('newly added modal calls showModal()', async () => {
   mockModal.modals.value = [
     ...mockModal.modals.value,
     {
+      id: ++nextId,
       component: markRaw({ template: '<div>ModalOne</div>' }),
       config: { title: 'Modal One' },
     },
@@ -130,15 +136,15 @@ test('newly added modal calls showModal()', async () => {
 
 test('renders component in topmost modal', async () => {
   const TestComponent = markRaw({ template: '<div>Test Component</div>' });
-  mockModal.modals.value = [{ component: TestComponent, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: TestComponent, config: {} }];
   await wrapper.vm.$nextTick();
   expect(wrapper.findComponent(TestComponent).exists()).toBe(true);
 });
 
 test('renders title from config.title', async () => {
   mockModal.modals.value = [
-    { component: markRaw({ template: '<div>First</div>' }), config: { title: 'First Title' } },
-    { component: markRaw({ template: '<div>Second</div>' }), config: { title: 'Second Title' } },
+    { id: ++nextId, component: markRaw({ template: '<div>First</div>' }), config: { title: 'First Title' } },
+    { id: ++nextId, component: markRaw({ template: '<div>Second</div>' }), config: { title: 'Second Title' } },
   ];
   await wrapper.vm.$nextTick();
   const allTitles = wrapper.findAll('h1.title');
@@ -150,6 +156,7 @@ test('renders title from config.title', async () => {
 test('renders close button when config.closable is true', async () => {
   mockModal.modals.value = [
     {
+      id: ++nextId,
       component: markRaw({ template: '<div>SomeModal</div>' }),
       config: { closable: true, title: 'p' },
     },
@@ -162,7 +169,7 @@ test('renders close button when config.closable is true', async () => {
 
 test('does not render close button when config.closable is false', async () => {
   mockModal.modals.value = [
-    { component: markRaw({ template: '<div>ModalNoClose</div>' }), config: { closable: false } },
+    { id: ++nextId, component: markRaw({ template: '<div>ModalNoClose</div>' }), config: { closable: false } },
   ];
   await wrapper.vm.$nextTick();
   const closeButton = wrapper.find('action-button-stub');
@@ -172,7 +179,7 @@ test('does not render close button when config.closable is false', async () => {
 // TODO: feat/stable-beta fix it
 test.skip('closes the topmost modal when clicking outside modal content', async () => {
   mockModal.modals.value = [
-    { component: markRaw({ template: '<div>ModalOutsideClick</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>ModalOutsideClick</div>' }), config: {} },
   ];
   await wrapper.vm.$nextTick();
   const dialog = wrapper.find('dialog');
@@ -182,7 +189,7 @@ test.skip('closes the topmost modal when clicking outside modal content', async 
 
 test('does not close modal when clicking inside modal content', async () => {
   mockModal.modals.value = [
-    { component: markRaw({ template: '<div>SomeModal</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>SomeModal</div>' }), config: {} },
   ];
   await wrapper.vm.$nextTick();
   const modalContent = wrapper.find('.modal-content');
@@ -192,8 +199,8 @@ test('does not close modal when clicking inside modal content', async () => {
 
 test('removing a modal from modals closes/removes that dialog', async () => {
   mockModal.modals.value = [
-    { component: markRaw({ template: '<div>First Modal</div>' }), config: {} },
-    { component: markRaw({ template: '<div>Second Modal</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>First Modal</div>' }), config: {} },
+    { id: ++nextId, component: markRaw({ template: '<div>Second Modal</div>' }), config: {} },
   ];
   await wrapper.vm.$nextTick();
   let dialogs = wrapper.findAll('dialog');
@@ -204,7 +211,7 @@ test('removing a modal from modals closes/removes that dialog', async () => {
   expect(dialogs.length).toBe(1);
 });
 
-test('ModalWindow removing modal calls native dialog close before unmount', async () => {
+test('ModalContainer removing modal calls native dialog close before unmount', async () => {
   const showModalSpy = vi
     .spyOn(HTMLDialogElement.prototype, 'showModal')
     .mockImplementation(vi.fn());
@@ -212,6 +219,7 @@ test('ModalWindow removing modal calls native dialog close before unmount', asyn
 
   mockModal.modals.value = [
     {
+      id: ++nextId,
       component: markRaw({ template: '<div>ModalForClose</div>' }),
       config: {},
     },
@@ -235,7 +243,7 @@ test('ModalWindow removing modal calls native dialog close before unmount', asyn
   expect(closeSpy).toHaveBeenCalled();
 });
 
-test('ModalWindow swap replacing modal calls showModal on new dialog', async () => {
+test('ModalContainer swap replacing modal calls showModal on new dialog', async () => {
   const showModalSpy = vi
     .spyOn(HTMLDialogElement.prototype, 'showModal')
     .mockImplementation(vi.fn());
@@ -244,20 +252,20 @@ test('ModalWindow swap replacing modal calls showModal on new dialog', async () 
   const componentA = markRaw({ template: '<div>ComponentA</div>' });
   const componentB = markRaw({ template: '<div>ComponentB</div>' });
 
-  mockModal.modals.value = [{ component: componentA, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
   await nextTick();
   await nextTick();
 
   expect(showModalSpy).toHaveBeenCalledTimes(1);
 
-  mockModal.modals.value = [{ component: componentB, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentB, config: {} }];
   await nextTick();
   await nextTick();
 
   expect(showModalSpy).toHaveBeenCalledTimes(2);
 });
 
-test('ModalWindow swap closes old dialog before opening new one', async () => {
+test('ModalContainer swap closes old dialog before opening new one', async () => {
   const callOrder: string[] = [];
 
   vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function () {
@@ -270,7 +278,7 @@ test('ModalWindow swap closes old dialog before opening new one', async () => {
   const componentA = markRaw({ template: '<div>ComponentA</div>' });
   const componentB = markRaw({ template: '<div>ComponentB</div>' });
 
-  mockModal.modals.value = [{ component: componentA, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
   await nextTick();
   await nextTick();
 
@@ -283,7 +291,7 @@ test('ModalWindow swap closes old dialog before opening new one', async () => {
 
   callOrder.length = 0;
 
-  mockModal.modals.value = [{ component: componentB, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentB, config: {} }];
   await nextTick();
   await nextTick();
 
@@ -291,20 +299,20 @@ test('ModalWindow swap closes old dialog before opening new one', async () => {
   expect(callOrder[1]).toBe('showModal');
 });
 
-test('ModalWindow swap renders new component after modal replacement', async () => {
+test('ModalContainer swap renders new component after modal replacement', async () => {
   vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(vi.fn());
   vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(vi.fn());
 
   const componentA = markRaw({ template: '<div class="comp-a">ComponentA</div>' });
   const componentB = markRaw({ template: '<div class="comp-b">ComponentB</div>' });
 
-  mockModal.modals.value = [{ component: componentA, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
   await nextTick();
   await nextTick();
 
   expect(wrapper.find('.comp-a').exists()).toBe(true);
 
-  mockModal.modals.value = [{ component: componentB, config: {} }];
+  mockModal.modals.value = [{ id: ++nextId, component: componentB, config: {} }];
   await nextTick();
   await nextTick();
 

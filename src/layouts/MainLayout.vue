@@ -27,7 +27,7 @@
     </template>
   </sidebars-layout>
 
-  <modal-window />
+  <modal-container />
   <app-notifications v-show="!hasOpenModals" />
 </template>
 
@@ -35,7 +35,7 @@
 import MainFooter from 'src/containers/MainFooter.vue';
 import MainSidebar from 'src/containers/MainSidebar.vue';
 import RightSidebarContent from 'src/containers/RightSidebarContent.vue';
-import ModalWindow from 'src/containers/ModalWindow.vue';
+import ModalContainer from 'src/containers/ModalContainer.vue';
 import AppNotifications from 'src/containers/AppNotifications.vue';
 import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
 import SidebarsLayout from 'src/components/SidebarsLayout.vue';

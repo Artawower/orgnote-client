@@ -7,12 +7,12 @@
       </card-wrapper>
     </page-wrapper>
   </safe-area>
-  <modal-window />
+  <modal-container />
 </template>
 
 <script lang="ts" setup>
 import PageWrapper from 'src/components/PageWrapper.vue';
-import ModalWindow from 'src/containers/ModalWindow.vue';
+import ModalContainer from 'src/containers/ModalContainer.vue';
 import StorageSettings from 'src/containers/StorageSettings.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from 'src/containers/MenuItem.vue';

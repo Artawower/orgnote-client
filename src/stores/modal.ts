@@ -7,6 +7,7 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
   const modals = shallowRef<Modal[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resolvers: Array<(value?: any) => any> = [];
+  let nextModalId = 0;
 
   const open = <TReturn = unknown>(
     cmp: VueComponent,
@@ -25,6 +26,7 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
     modals.value = [
       ...modals.value,
       {
+        id: ++nextModalId,
         component: cmp,
         closed: p,
         config: modalConfig,
@@ -49,6 +51,8 @@ export const useModalStore = defineStore<'modal', ModalStore>('modal', () => {
   const title = computed(() => config.value?.title);
 
   const closeAll = () => {
+    resolvers.forEach((resolve) => resolve(undefined));
+    resolvers.length = 0;
     modals.value = [];
   };
 

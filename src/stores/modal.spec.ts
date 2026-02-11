@@ -196,3 +196,21 @@ test('ModalStore close then immediate open with same component creates fresh mod
   expect(store.title).toBe('Second');
   expect(secondPromise).not.toBe(firstPromise);
 });
+
+test('ModalStore closeAll resolves all pending promises with undefined', async () => {
+  const store = useModalStore();
+  const modalA = markRaw(defineComponent({ template: '<div>A</div>' }));
+  const modalB = markRaw(defineComponent({ template: '<div>B</div>' }));
+
+  const closedA = store.open<string>(modalA);
+  const closedB = store.open<string>(modalB);
+
+  store.closeAll();
+
+  const resultA = await closedA;
+  const resultB = await closedB;
+
+  expect(resultA).toBeUndefined();
+  expect(resultB).toBeUndefined();
+  expect(store.modals.length).toBe(0);
+});
