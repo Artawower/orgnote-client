@@ -1,5 +1,5 @@
 import type { Command } from 'orgnote-api';
-import { DefaultCommands, i18n, I18N } from 'orgnote-api';
+import { DefaultCommands, i18n, I18N, isOrgGpgFile, buildBufferUri } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
@@ -9,6 +9,64 @@ import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
+
+const getActiveFilePath = (): string | undefined => {
+  const tab = api.core.usePane().activeTab;
+  const path = tab?.router.currentRoute.value?.params?.path;
+  if (!path) return;
+  return Array.isArray(path) ? path.join('/') : path;
+};
+
+const isEncryptionEnabled = (): boolean =>
+  api.core.useConfig().config.encryption.type !== 'disabled';
+
+const isActiveFileEncrypted = (): boolean => {
+  const path = getActiveFilePath();
+  return !!path && isOrgGpgFile(path);
+};
+
+const isEncryptCommandDisabled = (): boolean => !isEncryptionEnabled() || !getActiveFilePath() || isActiveFileEncrypted();
+
+const isDecryptCommandDisabled = (): boolean => !isEncryptionEnabled() || !getActiveFilePath() || !isActiveFileEncrypted();
+
+const ensureDestinationAvailable = async (path: string): Promise<void> => {
+  const fm = api.core.useFileSystemManager();
+  if (!fm.currentFs) return;
+  const exists = await fm.currentFs.isFileExist(path);
+  if (!exists) return;
+  throw new Error(`File already exists: ${path}`);
+};
+
+const rewriteAndReopen = async (oldPath: string, newPath: string): Promise<void> => {
+  const fs = api.core.useFileSystem();
+  const bufferViewer = api.core.useBufferViewer();
+  const buffers = api.core.useBuffers();
+  const provider = api.core.useBufferProviders().get('file');
+
+  const oldUri = buildBufferUri('file', oldPath);
+  const newUri = buildBufferUri('file', newPath);
+
+  const buffer = buffers.getBufferByUri(oldUri);
+
+  if (!buffer || !provider?.write) {
+    throw new Error('Buffer or file provider is not available');
+  }
+
+  await ensureDestinationAvailable(newPath);
+
+  const content = new Uint8Array(buffer.rawContent);
+
+  await provider.write(newPath, content);
+  await buffers.closeBuffer(oldUri, true);
+  await fs.deleteFile(oldPath);
+  await bufferViewer.open(newUri);
+};
+
+const safeRewriteAndReopen = async (oldPath: string, newPath: string): Promise<void> => {
+  const result = await to(rewriteAndReopen)(oldPath, newPath);
+  if (result.isOk()) return;
+  reporter.reportError(result.error);
+};
 
 export function getGlobalCommands(): Command[] {
   const sidebarStore = api.ui.useSidebar();
@@ -120,35 +178,26 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.ENCRYPT_NOTE,
       icon: 'sym_o_encrypted',
       description: I18N.ENCRYPT_ACTIVE_NOTE,
-      // description: 'encrypt active note',
-      // disabled: () =>
-      //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
-      //   !currentNoteStore.currentNote ||
-      //   currentNoteStore.currentNote.encrypted,
+      disabled: isEncryptCommandDisabled,
       group: 'global',
       handler: async () => {
-        // const path = currentNoteStore.currentNote.filePath;
-        // const newFilePath = [...path.slice(0, -1), `${path.at(-1)}.gpg`];
-        // await fileSystemStore.writeFile(newFilePath, currentNoteStore.noteText);
-        // noteEditorStore.setFilePath(newFilePath);
-        // await fileSystemStore.deleteFile(path);
+        const path = getActiveFilePath();
+        if (!path || isOrgGpgFile(path)) return;
+        const encryptedPath = `${path}.gpg`;
+        await safeRewriteAndReopen(path, encryptedPath);
       },
     },
     {
       command: DefaultCommands.DECRYPT_NOTE,
       icon: 'sym_o_remove_moderator',
       description: I18N.DECRYPT_ACTIVE_NOTE,
-      // disabled: () =>
-      //   config.encryption.type === ModelsPublicNoteEncryptionTypeEnum.Disabled ||
-      //   !currentNoteStore.currentNote?.encrypted,
+      disabled: isDecryptCommandDisabled,
       group: 'global',
       handler: async () => {
-        // const path = currentNoteStore.currentNote.filePath;
-        // const newFileName = path.at(-1).replace(/\.gpg$/, '');
-        // const newFilePath = [...path.slice(0, -1), newFileName];
-        // await fileSystemStore.writeFile(newFilePath, currentNoteStore.noteText);
-        // noteEditorStore.setFilePath(newFilePath);
-        // await fileSystemStore.deleteFile(path);
+        const path = getActiveFilePath();
+        if (!path || !isOrgGpgFile(path)) return;
+        const decryptedPath = path.replace(/\.gpg$/, '');
+        await safeRewriteAndReopen(path, decryptedPath);
       },
     },
     {

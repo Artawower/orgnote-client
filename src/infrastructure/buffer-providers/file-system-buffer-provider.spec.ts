@@ -75,8 +75,9 @@ test('createFileSystemBufferProvider read returns content for non-gpg files with
   expect(result).toEqual(content);
 });
 
-test('createFileSystemBufferProvider read decrypts .org.gpg files passing Uint8Array to decrypt', async () => {
-  const encryptedContent = new Uint8Array([1, 2, 3, 4, 5]);
+test('createFileSystemBufferProvider read decrypts armored .org.gpg files converting bytes to string before decrypt', async () => {
+  const armoredText = '-----BEGIN PGP MESSAGE-----\ntest\n-----END PGP MESSAGE-----';
+  const encryptedContent = new TextEncoder().encode(armoredText);
   mockReadFile.mockResolvedValue(encryptedContent);
   mockDecrypt.mockResolvedValue('decrypted text');
 
@@ -84,7 +85,19 @@ test('createFileSystemBufferProvider read decrypts .org.gpg files passing Uint8A
   await provider.read('/notes/secret.org.gpg');
 
   expect(mockReadFile).toHaveBeenCalledWith('/notes/secret.org.gpg', 'binary');
-  expect(mockDecrypt).toHaveBeenCalledWith(encryptedContent);
+  expect(mockDecrypt).toHaveBeenCalledWith(armoredText);
+  expect(mockDecrypt).toHaveBeenCalledWith(expect.any(String));
+});
+
+test('createFileSystemBufferProvider read decrypts binary .org.gpg files passing Uint8Array to decrypt', async () => {
+  const binaryContent = new Uint8Array([0xC0, 0x03, 0x04, 0x07, 0x02]);
+  mockReadFile.mockResolvedValue(binaryContent);
+  mockDecrypt.mockResolvedValue('decrypted text');
+
+  const provider = createFileSystemBufferProvider();
+  await provider.read('/notes/secret.org.gpg');
+
+  expect(mockDecrypt).toHaveBeenCalledWith(binaryContent);
   expect(mockDecrypt).toHaveBeenCalledWith(expect.any(Uint8Array));
 });
 

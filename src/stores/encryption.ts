@@ -14,7 +14,7 @@ export const useEncryptionStore = defineStore<'encryption', EncryptionStore>('en
 
   const encrypt = async (
     text: string,
-    format: BaseOrgNoteEncryption['format'] = 'binary',
+    format: BaseOrgNoteEncryption['format'] = 'armored',
     encryptionConfig?: OrgNoteEncryption,
   ): Promise<string> => {
     encryptionConfig ??= config.encryption;

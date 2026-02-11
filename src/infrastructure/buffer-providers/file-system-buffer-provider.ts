@@ -1,6 +1,6 @@
 import type { BufferProvider, BufferContext, FileSystemChange } from 'orgnote-api';
 import { isOrgGpgFile } from 'orgnote-api';
-import { to, uint8ArrayToText, textToUint8Array } from 'orgnote-api/utils';
+import { to, uint8ArrayToText, textToUint8Array, isArmoredPgp } from 'orgnote-api/utils';
 import type { ResultAsync } from 'neverthrow';
 import { errAsync, okAsync } from 'neverthrow';
 import { api } from 'src/boot/api';
@@ -38,7 +38,10 @@ const decryptContent = (filePath: string, content: Uint8Array): ResultAsync<Uint
   if (!isEncryptionConfigValid()) {
     return errAsync(new EncryptionConfigRequiredError());
   }
-  return to(api.core.useEncryption().decrypt)(content).map(textToUint8Array);
+  const decryptInput: string | Uint8Array = isArmoredPgp(content)
+    ? uint8ArrayToText(content)
+    : content;
+  return to(api.core.useEncryption().decrypt)(decryptInput).map(textToUint8Array);
 };
 
 export const createFileSystemBufferProvider = (): BufferProvider => ({
@@ -51,9 +54,14 @@ export const createFileSystemBufferProvider = (): BufferProvider => ({
     }
 
     const safeRead = to(fm.currentFs.readFile, 'Failed to load buffer content');
-    const result = await safeRead<'binary', Uint8Array>(path, 'binary').andThen((content) =>
-      decryptContent(path, content),
-    );
+    const readResult = await safeRead<'binary', Uint8Array>(path, 'binary');
+
+    if (readResult.isErr()) {
+      reporter.reportError(new Error(`Failed to load: ${path}`, { cause: readResult.error }));
+      throw readResult.error;
+    }
+
+    const result = await decryptContent(path, readResult.value);
 
     if (result.isErr()) {
       reporter.reportError(new Error(`Failed to load: ${path}`, { cause: result.error }));
