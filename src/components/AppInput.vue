@@ -6,6 +6,7 @@
     v-model="model"
     :name="name"
     :placeholder="placeholder"
+    :autocomplete="autocomplete"
   />
 </template>
 
@@ -17,6 +18,7 @@ defineProps<{
   placeholder?: string;
   name?: string;
   type?: string;
+  autocomplete?: string;
 }>();
 
 const model = defineModel<string | number>();

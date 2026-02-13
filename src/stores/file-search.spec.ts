@@ -233,12 +233,15 @@ test('processFile regression: file created without org-mode ID becomes searchabl
   });
 });
 
-test('processFile does nothing for empty file', async () => {
+test('processFile indexes empty file with path-based title', async () => {
   const store = useFileSearchStore();
   mockFileContents.set('/notes/empty.org', '');
 
   await store.processFile('/notes/empty.org');
-  expect(mockFiles.size).toBe(0);
+  expect(mockFiles.size).toBe(1);
+  const saved = mockFiles.get('/notes/empty.org');
+  expect(saved?.title).toBe('empty');
+  expect(saved?.filePath).toEqual(['notes', 'empty.org']);
 });
 
 test('processFile does nothing for missing file', async () => {

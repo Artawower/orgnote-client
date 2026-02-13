@@ -1,14 +1,24 @@
 import type { Command } from 'orgnote-api';
-import { DefaultCommands, i18n, I18N, isOrgGpgFile, buildBufferUri } from 'orgnote-api';
+import {
+  DefaultCommands,
+  i18n,
+  I18N,
+  isOrgGpgFile,
+  buildBufferUri,
+  generateGpgKeys,
+} from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
 import { clientOnly } from 'src/utils/platform-specific';
 import LogsContainer from 'src/containers/LogsContainer.vue';
 import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
+import GenerateGpgKeysModal from 'src/containers/GenerateGpgKeysModal.vue';
+import type { GenerateGpgKeysModalResult } from 'src/models/gpg-keys-modal-result';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
+import { useEncryptedNotesWarning } from 'src/composables/use-encrypted-notes-warning';
 
 const getActiveFilePath = (): string | undefined => {
   const tab = api.core.usePane().activeTab;
@@ -25,9 +35,89 @@ const isActiveFileEncrypted = (): boolean => {
   return !!path && isOrgGpgFile(path);
 };
 
-const isEncryptCommandDisabled = (): boolean => !isEncryptionEnabled() || !getActiveFilePath() || isActiveFileEncrypted();
+const isEncryptCommandDisabled = (): boolean =>
+  !isEncryptionEnabled() || !getActiveFilePath() || isActiveFileEncrypted();
 
-const isDecryptCommandDisabled = (): boolean => !isEncryptionEnabled() || !getActiveFilePath() || !isActiveFileEncrypted();
+const withEncryptionGuard = async (fn: () => Promise<void>): Promise<void> => {
+  const { confirmEncryptionChange } = useEncryptedNotesWarning();
+  if (!(await confirmEncryptionChange())) return;
+  await fn();
+};
+
+const uploadEncryptionKey = (field: 'privateKey' | 'publicKey') =>
+  withEncryptionGuard(async () => {
+    const file = await api.utils.uploadFile();
+    if (!file) return;
+    const { config } = api.core.useConfig();
+    if (config.encryption.type !== 'gpgKeys') return;
+    config.encryption[field] = await file.text();
+  });
+
+const normalizeText = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+};
+
+const extractUsernameFromEmail = (email: string): string => {
+  const localPart = email.split('@')[0] ?? '';
+  return normalizeText(localPart);
+};
+
+const resolveGpgIdentity = (email: string) => {
+  const auth = api.core.useAuth();
+  const user = auth.user;
+  const normalizedEmail = normalizeText(email);
+  const username =
+    normalizeText(user?.nickName) ||
+    normalizeText(user?.name) ||
+    extractUsernameFromEmail(normalizedEmail);
+
+  return { username, email: normalizedEmail };
+};
+
+const openGenerateGpgKeysModal = async (): Promise<GenerateGpgKeysModalResult | undefined> => {
+  const auth = api.core.useAuth();
+  return await api.ui
+    .useModal()
+    .open<GenerateGpgKeysModalResult | undefined>(GenerateGpgKeysModal, {
+      title: I18N.GENERATE_GPG_KEYS,
+      mini: true,
+      position: 'bottom',
+      modalProps: {
+        email: auth.user?.email,
+      },
+    });
+};
+
+const generateAndSaveGpgKeys = async (): Promise<void> => {
+  const modalResult = await openGenerateGpgKeysModal();
+  if (!modalResult) return;
+
+  const identity = resolveGpgIdentity(modalResult.email);
+  const generated = await to(generateGpgKeys)({
+    username: identity.username,
+    email: identity.email,
+    passphrase: modalResult.passphrase,
+  });
+
+  if (generated.isErr()) {
+    reporter.reportError(generated.error);
+    return;
+  }
+
+  const { config } = api.core.useConfig();
+  const encryptFilesByDefault = config.encryption.encryptFilesByDefault;
+  config.encryption = {
+    type: 'gpgKeys',
+    privateKey: generated.value.privateKey,
+    publicKey: generated.value.publicKey,
+    privateKeyPassphrase: modalResult.passphrase,
+    encryptFilesByDefault,
+  };
+};
+
+const isDecryptCommandDisabled = (): boolean =>
+  !isEncryptionEnabled() || !getActiveFilePath() || !isActiveFileEncrypted();
 
 const ensureDestinationAvailable = async (path: string): Promise<void> => {
   const fm = api.core.useFileSystemManager();
@@ -178,6 +268,7 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.ENCRYPT_NOTE,
       icon: 'sym_o_encrypted',
       description: I18N.ENCRYPT_ACTIVE_NOTE,
+      hide: isEncryptCommandDisabled,
       disabled: isEncryptCommandDisabled,
       group: 'global',
       handler: async () => {
@@ -191,6 +282,7 @@ export function getGlobalCommands(): Command[] {
       command: DefaultCommands.DECRYPT_NOTE,
       icon: 'sym_o_remove_moderator',
       description: I18N.DECRYPT_ACTIVE_NOTE,
+      hide: isDecryptCommandDisabled,
       disabled: isDecryptCommandDisabled,
       group: 'global',
       handler: async () => {
@@ -218,6 +310,24 @@ export function getGlobalCommands(): Command[] {
       icon: 'sym_o_savings',
       group: 'global',
       handler: () => window.open(PATREON_LINK, '_blank'),
+    },
+    {
+      command: DefaultCommands.UPLOAD_PRIVATE_KEY,
+      icon: 'sym_o_key',
+      group: 'encryption',
+      handler: () => uploadEncryptionKey('privateKey'),
+    },
+    {
+      command: DefaultCommands.UPLOAD_PUBLIC_KEY,
+      icon: 'sym_o_key',
+      group: 'encryption',
+      handler: () => uploadEncryptionKey('publicKey'),
+    },
+    {
+      command: DefaultCommands.GENERATE_GPG_KEYS,
+      icon: 'sym_o_vpn_key',
+      group: 'encryption',
+      handler: () => withEncryptionGuard(generateAndSaveGpgKeys),
     },
   ];
 

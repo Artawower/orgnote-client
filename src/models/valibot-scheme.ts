@@ -1,11 +1,15 @@
 // NOTE It's not a real scheme, just a simple representation of actual scheme
 // with necessary fields for rendering.
+import type { CommandName } from 'orgnote-api';
 
+// TODO: find a batter way to get fields from the orgnote-api scheme
 export interface ValibotMetadata {
   metadata: {
     conditionalKey?: string;
     textarea?: boolean;
     upload?: boolean;
+    password?: boolean;
+    command?: CommandName;
   };
   type: string;
 }

@@ -56,6 +56,7 @@ const props = defineProps<{
   path: keyof OrgNoteConfig;
   name?: string;
   scheme: ValibotScheme;
+  beforeTypeChange?: () => Promise<boolean>;
 }>();
 
 const { config } = storeToRefs(api.core.useConfig());
@@ -96,9 +97,10 @@ const conditionalOption = computed(() => {
   };
 });
 
-const changeConditionalType = (t?: string): void => {
+const changeConditionalType = async (newType?: string): Promise<void> => {
   if (!isPresent(conditionalKey)) return;
-  config.value[props.path][conditionalKey] = t;
+  if (props.beforeTypeChange && !(await props.beforeTypeChange())) return;
+  config.value[props.path][conditionalKey] = newType;
 };
 </script>
 

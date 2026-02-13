@@ -1,6 +1,14 @@
 import { I18N } from 'orgnote-api';
 
+const buildDefaultMessages = (): Record<string, string> => {
+  return Object.values(I18N).reduce<Record<string, string>>((acc, key) => {
+    acc[key] = key;
+    return acc;
+  }, {});
+};
+
 const eng: Record<string, string> = {
+  ...buildDefaultMessages(),
   [I18N.LOADING_MESSAGE_1]: 'loading...',
   [I18N.LOADING_MESSAGE_2]: 'fetching data...',
   [I18N.LOADING_MESSAGE_3]: 'almost there...',
@@ -13,7 +21,8 @@ const eng: Record<string, string> = {
   [I18N.REMOVE_ACCOUNT]: 'remove account',
   [I18N.SEARCH]: 'Search',
   [I18N.CRITICAL_ERROR]: 'Critical Error',
-  [I18N.ERROR_DESCRIPTION]: 'The application encountered an unexpected error and cannot continue normally.',
+  [I18N.ERROR_DESCRIPTION]:
+    'The application encountered an unexpected error and cannot continue normally.',
   [I18N.RELOAD]: 'Reload',
   [I18N.COPY_LOG]: 'Copy Log',
   [I18N.BACK_HOME]: 'Back to Home',
@@ -46,6 +55,9 @@ const eng: Record<string, string> = {
 
   [I18N.TOC_NO_ACTIVE_DOCUMENT]: 'No active document',
   [I18N.TOC_NO_HEADLINES_FOUND]: 'No headlines found',
+
+  [I18N.GPG_EMAIL_REQUIRED]: 'Email is required',
+  [I18N.GPG_EMAIL_INVALID]: 'Invalid email format',
 };
 
 export default eng;

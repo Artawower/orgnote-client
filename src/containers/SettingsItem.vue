@@ -14,7 +14,7 @@
   </template>
   <template v-else-if="actualType === 'array'">
     <menu-item v-for="(_, i) of config[props.path][props.name]" :key="i">
-      <app-input
+      <input-field
         v-model="config[props.path][props.name][i]"
         :type="actualScheme.type"
         :name="name"
@@ -61,15 +61,18 @@
         v-model="config[props.path][props.name]"
         @click="ensureValue"
       />
-      <app-input
-        v-else-if="inputSchemeType"
-        v-model="config[props.path][props.name]"
-        :textRight="true"
-        :type="actualType === 'string' ? 'text' : 'number'"
-        :name="name"
-        ref="editInputRef"
-        @focus="ensureValue"
-      />
+      <div v-else-if="inputSchemeType" class="input-wrapper">
+        <input-field
+          v-model="config[props.path][props.name]"
+          :textRight="true"
+          :type="inputFieldType"
+          :password-toggle="isPasswordField"
+          :name="name"
+          ref="editInputRef"
+          @focus="ensureValue"
+          class="settings-input"
+        />
+      </div>
       <div v-if="isOptional && config[props.path][props.name] == null" class="optional-indicator">
         <span class="text-grey-6">{{ camelCaseToWords('optional') }}</span>
       </div>
@@ -80,7 +83,7 @@
 <script lang="ts" setup>
 import MenuItem from './MenuItem.vue';
 import ToggleButton from 'src/components/ToggleButton.vue';
-import AppInput from 'src/components/AppInput.vue';
+import InputField from 'src/components/InputField.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import type { OrgNoteConfig } from 'orgnote-api';
 import { I18N } from 'orgnote-api';
@@ -91,7 +94,8 @@ import { useI18n } from 'vue-i18n';
 import type { ValibotScheme } from 'src/models/valibot-scheme';
 import AppTextArea from './AppTextArea.vue';
 import AppDescription from 'src/components/AppDescription.vue';
-import { isPresent } from 'orgnote-api/utils';
+import { isPresent, to } from 'orgnote-api/utils';
+import { reporter } from 'src/boot/report';
 
 const props = defineProps<{
   path: keyof OrgNoteConfig;
@@ -103,7 +107,7 @@ const props = defineProps<{
 const { config } = api.core.useConfig() as Record<string, any>;
 const getNestedPath = (path: string) => `${props.path}.${path}`;
 
-const editInputRef = ref<typeof AppInput>();
+const editInputRef = ref<typeof InputField>();
 
 const onItemClick = () => {
   ensureValue();
@@ -130,6 +134,12 @@ const removeFromArray = (index: number) => {
 };
 
 const uploadConfigFile = async () => {
+  const command = metadata?.command;
+  if (command) {
+    const result = await to(() => api.core.useCommands().execute(command))();
+    if (result.isErr()) reporter.reportError(result.error);
+    return;
+  }
   const file = await api.utils.uploadFile();
   config[props.path][props.name] = await file?.text();
 };
@@ -187,6 +197,14 @@ const ensureValue = (): void => {
 
 const inputTypes = ['string', 'number'];
 const inputSchemeType = computed(() => inputTypes.includes(actualType.value));
+
+const isPasswordField = computed(() => metadata?.password && actualType.value === 'string');
+
+const inputFieldType = computed<'text' | 'number' | 'password'>(() => {
+  if (actualType.value === 'number') return 'number';
+  if (isPasswordField.value) return 'password';
+  return 'text';
+});
 </script>
 
 <style lang="scss" scoped>
@@ -229,5 +247,9 @@ textarea {
 .optional-indicator {
   font-size: var(--font-size-sm);
   font-style: italic;
+}
+
+.input-wrapper {
+  width: 100%;
 }
 </style>
