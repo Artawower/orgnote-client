@@ -76,13 +76,13 @@ body {
   --header-bg: transparent;
   --header-border: none;
   --header-border-radius: 0;
-  --header-padding: var(--padding-sm) var(--padding-md);
-  --header-top: var(--padding-md);
+  --header-padding: var(--padding-sm) 0;
+  --header-top: 0;
 
   // Header wrapper
   --header-wrapper-bg: transparent;
   --header-wrapper-border-radius: 0;
-  --header-wrapper-padding-y: var(--padding-lg);
+  --header-wrapper-padding-y: var(--padding-md);
   --header-wrapper-padding-x: var(--padding-lg);
   --header-wrapper-padding: var(--header-wrapper-padding-y) var(--header-wrapper-padding-x);
 

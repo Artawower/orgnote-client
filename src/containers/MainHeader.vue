@@ -1,5 +1,5 @@
 <template>
-  <app-header>
+  <app-header float>
     <template v-if="canGoBack || canGoForward" #left>
       <action-button
         v-if="canGoBack"
