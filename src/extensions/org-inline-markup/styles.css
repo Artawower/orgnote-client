@@ -77,19 +77,24 @@
 }
 
 .org-headline-1 {
-  font-size: 2rem;
+  --paragraph-font-size: var(--headline-font-size-1);
+  font-size: var(--paragraph-font-size);
 }
 .org-headline-2 {
-  font-size: 1.8rem;
+  --paragraph-font-size: var(--headline-font-size-2);
+  font-size: var(--paragraph-font-size);
 }
 .org-headline-3 {
-  font-size: 1.6rem;
+  --paragraph-font-size: var(--headline-font-size-3);
+  font-size: var(--paragraph-font-size);
 }
 .org-headline-4 {
-  font-size: 1.4rem;
+  --paragraph-font-size: var(--headline-font-size-4);
+  font-size: var(--paragraph-font-size);
 }
 .org-headline-5 {
-  font-size: 1.2rem;
+  --paragraph-font-size: var(--headline-font-size-5);
+  font-size: var(--paragraph-font-size);
 }
 .org-headline-6,
 .org-headline-7,
@@ -98,7 +103,8 @@
 .org-headline-10,
 .org-headline-11,
 .org-headline-12 {
-  font-size: 1rem;
+  --paragraph-font-size: var(--headline-font-size-6);
+  font-size: var(--paragraph-font-size);
 }
 
 .org-headline-line {
