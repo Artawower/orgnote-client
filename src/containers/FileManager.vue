@@ -68,7 +68,7 @@
 
 <script lang="ts" setup>
 import type { StyleSize } from 'orgnote-api';
-import { DefaultCommands, getParentDir, I18N, join, withRoot } from 'orgnote-api';
+import { DefaultCommands, getParentDir, I18N, join, parseBufferUri, withRoot } from 'orgnote-api';
 import type { DiskFile } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import FileManagerItem from './FileManagerItem.vue';
@@ -179,7 +179,9 @@ const activeFilePath = computed<string | undefined>(() => {
   if (!activeTab?.router) return;
 
   const route = activeTab.router.currentRoute.value;
-  return extractPathFromRoute(route);
+  const uri = extractPathFromRoute(route);
+  if (!uri) return;
+  return parseBufferUri(uri).path;
 });
 
 const isActiveFile = (file: DiskFile): boolean => {
