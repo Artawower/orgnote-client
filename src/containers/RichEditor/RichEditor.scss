@@ -168,7 +168,7 @@
     }
 
     @for $i from 1 through 12 {
-      .cm-line:has(.org-headline-#{$i}.org-operator ~ .org-headline-#{$i}:not(.org-operator)) {
+      .cm-line.org-headline-#{$i}:not(.cm-activeLine) {
         .org-headline-#{$i}.org-operator {
           @include cm-hidden;
         }
