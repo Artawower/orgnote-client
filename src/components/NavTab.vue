@@ -128,7 +128,7 @@ const handleDragEnd = () => {
   background: var(--tab-active-bg);
 
   .label-text {
-    color: var(--tab-active-fg) !important;
+    color: var(--tab-active-fg);
   }
 }
 

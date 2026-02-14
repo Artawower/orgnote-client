@@ -257,8 +257,8 @@ body {
   --tab-width: 160px;
   --tab-active-border: 0;
   --tab-active-hover-bg: var(--bg-hover);
-  --tab-active-fg: var(--fg-active);
-  --tab-active-bg: var(--bg-active);
+  --tab-active-fg: var(--fg);
+  --tab-active-bg: var(--bg-hover);
 
   // Tab overview
   --tab-preview-active-border: 3px solid var(--accent);
