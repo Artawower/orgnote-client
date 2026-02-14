@@ -14,6 +14,7 @@
       </slot>
     </animation-wrapper>
     <slot name="text" />
+    <slot />
   </button>
 </template>
 

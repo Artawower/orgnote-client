@@ -1,7 +1,15 @@
 <template>
   <app-flex class="file-manager" :class="{ compact }" column start align-start gap="md">
     <div class="actions">
-      <action-buttons horizontal :position="compact ? 'left' : 'right'">
+      <action-buttons v-if="selectionMode && !pickDir" horizontal position="left">
+        <command-action-button :command="DefaultCommands.COPY_FILE" :size="iconSize" />
+        <command-action-button :command="DefaultCommands.MOVE_FILE" :size="iconSize" />
+        <command-action-button :command="DefaultCommands.DELETE_FILE" :size="iconSize" />
+        <command-action-button :command="DefaultCommands.DESELECT_ALL_FILES" :size="iconSize" />
+      </action-buttons>
+      <action-buttons v-else horizontal :position="compact ? 'left' : 'right'">
+        <command-action-button v-if="pendingOperation" :command="DefaultCommands.EXECUTE_PENDING_FILE_OPERATION" :size="iconSize" />
+        <command-action-button v-if="pendingOperation" :command="DefaultCommands.CANCEL_PENDING_FILE_OPERATION" :size="iconSize" />
         <action-button
           @click="emits('dirPicked', targetPath)"
           v-if="pickDir"
@@ -53,12 +61,15 @@
           />
           <file-manager-item
             :highlight="searchHighlightKeywords"
-            @click="handleFileClick(f)"
+            @click="handleFileClick(f, $event)"
             v-for="f of searchFiles"
             :key="f.path"
             :file="f"
             :size="menuItemSize"
             :active="isActiveFile(f)"
+            :selection-mode="selectionMode"
+            :selected="selectedFiles.has(f.path)"
+            @toggle-selection="fm.toggleSelection(f.path)"
           />
         </card-wrapper>
       </div>
@@ -100,7 +111,8 @@ const emits = defineEmits<{
 
 const menuItemSize = computed(() => (props.compact ? 'md' : 'auto'));
 
-const { path: targetPath, searchQuery } = storeToRefs(api.core.useFileManager());
+const fm = api.core.useFileManager();
+const { path: targetPath, searchQuery, selectionMode, selectedFiles, pendingOperation } = storeToRefs(fm);
 if (props.path) {
   targetPath.value = props.path;
 }
@@ -146,7 +158,17 @@ const bufferViewer = api.core.useBufferViewer();
 const sidebar = api.ui.useSidebar();
 const paneStore = api.core.usePane();
 
-const handleFileClick = async (f: DiskFile) => {
+const handleFileClick = async (f: DiskFile, event?: MouseEvent) => {
+  if (event?.ctrlKey || event?.metaKey) {
+    fm.toggleSelection(f.path);
+    return;
+  }
+
+  if (selectionMode.value) {
+    fm.toggleSelection(f.path);
+    return;
+  }
+
   if (f.type === 'directory') {
     targetPath.value = withRoot(join(targetPath.value, f.name));
     await readDir();

@@ -5,15 +5,19 @@ import { reactive } from 'vue';
 
 const DEFAULT_FILE_ACTIONS: MenuAction[] = [
   { command: DefaultCommands.CREATE_NOTE },
+  { command: DefaultCommands.COPY_FILE },
+  { command: DefaultCommands.MOVE_FILE },
   { command: DefaultCommands.DELETE_FILE },
-  { command: DefaultCommands.RENAME_FILE },
+  { command: DefaultCommands.SELECT_FILE },
 ];
 
 const DEFAULT_DIR_ACTIONS: MenuAction[] = [
   { command: DefaultCommands.CREATE_FOLDER },
   { command: DefaultCommands.CREATE_NOTE },
+  { command: DefaultCommands.COPY_FILE },
+  { command: DefaultCommands.MOVE_FILE },
   { command: DefaultCommands.DELETE_FILE },
-  { command: DefaultCommands.RENAME_FILE },
+  { command: DefaultCommands.SELECT_FILE },
 ];
 
 const DEFAULT_GROUPS: Record<MenuGroup, MenuGroupParams> = {

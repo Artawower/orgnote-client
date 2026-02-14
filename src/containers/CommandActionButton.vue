@@ -12,6 +12,7 @@
     <template v-if="includeText || text" #text>{{
       text || camelCaseToWords(command.command)
     }}</template>
+    <q-tooltip v-if="resolvedAriaLabel" :delay="tooltipDelay">{{ resolvedAriaLabel }}</q-tooltip>
   </action-button>
 </template>
 
@@ -23,6 +24,8 @@ import { computed, toValue } from 'vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { useResolvedIcon } from 'src/composables/use-resolved-icon';
+import { useConfigStore } from 'src/stores/config';
+import { storeToRefs } from 'pinia';
 
 defineOptions({
   inheritAttrs: false,
@@ -35,6 +38,9 @@ const props = defineProps<{
   ariaLabel?: string;
   data?: unknown;
 }>();
+
+const { config } = storeToRefs(useConfigStore());
+const tooltipDelay = computed(() => config.value.ui.tooltipDelay);
 
 const commandsStore = useCommandsStore();
 

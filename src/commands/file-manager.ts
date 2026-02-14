@@ -7,7 +7,6 @@ import { deleteFileCompletion } from 'src/composables/delete-file-completion';
 import { useFileRenameCompletion } from 'src/composables/file-rename-completion';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { to } from 'orgnote-api/utils';
-import { isNullable } from 'orgnote-api/utils';
 import { defineAsyncComponent } from 'vue';
 
 const group = 'file manager';
@@ -125,38 +124,121 @@ export function getFileManagerCommands(): Command[] {
         api: OrgNoteApi,
         params: CommandHandlerParams<{
           path?: string;
+          paths?: string[];
           force?: boolean;
         }>,
       ) => {
-        if (!params.data) {
+        const fm = api.core.useFileManager();
+        const paths = params?.data?.paths ?? (params?.data?.path ? [params.data.path] : null);
+        const targets = paths ?? fm.operationTargets;
+
+        if (!targets.length) {
           await deleteFileCompletion(api);
           return;
         }
 
-        const fs = api.core.useFileSystem();
         if (params?.data?.force) {
-          await fs.deleteFile(params.data.path!);
+          const fs = api.core.useFileSystem();
+          await Promise.all(targets.map((p) => fs.deleteFile(p)));
+          fm.clearSelection();
           return;
         }
 
-        if (isNullable(params?.data?.path)) {
-          return;
-        }
+        return deleteWithConfirmation(api, targets);
+      },
+    },
+    {
+      command: DefaultCommands.COPY_FILE,
+      group,
+      icon: 'sym_o_content_copy',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        const targets = fm.operationTargets;
+        if (!targets.length) return;
+        fm.startCopy(targets);
+      },
+    },
+    {
+      command: DefaultCommands.MOVE_FILE,
+      group,
+      icon: 'sym_o_drive_file_move',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        const targets = fm.operationTargets;
+        if (!targets.length) return;
+        fm.startMove(targets);
+      },
+    },
+    {
+      command: DefaultCommands.EXECUTE_PENDING_FILE_OPERATION,
+      group,
+      icon: 'sym_o_content_paste',
+      handler: async (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        await fm.executePending(fm.path);
+      },
+    },
+    {
+      command: DefaultCommands.CANCEL_PENDING_FILE_OPERATION,
+      group,
+      icon: 'close',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        fm.cancelPending();
+      },
+    },
+    {
+      command: DefaultCommands.SELECT_FILE,
+      group,
+      icon: 'sym_o_check_circle',
+      handler: (
+        api: OrgNoteApi,
+        params: CommandHandlerParams<{ path?: string }>,
+      ) => {
+        const fm = api.core.useFileManager();
+        const targetPath = params?.data?.path ?? fm.focusFile?.path;
+        if (!targetPath) return;
 
-        const confirmModal = api.ui.useConfirmationModal();
-        const del = await confirmModal.confirm({
-          title: I18N.CONFIRM_DELETE_FILE,
-          message: params.data.path,
-        });
-
-        if (!del) {
-          return;
-        }
-        await fs.deleteFile(params.data.path);
-        return;
+        fm.toggleSelection(targetPath);
+      },
+    },
+    {
+      command: DefaultCommands.SELECT_ALL_FILES,
+      group,
+      icon: 'sym_o_select_all',
+      handler: async (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        const fs = api.core.useFileSystem();
+        const files = await fs.readDir(fm.path);
+        fm.selectFiles(files);
+      },
+    },
+    {
+      command: DefaultCommands.DESELECT_ALL_FILES,
+      group,
+      icon: 'sym_o_deselect',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        fm.clearSelection();
       },
     },
   ];
 
   return commands;
 }
+
+const deleteWithConfirmation = async (api: OrgNoteApi, paths: string[]): Promise<void> => {
+  const confirmModal = api.ui.useConfirmationModal();
+  const message = paths.length === 1 ? paths[0] : `${paths.length} files`;
+  const confirmed = await confirmModal.confirm({
+    title: I18N.CONFIRM_DELETE_FILE,
+    message,
+  });
+
+  if (!confirmed) return;
+
+  const fm = api.core.useFileManager();
+  await fm.deleteFiles(paths);
+};
+
+

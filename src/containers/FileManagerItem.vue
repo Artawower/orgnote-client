@@ -7,6 +7,12 @@
   >
     <menu-item :size="size" :active="active">
       <app-flex class="file-info" row start align-center gap="sm">
+        <app-checkbox
+          v-if="selectionMode && !root"
+          :model-value="selected ?? false"
+          @change="emits('toggleSelection')"
+          @click.stop
+        />
         <app-icon
           :name="file?.type === 'directory' || root ? 'sym_o_folder' : 'sym_o_draft'"
           size="sm"
@@ -21,7 +27,7 @@
               :autoEscape="true"
               :textToHighlight="file?.name ?? ''"
             />
-            <q-tooltip :delay="tooltipDelay">{{ file?.name }}</q-tooltip>
+            <q-tooltip v-if="file?.name" :delay="tooltipDelay">{{ file.name }}</q-tooltip>
           </template>
         </div>
       </app-flex>
@@ -32,6 +38,7 @@
 <script lang="ts" setup>
 import type { MenuGroup, StyleSize } from 'orgnote-api';
 import type { DiskFile } from 'orgnote-api';
+import AppCheckbox from 'src/components/AppCheckbox.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import MenuItem from './MenuItem.vue';
 import Highlighter from 'vue-highlight-words';
@@ -49,6 +56,12 @@ const props = defineProps<{
   root?: boolean;
   size?: StyleSize;
   active?: boolean;
+  selectionMode?: boolean;
+  selected?: boolean;
+}>();
+
+const emits = defineEmits<{
+  (e: 'toggleSelection'): void;
 }>();
 
 const fm = api.core.useFileManager();

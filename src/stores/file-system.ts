@@ -168,6 +168,48 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       return res;
     };
 
+    const copyFile = async (src: string | string[], dest: string | string[]): Promise<void> => {
+      const srcPath = normalizePath(src);
+      const destPath = normalizePath(dest);
+
+      const srcInfo = await safeFs.value.fileInfo(srcPath);
+      if (srcInfo?.type === 'directory') {
+        await copyDir(srcPath, destPath);
+        return;
+      }
+
+      if (safeFs.value.copyFile) {
+        return await safeFs.value.copyFile(srcPath, destPath);
+      }
+
+      const content = await safeFs.value.readFile(srcPath, 'binary');
+      await safeFs.value.writeFile(destPath, content, 'binary');
+    };
+
+    const copyDir = async (srcDir: string, destDir: string): Promise<void> => {
+      await safeFs.value.mkdir(destDir);
+      const entries = await safeFs.value.readDir(srcDir);
+      // TODO: Could be optimized via queue
+      await Promise.all(
+        entries.map((entry) => {
+          const srcChild = join(srcDir, entry.name);
+          const destChild = join(destDir, entry.name);
+          if (entry.type === 'directory') {
+            return copyDir(srcChild, destChild);
+          }
+          return copySingleFile(srcChild, destChild);
+        }),
+      );
+    };
+
+    const copySingleFile = async (srcPath: string, destPath: string): Promise<void> => {
+      if (safeFs.value.copyFile) {
+        return await safeFs.value.copyFile(srcPath, destPath);
+      }
+      const content = await safeFs.value.readFile(srcPath, 'binary');
+      await safeFs.value.writeFile(destPath, content, 'binary');
+    };
+
     function withSafeFolderCreation<PATH extends string | string[], A extends unknown[], R>(
       fn: (p: PATH, ...args: A) => Promise<R>,
       isDir: boolean,
@@ -217,6 +259,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       rmdir: withSafeFolderCreation(rmdir, true),
       fileInfo: withSafeFolderCreation(fileInfo),
       readDir: withSafeFolderCreation(readDir, false, []),
+      copyFile: withSafeFolderCreation(copyFile),
       dropFileSystem,
       prettyVault,
     };

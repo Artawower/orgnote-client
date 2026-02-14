@@ -22,7 +22,18 @@ vi.mock('vue-i18n', () => ({
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
-      useFileManager: () => ({ path: fileManagerPath, searchQuery: fileManagerSearchQuery, mobileFileSearchActive: fileManagerMobileFileSearchActive }),
+      useFileManager: () => ({
+        path: fileManagerPath,
+        searchQuery: fileManagerSearchQuery,
+        mobileFileSearchActive: fileManagerMobileFileSearchActive,
+        selectedFiles: ref(new Set<string>()),
+        selectionMode: ref(false),
+        pendingOperation: ref(undefined),
+        operationTargets: ref([]),
+        focusFile: ref(undefined),
+        toggleSelection: vi.fn(),
+        clearSelection: vi.fn(),
+      }),
       useFileSystem: () => ({ readDir }),
       useFileWatcher: () => ({ watch: fileWatcherWatch }),
       useBufferViewer: () => ({ open: bufferViewerOpen }),
