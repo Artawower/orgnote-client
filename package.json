@@ -61,7 +61,7 @@
     "@sotaproject/strikethrough": "1.0.1",
     "@uiw/codemirror-extensions-langs": "4.22.1",
     "@vueuse/core": "10.11.0",
-    "axios": "1.7.3",
+    "axios": "1.13.5",
     "dexie": "4.0.7",
     "force-graph": "1.43.5",
     "fuse.js": "7.0.0",
