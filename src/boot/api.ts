@@ -74,6 +74,7 @@ import { useFileSearchStore } from 'src/stores/file-search';
 import { useFileMetaStore } from 'src/stores/file-meta';
 import { useFontStore } from 'src/stores/fonts';
 import { wsClient } from 'src/infrastructure/websocket-client';
+import { useFileContent } from 'src/composables/use-file-content';
 
 let api: OrgNoteApi;
 async function initApi(app: App, router: Router): Promise<void> {
@@ -115,6 +116,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useFileSearch: useFileSearchStore,
       useFileMeta: useFileMetaStore,
       useEmbeddedBuffer: useEmbeddedBufferStore,
+      useFileContent,
       app,
     },
     utils: {

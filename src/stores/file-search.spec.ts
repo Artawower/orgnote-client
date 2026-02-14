@@ -45,17 +45,28 @@ const mockFileInfos: Map<string, { mtime: string }> = new Map();
 const mockDirEntries: Map<string, DiskFile[]> = new Map();
 const mockQueueTasksDB: Map<string, Record<string, unknown>> = new Map();
 
-vi.mock('src/stores/file-system', () => ({
-  useFileSystemStore: vi.fn(() => ({
-    readFile: vi.fn(async (path: string) => mockFileContents.get(path)),
-    fileInfo: vi.fn(async (path: string) => mockFileInfos.get(path)),
-    readDir: vi.fn(async (path: string) => mockDirEntries.get(path) ?? []),
-  })),
+const mockFileContentRead = vi.fn(async (path: string) => {
+  const text = mockFileContents.get(path);
+  if (text === undefined) throw new Error(`File not found: ${path}`);
+  return new TextEncoder().encode(text);
+});
+const mockFileContentWrite = vi.fn();
+
+vi.mock('src/boot/api', () => ({
+  api: {
+    core: {
+      useFileContent: () => ({
+        read: mockFileContentRead,
+        write: mockFileContentWrite,
+      }),
+    },
+  },
 }));
 
-vi.mock('src/stores/encryption', () => ({
-  useEncryptionStore: vi.fn(() => ({
-    decrypt: vi.fn(async (data: Uint8Array) => new TextDecoder().decode(data)),
+vi.mock('src/stores/file-system', () => ({
+  useFileSystemStore: vi.fn(() => ({
+    fileInfo: vi.fn(async (path: string) => mockFileInfos.get(path)),
+    readDir: vi.fn(async (path: string) => mockDirEntries.get(path) ?? []),
   })),
 }));
 
@@ -95,6 +106,12 @@ beforeEach(() => {
   mockDirEntries.clear();
   mockQueueTasks.length = 0;
   mockQueueTasksDB.clear();
+  mockFileContentRead.mockImplementation(async (path: string) => {
+    const text = mockFileContents.get(path);
+    if (text === undefined) throw new Error(`File not found: ${path}`);
+    return new TextEncoder().encode(text);
+  });
+  mockFileContentWrite.mockResolvedValue(undefined);
   mockParsedMeta = {
     id: 'parsed-id',
     title: 'Parsed Title',

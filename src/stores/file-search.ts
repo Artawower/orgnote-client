@@ -9,13 +9,13 @@ import type {
   StoredIndex,
   QueueStatus,
 } from 'orgnote-api';
-import { isOrgFile, isOrgGpgFile, to, isNullable } from 'orgnote-api';
-import { isArmoredPgp, uint8ArrayToText } from 'orgnote-api/utils';
+import { isOrgFile, to } from 'orgnote-api';
+import { uint8ArrayToText } from 'orgnote-api/utils';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
 import { useQueueStore } from 'src/stores/queue';
 import { useFileSystemStore } from 'src/stores/file-system';
-import { useEncryptionStore } from 'src/stores/encryption';
+import { api } from 'src/boot/api';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { INDEX_QUEUE_ID } from 'src/constants/queue-ids';
 import { logger } from 'src/boot/logger';
@@ -147,27 +147,10 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     return result.value;
   };
 
-  const readPlainFile = async (filePath: string): Promise<string | null> => {
-    const fs = useFileSystemStore();
-    const raw = await fs.readFile(filePath, 'utf8');
-    if (typeof raw !== 'string') return null;
-    return raw;
-  };
-
-  const readEncryptedFile = async (filePath: string): Promise<string | null> => {
-    const fs = useFileSystemStore();
-    const encryption = useEncryptionStore();
-
-    const raw = await fs.readFile(filePath, 'binary');
-    if (!raw || !(raw instanceof Uint8Array)) return null;
-
-    const decryptInput: string | Uint8Array = isArmoredPgp(raw) ? uint8ArrayToText(raw) : raw;
-    return encryption.decrypt(decryptInput);
-  };
-
-  const readFileContent = async (filePath: string): Promise<string | null> => {
-    if (isOrgGpgFile(filePath)) return readEncryptedFile(filePath);
-    return readPlainFile(filePath);
+  const readFileContent = async (filePath: string): Promise<string> => {
+    const fileContent = api.core.useFileContent();
+    const raw = await fileContent.read(filePath);
+    return uint8ArrayToText(raw);
   };
 
   const parseFile = (content: string, filePath: string): FileMeta => {
@@ -201,8 +184,9 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   };
 
   const processFile = async (filePath: string): Promise<void> => {
-    const content = await readFileContent(filePath);
-    if (isNullable(content)) return;
+    const readResult = await to(() => readFileContent(filePath))();
+    if (readResult.isErr()) return;
+    const content = readResult.value;
 
     const meta = content.length > 0 ? parseFile(content, filePath) : createMetaFromPath(filePath);
     await removeStaleRecord(meta);
@@ -427,13 +411,11 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   };
 
   const loadFileIntoIndex = async (file: FileMeta, meta: FileIndexMeta): Promise<void> => {
-    const fs = useFileSystemStore();
     const filePath = '/' + file.filePath.join('/');
-    const content = await fs.readFile(filePath, 'utf8');
+    const readResult = await to(() => readFileContent(filePath))();
+    if (readResult.isErr()) return;
 
-    if (!content || typeof content !== 'string') return;
-
-    addToIndex(file, content);
+    addToIndex(file, readResult.value);
     indexMetaMap.set(file.id, meta);
   };
 
