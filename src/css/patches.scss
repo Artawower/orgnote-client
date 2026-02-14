@@ -32,4 +32,8 @@ dialog {
 .q-menu {
   border-radius: var(--card-radius);
   box-shadow: unset;
+
+  &.context-menu {
+    @include floating-surface;
+  }
 }

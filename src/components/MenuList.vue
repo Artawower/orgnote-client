@@ -1,5 +1,5 @@
 <template>
-  <card-wrapper class="context-menu-list">
+  <card-wrapper class="context-menu-list" type="clear">
     <menu-item
       v-for="(item, index) of actions"
       :key="index"

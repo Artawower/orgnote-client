@@ -68,6 +68,12 @@ body {
   --glass-backdrop-filter: blur(3px);
   --glass-border: none;
 
+  // Floating surface (popups, dropdowns, context menus)
+  --floating-bg: var(--bg);
+  --floating-border: var(--border-default);
+  --floating-box-shadow: var(--shadow-md);
+  --floating-border-radius: var(--border-radius-md);
+
   // Shared glass bar height
   --bar-height: 49px;
 
