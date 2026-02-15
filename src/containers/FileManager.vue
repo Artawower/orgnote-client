@@ -31,6 +31,7 @@
         ></command-action-button>
         <command-action-button :command="DefaultCommands.CREATE_FOLDER" :size="iconSize">
         </command-action-button>
+        <command-action-button :command="DefaultCommands.SORT_FILES" :size="iconSize" />
         <action-button @click="emits('close')" v-if="closable" icon="close" :size="iconSize" />
       </action-buttons>
     </div>
@@ -86,7 +87,7 @@ import FileManagerItem from './FileManagerItem.vue';
 import MenuItem from './MenuItem.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButtons from 'src/components/ActionButtons.vue';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed } from 'vue';
 import CommandActionButton from './CommandActionButton.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { storeToRefs } from 'pinia';
@@ -94,7 +95,6 @@ import { useI18n } from 'vue-i18n';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import AppFlex from 'src/components/AppFlex.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
-import { debounce } from 'src/utils/debounce';
 
 const props = defineProps<{
   path?: string;
@@ -112,47 +112,18 @@ const emits = defineEmits<{
 const menuItemSize = computed(() => (props.compact ? 'md' : 'auto'));
 
 const fm = api.core.useFileManager();
-const { path: targetPath, searchQuery, selectionMode, selectedFiles, pendingOperation } = storeToRefs(fm);
+const { path: targetPath, searchQuery, selectionMode, selectedFiles, pendingOperation, sortedFiles } = storeToRefs(fm);
 if (props.path) {
   targetPath.value = props.path;
 }
-const fs = api.core.useFileSystem();
 
-const files = ref<DiskFile[]>([]);
 const searchHighlightKeywords = computed(() => searchQuery.value.split(' '));
+const normalizedQuery = computed(() => searchQuery.value.toLowerCase());
 const searchFiles = computed(() =>
-  files.value.filter((f) =>
-    searchQuery.value ? f.name.toLowerCase().includes(searchQuery.value) : files.value,
+  sortedFiles.value.filter((f) =>
+    !normalizedQuery.value || f.name.toLowerCase().includes(normalizedQuery.value),
   ),
 );
-
-const readDir = async () => {
-  files.value = await fs.readDir(targetPath.value);
-};
-
-const refreshFiles = debounce(() => void readDir(), 100);
-const fileWatcher = api.core.useFileWatcher();
-
-let unwatchTargetDir: (() => void) | undefined;
-
-const watchTargetDir = (path: string): void => {
-  unwatchTargetDir?.();
-  unwatchTargetDir = fileWatcher.watch(path, () => refreshFiles(), { recursive: false });
-};
-
-watch(
-  targetPath,
-  async (path) => {
-    watchTargetDir(path);
-    await readDir();
-  },
-  { immediate: true },
-);
-
-onBeforeUnmount(() => {
-  unwatchTargetDir?.();
-  refreshFiles.cancel();
-});
 
 const bufferViewer = api.core.useBufferViewer();
 const sidebar = api.ui.useSidebar();
@@ -171,7 +142,6 @@ const handleFileClick = async (f: DiskFile, event?: MouseEvent) => {
 
   if (f.type === 'directory') {
     targetPath.value = withRoot(join(targetPath.value, f.name));
-    await readDir();
     return;
   }
 
@@ -189,9 +159,8 @@ const closeMobileSidebar = () => {
   }
 };
 
-const moveUp = async () => {
+const moveUp = () => {
   targetPath.value = withRoot(getParentDir(targetPath.value));
-  await readDir();
 };
 
 const iconSize = computed<StyleSize>(() => (props.compact ? 'sm' : 'md'));

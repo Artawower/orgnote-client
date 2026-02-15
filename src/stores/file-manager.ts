@@ -1,11 +1,22 @@
-import { getFileName, join, type DiskFile, type FileManagerStore, type PendingFileOperation } from 'orgnote-api';
+import {
+  DEFAULT_FILE_SORT_CONFIG,
+  getFileName,
+  join,
+  sortFiles,
+  type DiskFile,
+  type FileManagerStore,
+  type FileSortConfig,
+  type PendingFileOperation,
+} from 'orgnote-api';
 import { defineStore } from 'pinia';
-import { computed, ref, shallowRef } from 'vue';
+import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { useFileSystemStore } from './file-system';
+import { useFileWatcherStore } from './file-watcher';
 import { getUniqueFileName } from 'src/utils/unique-file-name';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { isFilePath } from 'src/utils/is-file-path';
 import { DEFAULT_FOLDER_NAME } from 'src/constants/default-folder-name';
+import { debounce } from 'src/utils/debounce';
 
 export const useFileManagerStore = defineStore<string, FileManagerStore>('file-manager', () => {
   const path = ref<string>('/');
@@ -13,10 +24,15 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   const searchQuery = ref<string>('');
   const mobileFileSearchActive = ref<boolean>(false);
 
+  const files = ref<DiskFile[]>([]);
+  const sortConfig = ref<FileSortConfig>({ ...DEFAULT_FILE_SORT_CONFIG });
+  const sortedFiles = computed(() => sortFiles(files.value, sortConfig.value));
+
   const selectedFiles = ref(new Set<string>());
   const selectionMode = computed(() => selectedFiles.value.size > 0);
 
   const fs = useFileSystemStore();
+  const fileWatcher = useFileWatcherStore();
 
   const focusDirPath = computed<string>(() => {
     if (!path.value) {
@@ -78,14 +94,35 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
     dest: string,
     operation: (src: string, dest: string) => Promise<void>,
   ): Promise<void> => {
-    await Promise.all(
-      paths.map((src) => operation(src, join(dest, getFileName(src)))),
-    );
+    await Promise.all(paths.map((src) => operation(src, join(dest, getFileName(src)))));
     clearSelection();
   };
 
   const copyFiles = (paths: string[], dest: string) => transferFiles(paths, dest, fs.copyFile);
   const moveFiles = (paths: string[], dest: string) => transferFiles(paths, dest, fs.rename);
+
+  const loadFiles = async (): Promise<void> => {
+    files.value = await fs.readDir(path.value);
+  };
+
+  const refreshFiles = debounce(() => void loadFiles(), 100);
+
+  let unwatchDir: (() => void) | undefined;
+
+  watch(
+    path,
+    (currentPath) => {
+      unwatchDir?.();
+      unwatchDir = fileWatcher.watch(currentPath, () => refreshFiles(), { recursive: false });
+      loadFiles();
+    },
+    { immediate: true },
+  );
+
+  onScopeDispose(() => {
+    unwatchDir?.();
+    refreshFiles.cancel();
+  });
 
   const deleteFiles = async (paths: string[]): Promise<void> => {
     await Promise.all(paths.map((p) => fs.deleteFile(p)));
@@ -97,8 +134,8 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
       await fs.writeFile(p, '');
       return;
     }
-    const files = (await fs.readDir(path.value)).map((f) => f.name);
-    const fileName = getUniqueFileName(files);
+    const existingNames = files.value.map((f) => f.name);
+    const fileName = getUniqueFileName(existingNames);
     await fs.writeFile(join(path.value, fileName), '');
   };
 
@@ -107,8 +144,8 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
       await fs.mkdir(p);
       return;
     }
-    const files = (await fs.readDir(path.value)).map((f) => f.name);
-    const folderName = getUniqueFileName(files, '', DEFAULT_FOLDER_NAME);
+    const existingNames = files.value.map((f) => f.name);
+    const folderName = getUniqueFileName(existingNames, '', DEFAULT_FOLDER_NAME);
     const folderPath = join(path.value, folderName);
     await fs.mkdir(folderPath);
   };
@@ -119,6 +156,11 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
     searchQuery,
     mobileFileSearchActive,
     focusDirPath,
+
+    files,
+    sortConfig,
+    sortedFiles,
+    loadFiles,
 
     selectionMode,
     selectedFiles,

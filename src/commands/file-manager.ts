@@ -1,4 +1,4 @@
-import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
+import type { CommandHandlerParams, FileSortConfig, OrgNoteApi } from 'orgnote-api';
 import { DefaultCommands, I18N, type Command } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { createFileCompletion } from 'src/composables/create-file-completion';
@@ -8,6 +8,7 @@ import { useFileRenameCompletion } from 'src/composables/file-rename-completion'
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { to } from 'orgnote-api/utils';
 import { defineAsyncComponent } from 'vue';
+import { buildSortCandidates } from 'src/composables/sort-files-completion';
 
 const group = 'file manager';
 
@@ -206,11 +207,9 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.SELECT_ALL_FILES,
       group,
       icon: 'sym_o_select_all',
-      handler: async (api: OrgNoteApi) => {
+      handler: (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
-        const fs = api.core.useFileSystem();
-        const files = await fs.readDir(fm.path);
-        fm.selectFiles(files);
+        fm.selectFiles([...fm.files]);
       },
     },
     {
@@ -220,6 +219,21 @@ export function getFileManagerCommands(): Command[] {
       handler: (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
         fm.clearSelection();
+      },
+    },
+    {
+      command: DefaultCommands.SORT_FILES,
+      group,
+      icon: 'sym_o_sort',
+      handler: (api: OrgNoteApi) => {
+        const fm = api.core.useFileManager();
+        const completion = api.core.useCompletion();
+
+        completion.open<FileSortConfig>({
+          placeholder: I18N.SORT_FILES,
+          type: 'choice',
+          itemsGetter: () => buildSortCandidates(fm.sortConfig),
+        });
       },
     },
   ];
