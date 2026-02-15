@@ -55,6 +55,7 @@ defineProps<{
   height: var(--header-item-height);
   background: var(--header-item-bg);
   border: var(--header-item-border);
+  border-top: var(--header-item-border-top, var(--glass-border-top));
   border-radius: var(--header-item-border-radius);
   padding: var(--header-item-padding);
   -webkit-backdrop-filter: var(--header-item-backdrop-filter);
@@ -64,6 +65,7 @@ defineProps<{
 
   --btn-action-radius: calc(var(--header-item-border-radius) - var(--padding-md));
   @include glass-btn;
+  @include glass-specular;
 }
 
 .header-left {

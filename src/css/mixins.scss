@@ -181,9 +181,85 @@ $type-colors: (
   border-radius: var(--floating-border-radius);
 }
 
+@mixin glass-surface {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.08));
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.15));
+  border-top: var(--glass-border-top, 1px solid rgba(255, 255, 255, 0.2));
+  -webkit-backdrop-filter: var(--glass-backdrop-filter, blur(10px) saturate(150%));
+  backdrop-filter: var(--glass-backdrop-filter, blur(10px) saturate(150%));
+  background-clip: padding-box;
+  box-shadow: var(--glass-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@mixin glass-scroll-fade($direction: top) {
+  $fade-size: var(--glass-scroll-fade-size);
+
+  @if $direction == top {
+    mask-image: linear-gradient(to bottom, transparent 0, black #{$fade-size});
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black #{$fade-size});
+  } @else if $direction == bottom {
+    mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+  } @else if $direction == both {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black #{$fade-size},
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black #{$fade-size},
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+  }
+}
+
+@mixin glass-tint($color: var(--accent)) {
+  background: color-mix(in srgb, #{$color} calc(var(--glass-tint-opacity) * 100%), var(--glass-bg));
+}
+
 @mixin glass-btn {
   --btn-action-hover-bg: transparent;
   --btn-action-hover-brightness: 1.15;
   --btn-action-hover-scale: 1.05;
   --btn-action-active-scale: 0.92;
+}
+
+@mixin glass-specular {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(
+      circle at var(--glass-specular-x, 50%) var(--glass-specular-y, 50%),
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 70%
+    );
+    transition: var(--glass-specular-transition, opacity 0.3s ease);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &:active::after {
+    opacity: 1;
+  }
 }

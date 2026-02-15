@@ -1,5 +1,12 @@
 <template>
-  <app-flex class="search-input" :class="[appearance, { 'no-icon': !icon }]" row between align-center gap="sm">
+  <app-flex
+    class="search-input"
+    :class="[appearance, { 'no-icon': !icon }]"
+    row
+    between
+    align-center
+    gap="sm"
+  >
     <app-icon v-if="icon" :name="icon" size="md" color="fg" />
     <app-input
       ref="appInputRef"
@@ -73,12 +80,7 @@ defineExpose({
   &.glass {
     height: var(--bar-height);
     padding: 0 var(--padding-md);
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: var(--glass-backdrop-filter);
-    backdrop-filter: var(--glass-backdrop-filter);
-    background-clip: padding-box;
-    box-shadow: var(--glass-box-shadow);
-    border: var(--glass-border);
+    @include glass-surface;
     border-radius: var(--border-radius-xl);
 
     &.no-icon {

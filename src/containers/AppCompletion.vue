@@ -151,6 +151,7 @@ const { t } = useI18n({
     background-clip: padding-box;
     box-shadow: var(--completion-header-box-shadow);
     border: var(--completion-header-border);
+    border-top: var(--glass-border-top);
     border-radius: var(--completion-header-border-radius);
   }
 }
