@@ -17,8 +17,8 @@
       <visibility-wrapper tablet-below>
         <floating-footer>
           <app-footer v-if="opened && !mobileFileSearchActive" class="sidebar-footer" float>
-            <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
-            <command-action-button :command="DefaultCommands.SHOW_MOBILE_FILE_SEARCH" />
+            <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" @executed="closeSidebar" />
+            <command-action-button :command="DefaultCommands.SHOW_MOBILE_FILE_SEARCH" @executed="closeSidebar" />
           </app-footer>
           <div v-if="opened && mobileFileSearchActive" class="sidebar-footer-search">
             <search-input
@@ -59,6 +59,10 @@ const footerCommands = pinnedCommands.getCommands('sidebar-footer');
 const { tabletAbove } = useScreenDetection();
 
 const { searchQuery, mobileFileSearchActive } = storeToRefs(api.core.useFileManager());
+
+const closeSidebar = () => {
+  api.ui.useSidebar().close();
+};
 const mobileSearchInputRef = ref<InstanceType<typeof SearchInput>>();
 
 watch(mobileFileSearchActive, async (active) => {

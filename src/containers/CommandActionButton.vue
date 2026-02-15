@@ -55,7 +55,12 @@ const resolvedAriaLabel = computed(() => {
   return camelCaseToWords(command.value.command);
 });
 
-const execute = () => {
-  commandsStore.execute(props.command, props.data);
+const emit = defineEmits<{
+  executed: [];
+}>();
+
+const execute = async () => {
+  await commandsStore.execute(props.command, props.data);
+  emit('executed');
 };
 </script>
