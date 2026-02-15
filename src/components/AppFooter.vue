@@ -40,7 +40,7 @@ const props = withDefaults(
     min-height: var(--footer-height);
     background: var(--footer-bg);
     border: var(--footer-border);
-    border-top: var(--footer-border-top);
+    border-top: var(--footer-border-top, var(--glass-border-top));
     padding: var(--footer-padding);
     border-radius: var(--footer-border-radius);
     box-sizing: border-box;
@@ -52,5 +52,6 @@ const props = withDefaults(
 
   --btn-action-radius: calc(var(--footer-border-radius) - var(--padding-md));
   @include glass-btn;
+  @include glass-specular;
 }
 </style>

@@ -65,8 +65,11 @@ body {
   --gap-lg: 24px;
   --gap-xl: 32px;
 
-  --glass-backdrop-filter: blur(3px);
-  --glass-border: none;
+  --glass-backdrop-filter: blur(16px) saturate(180%);
+  --glass-border: 1px solid var(--glass-border-color, rgba(255, 255, 255, 0.15));
+  --glass-border-top: 1px solid var(--glass-border-top-color, rgba(255, 255, 255, 0.3));
+  --glass-tint-opacity: 0.15;
+  --glass-scroll-fade-size: 32px;
 
   // Floating surface (popups, dropdowns, context menus)
   --floating-bg: var(--bg);
@@ -426,6 +429,26 @@ body {
 
 @include native-mobile {
   --device-padding-bottom: 14px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body {
+    --glass-bg: var(--bg);
+    --glass-backdrop-filter: none;
+    --glass-box-shadow: var(--shadow-md);
+    --glass-border: var(--border-default);
+    --glass-border-top: var(--border-default);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    --btn-action-transition: none;
+    --btn-action-hover-scale: 1;
+    --btn-action-active-scale: 1;
+    --btn-action-hover-brightness: 100%;
+    --glass-specular-transition: none;
+  }
 }
 
 body.keyboard-opened {

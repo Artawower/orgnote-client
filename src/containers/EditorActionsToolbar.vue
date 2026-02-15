@@ -9,18 +9,10 @@
     @mousedown.prevent
   >
     <app-flex class="editor-actions" row start a-center gap="xs">
-      <command-action-button
-        v-for="cmd of editorCommands"
-        :key="cmd"
-        :command="cmd"
-        size="md"
-      />
+      <command-action-button v-for="cmd of editorCommands" :key="cmd" :command="cmd" size="md" />
     </app-flex>
     <div class="fixed-editor-actions">
-      <command-action-button
-        :command="DefaultCommands.EDITOR_HIDE_KEYBOARD"
-        size="md"
-      />
+      <command-action-button :command="DefaultCommands.EDITOR_HIDE_KEYBOARD" size="md" />
     </div>
   </app-flex>
 </template>
@@ -84,14 +76,10 @@ $toolbar-height: calc(var(--editor-toolbar-height) + var(--footer-wrapper-paddin
 .editor-actions,
 .fixed-editor-actions {
   border-radius: var(--footer-border-radius);
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-backdrop-filter);
-  backdrop-filter: var(--glass-backdrop-filter);
-  background-clip: padding-box;
-  border: var(--glass-border);
-  box-shadow: var(--glass-box-shadow);
+  @include glass-surface;
   height: var(--bar-height);
   align-items: center;
   @include glass-btn;
+  @include glass-specular;
 }
 </style>
