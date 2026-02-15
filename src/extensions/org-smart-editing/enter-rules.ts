@@ -1,6 +1,8 @@
 import type { TransactionSpec } from '@codemirror/state';
 import { NodeType, findParent, type OrgNode } from 'org-mode-ast';
 
+export type EnterRule = (node: OrgNode, cursorPos: number) => TransactionSpec | undefined;
+
 const ORG_OPERATOR_REGEXP = /(\* |- |\+ |\d+[).]{1})/;
 
 const clearEmptyHeadline = (node: OrgNode): TransactionSpec | undefined => {
@@ -33,32 +35,36 @@ const newLineAfterEmptyBullet = (node: OrgNode): TransactionSpec | undefined => 
   };
 };
 
-const newListItem = (node: OrgNode): TransactionSpec | undefined => {
-  const parentListItem = findParent(node, (n) => {
+const newListItem = (node: OrgNode, cursorPos: number): TransactionSpec | undefined => {
+  const titleNode = findParent(node, (n) => {
     if (n.isNot(NodeType.Title)) return false;
     if (n.parent?.isNot(NodeType.ListItem)) return [false, true];
     return true;
   });
 
-  if (node.is(NodeType.NewLine) || !node.parent?.parent || !parentListItem) {
+  if (node.is(NodeType.NewLine) || !node.parent?.parent || !titleNode) {
     return;
   }
 
-  const firstChild = parentListItem.children.first;
+  if (cursorPos < titleNode.start || cursorPos > titleNode.end) return;
+
+  const firstChild = titleNode.children.first;
   if (!firstChild) return;
 
   const operator = firstChild.rawValue.trim();
-  const checkbox = parentListItem.children?.get(1)?.is(NodeType.Checkbox) ? '[ ] ' : '';
+  const checkbox = titleNode.children?.get(1)?.is(NodeType.Checkbox) ? '[ ] ' : '';
   const isNumberList = operator.match(/\d+[).]{1}/);
   const newOperator = isNumberList
     ? +operator.slice(0, -1) + 1 + operator.slice(-1)
     : operator;
 
-  const insert = `\n${newOperator} ${checkbox}`;
+  const charAtCursor = titleNode.rawValue[cursorPos - titleNode.start];
+  const skipSpace = charAtCursor === ' ' ? 1 : 0;
+  const prefix = `\n${newOperator} ${checkbox}`;
 
   return {
-    changes: { from: node.end, insert },
-    selection: { anchor: node.end + insert.length },
+    changes: { from: cursorPos, to: cursorPos + skipSpace, insert: prefix },
+    selection: { anchor: cursorPos + prefix.length },
   };
 };
 
@@ -230,7 +236,7 @@ const newTableRow = (node: OrgNode): TransactionSpec | undefined => {
   };
 };
 
-export const enterRules = [
+export const enterRules: readonly EnterRule[] = [
   clearEmptyHeadline,
   exitList,
   exitBlockOnEmptyLines,
@@ -242,4 +248,4 @@ export const enterRules = [
   indentListItemSection,
   exitEmptyTableRow,
   newTableRow,
-] as const;
+];

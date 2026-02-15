@@ -18,11 +18,11 @@ import {
   type PairConfig,
 } from './pair-rules';
 
-const getEnterTransaction = (node: OrgNode | undefined): TransactionSpec | undefined => {
+const getEnterTransaction = (node: OrgNode | undefined, cursorPos: number): TransactionSpec | undefined => {
   if (!node) return;
 
   for (const rule of enterRules) {
-    const transaction = rule(node);
+    const transaction = rule(node, cursorPos);
     if (transaction) return transaction;
   }
 };
@@ -47,7 +47,7 @@ const createEnterCommand = (getOrgNode: () => OrgNode | null): StateCommand => {
       return false;
     });
 
-    const transaction = getEnterTransaction(exactMatch ?? deepestContaining);
+    const transaction = getEnterTransaction(exactMatch ?? deepestContaining, currentPos);
 
     if (transaction) {
       dispatch(state.update(transaction));
