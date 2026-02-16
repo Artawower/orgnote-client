@@ -2,7 +2,7 @@
   <search-input
     ref="searchInputRef"
     class="completion-input"
-    v-model="completion.activeCompletion!.searchQuery"
+    v-model="searchQuery"
     :placeholder="placeholder"
     icon="keyboard_arrow_right"
     :clearable="false"
@@ -27,7 +27,7 @@ import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 defineProps<{
   placeholder?: string;
@@ -35,6 +35,14 @@ defineProps<{
 }>();
 
 const completion = api.core.useCompletion();
+
+const searchQuery = computed({
+  get: () => completion.activeCompletion?.searchQuery ?? '',
+  set: (value: string) => {
+    if (!completion.activeCompletion) return;
+    completion.activeCompletion.searchQuery = value;
+  },
+});
 
 const modal = api.ui.useModal();
 const { config } = storeToRefs(modal);
@@ -45,7 +53,9 @@ const toggleFullScreen = () => {
 };
 
 const handleCompletionInput = () => {
-  const activeCompletion = completion.activeCompletion!;
+  const activeCompletion = completion.activeCompletion;
+  if (!activeCompletion) return;
+
   const selectedIndex = activeCompletion.selectedCandidateIndex ?? 0;
   const selectedCandidate = activeCompletion.candidates?.[selectedIndex];
 

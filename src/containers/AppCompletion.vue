@@ -1,7 +1,7 @@
 <template>
   <container-layout
     class="completion-wrapper"
-    :class="{ 'full-screen': config!.fullScreen, 'input-only': isInputOnly }"
+    :class="{ 'full-screen': config?.fullScreen, 'input-only': isInputOnly }"
     :reverse="shouldReverse"
     header-border
     footer-border
@@ -15,7 +15,7 @@
     <template v-if="!isInputOnly" #body>
       <div class="body">
         <completion-result
-          v-if="activeCompletion!.candidates?.length"
+          v-if="activeCompletion?.candidates?.length"
           @select="handleResultSelect"
         />
         <app-flex
@@ -32,7 +32,7 @@
     </template>
     <template v-if="!isInputOnly" #footer>
       <app-flex class="footer" row center align-center>
-        {{ (activeCompletion!.selectedCandidateIndex ?? 0) + 1 }}/{{ activeCompletion!.total }}
+        {{ (activeCompletion?.selectedCandidateIndex ?? 0) + 1 }}/{{ activeCompletion?.total }}
       </app-flex>
     </template>
   </container-layout>
@@ -65,7 +65,7 @@ const completionInputRef = ref<InstanceType<typeof CompletionInput> | null>(null
 const handleResultSelect = () => completionInputRef.value?.focusInput?.();
 
 const completionItemHeight = computed(
-  () => activeCompletion.value!.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
+  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
 );
 
 const { desktopBelow } = api.ui.useScreenDetection();

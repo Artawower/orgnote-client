@@ -95,7 +95,7 @@ const itemHeight = computed(
 
 const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() => {
   const candidates = activeCompletion.value?.candidates;
-  if (!candidates || !config.value.completion.showGroup) {
+  if (!candidates || !config.value?.completion?.showGroup) {
     return [candidates ?? [], []];
   }
 
