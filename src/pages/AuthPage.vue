@@ -64,7 +64,7 @@ const initiateOAuth = async (): Promise<void> => {
   await authStore.auth({
     provider: initialProvider.value,
     environment: hasExplicitState.value ? stateFromQuery.value.environment : undefined,
-    redirectUrl: stateFromQuery.value.redirectUrl ?? '',
+    redirectUrl: stateFromQuery.value.redirectUrl ?? asString(route.query.redirectUrl),
   });
 };
 
