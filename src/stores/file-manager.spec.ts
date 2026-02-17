@@ -356,3 +356,22 @@ test('store refreshes files when fileWatcher notifies change', async () => {
 
   expect(mockFs.readDir).toHaveBeenCalledWith('/');
 });
+
+test('selectedFiles ignores stale Pinia state and remains a functional Set', async () => {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+
+  pinia.state.value['file-manager'] = {
+    selectedFiles: {},
+  };
+
+  const store = useFileManagerStore();
+  await nextTick();
+
+  expect(store.selectedFiles).toBeInstanceOf(Set);
+  expect(store.selectionMode).toBe(false);
+
+  store.toggleSelection('/a.org');
+  expect(store.selectionMode).toBe(true);
+  expect(store.selectedFiles.has('/a.org')).toBe(true);
+});

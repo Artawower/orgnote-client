@@ -11,7 +11,7 @@ export const vClickMobile: Directive<ClickMobileElement, () => void> = {
   mounted: (el, { value: callback }) => {
     const { mobile } = useScreenDetection();
 
-    const handler = (e: MouseEvent) => {
+    const handler = () => {
       if (!mobile.value) return;
       callback();
     };

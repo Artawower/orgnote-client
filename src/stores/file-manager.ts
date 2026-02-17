@@ -8,7 +8,7 @@ import {
   type FileSortConfig,
   type PendingFileOperation,
 } from 'orgnote-api';
-import { defineStore } from 'pinia';
+import { defineStore, skipHydrate } from 'pinia';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { useFileSystemStore } from './file-system';
 import { useFileWatcherStore } from './file-watcher';
@@ -28,7 +28,8 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   const sortConfig = ref<FileSortConfig>({ ...DEFAULT_FILE_SORT_CONFIG });
   const sortedFiles = computed(() => sortFiles(files.value, sortConfig.value));
 
-  const selectedFiles = ref(new Set<string>());
+  const selectedFiles = skipHydrate(ref(new Set<string>()));
+
   const selectionMode = computed(() => selectedFiles.value.size > 0);
 
   const fs = useFileSystemStore();
