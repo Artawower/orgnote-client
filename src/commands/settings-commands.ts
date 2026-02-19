@@ -5,11 +5,34 @@ import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
 import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import TheSettings from 'src/containers/TheSettings.vue';
+import AppIcon from 'src/components/AppIcon.vue';
 import { getDatabase } from 'src/infrastructure/repositories';
 import { to } from 'orgnote-api/utils';
-import { computed, defineAsyncComponent, h } from 'vue';
+import { defineAsyncComponent, defineComponent, h } from 'vue';
 import AppAvatar from 'src/components/AppAvatar.vue';
 import { usePanePersistence } from 'src/composables/pane-persistence';
+
+const SettingsHeaderTitle = defineAsyncComponent(
+  () => import('src/containers/SettingsHeaderTitle.vue'),
+);
+
+const ExtensionManager = defineAsyncComponent(() => import('src/containers/ExtensionManager.vue'));
+
+const SettingsCommandIcon = defineComponent({
+  name: 'SettingsCommandIcon',
+  setup() {
+    const auth = api.core.useAuth();
+
+    return () => {
+      const avatarUrl = auth.user?.avatarUrl;
+      if (!avatarUrl) {
+        return h(AppIcon, { name: 'sym_o_settings', size: 'sm' });
+      }
+
+      return h(AppAvatar, { url: avatarUrl, size: 'xs' });
+    };
+  },
+});
 
 export function getSettingsCommands(): Command[] {
   const confirmationModal = api.ui.useConfirmationModal();
@@ -32,24 +55,14 @@ export function getSettingsCommands(): Command[] {
       title: 'settings',
       closable: true,
       wide: true,
-      headerTitleComponent: defineAsyncComponent(
-        () => import('src/containers/SettingsHeaderTitle.vue'),
-      ),
+      headerTitleComponent: SettingsHeaderTitle,
       modalProps: {
         initialRoute: routeName,
       },
     });
   };
 
-  const auth = api.core.useAuth();
-
-  const settingsIcon = computed<CommandIcon>(() => {
-    const avatarUrl = auth.user?.avatarUrl;
-    if (!avatarUrl) {
-      return 'sym_o_settings';
-    }
-    return () => h(AppAvatar, { url: avatarUrl, size: 'xs' });
-  });
+  const settingsIcon: CommandIcon = SettingsCommandIcon;
 
   const commands: Command[] = [
     {
@@ -155,14 +168,11 @@ export function getSettingsCommands(): Command[] {
       icon: 'sym_o_extension',
       handler: () => {
         const modal = api.ui.useModal();
-        modal.open(
-          defineAsyncComponent(() => import('src/containers/ExtensionManager.vue')),
-          {
-            title: i18n.EXTENSIONS,
-            closable: true,
-            wide: true,
-          },
-        );
+        modal.open(ExtensionManager, {
+          title: i18n.EXTENSIONS,
+          closable: true,
+          wide: true,
+        });
       },
     },
     {
