@@ -82,4 +82,10 @@ $toolbar-height: calc(var(--editor-toolbar-height) + var(--footer-wrapper-paddin
   @include glass-btn;
   @include glass-specular;
 }
+
+.editor-actions {
+  overflow-x: auto;
+  overflow-y: hidden;
+  touch-action: pan-x;
+}
 </style>
