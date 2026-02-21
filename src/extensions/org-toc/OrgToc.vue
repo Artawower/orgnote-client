@@ -20,10 +20,12 @@ import { EditorView } from '@codemirror/view';
 import { i18n } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import AppTree from 'src/components/AppTree.vue';
+import { getNumericCssVar } from 'src/utils/css-utils';
 import { collectTocTree, flattenTocTree } from './toc-utils';
 import type { TocTreeNode } from './toc-tree';
 
-const SCROLL_Y_MARGIN = 10;
+const SCROLL_Y_MARGIN_FALLBACK = 10;
+const SCROLL_Y_MARGIN_EXTRA_GAP = 8;
 
 const { t } = useI18n();
 const editorStore = api.core.useEditor();
@@ -65,6 +67,20 @@ const isValidRange = (start: number, end: number, docLength: number): boolean =>
 
 const { tabletBelow } = api.ui.useScreenDetection();
 
+const getHeaderOffsetFromVars = (): number => {
+  const headerHeight = getNumericCssVar('header-height') ?? 0;
+  const headerWrapperPaddingY = getNumericCssVar('header-wrapper-padding-y') ?? 0;
+
+  const offset = headerHeight + headerWrapperPaddingY * 2;
+  if (offset <= 0) return SCROLL_Y_MARGIN_FALLBACK;
+
+  return offset + SCROLL_Y_MARGIN_EXTRA_GAP;
+};
+
+const getScrollYMargin = (): number => {
+  return getHeaderOffsetFromVars();
+};
+
 const navigateTo = (node: TocTreeNode) => {
   const editorView = activeContext.value?.editorViewGetter();
   if (!editorView) return;
@@ -76,13 +92,15 @@ const navigateTo = (node: TocTreeNode) => {
   if (!isValidRange(position, endPosition, docLength)) return;
 
   requestAnimationFrame(() => {
+    const yMargin = getScrollYMargin();
+
     editorView.focus();
     editorView.dispatch({
       selection: {
         anchor: endPosition,
         head: endPosition,
       },
-      effects: EditorView.scrollIntoView(position, { y: 'start', yMargin: SCROLL_Y_MARGIN }),
+      effects: EditorView.scrollIntoView(position, { y: 'start', yMargin }),
     });
   });
 
