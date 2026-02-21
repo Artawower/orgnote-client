@@ -33,6 +33,7 @@ export const useWidgetBuilder = () => {
     return (params: WidgetBuilderParams): EmbeddedWidget => {
       const normalizedType = toKebabCase(params.orgNode.type);
       params.wrap.classList.add(`org-embedded-${normalizedType}`);
+      params.wrap.classList.add('org-embedded-multiline');
 
       const wrappedComponent = h(
         MultilineWidgetWrapper,

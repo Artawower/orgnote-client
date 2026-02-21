@@ -121,6 +121,10 @@
       box-sizing: border-box;
     }
 
+    [class^='org-embedded-'].org-embedded-multiline {
+      overflow: visible;
+    }
+
     .cm-tag-name,
     .cm-angle-bracket {
       color: var(--yellow);
