@@ -6,6 +6,7 @@ import { ref } from 'vue';
 const mockFiles: FileMeta[] = [];
 let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
+let showDetails = true;
 
 const createMockApi = (): OrgNoteApi => {
   const mockCompletion = {
@@ -47,12 +48,21 @@ const createMockApi = (): OrgNoteApi => {
     open: vi.fn(),
   };
 
+  const mockConfig = {
+    config: {
+      completion: {
+        showDetails,
+      },
+    },
+  };
+
   return {
     core: {
       useCompletion: vi.fn(() => mockCompletion),
       useFileSearch: vi.fn(() => mockFileSearch),
       useFileMeta: vi.fn(() => mockFileMeta),
       useBufferViewer: vi.fn(() => mockBufferViewer),
+      useConfig: vi.fn(() => mockConfig),
     },
   } as unknown as OrgNoteApi;
 };
@@ -61,6 +71,7 @@ beforeEach(() => {
   mockFiles.length = 0;
   mockSearchResult = null;
   capturedCompletionConfig = null;
+  showDetails = true;
 });
 
 afterEach(() => {
@@ -89,6 +100,43 @@ test('useNoteSearchCompletion sets search placeholder', async () => {
   await useNoteSearchCompletion(api);
 
   expect(capturedCompletionConfig?.placeholder).toBeDefined();
+});
+
+test('useNoteSearchCompletion uses detailed renderer when enabled', async () => {
+  const api = createMockApi();
+
+  await useNoteSearchCompletion(api);
+
+  expect(capturedCompletionConfig?.itemRenderer).toBeDefined();
+  expect(capturedCompletionConfig?.itemHeight).toBe(96);
+});
+
+test('useNoteSearchCompletion falls back to title-only view when disabled', async () => {
+  showDetails = false;
+  const api = createMockApi();
+
+  await useNoteSearchCompletion(api);
+
+  expect(capturedCompletionConfig?.itemRenderer).toBeUndefined();
+  expect(capturedCompletionConfig?.itemHeight).toBeUndefined();
+});
+
+test('useNoteSearchCompletion does not provide candidate description when details disabled', async () => {
+  showDetails = false;
+  const api = createMockApi();
+
+  mockFiles.push({
+    id: '1',
+    filePath: ['test.org'],
+    title: 'Test',
+    description: 'Detailed text',
+    tags: ['tag1'],
+  });
+
+  await useNoteSearchCompletion(api);
+
+  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  expect(result.result[0]!.description).toBeUndefined();
 });
 
 test('itemsGetter returns recent files for empty query', async () => {

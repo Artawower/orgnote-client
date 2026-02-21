@@ -31,9 +31,9 @@ import AsyncItemContainer from './AsyncItemContainer.vue';
 import CompletionResultItem from './CompletionResultItem.vue';
 import type { CompletionCandidate } from 'orgnote-api';
 import { toValue, watch } from 'vue';
-import { DEFAULT_COMPLETIO_ITEM_HEIGHT } from 'src/constants/completion-item';
 import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
 import { computed } from 'vue';
+import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 
 defineEmits<{
   select: [];
@@ -89,9 +89,7 @@ const getPagedResult = (from: number, size: number) => {
   return fakeRows;
 };
 
-const itemHeight = computed(
-  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
-);
+const itemHeight = computed(() => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETION_ITEM_HEIGHT);
 
 const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() => {
   const candidates = activeCompletion.value?.candidates;

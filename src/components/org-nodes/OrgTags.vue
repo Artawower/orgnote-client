@@ -1,11 +1,13 @@
 <template>
-  <app-flex inline start class="org-tags" gap="sm">
+  <app-flex inline start class="org-tags" :class="{ wrap }" gap="sm">
     <app-badge
       v-for="tag in tags"
-      @click="searchTag(tag)"
+      @click="onTagClick(tag)"
       :key="tag"
       class="org-tag"
+      :class="{ clickable }"
       color="accent"
+      :size="badgeSize"
     >
       {{ tag }}
     </app-badge>
@@ -15,21 +17,39 @@
 <script lang="ts" setup>
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
-import { DefaultCommands } from 'orgnote-api';
+import { DefaultCommands, type StyleSize } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { computed } from 'vue';
 
-const props = defineProps<{
-  node: OrgNode;
-}>();
-
-const tags = computed<string[]>(
-  () => props.node.children?.filter((n) => n.is(NodeType.Text)).map((n) => n.value) ?? [],
+const props = withDefaults(
+  defineProps<{
+    node?: OrgNode;
+    tags?: string[];
+    clickable?: boolean;
+    wrap?: boolean;
+    badgeSize?: StyleSize;
+  }>(),
+  {
+    clickable: true,
+    wrap: true,
+    badgeSize: 'sm',
+  },
 );
 
-const searchTag = (tag: string) => {
+const tags = computed<string[]>(() => {
+  if (props.tags?.length) {
+    return props.tags;
+  }
+
+  return props.node?.children?.filter((n) => n.is(NodeType.Text)).map((n) => n.value) ?? [];
+});
+
+const onTagClick = (tag: string) => {
+  if (!props.clickable) {
+    return;
+  }
   const commands = api.core.useCommands();
   commands.execute(DefaultCommands.SEARCH, { searchText: tag });
 };
@@ -37,13 +57,19 @@ const searchTag = (tag: string) => {
 
 <style lang="scss" scoped>
 .org-tag {
-  cursor: pointer;
   white-space: nowrap;
+
+  &.clickable {
+    cursor: pointer;
+  }
 }
 
 .org-tags {
   max-width: 100%;
-  flex-wrap: wrap;
   align-items: flex-start;
+
+  &.wrap {
+    flex-wrap: wrap;
+  }
 }
 </style>

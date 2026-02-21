@@ -6,6 +6,9 @@ import type {
 } from 'orgnote-api';
 import { I18N, join } from 'orgnote-api';
 import { unref } from 'vue';
+import NoteSearchCompletionItem from 'src/containers/NoteSearchCompletionItem.vue';
+
+const noteSearchItemHeight = 96;
 
 const getFileName = (filePath: string[]): string => filePath.at(-1) ?? 'Untitled';
 
@@ -77,11 +80,13 @@ export const useNoteSearchCompletion = async (
 ): Promise<void> => {
   const completion = api.core.useCompletion();
   const bufferViewer = api.core.useBufferViewer();
+  const config = api.core.useConfig().config;
+  const showDetails = config.completion.showDetails;
 
   const mapFile = (file: FileMeta): CompletionCandidate<FileMeta> => ({
     icon: 'sym_o_description',
     title: file.title ?? getFileName(file.filePath),
-    description: formatFileDescription(file),
+    description: showDetails ? formatFileDescription(file) : undefined,
     data: file,
     commandHandler: () => {
       bufferViewer.open(join('/', ...file.filePath));
@@ -93,6 +98,8 @@ export const useNoteSearchCompletion = async (
     type: 'choice',
     searchText,
     placeholder: I18N.SEARCH,
+    itemHeight: showDetails ? noteSearchItemHeight : undefined,
+    itemRenderer: showDetails ? NoteSearchCompletionItem : undefined,
     itemsGetter: createFileItemsGetter(api, mapFile),
   });
 };

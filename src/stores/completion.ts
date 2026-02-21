@@ -9,7 +9,7 @@ import { type CompletionConfig, type CompletionStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useModalStore } from './modal';
 import AppCompletion from 'src/containers/AppCompletion.vue';
-import { computed, shallowRef, shallowReactive, ref } from 'vue';
+import { computed, shallowRef, shallowReactive, ref, markRaw } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
@@ -54,7 +54,10 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       });
 
       const [result, resolve] = createPromise<TReturn>();
-      const completionConfig = config as CompletionConfig<unknown>;
+      const completionConfig = {
+        ...config,
+        itemRenderer: config.itemRenderer ? markRaw(config.itemRenderer) : undefined,
+      } as CompletionConfig<unknown>;
       const completion = shallowReactive<Completion<unknown>>({
         ...completionConfig,
         searchQuery: completionConfig.searchText ?? '',

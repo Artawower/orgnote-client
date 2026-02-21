@@ -46,10 +46,10 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import CompletionResult from './CompletionResult.vue';
 import { computed } from 'vue';
-import { DEFAULT_COMPLETIO_ITEM_HEIGHT } from 'src/constants/completion-item';
 import { useI18n } from 'vue-i18n';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 
 defineProps<
   {
@@ -65,7 +65,7 @@ const completionInputRef = ref<InstanceType<typeof CompletionInput> | null>(null
 const handleResultSelect = () => completionInputRef.value?.focusInput?.();
 
 const completionItemHeight = computed(
-  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETIO_ITEM_HEIGHT,
+  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETION_ITEM_HEIGHT,
 );
 
 const { desktopBelow } = api.ui.useScreenDetection();

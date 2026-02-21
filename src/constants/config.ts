@@ -32,6 +32,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     showGroup: false,
     defaultCompletionLimit: 500,
     fuseThreshold: DEFAULT_FUST_THRESHOLD,
+    showDetails: true,
   },
   synchronization: {
     type: 'none',

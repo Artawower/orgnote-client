@@ -3,7 +3,7 @@
     class="icon"
     :style="iconStyle"
     :class="[{ rounded, bordered }, sizeClass, $attrs.class]"
-    center
+    :center="center"
     align-center
   >
     <q-icon v-bind="$props" color="inherit" :size="iconSize" />
@@ -26,10 +26,12 @@ interface Props {
   size?: StyleSize | (string & {});
   rounded?: boolean;
   bordered?: boolean;
+  center?: boolean;
 }
 
 const props = withDefaults(defineProps<QIconProps & Props>(), {
   size: 'md',
+  center: true,
 });
 
 const bgColor = computed(() => props.background && getCssVariableName(props.background));

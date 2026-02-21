@@ -10,44 +10,32 @@
   </app-flex>
   <app-flex
     v-else
-    :key="resolvedTitle"
     class="completion-item"
-    :class="{ selected }"
-    @click="executeCompletionItem"
-    @mouseover="
-      (e: MouseEvent) =>
-        focusCompletionCandidate(e, (item as IndexedCompletionCandidate).index || index)
-    "
-    direction="row"
-    justify="start"
-    align="center"
-    gap="md"
+    :class="{ selected: selected ?? false }"
+    row
+    start
+    align-center
+    @click="selectCandidate"
+    @mouseover="(e: MouseEvent) => focusCompletionCandidate(e, candidateIndex)"
   >
-    <component v-if="iconComponent" :is="iconComponent" size="sm" />
-    <app-icon v-else-if="iconString" :name="iconString" size="sm" />
-    <div class="text-medium color-main">
-      <div class="line-limit-1">
-        {{ resolvedTitle }}
-      </div>
-    </div>
-    <div>
-      <span class="text-italic color-secondary line-limit-1">
-        {{ resolvedDescription }}
-      </span>
-    </div>
+    <component
+      :is="itemRenderer"
+      :candidate="item"
+      :index="candidateIndex"
+      :selected="selected ?? false"
+      :search-query="searchQuery"
+      :on-select="selectCandidate"
+    />
   </app-flex>
 </template>
 
 <script lang="ts" setup>
 import { computed, toValue } from 'vue';
 import { api } from 'src/boot/api';
-import AppIcon from 'src/components/AppIcon.vue';
-import type {
-  GroupedCompletionCandidate,
-  IndexedCompletionCandidate,
-} from 'src/models/grouped-completion-candidate';
+import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
+import type { CompletionItemRenderer } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
-import { useResolvedIcon } from 'src/composables/use-resolved-icon';
+import CompletionResultDefaultItem from 'src/containers/CompletionResultDefaultItem.vue';
 
 const props = defineProps<{
   item: GroupedCompletionCandidate;
@@ -59,19 +47,21 @@ const emit = defineEmits<{
   select: [];
 }>();
 
-const resolvedTitle = computed(() =>
-  'groupTitle' in props.item ? undefined : toValue(props.item.title),
-);
-
-const { iconString, iconComponent } = useResolvedIcon(
-  computed(() => ('groupTitle' in props.item ? undefined : toValue(props.item.icon))),
-);
-
-const resolvedDescription = computed(() =>
-  'groupTitle' in props.item ? undefined : toValue(props.item.description),
-);
-
 const completion = api.core.useCompletion();
+
+const candidateIndex = computed(() => {
+  if ('groupTitle' in props.item) {
+    return props.index;
+  }
+
+  return props.item.index ?? props.index;
+});
+
+const itemRenderer = computed<CompletionItemRenderer>(
+  () => completion.activeCompletion?.itemRenderer ?? CompletionResultDefaultItem,
+);
+
+const searchQuery = computed(() => completion.activeCompletion?.searchQuery ?? '');
 
 let lastCoords = [0, 0];
 const applyCandidateToInput = (index: number) => {
@@ -114,23 +104,17 @@ const focusCompletionCandidate = (e: MouseEvent, index: number) => {
   activeCompletion.selectedCandidateIndex = index;
 };
 
-const executeCompletionItem = async (e: MouseEvent) => {
-  if ('groupTitle' in props.item) return;
-  e.preventDefault();
-  e.stopPropagation();
-  if (!completion.activeCompletion) return;
-
-  applyCandidateToInput(props.index);
-};
+const selectCandidate = () => applyCandidateToInput(candidateIndex.value);
 </script>
 
 <style lang="scss" scoped>
 .completion-item {
   & {
-    height: 100%;
+    @include fit;
     cursor: pointer;
     border-radius: var(--completion-item-radius);
-    padding: var(--completion-item-padding);
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   &.selected {
@@ -154,13 +138,5 @@ const executeCompletionItem = async (e: MouseEvent) => {
     background: var(--bg-elevated);
     user-select: none;
   }
-
-  /* &::before,
-     &::after {
-     content: '';
-     flex: 1;
-     border-bottom: var(--border-default);
-     margin: 0 10px;
-     } */
 }
 </style>

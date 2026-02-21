@@ -56,6 +56,9 @@ const eng: Record<string, string> = {
   [I18N.TOC_NO_ACTIVE_DOCUMENT]: 'No active document',
   [I18N.TOC_NO_HEADLINES_FOUND]: 'No headlines found',
 
+  [I18N.TODAY]: 'Today',
+  [I18N.YESTERDAY]: 'Yesterday',
+
   [I18N.GPG_EMAIL_REQUIRED]: 'Email is required',
   [I18N.GPG_EMAIL_INVALID]: 'Invalid email format',
 };

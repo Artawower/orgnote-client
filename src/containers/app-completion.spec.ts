@@ -148,7 +148,7 @@ test('AppCompletion itemHeight computed does not crash when activeCompletion is 
   openCompletion({
     type: 'choice',
     placeholder: 'Test',
-    itemHeight: '40',
+    itemHeight: 40,
     itemsGetter: () => ({ result: [], total: 0 }),
   });
 
