@@ -3,12 +3,14 @@ import { test, expect, vi, beforeEach } from 'vitest';
 const {
   mockGetById,
   mockWriteFile,
+  mockFileInfo,
   mockSave,
   mockOpen,
   mockReportError,
 } = vi.hoisted(() => ({
   mockGetById: vi.fn(),
   mockWriteFile: vi.fn(),
+  mockFileInfo: vi.fn(),
   mockSave: vi.fn(),
   mockOpen: vi.fn(),
   mockReportError: vi.fn(),
@@ -16,6 +18,7 @@ const {
 
 let mockActiveContext: { filePath?: string } | null = null;
 let mockEditorConfig: { autoCreateMissingNotes?: boolean } = { autoCreateMissingNotes: true };
+let mockCurrentRouteName = 'File';
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -26,9 +29,21 @@ vi.mock('src/boot/api', () => ({
       }),
       useFileSystem: () => ({
         writeFile: mockWriteFile,
+        fileInfo: mockFileInfo,
       }),
       useBufferViewer: () => ({
         open: mockOpen,
+      }),
+      usePane: () => ({
+        activeTab: {
+          router: {
+            currentRoute: {
+              value: {
+                name: mockCurrentRouteName,
+              },
+            },
+          },
+        },
       }),
       useEditor: () => ({
         get activeContext() {
@@ -56,8 +71,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockActiveContext = { filePath: 'notes/current.org' };
   mockEditorConfig = { autoCreateMissingNotes: true };
+  mockCurrentRouteName = 'File';
   mockGetById.mockResolvedValue({ filePath: ['notes', 'existing.org'] });
   mockWriteFile.mockResolvedValue(undefined);
+  mockFileInfo.mockResolvedValue({ type: 'file' });
   mockSave.mockResolvedValue(undefined);
 });
 
@@ -165,5 +182,69 @@ test('useInternalLinkHandler handleClick skips creation when autoCreateMissingNo
   const { handleClick } = useInternalLinkHandler();
   await handleClick('abc', 'Title');
   expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockOpen).not.toHaveBeenCalled();
+});
+
+test('useInternalLinkHandler handleFileLink opens resolved file in current scheme', async () => {
+  mockActiveContext = { filePath: '/docs/info.org' };
+  mockCurrentRouteName = 'Remote';
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./installation.org');
+
+  expect(mockOpen).toHaveBeenCalledWith('remote:///docs/installation.org');
+});
+
+test('useInternalLinkHandler handleFileLink auto-creates missing local file', async () => {
+  mockActiveContext = { filePath: '/notes/current.org' };
+  mockCurrentRouteName = 'File';
+  mockFileInfo.mockResolvedValue(undefined);
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./simple-note.org');
+
+  expect(mockWriteFile).toHaveBeenCalledOnce();
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '/notes/simple-note.org',
+    expect.stringContaining('#+TITLE: simple-note'),
+  );
+  expect(mockSave).toHaveBeenCalledOnce();
+  expect(mockOpen).toHaveBeenCalledWith('file:///notes/simple-note.org');
+});
+
+test('useInternalLinkHandler handleFileLink does not auto-create when disabled', async () => {
+  mockActiveContext = { filePath: '/notes/current.org' };
+  mockCurrentRouteName = 'File';
+  mockEditorConfig = { autoCreateMissingNotes: false };
+  mockFileInfo.mockResolvedValue(undefined);
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./simple-note.org');
+
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockSave).not.toHaveBeenCalled();
+  expect(mockOpen).toHaveBeenCalledWith('file:///notes/simple-note.org');
+});
+
+test('useInternalLinkHandler handleFileLink does not auto-create for remote scheme', async () => {
+  mockActiveContext = { filePath: '/docs/info.org' };
+  mockCurrentRouteName = 'Remote';
+  mockFileInfo.mockResolvedValue(undefined);
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./simple-note.org');
+
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockSave).not.toHaveBeenCalled();
+  expect(mockOpen).toHaveBeenCalledWith('remote:///docs/simple-note.org');
+});
+
+test('useInternalLinkHandler handleFileLink reports error when current file path is missing', async () => {
+  mockActiveContext = { filePath: undefined };
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./installation.org');
+
+  expect(mockReportError).toHaveBeenCalledOnce();
   expect(mockOpen).not.toHaveBeenCalled();
 });

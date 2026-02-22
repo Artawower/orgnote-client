@@ -1,5 +1,11 @@
 import { test, expect, vi } from 'vitest';
-import { isInternalLink, extractInternalId, resolveInternalNoteUri } from './org-link';
+import {
+  isInternalLink,
+  extractInternalId,
+  resolveInternalNoteUri,
+  isRelativeFileLink,
+  resolveRelativeOrgFilePath,
+} from './org-link';
 
 test('org-link isInternalLink returns true for id: prefixed links', () => {
   expect(isInternalLink('id:abc-123')).toBe(true);
@@ -23,6 +29,50 @@ test('org-link isInternalLink returns false for empty string', () => {
 
 test('org-link isInternalLink returns false for plain text', () => {
   expect(isInternalLink('some random text')).toBe(false);
+});
+
+test('org-link isRelativeFileLink returns true for ./ prefixed link', () => {
+  expect(isRelativeFileLink('./simple-note.org')).toBe(true);
+});
+
+test('org-link isRelativeFileLink returns true for ../ prefixed link', () => {
+  expect(isRelativeFileLink('../simple-note.org')).toBe(true);
+});
+
+test('org-link isRelativeFileLink returns true for deep relative ../../../ link', () => {
+  expect(isRelativeFileLink('../../../simple-note.org')).toBe(true);
+});
+
+test('org-link isRelativeFileLink returns true for / prefixed link', () => {
+  expect(isRelativeFileLink('/docs/simple-note.org')).toBe(true);
+});
+
+test('org-link isRelativeFileLink returns false for id: link', () => {
+  expect(isRelativeFileLink('id:abc-123')).toBe(false);
+});
+
+test('org-link isRelativeFileLink returns false for external URL', () => {
+  expect(isRelativeFileLink('https://example.com')).toBe(false);
+});
+
+test('org-link resolveRelativeOrgFilePath resolves ./ path against current file directory', () => {
+  const resolved = resolveRelativeOrgFilePath('./simple-note.org', '/docs/info.org');
+  expect(resolved).toBe('/docs/simple-note.org');
+});
+
+test('org-link resolveRelativeOrgFilePath resolves ../ path against current file directory', () => {
+  const resolved = resolveRelativeOrgFilePath('../simple-note.org', '/docs/guide/info.org');
+  expect(resolved).toBe('/docs/simple-note.org');
+});
+
+test('org-link resolveRelativeOrgFilePath keeps absolute paths absolute', () => {
+  const resolved = resolveRelativeOrgFilePath('/docs/simple-note.org', '/docs/info.org');
+  expect(resolved).toBe('/docs/simple-note.org');
+});
+
+test('org-link resolveRelativeOrgFilePath strips org location suffix', () => {
+  const resolved = resolveRelativeOrgFilePath('./simple-note.org::Target', '/docs/info.org');
+  expect(resolved).toBe('/docs/simple-note.org');
 });
 
 test('org-link extractInternalId extracts id from id: link', () => {

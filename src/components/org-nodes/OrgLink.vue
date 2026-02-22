@@ -1,7 +1,7 @@
 <template>
   <app-link
     :href="href"
-    :external="!internal"
+    :external="!handledByApp"
     class="org-link"
     @click="handleClick"
   >
@@ -13,7 +13,7 @@
 import type { OrgNode } from 'org-mode-ast';
 import AppLink from 'src/components/AppLink.vue';
 import { computed, toRef } from 'vue';
-import { isInternalLink, extractInternalId } from 'src/utils/org-link';
+import { isInternalLink, extractInternalId, isRelativeFileLink } from 'src/utils/org-link';
 import { useInternalLinkHandler } from 'src/composables/use-internal-link-handler';
 
 const props = defineProps<{
@@ -35,9 +35,11 @@ const rawLink = computed(() => node.value.children?.get(1)?.children?.get(1)?.va
 const linkAddress = computed(() => extractLink(rawLink.value));
 
 const internal = computed(() => isInternalLink(linkAddress.value));
+const relativeFile = computed(() => isRelativeFileLink(linkAddress.value));
+const handledByApp = computed(() => internal.value || relativeFile.value);
 
 const href = computed(() => {
-  if (!internal.value) return linkAddress.value;
+  if (!handledByApp.value) return linkAddress.value;
   return '#';
 });
 
@@ -49,11 +51,19 @@ const displayText = computed(
   () => linkNameNode.value?.children?.get(1).rawValue ?? linkAddress.value,
 );
 
-const { handleClick: handleInternalLink } = useInternalLinkHandler();
+const { handleClick: handleInternalLink, handleFileLink } = useInternalLinkHandler();
 
 const handleClick = async (event: MouseEvent): Promise<void> => {
-  if (!internal.value) return;
+  if (!handledByApp.value) return;
   event.preventDefault();
-  await handleInternalLink(extractInternalId(linkAddress.value), displayText.value);
+
+  if (internal.value) {
+    await handleInternalLink(extractInternalId(linkAddress.value), displayText.value);
+    return;
+  }
+
+  if (relativeFile.value) {
+    await handleFileLink(linkAddress.value);
+  }
 };
 </script>

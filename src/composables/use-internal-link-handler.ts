@@ -1,24 +1,97 @@
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import { resolveInternalNoteUri } from 'src/utils/org-link';
+import { resolveInternalNoteUri, resolveRelativeOrgFilePath } from 'src/utils/org-link';
 import { buildNoteContent, buildNoteFilePath } from 'src/utils/create-note-from-link';
-import { buildBufferUri } from 'orgnote-api';
+import { buildBufferUri, RouteNames, splitPath, type BufferScheme } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
+import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 
 const DEFAULT_SCHEME = 'file';
 
-const createMissingNote = (
-  noteId: string,
-  title: string,
-  currentFilePath: string,
-) => {
+const getCurrentFilePath = (): string | undefined => api.core.useEditor().activeContext?.filePath;
+const shouldAutoCreateMissingNotes = (): boolean =>
+  Boolean(api.core.useConfig().config.editor.autoCreateMissingNotes);
+
+const persistNoteFileAndMeta = (params: {
+  filePath: string;
+  noteId: string;
+  title: string;
+  content: string;
+}) =>
+  to(async () => {
+    await api.core.useFileSystem().writeFile(params.filePath, params.content);
+    await api.core.useFileMeta().save({
+      id: params.noteId,
+      filePath: splitPath(params.filePath),
+      title: params.title,
+    });
+  }, `Failed to write and save note: ${params.filePath}`)();
+
+const resolveActiveScheme = (): BufferScheme => {
+  const routeName = api.core.usePane().activeTab?.router.currentRoute.value.name?.toString();
+
+  if (routeName === RouteNames.Remote) {
+    return 'remote';
+  }
+
+  if (routeName === RouteNames.Embedded) {
+    return 'embedded';
+  }
+
+  return DEFAULT_SCHEME;
+};
+
+const createMissingNote = (noteId: string, title: string, currentFilePath: string) => {
   const filePath = buildNoteFilePath(title, currentFilePath);
   const content = buildNoteContent(noteId, title);
   return to(async () => {
-    await api.core.useFileSystem().writeFile(filePath, content);
-    await api.core.useFileMeta().save({ id: noteId, filePath: filePath.split('/'), title });
+    const saveResult = await persistNoteFileAndMeta({ filePath, noteId, title, content });
+    if (saveResult.isErr()) {
+      throw saveResult.error;
+    }
     return buildBufferUri(DEFAULT_SCHEME, filePath);
   }, `Failed to create note: ${noteId}`)();
+};
+
+const createMissingNoteByPath = (filePath: string) => {
+  const noteId = crypto.randomUUID();
+  const title = extractOrgTitleFromPath(filePath);
+  const content = buildNoteContent(noteId, title);
+
+  return persistNoteFileAndMeta({ filePath, noteId, title, content });
+};
+
+const openBufferUri = async (uri: string): Promise<void> => {
+  const bufferViewer = api.core.useBufferViewer();
+  const openResult = await to(bufferViewer.open.bind(bufferViewer))(uri);
+  if (openResult.isErr()) {
+    reporter.reportError(openResult.error);
+  }
+};
+
+const ensureLocalLinkFileExists = async (scheme: BufferScheme, path: string): Promise<boolean> => {
+  if (scheme !== DEFAULT_SCHEME) {
+    return true;
+  }
+
+  const fileSystem = api.core.useFileSystem();
+  const fileInfoResult = await to(fileSystem.fileInfo.bind(fileSystem))(path);
+  if (fileInfoResult.isErr()) {
+    reporter.reportError(fileInfoResult.error);
+    return false;
+  }
+
+  if (fileInfoResult.value || !shouldAutoCreateMissingNotes()) {
+    return true;
+  }
+
+  const createResult = await createMissingNoteByPath(path);
+  if (createResult.isErr()) {
+    reporter.reportError(createResult.error);
+    return false;
+  }
+
+  return true;
 };
 
 export const useInternalLinkHandler = () => {
@@ -32,10 +105,10 @@ export const useInternalLinkHandler = () => {
       api.core.useBufferViewer().open(result.value);
       return;
     }
-    if (!api.core.useConfig().config.editor.autoCreateMissingNotes) {
+    if (!shouldAutoCreateMissingNotes()) {
       return;
     }
-    const currentFilePath = api.core.useEditor().activeContext?.filePath;
+    const currentFilePath = getCurrentFilePath();
     if (!currentFilePath) {
       reporter.reportError(new Error('Cannot create note: current file path unknown'));
       return;
@@ -48,5 +121,24 @@ export const useInternalLinkHandler = () => {
     api.core.useBufferViewer().open(createResult._unsafeUnwrap());
   };
 
-  return { handleClick };
+  const handleFileLink = async (rawLink: string): Promise<void> => {
+    const currentFilePath = getCurrentFilePath();
+    if (!currentFilePath) {
+      reporter.reportError(new Error('Cannot open link: current file path unknown'));
+      return;
+    }
+
+    const scheme = resolveActiveScheme();
+    const path = resolveRelativeOrgFilePath(rawLink, currentFilePath);
+    const uri = buildBufferUri(scheme, path);
+
+    const isFileReady = await ensureLocalLinkFileExists(scheme, path);
+    if (!isFileReady) {
+      return;
+    }
+
+    await openBufferUri(uri);
+  };
+
+  return { handleClick, handleFileLink };
 };
