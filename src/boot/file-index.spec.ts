@@ -1,82 +1,247 @@
-import { test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { isOrgFile } from 'orgnote-api';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { ref } from 'vue';
+import fileIndexBoot from './file-index';
+import type { DiskFile, FileMeta } from 'orgnote-api';
 
-vi.mock('orgnote-api', async () => {
-  const actual = await vi.importActual('orgnote-api');
+type FileChange = {
+  path: string;
+  type: 'create' | 'modify' | 'delete' | 'rename';
+  previousPath?: string;
+};
+
+const watcherState = {
+  isWatching: ref(true),
+};
+
+const searchState = {
+  isIndexing: false,
+  isIndexingRef: ref(false),
+  indexFile: vi.fn(async () => {}),
+  removeFile: vi.fn(async () => {}),
+};
+
+const commandsState = {
+  execute: vi.fn(() => {}),
+};
+
+const mockDirEntries = new Map<string, DiskFile[]>();
+const mockFileInfoByPath = new Map<string, DiskFile | undefined>();
+const mockIndexedFiles: FileMeta[] = [];
+
+let watchedCallback: ((change: FileChange) => Promise<void> | void) | undefined;
+
+vi.mock('vue', async () => {
+  const actual = await vi.importActual('vue');
   return {
     ...actual,
-    isOrgFile: vi.fn((path: string) => path.endsWith('.org') || path.endsWith('.org.gpg')),
+    watch: (
+      source: { value: unknown } | (() => unknown),
+      callback: (value: unknown) => void,
+      options?: { immediate?: boolean },
+    ) => {
+      let stopped = false;
+      const stop = () => {
+        stopped = true;
+      };
+
+      if (options?.immediate) {
+        Promise.resolve().then(() => {
+          if (stopped) {
+            return;
+          }
+
+          const value = typeof source === 'function' ? source() : source.value;
+          callback(value);
+        });
+      }
+
+      return stop;
+    },
   };
 });
 
+vi.mock('pinia', async () => {
+  const actual = await vi.importActual('pinia');
+  return {
+    ...actual,
+    storeToRefs: (store: Record<string, unknown>) => {
+      return Object.entries(store).reduce<Record<string, unknown>>((refs, [key, value]) => {
+        if (key === 'isIndexing' && typeof value === 'boolean') {
+          refs[key] = searchState.isIndexingRef;
+          return refs;
+        }
+
+        if (value && typeof value === 'object' && 'value' in (value as object)) {
+          refs[key] = value;
+        }
+        return refs;
+      }, {});
+    },
+  };
+});
+
+vi.mock('src/stores/file-watcher', () => ({
+  useFileWatcherStore: vi.fn(() => ({
+    isWatching: watcherState.isWatching,
+    watch: vi.fn((path: string, callback: (change: FileChange) => Promise<void> | void) => {
+      if (path === '/') {
+        watchedCallback = callback;
+      }
+      return () => {};
+    }),
+  })),
+}));
+
+vi.mock('src/stores/file-search', () => ({
+  useFileSearchStore: vi.fn(() => ({
+    isIndexing: searchState.isIndexing,
+    indexFile: searchState.indexFile,
+    removeFile: searchState.removeFile,
+  })),
+}));
+
+vi.mock('src/stores/file-system', () => ({
+  useFileSystemStore: vi.fn(() => ({
+    readDir: vi.fn(async (path: string) => mockDirEntries.get(path) ?? []),
+    fileInfo: vi.fn(async (path: string) => mockFileInfoByPath.get(path)),
+  })),
+}));
+
+vi.mock('src/boot/repositories', () => ({
+  repositories: {
+    fileRepository: {
+      getAll: vi.fn(async () => mockIndexedFiles),
+    },
+  },
+}));
+
+vi.mock('src/stores/command', () => ({
+  useCommandsStore: vi.fn(() => commandsState),
+}));
+
 beforeEach(() => {
-  vi.clearAllMocks();
+  watchedCallback = undefined;
+  watcherState.isWatching.value = true;
+  searchState.isIndexing = false;
+  searchState.isIndexingRef.value = false;
+  searchState.indexFile.mockClear();
+  searchState.removeFile.mockClear();
+  commandsState.execute.mockClear();
+  mockDirEntries.clear();
+  mockFileInfoByPath.clear();
+  mockIndexedFiles.length = 0;
 });
 
 afterEach(() => {
   vi.clearAllMocks();
 });
 
-test('isOrgFile returns true for .org files', () => {
-  expect(isOrgFile('/notes/test.org')).toBe(true);
+test('file-index watcher removes old path and indexes new path on rename', async () => {
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
+  expect(watchedCallback).toBeTypeOf('function');
+
+  await watchedCallback?.({
+    type: 'rename',
+    path: '/new-name.org',
+    previousPath: '/old-name.org',
+  });
+
+  expect(searchState.removeFile).toHaveBeenCalledTimes(1);
+  expect(searchState.removeFile).toHaveBeenCalledWith({ path: ['old-name.org'] });
+
+  expect(searchState.indexFile).toHaveBeenCalledTimes(1);
+  expect(searchState.indexFile).toHaveBeenCalledWith('/new-name.org');
 });
 
-test('isOrgFile returns true for .org.gpg files', () => {
-  expect(isOrgFile('/notes/secret.org.gpg')).toBe(true);
+test('file-index watcher handles bulk rename by updating all old and new paths', async () => {
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
+  expect(watchedCallback).toBeTypeOf('function');
+
+  await watchedCallback?.({
+    type: 'rename',
+    path: '/archive/new-a.org',
+    previousPath: '/inbox/old-a.org',
+  });
+  await watchedCallback?.({
+    type: 'rename',
+    path: '/archive/new-b.org',
+    previousPath: '/inbox/old-b.org',
+  });
+
+  expect(searchState.removeFile).toHaveBeenNthCalledWith(1, { path: ['inbox', 'old-a.org'] });
+  expect(searchState.removeFile).toHaveBeenNthCalledWith(2, { path: ['inbox', 'old-b.org'] });
+
+  expect(searchState.indexFile).toHaveBeenNthCalledWith(1, '/archive/new-a.org');
+  expect(searchState.indexFile).toHaveBeenNthCalledWith(2, '/archive/new-b.org');
 });
 
-test('isOrgFile returns false for .txt files', () => {
-  expect(isOrgFile('/notes/readme.txt')).toBe(false);
-});
+test('file-index watcher removes stale index paths and reindexes on directory rename', async () => {
+  mockIndexedFiles.push(
+    {
+      id: '/markdown/python/with, context-manager.org',
+      filePath: ['markdown', 'python', 'with, context-manager.org'],
+      title: 'with, context-manager',
+    },
+    {
+      id: '/markdown/python/asyncio.org',
+      filePath: ['markdown', 'python', 'asyncio.org'],
+      title: 'asyncio',
+    },
+    {
+      id: '/other/keep.org',
+      filePath: ['other', 'keep.org'],
+      title: 'keep',
+    },
+  );
 
-test('isOrgFile returns false for .md files', () => {
-  expect(isOrgFile('/notes/readme.md')).toBe(false);
-});
+  mockDirEntries.set('/python', [
+    {
+      name: 'with, context-manager.org',
+      path: '/python/with, context-manager.org',
+      type: 'file',
+      size: 10,
+      mtime: Date.now(),
+    },
+    {
+      name: 'sub',
+      path: '/python/sub',
+      type: 'directory',
+      size: 0,
+      mtime: Date.now(),
+    },
+  ]);
+  mockDirEntries.set('/python/sub', [
+    {
+      name: 'asyncio.org',
+      path: '/python/sub/asyncio.org',
+      type: 'file',
+      size: 12,
+      mtime: Date.now(),
+    },
+  ]);
+  mockFileInfoByPath.set('/python', {
+    name: 'python',
+    path: '/python',
+    type: 'directory',
+    size: 0,
+    mtime: Date.now(),
+  });
 
-test('isOrgFile returns false for .json files', () => {
-  expect(isOrgFile('/data/config.json')).toBe(false);
-});
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
 
-test('isOrgFile handles nested paths', () => {
-  expect(isOrgFile('/folder/subfolder/deep/note.org')).toBe(true);
-});
+  await watchedCallback?.({
+    type: 'rename',
+    path: '/python',
+    previousPath: '/markdown/python',
+  });
 
-test('isOrgFile handles root path files', () => {
-  expect(isOrgFile('/root.org')).toBe(true);
-});
+  expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/markdown/python/with, context-manager.org' });
+  expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/markdown/python/asyncio.org' });
+  expect(searchState.removeFile).not.toHaveBeenCalledWith({ id: '/other/keep.org' });
 
-test('path split correctly extracts file parts', () => {
-  const path = '/notes/deleted.org';
-  const parts = path.split('/').filter(Boolean);
-
-  expect(parts).toEqual(['notes', 'deleted.org']);
-});
-
-test('path split handles multiple levels', () => {
-  const path = '/folder/subfolder/file.org';
-  const parts = path.split('/').filter(Boolean);
-
-  expect(parts).toEqual(['folder', 'subfolder', 'file.org']);
-});
-
-test('path split handles root level files', () => {
-  const path = '/root.org';
-  const parts = path.split('/').filter(Boolean);
-
-  expect(parts).toEqual(['root.org']);
-});
-
-test('file change type delete is identified', () => {
-  const change = { type: 'delete', path: '/notes/deleted.org' };
-  expect(change.type).toBe('delete');
-});
-
-test('file change type modify is identified', () => {
-  const change = { type: 'modify', path: '/notes/modified.org' };
-  expect(change.type).toBe('modify');
-});
-
-test('file change type create is identified', () => {
-  const change = { type: 'create', path: '/notes/new.org' };
-  expect(change.type).toBe('create');
+  expect(searchState.indexFile).toHaveBeenCalledWith('/python/with, context-manager.org');
+  expect(searchState.indexFile).toHaveBeenCalledWith('/python/sub/asyncio.org');
 });
