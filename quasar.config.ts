@@ -44,6 +44,7 @@ export default defineConfig((ctx) => {
       { path: 'file-guards', server: false },
       { path: 'files-watchers', server: false },
       { path: 'auth', server: false },
+      { path: 'fs-sync-bridge', server: false },
       { path: 'electron-deeplink', server: false },
       { path: 'katex', server: false },
     ],
