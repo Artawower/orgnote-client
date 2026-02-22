@@ -67,6 +67,14 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
   const providerStore = api.core.useBufferProviders();
   const config = api.core.useConfig();
 
+  const syncAfterBufferSave = debounce(async () => {
+    const syncStore = api.core.useSync();
+    const result = await to(syncStore.sync.bind(syncStore), 'Failed to sync after buffer save')();
+    if (result.isErr()) {
+      reporter.reportWarning(result.error);
+    }
+  }, () => config.config.editor.saveDelayMs ?? DEFAULT_SAVE_DELAY_MS);
+
   const getProvider = (scheme: BufferScheme): BufferProvider | undefined => providerStore.get(scheme);
 
   const isBufferDirty = (buffer: OrgBuffer): boolean => {
@@ -102,6 +110,10 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
     buffer.metadata.originalRawContent = new Uint8Array(contentToWrite);
     buffer.metadata.lastSavedAt = Date.now();
+
+    if (buffer.scheme === 'file') {
+      syncAfterBufferSave();
+    }
 
     buffer.isSaving = false;
   };

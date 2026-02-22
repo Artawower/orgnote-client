@@ -6,6 +6,7 @@ import type { FileMeta } from 'orgnote-api';
 const mockFiles: Map<string, FileMeta> = new Map();
 const mockFileContents: Map<string, Uint8Array> = new Map();
 let mockEncryptionType = 'disabled';
+const mockSync = vi.fn(async () => {});
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -39,6 +40,9 @@ vi.mock('src/boot/api', () => ({
         unregister: (scheme: string) => {
           mockProviders.delete(scheme);
         },
+      })),
+      useSync: vi.fn(() => ({
+        sync: mockSync,
       })),
     },
     infrastructure: {
@@ -117,6 +121,7 @@ beforeEach(() => {
   mockProviders.clear();
   mockProviders.set('file', createFileProvider());
   mockEncryptionType = 'disabled';
+  mockSync.mockClear();
   vi.useFakeTimers();
 });
 
@@ -418,6 +423,36 @@ test('auto-save triggers on content change after delay', async () => {
   await vi.runAllTimersAsync();
 
   expect(textDecoder.decode(mockFileContents.get('/notes/auto.org'))).toBe('Modified');
+});
+
+test('auto-save triggers sync for file scheme buffers', async () => {
+  const store = useBufferStore();
+  mockFileContents.set('/notes/sync.org', textEncoder.encode('Original'));
+
+  const buffer = await store.getOrCreateBuffer('/notes/sync.org');
+  buffer.setText('Modified');
+
+  vi.advanceTimersByTime(250);
+  await vi.runAllTimersAsync();
+
+  expect(mockSync).toHaveBeenCalledTimes(1);
+});
+
+test('auto-save does not trigger sync for non-file scheme buffers', async () => {
+  const store = useBufferStore();
+  mockProviders.set('custom', {
+    scheme: 'custom',
+    read: async () => textEncoder.encode('Original'),
+    write: async () => {},
+  });
+
+  const buffer = await store.getOrCreateBuffer('custom://doc.org');
+  buffer.setText('Modified');
+
+  vi.advanceTimersByTime(250);
+  await vi.runAllTimersAsync();
+
+  expect(mockSync).not.toHaveBeenCalled();
 });
 
 test('buffer isSaving flag is set during save', async () => {
