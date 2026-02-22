@@ -1,5 +1,5 @@
 .cm-content {
-  --fold-trigger-offset: 1.75em;
+  --fold-trigger-offset: 1.75rem;
   padding-left: var(--fold-trigger-offset) !important;
 }
 
@@ -13,10 +13,10 @@
 .headline-fold-trigger-wrap .headline-fold-trigger {
   position: absolute;
   left: calc(-1 * var(--fold-trigger-offset));
-  top: 0;
-  transform: translateY(-15%);
-  width: 1.25em;
-  height: 1.25em;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .cm-line:hover .headline-fold-trigger-wrap .headline-fold-trigger {
