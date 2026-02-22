@@ -1,10 +1,17 @@
 import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
-import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
+import {
+  DefaultCommands,
+  EDITOR_COMMAND_GROUP,
+  i18n,
+  getParentDir,
+  join,
+} from 'orgnote-api';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
 import { to } from 'orgnote-api/utils';
 import { redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
+import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import { blurEditor } from 'src/utils/editor-primitives';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
@@ -125,7 +132,7 @@ export const getEditorCommands = (): Command[] => {
         const file = await api.utils.uploadFile({ accept: 'image/*' });
         if (!file) return;
 
-        const currentPath = api.core.useEditor().activeContext?.filePath;
+        const currentPath = getActiveFilePath(api);
         if (!currentPath) return;
 
         const targetDir = getParentDir(currentPath);

@@ -23,6 +23,14 @@ import { computed, ref, watchEffect } from 'vue';
 import { uint8ArrayToBase64, isNullable, to } from 'orgnote-api/utils';
 import { I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
+import { getHostRelatedPath } from 'src/utils/get-host-related-path';
+import {
+  extractOrgLinkTarget,
+  isExternalResourceLink,
+  normalizeOrgResourcePath,
+  resolveBufferSchemeFromRouteName,
+  resolveRelativeOrgFilePath,
+} from 'src/utils/org-link';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppImage from 'src/components/AppImage.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
@@ -38,28 +46,17 @@ const resolvedSrc = ref<string | null>(null);
 
 const currentNode = computed(() => props.nodeGetter?.() ?? props.node);
 
-const extractLink = (raw: string): string => {
-  const match = raw.match(/\[\[([^\]]+)\]/);
-  return match?.[1] ?? raw;
-};
-
 const rawLink = computed(() => currentNode.value.children?.get(1)?.children?.get(1)?.value ?? '');
+const imagePath = computed(() => normalizeOrgResourcePath(extractOrgLinkTarget(rawLink.value)));
 
-const normalizeImagePath = (path: string): string => {
-  if (path.startsWith('file:')) return path.slice(5);
-  if (path.startsWith('attachment:')) return path.slice(11);
-  return path;
-};
+const pane = api.core.usePane();
 
-const imagePath = computed(() => normalizeImagePath(extractLink(rawLink.value)));
+const activeScheme = computed(() => {
+  const routeName = pane.activeRoute?.name?.toString();
+  return resolveBufferSchemeFromRouteName(routeName);
+});
 
-const isExternalUrl = (path: string): boolean =>
-  path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:');
-
-const isValidPath = (path: string): boolean => {
-  if (!path || path.includes('..')) return false;
-  return true;
-};
+const currentFilePath = computed(() => api.core.useEditor().activeContext?.filePath);
 
 const truncatedPath = computed(() => {
   const src = imagePath.value;
@@ -80,14 +77,32 @@ const readImageAsDataUrl = async (path: string): Promise<string | null> => {
   return `data:image/*;base64,${uint8ArrayToBase64(bytes)}`;
 };
 
+const resolveImagePathAgainstCurrentFile = (path: string): string | null => {
+  if (path.startsWith('/')) {
+    return path;
+  }
+
+  if (!currentFilePath.value) {
+    return null;
+  }
+
+  return resolveRelativeOrgFilePath(path, currentFilePath.value);
+};
+
 const resolveImageSrc = async (path: string): Promise<string | null> => {
   if (!path) return null;
-  if (isExternalUrl(path)) return path;
-  if (!isValidPath(path)) return null;
+  if (isExternalResourceLink(path)) return path;
 
-  const result = await to(readImageAsDataUrl)(path);
+  const resolvedPath = resolveImagePathAgainstCurrentFile(path);
+  if (!resolvedPath) return null;
+
+  if (activeScheme.value === 'remote') {
+    return getHostRelatedPath(resolvedPath);
+  }
+
+  const result = await to(readImageAsDataUrl)(resolvedPath);
   if (result.isErr()) {
-    api.utils.logger.error(`Failed to load image: ${path}`, { error: result.error });
+    api.utils.logger.error(`Failed to load image: ${resolvedPath}`, { error: result.error });
     return null;
   }
   return result.value;

@@ -5,7 +5,14 @@ import {
   resolveInternalNoteUri,
   isRelativeFileLink,
   resolveRelativeOrgFilePath,
+  extractOrgLinkTarget,
+  normalizeOrgResourcePath,
+  isExternalResourceLink,
+  buildContextualBufferUri,
+  resolveRemoteResourceUrl,
+  resolveBufferSchemeFromRouteName,
 } from './org-link';
+import { RouteNames } from 'orgnote-api';
 
 test('org-link isInternalLink returns true for id: prefixed links', () => {
   expect(isInternalLink('id:abc-123')).toBe(true);
@@ -29,6 +36,30 @@ test('org-link isInternalLink returns false for empty string', () => {
 
 test('org-link isInternalLink returns false for plain text', () => {
   expect(isInternalLink('some random text')).toBe(false);
+});
+
+test('org-link extractOrgLinkTarget extracts target from bracketed link', () => {
+  expect(extractOrgLinkTarget('[[./simple-note.org][Simple link]]')).toBe('./simple-note.org');
+});
+
+test('org-link normalizeOrgResourcePath strips file: prefix', () => {
+  expect(normalizeOrgResourcePath('file:/docs/img.png')).toBe('/docs/img.png');
+});
+
+test('org-link normalizeOrgResourcePath strips attachment: prefix', () => {
+  expect(normalizeOrgResourcePath('attachment:./img.png')).toBe('./img.png');
+});
+
+test('org-link isExternalResourceLink returns true for https url', () => {
+  expect(isExternalResourceLink('https://example.com/img.png')).toBe(true);
+});
+
+test('org-link isExternalResourceLink returns true for uppercase scheme', () => {
+  expect(isExternalResourceLink('HTTPS://example.com/img.png')).toBe(true);
+});
+
+test('org-link isExternalResourceLink returns false for relative path', () => {
+  expect(isExternalResourceLink('./img.png')).toBe(false);
 });
 
 test('org-link isRelativeFileLink returns true for ./ prefixed link', () => {
@@ -73,6 +104,33 @@ test('org-link resolveRelativeOrgFilePath keeps absolute paths absolute', () => 
 test('org-link resolveRelativeOrgFilePath strips org location suffix', () => {
   const resolved = resolveRelativeOrgFilePath('./simple-note.org::Target', '/docs/info.org');
   expect(resolved).toBe('/docs/simple-note.org');
+});
+
+test('org-link resolveRelativeOrgFilePath resolves plain filename against current file directory', () => {
+  const resolved = resolveRelativeOrgFilePath('img.png', '/docs/info.org');
+  expect(resolved).toBe('/docs/img.png');
+});
+
+test('org-link buildContextualBufferUri builds remote URI from relative path', () => {
+  const uri = buildContextualBufferUri('./simple-note.org', {
+    scheme: 'remote',
+    currentFilePath: '/docs/info.org',
+  });
+  expect(uri).toBe('remote:///docs/simple-note.org');
+});
+
+test('org-link resolveRemoteResourceUrl resolves relative image path to host URL', () => {
+  const url = resolveRemoteResourceUrl('./images/photo.png', '/docs/info.org');
+  expect(url).toMatch(/\/docs\/images\/photo\.png$/);
+});
+
+test('org-link resolveBufferSchemeFromRouteName maps known route names', () => {
+  expect(resolveBufferSchemeFromRouteName(RouteNames.Remote)).toBe('remote');
+  expect(resolveBufferSchemeFromRouteName(RouteNames.File)).toBe('file');
+});
+
+test('org-link resolveBufferSchemeFromRouteName falls back to file', () => {
+  expect(resolveBufferSchemeFromRouteName('UnknownRoute')).toBe('file');
 });
 
 test('org-link extractInternalId extracts id from id: link', () => {

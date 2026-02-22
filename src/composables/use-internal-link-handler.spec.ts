@@ -35,14 +35,8 @@ vi.mock('src/boot/api', () => ({
         open: mockOpen,
       }),
       usePane: () => ({
-        activeTab: {
-          router: {
-            currentRoute: {
-              value: {
-                name: mockCurrentRouteName,
-              },
-            },
-          },
+        activeRoute: {
+          name: mockCurrentRouteName,
         },
       }),
       useEditor: () => ({

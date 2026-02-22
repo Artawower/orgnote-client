@@ -1,8 +1,13 @@
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import { resolveInternalNoteUri, resolveRelativeOrgFilePath } from 'src/utils/org-link';
+import {
+  resolveInternalNoteUri,
+  resolveRelativeOrgFilePath,
+  buildContextualBufferUri,
+  resolveBufferSchemeFromRouteName,
+} from 'src/utils/org-link';
 import { buildNoteContent, buildNoteFilePath } from 'src/utils/create-note-from-link';
-import { buildBufferUri, RouteNames, splitPath, type BufferScheme } from 'orgnote-api';
+import { buildBufferUri, splitPath, type BufferScheme } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 
@@ -28,17 +33,8 @@ const persistNoteFileAndMeta = (params: {
   }, `Failed to write and save note: ${params.filePath}`)();
 
 const resolveActiveScheme = (): BufferScheme => {
-  const routeName = api.core.usePane().activeTab?.router.currentRoute.value.name?.toString();
-
-  if (routeName === RouteNames.Remote) {
-    return 'remote';
-  }
-
-  if (routeName === RouteNames.Embedded) {
-    return 'embedded';
-  }
-
-  return DEFAULT_SCHEME;
+  const routeName = api.core.usePane().activeRoute?.name?.toString();
+  return resolveBufferSchemeFromRouteName(routeName);
 };
 
 const createMissingNote = (noteId: string, title: string, currentFilePath: string) => {
@@ -130,7 +126,7 @@ export const useInternalLinkHandler = () => {
 
     const scheme = resolveActiveScheme();
     const path = resolveRelativeOrgFilePath(rawLink, currentFilePath);
-    const uri = buildBufferUri(scheme, path);
+    const uri = buildContextualBufferUri(rawLink, { scheme, currentFilePath });
 
     const isFileReady = await ensureLocalLinkFileExists(scheme, path);
     if (!isFileReady) {

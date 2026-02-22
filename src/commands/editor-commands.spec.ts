@@ -1,6 +1,6 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import { getEditorCommands } from './editor-commands';
-import { DefaultCommands } from 'orgnote-api';
+import { DefaultCommands, RouteNames } from 'orgnote-api';
 import type { OrgNoteApi, FileMeta, CompletionConfig, CompletionSearchResult } from 'orgnote-api';
 import { ref } from 'vue';
 
@@ -10,7 +10,10 @@ const mockFiles: FileMeta[] = [];
 let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
 
 const mockInsertInternalLink = vi.fn();
+const mockInsertImage = vi.fn();
 const mockCompletionClose = vi.fn();
+const mockUploadFile = vi.fn();
+const mockWriteFile = vi.fn();
 
 const mockCompletion = {
   open: vi.fn(async (config: CompletionConfig<FileMeta>) => {
@@ -47,6 +50,7 @@ vi.mock('src/composables/use-org-editor', () => ({
   useOrgEditor: () => ({
     orgEditor: {
       insertInternalLink: mockInsertInternalLink,
+      insertImage: mockInsertImage,
     },
     withOrgEditor: vi.fn(),
   }),
@@ -67,8 +71,36 @@ const createMockApi = (): OrgNoteApi =>
         activeContext: {
           editorViewGetter: () => ({}),
           orgNode: undefined,
+          filePath: '/docs/info.org',
         },
       }),
+      usePane: () => ({
+        activeBufferUri: 'file://root.org',
+        activeRoute: {
+          name: RouteNames.File,
+          params: {
+            path: 'root.org',
+          },
+        },
+        activeTab: {
+          router: {
+            currentRoute: {
+              value: {
+                name: RouteNames.File,
+                params: {
+                  path: 'root.org',
+                },
+              },
+            },
+          },
+        },
+      }),
+      useFileSystem: () => ({
+        writeFile: mockWriteFile,
+      }),
+    },
+    utils: {
+      uploadFile: mockUploadFile,
     },
     ui: {
       useKeyboardState: () => ({ keyboardOpened: ref(false) }),
@@ -80,11 +112,19 @@ const findInternalLinkCommand = () => {
   return commands.find((c) => c.command === DefaultCommands.EDITOR_INSERT_INTERNAL_LINK)!;
 };
 
+const findInsertImageCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_INSERT_IMAGE)!;
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockFiles.length = 0;
   mockSearchResult = null;
   capturedCompletionConfig = null;
+  mockInsertImage.mockReset();
+  mockUploadFile.mockReset();
+  mockWriteFile.mockReset();
 });
 
 test('editor-commands EDITOR_INSERT_INTERNAL_LINK opens completion with type choice', async () => {
@@ -199,4 +239,16 @@ test('editor-commands EDITOR_INSERT_INTERNAL_LINK sets placeholder', async () =>
   await command.handler(api, { data: {}, meta: {} });
 
   expect(capturedCompletionConfig?.placeholder).toBeDefined();
+});
+
+test('editor-commands EDITOR_INSERT_IMAGE saves image in active route file directory', async () => {
+  const api = createMockApi();
+  const command = findInsertImageCommand();
+  const file = new File([new Uint8Array([1, 2, 3])], 'image.png', { type: 'image/png' });
+  mockUploadFile.mockResolvedValue(file);
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  expect(mockWriteFile).toHaveBeenCalledWith('image.png', expect.any(Uint8Array));
+  expect(mockInsertImage).toHaveBeenCalledWith('image.png');
 });

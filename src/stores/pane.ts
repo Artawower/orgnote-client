@@ -17,6 +17,7 @@ import type { RouteLocationRaw, Router } from 'vue-router';
 import { createPaneRouter } from 'src/utils/pane-router';
 import { useLayoutStore } from './layout';
 import { isPresent } from 'orgnote-api/utils';
+import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 
 export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   // TODO: feat/stable-beta replace by reactive object
@@ -37,6 +38,14 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     const pane = activePane.value;
     const tab = pane?.tabs.value[pane.activeTabId];
     return tab;
+  });
+
+  const activeRoute = computed(() => activeTab.value?.router.currentRoute.value);
+
+  const activeBufferUri = computed(() => {
+    const route = activeRoute.value;
+    if (!route) return undefined;
+    return extractPathFromRoute(route);
   });
 
   const getAllTabTitles = computed((): string[] => {
@@ -596,6 +605,8 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     activePaneId,
     activePane,
     activeTab,
+    activeRoute,
+    activeBufferUri,
     moveTab,
     createPane,
     getPane,

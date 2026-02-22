@@ -13,7 +13,13 @@
 import type { OrgNode } from 'org-mode-ast';
 import AppLink from 'src/components/AppLink.vue';
 import { computed, toRef } from 'vue';
-import { isInternalLink, extractInternalId, isRelativeFileLink } from 'src/utils/org-link';
+import {
+  isInternalLink,
+  extractInternalId,
+  isRelativeFileLink,
+  extractOrgLinkTarget,
+  normalizeOrgResourcePath,
+} from 'src/utils/org-link';
 import { useInternalLinkHandler } from 'src/composables/use-internal-link-handler';
 
 const props = defineProps<{
@@ -26,13 +32,8 @@ defineEmits<{
 
 const node = toRef(props, 'node');
 
-const extractLink = (raw: string): string => {
-  const match = raw.match(/\[\[([^\]]+)\]/);
-  return match?.[1] ?? raw;
-};
-
 const rawLink = computed(() => node.value.children?.get(1)?.children?.get(1)?.value ?? '');
-const linkAddress = computed(() => extractLink(rawLink.value));
+const linkAddress = computed(() => normalizeOrgResourcePath(extractOrgLinkTarget(rawLink.value)));
 
 const internal = computed(() => isInternalLink(linkAddress.value));
 const relativeFile = computed(() => isRelativeFileLink(linkAddress.value));
