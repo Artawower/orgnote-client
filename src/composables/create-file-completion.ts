@@ -1,4 +1,4 @@
-import { I18N, isOrgFile, type DiskFile, type OrgNoteApi } from 'orgnote-api';
+import { getFileExtension, I18N, isOrgFile, type DiskFile, type OrgNoteApi } from 'orgnote-api';
 import { ORG_EXTENSION } from 'src/constants/org-file-extension';
 import { createDirPath } from 'src/utils/create-dir-path';
 import { createDirItemsGetter } from 'src/utils/dir-items-getter';
@@ -11,7 +11,8 @@ export const createFileCompletion = async (api: OrgNoteApi): Promise<string> => 
     return '';
   }
 
-  if (!isOrgFile(filePath)) {
+  const fileExtension = getFileExtension(filePath);
+  if (!isOrgFile(filePath) && !fileExtension) {
     filePath += `.${ORG_EXTENSION}`;
   }
   const fs = api.core.useFileSystem();
