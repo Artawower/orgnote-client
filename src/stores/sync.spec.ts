@@ -37,10 +37,8 @@ vi.mock('src/infrastructure/sync', () => ({
   isPlanEmpty: mockIsPlanEmpty,
 }));
 
-vi.mock('orgnote-api', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('orgnote-api')>();
+vi.mock('orgnote-api', async () => {
   return {
-    ...actual,
     recoverState: mockRecoverState,
     fetchRemoteChanges: mockFetchRemoteChanges,
     scanLocalFiles: mockScanLocalFiles,

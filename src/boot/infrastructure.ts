@@ -2,11 +2,13 @@ import { defineBoot } from '#q-app/wrappers';
 import { debounce } from 'quasar';
 import { wsClient, initWebSocketClient } from 'src/infrastructure/websocket-client';
 import { api as axiosInstance } from 'src/boot/axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from 'src/stores/auth';
 import { useSyncStore } from 'src/stores/sync';
 import { useConfigStore } from 'src/stores/config';
 import { watch } from 'vue';
 import { logger } from 'src/boot/logger';
+import { clientOnly } from 'src/utils/platform-specific';
 
 export default defineBoot(({ store }) => {
   const authStore = useAuthStore(store);
@@ -18,7 +20,7 @@ export default defineBoot(({ store }) => {
     syncStore.sync();
   }, 1000);
 
-  const reinitWebSocket = () => {
+  const reinitWebSocket = clientOnly(() => {
     if (wsClient) {
       wsClient.off('sync', debouncedSync);
     }
@@ -31,9 +33,7 @@ export default defineBoot(({ store }) => {
     if (authStore.token) {
       client.connect(authStore.token);
     }
-  };
-
-  reinitWebSocket();
+  });
 
   watch(
     [
@@ -43,23 +43,32 @@ export default defineBoot(({ store }) => {
     reinitWebSocket,
   );
 
+  const handleTokenChange = (token: string): void => {
+    if (!wsClient) {
+      return;
+    }
+    if (token) {
+      wsClient.connect(token);
+      return;
+    }
+    wsClient.disconnect();
+  };
+
   watch(
     () => authStore.token,
-    (token: string) => {
-      if (token) {
-        wsClient.connect(token);
-        return;
-      }
-      wsClient.disconnect();
-    },
+    clientOnly(handleTokenChange),
     { immediate: true },
   );
 
-  axiosInstance.interceptors.request.use((config) => {
-    if (wsClient.socketId) {
-      config.headers['X-Socket-ID'] = wsClient.socketId;
+  const attachSocketIdToRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+
+    if (!wsClient?.socketId) {
+      return config;
     }
+    config.headers['X-Socket-ID'] = wsClient.socketId;
     return config;
-  });
+  };
+
+  axiosInstance.interceptors.request.use(clientOnly(attachSocketIdToRequest));
 
 });
