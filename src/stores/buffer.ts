@@ -69,7 +69,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
 
   const syncAfterBufferSave = debounce(async () => {
     const syncStore = api.core.useSync();
-    const result = await to(syncStore.sync.bind(syncStore), 'Failed to sync after buffer save')();
+    const result = await to(() => syncStore.sync(), 'Failed to sync after buffer save')();
     if (result.isErr()) {
       reporter.reportWarning(result.error);
     }

@@ -15,6 +15,7 @@ import { createSyncState } from 'src/utils/sync-state';
 import { to } from 'orgnote-api/utils';
 import { enqueuePlanOperations, isPlanEmpty } from 'src/infrastructure/sync';
 import { useFileSystemManagerStore } from './file-system-manager';
+import { api } from 'src/boot/api';
 
 export const useSyncStore = defineStore<'sync', SyncStore>(
   'sync',
@@ -24,6 +25,12 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
 
     const state = createSyncState(stateData);
     const fs = computed(() => useFileSystemManagerStore().currentFs as FileSystem);
+
+    const isSyncProhibited = (): boolean => {
+      const authStore = api.core.useAuth();
+      const configStore = api.core.useConfig();
+      return !authStore.user?.active || configStore.config.synchronization.type === 'none';
+    };
 
     const buildSyncPlan = async (
       fs: FileSystem,
@@ -68,6 +75,10 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
     };
 
     const sync = async (): Promise<void> => {
+      if (isSyncProhibited()) {
+        return;
+      }
+
       const plan = await createPlanAction();
 
       if (!plan) {
