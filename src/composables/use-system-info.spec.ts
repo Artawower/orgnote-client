@@ -28,6 +28,17 @@ vi.mock('src/boot/api', () => ({
   },
 }));
 
+vi.mock('src/utils/server-endpoints', () => ({
+  getWebSocketUrl: vi.fn(() => 'ws://localhost:3000/ws/events'),
+}));
+
+vi.mock('src/infrastructure/websocket-client', () => ({
+  wsClient: {
+    isConnected: false,
+    socketId: null,
+  },
+}));
+
 const ORIGINAL_ENV = { ...process.env };
 
 beforeEach(() => {

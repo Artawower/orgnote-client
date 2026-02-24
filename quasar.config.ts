@@ -26,7 +26,7 @@ export default defineConfig((ctx) => {
       'default-file-systems',
       'i18n',
       'axios',
-      'infrastructure',
+      { server: false, path: 'infrastructure' },
       'api',
       { server: false, path: 'highlightjs' },
       {

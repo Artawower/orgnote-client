@@ -8,7 +8,6 @@ import { useSyncStore } from 'src/stores/sync';
 import { useConfigStore } from 'src/stores/config';
 import { watch } from 'vue';
 import { logger } from 'src/boot/logger';
-import { clientOnly } from 'src/utils/platform-specific';
 
 export default defineBoot(({ store }) => {
   const authStore = useAuthStore(store);
@@ -20,7 +19,8 @@ export default defineBoot(({ store }) => {
     syncStore.sync();
   }, 1000);
 
-  const reinitWebSocket = clientOnly(() => {
+  const reinitWebSocket = () => {
+    console.log('[line 23]: REINIT WS');
     if (wsClient) {
       wsClient.off('sync', debouncedSync);
     }
@@ -28,22 +28,24 @@ export default defineBoot(({ store }) => {
       apiUrl: configStore.config.network.apiUrl,
       wsUrl: configStore.config.network.wsUrl,
     });
+    console.log('✎: [line 31][infrastructure.ts] client: ', client);
 
     client.on('sync', debouncedSync);
     if (authStore.token) {
       client.connect(authStore.token);
     }
-  });
+  };
+
+  reinitWebSocket();
 
   watch(
-    [
-      () => configStore.config.network.apiUrl,
-      () => configStore.config.network.wsUrl,
-    ],
+    [() => configStore.config.network.apiUrl, () => configStore.config.network.wsUrl],
     reinitWebSocket,
   );
 
   const handleTokenChange = (token: string): void => {
+    console.log('✎: [line 44][infrastructure.ts] token: ', token);
+    console.log('✎: [line 46][infrastructure.ts] wsClient: ', wsClient);
     if (!wsClient) {
       return;
     }
@@ -54,14 +56,11 @@ export default defineBoot(({ store }) => {
     wsClient.disconnect();
   };
 
-  watch(
-    () => authStore.token,
-    clientOnly(handleTokenChange),
-    { immediate: true },
-  );
+  watch(() => authStore.token, handleTokenChange, { immediate: true });
 
-  const attachSocketIdToRequest = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-
+  const attachSocketIdToRequest = (
+    config: InternalAxiosRequestConfig,
+  ): InternalAxiosRequestConfig => {
     if (!wsClient?.socketId) {
       return config;
     }
@@ -69,6 +68,5 @@ export default defineBoot(({ store }) => {
     return config;
   };
 
-  axiosInstance.interceptors.request.use(clientOnly(attachSocketIdToRequest));
-
+  axiosInstance.interceptors.request.use(attachSocketIdToRequest);
 });

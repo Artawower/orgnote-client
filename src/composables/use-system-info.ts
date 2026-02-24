@@ -6,10 +6,13 @@ import type {
   EncryptionInfo,
   EnvironmentInfo,
   PlatformInfo,
+  WebSocketInfo,
 } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { version } from '../../package.json';
 import { api } from 'src/boot/api';
+import { getWebSocketUrl } from 'src/utils/server-endpoints';
+import { wsClient } from 'src/infrastructure/websocket-client';
 
 const isClientEnvironment = (): boolean => (process.env.CLIENT ?? '').toString() === 'true';
 const hasNavigator = (): boolean => isClientEnvironment() && typeof navigator !== 'undefined';
@@ -88,6 +91,18 @@ const getEnvironmentInfo = (): EnvironmentInfo => ({
   mode: process.env.NODE_ENV || '',
 });
 
+const getWebSocketInfo = (): WebSocketInfo => {
+  const url = getWebSocketUrl();
+  const isConnected = wsClient?.isConnected ?? false;
+  const socketId = wsClient?.socketId ?? null;
+
+  return {
+    url,
+    isConnected,
+    socketId,
+  };
+};
+
 const getDeviceInfo = async (): Promise<DeviceInfo | undefined> => {
   const $q = api?.core?.useQuasar?.();
   if (!$q?.platform?.is?.nativeMobile) return undefined;
@@ -116,6 +131,7 @@ const getSystemInfo = async (): Promise<SystemInfo> => {
     language: getNavigatorLanguage(),
     screen: getScreenInfo(),
     encryption: getEncryptionInfo(),
+    websocket: getWebSocketInfo(),
     environment: getEnvironmentInfo(),
     platform: getPlatformInfo(),
     device,
@@ -153,6 +169,14 @@ const formatEncryption = (info: EncryptionInfo): string[] => {
   const base = ['', 'Encryption:', `  Type: ${info.type}`];
   return [...base, ...formatEncryptionDetails(info)];
 };
+
+const formatWebSocket = (info: WebSocketInfo): string[] => [
+  '',
+  'WebSocket:',
+  `  URL: ${info.url}`,
+  `  Connected: ${info.isConnected}`,
+  `  Socket ID: ${info.socketId ?? 'N/A'}`,
+];
 
 const formatEnvironment = (env: EnvironmentInfo): string[] => [
   '',
@@ -197,6 +221,7 @@ const getTextSystemInfo = async (): Promise<string> => {
     formatHeader(info),
     formatScreen(info.screen),
     formatEncryption(info.encryption),
+    formatWebSocket(info.websocket),
     formatEnvironment(info.environment),
     formatPlatform(info.platform),
     formatDevice(info.device),
