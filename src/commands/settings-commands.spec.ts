@@ -1,6 +1,6 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import type { Command } from 'orgnote-api';
-import { RouteNames } from 'orgnote-api';
+import { DefaultCommands, I18N, RouteNames } from 'orgnote-api';
 
 const mockModal = {
   open: vi.fn(),
@@ -11,6 +11,17 @@ const mockModal = {
 const mockSettingsRouter = {
   push: vi.fn(),
 };
+
+const mockNotifications = {
+  notify: vi.fn(),
+};
+
+const mockCopyToClipboard = vi.fn(async () => undefined);
+const mockReportError = vi.fn();
+
+const mockBuildLocalSyncProfileToml = vi.fn(() => '[profile]\nname = "default"');
+const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
+const mockRevokeObjectURL = vi.fn();
 
 const mockApi = {
   ui: {
@@ -30,9 +41,12 @@ const mockApi = {
     useAuth: vi.fn(() => ({
       user: null,
     })),
+    useNotifications: vi.fn(() => mockNotifications),
   },
   infrastructure: {},
-  utils: {},
+  utils: {
+    copyToClipboard: mockCopyToClipboard,
+  },
   vue: {},
 };
 
@@ -54,6 +68,16 @@ vi.mock('src/containers/TheSettings.vue', () => ({
   default: { name: 'TheSettings' },
 }));
 
+vi.mock('src/boot/report', () => ({
+  reporter: {
+    reportError: mockReportError,
+  },
+}));
+
+vi.mock('src/utils/local-sync-profile-config', () => ({
+  buildLocalSyncProfileToml: mockBuildLocalSyncProfileToml,
+}));
+
 const mockDefineAsyncComponent = <T>(factory: () => T): T => factory();
 
 vi.mock('vue', async (importOriginal) => {
@@ -67,6 +91,10 @@ vi.mock('vue', async (importOriginal) => {
 beforeEach(() => {
   vi.clearAllMocks();
   mockModal.component = null;
+  vi.stubGlobal('URL', {
+    createObjectURL: mockCreateObjectURL,
+    revokeObjectURL: mockRevokeObjectURL,
+  });
 });
 
 test('openSettingsRoute opens settings modal with wide layout', async () => {
@@ -119,4 +147,49 @@ test('getSettingsCommands export available', async () => {
       (cmd: Command) => typeof cmd.command === 'string' && typeof cmd.handler === 'function',
     ),
   ).toBe(true);
+});
+
+test('settings-commands EXPORT_LOCAL_SYNC_CONFIG copies generated toml and shows notification', async () => {
+  const { getSettingsCommands } = await import('./settings-commands');
+  const commands = getSettingsCommands();
+  const exportCommand = commands.find((cmd) => cmd.command === DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG);
+
+  expect(exportCommand).toBeDefined();
+
+  if (exportCommand) {
+    await exportCommand.handler(mockApi as never, { data: {}, meta: {} });
+  }
+
+  expect(mockBuildLocalSyncProfileToml).toHaveBeenCalledTimes(1);
+  expect(mockCopyToClipboard).toHaveBeenCalledWith('[profile]\nname = "default"');
+  expect(mockNotifications.notify).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message: I18N.SYNC_PROFILE_CONFIG_EXPORTED,
+      level: 'info',
+    }),
+  );
+});
+
+test('settings-commands DOWNLOAD_LOCAL_SYNC_CONFIG downloads generated toml and shows notification', async () => {
+  const { getSettingsCommands } = await import('./settings-commands');
+  const commands = getSettingsCommands();
+  const downloadCommand = commands.find(
+    (cmd) => cmd.command === DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG,
+  );
+
+  expect(downloadCommand).toBeDefined();
+
+  if (downloadCommand) {
+    await downloadCommand.handler(mockApi as never, { data: {}, meta: {} });
+  }
+
+  expect(mockBuildLocalSyncProfileToml).toHaveBeenCalledTimes(1);
+  expect(mockCreateObjectURL).toHaveBeenCalledTimes(1);
+  expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
+  expect(mockNotifications.notify).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED,
+      level: 'info',
+    }),
+  );
 });

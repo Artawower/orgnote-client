@@ -28,6 +28,10 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   system: {
     language: 'en-US',
   },
+  network: {
+    apiUrl: process.env.API_URL || '/v1',
+    wsUrl: process.env.WS_URL || '',
+  },
   completion: {
     showGroup: false,
     defaultCompletionLimit: 500,

@@ -4,14 +4,44 @@ import { wsClient, initWebSocketClient } from 'src/infrastructure/websocket-clie
 import { api as axiosInstance } from 'src/boot/axios';
 import { useAuthStore } from 'src/stores/auth';
 import { useSyncStore } from 'src/stores/sync';
+import { useConfigStore } from 'src/stores/config';
 import { watch } from 'vue';
 import { logger } from 'src/boot/logger';
 
 export default defineBoot(({ store }) => {
-  initWebSocketClient();
-
   const authStore = useAuthStore(store);
   const syncStore = useSyncStore(store);
+  const configStore = useConfigStore(store);
+
+  const debouncedSync = debounce(() => {
+    logger.info('Received sync event from WebSocket');
+    syncStore.sync();
+  }, 1000);
+
+  const reinitWebSocket = () => {
+    if (wsClient) {
+      wsClient.off('sync', debouncedSync);
+    }
+    const client = initWebSocketClient({
+      apiUrl: configStore.config.network.apiUrl,
+      wsUrl: configStore.config.network.wsUrl,
+    });
+
+    client.on('sync', debouncedSync);
+    if (authStore.token) {
+      client.connect(authStore.token);
+    }
+  };
+
+  reinitWebSocket();
+
+  watch(
+    [
+      () => configStore.config.network.apiUrl,
+      () => configStore.config.network.wsUrl,
+    ],
+    reinitWebSocket,
+  );
 
   watch(
     () => authStore.token,
@@ -32,10 +62,4 @@ export default defineBoot(({ store }) => {
     return config;
   });
 
-  const debouncedSync = debounce(() => {
-    logger.info('Received sync event from WebSocket');
-    syncStore.sync();
-  }, 1000);
-
-  wsClient.on('sync', debouncedSync);
 });

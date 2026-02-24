@@ -14,6 +14,13 @@
 
     <api-settings />
 
+    <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
+
+    <card-wrapper>
+      <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
+      <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
+    </card-wrapper>
+
     <card-wrapper>
       <command-menu-item
         :command="DefaultCommands.SYNC_FILES"

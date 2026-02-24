@@ -1,5 +1,5 @@
 import type { Command, CommandHandlerParams, CommandIcon } from 'orgnote-api';
-import { DefaultCommands, RouteNames, i18n } from 'orgnote-api';
+import { DefaultCommands, RouteNames, i18n, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
@@ -11,6 +11,10 @@ import { to } from 'orgnote-api/utils';
 import { defineAsyncComponent, defineComponent, h } from 'vue';
 import AppAvatar from 'src/components/AppAvatar.vue';
 import { usePanePersistence } from 'src/composables/pane-persistence';
+import { downloadTextFile } from 'src/utils/download-text-file';
+import {
+  buildLocalSyncProfileToml
+} from 'src/utils/local-sync-profile-config';
 
 const SettingsHeaderTitle = defineAsyncComponent(
   () => import('src/containers/SettingsHeaderTitle.vue'),
@@ -36,6 +40,43 @@ const SettingsCommandIcon = defineComponent({
 
 export function getSettingsCommands(): Command[] {
   const confirmationModal = api.ui.useConfirmationModal();
+  const notifications = api.core.useNotifications();
+
+  const copyLocalSyncConfig = async (): Promise<void> => {
+    const result = await to(async () => {
+      const content = buildLocalSyncProfileToml(api);
+      await api.utils.copyToClipboard(content);
+    })();
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return;
+    }
+
+    notifications.notify({
+      message: I18N.SYNC_PROFILE_CONFIG_EXPORTED,
+      description: I18N.SYNC_PROFILE_CONFIG_EXPORTED_DESCRIPTION,
+      level: 'info',
+    });
+  };
+
+  const downloadLocalSyncConfig = async (): Promise<void> => {
+    const result = await to(async () => {
+      const content = buildLocalSyncProfileToml(api);
+      downloadTextFile('orgnote-sync-profile.toml', content);
+    })();
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return;
+    }
+
+    notifications.notify({
+      message: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED,
+      description: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED_DESCRIPTION,
+      level: 'info',
+    });
+  };
 
   const isActiveRoute = (routeName: RouteNames): boolean => {
     const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
@@ -118,6 +159,26 @@ export function getSettingsCommands(): Command[] {
       icon: 'sym_o_sync',
       handler: () => openSettingsRoute(RouteNames.SynchronisationSettings),
       isActive: () => isActiveRoute(RouteNames.SynchronisationSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG,
+      group: 'settings',
+      icon: 'content_copy',
+      description: I18N.SYNC_PROFILE_CONFIG_EXPORTED_DESCRIPTION,
+      handler: copyLocalSyncConfig,
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG,
+      group: 'settings',
+      icon: 'download',
+      description: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED_DESCRIPTION,
+      handler: downloadLocalSyncConfig,
       context: {
         narrow: true,
       },
@@ -250,11 +311,11 @@ export function getSettingsCommands(): Command[] {
       icon: 'sym_o_event_busy',
       group: 'settings',
       handler: async () => {
-        const confirm = await confirmationModal.confirm({
+        await confirmationModal.confirm({
           title: i18n.DELETE_ALL_NOTES,
           message: i18n.CONFIRM_DELETE_NOTES,
         });
-        console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
+
       },
     },
     {
@@ -262,11 +323,11 @@ export function getSettingsCommands(): Command[] {
       icon: 'sym_o_event_busy',
       group: 'settings',
       handler: async () => {
-        const confirm = await confirmationModal.confirm({
+        await confirmationModal.confirm({
           title: i18n.REMOVE_ACCOUNT,
           message: i18n.CONFIRM_DELETE_ACCOUNT,
         });
-        console.log('✎: [line 155][settings-commands.ts] confirm: ', confirm);
+
       },
     },
   ];
