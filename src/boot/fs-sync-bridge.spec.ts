@@ -16,3 +16,19 @@ test('shouldTriggerSyncForAction returns true for deleteFile action', () => {
 test('shouldTriggerSyncForAction returns false for readFile action', () => {
   expect(shouldTriggerSyncForAction('readFile')).toBe(false);
 });
+
+test('shouldTriggerSyncForAction returns true for mkdir action', () => {
+  expect(shouldTriggerSyncForAction('mkdir')).toBe(true);
+});
+
+test('shouldTriggerSyncForAction returns true for rmdir action', () => {
+  expect(shouldTriggerSyncForAction('rmdir')).toBe(true);
+});
+
+test('shouldTriggerSyncForAction returns true for copyFile action', () => {
+  expect(shouldTriggerSyncForAction('copyFile')).toBe(true);
+});
+
+test('shouldTriggerSyncForAction returns false for unknown action', () => {
+  expect(shouldTriggerSyncForAction('unknownOp')).toBe(false);
+});
