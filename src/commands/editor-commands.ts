@@ -13,6 +13,8 @@ import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import { blurEditor } from 'src/utils/editor-primitives';
+import { platform } from 'src/utils/platform-detection';
+import { androidOnly } from 'src/utils/platform-specific';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
 const isKeyboardClosed = (api: OrgNoteApi): boolean =>
@@ -281,7 +283,13 @@ export const getEditorCommands = (): Command[] => {
       icon: 'sym_o_keyboard_hide',
       group: EDITOR_COMMAND_GROUP,
       hide: isKeyboardClosed,
-      handler: (api) => withEditorView(api, blurEditor),
+      handler: async (api) => {
+        withEditorView(api, blurEditor);
+        await androidOnly(async () => {
+          const { Keyboard } = await import('@capacitor/keyboard');
+          await Keyboard.hide();
+        })();
+      },
     },
   ];
 
