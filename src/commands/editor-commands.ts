@@ -1,11 +1,5 @@
 import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
-import {
-  DefaultCommands,
-  EDITOR_COMMAND_GROUP,
-  i18n,
-  getParentDir,
-  join,
-} from 'orgnote-api';
+import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
 import { to } from 'orgnote-api/utils';
 import { redo, undo } from '@codemirror/commands';
@@ -13,7 +7,6 @@ import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import { blurEditor } from 'src/utils/editor-primitives';
-import { platform } from 'src/utils/platform-detection';
 import { androidOnly } from 'src/utils/platform-specific';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);

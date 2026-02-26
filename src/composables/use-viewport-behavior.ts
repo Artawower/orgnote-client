@@ -11,6 +11,7 @@ type ViewportCallback = (info: ViewportInfo) => void;
 
 const KEYBOARD_HEIGHT_THRESHOLD = 80;
 const VH_MULTIPLIER = 0.01;
+const KEYBOARD_OPEN_RATIO_THRESHOLD = 0.6;
 
 const globalKeyboardOpened = ref(false);
 const globalKeyboardHeight = ref(0);
@@ -127,10 +128,12 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
     viewportHeight.value = screenHeight;
     globalViewportHeight.value = screenHeight;
 
-    if (!platform.is.capacitor) {
+    if (!platform.is.capacitor || platform.is.android) {
       const baseHeight = initialViewportHeight || window.innerHeight;
       const height = Math.max(0, baseHeight - screenHeight);
-      const opened = height > KEYBOARD_HEIGHT_THRESHOLD;
+      const opened =
+        height > KEYBOARD_HEIGHT_THRESHOLD
+        || screenHeight / baseHeight <= KEYBOARD_OPEN_RATIO_THRESHOLD;
       setKeyboardState(opened, opened ? height : 0);
 
       const effectiveHeight = opened ? screenHeight : baseHeight;
@@ -163,23 +166,28 @@ const createScheduler = (measureFn: () => void) => {
 };
 
 const setupCapacitorKeyboardListeners = async () => {
-  const keyboardModule = await to(() => import('@capacitor/keyboard'))();
-  if (keyboardModule.isErr()) return { cleanup: () => {} };
+  return platformMatch({
+    android: () => ({ cleanup: () => {} }),
+    default: async () => {
+      const keyboardModule = await to(() => import('@capacitor/keyboard'))();
+      if (keyboardModule.isErr()) return { cleanup: () => {} };
 
-  const { Keyboard } = keyboardModule.value;
-  const showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
-    setKeyboardState(true, info.keyboardHeight);
-  });
-  const hideListener = await Keyboard.addListener('keyboardWillHide', () => {
-    setKeyboardState(false, 0);
-  });
+      const { Keyboard } = keyboardModule.value;
+      const showListener = await Keyboard.addListener('keyboardWillShow', (info) => {
+        setKeyboardState(true, info.keyboardHeight);
+      });
+      const hideListener = await Keyboard.addListener('keyboardWillHide', () => {
+        setKeyboardState(false, 0);
+      });
 
-  return {
-    cleanup: () => {
-      showListener.remove();
-      hideListener.remove();
+      return {
+        cleanup: () => {
+          showListener.remove();
+          hideListener.remove();
+        },
+      };
     },
-  };
+  });
 };
 
 const setupIOSSafariScrollFix = () => {

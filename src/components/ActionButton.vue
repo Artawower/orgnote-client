@@ -1,6 +1,8 @@
 <template>
-  <button
+  <component
+    :is="buttonTag"
     @click="onButtonClick"
+    v-bind="dynamicAttrs"
     :class="[`icon-${size}`, active, { outline, border, text: slots.text, 'hover-effect': hoverEffect }, props.classes]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
@@ -15,7 +17,7 @@
     </animation-wrapper>
     <slot name="text" />
     <slot />
-  </button>
+  </component>
 </template>
 
 <script lang="ts" setup>
@@ -31,6 +33,8 @@ import type { StyleSize, ThemeVariable } from 'orgnote-api';
 export type ButtonAlignment = 'center' | 'space-between' | 'left' | 'right';
 
 export interface ActionButtonProps {
+  as?: 'button' | 'div';
+  disableClickHandling?: boolean;
   icon?: string;
   active?: boolean;
   size?: StyleSize;
@@ -64,8 +68,25 @@ const fired = ref<boolean>(false);
 const activeIcon = computed(() => (fired.value ? props.fireIcon : props.icon));
 const activeColor = computed(() => (fired.value ? (props.fireColor ?? props.color) : props.color));
 const safeHoverColor = computed(() => props.hoverColor && getCssVariableName(props.hoverColor));
+const buttonTag = computed(() => props.as ?? 'button');
+const dynamicAttrs = computed(() => {
+  if (buttonTag.value === 'div') {
+    return {
+      role: 'button',
+      tabindex: 0,
+    };
+  }
+
+  return {
+    type: 'button',
+  };
+});
 
 const onButtonClick = async () => {
+  if (props.disableClickHandling) {
+    return;
+  }
+
   if (props.copyText) {
     await copyToClipboard(props.copyText);
   }
@@ -85,7 +106,8 @@ const slots = useSlots();
 </script>
 
 <style lang="scss" scoped>
-button {
+button,
+[role='button'] {
   @include flexify(row, v-bind(alignment), center, var(--gap-sm));
 
   & {
