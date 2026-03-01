@@ -6,8 +6,9 @@ import { redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
-import { blurEditor } from 'src/utils/editor-primitives';
+import { blurEditor, suspendEditorInput, resumeEditorInput } from 'src/utils/editor-primitives';
 import { androidOnly } from 'src/utils/platform-specific';
+import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
 const isKeyboardClosed = (api: OrgNoteApi): boolean =>
@@ -280,6 +281,8 @@ export const getEditorCommands = (): Command[] => {
         withEditorView(api, blurEditor);
         await androidOnly(async () => {
           const { Keyboard } = await import('@capacitor/keyboard');
+          withEditorView(api, suspendEditorInput);
+          startKeyboardHideWindow(() => withEditorView(api, resumeEditorInput));
           await Keyboard.hide();
         })();
       },

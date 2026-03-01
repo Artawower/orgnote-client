@@ -1,12 +1,18 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
-import { useViewportBehavior } from './use-viewport-behavior';
+import { useViewportBehavior, useKeyboardState } from './use-viewport-behavior';
 
 vi.mock('src/utils/platform-detection', () => ({
   platform: { is: { ios: true, safari: true, capacitor: false } },
   platformMatch: async (handlers: { default: () => unknown }) => handlers.default(),
 }));
+
+vi.mock('src/utils/android-keyboard-hide', () => ({
+  isKeyboardHideWindowActive: vi.fn(() => false),
+}));
+
+import { isKeyboardHideWindowActive } from 'src/utils/android-keyboard-hide';
 
 const createTouchEvent = (
   type: 'touchstart' | 'touchmove' | 'touchend',
@@ -60,6 +66,7 @@ beforeEach(() => {
     },
     configurable: true,
   });
+  Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true, writable: true });
 });
 
 afterEach(() => {
@@ -107,4 +114,21 @@ test('useViewportBehavior should prevent default at vertical boundary', () => {
 
   document.body.removeChild(scrollable);
   wrapper.unmount();
+});
+
+test('useViewportBehavior skips keyboard-open state update during hide window', () => {
+  vi.mocked(isKeyboardHideWindowActive).mockReturnValueOnce(true);
+
+  Object.defineProperty(window, 'visualViewport', {
+    value: { height: 300, offsetTop: 0, addEventListener: vi.fn(), removeEventListener: vi.fn() },
+    configurable: true,
+  });
+
+  const wrapper = mount(createTestComponent());
+
+  const { keyboardOpened } = useKeyboardState();
+  expect(keyboardOpened.value).toBe(false);
+
+  wrapper.unmount();
+  document.body.classList.remove('keyboard-opened');
 });

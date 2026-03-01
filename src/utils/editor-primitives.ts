@@ -193,3 +193,13 @@ export const blurEditor = (view: EditorView): void => {
 export const focusEditor = (view: EditorView): void => {
   focusEditorAsync(view);
 };
+
+export const suspendEditorInput = (view: EditorView): void => {
+  view.dom.setAttribute('inert', '');
+  view.contentDOM.setAttribute('contenteditable', 'false');
+};
+
+export const resumeEditorInput = (view: EditorView): void => {
+  view.dom.removeAttribute('inert');
+  view.contentDOM.setAttribute('contenteditable', 'true');
+}

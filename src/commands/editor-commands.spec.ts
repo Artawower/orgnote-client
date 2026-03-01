@@ -2,6 +2,8 @@ import { test, expect, vi, beforeEach } from 'vitest';
 import { getEditorCommands } from './editor-commands';
 import { DefaultCommands, RouteNames } from 'orgnote-api';
 import type { OrgNoteApi, FileMeta, CompletionConfig, CompletionSearchResult } from 'orgnote-api';
+import { blurEditor, suspendEditorInput } from 'src/utils/editor-primitives';
+import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { ref } from 'vue';
 
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
@@ -59,6 +61,25 @@ vi.mock('src/composables/use-org-editor', () => ({
 
 vi.mock('src/utils/editor-primitives', () => ({
   blurEditor: vi.fn(),
+  suspendEditorInput: vi.fn(),
+  resumeEditorInput: vi.fn(),
+}));
+
+vi.mock('src/utils/platform-specific', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as object),
+    androidOnly: (fn: () => unknown) => fn,
+  };
+});
+
+vi.mock('@capacitor/keyboard', () => ({
+  Keyboard: { hide: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('src/utils/android-keyboard-hide', () => ({
+  startKeyboardHideWindow: vi.fn(),
+  isKeyboardHideWindowActive: vi.fn(() => false),
 }));
 
 const createMockApi = (): OrgNoteApi =>
@@ -251,4 +272,24 @@ test('editor-commands EDITOR_INSERT_IMAGE saves image in active route file direc
 
   expect(mockWriteFile).toHaveBeenCalledWith('image.png', expect.any(Uint8Array));
   expect(mockInsertImage).toHaveBeenCalledWith('image.png');
+});
+
+const findHideKeyboardCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_HIDE_KEYBOARD)!;
+};
+
+test('editor-commands EDITOR_HIDE_KEYBOARD blurs editor', async () => {
+  const api = createMockApi();
+  const command = findHideKeyboardCommand();
+  await command.handler(api, { data: {}, meta: {} });
+  expect(blurEditor).toHaveBeenCalled();
+});
+
+test('editor-commands EDITOR_HIDE_KEYBOARD suspends editor input and starts hide window on Android', async () => {
+  const api = createMockApi();
+  const command = findHideKeyboardCommand();
+  await command.handler(api, { data: {}, meta: {} });
+  expect(suspendEditorInput).toHaveBeenCalled();
+  expect(startKeyboardHideWindow).toHaveBeenCalled();
 });

@@ -34,6 +34,7 @@ vi.mock('src/boot/api', () => ({
       }),
       useBufferViewer: () => ({ open: vi.fn() }),
       usePane: () => ({ activeTab: undefined }),
+      useEditor: () => ({ activeContext: undefined }),
     },
     ui: {
       useSidebar: () => ({ close: vi.fn() }),

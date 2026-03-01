@@ -18,7 +18,7 @@
           size="md"
         />
       </app-flex>
-      <div class="fixed-editor-actions">
+      <div class="fixed-editor-actions" @pointerdown.capture="onHidePointerDown">
         <command-action-button :command="DefaultCommands.EDITOR_HIDE_KEYBOARD" size="md" />
       </div>
     </app-flex>
@@ -30,6 +30,9 @@ import { computed } from 'vue';
 import { api } from 'src/boot/api';
 import CommandActionButton from './CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import { suspendEditorInput, resumeEditorInput } from 'src/utils/editor-primitives';
+import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
+import { androidOnly } from 'src/utils/platform-specific';
 import { DefaultCommands } from 'orgnote-api';
 
 const editorStore = api.core.useEditor();
@@ -44,6 +47,19 @@ const shouldShow = computed(
 );
 
 const editorCommands = api.ui.usePinnedCommands().getCommands('editor-actions');
+
+const onHidePointerDown = (event: PointerEvent): void => {
+  if (!event.isPrimary) return;
+  androidOnly(() => {
+    const view = editorStore.activeContext?.editorViewGetter?.();
+    if (!view) return;
+    suspendEditorInput(view);
+    startKeyboardHideWindow(() => {
+      const liveView = editorStore.activeContext?.editorViewGetter?.();
+      if (liveView) resumeEditorInput(liveView);
+    });
+  })();
+};
 </script>
 
 <style lang="scss" scoped>

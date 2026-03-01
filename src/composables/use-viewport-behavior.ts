@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted, readonly, type Ref } from 'vue';
 import { platform, platformMatch } from 'src/utils/platform-detection';
 import { to } from 'orgnote-api/utils';
-
+import { isKeyboardHideWindowActive } from 'src/utils/android-keyboard-hide';
 interface ViewportInfo {
   viewportHeight: number;
   keyboardOpened: boolean;
@@ -134,13 +134,14 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
       const opened =
         height > KEYBOARD_HEIGHT_THRESHOLD
         || screenHeight / baseHeight <= KEYBOARD_OPEN_RATIO_THRESHOLD;
-      setKeyboardState(opened, opened ? height : 0);
+      const effectiveOpened = opened && !isKeyboardHideWindowActive();
+      setKeyboardState(effectiveOpened, effectiveOpened ? height : 0);
 
-      const effectiveHeight = opened ? screenHeight : baseHeight;
+      const effectiveHeight = effectiveOpened ? screenHeight : baseHeight;
       updateCssVariables(effectiveHeight, viewportOffsetTop);
 
       if (!platform.is.ios) return;
-      if (opened) {
+      if (effectiveOpened) {
         window.scrollTo(0, 0);
       }
     }
