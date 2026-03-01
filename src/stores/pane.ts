@@ -18,6 +18,7 @@ import { createPaneRouter } from 'src/utils/pane-router';
 import { useLayoutStore } from './layout';
 import { isPresent } from 'orgnote-api/utils';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
+import { generateTabTitle } from 'src/utils/generate-tab-title';
 
 export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   // TODO: feat/stable-beta replace by reactive object
@@ -46,6 +47,12 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     const route = activeRoute.value;
     if (!route) return undefined;
     return extractPathFromRoute(route);
+  });
+
+  const activeTabTitle = computed((): string => {
+    const tab = activeTab.value;
+    if (!tab) return '';
+    return generateTabTitle(tab.router.currentRoute.value) || tab.title;
   });
 
   const getAllTabTitles = computed((): string[] => {
@@ -607,6 +614,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     activeTab,
     activeRoute,
     activeBufferUri,
+    activeTabTitle,
     moveTab,
     createPane,
     getPane,

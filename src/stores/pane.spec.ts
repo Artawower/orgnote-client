@@ -1008,3 +1008,25 @@ test('BUG: should activate tab in remaining pane when it has no active tab', asy
   expect(paneStore.activeTab).toBeDefined();
   expect(paneStore.activeTab?.id).toBe(tab1!.id);
 });
+
+test('activeTabTitle should reflect file name after navigation to file route', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane = await paneStore.createPane();
+  await paneStore.addTab(pane.id);
+
+  const activeTab = paneStore.activeTab;
+  assertDefined(activeTab, 'activeTab is not defined');
+
+  Object.assign(activeTab.router.currentRoute.value, {
+    name: RouteNames.File,
+    params: { paneId: pane.id, path: 'notes/my-note.org' },
+    meta: {
+      titleGenerator: (route: { params: { path: string } }) =>
+        route.params.path.split('/').pop() ?? '',
+    },
+  });
+
+  expect(paneStore.activeTabTitle).toBe('my-note.org');
+});

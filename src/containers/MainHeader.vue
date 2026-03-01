@@ -17,7 +17,7 @@
       />
     </template>
     <template #center>
-      <span class="header-title">{{ panes.activeTab?.title }}</span>
+      <span class="header-title">{{ panes.activeTabTitle }}</span>
     </template>
     <template #right>
       <command-action-button

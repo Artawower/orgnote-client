@@ -1,6 +1,6 @@
 import type { RouteLocationNormalized } from 'vue-router';
 
-const DEFAULT_TAB_TITLE = 'Untitled';
+const defaultTabTitle = 'Untitled';
 
 export function generateTabTitle(route: RouteLocationNormalized): string {
   const generator = route.meta?.titleGenerator;
@@ -8,5 +8,5 @@ export function generateTabTitle(route: RouteLocationNormalized): string {
     return generator(route);
   }
 
-  return DEFAULT_TAB_TITLE;
+  return defaultTabTitle;
 }
