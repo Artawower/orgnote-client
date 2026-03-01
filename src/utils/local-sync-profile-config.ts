@@ -1,6 +1,6 @@
 import { type OrgNoteApi, type SyncProfile } from 'orgnote-api';
 import { stringifyToml } from 'orgnote-api/utils';
-import { getApiPublicUrl } from './server-endpoints';
+import { getApiPublicUrl, getWebSocketUrl } from './server-endpoints';
 
 const defaultBackupCount = 3;
 const defaultProfileName = 'default';
@@ -21,6 +21,7 @@ const buildProfileFromApi = (api: OrgNoteApi): SyncProfile => {
   return {
     name: defaultProfileName,
     clientAddress: getClientAddress(),
+    wsAddress: getWebSocketUrl(),
     remoteAddress: getApiPublicUrl(configStore.config.network.apiUrl),
     token: authStore.token,
     rootFolder: '',
