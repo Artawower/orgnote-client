@@ -5,6 +5,7 @@ import { DefaultCommands, I18N, RouteNames } from 'orgnote-api';
 const mockModal = {
   open: vi.fn(),
   component: null as unknown,
+  config: undefined as { modalProps?: { settingsRouter?: { push: ReturnType<typeof vi.fn> } } } | undefined,
   close: vi.fn(),
 };
 
@@ -31,13 +32,6 @@ const mockApi = {
     })),
   },
   core: {
-    app: {
-      _context: {
-        provides: {
-          [Symbol.for('settings-router')]: mockSettingsRouter,
-        },
-      },
-    },
     useAuth: vi.fn(() => ({
       user: null,
     })),
@@ -58,10 +52,6 @@ vi.mock('src/composables/use-route-active', () => ({
   useRouteActive: vi.fn(() => ({
     isActive: vi.fn().mockReturnValue(false),
   })),
-}));
-
-vi.mock('src/constants/app-providers', () => ({
-  SETTINGS_ROUTER_PROVIDER_TOKEN: Symbol.for('settings-router'),
 }));
 
 vi.mock('src/containers/TheSettings.vue', () => ({
@@ -91,6 +81,7 @@ vi.mock('vue', async (importOriginal) => {
 beforeEach(() => {
   vi.clearAllMocks();
   mockModal.component = null;
+  mockModal.config = undefined;
   vi.stubGlobal('URL', {
     createObjectURL: mockCreateObjectURL,
     revokeObjectURL: mockRevokeObjectURL,
@@ -111,9 +102,9 @@ test('openSettingsRoute opens settings modal with wide layout', async () => {
     expect.any(Object),
     expect.objectContaining({
       wide: true,
-      modalProps: {
+      modalProps: expect.objectContaining({
         initialRoute: RouteNames.SettingsPage,
-      },
+      }),
     }),
   );
 });
@@ -125,10 +116,17 @@ test('openSettingsRoute reuses existing modal without reopening', async () => {
 
   const TheSettingsComponent = (await import('src/containers/TheSettings.vue')).default;
   mockModal.component = TheSettingsComponent;
+  mockModal.config = {
+    modalProps: {
+      settingsRouter: mockSettingsRouter,
+    },
+  };
 
   if (settingsCommand) {
     settingsCommand.handler(mockApi as never, { data: {}, meta: {} });
   }
+
+  await Promise.resolve();
 
   expect(mockModal.open).not.toHaveBeenCalled();
   expect(mockSettingsRouter.push).toHaveBeenCalledWith({

@@ -3,8 +3,9 @@ import { DefaultCommands, RouteNames, i18n, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import TheSettings from 'src/containers/TheSettings.vue';
+import type { TheSettingsModalProps } from 'src/containers/TheSettings.vue';
+import { createSettingsRouter } from 'src/containers/modal-settings-routes';
 import AppIcon from 'src/components/AppIcon.vue';
 import { getDatabase } from 'src/infrastructure/repositories';
 import { to } from 'orgnote-api/utils';
@@ -12,15 +13,72 @@ import { defineAsyncComponent, defineComponent, h } from 'vue';
 import AppAvatar from 'src/components/AppAvatar.vue';
 import { usePanePersistence } from 'src/composables/pane-persistence';
 import { downloadTextFile } from 'src/utils/download-text-file';
-import {
-  buildLocalSyncProfileToml
-} from 'src/utils/local-sync-profile-config';
+import type { Router } from 'vue-router';
+import { buildLocalSyncProfileToml } from 'src/utils/local-sync-profile-config';
 
 const SettingsHeaderTitle = defineAsyncComponent(
   () => import('src/containers/SettingsHeaderTitle.vue'),
 );
 
 const ExtensionManager = defineAsyncComponent(() => import('src/containers/ExtensionManager.vue'));
+const routeNameSet = new Set(Object.values(RouteNames));
+
+const isRouterValue = (value: unknown): value is Router => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const routerLike = value as { push?: unknown; currentRoute?: unknown };
+  return typeof routerLike.push === 'function' && !!routerLike.currentRoute;
+};
+
+const isRouteName = (value: unknown): value is RouteNames => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  return routeNameSet.has(value as RouteNames);
+};
+
+const getModalSettingsProps = (modalProps: unknown): TheSettingsModalProps | undefined => {
+  if (!modalProps || typeof modalProps !== 'object') {
+    return;
+  }
+
+  const candidate = modalProps as { settingsRouter?: unknown; initialRoute?: unknown };
+  if (!isRouterValue(candidate.settingsRouter)) {
+    return;
+  }
+
+  if (candidate.initialRoute !== undefined && !isRouteName(candidate.initialRoute)) {
+    return;
+  }
+
+  return {
+    settingsRouter: candidate.settingsRouter,
+    initialRoute: candidate.initialRoute,
+  };
+};
+
+const getRouterFromSettingsModal = (): Router | undefined => {
+  const modal = api.ui.useModal();
+  const modalComponent = modal.component;
+  if (!modalComponent || modalComponent !== TheSettings) {
+    return;
+  }
+
+  const modalProps = getModalSettingsProps(modal.config?.modalProps);
+  return modalProps?.settingsRouter;
+};
+
+const createSettingsHeaderTitle = (settingsRouter: Router) => {
+  return defineComponent({
+    name: 'SettingsHeaderTitleBridge',
+    setup() {
+      return () => h(SettingsHeaderTitle, { settingsRouter });
+    },
+  });
+};
 
 const SettingsCommandIcon = defineComponent({
   name: 'SettingsCommandIcon',
@@ -79,27 +137,40 @@ export function getSettingsCommands(): Command[] {
   };
 
   const isActiveRoute = (routeName: RouteNames): boolean => {
-    const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
+    const settingsRouter = getRouterFromSettingsModal();
+    if (!settingsRouter) {
+      return false;
+    }
     const { isActive } = useRouteActive(settingsRouter);
     return isActive(routeName);
   };
 
-  const openSettingsRoute = (routeName: string) => {
+  const openSettingsRoute = (routeName: RouteNames) => {
     const modal = api.ui.useModal();
-    const isModalOpened = modal.component && modal.component === TheSettings;
-    const settingsRouter = api.core.app._context.provides[SETTINGS_ROUTER_PROVIDER_TOKEN];
-    if (isModalOpened) {
-      settingsRouter.push({ name: routeName });
+    const isModalOpened = modal.component === TheSettings;
+
+    if (!isModalOpened) {
+      const settingsRouter = createSettingsRouter();
+      modal.open(TheSettings, {
+        title: 'settings',
+        closable: true,
+        wide: true,
+        headerTitleComponent: createSettingsHeaderTitle(settingsRouter),
+        modalProps: {
+          initialRoute: routeName,
+          settingsRouter,
+        },
+      });
       return;
     }
-    modal.open(TheSettings, {
-      title: 'settings',
-      closable: true,
-      wide: true,
-      headerTitleComponent: SettingsHeaderTitle,
-      modalProps: {
-        initialRoute: routeName,
-      },
+
+    const settingsRouter = getRouterFromSettingsModal();
+    if (!settingsRouter) {
+      return;
+    }
+
+    to(() => settingsRouter.push({ name: routeName }))().then((result) => {
+      if (result.isErr()) reporter.reportError(result.error);
     });
   };
 
@@ -315,7 +386,6 @@ export function getSettingsCommands(): Command[] {
           title: i18n.DELETE_ALL_NOTES,
           message: i18n.CONFIRM_DELETE_NOTES,
         });
-
       },
     },
     {
@@ -327,7 +397,6 @@ export function getSettingsCommands(): Command[] {
           title: i18n.REMOVE_ACCOUNT,
           message: i18n.CONFIRM_DELETE_ACCOUNT,
         });
-
       },
     },
   ];

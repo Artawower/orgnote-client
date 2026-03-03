@@ -11,34 +11,47 @@
   </app-flex>
 </template>
 
-<script lang="ts" setup>
-import { computed } from 'vue';
-import SettingsMenu from './SettingsMenu.vue';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
+<script lang="ts">
 import { RouteNames } from 'orgnote-api';
+import type { Router } from 'vue-router';
+
+export type TheSettingsModalProps = {
+  initialRoute?: RouteNames;
+  settingsRouter?: Router;
+};
+</script>
+
+<script lang="ts" setup>
+import { computed, watch } from 'vue';
+import SettingsMenu from './SettingsMenu.vue';
+import { to } from 'orgnote-api/utils';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-
-const props = withDefaults(
-  defineProps<{
-    initialRoute?: RouteNames;
-  }>(),
-  {
-    initialRoute: RouteNames.SettingsPage,
-  },
-);
-
-import { getCurrentInstance } from 'vue';
 import { createSettingsRouter } from './modal-settings-routes';
-const instance = getCurrentInstance();
-if (!instance) {
-  throw new Error('getCurrentInstance returned null');
-}
-const app = instance.appContext.app;
-const settingsRouter = createSettingsRouter();
+import { useScreenDetection } from 'src/composables/use-screen-detection';
+import { reporter } from 'src/boot/report';
 
-app.provide(SETTINGS_ROUTER_PROVIDER_TOKEN, settingsRouter);
-settingsRouter.isReady();
+const props = withDefaults(defineProps<TheSettingsModalProps>(), {
+  initialRoute: RouteNames.SettingsPage,
+});
+
+const settingsRouter = props.settingsRouter ?? createSettingsRouter();
+
+const { desktopBelow } = useScreenDetection();
+
+const redirectSettingsMenuForDesktop = async (isDesktopBelow: boolean) => {
+  if (isDesktopBelow || settingsRouter.currentRoute.value.name !== RouteNames.SettingsPage) {
+    return;
+  }
+
+  const replaceResult = await to(() =>
+    settingsRouter.replace({ name: RouteNames.SystemSettings }),
+  )();
+
+  if (replaceResult.isErr()) reporter.reportError(replaceResult.error);
+};
+
+watch(desktopBelow, redirectSettingsMenuForDesktop, { immediate: true });
 
 const currentRoute = computed(() => settingsRouter.currentRoute.value);
 
@@ -46,11 +59,13 @@ const currentView = computed(() => {
   return currentRoute.value.matched[0]?.components?.default;
 });
 
-const navigate = (routeName: string) => {
-  settingsRouter.push({ name: routeName });
+const navigate = (routeName: RouteNames) => {
+  return to(() => settingsRouter.push({ name: routeName }))();
 };
 
-navigate(props.initialRoute);
+navigate(props.initialRoute).then((result) => {
+  if (result.isErr()) reporter.reportError(result.error);
+});
 </script>
 
 <style lang="scss" scoped>

@@ -14,23 +14,32 @@ import { RouteNames } from 'orgnote-api';
 import NavigationHistory from 'src/components/NavigationHistory.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import HeaderWrapper from 'src/components/HeaderWrapper.vue';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
-import { computed, inject } from 'vue';
+import { reporter } from 'src/boot/report';
+import { to } from 'orgnote-api/utils';
+import { computed, nextTick } from 'vue';
 import type { Router } from 'vue-router';
 
-const settingsRouter = inject<Router>(SETTINGS_ROUTER_PROVIDER_TOKEN);
+const props = defineProps<{
+  settingsRouter?: Router;
+}>();
+
+const settingsRouter = props.settingsRouter;
 const currentRouteName = computed(() => settingsRouter?.currentRoute.value?.name?.toString());
 
 const handleReturnBack = async () => {
   if (!settingsRouter) return;
 
-  const canGoBack = settingsRouter.options.history.state.back;
-  if (canGoBack) {
-    settingsRouter.back();
-    return;
-  }
+  const routeBeforeBack = settingsRouter.currentRoute.value;
+  const routePathBeforeBack = routeBeforeBack.fullPath;
+  settingsRouter.back();
+  await nextTick();
 
-  settingsRouter.push({ name: RouteNames.SettingsPage });
+  const routeAfterBack = settingsRouter.currentRoute.value;
+  const routePathAfterBack = routeAfterBack.fullPath;
+  if (routePathAfterBack !== routePathBeforeBack) return;
+
+  const fallbackResult = await to(() => settingsRouter.push({ name: RouteNames.SettingsPage }))();
+  if (fallbackResult.isErr()) reporter.reportError(fallbackResult.error);
 };
 </script>

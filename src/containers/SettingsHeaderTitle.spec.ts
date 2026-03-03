@@ -5,7 +5,7 @@ import { RouteNames } from 'orgnote-api';
 import SettingsHeaderTitle from './SettingsHeaderTitle.vue';
 import NavigationHistory from 'src/components/NavigationHistory.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
-import { SETTINGS_ROUTER_PROVIDER_TOKEN } from 'src/constants/app-providers';
+import type { Router } from 'vue-router';
 
 vi.mock('src/utils/camel-case-to-words', () => ({
   camelCaseToWords: (str: string) => str,
@@ -14,46 +14,52 @@ vi.mock('src/utils/camel-case-to-words', () => ({
 type MockedRouter = {
   currentRoute: {
     value: {
-      name: string;
-    };
-  };
-  options: {
-    history: {
-      state: {
-        back: string | undefined;
-      };
+      name: RouteNames;
+      fullPath: string;
     };
   };
   back: ReturnType<typeof vi.fn>;
   push: ReturnType<typeof vi.fn>;
 };
 
-const createMockRouter = (hasBackHistory = false): MockedRouter => ({
-  currentRoute: {
+const createMockRouter = (backUpdatesRoute = false): MockedRouter => {
+  const currentRoute = {
     value: {
       name: RouteNames.SystemSettings,
+      fullPath: '/settings/system',
     },
-  },
-  options: {
-    history: {
-      state: {
-        back: hasBackHistory ? '/previous-route' : undefined,
-      },
-    },
-  },
-  back: vi.fn(),
-  push: vi.fn(),
-});
+  };
+
+  return {
+    currentRoute,
+    back: vi.fn(() => {
+      if (!backUpdatesRoute) {
+        return;
+      }
+
+      currentRoute.value = {
+        name: RouteNames.SettingsPage,
+        fullPath: '/',
+      };
+    }),
+    push: vi.fn(async ({ name }: { name: RouteNames }) => {
+      currentRoute.value = {
+        name,
+        fullPath: name === RouteNames.SettingsPage ? '/' : '/settings/system',
+      };
+    }),
+  };
+};
 
 test('SettingsHeaderTitle renders title correctly', () => {
   const mockRouter = createMockRouter();
 
   const wrapper = mount(SettingsHeaderTitle, {
+    props: {
+      settingsRouter: mockRouter as unknown as Router,
+    },
     global: {
       plugins: [createPinia()],
-      provide: {
-        [SETTINGS_ROUTER_PROVIDER_TOKEN]: mockRouter,
-      },
       components: {
         NavigationHistory,
         VisibilityWrapper,
@@ -67,15 +73,15 @@ test('SettingsHeaderTitle renders title correctly', () => {
   expect(wrapper.find('h1').text()).toBe(RouteNames.SystemSettings);
 });
 
-test('SettingsHeaderTitle calls router.push() when there is no back history', async () => {
+test('SettingsHeaderTitle falls back to settings page when back does not change route', async () => {
   const mockRouter = createMockRouter(false);
 
   const wrapper = mount(SettingsHeaderTitle, {
+    props: {
+      settingsRouter: mockRouter as unknown as Router,
+    },
     global: {
       plugins: [createPinia()],
-      provide: {
-        [SETTINGS_ROUTER_PROVIDER_TOKEN]: mockRouter,
-      },
       components: {
         NavigationHistory,
         VisibilityWrapper,
@@ -90,19 +96,19 @@ test('SettingsHeaderTitle calls router.push() when there is no back history', as
 
   await component.handleReturnBack();
 
-  expect(mockRouter.back).not.toHaveBeenCalled();
+  expect(mockRouter.back).toHaveBeenCalled();
   expect(mockRouter.push).toHaveBeenCalledWith({ name: RouteNames.SettingsPage });
 });
 
-test('SettingsHeaderTitle calls router.back() when there is back history available', async () => {
+test('SettingsHeaderTitle does not use fallback when back changes route', async () => {
   const mockRouter = createMockRouter(true);
 
   const wrapper = mount(SettingsHeaderTitle, {
+    props: {
+      settingsRouter: mockRouter as unknown as Router,
+    },
     global: {
       plugins: [createPinia()],
-      provide: {
-        [SETTINGS_ROUTER_PROVIDER_TOKEN]: mockRouter,
-      },
       components: {
         NavigationHistory,
         VisibilityWrapper,
@@ -122,14 +128,9 @@ test('SettingsHeaderTitle calls router.back() when there is back history availab
 });
 
 test('SettingsHeaderTitle does nothing when settingsRouter is not available', async () => {
-  const mockRouter = createMockRouter();
-
   const wrapper = mount(SettingsHeaderTitle, {
     global: {
       plugins: [createPinia()],
-      provide: {
-        [SETTINGS_ROUTER_PROVIDER_TOKEN]: null,
-      },
       components: {
         NavigationHistory,
         VisibilityWrapper,
@@ -143,7 +144,4 @@ test('SettingsHeaderTitle does nothing when settingsRouter is not available', as
   const component = wrapper.vm as unknown as { handleReturnBack: () => Promise<void> };
 
   await component.handleReturnBack();
-
-  expect(mockRouter.back).not.toHaveBeenCalled();
-  expect(mockRouter.push).not.toHaveBeenCalled();
 });

@@ -1,20 +1,18 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw, Router } from 'vue-router';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { RouteNames } from 'orgnote-api';
-import { ref } from 'vue';
-import { getNumericCssVar } from 'src/utils/css-utils';
 
-const redirectRoute: RouteRecordRaw = {
+const settingsMenuRoute: RouteRecordRaw = {
   path: '/',
-  redirect: { name: RouteNames.SystemSettings },
   name: RouteNames.SettingsPage,
+  component: () => import('./SettingsMenu.vue'),
 };
 
-export function createSettingsRouter() {
+export function createSettingsRouter(): Router {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      redirectRoute,
+      settingsMenuRoute,
       {
         name: RouteNames.AuthenticationSettings,
         path: '/settings/authentication',
@@ -77,47 +75,6 @@ export function createSettingsRouter() {
       },
     ],
   });
-
-  const screenWidth = ref(window.innerWidth);
-  const isMobile = ref<boolean>(false);
-
-  const updateRoutes = () => {
-    router.removeRoute(RouteNames.SettingsPage);
-    if (isMobile.value) {
-      router.addRoute({
-        path: '/',
-        name: RouteNames.SettingsPage,
-        component: () => import('./SettingsMenu.vue'),
-      });
-      return;
-    }
-    router.addRoute(redirectRoute);
-  };
-
-  const handleResize = () => {
-    const maxMobileWidth = getNumericCssVar('--desktop');
-    if (!maxMobileWidth) {
-      return;
-    }
-    screenWidth.value = window.innerWidth;
-    const mobile = screenWidth.value < maxMobileWidth;
-    if (mobile === isMobile.value) {
-      return;
-    }
-    isMobile.value = mobile;
-    updateRoutes();
-    redirectActiveSettingsPage();
-  };
-
-  const redirectActiveSettingsPage = () => {
-    if (router.currentRoute.value.name === RouteNames.SettingsPage) {
-      router.push({ name: RouteNames.SystemSettings });
-    }
-  };
-
-  window.addEventListener('resize', handleResize);
-
-  handleResize();
 
   return router;
 }
