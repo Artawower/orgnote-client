@@ -1,5 +1,5 @@
 <template>
-  <app-header float>
+  <app-header class="main-header" float>
     <template v-if="canGoBack || canGoForward" #left>
       <action-button
         v-if="canGoBack"
@@ -17,7 +17,9 @@
       />
     </template>
     <template #center>
-      <span class="header-title">{{ panes.activeTabTitle }}</span>
+      <span class="header-title" :title="panes.activeTabTitle">
+        {{ panes.activeTabTitle }}
+      </span>
     </template>
     <template #right>
       <command-action-button
@@ -53,7 +55,23 @@ const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
 
 <style lang="scss" scoped>
 .header-title {
+  display: inline-block;
+  max-width: var(--main-header-title-max-width);
   padding: 0 var(--padding-lg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   user-select: none;
+}
+
+@include mobile {
+  .main-header {
+    --header-column-gap: var(--main-header-actions-gap-mobile);
+  }
+
+  .header-title {
+    max-width: 100%;
+    padding: 0 var(--padding-md);
+  }
 }
 </style>

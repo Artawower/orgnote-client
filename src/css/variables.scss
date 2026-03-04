@@ -103,6 +103,8 @@ body {
   --header-item-padding: 0;
   --header-item-backdrop-filter: var(--glass-backdrop-filter);
   --header-item-box-shadow: var(--glass-box-shadow);
+  --main-header-title-max-width: 72vw;
+  --main-header-actions-gap-mobile: var(--padding-md);
 
   // Footer
   --footer-height: 0px;

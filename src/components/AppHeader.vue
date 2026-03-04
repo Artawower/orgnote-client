@@ -1,6 +1,6 @@
 <template>
   <app-flex row space-between :class="{ float }" class="header-wrapper">
-    <app-flex class="header" row align-center>
+    <div class="header">
       <app-flex v-if="$slots.left" class="header-left float" row align-center center gap="sm">
         <slot name="left" />
       </app-flex>
@@ -12,7 +12,7 @@
       <app-flex v-if="$slots.right" class="header-right float" row align-center center gap="sm">
         <slot name="right" />
       </app-flex>
-    </app-flex>
+    </div>
   </app-flex>
 </template>
 
@@ -38,6 +38,12 @@ defineProps<{
 }
 
 .header {
+  display: grid;
+  grid-template-columns:
+    minmax(var(--header-item-height), max-content) minmax(0, 1fr)
+    minmax(var(--header-item-height), max-content);
+  align-items: center;
+  column-gap: var(--header-column-gap, var(--padding-sm));
   width: 100%;
   min-height: var(--header-height);
   background: var(--header-bg);
@@ -45,7 +51,6 @@ defineProps<{
   border-radius: var(--header-border-radius);
   padding: var(--header-padding);
   box-sizing: border-box;
-  position: relative;
 }
 
 .header-left,
@@ -69,18 +74,20 @@ defineProps<{
 }
 
 .header-left {
-  flex-shrink: 0;
-  margin-right: auto;
+  grid-column: 1;
+  justify-self: start;
 }
 
 .header-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-column: 2;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  justify-self: center;
 }
 
 .header-right {
-  flex-shrink: 0;
-  margin-left: auto;
+  grid-column: 3;
+  justify-self: end;
 }
 </style>

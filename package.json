@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.41.60",
+  "version": "0.41.61",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
