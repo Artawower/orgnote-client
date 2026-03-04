@@ -6,7 +6,6 @@
   @include fit;
 
   .rich-editor {
-    max-width: var(--editor-max-width);
     height: 100%;
     margin: auto;
   }
@@ -57,9 +56,10 @@
 
     .cm-content {
       padding: var(--editor-padding);
+      max-width: var(--editor-max-width);
+      margin: auto;
       padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
       padding-bottom: var(--floating-padding-bottom);
-      max-width: 100%;
       min-width: 0;
       caret-color: var(--editor-cursor-color);
     }
