@@ -5,6 +5,7 @@ import { reactive } from 'vue';
 
 const DEFAULT_FILE_ACTIONS: MenuAction[] = [
   { command: DefaultCommands.CREATE_NOTE },
+  { command: DefaultCommands.RENAME_FILE },
   { command: DefaultCommands.COPY_FILE },
   { command: DefaultCommands.MOVE_FILE },
   { command: DefaultCommands.DELETE_FILE },
@@ -14,6 +15,7 @@ const DEFAULT_FILE_ACTIONS: MenuAction[] = [
 const DEFAULT_DIR_ACTIONS: MenuAction[] = [
   { command: DefaultCommands.CREATE_FOLDER },
   { command: DefaultCommands.CREATE_NOTE },
+  { command: DefaultCommands.RENAME_FILE },
   { command: DefaultCommands.COPY_FILE },
   { command: DefaultCommands.MOVE_FILE },
   { command: DefaultCommands.DELETE_FILE },

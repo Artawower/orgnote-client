@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import type { OrgNoteApi } from 'orgnote-api';
 import { buildLocalSyncProfileToml } from './local-sync-profile-config';
 
@@ -18,19 +18,18 @@ const createApi = () => {
     },
   };
 
-  const authStore = {
-    token: 'token-123',
-    verifyUser: vi.fn(async () => undefined),
+  const settingsStore = {
+    tokens: [{ token: 'token-123' }],
   };
 
   const api = {
     core: {
       useConfig: () => configStore,
-      useAuth: () => authStore,
+      useSettings: () => settingsStore,
     },
   } as unknown as OrgNoteApi;
 
-  return { api, configStore, authStore };
+  return { api, configStore, settingsStore };
 };
 
 test('local-sync-profile-config buildLocalSyncProfileToml creates parseable profile from stores', () => {

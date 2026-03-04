@@ -16,14 +16,15 @@ const getClientAddress = (): string => {
 
 const buildProfileFromApi = (api: OrgNoteApi): SyncProfile => {
   const configStore = api.core.useConfig();
-  const authStore = api.core.useAuth();
+  const settingsStore = api.core.useSettings();
+  const firstToken = settingsStore.tokens?.[0]?.token ?? '';
 
   return {
     name: defaultProfileName,
     clientAddress: getClientAddress(),
     wsAddress: getWebSocketUrl(),
     remoteAddress: getApiPublicUrl(configStore.config.network.apiUrl),
-    token: authStore.token,
+    token: firstToken,
     rootFolder: '',
     debug: configStore.config.developer.developerMode,
     logPath: defaultLogPath,

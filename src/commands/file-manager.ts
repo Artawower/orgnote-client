@@ -87,12 +87,16 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.RENAME_FILE,
       group,
       icon: 'sym_o_edit',
-      handler: async (api: OrgNoteApi) => {
+      handler: async (
+        api: OrgNoteApi,
+        params: CommandHandlerParams<{ path?: string }>,
+      ) => {
         const fm = api.core.useFileManager();
-        if (!fm.focusFile) {
+        const targetPath = params?.data?.path ?? fm.focusFile?.path;
+        if (!targetPath) {
           return;
         }
-        useFileRenameCompletion(api, fm.focusFile.path);
+        useFileRenameCompletion(api, targetPath);
         return;
       },
     },
@@ -254,5 +258,4 @@ const deleteWithConfirmation = async (api: OrgNoteApi, paths: string[]): Promise
   const fm = api.core.useFileManager();
   await fm.deleteFiles(paths);
 };
-
 

@@ -12,6 +12,10 @@ vi.mock('src/utils/get-file-dir-path', () => ({
   getFileDirPath: vi.fn(),
 }));
 
+vi.mock('src/composables/file-rename-completion', () => ({
+  useFileRenameCompletion: vi.fn(),
+}));
+
 test('CREATE_NOTE command calls OPEN_NOTE after successful file creation', async () => {
   const { createFileCompletion } = await import('src/composables/create-file-completion');
   const { getFileDirPath } = await import('src/utils/get-file-dir-path');
@@ -70,4 +74,27 @@ test('CREATE_NOTE command does not call OPEN_NOTE when file creation fails', asy
   expect(mockCommands.execute).not.toHaveBeenCalled();
 });
 
+test('RENAME_FILE command uses path from params when provided', async () => {
+  const { useFileRenameCompletion } = await import('src/composables/file-rename-completion');
+
+  const mockApi: Partial<OrgNoteApi> = {
+    core: {
+      useFileManager: () => ({
+        focusFile: undefined,
+      }),
+    } as unknown as OrgNoteApi['core'],
+  };
+
+  const commands = getFileManagerCommands();
+  const renameFileCommand = commands.find((cmd) => cmd.command === DefaultCommands.RENAME_FILE);
+
+  if (isNullable(renameFileCommand)) return;
+
+  await renameFileCommand.handler(mockApi as OrgNoteApi, {
+    data: { path: '/test/renamed.org' },
+    meta: {},
+  });
+
+  expect(useFileRenameCompletion).toHaveBeenCalledWith(mockApi, '/test/renamed.org');
+});
 

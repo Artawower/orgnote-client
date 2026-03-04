@@ -10,7 +10,12 @@ const mockModal = {
 };
 
 const mockSettingsRouter = {
-  push: vi.fn(),
+  push: vi.fn(async () => undefined),
+  currentRoute: {
+    value: {
+      name: RouteNames.SettingsPage,
+    },
+  },
 };
 
 const mockNotifications = {
