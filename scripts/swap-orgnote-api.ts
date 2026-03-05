@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const YALC_DEPENDENCY = 'file:.yalc/orgnote-api';
@@ -9,6 +9,9 @@ type Mode = 'to-npm' | 'to-yalc';
 
 const rootDir = join(import.meta.dirname, '..');
 const packageJsonPath = join(rootDir, 'package.json');
+
+const isJjRepo = (): boolean => existsSync(join(rootDir, '.jj'));
+const isGitRepo = (): boolean => existsSync(join(rootDir, '.git'));
 
 const run = (command: string): string => {
   return execSync(command, { cwd: rootDir, encoding: 'utf-8' }).trim();
@@ -46,7 +49,9 @@ const setDependencyVersion = (pkg: Record<string, unknown>, version: string): vo
 };
 
 const stageFiles = (): void => {
-  run('git add package.json bun.lock');
+  if (isGitRepo()) {
+    run('git add package.json bun.lock');
+  }
 };
 
 const installDependencies = (): void => {
@@ -67,8 +72,9 @@ const toNpm = (): void => {
     return;
   }
 
+  const vcs = isJjRepo() ? 'jj' : 'git';
   const latestVersion = getLatestNpmVersion();
-  console.log(`📦 Switching to orgnote-api@${latestVersion} from npm...`);
+  console.log(`📦 [${vcs}] Switching to orgnote-api@${latestVersion} from npm...`);
 
   setDependencyVersion(pkg, latestVersion);
   writePackageJson(pkg);
@@ -87,7 +93,8 @@ const toYalc = (): void => {
     return;
   }
 
-  console.log('📦 Restoring yalc orgnote-api...');
+  const vcs = isJjRepo() ? 'jj' : 'git';
+  console.log(`📦 [${vcs}] Restoring yalc orgnote-api...`);
 
   restoreYalc();
 
