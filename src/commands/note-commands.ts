@@ -1,6 +1,8 @@
 import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
 import { DefaultCommands, I18N, RouteNames } from 'orgnote-api';
 import { useNotePickCompletion } from 'src/composables/file-pick-completion';
+import NoteInfoModal from 'src/containers/NoteInfoModal.vue';
+import { getCurrentNoteInfo } from 'src/utils/current-note-info';
 
 export function getNoteCommands(): Command[] {
   const commands: Command[] = [
@@ -69,6 +71,28 @@ export function getNoteCommands(): Command[] {
         await api.utils.copyToClipboard(shareUrl);
         n.notify({
           message: I18N.COPIED_TO_CLIPBOARD,
+        });
+      },
+    },
+    {
+      command: DefaultCommands.SHOW_FILE_INFO,
+      icon: 'sym_o_info',
+      group: 'note',
+      handler: async (api) => {
+        const notifications = api.core.useNotifications();
+        const noteInfo = await getCurrentNoteInfo(api);
+
+        if (!noteInfo) {
+          notifications.notify({
+            level: 'warning',
+            message: I18N.NO_SELECTED_NOTE,
+          });
+          return;
+        }
+
+        api.ui.useModal().open(NoteInfoModal, {
+          title: DefaultCommands.SHOW_FILE_INFO,
+          modalProps: { noteInfo },
         });
       },
     },

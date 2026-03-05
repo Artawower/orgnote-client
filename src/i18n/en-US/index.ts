@@ -61,6 +61,13 @@ const eng: Record<string, string> = {
 
   [I18N.GPG_EMAIL_REQUIRED]: 'Email is required',
   [I18N.GPG_EMAIL_INVALID]: 'Invalid email format',
+  [I18N.NOTE_INFO_TAGS]: 'Tags',
+  [I18N.NOTE_INFO_LINKS]: 'Links',
+  [I18N.NOTE_INFO_BACKLINKS]: 'Backlinks',
+  [I18N.NOTE_INFO_CREATED]: 'Created',
+  [I18N.NOTE_INFO_UPDATED]: 'Updated',
+  [I18N.NOTE_INFO_LAST_OPENED]: 'Last opened',
+  [I18N.NOTE_INFO_LAST_SYNC]: 'Last sync',
 };
 
 export default eng;
