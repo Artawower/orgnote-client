@@ -17,7 +17,14 @@
       />
     </template>
     <template #center>
-      <span class="header-title" :title="panes.activeTabTitle">
+      <span
+        class="header-title"
+        :title="panes.activeTabTitle"
+        role="button"
+        tabindex="0"
+        @click="openFileActions"
+        @keydown.enter.prevent="openFileActions"
+      >
         {{ panes.activeTabTitle }}
       </span>
     </template>
@@ -34,19 +41,62 @@
 </template>
 
 <script lang="ts" setup>
-import { inject, shallowRef, type ShallowRef } from 'vue';
+import { computed, inject, shallowRef, type ShallowRef } from 'vue';
 import type { Router } from 'vue-router';
+import type { MenuAction } from 'orgnote-api';
 import AppHeader from 'src/components/AppHeader.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import CommandActionButton from './CommandActionButton.vue';
+import MenuList from 'src/components/MenuList.vue';
 import { api } from 'src/boot/api';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import { useTabHistory } from 'src/composables/use-tab-history';
+import { getActiveFilePath } from 'src/utils/get-active-file-path';
 
 const pinnedCommandsStore = api.ui.usePinnedCommands();
 const rightCommands = pinnedCommandsStore.getCommands('right-header');
+const fileActionsCommands = pinnedCommandsStore.getCommands('file-actions');
 
 const panes = api.core.usePane();
+const modal = api.ui.useModal();
+
+const fileActions = computed<MenuAction[]>(() => {
+  return fileActionsCommands.value.map((command) => ({ command }));
+});
+
+const fileActionsData = computed<
+  | {
+      path: string;
+      paths: string[];
+      interactive: true;
+    }
+  | undefined
+>(() => {
+  const path = getActiveFilePath(api);
+  if (!path) {
+    return;
+  }
+
+  return {
+    path,
+    paths: [path],
+    interactive: true,
+  };
+});
+
+const openFileActions = () => {
+  modal.open(MenuList, {
+    mini: true,
+    position: 'bottom',
+    modalProps: {
+      actions: fileActions.value,
+      data: fileActionsData.value,
+    },
+    modalEmits: {
+      close: () => modal.close(),
+    },
+  });
+};
 
 const fallbackRouter = shallowRef<Router | undefined>(undefined);
 const tabRouter = inject<ShallowRef<Router | undefined>>(TAB_ROUTER_KEY, fallbackRouter);
@@ -62,6 +112,7 @@ const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
   overflow: hidden;
   text-overflow: ellipsis;
   user-select: none;
+  cursor: pointer;
 }
 
 @include mobile {
@@ -71,7 +122,6 @@ const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
 
   .header-title {
     max-width: 100%;
-    padding: 0 var(--padding-md);
   }
 }
 </style>

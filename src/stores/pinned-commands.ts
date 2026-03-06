@@ -22,7 +22,7 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.SETTINGS,
     DefaultCommands.TOGGLE_SIDEBAR,
   ],
-  'right-header': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR, DefaultCommands.SHOW_FILE_INFO],
+  'right-header': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR],
   'right-sidebar': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR, DefaultCommands.TOGGLE_AST_DEBUGGER],
   'edit-toolbar': [
     DefaultCommands.TOGGLE_SIDEBAR,
@@ -54,6 +54,13 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.EDITOR_INSERT_TAG,
     DefaultCommands.EDITOR_INSERT_DATETIME,
     DefaultCommands.EDITOR_INSERT_HTML_BLOCK,
+  ],
+  'file-actions': [
+    DefaultCommands.RENAME_FILE,
+    DefaultCommands.COPY_FILE,
+    DefaultCommands.MOVE_FILE,
+    DefaultCommands.DELETE_FILE,
+    DefaultCommands.SHOW_FILE_INFO,
   ],
 };
 
