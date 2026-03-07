@@ -121,6 +121,16 @@ const { t } = useI18n({
     @include completion-fullframe();
     position: relative;
 
+    &.input-only {
+      height: auto;
+
+      :deep(.layout-body) {
+        display: none;
+      }
+    }
+  }
+
+  .completion-wrapper:not(.input-only) {
     :deep(.layout-header) {
       position: absolute;
       bottom: 0;
@@ -133,14 +143,6 @@ const { t } = useI18n({
 
     :deep(.layout-body) {
       padding-bottom: var(--completion-header-offset);
-    }
-
-    &.input-only {
-      height: auto;
-
-      :deep(.layout-body) {
-        display: none;
-      }
     }
   }
 

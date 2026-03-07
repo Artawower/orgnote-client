@@ -105,14 +105,29 @@ test('renders a single dialog when modals has 1 item', async () => {
   expect(dialogs.length).toBe(1);
 });
 
-test('renders multiple dialogs when multiple items in modals', async () => {
+test('renders only top dialog when multiple modals in stack', async () => {
   mockModal.modals.value.push(
     { id: ++nextId, component: markRaw({ template: '<div>ModalOne</div>' }), config: {} },
     { id: ++nextId, component: markRaw({ template: '<div>ModalTwo</div>' }), config: {} },
   );
   await wrapper.vm.$nextTick();
   const dialogs = wrapper.findAll('dialog');
-  expect(dialogs.length).toBe(2);
+  expect(dialogs.length).toBe(1);
+});
+
+test('ModalContainer unmounts first modal when second is pushed onto stack', async () => {
+  const componentA = markRaw({ template: '<div class="a">A</div>' });
+  const componentB = markRaw({ template: '<div class="b">B</div>' });
+
+  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
+  await nextTick();
+  expect(wrapper.find('.a').exists()).toBe(true);
+
+  mockModal.modals.value.push({ id: ++nextId, component: componentB, config: {} });
+  await nextTick();
+
+  expect(wrapper.find('.a').exists()).toBe(false);
+  expect(wrapper.find('.b').exists()).toBe(true);
 });
 
 test('newly added modal calls showModal()', async () => {
@@ -148,9 +163,8 @@ test('renders title from config.title', async () => {
   ];
   await wrapper.vm.$nextTick();
   const allTitles = wrapper.findAll('h1.title');
-  expect(allTitles.length).toBe(2);
-  expect(allTitles.at(0)?.text()).toBe('First Title');
-  expect(allTitles.at(1)?.text()).toBe('Second Title');
+  expect(allTitles.length).toBe(1);
+  expect(allTitles.at(0)?.text()).toBe('Second Title');
 });
 
 test('renders close button when config.closable is true', async () => {
@@ -197,14 +211,14 @@ test('does not close modal when clicking inside modal content', async () => {
   expect(mockModal.close).not.toHaveBeenCalled();
 });
 
-test('removing a modal from modals closes/removes that dialog', async () => {
+test('removing top modal keeps previous one visible', async () => {
   mockModal.modals.value = [
     { id: ++nextId, component: markRaw({ template: '<div>First Modal</div>' }), config: {} },
     { id: ++nextId, component: markRaw({ template: '<div>Second Modal</div>' }), config: {} },
   ];
   await wrapper.vm.$nextTick();
   let dialogs = wrapper.findAll('dialog');
-  expect(dialogs.length).toBe(2);
+  expect(dialogs.length).toBe(1);
   mockModal.modals.value.pop();
   await wrapper.vm.$nextTick();
   dialogs = wrapper.findAll('dialog');

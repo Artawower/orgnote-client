@@ -85,12 +85,17 @@ const fileActionsData = computed<
 });
 
 const openFileActions = () => {
+  const data = fileActionsData.value;
+  if (!data) {
+    return;
+  }
+
   modal.open(MenuList, {
     mini: true,
     position: 'bottom',
     modalProps: {
       actions: fileActions.value,
-      data: fileActionsData.value,
+      data,
     },
     modalEmits: {
       close: () => modal.close(),
