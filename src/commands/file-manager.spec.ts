@@ -1,6 +1,8 @@
 import { test, expect, vi } from 'vitest';
 import { getFileManagerCommands } from './file-manager';
-import { DefaultCommands, I18N, type Command, type OrgNoteApi } from 'orgnote-api';
+import { DefaultCommands, I18N, RouteNames, type Command, type OrgNoteApi } from 'orgnote-api';
+import type { Router } from 'vue-router';
+import type { Tab } from 'orgnote-api';
 
 vi.mock('src/composables/create-file-completion', () => ({
   createFileCompletion: vi.fn(),
@@ -24,6 +26,7 @@ type BuildMockApiOverrides = {
   };
   pane?: {
     activeBufferUri?: string;
+    activeTab?: Partial<Tab>;
   };
   editor?: {
     activeContext?: {
@@ -62,6 +65,7 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
 
   const pane = {
     activeBufferUri: undefined,
+    activeTab: undefined,
     ...overrides.pane,
   };
 
@@ -469,4 +473,39 @@ test('EXECUTE_PENDING_FILE_OPERATION reopens active moved note', async () => {
 
   expect(executePending).toHaveBeenCalledWith('/dest');
   expect(execute).toHaveBeenCalledWith(DefaultCommands.OPEN_NOTE, { path: '/dest/old.org' });
+});
+
+test('EXECUTE_PENDING_FILE_OPERATION uses router.replace to avoid stale history', async () => {
+  const executePending = vi.fn();
+  const execute = vi.fn();
+  const replace = vi.fn();
+
+  const { api } = buildMockApi({
+    fileManager: {
+      path: '/dest',
+      pendingOperation: { type: 'move', paths: ['/test/old.org'] },
+      executePending,
+    },
+    pane: {
+      activeBufferUri: 'file:///test/old.org',
+      activeTab: {
+        paneId: 'pane-1',
+        router: { replace } as unknown as Router,
+      },
+    },
+    commands: { execute },
+  });
+
+  const executePendingCommand = getCommandOrThrow(DefaultCommands.EXECUTE_PENDING_FILE_OPERATION);
+  await executePendingCommand.handler(api, { data: {}, meta: {} });
+
+  expect(executePending).toHaveBeenCalledWith('/dest');
+  expect(replace).toHaveBeenCalledWith({
+    name: RouteNames.File,
+    params: {
+      paneId: 'pane-1',
+      path: '/dest/old.org',
+    },
+  });
+  expect(execute).not.toHaveBeenCalled();
 });

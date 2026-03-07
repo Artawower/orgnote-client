@@ -1,6 +1,7 @@
 import {
   DefaultCommands,
   I18N,
+  RouteNames,
   getFileName,
   join,
   type Command,
@@ -197,6 +198,19 @@ const remapPath = (
 };
 
 const reopenPath = async (api: OrgNoteApi, path: string): Promise<void> => {
+  const panes = api.core.usePane();
+  const activeTab = panes.activeTab;
+  if (activeTab?.router) {
+    await activeTab.router.replace({
+      name: RouteNames.File,
+      params: {
+        paneId: activeTab.paneId,
+        path,
+      },
+    });
+    return;
+  }
+
   const commands = api.core.useCommands();
   await commands.execute(DefaultCommands.OPEN_NOTE, { path });
 };
