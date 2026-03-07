@@ -17,11 +17,14 @@ import { enqueuePlanOperations, isPlanEmpty } from 'src/infrastructure/sync';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { api } from 'src/boot/api';
 
+const httpUpgradeRequired = 426;
+
 export const useSyncStore = defineStore<'sync', SyncStore>(
   'sync',
   (): SyncStore => {
     const currentPlan = ref<SyncPlan | null>(null);
     const stateData = ref<SyncStateData | null>({ files: {} });
+    const isVersionIncompatible = ref(false);
 
     const state = createSyncState(stateData);
     const fs = computed(() => useFileSystemManagerStore().currentFs as FileSystem);
@@ -29,7 +32,11 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
     const isSyncProhibited = (): boolean => {
       const authStore = api.core.useAuth();
       const configStore = api.core.useConfig();
-      return !authStore.user?.active || configStore.config.synchronization.type === 'none';
+      return (
+        isVersionIncompatible.value ||
+        !authStore.user?.active ||
+        configStore.config.synchronization.type === 'none'
+      );
     };
 
     const buildSyncPlan = async (
@@ -52,7 +59,16 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       return { plan, serverTime };
     };
 
+    const isVersionError = (error: Error): boolean => {
+      const axiosError = error as { response?: { status?: number } };
+      return axiosError.response?.status === httpUpgradeRequired;
+    };
+
     const handleSyncError = (error: Error): null => {
+      if (isVersionError(error)) {
+        isVersionIncompatible.value = true;
+        return null;
+      }
       reporter.reportError(error);
       return null;
     };
