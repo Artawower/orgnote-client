@@ -10,12 +10,12 @@ import { useConfigStore } from 'src/stores/config';
 
 const props = withDefaults(
   defineProps<{
-    animationName?: 'bounce' | 'expand';
+    animationName?: 'bounce' | 'expand' | 'fade';
     mode?: 'in-out' | 'out-in';
     css?: boolean;
   }>(),
   {
-    animationName: 'bounce',
+    animationName: 'fade',
     mode: 'out-in',
     css: true,
   },
@@ -24,9 +24,7 @@ const props = withDefaults(
 const { config } = useConfigStore();
 
 const shouldUseCss = computed(() => config.ui.enableAnimations && props.css);
-const transitionMode = computed(() =>
-  config.ui.enableAnimations ? props.mode : undefined,
-);
+const transitionMode = computed(() => (config.ui.enableAnimations ? props.mode : undefined));
 const transitionName = computed(() =>
   config.ui.enableAnimations ? props.animationName : undefined,
 );
@@ -84,5 +82,24 @@ const transitionName = computed(() =>
 .expand-leave-from {
   grid-template-rows: 1fr;
   opacity: 1;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+  transform: scale(1);
 }
 </style>
