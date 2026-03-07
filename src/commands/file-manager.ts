@@ -19,6 +19,10 @@ import { to } from 'orgnote-api/utils';
 import { defineAsyncComponent } from 'vue';
 import { buildSortCandidates } from 'src/composables/sort-files-completion';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
+import {
+  useTransferDestinationCompletion,
+  type TransferDestination,
+} from 'src/composables/transfer-destination-completion';
 
 const group = 'file manager';
 
@@ -42,12 +46,72 @@ const getTargetPathsFromCommandData = (data?: FileTargetsCommandData): string[] 
   }
 };
 
-const pickDestinationPath = (api: OrgNoteApi, initialPath: string): Promise<string> => {
-  return api.core.useCompletion().open<void, string>({
-    type: 'input',
-    searchText: initialPath,
-    placeholder: I18N.PICK_FOLDER,
-  });
+const cancelAndThrow = (fm: ReturnType<OrgNoteApi['core']['useFileManager']>, error: Error): never => {
+  fm.cancelPending();
+  throw error;
+};
+
+const pickInteractiveDestination = async (
+  api: OrgNoteApi,
+  fm: ReturnType<OrgNoteApi['core']['useFileManager']>,
+): Promise<TransferDestination | undefined> => {
+  const destinationResult = await to(
+    useTransferDestinationCompletion,
+    'Failed to pick destination',
+  )(api, fm.path);
+
+  if (destinationResult.isErr()) {
+    return cancelAndThrow(fm, destinationResult.error);
+  }
+
+  const destination = destinationResult.value;
+  if (!destination) {
+    fm.cancelPending();
+    return;
+  }
+
+  return destination;
+};
+
+const executeExplicitTransferIfRequired = async (
+  api: OrgNoteApi,
+  fm: ReturnType<OrgNoteApi['core']['useFileManager']>,
+  pendingOperation: PendingFileOperation | undefined,
+  destination: TransferDestination,
+): Promise<boolean> => {
+  const explicitTransferResult = await to(
+    executeExplicitTransfer,
+    'Failed to execute pending transfer',
+  )(api, pendingOperation, destination);
+
+  if (explicitTransferResult.isErr()) {
+    return cancelAndThrow(fm, explicitTransferResult.error);
+  }
+
+  if (!explicitTransferResult.value) {
+    return false;
+  }
+
+  fm.cancelPending();
+  return true;
+};
+
+const executePendingTransferAndSync = async (
+  api: OrgNoteApi,
+  fm: ReturnType<OrgNoteApi['core']['useFileManager']>,
+  pendingOperation: PendingFileOperation | undefined,
+  destination: TransferDestination,
+): Promise<void> => {
+  const executeResult = await to(
+    fm.executePending.bind(fm),
+    'Failed to execute pending transfer',
+  )(destination.destinationDir);
+
+  if (executeResult.isErr()) {
+    return cancelAndThrow(fm, executeResult.error);
+  }
+
+  await safeSyncActiveFileAfterMove(api, pendingOperation, destination.destinationDir);
 };
 
 const executeInteractiveTransfer = async (
@@ -55,27 +119,62 @@ const executeInteractiveTransfer = async (
   pendingOperation: PendingFileOperation | undefined,
 ): Promise<void> => {
   const fm = api.core.useFileManager();
-  const destinationResult = await to(pickDestinationPath, 'Failed to pick destination')(api, fm.path);
-  if (destinationResult.isErr()) {
-    fm.cancelPending();
-    throw destinationResult.error;
-  }
-
-  const destinationPath = destinationResult.value;
-  if (!destinationPath) {
-    fm.cancelPending();
+  const destination = await pickInteractiveDestination(api, fm);
+  if (!destination) {
     return;
   }
 
-  const executeResult = await to(fm.executePending.bind(fm), 'Failed to execute pending transfer')(
-    destinationPath,
+  const handledByExplicitTransfer = await executeExplicitTransferIfRequired(
+    api,
+    fm,
+    pendingOperation,
+    destination,
   );
-  if (executeResult.isErr()) {
-    fm.cancelPending();
-    throw executeResult.error;
+  if (handledByExplicitTransfer) {
+    return;
   }
 
-  await safeSyncActiveFileAfterMove(api, pendingOperation, destinationPath);
+  await executePendingTransferAndSync(api, fm, pendingOperation, destination);
+};
+
+const canTransferToExplicitPath = (
+  operation: PendingFileOperation | undefined,
+  destination: TransferDestination,
+): operation is PendingFileOperation => {
+  if (!operation?.paths.length || !destination.explicitFilePath) {
+    return false;
+  }
+
+  return operation.paths.length === 1;
+};
+
+const executeExplicitTransfer = async (
+  api: OrgNoteApi,
+  operation: PendingFileOperation | undefined,
+  destination: TransferDestination,
+): Promise<boolean> => {
+  if (!canTransferToExplicitPath(operation, destination)) {
+    return false;
+  }
+
+  const sourcePath = operation.paths[0]!;
+  const targetPath = destination.explicitFilePath!;
+  const fs = api.core.useFileSystem();
+  const transfer = operation.type === 'copy' ? fs.copyFile.bind(fs) : fs.rename.bind(fs);
+
+  const transferResult = await to(transfer, 'Failed to execute pending transfer')(
+    sourcePath,
+    targetPath,
+  );
+  if (transferResult.isErr()) {
+    throw transferResult.error;
+  }
+
+  if (operation.type === 'move') {
+    await safeSyncActiveFileAfterRename(api, sourcePath, targetPath);
+  }
+
+  return true;
 };
 
 const toPathPrefix = (path: string): string => (path.endsWith('/') ? path : `${path}/`);
@@ -118,6 +217,22 @@ const syncActiveFileAfterRename = async (
   }
 
   await reopenPath(api, remappedPath);
+};
+
+const safeSyncActiveFileAfterRename = async (
+  api: OrgNoteApi,
+  previousPath: string,
+  nextPath: string,
+): Promise<void> => {
+  const syncResult = await to(syncActiveFileAfterRename, 'Failed to sync active file after rename')(
+    api,
+    previousPath,
+    nextPath,
+  );
+
+  if (syncResult.isErr()) {
+    reporter.reportWarning(syncResult.error);
+  }
 };
 
 const getMoveDestinationPath = (sourcePath: string, destinationDir: string): string =>
@@ -181,7 +296,7 @@ const createTransferHandler =
     }
 
     await executeInteractiveTransfer(api, fm.pendingOperation);
-};
+  };
 
 export function getFileManagerCommands(): Command[] {
   const commands: Command[] = [
@@ -296,10 +411,7 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.DELETE_FILE,
       group,
       icon: 'sym_o_delete',
-      handler: async (
-        api: OrgNoteApi,
-        params: CommandHandlerParams<DeleteFileCommandData>,
-      ) => {
+      handler: async (api: OrgNoteApi, params: CommandHandlerParams<DeleteFileCommandData>) => {
         const fm = api.core.useFileManager();
         const paths = getTargetPathsFromCommandData(params?.data);
         const targets = paths ?? fm.operationTargets;
@@ -323,13 +435,17 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.COPY_FILE,
       group,
       icon: 'sym_o_content_copy',
-      handler: createTransferHandler((api, targets) => api.core.useFileManager().startCopy(targets)),
+      handler: createTransferHandler((api, targets) =>
+        api.core.useFileManager().startCopy(targets),
+      ),
     },
     {
       command: DefaultCommands.MOVE_FILE,
       group,
       icon: 'sym_o_drive_file_move',
-      handler: createTransferHandler((api, targets) => api.core.useFileManager().startMove(targets)),
+      handler: createTransferHandler((api, targets) =>
+        api.core.useFileManager().startMove(targets),
+      ),
     },
     {
       command: DefaultCommands.EXECUTE_PENDING_FILE_OPERATION,

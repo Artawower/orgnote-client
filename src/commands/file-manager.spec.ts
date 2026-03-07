@@ -30,6 +30,16 @@ type BuildMockApiOverrides = {
       filePath?: string;
     };
   };
+  fileSystemManager?: {
+    currentFs?: {
+      isDirExist: (path: string) => Promise<boolean>;
+      isFileExist: (path: string) => Promise<boolean>;
+    };
+  };
+  fileSystem?: {
+    rename?: ReturnType<typeof vi.fn>;
+    copyFile?: ReturnType<typeof vi.fn>;
+  };
 };
 
 const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
@@ -60,6 +70,20 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
     ...overrides.editor,
   };
 
+  const fileSystemManager = {
+    currentFs: {
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => false),
+    },
+    ...overrides.fileSystemManager,
+  };
+
+  const fileSystem = {
+    rename: vi.fn(),
+    copyFile: vi.fn(),
+    ...overrides.fileSystem,
+  };
+
   const api: Partial<OrgNoteApi> = {
     core: {
       useFileManager: () => fileManager,
@@ -67,6 +91,8 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
       useCommands: () => commands,
       usePane: () => pane,
       useEditor: () => editor,
+      useFileSystemManager: () => fileSystemManager,
+      useFileSystem: () => fileSystem,
     } as unknown as OrgNoteApi['core'],
   };
 
@@ -75,6 +101,7 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
     fileManager,
     completion,
     commands,
+    fileSystem,
   };
 };
 
@@ -193,9 +220,10 @@ test('COPY_FILE command executes pending operation in interactive mode', async (
 
   expect(startCopy).toHaveBeenCalledWith(['/test/copied.org']);
   expect(completion.open).toHaveBeenCalledWith({
-    type: 'input',
+    type: 'input-choice',
     searchText: '/notes',
     placeholder: I18N.PICK_FOLDER,
+    itemsGetter: expect.any(Function),
   });
   expect(executePending).toHaveBeenCalledWith('/dest');
   expect(cancelPending).not.toHaveBeenCalled();
@@ -257,6 +285,50 @@ test('MOVE_FILE command executes pending operation in interactive mode', async (
   expect(startMove).toHaveBeenCalledWith(['/test/moved.org']);
   expect(executePending).toHaveBeenCalledWith('/dest');
   expect(cancelPending).not.toHaveBeenCalled();
+});
+
+test('MOVE_FILE command supports explicit destination file path for single source', async () => {
+  const startMove = vi.fn();
+  const executePending = vi.fn();
+  const cancelPending = vi.fn();
+  const open = vi.fn().mockResolvedValue('/test/new-name.org');
+  const rename = vi.fn();
+  const execute = vi.fn();
+
+  const { api } = buildMockApi({
+    fileManager: {
+      operationTargets: [],
+      path: '/notes',
+      pendingOperation: { type: 'move', paths: ['/test/old-name.org'] },
+      startMove,
+      executePending,
+      cancelPending,
+    },
+    fileSystemManager: {
+      currentFs: {
+        isDirExist: vi.fn(async () => false),
+        isFileExist: vi.fn(async () => false),
+      },
+    },
+    fileSystem: {
+      rename,
+    },
+    commands: { execute },
+    pane: { activeBufferUri: 'file:///test/old-name.org' },
+    completion: { open },
+  });
+
+  const moveCommand = getCommandOrThrow(DefaultCommands.MOVE_FILE);
+  await moveCommand.handler(api, {
+    data: { path: '/test/old-name.org', interactive: true },
+    meta: {},
+  });
+
+  expect(startMove).toHaveBeenCalledWith(['/test/old-name.org']);
+  expect(rename).toHaveBeenCalledWith('/test/old-name.org', '/test/new-name.org');
+  expect(executePending).not.toHaveBeenCalled();
+  expect(cancelPending).toHaveBeenCalled();
+  expect(execute).toHaveBeenCalledWith(DefaultCommands.OPEN_NOTE, { path: '/test/new-name.org' });
 });
 
 test('COPY_FILE command cancels pending operation when interactive path is empty', async () => {
