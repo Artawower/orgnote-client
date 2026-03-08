@@ -13,10 +13,15 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
 
     const { config } = storeToRefs(useConfigStore());
 
-    const notify = (notificationConfig: NotificationConfig): string => {
-      const id = notificationConfig.id ?? crypto.randomUUID();
+    const resolveNotificationId = (id?: string): string => {
+      if (id && id.trim()) return id;
+      return crypto.randomUUID();
+    };
 
-      const timeout = notificationConfig.timeout ?? config.value.ui.notificationTimeout ?? 5000;
+    const notify = (notificationConfig: NotificationConfig): string => {
+      const id = resolveNotificationId(notificationConfig.id);
+      const configuredTimeout = config.value.ui.notificationTimeout;
+      const timeout = notificationConfig.timeout ?? configuredTimeout ?? 5000;
       const shouldGroup = notificationConfig.group !== false;
       const groupKey = id;
 
@@ -46,13 +51,30 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       const configWithId = { ...notificationConfig, id };
 
       if (notificationConfig.stored) {
-        notifications.value.push({
-          read: false,
+        const existingNotification = notifications.value.find((n) => n.config.id === id);
+        if (existingNotification) {
+          existingNotification.dismiss?.();
+          existingNotification.dismiss = dismiss;
+          existingNotification.config = configWithId;
+          existingNotification.icon = notificationConfig.icon;
+          existingNotification.iconEnabled = notificationConfig.iconEnabled ?? true;
+          existingNotification.createdAt = new Date().toISOString();
+          existingNotification.readAt = undefined;
+          existingNotification.count = (existingNotification.count ?? 1) + 1;
+          return id;
+        }
+
+        const nextNotification: Notification = {
+          createdAt: new Date().toISOString(),
+          readAt: undefined,
+          count: 1,
           dismiss,
           config: configWithId,
           icon: notificationConfig.icon,
           iconEnabled: notificationConfig.iconEnabled ?? true,
-        });
+        };
+
+        notifications.value.push(nextNotification);
       }
 
       return id;
@@ -64,16 +86,42 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       groupCounts.value.clear();
     };
 
-    const deleteNotification = (notificationId: string): void => {
-      const notification = notifications.value.find((n) => n.config.id === notificationId);
-      notification?.dismiss?.();
-      notifications.value = notifications.value.filter((n) => n.config.id !== notificationId);
+    const decrementGroupCount = (notificationId: string): void => {
+      const currentCount = groupCounts.value.get(notificationId);
+      if (!currentCount) return;
+      if (currentCount <= 1) {
+        groupCounts.value.delete(notificationId);
+        return;
+      }
+      groupCounts.value.set(notificationId, currentCount - 1);
     };
 
-    const markAsRead = (notificationId: string): void => {
+    const deleteNotification = (notificationId: string): void => {
+      if (!notificationId) return;
+
+      const notificationIndex = notifications.value.findIndex((n) => n.config.id === notificationId);
+      if (notificationIndex < 0) return;
+
+      const notification = notifications.value[notificationIndex];
+      if (!notification) return;
+
+      const currentCount = notification.count ?? 1;
+      if (currentCount > 1) {
+        notification.count = currentCount - 1;
+        decrementGroupCount(notificationId);
+        return;
+      }
+
+      notification.dismiss?.();
+      notifications.value.splice(notificationIndex, 1);
+      decrementGroupCount(notificationId);
+    };
+
+    const markAsRead = (notificationId: string, readAt?: string): void => {
+      if (!notificationId) return;
       const notification = notifications.value.find((n) => n.config.id === notificationId);
       if (!notification) return;
-      notification.read = true;
+      notification.readAt = readAt ?? new Date().toISOString();
     };
 
     const hideAll = (): void => {
@@ -87,8 +135,9 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       const notification = notifications.value.find((n) => n.config.id === notificationId);
       if (!notification) return;
 
-      const { message, ...safeUpdates } = updates;
-      void message;
+      const safeUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([key]) => key !== 'message'),
+      ) as Partial<NotificationConfig>;
 
       notification.config = { ...notification.config, ...safeUpdates };
     };

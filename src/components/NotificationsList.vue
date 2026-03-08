@@ -12,49 +12,22 @@
           leave-from="notification-leave-from"
           leave-to="notification-leave-to"
         >
-          <app-flex
+          <app-notification
             v-for="notification in groupByKey(notiwindNotifications)"
             :key="notification.id"
-            gap="sm"
-            align-center
-            class="notification-item"
-            :class="[
-              `notification-${notification.type ?? 'info'}`,
-              { clickable: !!notification.onClick },
-            ]"
+            :type="notification.type"
+            :icon="getNotificationIcon(notification)"
+            :icon-color="getNotificationIconColor(notification)"
+            :html-message="getNotificationTitle(notification)"
+            :caption="getNotificationText(notification)"
+            :count="notification.count"
+            :closable="notification.closable !== false"
+            :clickable="!!notification.onClick"
             @click="notification.onClick?.()"
+            @close="close(notification.id)"
             @mouseenter="hovering(notification.id, true)"
             @mouseleave="hovering(notification.id, false)"
-          >
-            <app-icon
-              v-if="getNotificationIcon(notification)"
-              :name="getNotificationIcon(notification)"
-              :color="getNotificationIconColor(notification)"
-              size="sm"
-            />
-            <app-flex column start align-start gap="xs" class="notification-content">
-              <span class="notification-message">
-                <span v-html-safe="getNotificationTitle(notification)"></span>
-                <app-badge
-                  v-if="notification.count && notification.count > 1"
-                  :label="String(notification.count)"
-                  size="xs"
-                  rounded
-                  class="notification-badge"
-                />
-              </span>
-              <span v-if="getNotificationText(notification)" class="notification-caption">
-                {{ getNotificationText(notification) }}
-              </span>
-            </app-flex>
-            <action-button
-              v-if="notification.closable !== false"
-              icon="close"
-              size="xs"
-              class="notification-close"
-              @click.stop="close(notification.id)"
-            />
-          </app-flex>
+          />
         </Notification>
       </app-flex>
     </NotificationGroup>
@@ -62,14 +35,11 @@
 </template>
 
 <script setup lang="ts">
-// TODO: Need to recreate notifications for handling ref-like objects
 import type { ThemeVariable } from 'orgnote-api';
 import { NotificationGroup, Notification } from 'notiwind';
 
-import ActionButton from './ActionButton.vue';
-import AppBadge from './AppBadge.vue';
 import AppFlex from './AppFlex.vue';
-import AppIcon from './AppIcon.vue';
+import AppNotification from './AppNotification.vue';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
 
 interface NotiwindNotification {
@@ -110,7 +80,7 @@ const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification
       return acc;
     }
 
-    Object.assign(existing, n);
+    acc.set(key, { ...existing, ...n });
     return acc;
   }, new Map<string, NotiwindNotification>());
 
@@ -128,55 +98,6 @@ const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification
   z-index: var(--notification-z-index);
   max-width: var(--notification-max-width);
   pointer-events: none;
-}
-
-.notification-item {
-  padding: var(--notification-padding);
-  border-radius: var(--notification-radius);
-  background: var(--notification-bg);
-  color: var(--notification-fg);
-  border: var(--notification-border);
-  box-shadow: var(--notification-shadow);
-  max-width: var(--notification-max-width);
-  pointer-events: auto;
-  width: 100%;
-  min-width: var(--notification-min-width);
-
-  &.clickable {
-    cursor: pointer;
-    transition: filter 0.2s;
-
-    @include hover {
-      filter: brightness(1.1);
-    }
-  }
-}
-
-@include for-each-view-type using ($type, $color) {
-  .notification-#{$type} {
-    background: color-mix(in srgb, $color, var(--bg) 80%);
-    color: var(--fg);
-    border-color: $color;
-  }
-}
-
-.notification-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.notification-message {
-  font-size: var(--notification-message-font-size);
-  font-weight: var(--notification-message-font-weight);
-}
-
-.notification-caption {
-  font-size: var(--notification-caption-font-size);
-  opacity: var(--notification-caption-opacity);
-}
-
-.notification-close {
-  opacity: var(--notification-close-opacity);
 }
 
 .notification-enter {

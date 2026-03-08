@@ -13,6 +13,8 @@ import { ISSUE_PAGE } from 'src/constants/issue-page';
 import { clientOnly } from 'src/utils/platform-specific';
 import LogsContainer from 'src/containers/LogsContainer.vue';
 import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
+import NotificationsInboxContainer from 'src/containers/NotificationsInboxContainer.vue';
+import NotificationsCommandIcon from 'src/components/NotificationsCommandIcon.vue';
 import GenerateGpgKeysModal from 'src/containers/GenerateGpgKeysModal.vue';
 import type { GenerateGpgKeysModalResult } from 'src/models/gpg-keys-modal-result';
 import { to } from 'orgnote-api/utils';
@@ -213,6 +215,14 @@ export function getGlobalCommands(): Command[] {
           api.core.useCommands().execute(DefaultCommands.EDITOR_HIDE_KEYBOARD);
         }
         sidebarStore.toggle();
+      },
+    },
+    {
+      command: DefaultCommands.OPEN_NOTIFICATIONS,
+      group: 'global',
+      icon: NotificationsCommandIcon,
+      handler: () => {
+        modalStore.open(NotificationsInboxContainer, { title: I18N.NOTIFICATIONS });
       },
     },
     {

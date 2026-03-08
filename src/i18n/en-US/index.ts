@@ -68,6 +68,9 @@ const eng: Record<string, string> = {
   [I18N.NOTE_INFO_UPDATED]: 'Updated',
   [I18N.NOTE_INFO_LAST_OPENED]: 'Last opened',
   [I18N.NOTE_INFO_LAST_SYNC]: 'Last sync',
+
+  [I18N.CLEAR_ALL_NOTIFICATIONS]: 'Clear all',
+  [I18N.NO_NOTIFICATIONS]: 'No notifications',
 };
 
 export default eng;
