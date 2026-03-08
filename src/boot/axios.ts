@@ -26,6 +26,7 @@ const notifyVersionIncompatible = (): void => {
     level: 'warning',
     closable: false,
     group: false,
+    stored: true,
   });
 };
 

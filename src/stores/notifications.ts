@@ -45,13 +45,15 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
 
       const configWithId = { ...notificationConfig, id };
 
-      notifications.value.push({
-        read: false,
-        dismiss,
-        config: configWithId,
-        icon: notificationConfig.icon,
-        iconEnabled: notificationConfig.iconEnabled ?? true,
-      });
+      if (notificationConfig.stored) {
+        notifications.value.push({
+          read: false,
+          dismiss,
+          config: configWithId,
+          icon: notificationConfig.icon,
+          iconEnabled: notificationConfig.iconEnabled ?? true,
+        });
+      }
 
       return id;
     };
