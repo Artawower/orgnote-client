@@ -33,7 +33,7 @@ const toggle = () => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 label {
   display: inline-flex;
   align-items: center;
@@ -41,7 +41,7 @@ label {
   width: var(--checkbox-size);
   height: var(--checkbox-size);
   cursor: pointer;
-  user-select: none;
+  @include interactive-no-select;
   vertical-align: middle;
   position: relative;
   flex-shrink: 0;

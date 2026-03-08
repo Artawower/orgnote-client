@@ -89,4 +89,9 @@ navigate(props.initialRoute).then((result) => {
     min-width: 0;
   }
 }
+
+.settings :deep(.title),
+.settings :deep(.description) {
+  @include interactive-no-select;
+}
 </style>

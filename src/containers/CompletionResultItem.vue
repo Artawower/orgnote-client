@@ -111,6 +111,7 @@ const selectCandidate = () => applyCandidateToInput(candidateIndex.value);
 .completion-item {
   & {
     @include fit;
+    @include interactive-no-select;
     cursor: pointer;
     border-radius: var(--completion-item-radius);
     box-sizing: border-box;
@@ -136,7 +137,7 @@ const selectCandidate = () => applyCandidateToInput(candidateIndex.value);
     font-weight: bold;
     color: var(--fg-muted);
     background: var(--bg-elevated);
-    user-select: none;
+    @include interactive-no-select;
   }
 }
 </style>

@@ -116,7 +116,7 @@ const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  user-select: none;
+  @include interactive-no-select;
   cursor: pointer;
 }
 

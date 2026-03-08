@@ -43,3 +43,9 @@ const handleReturnBack = async () => {
   if (fallbackResult.isErr()) reporter.reportError(fallbackResult.error);
 };
 </script>
+
+<style lang="scss" scoped>
+.title {
+  @include interactive-no-select;
+}
+</style>

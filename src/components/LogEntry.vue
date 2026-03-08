@@ -151,6 +151,7 @@ $level-colors: (
 );
 
 .log-entry {
+  @include interactive-no-select;
   width: 100%;
   padding: var(--padding-lg);
   border-radius: var(--border-radius-md);

@@ -175,6 +175,12 @@ $type-colors: (
   }
 }
 
+@mixin interactive-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 @mixin floating-surface {
   background: var(--floating-bg);
   border: var(--floating-border);

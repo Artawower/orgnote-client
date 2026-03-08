@@ -109,6 +109,7 @@ const slots = useSlots();
 button,
 [role='button'] {
   @include flexify(row, v-bind(alignment), center, var(--gap-sm));
+  @include interactive-no-select;
 
   & {
     padding: var(--btn-action-padding);

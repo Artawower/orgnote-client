@@ -86,8 +86,6 @@ defineExpose({
 <style lang="scss" scoped>
 .context-menu-trigger {
   display: contents;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
+  @include interactive-no-select;
 }
 </style>

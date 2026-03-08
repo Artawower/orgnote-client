@@ -115,6 +115,7 @@ const handleNodeClick = (node: T) => {
 }
 
 .app-tree-node {
+  @include interactive-no-select;
   display: flex;
   align-items: center;
   gap: var(--gap-sm);

@@ -74,6 +74,7 @@ const toggle = (): void => {
 
 .spoiler-header {
   & {
+    @include interactive-no-select;
     cursor: pointer;
     min-height: var(--menu-item-height);
     padding: var(--menu-item-padding);

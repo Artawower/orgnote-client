@@ -96,7 +96,7 @@ const handleDragEnd = () => {
     height: var(--tab-height);
     box-sizing: border-box;
     position: relative;
-    user-select: none;
+    @include interactive-no-select;
   }
 
   &:not(.active) {

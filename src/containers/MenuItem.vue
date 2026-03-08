@@ -100,6 +100,7 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 <style lang="scss" scoped>
 .menu-item {
   & {
+    @include interactive-no-select;
     cursor: pointer;
     min-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
     height: auto;

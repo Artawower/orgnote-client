@@ -84,6 +84,7 @@ const emit = defineEmits<{
 
 <style lang="scss" scoped>
 .notification-item {
+  @include interactive-no-select;
   padding: var(--notification-padding);
   border-radius: var(--notification-radius);
   background: var(--notification-bg);

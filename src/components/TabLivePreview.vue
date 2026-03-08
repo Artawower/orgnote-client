@@ -47,6 +47,7 @@ defineEmits<{
 
 <style lang="scss" scoped>
 .preview-container {
+  @include interactive-no-select;
   cursor: pointer;
 }
 
@@ -99,7 +100,7 @@ defineEmits<{
 
 .preview-content {
   pointer-events: none;
-  user-select: none;
+  @include interactive-no-select;
 
   --device-padding-bottom: 0px;
   --title-bar-height: 0px;
