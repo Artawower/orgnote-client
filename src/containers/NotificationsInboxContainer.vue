@@ -1,6 +1,6 @@
 <template>
   <safe-area fit>
-    <container-layout gap="lg" :body-scroll="false">
+    <container-layout gap="lg">
       <app-flex column v-if="notifications.length > 0" gap="md">
         <app-notification
           v-for="(notification, index) in notifications"

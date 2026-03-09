@@ -1,12 +1,12 @@
 <template>
   <safe-area fit>
-    <container-layout gap="lg" :body-scroll="false">
+    <container-layout gap="lg">
       <app-code class="code" :code="systemInfoText" />
 
       <template #footer>
         <card-wrapper>
           <menu-item type="info" @click="safeCopyToClipboard(systemInfoText)">
-            {{ $t(I18N.COPY) }}
+            {{ t(I18N.COPY) }}
           </menu-item>
         </card-wrapper>
       </template>
@@ -24,6 +24,9 @@ import SafeArea from 'src/components/SafeArea.vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
 import { useSystemInfo } from 'src/composables/use-system-info';
 import { I18N } from 'orgnote-api';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const { safeCopyToClipboard } = useInteractiveClipboard();
 const { getTextSystemInfo } = useSystemInfo();
@@ -38,5 +41,6 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .code {
   height: 100%;
+  overflow: auto;
 }
 </style>
