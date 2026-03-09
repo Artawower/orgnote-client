@@ -18,7 +18,7 @@
             outline
             border
             icon="sym_o_refresh"
-            :tooltip="$t(i18n.REFRESH)"
+            :tooltip="t(i18n.REFRESH)"
           />
         </app-flex>
       </template>
@@ -26,9 +26,9 @@
       <template #body>
         <card-wrapper class="extensions-list">
           <app-flex v-if="isLoading" class="loading-container" center align-center>
-            <loading-dots :text="$t(i18n.LOADING)" />
+            <loading-dots :text="t(i18n.LOADING)" />
           </app-flex>
-          <empty-state v-else-if="displayedExtensions.length === 0" :title="$t(emptyMessageKey)" />
+          <empty-state v-else-if="displayedExtensions.length === 0" :title="t(emptyMessageKey)" />
           <extension-item
             v-else
             v-for="ext in displayedExtensions"
@@ -46,10 +46,10 @@
       <template #footer>
         <card-wrapper>
           <menu-item type="info" @click="handleImportExtension" icon="sym_o_upload">
-            {{ $t(i18n.IMPORT_EXTENSION) }}
+            {{ t(i18n.IMPORT_EXTENSION) }}
           </menu-item>
           <menu-item type="info" @click="openInstallFromUrl" icon="sym_o_link">
-            {{ $t(i18n.INSTALL_FROM_URL) }}
+            {{ t(i18n.INSTALL_FROM_URL) }}
           </menu-item>
         </card-wrapper>
       </template>

@@ -6,7 +6,7 @@
           <app-flex gap="md" align="center">
             <app-icon :name="categoryIcon" :color="isActive ? 'green' : 'fg-muted'" size="sm" />
 
-            <app-flex column gap="xs">
+            <app-flex column gap="xs" align-start>
               <app-flex gap="sm" align="center">
                 <monochrome-face>
                   {{ manifest.name }}
