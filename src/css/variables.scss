@@ -361,6 +361,9 @@ body {
   --src-margin-y: var(--margin-md);
 
   --org-list-item-bullet-margin-left: 20px;
+  --org-list-bullet-offset-x: -14px;
+  --org-list-bullet-offset-x-mobile: -10px;
+  --org-list-bullet-scale: 1.6;
 
   // Checkbox
   --checkbox-size: 20px;

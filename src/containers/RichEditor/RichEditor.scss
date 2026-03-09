@@ -98,9 +98,9 @@
         position: relative;
       }
 
-      &:has(.org-embedded-checkbox) {
-        display: flex;
-        align-items: center;
+      .org-embedded-checkbox {
+        display: inline-flex;
+        vertical-align: text-top;
       }
     }
 
