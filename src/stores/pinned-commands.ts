@@ -20,6 +20,7 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.TOGGLE_COMMANDS,
     DefaultCommands.PROJECT_INFO,
     DefaultCommands.SETTINGS,
+    DefaultCommands.OPEN_NOTIFICATIONS,
     DefaultCommands.TOGGLE_SIDEBAR,
   ],
   'right-header': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR],
