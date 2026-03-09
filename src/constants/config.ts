@@ -45,6 +45,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     showUserProfiles: true,
     theme: 'auto',
     darkThemeName: null,
+    showFileTitleBar: true,
     lightThemeName: null,
     enableAnimations: true,
     notificationTimeout: 5000,

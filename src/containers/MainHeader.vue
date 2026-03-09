@@ -16,7 +16,7 @@
         @click="handleNavigation('forward')"
       />
     </template>
-    <template #center>
+    <template v-if="config.ui.showFileTitleBar" #center>
       <span
         class="header-title"
         :title="panes.activeTabTitle"
@@ -52,6 +52,7 @@ import { api } from 'src/boot/api';
 import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import { useTabHistory } from 'src/composables/use-tab-history';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
+import { storeToRefs } from 'pinia';
 
 const pinnedCommandsStore = api.ui.usePinnedCommands();
 const rightCommands = pinnedCommandsStore.getCommands('right-header');
@@ -59,6 +60,7 @@ const fileActionsCommands = pinnedCommandsStore.getCommands('file-actions');
 
 const panes = api.core.usePane();
 const modal = api.ui.useModal();
+const { config } = storeToRefs(api.core.useConfig());
 
 const fileActions = computed<MenuAction[]>(() => {
   return fileActionsCommands.value.map((command) => ({ command }));
