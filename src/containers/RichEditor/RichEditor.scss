@@ -102,6 +102,10 @@
         display: inline-flex;
         vertical-align: text-top;
       }
+
+      &.org-headline-line .org-embedded-checkbox {
+        vertical-align: middle;
+      }
     }
 
     .cm-line:not(.org-src-block-line, .org-headline-line) {
