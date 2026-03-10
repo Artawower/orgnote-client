@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import type { FileMeta, FileMetaStore } from 'orgnote-api';
 import { repositories } from 'src/boot/repositories';
 
-export const useFileMetaStore = defineStore<'fileMeta', FileMetaStore>('fileMeta', () => {
+export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-meta', () => {
   const getById = async (id: string): Promise<FileMeta | undefined> => {
     return repositories.fileRepository.getById(id);
   };

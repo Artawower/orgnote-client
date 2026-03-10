@@ -17,6 +17,7 @@ import { useQueueStore } from 'src/stores/queue';
 import { useFileSystemStore } from 'src/stores/file-system';
 import { api } from 'src/boot/api';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
+import { extractFileTasks } from 'src/utils/extract-file-tasks';
 import { INDEX_QUEUE_ID } from 'src/constants/queue-ids';
 import { logger } from 'src/boot/logger';
 
@@ -156,6 +157,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   const parseFile = (content: string, filePath: string): FileMeta => {
     const root = withMetaInfo(parse(content));
     const orgMeta = root.meta;
+    const tasks = extractFileTasks(root, filePath);
 
     return {
       id: orgMeta.id ?? filePath,
@@ -164,6 +166,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
       description: orgMeta.description,
       tags: orgMeta.fileTags,
       links: orgMeta.connectedNotes ? Object.keys(orgMeta.connectedNotes) : undefined,
+      tasks,
       updatedAt: new Date().toISOString(),
     };
   };
@@ -172,6 +175,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     id: filePath,
     filePath: filePath.split('/').filter(Boolean),
     title: extractOrgTitleFromPath(filePath),
+    tasks: [],
     updatedAt: new Date().toISOString(),
   });
 
@@ -189,6 +193,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     const content = readResult.value;
 
     const meta = content.length > 0 ? parseFile(content, filePath) : createMetaFromPath(filePath);
+
     await removeStaleRecord(meta);
 
     await repositories.fileRepository.save(meta);

@@ -2,6 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useFileSearchStore } from './file-search';
 import type { FileMeta, DiskFile } from 'orgnote-api';
+import type * as OrgModeAst from 'org-mode-ast';
 
 const mockFiles: Map<string, FileMeta> = new Map();
 const mockKeyValue: Map<string, string> = new Map();
@@ -89,13 +90,18 @@ let mockParsedMeta = {
   connectedNotes: { link1: true, link2: true } as Record<string, boolean> | undefined,
 };
 
-vi.mock('org-mode-ast', () => ({
-  parse: vi.fn(() => ({ type: 'root', children: [] })),
-  withMetaInfo: vi.fn((node) => ({
-    ...node,
-    meta: { ...mockParsedMeta },
-  })),
-}));
+vi.mock('org-mode-ast', async (importOriginal) => {
+  const actual = (await importOriginal()) as typeof OrgModeAst;
+
+  return {
+    ...actual,
+    parse: vi.fn((content: string) => actual.parse(content)),
+    withMetaInfo: vi.fn((node) => {
+      node.updateMeta({ ...mockParsedMeta });
+      return node;
+    }),
+  };
+});
 
 beforeEach(() => {
   setActivePinia(createPinia());
