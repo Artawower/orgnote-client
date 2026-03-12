@@ -1,4 +1,5 @@
 import { I18N } from 'orgnote-api';
+import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 
 const buildDefaultMessages = (): Record<string, string> => {
   return Object.values(I18N).reduce<Record<string, string>>((acc, key) => {
@@ -71,6 +72,15 @@ const eng: Record<string, string> = {
 
   [I18N.CLEAR_ALL_NOTIFICATIONS]: 'Clear all',
   [I18N.NO_NOTIFICATIONS]: 'No notifications',
+  [extensionI18nKeys.orgTasksSidebarEmptyTaskLabel]: '(empty task)',
+  [extensionI18nKeys.orgTasksSidebarNoTasksFound]: 'No tasks found',
+  [extensionI18nKeys.orgTasksSidebarShowCompletedTasks]: 'Show completed tasks',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLabel]: 'Last edited',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterAll]: 'All time',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterToday]: 'Today',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterYesterday]: 'Yesterday',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastWeek]: 'Last week',
+  [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastMonth]: 'Last month',
 };
 
 export default eng;
