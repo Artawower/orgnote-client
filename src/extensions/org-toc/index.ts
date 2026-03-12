@@ -13,19 +13,16 @@ const createCommand = (): Command => ({
   },
 });
 
-let registeredCommand: Command | null = null;
-
 export const orgTocExtension: Extension = {
   onMounted: async (api) => {
-    registeredCommand = createCommand();
-    api.core.useCommands().add(registeredCommand);
+    api.core.useCommands().add(createCommand());
     api.ui.usePinnedCommands().addCommand('right-sidebar', COMMAND_NAME);
   },
 
   onUnmounted: async (api) => {
-    if (registeredCommand) {
-      api.core.useCommands().remove(registeredCommand);
-      registeredCommand = null;
+    const command = api.core.useCommands().get(COMMAND_NAME);
+    if (command) {
+      api.core.useCommands().remove(command);
     }
     api.ui.usePinnedCommands().removeCommand('right-sidebar', COMMAND_NAME);
   },
