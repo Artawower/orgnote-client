@@ -77,6 +77,7 @@ const refreshTasksAfterUpdate = async (
   filePath: string,
 ): Promise<void> => {
   const refreshResult = await to(fileSearch.processFile, 'Failed to refresh task index')(filePath);
+
   if (refreshResult.isErr()) {
     reporter.reportError(refreshResult.error);
     return;
@@ -88,16 +89,19 @@ const refreshTasksAfterUpdate = async (
 export const createTaskToggleRunner = (deps: TaskToggleRunnerDeps) => {
   const run = async (node: ToggleableTaskNode): Promise<void> => {
     const content = await readTaskContent(deps.fileContent, node.filePath);
+
     if (content === undefined) {
       return;
     }
 
     const nextContent = buildToggledContent(node, content);
+
     if (!nextContent) {
       return;
     }
 
     const isPersisted = await persistTaskContent(deps.fileContent, node.filePath, nextContent);
+
     if (!isPersisted) {
       return;
     }

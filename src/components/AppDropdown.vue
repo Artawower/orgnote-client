@@ -163,6 +163,16 @@ defineExpose({
     border-radius: var(--card-radius);
     overflow: hidden;
   }
+
+  .vs__dropdown-option {
+    color: var(--vs-dropdown-option-color) !important;
+  }
+
+  .vs__dropdown-option--highlight,
+  .vs__dropdown-option--selected {
+    color: var(--vs-dropdown-option--active-color) !important;
+    background: var(--vs-dropdown-option--active-bg) !important;
+  }
 }
 
 .vs__search,
