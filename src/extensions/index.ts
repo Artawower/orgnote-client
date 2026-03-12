@@ -13,6 +13,7 @@ import { orgKeywordOverlayManifest } from './org-keyword-overlay/manifest';
 import { orgTocManifest } from './org-toc/manifest';
 import { recentfManifest } from './recentf/manifest';
 import { commandHistoryManifest } from './command-history/manifest';
+import { orgTasksSidebarManifest } from './org-tasks-sidebar/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -20,8 +21,7 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
   [orgInlineMarkupManifest.name]: () =>
     import('./org-inline-markup').then((m) => m.orgInlineMarkupExtension),
   [orgTableManifest.name]: () => import('./org-table').then((m) => m.orgTableExtension),
-  [orgSrcBlockManifest.name]: () =>
-    import('./org-src-block').then((m) => m.orgSrcBlockExtension),
+  [orgSrcBlockManifest.name]: () => import('./org-src-block').then((m) => m.orgSrcBlockExtension),
   [orgQuoteBlockManifest.name]: () =>
     import('./org-quote-block').then((m) => m.orgQuoteBlockExtension),
   [orgLatexBlockManifest.name]: () =>
@@ -33,14 +33,15 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
   [orgImageManifest.name]: () => import('./org-image').then((m) => m.orgImageExtension),
   [orgSmartEditingManifest.name]: () =>
     import('./org-smart-editing').then((m) => m.orgSmartEditingExtension),
-  [orgFoldingManifest.name]: () =>
-    import('./org-folding').then((m) => m.orgFoldingExtension),
+  [orgFoldingManifest.name]: () => import('./org-folding').then((m) => m.orgFoldingExtension),
   [orgKeywordOverlayManifest.name]: () =>
     import('./org-keyword-overlay').then((m) => m.orgKeywordOverlayExtension),
   [orgTocManifest.name]: () => import('./org-toc').then((m) => m.orgTocExtension),
   [recentfManifest.name]: () => import('./recentf').then((m) => m.recentfExtension),
   [commandHistoryManifest.name]: () =>
     import('./command-history').then((m) => m.commandHistoryExtension),
+  [orgTasksSidebarManifest.name]: () =>
+    import('./org-tasks-sidebar').then((m) => m.orgTasksSidebarExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -58,4 +59,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgTocManifest, active: true },
   { manifest: recentfManifest, active: true },
   { manifest: commandHistoryManifest, active: true },
+  { manifest: orgTasksSidebarManifest, active: true },
 ];
