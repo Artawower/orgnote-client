@@ -388,6 +388,46 @@ body {
   --checkbox-disabled-opacity: 0.5;
   --checkbox-focus-shadow: 0 0 0 2px var(--accent);
   --checkbox-hover-filter: brightness(0.9);
+
+  // Date Picker
+  --date-picker-bg: var(--bg);
+  --date-picker-fg: var(--fg);
+  --date-picker-border: var(--border-default);
+  --date-picker-radius: var(--border-radius-md);
+  --date-picker-padding: var(--padding-sm);
+  --date-picker-font-size: var(--font-size-sm);
+
+  --date-picker-header-fg: var(--fg-muted);
+  --date-picker-header-font-size: var(--font-size-sm);
+  --date-picker-header-font-weight: var(--font-weight-medium);
+
+  --date-picker-day-size: 32px;
+  --date-picker-day-radius: var(--border-radius-sm);
+  --date-picker-day-fg: var(--fg);
+  --date-picker-day-hover-bg: var(--bg-hover);
+  --date-picker-day-selected-bg: color-mix(in srgb, var(--accent) 85%, var(--bg));
+  --date-picker-day-selected-fg: var(--bg);
+  --date-picker-day-today-border: 1px solid var(--accent);
+  --date-picker-day-disabled-opacity: 0.35;
+  --date-picker-day-outside-opacity: 0.3;
+
+  --date-picker-range-bg: color-mix(in srgb, var(--accent) 12%, transparent);
+  --date-picker-range-edge-radius: var(--border-radius-sm);
+
+  --date-picker-weekday-fg: var(--fg-muted);
+  --date-picker-weekday-font-size: var(--font-size-xs);
+
+  --date-picker-marker-size: 4px;
+  --date-picker-marker-bar-height: 3px;
+  --date-picker-marker-highlight-bg: color-mix(in srgb, var(--accent) 15%, transparent);
+  --date-picker-marker-gap: var(--padding-xs);
+  --date-picker-marker-offset: var(--padding-xs);
+  --date-picker-marker-default-color: var(--accent);
+
+  --date-picker-nav-btn-size: var(--btn-action-sm-size);
+  --date-picker-nav-btn-radius: var(--border-radius-sm);
+  --date-picker-nav-btn-hover-bg: var(--bg-hover);
+  --date-picker-transition: 0.15s ease;
 }
 
 @include desktop-below {
