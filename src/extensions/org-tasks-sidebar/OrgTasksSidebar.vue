@@ -1,51 +1,88 @@
 <template>
-  <div class="org-tasks-sidebar">
-    <app-flex class="tasks-controls" column start align-stretch gap="sm">
-      <app-dropdown
-        v-model="selectedUpdatedAtFilter"
-        :options="updatedAtFilterOptions"
-        option-label="label"
-        option-value="value"
-        :clearable="false"
-        :use-input="false"
-        class="tasks-date-filter"
-      />
+  <app-flex class="org-tasks-sidebar" column start align-stretch gap="sm">
+    <app-flex class="tasks-body" column start align-stretch gap="sm">
+      <app-flex class="tasks-controls" column start align-stretch gap="sm">
+        <app-dropdown
+          v-model="selectedUpdatedAtFilter"
+          :options="updatedAtFilterOptions"
+          option-label="label"
+          option-value="value"
+          :clearable="false"
+          :use-input="false"
+          class="tasks-date-filter"
+        />
 
-      <app-flex class="tasks-filter" start align-center gap="sm">
-        <app-checkbox v-model="includeCompletedTasks" />
-        <span class="tasks-filter-label">
-          {{ t(extensionI18nKeys.orgTasksSidebarShowCompletedTasks) }}
+        <app-flex class="tasks-filter" start align-center gap="sm">
+          <app-checkbox v-model="includeCompletedTasks" />
+          <span class="tasks-filter-label">
+            {{ t(extensionI18nKeys.orgTasksSidebarShowCompletedTasks) }}
+          </span>
+        </app-flex>
+      </app-flex>
+
+      <div class="tasks-content">
+        <div v-if="showEmptyState" class="tasks-empty">
+          {{ t(extensionI18nKeys.orgTasksSidebarNoTasksFound) }}
+        </div>
+        <app-tree v-if="showTree" :nodes="nodes" :selected="selectedId">
+          <template #node="{ node }">
+            <app-flex
+              class="task-node-row"
+              :class="{ done: isTaskDone(node) }"
+              start
+              align-center
+              gap="sm"
+              @click="handleNodeClick(node)"
+            >
+              <app-checkbox
+                v-if="isTaskNode(node)"
+                :model-value="isTaskDone(node)"
+                :disabled="isTaskToggleDisabled(node)"
+                @change="() => handleTaskToggle(node)"
+                @click.stop
+              />
+              <app-icon v-else-if="node.icon" :name="node.icon" size="xs" />
+              <app-flex class="task-node-content" column start align-start>
+                <span class="task-node-label">{{ resolveNodeLabel(node) }}</span>
+              </app-flex>
+            </app-flex>
+          </template>
+        </app-tree>
+      </div>
+    </app-flex>
+
+    <app-flex class="tasks-footer" column start align-stretch>
+      <tasks-sidebar-calendar
+        v-if="isCalendarOpen"
+        v-model="selectedUpdatedAtDate"
+        :clear-label="t(extensionI18nKeys.orgTasksSidebarCalendarClearFilter)"
+        :markers="calendarDateMarkers"
+      />
+      <app-flex
+        class="tasks-calendar-toggle"
+        row
+        between
+        align-center
+        gap="sm"
+        @click="toggleCalendar"
+      >
+        <span class="tasks-calendar-toggle-label">
+          {{ t(extensionI18nKeys.orgTasksSidebarCalendarTitle) }}
         </span>
+        <app-flex row end align-center gap="sm">
+          <app-badge v-if="selectedUpdatedAtDateLabel" variant="accent" size="xs">
+            {{ selectedUpdatedAtDateLabel }}
+          </app-badge>
+          <app-icon
+            :name="isCalendarOpen ? 'sym_o_keyboard_arrow_down' : 'sym_o_keyboard_arrow_up'"
+            size="sm"
+            color="fg-muted"
+            class="tasks-calendar-toggle-icon"
+          />
+        </app-flex>
       </app-flex>
     </app-flex>
-    <div v-if="showEmptyState" class="tasks-empty">
-      {{ t(extensionI18nKeys.orgTasksSidebarNoTasksFound) }}
-    </div>
-    <app-tree v-if="showTree" :nodes="nodes" :selected="selectedId">
-      <template #node="{ node }">
-        <app-flex
-          class="task-node-row"
-          :class="{ done: isTaskDone(node) }"
-          start
-          align-center
-          gap="sm"
-          @click="handleNodeClick(node)"
-        >
-          <app-checkbox
-            v-if="isTaskNode(node)"
-            :model-value="isTaskDone(node)"
-            :disabled="isTaskToggleDisabled(node)"
-            @change="() => handleTaskToggle(node)"
-            @click.stop
-          />
-          <app-icon v-else-if="node.icon" :name="node.icon" size="xs" />
-          <app-flex class="task-node-content" column start align-start>
-            <span class="task-node-label">{{ resolveNodeLabel(node) }}</span>
-          </app-flex>
-        </app-flex>
-      </template>
-    </app-tree>
-  </div>
+  </app-flex>
 </template>
 
 <script lang="ts" setup>
@@ -58,11 +95,18 @@ import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import AppTree from 'src/components/AppTree.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
+import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from 'src/utils/debounce';
-import { buildTasksTree, type TaskTreeNode, type UpdatedAtFilter } from './task-tree';
+import TasksSidebarCalendar from './TasksSidebarCalendar.vue';
+import {
+  buildTaskDateMarkers,
+  buildTasksTree,
+  type TaskTreeNode,
+  type UpdatedAtFilter,
+} from './task-tree';
 import { isOrgTaskRelatedChange } from './refresh-trigger';
 import { createTaskToggleRunner, type ToggleableTaskNode } from './task-toggle-runner';
 import { useI18n } from 'vue-i18n';
@@ -79,6 +123,8 @@ const selectedId = ref<string | number>();
 const nodes = ref<TaskTreeNode[]>([]);
 const filesWithTasks = ref<FileMeta[]>([]);
 const includeCompletedTasks = ref(true);
+const selectedUpdatedAtDate = ref<string>();
+const isCalendarOpen = ref(false);
 const fileMeta = api.core.useFileMeta();
 const commands = api.core.useCommands();
 const rightSidebar = api.ui.useRightSidebar();
@@ -110,13 +156,42 @@ const updatedAtFilterOptions = computed<UpdatedAtFilterOption[]>(() => {
     { value: 'last-month', label: t(extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastMonth) },
   ];
 });
+
 const selectedUpdatedAtFilter = ref<UpdatedAtFilterOption>(updatedAtFilterOptions.value[0]!);
+
+const calendarDateMarkers = computed(() => {
+  return buildTaskDateMarkers(filesWithTasks.value, {
+    includeCompletedTasks: includeCompletedTasks.value,
+    updatedAtFilter: selectedUpdatedAtFilter.value.value,
+  });
+});
+
+const selectedUpdatedAtDateLabel = computed(() => {
+  if (!selectedUpdatedAtDate.value) {
+    return undefined;
+  }
+
+  return formatSelectedDateLabel(selectedUpdatedAtDate.value);
+});
 
 const rebuildTree = (): void => {
   nodes.value = buildTasksTree(filesWithTasks.value, {
     includeCompletedTasks: includeCompletedTasks.value,
     updatedAtFilter: selectedUpdatedAtFilter.value.value,
+    selectedUpdatedAtDate: selectedUpdatedAtDate.value,
   });
+};
+
+const formatSelectedDateLabel = (value: string): string => {
+  const [yearPart, monthPart, dayPart] = value.split('/').map(Number);
+  const year = yearPart ?? 0;
+  const month = monthPart ?? 1;
+  const day = dayPart ?? 1;
+  return new Date(year, month - 1, day).toLocaleDateString();
+};
+
+const toggleCalendar = (): void => {
+  isCalendarOpen.value = !isCalendarOpen.value;
 };
 
 const isTaskNode = (node: TaskTreeNode): boolean => node.kind === 'task';
@@ -255,6 +330,7 @@ watch(opened, reloadTasksIfOpened, { immediate: true });
 watch(isIndexing, reloadTasksAfterIndexing);
 watch(includeCompletedTasks, rebuildTree);
 watch(selectedUpdatedAtFilter, rebuildTree);
+watch(selectedUpdatedAtDate, rebuildTree);
 watch(updatedAtFilterOptions, (options) => {
   const currentValue = selectedUpdatedAtFilter.value?.value;
   selectedUpdatedAtFilter.value =
@@ -267,7 +343,19 @@ onUnmounted(stopWatchingFileChanges);
 <style lang="scss" scoped>
 .org-tasks-sidebar {
   @include fit;
+  min-height: 0;
   padding: var(--padding-md);
+  overflow: hidden;
+}
+
+.tasks-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.tasks-content {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -292,6 +380,22 @@ onUnmounted(stopWatchingFileChanges);
 
 .tasks-date-filter {
   width: 100%;
+}
+
+.tasks-calendar-toggle {
+  width: 100%;
+  min-height: var(--menu-item-height-sm);
+  padding: var(--padding-sm) 0;
+  cursor: pointer;
+}
+
+.tasks-calendar-toggle-label {
+  @include fontify(
+    var(--font-size-md),
+    var(--font-weight-medium),
+    var(--fg),
+    var(--line-height-normal)
+  );
 }
 
 .task-node-row {

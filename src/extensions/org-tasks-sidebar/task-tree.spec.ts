@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import type { FileMeta } from 'orgnote-api';
-import { buildTasksTree } from './task-tree';
+import { buildTaskDateMarkers, buildTasksTree } from './task-tree';
 
 test('buildTasksTree groups tasks by file and filters files without tasks', () => {
   const files: FileMeta[] = [
@@ -238,4 +238,68 @@ test('buildTasksTree filters files by last week', () => {
   const tree = buildTasksTree(files, { updatedAtFilter: 'last-week', now });
 
   expect(tree.map((node) => node.id)).toEqual(['file:recent-file']);
+});
+
+test('buildTasksTree filters files by exact updatedAt calendar date', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'selected-file',
+      filePath: ['notes', 'selected.org'],
+      title: 'Selected',
+      updatedAt: '2026-03-12T08:00:00',
+      tasks: [{ id: 'task-1', kind: 'headline-todo', state: 'todo', text: 'Selected task' }],
+    },
+    {
+      id: 'other-file',
+      filePath: ['notes', 'other.org'],
+      title: 'Other',
+      updatedAt: '2026-03-13T08:00:00',
+      tasks: [{ id: 'task-2', kind: 'headline-todo', state: 'todo', text: 'Other task' }],
+    },
+  ];
+
+  const tree = buildTasksTree(files, { selectedUpdatedAtDate: '2026/03/12' });
+
+  expect(tree.map((node) => node.id)).toEqual(['file:selected-file']);
+});
+
+test('buildTaskDateMarkers returns unique updatedAt dates with visible tasks', () => {
+  const now = new Date('2026-03-14T12:00:00');
+  const files: FileMeta[] = [
+    {
+      id: 'first',
+      filePath: ['notes', 'first.org'],
+      updatedAt: '2026-03-12T08:00:00',
+      tasks: [{ id: 'task-1', kind: 'headline-todo', state: 'todo', text: 'Task 1' }],
+    },
+    {
+      id: 'second',
+      filePath: ['notes', 'second.org'],
+      updatedAt: '2026-03-12T09:00:00',
+      tasks: [{ id: 'task-2', kind: 'headline-todo', state: 'todo', text: 'Task 2' }],
+    },
+    {
+      id: 'done-only',
+      filePath: ['notes', 'done.org'],
+      updatedAt: '2026-03-13T08:00:00',
+      tasks: [{ id: 'task-3', kind: 'headline-todo', state: 'done', text: 'Done task' }],
+    },
+    {
+      id: 'recent',
+      filePath: ['notes', 'recent.org'],
+      updatedAt: '2026-03-14T08:00:00',
+      tasks: [{ id: 'task-4', kind: 'headline-todo', state: 'todo', text: 'Recent task' }],
+    },
+  ];
+
+  const markers = buildTaskDateMarkers(files, {
+    includeCompletedTasks: false,
+    updatedAtFilter: 'last-week',
+    now,
+  });
+
+  expect(markers).toEqual([
+    { date: '2026/03/12', color: 'accent' },
+    { date: '2026/03/14', color: 'accent' },
+  ]);
 });

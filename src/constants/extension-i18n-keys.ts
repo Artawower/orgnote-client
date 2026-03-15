@@ -8,4 +8,6 @@ export const extensionI18nKeys = {
   orgTasksSidebarUpdatedAtFilterYesterday: 'extensions.orgTasksSidebar.updatedAtFilter.yesterday',
   orgTasksSidebarUpdatedAtFilterLastWeek: 'extensions.orgTasksSidebar.updatedAtFilter.lastWeek',
   orgTasksSidebarUpdatedAtFilterLastMonth: 'extensions.orgTasksSidebar.updatedAtFilter.lastMonth',
+  orgTasksSidebarCalendarTitle: 'extensions.orgTasksSidebar.calendar.title',
+  orgTasksSidebarCalendarClearFilter: 'extensions.orgTasksSidebar.calendar.clearFilter',
 } as const;

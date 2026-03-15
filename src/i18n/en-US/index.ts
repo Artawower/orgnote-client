@@ -81,6 +81,8 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterYesterday]: 'Yesterday',
   [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastWeek]: 'Last week',
   [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastMonth]: 'Last month',
+  [extensionI18nKeys.orgTasksSidebarCalendarTitle]: 'Browse by date',
+  [extensionI18nKeys.orgTasksSidebarCalendarClearFilter]: 'Show all dates',
 };
 
 export default eng;

@@ -1,4 +1,5 @@
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
+import type { DateMarker } from 'src/models/date-picker';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 
 export interface TaskTreeNode extends Record<string, unknown> {
@@ -20,6 +21,7 @@ export type UpdatedAtFilter = 'all' | 'today' | 'yesterday' | 'last-week' | 'las
 interface BuildTasksTreeOptions {
   includeCompletedTasks?: boolean;
   updatedAtFilter?: UpdatedAtFilter;
+  selectedUpdatedAtDate?: string;
   now?: Date;
 }
 
@@ -31,6 +33,7 @@ const taskIcons = {
   done: 'sym_o_check_box',
   todo: 'sym_o_check_box_outline_blank',
 } as const;
+const calendarMarkerColor = 'accent';
 
 const resolveAbsoluteFilePath = (file: FileMeta): string => join('/', ...file.filePath);
 
@@ -88,6 +91,37 @@ const parseDate = (value: string | undefined): Date | undefined => {
   return Number.isNaN(date.getTime()) ? undefined : date;
 };
 
+const formatCalendarDate = (date: Date): string => {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}/${month}/${day}`;
+};
+
+const resolveCalendarDate = (value: string | undefined): string | undefined => {
+  const date = parseDate(value);
+  if (!date) {
+    return undefined;
+  }
+
+  return formatCalendarDate(date);
+};
+
+const matchesSelectedUpdatedAtDate = (
+  updatedAt: string | undefined,
+  selectedDate: string | undefined,
+): boolean => {
+  if (!selectedDate) {
+    return true;
+  }
+
+  return resolveCalendarDate(updatedAt) === selectedDate;
+};
+
+const resolveVisibleTasks = (file: FileMeta, includeCompletedTasks: boolean): FileTask[] => {
+  return (file.tasks ?? []).filter((task) => includeCompletedTasks || task.state !== 'done');
+};
+
 const filterPredicates: Record<NonAllUpdatedAtFilter, UpdatedAtPredicate> = {
   today: (date, now) => isSameDay(date, now),
   yesterday: (date, now) => {
@@ -122,12 +156,17 @@ const createFileNode = (
 ): TaskTreeNode | undefined => {
   const includeCompletedTasks = options.includeCompletedTasks ?? true;
   const updatedAtFilter = options.updatedAtFilter ?? 'all';
+  const selectedUpdatedAtDate = options.selectedUpdatedAtDate;
   const now = options.now ?? new Date();
   if (!matchesUpdatedAtFilter(file.updatedAt, updatedAtFilter, now)) {
     return undefined;
   }
 
-  const tasks = (file.tasks ?? []).filter((task) => includeCompletedTasks || task.state !== 'done');
+  if (!matchesSelectedUpdatedAtDate(file.updatedAt, selectedUpdatedAtDate)) {
+    return undefined;
+  }
+
+  const tasks = resolveVisibleTasks(file, includeCompletedTasks);
   if (tasks.length === 0) {
     return undefined;
   }
@@ -164,4 +203,32 @@ export const buildTasksTree = (
     .map((file) => createFileNode(file, options))
     .filter((node): node is TaskTreeNode => node !== undefined)
     .sort(compareFilesByLastUpdated);
+};
+
+export const buildTaskDateMarkers = (
+  files: FileMeta[],
+  options: Omit<BuildTasksTreeOptions, 'selectedUpdatedAtDate'> = {},
+): DateMarker[] => {
+  const includeCompletedTasks = options.includeCompletedTasks ?? true;
+  const updatedAtFilter = options.updatedAtFilter ?? 'all';
+  const now = options.now ?? new Date();
+  const seenDates = new Set<string>();
+
+  return files.reduce<DateMarker[]>((markers, file) => {
+    if (
+      !matchesUpdatedAtFilter(file.updatedAt, updatedAtFilter, now) ||
+      resolveVisibleTasks(file, includeCompletedTasks).length === 0
+    ) {
+      return markers;
+    }
+
+    const date = resolveCalendarDate(file.updatedAt);
+    if (!date || seenDates.has(date)) {
+      return markers;
+    }
+
+    seenDates.add(date);
+    markers.push({ date, color: calendarMarkerColor });
+    return markers;
+  }, []);
 };
