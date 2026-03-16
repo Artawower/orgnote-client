@@ -1115,6 +1115,7 @@ When you receive a task, BEFORE starting work:
 -   **NEVER use any type** - use `unknown` and narrow with type guards
 -   **ESLint rules IMMUTABLE** - disabling rules prohibited without explicit approval
 -   **Type inference** - let TypeScript infer when obvious, annotate when ambiguous
+-   **Case rules** -  always use **camelCase** for locale constants, **SCREAMING<sub>SNAKE</sub><sub>CASE</sub>** for exported constants
 
 
 ## Null vs Undefined Convention
@@ -1359,6 +1360,7 @@ When you receive a task, BEFORE starting work:
 -   **Theme support** - dark/light mode via CSS custom properties
 -   **Responsive** - mobile-first breakpoints
 -   **Mixins** Always use mixins when possible `src/css/mixins.scss`
+-   **Never** use BEM! Vuejs already provides scoped styles!
 
 
 # Internationalization (i18n)
