@@ -27,6 +27,7 @@ const eng: Record<string, string> = {
   [I18N.RELOAD]: 'Reload',
   [I18N.COPY_LOG]: 'Copy Log',
   [I18N.BACK_HOME]: 'Back to Home',
+  [I18N.INVALID_DATE]: 'Invalid Date',
   [I18N.ERROR_DETAILS]: 'Error Details',
   [I18N.NO_ERRORS]: 'No errors recorded',
   [I18N.BOOT_ERRORS]: 'Boot Errors (Fallback)',

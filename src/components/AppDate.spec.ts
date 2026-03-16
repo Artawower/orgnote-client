@@ -1,12 +1,43 @@
 import { mount } from '@vue/test-utils';
 import { expect, test } from 'vitest';
+import { defineComponent } from 'vue';
+import { i18n } from 'src/boot/i18n';
 import AppDate from './AppDate.vue';
+
+const InlineDateTokenStub = defineComponent({
+  props: {
+    editable: {
+      type: Boolean,
+      default: false,
+    },
+    monospace: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['activate'],
+  template: `
+    <span
+      class="app-date"
+      :class="{ editable, monospace }"
+      @click="$emit('activate')"
+    >
+      <slot />
+    </span>
+  `,
+});
 
 const createWrapper = (props: Record<string, unknown> = {}) =>
   mount(AppDate, {
     props: {
       date: new Date('2023-01-01T12:00:00.000Z'),
       ...props,
+    },
+    global: {
+      plugins: [i18n],
+      stubs: {
+        InlineDateToken: InlineDateTokenStub,
+      },
     },
   });
 
@@ -45,4 +76,10 @@ test('AppDate handles timestamp input', () => {
   const timestamp = 1672574400000;
   const wrapper = createWrapper({ date: timestamp, format: 'iso' });
   expect(wrapper.text()).toBe('2023-01-01T12:00:00.000Z');
+});
+
+test('AppDate emits open when editable and clicked', async () => {
+  const wrapper = createWrapper({ editable: true });
+  await wrapper.find('.app-date').trigger('click');
+  expect(wrapper.emitted('open')).toEqual([[]]);
 });

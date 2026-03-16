@@ -10,6 +10,7 @@ import {
   isCheckboxListItem,
   isToggleableNode,
 } from './org-ast';
+import { formatOrgDate } from './org-date';
 
 type NodeMatcher = (node: OrgNode) => boolean;
 
@@ -102,16 +103,11 @@ const toggleLinePrefix = (
   const node = findNodeAtLine(orgNode, lineStart);
   const ctx: ToggleContext = { view, node, template, lineEnd };
 
-  const handled =
-    tryRemovePrefix(ctx, matcher) || tryReplacePrefix(ctx) || insertPrefix(ctx);
-  void handled;
-};
+  if (tryRemovePrefix(ctx, matcher) || tryReplacePrefix(ctx)) {
+    return;
+  }
 
-const formatDatetime = (): string => {
-  const now = new Date();
-  const weekDay = now.toLocaleDateString('default', { weekday: 'short' });
-  const dateStr = now.toISOString().split('T')[0];
-  return `<${dateStr} ${weekDay}> `;
+  insertPrefix(ctx);
 };
 
 export const createOrgEditing = (view: EditorView, orgNode?: OrgNode) => ({
@@ -190,5 +186,6 @@ export const createOrgEditing = (view: EditorView, orgNode?: OrgNode) => ({
 
   insertTable: () => insertTemplate(view, { template: '\n| ' }),
 
-  insertDatetime: () => insertTemplate(view, { template: formatDatetime() }),
+  insertDatetime: () =>
+    insertTemplate(view, { template: formatOrgDate(new Date(), { trailingSpace: true }) }),
 });
