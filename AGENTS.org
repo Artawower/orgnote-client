@@ -33,6 +33,7 @@ OrgNote is a cross-platform note-taking application providing full Emacs Org mod
 - *NEVER use any type* - use =unknown= and narrow with type guards
 - *ESLint rules IMMUTABLE* - disabling rules prohibited without explicit approval
 - *Type inference* - let TypeScript infer when obvious, annotate when ambiguous
+- *Case rules* -  always use *camelCase* for locale constants, *SCREAMING_SNAKE_CASE* for exported constants
 
 ** Null vs Undefined Convention
 *PREFER =undefined= over =null= throughout application:*
