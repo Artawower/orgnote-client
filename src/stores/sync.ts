@@ -1,14 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { SyncStore, SyncPlan, SyncStateData, FileSystem } from 'orgnote-api';
-import {
-  createPlan,
-  fetchRemoteChanges,
-  scanLocalFiles,
-  findDeletedLocally,
-  recoverState,
-  getOldestSyncedAt,
-} from 'orgnote-api';
+import { createSyncPlan, recoverState } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { sdk } from 'src/boot/axios';
 import { createSyncState } from 'src/utils/sync-state';
@@ -16,8 +9,11 @@ import { to } from 'orgnote-api/utils';
 import { enqueuePlanOperations, isPlanEmpty } from 'src/infrastructure/sync';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { api } from 'src/boot/api';
+import axios from 'axios';
 
 const httpUpgradeRequired = 426;
+const rootPath = '/';
+const contentHashCheckEnabled = true;
 
 export const useSyncStore = defineStore<'sync', SyncStore>(
   'sync',
@@ -39,29 +35,8 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       );
     };
 
-    const buildSyncPlan = async (
-      fs: FileSystem,
-    ): Promise<{ plan: SyncPlan; serverTime: string }> => {
-      const stateSnapshot = await state.get();
-      const since = getOldestSyncedAt(stateSnapshot);
-      const { files: remoteFiles, serverTime } = await fetchRemoteChanges(sdk.sync, since);
-      const localFiles = await scanLocalFiles(fs, '/');
-      const deletedLocally = findDeletedLocally(localFiles, stateSnapshot);
-
-      const plan = createPlan({
-        localFiles,
-        deletedLocally,
-        remoteFiles,
-        stateData: stateSnapshot,
-        serverTime,
-      });
-
-      return { plan, serverTime };
-    };
-
     const isVersionError = (error: Error): boolean => {
-      const axiosError = error as { response?: { status?: number } };
-      return axiosError.response?.status === httpUpgradeRequired;
+      return axios.isAxiosError(error) && error.response?.status === httpUpgradeRequired;
     };
 
     const handleSyncError = (error: Error): null => {
@@ -69,6 +44,7 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
         isVersionIncompatible.value = true;
         return null;
       }
+
       reporter.reportError(error);
       return null;
     };
@@ -77,12 +53,17 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       const recoverResult = await to(recoverState)(state);
       if (recoverResult.isErr()) return handleSyncError(recoverResult.error);
 
-      const planResult = await to(buildSyncPlan)(fs.value);
+      const planResult = await to(createSyncPlan)({
+        fs: fs.value,
+        api: sdk.sync,
+        state,
+        rootPath: rootPath,
+        enableContentHashCheck: contentHashCheckEnabled,
+      });
       if (planResult.isErr()) return handleSyncError(planResult.error);
 
-      const { plan } = planResult.value;
-      currentPlan.value = plan;
-      return plan;
+      currentPlan.value = planResult.value;
+      return planResult.value;
     };
 
     const executePlan = async (plan: SyncPlan): Promise<void> => {

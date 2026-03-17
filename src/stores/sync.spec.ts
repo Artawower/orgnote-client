@@ -5,11 +5,7 @@ import type { SyncPlan } from 'orgnote-api';
 const mockEnqueuePlanOperations = vi.fn();
 const mockIsPlanEmpty = vi.fn();
 const mockRecoverState = vi.fn(async () => undefined);
-const mockFetchRemoteChanges = vi.fn();
-const mockScanLocalFiles = vi.fn();
-const mockFindDeletedLocally = vi.fn();
-const mockCreatePlan = vi.fn();
-const mockGetOldestSyncedAt = vi.fn(() => undefined);
+const mockCreateSyncPlan = vi.fn();
 const mockReportError = vi.fn();
 
 let mockUserActive: string | undefined = 'pro';
@@ -40,11 +36,7 @@ vi.mock('src/infrastructure/sync', () => ({
 vi.mock('orgnote-api', async () => {
   return {
     recoverState: mockRecoverState,
-    fetchRemoteChanges: mockFetchRemoteChanges,
-    scanLocalFiles: mockScanLocalFiles,
-    findDeletedLocally: mockFindDeletedLocally,
-    createPlan: mockCreatePlan,
-    getOldestSyncedAt: mockGetOldestSyncedAt,
+    createSyncPlan: mockCreateSyncPlan,
   };
 });
 
@@ -116,10 +108,7 @@ test('sync does not create plan when user.active is empty string', async () => {
 
 test('sync proceeds to plan creation when user is active and sync type is api', async () => {
   mockRecoverState.mockResolvedValueOnce(undefined);
-  mockFetchRemoteChanges.mockResolvedValueOnce({ files: [], serverTime: '2024-01-01T00:00:00Z' });
-  mockScanLocalFiles.mockResolvedValueOnce([]);
-  mockFindDeletedLocally.mockReturnValueOnce([]);
-  mockCreatePlan.mockReturnValueOnce(createNonEmptyPlan());
+  mockCreateSyncPlan.mockResolvedValueOnce(createNonEmptyPlan());
   mockIsPlanEmpty.mockReturnValueOnce(false);
 
   const { useSyncStore } = await import('./sync');
@@ -128,15 +117,18 @@ test('sync proceeds to plan creation when user is active and sync type is api', 
   await store.sync();
 
   expect(mockRecoverState).toHaveBeenCalled();
+  expect(mockCreateSyncPlan).toHaveBeenCalledWith(
+    expect.objectContaining({
+      rootPath: '/',
+      enableContentHashCheck: true,
+    }),
+  );
   expect(mockEnqueuePlanOperations).toHaveBeenCalled();
 });
 
 test('sync skips executePlan when plan is empty', async () => {
   mockRecoverState.mockResolvedValueOnce(undefined);
-  mockFetchRemoteChanges.mockResolvedValueOnce({ files: [], serverTime: '2024-01-01T00:00:00Z' });
-  mockScanLocalFiles.mockResolvedValueOnce([]);
-  mockFindDeletedLocally.mockReturnValueOnce([]);
-  mockCreatePlan.mockReturnValueOnce(createEmptyPlan());
+  mockCreateSyncPlan.mockResolvedValueOnce(createEmptyPlan());
   mockIsPlanEmpty.mockReturnValueOnce(true);
 
   const { useSyncStore } = await import('./sync');
@@ -151,10 +143,7 @@ test('sync stores plan in currentPlan before execution', async () => {
   const plan = createNonEmptyPlan();
 
   mockRecoverState.mockResolvedValueOnce(undefined);
-  mockFetchRemoteChanges.mockResolvedValueOnce({ files: [], serverTime: plan.serverTime });
-  mockScanLocalFiles.mockResolvedValueOnce([]);
-  mockFindDeletedLocally.mockReturnValueOnce([]);
-  mockCreatePlan.mockReturnValueOnce(plan);
+  mockCreateSyncPlan.mockResolvedValueOnce(plan);
   mockIsPlanEmpty.mockReturnValueOnce(false);
   mockEnqueuePlanOperations.mockImplementation(() => undefined);
 
@@ -169,6 +158,20 @@ test('sync stores plan in currentPlan before execution', async () => {
 test('sync reports error and returns null plan when recoverState fails', async () => {
   const error = new Error('state recovery failed');
   mockRecoverState.mockRejectedValueOnce(error);
+
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+
+  expect(mockReportError).toHaveBeenCalledWith(error);
+  expect(mockEnqueuePlanOperations).not.toHaveBeenCalled();
+});
+
+test('sync reports error and returns null plan when createSyncPlan fails', async () => {
+  const error = new Error('plan creation failed');
+  mockRecoverState.mockResolvedValueOnce(undefined);
+  mockCreateSyncPlan.mockRejectedValueOnce(error);
 
   const { useSyncStore } = await import('./sync');
   const store = useSyncStore();

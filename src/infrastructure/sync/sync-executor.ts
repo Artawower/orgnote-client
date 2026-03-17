@@ -1,14 +1,10 @@
-import type {
-  SyncExecutor,
-  LocalFile,
-  RemoteFile,
-  FileSystem,
-  UploadResult,
-} from 'orgnote-api';
+import type { SyncExecutor, LocalFile, RemoteFile, FileSystem, UploadResult } from 'orgnote-api';
 import type { VersionConflictResponse } from 'orgnote-api/remote-api';
 import { sdk } from 'src/boot/axios';
 import axios, { type AxiosError } from 'axios';
 import { to } from 'orgnote-api/utils';
+
+const fallbackFilename = 'file';
 
 const isConflictError = (error: unknown): error is AxiosError<VersionConflictResponse> =>
   axios.isAxiosError(error) && error.response?.status === 409;
@@ -20,8 +16,13 @@ const uploadFile =
   (fs: FileSystem) =>
   async (file: LocalFile, expectedVersion?: number): Promise<UploadResult> => {
     const content = await fs.readFile(file.path, 'binary');
-    const blob = new File([content], file.path.split('/').pop() ?? 'file');
-    const result = await to(sdk.sync.syncFilesPut)(file.path, blob, undefined, expectedVersion);
+    const blob = new File([content], file.path.split('/').pop() ?? fallbackFilename);
+    const result = await to(sdk.sync.syncFilesPut)(
+      file.path,
+      blob,
+      file.contentHash,
+      expectedVersion,
+    );
 
     if (result.isOk()) {
       return { status: 'ok', version: result.value.data.data?.version ?? 1 };
