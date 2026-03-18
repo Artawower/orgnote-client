@@ -75,6 +75,7 @@ import { useFileMetaStore } from 'src/stores/file-meta';
 import { useFontStore } from 'src/stores/fonts';
 import { wsClient } from 'src/infrastructure/websocket-client';
 import { useFileContent } from 'src/composables/use-file-content';
+import { useAppResume } from 'src/composables/use-app-resume';
 
 let api: OrgNoteApi;
 async function initApi(app: App, router: Router): Promise<void> {
@@ -149,6 +150,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       stringifyToml,
 
       buildOrgNoteUrl,
+      useAppResume,
     },
     ui: {
       useFonts: useFontStore,
