@@ -25,14 +25,14 @@
           {{ t(extensionI18nKeys.orgTasksSidebarNoTasksFound) }}
         </div>
         <app-tree v-if="showTree" :nodes="nodes" :selected="selectedId">
-          <template #node="{ node }">
+          <template #node="{ node, toggle }">
             <app-flex
               class="task-node-row"
               :class="{ done: isTaskDone(node) }"
               start
               align-center
               gap="sm"
-              @click="handleNodeClick(node)"
+              @click="handleNodeClick(node, toggle)"
             >
               <app-checkbox
                 v-if="isTaskNode(node)"
@@ -263,9 +263,10 @@ const stopWatchingFileChanges = (): void => {
   scheduleReloadTasks.cancel();
 };
 
-const handleNodeClick = async (node: TaskTreeNode): Promise<void> => {
+const handleNodeClick = async (node: TaskTreeNode, toggle?: () => void): Promise<void> => {
   selectedId.value = node.id;
   if (!isTaskNode(node) || !node.filePath) {
+    toggle?.();
     return;
   }
   const openResult = await to(() =>
@@ -399,8 +400,10 @@ onUnmounted(stopWatchingFileChanges);
 }
 
 .task-node-row {
+  @include interactive-no-select;
   width: 100%;
   min-height: var(--menu-item-height-sm);
+  cursor: pointer;
 }
 
 .task-node-content {

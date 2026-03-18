@@ -1,5 +1,6 @@
 <template>
   <q-tree
+    ref="treeRef"
     class="app-tree"
     :nodes="nodes"
     :node-key="nodeKey"
@@ -12,7 +13,12 @@
     @lazy-load="$emit('lazyLoad', $event)"
   >
     <template #default-header="scope">
-      <slot name="node" :node="scope.node">
+      <slot
+        name="node"
+        :node="scope.node"
+        :expanded="scope.expanded"
+        :toggle="() => scope.tree.setExpanded(scope.key, !scope.tree.isExpanded(scope.key))"
+      >
         <div
           class="app-tree-node"
           :class="{ active: scope.node[nodeKey] === selected }"
@@ -27,7 +33,11 @@
 </template>
 
 <script lang="ts" setup generic="T extends Record<string, unknown>">
+import { ref } from 'vue';
+import { QTree } from 'quasar';
 import AppIcon from './AppIcon.vue';
+
+const treeRef = ref<InstanceType<typeof QTree> | null>(null);
 
 const props = withDefaults(
   defineProps<{
@@ -64,10 +74,18 @@ const handleSelectedUpdate = (value: unknown) => {
   emit('update:selected', normalizeSelection(value));
 };
 
+const toggleNodeExpansion = (node: T): void => {
+  const key = node[props.nodeKey];
+  if (!treeRef.value || (typeof key !== 'string' && typeof key !== 'number')) return;
+  const stringKey = String(key);
+  treeRef.value.setExpanded(stringKey, !treeRef.value.isExpanded(stringKey));
+};
+
 const handleNodeClick = (node: T) => {
   const value = node[props.nodeKey];
   handleSelectedUpdate(value);
   emit('nodeClick', node);
+  toggleNodeExpansion(node);
 };
 </script>
 
