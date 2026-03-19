@@ -26,15 +26,21 @@ export class BaseOrgWidget extends WidgetType {
   }
 
   protected updateValue(newVal: string): void {
-    const updateSchema = this.embeddedWidget.viewUpdater?.(this.orgNode, newVal);
+    const cursorPosition = this.view.state.selection.main.head;
+    const changes = this.embeddedWidget.viewUpdater?.(this.orgNode, newVal) ?? {
+      from: this.orgNode.start,
+      to: this.orgNode.end,
+      insert: newVal,
+    };
+
+    const mappedCursor = this.view.state.changes(changes).mapPos(cursorPosition);
 
     this.view.dispatch({
-      changes: updateSchema ?? {
-        from: this.orgNode.start,
-        to: this.orgNode.end,
-        insert: newVal,
-      },
+      changes,
+      selection: { anchor: mappedCursor },
     });
+
+    this.view.focus();
   }
 
   public override ignoreEvent(): boolean {
