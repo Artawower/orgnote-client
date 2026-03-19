@@ -13,6 +13,14 @@ import {
 } from '../facets';
 import { findHighestPriorityWidget } from '../utils';
 
+const isNodeOnActiveLine = (view: EditorView, node: OrgNode, caretPosition: number): boolean => {
+  const activeLine = view.state.doc.lineAt(caretPosition);
+  const clampedStart = Math.min(node.start, view.state.doc.length);
+  const nodeLine = view.state.doc.lineAt(clampedStart);
+
+  return activeLine.number === nodeLine.number;
+};
+
 const buildDecorations = (
   view: EditorView,
   inlineWidgets: InlineEmbeddedWidgets,
@@ -42,6 +50,10 @@ const buildDecorations = (
     if (!inlineWidget) return false;
 
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
+
+    if (view.hasFocus && inlineWidget.hideOnActiveLine && isNodeOnActiveLine(view, n, caretPosition)) {
+      return false;
+    }
 
     if (
       view.hasFocus &&

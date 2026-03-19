@@ -165,16 +165,6 @@
   }
 
   &.hide-special-symbols .cm-editor {
-    .org-bold,
-    .org-italic,
-    .org-verbatim,
-    .org-inline-code,
-    .org-crossed {
-      &.org-operator {
-        @include cm-hidden;
-      }
-    }
-
     @for $i from 1 through 12 {
       .cm-line.org-headline-#{$i}:not(.cm-activeLine) {
         .org-headline-#{$i}.org-operator {

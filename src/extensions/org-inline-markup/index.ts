@@ -17,6 +17,19 @@ import {
 } from 'src/components/org-nodes';
 import styles from './styles.css?raw';
 
+const markupParentTypes = [
+  NodeType.Bold,
+  NodeType.Italic,
+  NodeType.Verbatim,
+  NodeType.InlineCode,
+  NodeType.Crossed,
+  NodeType.Underline,
+] as const;
+
+const isMarkupOperator = (orgNode: OrgNode): boolean =>
+  orgNode.is(NodeType.Operator) &&
+  markupParentTypes.some((nodeType) => orgNode.parent?.is(nodeType));
+
 const inlineWidgets: WidgetMeta[] = [
   {
     id: 'inline-todo-keyword',
@@ -114,6 +127,16 @@ const inlineWidgets: WidgetMeta[] = [
       params.wrap.classList.add('org-list-bullet');
       return { destroy: () => {} };
     },
+  },
+  {
+    id: 'inline-markup-operator',
+    type: WidgetType.Inline,
+    nodeType: NodeType.Operator,
+    decorationType: 'replace',
+    ignoreEvent: true,
+    hideOnActiveLine: true,
+    satisfied: isMarkupOperator,
+    component: OrgInvisible,
   },
   {
     id: 'inline-horizontal-rule',
