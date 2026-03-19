@@ -389,3 +389,88 @@ test('newListItem returns undefined when cursor is beyond list context', () => {
 
   expect(result).toBeUndefined();
 });
+
+test('exitMarkupOnEnter inserts newline after bold when cursor is before closing operator', () => {
+  const doc = '*hello*';
+  const result = applyEnterRules(doc, 6);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 7, to: 7, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 8 });
+});
+
+test('exitMarkupOnEnter inserts newline after italic when cursor is before closing operator', () => {
+  const doc = '/hello/';
+  const result = applyEnterRules(doc, 6);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 7, to: 7, insert: '\n' });
+});
+
+test('exitMarkupOnEnter does not trigger when cursor is inside markup content', () => {
+  const doc = '*hello*';
+  const result = applyEnterRules(doc, 3);
+
+  expect(result).toBeUndefined();
+});
+
+test('exitMarkupOnEnter does not trigger when cursor is after closing operator', () => {
+  const doc = '*hello*';
+  const result = applyEnterRules(doc, 7);
+
+  expect(result).toBeUndefined();
+});
+
+test('exitMarkupOnEnter inserts newline after outermost markup for nested markup', () => {
+  const doc = '*+qwe+*';
+  const result = applyEnterRules(doc, 5);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 7, to: 7, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 8 });
+});
+
+test('exitMarkupOnEnter exits outermost bold when cursor is before closing * in nested markup with unicode content', () => {
+  const doc = '*+Руддщ йуйцуйцу+*';
+  const result = applyEnterRules(doc, 17);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 18, to: 18, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 19 });
+});
+
+test('exitMarkupOnEnter exits outermost italic when cursor is before closing / in nested markup with unicode content', () => {
+  const doc = '/+Руддщ йуйцуйцу+/';
+  const result = applyEnterRules(doc, 17);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 18, to: 18, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 19 });
+});
+
+test('exitMarkupOnEnter exits outermost verbatim when cursor is before closing = in nested markup with unicode content', () => {
+  const doc = '=+Руддщ йуйцуйцу+=';
+  const result = applyEnterRules(doc, 17);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 18, to: 18, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 19 });
+});
+
+test('exitMarkupOnEnter exits outermost crossed when cursor is before closing + in nested markup with unicode content', () => {
+  const doc = '+*Руддщ йуйцуйцу*+';
+  const result = applyEnterRules(doc, 17);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 18, to: 18, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 19 });
+});
+
+test('exitMarkupOnEnter inserts newline after underline markup', () => {
+  const doc = '_hello_';
+  const result = applyEnterRules(doc, 6);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 7, to: 7, insert: '\n' });
+  expect(result?.selection).toEqual({ anchor: 8 });
+});

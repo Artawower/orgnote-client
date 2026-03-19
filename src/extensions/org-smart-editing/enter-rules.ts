@@ -1,9 +1,89 @@
 import type { TransactionSpec } from '@codemirror/state';
-import { NodeType, findParent, type OrgNode } from 'org-mode-ast';
+import { NodeType, findParent, walkThroughParents, type OrgNode } from 'org-mode-ast';
+
+const markupNodeTypes = [
+  NodeType.Bold,
+  NodeType.Italic,
+  NodeType.Verbatim,
+  NodeType.InlineCode,
+  NodeType.Crossed,
+  NodeType.Underline,
+] as const;
+
+const isMarkupType = (node: OrgNode): boolean => markupNodeTypes.some((t) => node.is(t));
+
+const isMarkupOperator = (node: OrgNode): boolean =>
+  node.is(NodeType.Operator) && !!node.parent && isMarkupType(node.parent);
+
+const isLastChildClosingOperator = (op: OrgNode): boolean =>
+  op.is(NodeType.Operator) && op.parent?.children?.last === op;
+
+const resolveOutermostMarkupEnd = (closingOp: OrgNode): number => {
+  if (!closingOp.parent) return closingOp.end;
+  let outermost = closingOp.parent;
+
+  walkThroughParents(outermost, (parent) => {
+    if (!isMarkupType(parent)) return true;
+
+    const parentLastChild = parent.children?.last;
+    const isAdjacentClosingOperator =
+      parentLastChild?.is(NodeType.Operator) && parentLastChild.start === outermost.end;
+
+    if (!isAdjacentClosingOperator) return true;
+
+    outermost = parent;
+    return false;
+  });
+
+  return outermost.end;
+};
+
+const findOuterClosingOperatorAtPos = (node: OrgNode, cursorPos: number): OrgNode | undefined => {
+  let current: OrgNode | undefined = node;
+
+  while (current) {
+    const next = current.next;
+    if (next && isMarkupOperator(next) && cursorPos === next.start) {
+      return next;
+    }
+    current = current.parent;
+  }
+
+  return undefined;
+};
+
+const findClosingMarkupOperator = (node: OrgNode, cursorPos: number): OrgNode | undefined => {
+  if (!node.parent) return undefined;
+
+  if (isMarkupOperator(node) && cursorPos === node.start) {
+    return node;
+  }
+
+  const nextSibling = node.next;
+  if (nextSibling && isMarkupOperator(nextSibling) && cursorPos === nextSibling.start) {
+    return nextSibling;
+  }
+
+  if (isMarkupOperator(node) && cursorPos === node.end) {
+    return findOuterClosingOperatorAtPos(node.parent, cursorPos);
+  }
+
+  return undefined;
+};
+
+const exitMarkupOnEnter = (node: OrgNode, cursorPos: number): TransactionSpec | undefined => {
+  const closingOp = findClosingMarkupOperator(node, cursorPos);
+  if (!closingOp || !isLastChildClosingOperator(closingOp)) return;
+
+  const markupEnd = resolveOutermostMarkupEnd(closingOp);
+
+  return {
+    changes: { from: markupEnd, to: markupEnd, insert: '\n' },
+    selection: { anchor: markupEnd + 1 },
+  };
+};
 
 export type EnterRule = (node: OrgNode, cursorPos: number) => TransactionSpec | undefined;
-
-const ORG_OPERATOR_REGEXP = /(\* |- |\+ |\d+[).]{1})/;
 
 const clearEmptyHeadline = (node: OrgNode): TransactionSpec | undefined => {
   if (!node.is(NodeType.Operator)) return;
@@ -26,8 +106,11 @@ const clearEmptyHeadline = (node: OrgNode): TransactionSpec | undefined => {
   };
 };
 
+const isListOrHeadlineOperator = (node: OrgNode): boolean =>
+  !!node.parent?.is(NodeType.Title) || !!node.parent?.is(NodeType.ListItem);
+
 const newLineAfterEmptyBullet = (node: OrgNode): TransactionSpec | undefined => {
-  if (!node.is(NodeType.Operator) || !node.rawValue.match(ORG_OPERATOR_REGEXP)) {
+  if (!node.is(NodeType.Operator) || !isListOrHeadlineOperator(node)) {
     return;
   }
   return {
@@ -54,9 +137,7 @@ const newListItem = (node: OrgNode, cursorPos: number): TransactionSpec | undefi
   const operator = firstChild.rawValue.trim();
   const checkbox = titleNode.children?.get(1)?.is(NodeType.Checkbox) ? '[ ] ' : '';
   const isNumberList = operator.match(/\d+[).]{1}/);
-  const newOperator = isNumberList
-    ? +operator.slice(0, -1) + 1 + operator.slice(-1)
-    : operator;
+  const newOperator = isNumberList ? +operator.slice(0, -1) + 1 + operator.slice(-1) : operator;
 
   const charAtCursor = titleNode.rawValue[cursorPos - titleNode.start];
   const skipSpace = charAtCursor === ' ' ? 1 : 0;
@@ -69,10 +150,7 @@ const newListItem = (node: OrgNode, cursorPos: number): TransactionSpec | undefi
 };
 
 const blockFooter = (node: OrgNode): TransactionSpec | undefined => {
-  if (
-    node.parent?.isNot(NodeType.Keyword) ||
-    !node.rawValue.toLowerCase().startsWith('#+begin_')
-  ) {
+  if (node.parent?.isNot(NodeType.Keyword) || !node.rawValue.toLowerCase().startsWith('#+begin_')) {
     return;
   }
 
@@ -92,8 +170,7 @@ const BLOCK_TYPES = [
   NodeType.CommentBlock,
 ] as const;
 
-const isBlockType = (node: OrgNode): boolean =>
-  BLOCK_TYPES.some((type) => node.is(type));
+const isBlockType = (node: OrgNode): boolean => BLOCK_TYPES.some((type) => node.is(type));
 
 const exitBlockOnNewLine = (node: OrgNode): TransactionSpec | undefined => {
   const parent = node.parent;
@@ -237,6 +314,7 @@ const newTableRow = (node: OrgNode): TransactionSpec | undefined => {
 };
 
 export const enterRules: readonly EnterRule[] = [
+  exitMarkupOnEnter,
   clearEmptyHeadline,
   exitList,
   exitBlockOnEmptyLines,
