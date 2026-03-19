@@ -1,9 +1,8 @@
 <template>
   <div
-    ref="wrapperRef"
-    v-touch-hold.mouse:500="handleTrigger"
+    v-context-hold="contextHoldBinding"
     class="context-menu-trigger"
-    @contextmenu.stop.prevent="handleTrigger"
+    @contextmenu.stop.prevent="handleContextMenu"
   >
     <slot />
     <q-menu
@@ -19,11 +18,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
 import { QMenu } from 'quasar';
+import { computed, ref } from 'vue';
 import type { MenuAction, MenuGroup } from 'orgnote-api';
 import MenuList from './MenuList.vue';
 import { api } from 'src/boot/api';
+import { vContextHold } from 'src/directives/context-hold';
 
 const props = defineProps<{
   group: MenuGroup;
@@ -36,7 +36,6 @@ const emit = defineEmits<{
 }>();
 
 const qMenuRef = ref<InstanceType<typeof QMenu>>();
-const wrapperRef = ref<HTMLElement>();
 
 const contextMenuStore = api.ui.useContextMenu();
 const { desktopBelow } = api.ui.useScreenDetection();
@@ -44,13 +43,12 @@ const modal = api.ui.useModal();
 
 const actions = computed<MenuAction[]>(() => contextMenuStore.getContextMenuActions(props.group));
 
-const handleTrigger = () => {
-  if (props.disabled) return;
+const handleContextMenu = () => {
   if (desktopBelow.value) {
-    openMobileMenu();
     return;
   }
-  open();
+
+  openDesktopMenu();
 };
 
 const openMobileMenu = () => {
@@ -68,7 +66,7 @@ const openMobileMenu = () => {
   });
 };
 
-const open = () => {
+const openDesktopMenu = () => {
   emit('open');
   qMenuRef.value?.show();
 };
@@ -77,8 +75,13 @@ const close = () => {
   qMenuRef.value?.hide();
 };
 
+const contextHoldBinding = computed(() => ({
+  enabled: desktopBelow.value && !props.disabled,
+  onHold: openMobileMenu,
+}));
+
 defineExpose({
-  open,
+  open: openDesktopMenu,
   close,
 });
 </script>

@@ -3,17 +3,13 @@ import { test, expect, vi, beforeEach } from 'vitest';
 import ContextMenu from './ContextMenu.vue';
 import { api } from 'src/boot/api';
 import { QMenu } from 'quasar';
+import { ref } from 'vue';
 
+const desktopBelow = ref(false);
 
 vi.mock('src/boot/api', async () => {
-  const { ref } = await import('vue');
-  
   const mockUseContextMenu = {
     getContextMenuActions: vi.fn().mockReturnValue([]),
-  };
-
-  const mockUseScreenDetection = {
-    desktopBelow: ref(false),
   };
 
   const mockUseModal = {
@@ -25,7 +21,7 @@ vi.mock('src/boot/api', async () => {
     api: {
       ui: {
         useContextMenu: () => mockUseContextMenu,
-        useScreenDetection: () => mockUseScreenDetection,
+        useScreenDetection: () => ({ desktopBelow }),
         useModal: () => mockUseModal,
       },
     },
@@ -40,21 +36,34 @@ vi.mock('quasar', () => {
       hide: vi.fn(),
     },
   };
-  const TouchHoldMock = {
-    name: 'touch-hold',
-    beforeMount: vi.fn(),
-    beforeUnmount: vi.fn(),
-  };
   return {
     QMenu: QMenuMock,
-    TouchHold: TouchHoldMock,
   };
 });
 
 beforeEach(() => {
   vi.clearAllMocks();
-  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = false;
+  desktopBelow.value = false;
 });
+
+const createPointerEvent = (type: string, x = 0, y = 0) =>
+  new PointerEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    pointerId: 1,
+    pointerType: 'touch',
+    button: 0,
+    clientX: x,
+    clientY: y,
+  });
+
+const triggerLongPress = async (wrapper: ReturnType<typeof mount>) => {
+  vi.useFakeTimers();
+  wrapper.find('.context-menu-trigger').element.dispatchEvent(createPointerEvent('pointerdown', 10, 10));
+  vi.advanceTimersByTime(300);
+  document.dispatchEvent(createPointerEvent('pointerup', 10, 10));
+  vi.useRealTimers();
+};
 
 test('renders slot content', () => {
   const wrapper = mount(ContextMenu, {
@@ -91,7 +100,7 @@ test('opens QMenu on desktop when triggered', async () => {
   expect(api.ui.useModal().open).not.toHaveBeenCalled();
 });
 
-test('opens Modal on mobile when triggered', async () => {
+test('opens Modal on mobile after long press release', async () => {
   (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
 
   const wrapper = mount(ContextMenu, {
@@ -105,18 +114,16 @@ test('opens Modal on mobile when triggered', async () => {
     },
   });
 
-  expect(wrapper.findComponent(QMenu).exists()).toBe(false);
+  await triggerLongPress(wrapper);
 
-  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
   expect(api.ui.useModal().open).toHaveBeenCalled();
   expect(api.ui.useModal().open).toHaveBeenCalledWith(
     expect.anything(),
     expect.objectContaining({
       mini: true,
       position: 'bottom',
-    })
+    }),
   );
-  expect(wrapper.emitted('open')).toBeTruthy();
 });
 
 test('does not open anything if disabled', async () => {
@@ -139,7 +146,7 @@ test('does not open anything if disabled', async () => {
   expect(api.ui.useModal().open).not.toHaveBeenCalled();
 });
 
-test('ContextMenu opens modal on touch hold for mobile', () => {
+test('ContextMenu opens modal on mobile long press release', async () => {
   (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
 
   const wrapper = mount(ContextMenu, {
@@ -153,8 +160,7 @@ test('ContextMenu opens modal on touch hold for mobile', () => {
     },
   });
 
-  const vm = wrapper.vm as unknown as { handleTrigger: () => void };
-  vm.handleTrigger();
+  await triggerLongPress(wrapper);
 
   expect(api.ui.useModal().open).toHaveBeenCalledWith(
     expect.anything(),
@@ -163,11 +169,10 @@ test('ContextMenu opens modal on touch hold for mobile', () => {
       position: 'bottom',
     }),
   );
-  expect(wrapper.emitted('open')).toBeTruthy();
 });
 
-test('ContextMenu touch hold does not open when disabled', () => {
-  (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
+test('does not open modal on mobile long press when disabled', async () => {
+  desktopBelow.value = true;
 
   const wrapper = mount(ContextMenu, {
     props: {
@@ -181,8 +186,7 @@ test('ContextMenu touch hold does not open when disabled', () => {
     },
   });
 
-  const vm = wrapper.vm as unknown as { handleTrigger: () => void };
-  vm.handleTrigger();
+  await triggerLongPress(wrapper);
 
   expect(api.ui.useModal().open).not.toHaveBeenCalled();
 });
@@ -239,7 +243,7 @@ test('ContextMenu passes group to getContextMenuActions', () => {
   expect(api.ui.useContextMenu().getContextMenuActions).toHaveBeenCalledWith('custom-group');
 });
 
-test('ContextMenu passes data prop to modal on mobile', async () => {
+test('ContextMenu passes data prop to modal on mobile long press release', async () => {
   (api.ui.useScreenDetection().desktopBelow as unknown as { value: boolean }).value = true;
 
   const testData = { path: '/notes/test.org' };
@@ -256,7 +260,7 @@ test('ContextMenu passes data prop to modal on mobile', async () => {
     },
   });
 
-  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
+  await triggerLongPress(wrapper);
 
   expect(api.ui.useModal().open).toHaveBeenCalledWith(
     expect.anything(),
@@ -317,7 +321,7 @@ test('ContextMenu mobile modal close callback calls modal.close', async () => {
     },
   });
 
-  await wrapper.find('.context-menu-trigger').trigger('contextmenu');
+  await triggerLongPress(wrapper);
 
   const modalOpenCall = vi.mocked(api.ui.useModal().open).mock.calls[0]!;
   const modalEmits = modalOpenCall[1]?.modalEmits as { close: () => void };

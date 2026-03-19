@@ -4,6 +4,7 @@
     column
     start
     align-stretch
+    @pointerup="handleDialogPointerUp"
     @click="handleDialogClick"
     @cancel.prevent="modal.close()"
     :class="{
@@ -71,9 +72,6 @@ import AppFlex from 'src/components/AppFlex.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const BACKDROP_CLOSE_GUARD_MS = 400;
-let mountedAt = 0;
-
 defineProps<{ modalData: Modal }>();
 
 const modal = api.ui.useModal();
@@ -83,7 +81,6 @@ const getDialogElement = (): HTMLDialogElement | undefined =>
   dialogRef.value?.$el as HTMLDialogElement | undefined;
 
 onMounted(() => {
-  mountedAt = Date.now();
   getDialogElement()?.showModal();
 });
 
@@ -94,11 +91,18 @@ onBeforeUnmount(() => {
   }
 });
 
-const handleDialogClick = (e: MouseEvent) => {
-  if (Date.now() - mountedAt < BACKDROP_CLOSE_GUARD_MS) {
+const shouldCloseFromBackdrop = (event: Event) => event.target === event.currentTarget;
+
+const handleDialogPointerUp = (event: PointerEvent) => {
+  if (!shouldCloseFromBackdrop(event)) {
     return;
   }
-  if (e.target === e.currentTarget) {
+
+  modal.close();
+};
+
+const handleDialogClick = (e: MouseEvent) => {
+  if (shouldCloseFromBackdrop(e)) {
     modal.close();
   }
 };
