@@ -15,6 +15,7 @@ import { walkTree, type OrgNode } from 'org-mode-ast';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
 import AppFlex from './AppFlex.vue';
+import { escapeHtml } from 'src/utils/escape-html';
 
 const editorStore = api.core.useEditor();
 const { activeContext } = storeToRefs(editorStore);
@@ -39,10 +40,12 @@ const formattedTree = computed(() => {
 
   const selectedNode = findNodeAtCursor(node, cursorPosition.value);
   const [start, end] = [selectedNode?.start, selectedNode?.end];
+  const escaped = escapeHtml(node.toString());
 
-  return node
-    .toString()
-    .replace(`[${start}-${end}]`, `<span class="highlighted-range">[${start}-${end}]</span>`);
+  return escaped.replace(
+    `[${start}-${end}]`,
+    `<span class="highlighted-range">[${start}-${end}]</span>`,
+  );
 });
 </script>
 
