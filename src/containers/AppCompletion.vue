@@ -1,7 +1,11 @@
 <template>
   <container-layout
     class="completion-wrapper"
-    :class="{ 'full-screen': config?.fullScreen, 'input-only': isInputOnly }"
+    :class="{
+      'full-screen': config?.fullScreen,
+      'input-only': isInputOnly,
+      'keyboard-anchored': isKeyboardAnchored,
+    }"
     :reverse="shouldReverse"
     header-border
     footer-border
@@ -69,9 +73,15 @@ const completionItemHeight = computed(
 );
 
 const { desktopBelow } = api.ui.useScreenDetection();
+const { keyboardOpened, keyboardHeight } = api.ui.useKeyboardState();
 const shouldReverse = computed(() => desktopBelow.value);
 
 const isInputOnly = computed(() => activeCompletion.value?.type === 'input');
+const hasKeyboardHeight = computed(() => keyboardHeight.value > 0);
+const shouldAnchorToKeyboard = computed(
+  () => desktopBelow.value && keyboardOpened.value && hasKeyboardHeight.value,
+);
+const isKeyboardAnchored = computed(() => isInputOnly.value && shouldAnchorToKeyboard.value);
 
 const { t } = useI18n({
   useScope: 'global',
@@ -128,6 +138,24 @@ const { t } = useI18n({
         display: none;
       }
     }
+
+    &.input-only.keyboard-anchored {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: calc(
+        var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px)
+        - var(--completion-header-height)
+      );
+      z-index: 2;
+      height: auto;
+      max-width: unset;
+      padding: 0 var(--completion-header-margin);
+
+      :deep(.layout) {
+        height: auto;
+      }
+    }
   }
 
   .completion-wrapper:not(.input-only) {
@@ -156,6 +184,7 @@ const { t } = useI18n({
     border-top: var(--glass-border-top);
     border-radius: var(--completion-header-border-radius);
   }
+
 }
 
 @include desktop {

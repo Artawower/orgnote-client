@@ -6,6 +6,7 @@ let fileManagerPath: ReturnType<typeof ref<string>>;
 let fileManagerSearchQuery: ReturnType<typeof ref<string>>;
 let fileManagerMobileFileSearchActive: ReturnType<typeof ref<boolean>>;
 let tabletBelow: ReturnType<typeof ref<boolean>>;
+let desktopBelow: ReturnType<typeof ref<boolean>>;
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -38,7 +39,7 @@ vi.mock('src/boot/api', () => ({
     },
     ui: {
       useSidebar: () => ({ close: vi.fn() }),
-      useScreenDetection: () => ({ tabletBelow }),
+      useScreenDetection: () => ({ tabletBelow, desktopBelow }),
       useContextMenu: () => ({
         show: vi.fn(),
         hide: vi.fn(),
@@ -59,6 +60,7 @@ beforeEach(() => {
   fileManagerSearchQuery = ref('');
   fileManagerMobileFileSearchActive = ref(false);
   tabletBelow = ref(false);
+  desktopBelow = ref(false);
 });
 
 test('FileManager shows header search on desktop regardless of compact', async () => {
@@ -74,6 +76,7 @@ test('FileManager shows header search on desktop regardless of compact', async (
 
 test('FileManager hides header search on mobile when compact', async () => {
   tabletBelow.value = true;
+  desktopBelow.value = true;
   const wrapper = mount(FileManager, {
     props: { path: '/initial', compact: true },
   });
@@ -85,6 +88,7 @@ test('FileManager hides header search on mobile when compact', async () => {
 
 test('FileManager shows header search on mobile when not compact', async () => {
   tabletBelow.value = true;
+  desktopBelow.value = true;
   const wrapper = mount(FileManager, {
     props: { path: '/initial', compact: false },
   });

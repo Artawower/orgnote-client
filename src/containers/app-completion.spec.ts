@@ -7,6 +7,9 @@ import { ref, nextTick, shallowReactive, shallowRef, computed, reactive } from '
 import type { Completion, CompletionConfig } from 'orgnote-api';
 
 const openedCompletions = shallowRef<Completion<unknown>[]>([]);
+const keyboardOpened = ref(false);
+const keyboardHeight = ref(0);
+const desktopBelow = ref(false);
 
 const activeCompletion = computed(
   () => openedCompletions.value[openedCompletions.value.length - 1],
@@ -33,7 +36,11 @@ vi.mock('src/boot/api', () => ({
         updateConfig: vi.fn(),
       })),
       useScreenDetection: vi.fn(() => ({
-        desktopBelow: ref(false),
+        desktopBelow,
+      })),
+      useKeyboardState: vi.fn(() => ({
+        keyboardOpened,
+        keyboardHeight,
       })),
     },
     core: {
@@ -76,6 +83,9 @@ let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
   openedCompletions.value = [];
+  keyboardOpened.value = false;
+  keyboardHeight.value = 0;
+  desktopBelow.value = false;
 });
 
 afterEach(() => {
@@ -160,4 +170,56 @@ test('AppCompletion itemHeight computed does not crash when activeCompletion is 
 
   expect(activeCompletion.value).toBeUndefined();
   expect(wrapper.exists()).toBe(true);
+});
+
+test('AppCompletion adds keyboard-anchored class for mobile input completion with keyboard', async () => {
+  desktopBelow.value = true;
+  keyboardOpened.value = true;
+  keyboardHeight.value = 320;
+
+  openCompletion({
+    type: 'input',
+    placeholder: 'Rename file',
+  });
+
+  mountAppCompletion();
+  await nextTick();
+
+  expect(wrapper.find('.completion-wrapper').classes()).toContain('keyboard-anchored');
+});
+
+test('AppCompletion does not add keyboard-anchored class without keyboard height', async () => {
+  desktopBelow.value = true;
+  keyboardOpened.value = true;
+  keyboardHeight.value = 0;
+
+  openCompletion({
+    type: 'input',
+    placeholder: 'Rename file',
+  });
+
+  mountAppCompletion();
+  await nextTick();
+
+  expect(wrapper.find('.completion-wrapper').classes()).not.toContain('keyboard-anchored');
+});
+
+test('AppCompletion does not add keyboard-anchored class for non-input completion', async () => {
+  desktopBelow.value = true;
+  keyboardOpened.value = true;
+  keyboardHeight.value = 320;
+
+  openCompletion({
+    type: 'choice',
+    placeholder: 'Pick a command',
+    itemsGetter: () => ({
+      result: [{ title: 'Test command', data: {}, commandHandler: vi.fn() }],
+      total: 1,
+    }),
+  });
+
+  mountAppCompletion();
+  await nextTick();
+
+  expect(wrapper.find('.completion-wrapper').classes()).not.toContain('keyboard-anchored');
 });
