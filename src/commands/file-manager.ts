@@ -512,6 +512,30 @@ export function getFileManagerCommands(): Command[] {
       },
     },
     {
+      command: DefaultCommands.REVEAL_IN_FILE_MANAGER,
+      group,
+      icon: 'sym_o_my_location',
+      handler: (api: OrgNoteApi) => {
+        const filePath = getActiveFilePath(api);
+        if (!filePath) return;
+        const fm = api.core.useFileManager();
+        fm.path = getFileDirPath(filePath);
+        const sidebar = api.ui.useSidebar();
+        if (!sidebar.opened) {
+          sidebar.openComponent(
+            defineAsyncComponent(() => import('src/containers/FileManager.vue')),
+            {
+              componentProps: {
+                closable: false,
+                tree: true,
+                compact: true,
+              },
+            },
+          );
+        }
+      },
+    },
+    {
       command: DefaultCommands.SORT_FILES,
       group,
       icon: 'sym_o_sort',
