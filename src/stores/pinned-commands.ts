@@ -62,6 +62,7 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.MOVE_FILE,
     DefaultCommands.DELETE_FILE,
     DefaultCommands.SHOW_FILE_INFO,
+    DefaultCommands.REVEAL_IN_FILE_MANAGER,
   ],
 };
 
