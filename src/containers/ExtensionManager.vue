@@ -24,7 +24,7 @@
       </template>
 
       <template #body>
-        <card-wrapper class="extensions-list">
+        <app-flex column gap="sm" class="extensions-list">
           <app-flex v-if="isLoading" class="loading-container" center align-center>
             <loading-dots :text="t(i18n.LOADING)" />
           </app-flex>
@@ -40,7 +40,7 @@
             @delete="confirmDeleteExtension"
             @install="installExtension"
           />
-        </card-wrapper>
+        </app-flex>
       </template>
 
       <template #footer>

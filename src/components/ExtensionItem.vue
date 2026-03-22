@@ -1,137 +1,77 @@
 <template>
-  <div class="extension-item">
-    <app-spoiler style="--spoiler-max-height: unset; --card-radius: 0">
-      <template #title>
-        <app-flex row between class="full-width">
-          <app-flex gap="md" align="center">
-            <app-icon :name="categoryIcon" :color="isActive ? 'green' : 'fg-muted'" size="sm" />
+  <card-wrapper class="extension-item" padding>
+    <app-flex row between align-start gap="md">
+      <app-flex gap="md" align-start>
+        <app-icon :name="categoryIcon" color="accent" size="md" />
 
-            <app-flex column gap="xs" align-start>
-              <app-flex gap="sm" align="center">
-                <monochrome-face>
-                  {{ manifest.name }}
-                </monochrome-face>
-
-                <app-badge :color="categoryColor" size="xs">
-                  {{ manifest.category }}
-                </app-badge>
-
-                <app-badge v-if="manifest.version" color="fg-muted" size="xs">
-                  v{{ manifest.version }}
-                </app-badge>
-
-                <app-badge v-if="sourceLabel" color="blue" size="xs">
-                  {{ sourceLabel }}
-                </app-badge>
-              </app-flex>
-
-              <app-description v-if="manifest.description" class="description">
-                {{ manifest.description }}
-              </app-description>
-            </app-flex>
-          </app-flex>
-
-          <app-flex gap="sm" align="center">
-            <template v-if="isInstalled">
-              <action-button
-                @click.stop="toggleActive(!isActive)"
-                size="sm"
-                :color="isActive ? 'green' : 'fg-muted'"
-                outline
-                border
-                :icon="isActive ? 'sym_o_check_box' : 'sym_o_check_box_outline_blank'"
-                :tooltip="toggleTooltip"
-              />
-
-              <action-button
-                v-if="!isBuiltin"
-                @click.stop="$emit('delete', manifest.name)"
-                size="sm"
-                color="red"
-                outline
-                border
-                icon="sym_o_delete"
-                :tooltip="t(i18n.DELETE_EXTENSION)"
-              />
-            </template>
-
-            <action-button
-              v-else
-              @click.stop="handleInstall"
-              size="sm"
-              color="green"
-              outline
-              border
-              icon="sym_o_download"
-              :tooltip="t(i18n.INSTALL_EXTENSION)"
-            />
-          </app-flex>
+        <app-flex column gap="xs" align-start>
+          <span class="extension-name">{{ manifest.name }}</span>
+          <span class="extension-subtitle">
+            <template v-if="manifest.version">v{{ manifest.version }}</template>
+            <template v-if="sourceLabel"> ({{ sourceLabel }})</template>
+          </span>
         </app-flex>
-      </template>
+      </app-flex>
 
-      <template #body>
-        <app-flex column align-start gap="sm" class="extension-details">
-          <app-flex v-if="manifest.author" gap="sm">
-            <span class="label">{{ t(i18n.AUTHOR) }}:</span>
-            <span>{{ manifest.author }}</span>
-          </app-flex>
+      <app-flex gap="sm" align="center" class="extension-actions">
+        <template v-if="isInstalled">
+          <toggle-button :model-value="isActive" @update:model-value="toggleActive" />
+          <action-button
+            v-if="!isBuiltin"
+            @click.stop="$emit('delete', manifest.name)"
+            size="sm"
+            color="red"
+            icon="sym_o_delete"
+            :tooltip="t(i18n.DELETE_EXTENSION)"
+          />
+        </template>
 
-          <app-flex v-if="manifest.keywords?.length" gap="sm">
-            <span class="label">{{ t(i18n.KEYWORDS) }}:</span>
-            <app-flex gap="xs">
-              <app-badge
-                v-for="keyword in manifest.keywords"
-                :key="keyword"
-                color="fg-muted"
-                size="xs"
-              >
-                {{ keyword }}
-              </app-badge>
-            </app-flex>
-          </app-flex>
+        <action-button
+          v-else
+          @click.stop="handleInstall"
+          size="sm"
+          color="green"
+          outline
+          border
+          icon="sym_o_download"
+          :tooltip="t(i18n.INSTALL_EXTENSION)"
+        />
+      </app-flex>
+    </app-flex>
 
-          <app-flex v-if="repoUrl" gap="sm">
-            <span class="label">{{ t(i18n.REPOSITORY) }}:</span>
-            <app-link :href="repoUrl">{{ repoUrl }}</app-link>
-          </app-flex>
+    <app-description v-if="manifest.description" class="extension-description">
+      {{ manifest.description }}
+    </app-description>
 
-          <app-flex v-if="manifest.permissions?.length" gap="sm">
-            <span class="label">{{ t(i18n.PERMISSIONS) }}:</span>
-            <app-flex gap="xs">
-              <app-badge
-                v-for="permission in manifest.permissions"
-                :key="permission"
-                color="orange"
-                size="xs"
-              >
-                {{ permission }}
-              </app-badge>
-            </app-flex>
-          </app-flex>
-        </app-flex>
-      </template>
-    </app-spoiler>
-  </div>
+    <app-flex v-if="manifest.keywords?.length" gap="xs" class="extension-keywords" wrap justify="start">
+      <span class="keywords-label">{{ t(i18n.KEYWORDS) }}:</span>
+      <app-badge
+        v-for="keyword in manifest.keywords"
+        :key="keyword"
+        color="fg-muted"
+        size="xs"
+      >
+        {{ keyword }}
+      </app-badge>
+    </app-flex>
+  </card-wrapper>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { ExtensionMeta, ExtensionManifest, ThemeVariable } from 'orgnote-api';
+import type { ExtensionMeta, ExtensionManifest } from 'orgnote-api';
 import { i18n } from 'orgnote-api';
 import AppIcon from './AppIcon.vue';
 import AppBadge from './AppBadge.vue';
 import AppDescription from './AppDescription.vue';
-import AppSpoiler from './AppSpoiler.vue';
+import CardWrapper from './CardWrapper.vue';
 import AppFlex from './AppFlex.vue';
-import MonochromeFace from './MonochromeFace.vue';
+import ToggleButton from './ToggleButton.vue';
 import ActionButton from './ActionButton.vue';
-import AppLink from './AppLink.vue';
 import {
   EXTENSION_CATEGORY_ICONS,
-  EXTENSION_CATEGORY_COLORS,
   DEFAULT_EXTENSION_ICON,
-  DEFAULT_EXTENSION_COLOR,
 } from 'src/constants/extension-category';
 
 const { t } = useI18n();
@@ -166,10 +106,6 @@ const categoryIcon = computed(() => {
   return EXTENSION_CATEGORY_ICONS[manifest.value.category] ?? DEFAULT_EXTENSION_ICON;
 });
 
-const categoryColor = computed((): ThemeVariable => {
-  return EXTENSION_CATEGORY_COLORS[manifest.value.category] ?? DEFAULT_EXTENSION_COLOR;
-});
-
 const isActive = computed(() => {
   if (!isInstalled.value) {
     return false;
@@ -182,16 +118,6 @@ const isBuiltin = computed(() => manifest.value.source.type === 'builtin');
 const sourceLabel = computed(() => {
   const source = manifest.value.source;
   return source.type ?? '';
-});
-
-const repoUrl = computed(() => {
-  const source = manifest.value.source;
-  if (source.type === 'git') return source.repo;
-  return null;
-});
-
-const toggleTooltip = computed(() => {
-  return isActive.value ? t(i18n.DISABLE_EXTENSION) : t(i18n.ENABLE_EXTENSION);
 });
 
 const toggleActive = (value: boolean) => {
@@ -213,8 +139,39 @@ const handleInstall = () => {
   width: 100%;
 }
 
-.label {
+.extension-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--fg);
+  line-height: var(--line-height-sm);
+}
+
+.extension-subtitle {
+  font-size: var(--font-size-xs);
   color: var(--fg-muted);
-  min-width: 80px;
+  line-height: var(--line-height-sm);
+}
+
+.extension-description {
+  margin-top: var(--padding-sm);
+  font-size: var(--font-size-sm);
+  color: var(--fg);
+  line-height: var(--line-height-md);
+}
+
+.extension-keywords {
+  margin-top: var(--padding-sm);
+  align-items: center;
+}
+
+.keywords-label {
+  font-size: var(--font-size-xs);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+}
+
+.extension-actions {
+  flex-shrink: 0;
 }
 </style>
