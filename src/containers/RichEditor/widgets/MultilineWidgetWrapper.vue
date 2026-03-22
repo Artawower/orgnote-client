@@ -38,7 +38,7 @@ const handleEditClick = (event: MouseEvent) => {
 <style lang="scss" scoped>
 .org-multiline-widget {
   position: relative;
-  margin-top: var(--margin-md);
+  padding-top: var(--margin-md);
   width: 100%;
 }
 
