@@ -25,20 +25,27 @@
                 @click="handleNavigation('forward')"
               />
             </template>
-            <nav-tab
+            <context-menu
               v-for="tab of tabs"
-              @click="handleTabSelect(tab.id)"
-              @close="handleTabClose(tab.id)"
-              @dragstart="handleDragStart"
-              @dragend="handleDragEnd"
-              icon="description"
               :key="tab.id"
-              :active="isTabActive(tab.id)"
-              :tab-id="tab.id"
-              :pane-id="props.paneId"
+              group="tab"
+              :data="tabFileActionDataMap[tab.id]"
+              :disabled="!tabFileActionDataMap[tab.id]"
+              @open="handleTabSelect(tab.id)"
             >
-              {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
-            </nav-tab>
+              <nav-tab
+                @click="handleTabSelect(tab.id)"
+                @close="handleTabClose(tab.id)"
+                @dragstart="handleDragStart"
+                @dragend="handleDragEnd"
+                icon="description"
+                :active="isTabActive(tab.id)"
+                :tab-id="tab.id"
+                :pane-id="props.paneId"
+              >
+                {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
+              </nav-tab>
+            </context-menu>
             <template #actions>
               <command-action-button
                 :command="DefaultCommands.NEW_TAB"
@@ -122,6 +129,8 @@ import { TAB_ROUTER_KEY } from 'src/constants/context-providers';
 import { storeToRefs } from 'pinia';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import { useTabHistory } from 'src/composables/use-tab-history';
+import ContextMenu from 'src/components/ContextMenu.vue';
+import { useTabContextMenu } from 'src/composables/use-tab-context-menu';
 
 const props = defineProps<{
   paneId: string;
@@ -182,6 +191,8 @@ const handleTabClose = (tabId: string) => {
   if (!currentPane.value) return;
   pane.closeTab(currentPane.value.id, tabId);
 };
+
+const tabFileActionDataMap = useTabContextMenu(tabs);
 
 const currentDropZone = ref<DropZone | undefined>();
 

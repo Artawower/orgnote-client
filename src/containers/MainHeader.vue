@@ -43,7 +43,6 @@
 <script lang="ts" setup>
 import { computed, inject, shallowRef, type ShallowRef } from 'vue';
 import type { Router } from 'vue-router';
-import type { MenuAction } from 'orgnote-api';
 import AppHeader from 'src/components/AppHeader.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import CommandActionButton from './CommandActionButton.vue';
@@ -56,15 +55,11 @@ import { storeToRefs } from 'pinia';
 
 const pinnedCommandsStore = api.ui.usePinnedCommands();
 const rightCommands = pinnedCommandsStore.getCommands('right-header');
-const fileActionsCommands = pinnedCommandsStore.getCommands('file-actions');
+const contextMenuStore = api.ui.useContextMenu();
 
 const panes = api.core.usePane();
 const modal = api.ui.useModal();
 const { config } = storeToRefs(api.core.useConfig());
-
-const fileActions = computed<MenuAction[]>(() => {
-  return fileActionsCommands.value.map((command) => ({ command }));
-});
 
 const fileActionsData = computed<
   | {
@@ -96,7 +91,7 @@ const openFileActions = () => {
     mini: true,
     position: 'bottom',
     modalProps: {
-      actions: fileActions.value,
+      actions: contextMenuStore.getContextMenuActions('tab'),
       data,
     },
     modalEmits: {

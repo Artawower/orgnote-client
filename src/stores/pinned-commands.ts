@@ -64,6 +64,23 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.SHOW_FILE_INFO,
     DefaultCommands.REVEAL_IN_FILE_MANAGER,
   ],
+  'context-menu-file': [
+    DefaultCommands.CREATE_NOTE,
+    DefaultCommands.RENAME_FILE,
+    DefaultCommands.COPY_FILE,
+    DefaultCommands.MOVE_FILE,
+    DefaultCommands.DELETE_FILE,
+    DefaultCommands.SELECT_FILE,
+  ],
+  'context-menu-dir': [
+    DefaultCommands.CREATE_FOLDER,
+    DefaultCommands.CREATE_NOTE,
+    DefaultCommands.RENAME_FILE,
+    DefaultCommands.COPY_FILE,
+    DefaultCommands.MOVE_FILE,
+    DefaultCommands.DELETE_FILE,
+    DefaultCommands.SELECT_FILE,
+  ],
 };
 
 export const usePinnedCommandsStore = defineStore<'pinnedCommands', PinnedCommandsStore>(
