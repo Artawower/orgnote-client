@@ -9,6 +9,10 @@ export const findNodeAtLine = (
   if (!orgNode?.children) return undefined;
 
   for (const child of orgNode.children) {
+    if (child.start > lineStart) {
+      break;
+    }
+
     if (child.start < lineStart) {
       const nested = findNodeAtLine(child, lineStart);
       if (nested) return nested;

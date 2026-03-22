@@ -134,6 +134,22 @@ test('createOrgEditing toggleHeadline should not affect headline when cursor is 
   }
 });
 
+test('createOrgEditing toggleHeadline prepends current line instead of removing next headline prefix', () => {
+  const doc = 'qweqwe\n* Some title';
+  const caretPos = 6;
+  const { view, dispatchCalls } = createMockView(doc, caretPos);
+  const orgNode = createOrgNode(doc);
+
+  const editor = createOrgEditing(view, orgNode);
+  editor.toggleHeadline();
+
+  expect(dispatchCalls[0]?.changes).toEqual({
+    from: 0,
+    to: 0,
+    insert: '* ',
+  });
+});
+
 test('createOrgEditing toggleBulletList removes bullet prefix', () => {
   const doc = '- list item';
   const { view, dispatchCalls } = createMockView(doc, 5);

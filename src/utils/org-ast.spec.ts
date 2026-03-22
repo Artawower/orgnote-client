@@ -43,6 +43,13 @@ test('findNodeAtLine handles multiline document', () => {
   expect(node?.type).toBe('listItem');
 });
 
+test('findNodeAtLine returns undefined for plain line before headline', () => {
+  const doc = 'qweqwe\n* Some title';
+  const orgNode = createOrgNode(doc);
+  const node = findNodeAtLine(orgNode, 0);
+  expect(node).toBeUndefined();
+});
+
 test('findNodeAtLine returns undefined for empty orgNode', () => {
   const node = findNodeAtLine(undefined, 0);
   expect(node).toBeUndefined();
