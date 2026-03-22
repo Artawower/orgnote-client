@@ -223,10 +223,12 @@
   .cm-foldPlaceholder {
     padding-left: var(--padding-sm);
     border: none;
-    font-weight: bold;
+    font-weight: inherit;
     background: transparent;
     color: var(--fg-muted);
-    font-size: 1.5em;
+    font-size: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
   }
 }
 
