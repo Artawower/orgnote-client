@@ -168,6 +168,19 @@ export function getDeveloperCommands(): Command[] {
         return !config.config.developer.developerMode;
       },
     },
+    {
+      command: 'seed-demo-notes',
+      title: 'Seed demo notes',
+      description: 'Generate 30 interconnected sample notes for graph testing',
+      icon: 'sym_o_hub',
+      group: 'developer',
+      hide: (api: OrgNoteApi) => !api.core.useConfig().config.developer.developerMode,
+      handler: async (api: OrgNoteApi) => {
+        const { seedDemoNotes } = await import('src/commands/seed-demo-notes');
+        await seedDemoNotes(api);
+        api.core.useNotifications().notify({ message: 'Demo notes seeded', level: 'info' });
+      },
+    },
   ];
 
   return commands;

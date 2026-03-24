@@ -83,6 +83,7 @@ const routes: RouteRecordRaw[] = [
         name: RouteNames.Panes,
         component: () => import('pages/PanesPage.vue'),
       },
+
     ],
   },
   {

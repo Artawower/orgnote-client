@@ -1,4 +1,4 @@
-import type { Command } from 'orgnote-api';
+import { type Command } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { convertRouterNameToCommand } from 'src/utils/route-name-to-command';
 import { isPresent } from 'orgnote-api/utils';
@@ -14,7 +14,6 @@ export function getRoutesCommands(router?: Router): Command[] {
   router ??= useRouter();
   const routesCommands: Command[] = router
     .getRoutes()
-    // TODO: master tmp hack for avoid routes with params. Adapt to user input.
     .filter(hasRouteName)
     .filter((r) => !r.path.includes(':') && r?.meta?.programmaticalNavigation !== false)
     .map((r) => ({
@@ -23,7 +22,7 @@ export function getRoutesCommands(router?: Router): Command[] {
       description: `Open ${r.name.toString()}`,
       group: 'navigation' as const,
       icon: (r.meta?.icon as string) ?? 'assistant_navigation',
-      handler: () => router.push({ name: r.name }),
+      handler: () => router!.push({ name: r.name }),
     }));
 
   return routesCommands;

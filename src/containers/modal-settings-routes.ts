@@ -73,6 +73,11 @@ export function createSettingsRouter(): Router {
         path: '/settings/api',
         component: () => import('./ApiSettings.vue'),
       },
+      {
+        name: RouteNames.GraphSettings,
+        path: '/settings/graph',
+        component: () => import('./GraphSettings.vue'),
+      },
     ],
   });
 

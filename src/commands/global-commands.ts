@@ -6,6 +6,7 @@ import {
   isOrgGpgFile,
   buildBufferUri,
   generateGpgKeys,
+  RouteNames,
 } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
@@ -18,9 +19,11 @@ import NotificationsCommandIcon from 'src/components/NotificationsCommandIcon.vu
 import GenerateGpgKeysModal from 'src/containers/GenerateGpgKeysModal.vue';
 import type { GenerateGpgKeysModalResult } from 'src/models/gpg-keys-modal-result';
 import { to } from 'orgnote-api/utils';
+import { type Router } from 'vue-router';
 import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
 import { useEncryptedNotesWarning } from 'src/composables/use-encrypted-notes-warning';
+import { GRAPH_BUFFER_URI } from 'src/constants/graph-buffer';
 
 const getActiveFilePath = (): string | undefined => {
   const tab = api.core.usePane().activeTab;
@@ -160,10 +163,22 @@ const safeRewriteAndReopen = async (oldPath: string, newPath: string): Promise<v
   reporter.reportError(result.error);
 };
 
-export function getGlobalCommands(): Command[] {
+export function getGlobalCommands(router: Router): Command[] {
   const sidebarStore = api.ui.useSidebar();
   const modalStore = api.ui.useModal();
   const commands: Command[] = [
+    {
+      command: DefaultCommands.OPEN_GRAPH,
+      icon: 'sym_o_hub',
+      group: 'navigation',
+      handler: async (api): Promise<void> => {
+        if (router.currentRoute.value.name !== RouteNames.Panes) {
+          await router.push({ name: RouteNames.Panes });
+        }
+        await api.core.useLayout().initLayout();
+        await api.core.useBufferViewer().open(GRAPH_BUFFER_URI);
+      },
+    },
     {
       command: DefaultCommands.REPORT_BUG,
       group: 'debug',
