@@ -428,6 +428,15 @@ body {
   --date-picker-nav-btn-radius: var(--border-radius-sm);
   --date-picker-nav-btn-hover-bg: var(--bg-hover);
   --date-picker-transition: 0.15s ease;
+
+  --graph-node-color: var(--fg-muted);
+  --graph-node-dim-color: color-mix(in srgb, var(--fg-muted) 50%, transparent);
+  --graph-edge-color: color-mix(in srgb, var(--fg-muted) 30%, transparent);
+  --graph-edge-highlight-color: color-mix(in srgb, var(--red) 70%, transparent);
+  --graph-edge-dim-color: color-mix(in srgb, var(--fg-muted) 12%, transparent);
+  --graph-active-color: var(--red);
+  --graph-label-color: color-mix(in srgb, var(--fg-muted) 75%, transparent);
+  --graph-label-font: var(--main-font-family);
 }
 
 @include desktop-below {

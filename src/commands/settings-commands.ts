@@ -225,6 +225,16 @@ export function getSettingsCommands(): Command[] {
       },
     },
     {
+      command: DefaultCommands.OPEN_GRAPH_SETTINGS,
+      group: 'settings',
+      icon: 'sym_o_hub',
+      handler: () => openSettingsRoute(RouteNames.GraphSettings),
+      isActive: () => isActiveRoute(RouteNames.GraphSettings),
+      context: {
+        narrow: true,
+      },
+    },
+    {
       command: DefaultCommands.SYNCHRONISATION_SETTINGS,
       group: 'settings',
       icon: 'sym_o_sync',

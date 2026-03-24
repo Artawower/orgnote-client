@@ -54,6 +54,16 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
     dropZoneEdgeRatio: 0.25,
+    graph: {
+      nodeRelSize: 4,
+      linkDistance: 50,
+      chargeStrength: -80,
+      warmupTicks: 150,
+      velocityDecay: 0.3,
+      initialZoom: 1.5,
+      labelFontSize: 12,
+      linkWidth: 0.5,
+    },
     fonts: { ...DEFAULT_FONT_FAMILIES },
   },
   extensions: {

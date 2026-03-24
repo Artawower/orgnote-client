@@ -14,12 +14,15 @@ import '@quasar/extras/fontawesome-v6/fontawesome-v6.css';
 import 'quasar/dist/quasar.css';
 import { setup } from '@storybook/vue3-vite';
 import { i18n } from '../src/boot/i18n';
+import { ORGNOTE_API_PROVIDER_TOKEN } from '../src/constants/app-providers';
 
 import { QBtn, QDate, QIcon, QLinearProgress, Quasar } from 'quasar';
 import { createPinia } from 'pinia';
 import './global.css';
 
+
 setup((app) => {
+  (app.config as typeof app.config & { devtools?: boolean }).devtools = false;
   app.use(Quasar, {
     components: {
       QIcon,
@@ -43,7 +46,9 @@ setup((app) => {
     },
   };
 
-  // @ts-expect-error - Mocking API for Storybook
+  app.provide(ORGNOTE_API_PROVIDER_TOKEN, mockApi);
+  window.orgnote = mockApi;
+
   import('../src/boot/api').then(({ api }) => {
     Object.assign(api, mockApi);
   });

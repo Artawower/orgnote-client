@@ -1,8 +1,20 @@
 import { defineBoot } from '@quasar/app-vite/wrappers';
 import { api } from './api';
+import { GRAPH_BUFFER_PATTERN } from 'src/constants/graph-buffer';
 
 export default defineBoot(() => {
   const bufferViewer = api.core.useBufferViewer();
+
+  bufferViewer.register({
+    pattern: GRAPH_BUFFER_PATTERN,
+    component: () => import('src/containers/GraphContainer.vue'),
+    meta: {
+      id: 'builtin:graph-viewer',
+      name: 'Graph Viewer',
+      icon: 'hub',
+      priority: 100,
+    },
+  });
 
   bufferViewer.register({
     pattern: '\\.org(\\.gpg)?$',

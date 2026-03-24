@@ -1,5 +1,5 @@
 // This file has been automatically migrated to valid ESM format by Storybook.
-import { fileURLToPath } from "node:url";
+import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/vue3-vite';
 import vue from '@vitejs/plugin-vue';
 import path, { dirname } from 'path';
@@ -9,11 +9,7 @@ const __dirname = dirname(__filename);
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
-  addons: [
-    '@storybook/addon-onboarding',
-    '@chromatic-com/storybook',
-    '@storybook/addon-docs'
-  ],
+  addons: ['@storybook/addon-onboarding', '@chromatic-com/storybook', '@storybook/addon-docs'],
   framework: {
     name: '@storybook/vue3-vite',
     options: {},
@@ -30,6 +26,7 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         src: path.resolve(__dirname, '../src'),
         '#q-app/wrappers': path.resolve(__dirname, './mocks/q-app-wrappers.ts'),
+        'vue-i18n': path.resolve(__dirname, './mocks/vue-i18n.ts'),
       };
     }
 

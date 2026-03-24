@@ -11,6 +11,7 @@ export const useSettingsUiStore = defineStore('settings-ui', () => {
       DefaultCommands.STORAGE_SETTINGS,
       DefaultCommands.LANGUAGE_SETTINGS,
       DefaultCommands.INTERFACE_SETTINGS,
+      DefaultCommands.OPEN_GRAPH_SETTINGS,
       DefaultCommands.SYNCHRONISATION_SETTINGS,
       DefaultCommands.SUBSCRIPTION_SETTINGS,
       DefaultCommands.KEYBINDINGS_SETTINGS,
