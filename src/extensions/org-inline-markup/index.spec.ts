@@ -1,4 +1,5 @@
 import { test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { setActivePinia, createPinia } from 'pinia';
 import { orgInlineMarkupExtension, orgInlineMarkupManifest } from './index';
 import { NodeType } from 'org-mode-ast';
@@ -65,10 +66,7 @@ test('orgInlineMarkupExtension.onMounted: applies scoped styles', async () => {
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   expect(mockApplyScopedStyles).toHaveBeenCalledTimes(1);
-  expect(mockApplyScopedStyles).toHaveBeenCalledWith(
-    'org-inline-markup',
-    expect.any(String),
-  );
+  expect(mockApplyScopedStyles).toHaveBeenCalledWith('org-inline-markup', expect.any(String));
 });
 
 test('orgInlineMarkupExtension.onMounted: applies styles with correct scope id', async () => {
@@ -76,6 +74,15 @@ test('orgInlineMarkupExtension.onMounted: applies styles with correct scope id',
 
   const scopeId = mockApplyScopedStyles.mock.calls[0]?.[0];
   expect(scopeId).toBe('org-inline-markup');
+});
+
+test('orgInlineMarkupExtension.onMounted: bullet styles do not disable text selection', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const styles = readFileSync('src/extensions/org-inline-markup/styles.css', 'utf8');
+
+  expect(styles).toContain('.org-list-bullet');
+  expect(styles).not.toContain('user-select: none');
 });
 
 test('orgInlineMarkupExtension.onMounted: adds widgets to editor store', async () => {
@@ -177,7 +184,9 @@ test('orgInlineMarkupExtension: ListItem lineClass returns correct class with ch
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const listItemWidget = widgets.find((w) => w.nodeType === NodeType.ListItem) as unknown as LineClassWidget;
+  const listItemWidget = widgets.find(
+    (w) => w.nodeType === NodeType.ListItem,
+  ) as unknown as LineClassWidget;
 
   const mockCheckedNode = {
     title: {
@@ -199,7 +208,9 @@ test('orgInlineMarkupExtension: ListItem lineClass returns ordered class when pa
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const listItemWidget = widgets.find((w) => w.nodeType === NodeType.ListItem) as unknown as LineClassWidget;
+  const listItemWidget = widgets.find(
+    (w) => w.nodeType === NodeType.ListItem,
+  ) as unknown as LineClassWidget;
 
   const mockOrderedNode = {
     title: { children: { get: () => null } },
@@ -216,7 +227,9 @@ test('orgInlineMarkupExtension: Headline lineClass returns level-specific class'
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const headlineWidget = widgets.find((w) => w.nodeType === NodeType.Headline) as unknown as LineClassWidget;
+  const headlineWidget = widgets.find(
+    (w) => w.nodeType === NodeType.Headline,
+  ) as unknown as LineClassWidget;
 
   const mockHeadlineNode = { level: 3 };
   const classGetter = headlineWidget.class as ClassBuilder;
@@ -230,7 +243,9 @@ test('orgInlineMarkupExtension: TodoKeyword classBuilder returns keyword-specifi
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const todoWidget = widgets.find((w) => w.nodeType === NodeType.TodoKeyword) as unknown as InlineWidget;
+  const todoWidget = widgets.find(
+    (w) => w.nodeType === NodeType.TodoKeyword,
+  ) as unknown as InlineWidget;
 
   const mockTodoNode = { value: 'TODO' };
   const classBuilder = todoWidget.classBuilder!;
@@ -243,7 +258,9 @@ test('orgInlineMarkupExtension: TodoKeyword classBuilder handles different keywo
   await orgInlineMarkupExtension.onMounted!(mockApi);
 
   const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
-  const todoWidget = widgets.find((w) => w.nodeType === NodeType.TodoKeyword) as unknown as InlineWidget;
+  const todoWidget = widgets.find(
+    (w) => w.nodeType === NodeType.TodoKeyword,
+  ) as unknown as InlineWidget;
 
   const classBuilder = todoWidget.classBuilder!;
   expect(classBuilder({ value: 'DONE' })).toBe('org-keyword-done');
