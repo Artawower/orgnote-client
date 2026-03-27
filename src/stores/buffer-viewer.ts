@@ -16,6 +16,7 @@ const getRouteNameForScheme = (scheme: string): string => {
     memory: RouteNames.File,
     shared: RouteNames.File,
     embedded: RouteNames.Embedded,
+    builtin: RouteNames.Builtin,
   };
   return mapping[scheme] ?? RouteNames.File;
 };
@@ -84,7 +85,6 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
     const open = async (uri: string): Promise<void> => {
       const { scheme, path } = parseBufferUri(uri);
       const routeName = getRouteNameForScheme(scheme);
-
       await pane.navigate({
         name: routeName,
         params: { path },
