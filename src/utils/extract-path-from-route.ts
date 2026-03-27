@@ -5,7 +5,6 @@ const ROUTE_SCHEME_MAPPING: Record<string, BufferScheme> = {
   [RouteNames.File]: 'file',
   [RouteNames.Remote]: 'remote',
   [RouteNames.Embedded]: 'embedded',
-  [RouteNames.Builtin]: 'builtin',
 };
 
 const DEFAULT_SCHEME: BufferScheme = 'file';

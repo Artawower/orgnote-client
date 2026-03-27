@@ -8,10 +8,12 @@ import type { FileMeta } from 'orgnote-api';
 const getAll = vi.fn<() => Promise<FileMeta[]>>();
 const open = vi.fn<() => Promise<void>>();
 const activeContext = ref<{ filePath?: string } | null>(null);
+const config = ref({ ui: { graph: {} } });
 
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
+      useConfig: () => ({ config }),
       useFileMeta: () => ({ getAll }),
       useEditor: () => ({ activeContext: activeContext.value }),
       useBufferViewer: () => ({ open }),
@@ -106,4 +108,38 @@ test('GraphContainer opens selected note when nodeClick is emitted', async () =>
   });
 
   expect(open).toHaveBeenCalledWith('file:///notes/alpha.org');
+});
+
+test('GraphContainer keeps selected-node highlight when hover is cleared', async () => {
+  activeContext.value = { filePath: '/notes/beta.org' };
+
+  const wrapper = mount(GraphContainer, {
+    global: {
+      stubs: {
+        AppGraph: {
+          name: 'AppGraph',
+          props: ['graph', 'selectedNodeId', 'highlightedNodeIds', 'loading', 'error'],
+          template: '<div class="graph-stub" />',
+        },
+      },
+    },
+  });
+
+  await flushPromises();
+
+  await wrapper.getComponent({ name: 'AppGraph' }).vm.$emit('nodeHover', 'alpha');
+  await flushPromises();
+
+  expect(wrapper.getComponent({ name: 'AppGraph' }).props('highlightedNodeIds')).toEqual([
+    'alpha',
+    'beta',
+  ]);
+
+  await wrapper.getComponent({ name: 'AppGraph' }).vm.$emit('nodeHover', undefined);
+  await flushPromises();
+
+  expect(wrapper.getComponent({ name: 'AppGraph' }).props('highlightedNodeIds')).toEqual([
+    'beta',
+    'alpha',
+  ]);
 });

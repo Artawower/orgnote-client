@@ -1,11 +1,19 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { defineComponent, nextTick, ref } from 'vue';
+import type { GraphUiConfig } from 'orgnote-api';
 
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (k: string) => k }) }));
 import AppGraph from './AppGraph.vue';
 import type { GraphViewModel } from 'src/models/graph';
-import type { AppGraphProps } from './AppGraph.vue';
+
+interface AppGraphProps {
+  graph: GraphViewModel;
+  selectedNodeId?: string;
+  highlightedNodeIds?: string[];
+  graphConfig: GraphUiConfig;
+  dimUnrelated?: boolean;
+}
 
 type RendererGraphPayload = {
   nodes: GraphViewModel['nodes'];
@@ -209,6 +217,18 @@ test('AppGraph emits nodeHover when renderer hover changes', async () => {
   expect(wrapper.emitted('nodeHover')?.[0]).toEqual(['alpha']);
 });
 
+test('AppGraph emits undefined nodeHover when renderer hover is cleared', async () => {
+  const wrapper = mount(AppGraph, {
+    props: createProps(),
+  });
+
+  await flushGraphRender();
+
+  callbacks.nodeHover?.(undefined);
+
+  expect(wrapper.emitted('nodeHover')?.[0]).toEqual([undefined]);
+});
+
 test('AppGraph renders empty state when graph has no nodes', () => {
   const wrapper = mount(AppGraph, {
     props: createProps({ graph: { nodes: [], edges: [] } }),
@@ -218,14 +238,23 @@ test('AppGraph renders empty state when graph has no nodes', () => {
 });
 
 test('AppGraph does not reset graph data when only highlighted nodes change', async () => {
-  const wrapper = mount(AppGraph, {
-    props: createProps(),
+  const highlightedNodeIds = ref<string[]>([]);
+
+  const TestHarness = defineComponent({
+    components: { AppGraph },
+    setup() {
+      return { graph, highlightedNodeIds, defaultGraphConfig };
+    },
+    template:
+      '<AppGraph :graph="graph" :graph-config="defaultGraphConfig" :highlighted-node-ids="highlightedNodeIds" />',
   });
+
+  mount(TestHarness);
 
   await flushGraphRender();
   vi.clearAllMocks();
 
-  await wrapper.setProps({ highlightedNodeIds: ['alpha', 'beta'] });
+  highlightedNodeIds.value = ['alpha', 'beta'];
   await nextTick();
   await flushGraphRender();
 

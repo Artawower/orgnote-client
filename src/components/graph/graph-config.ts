@@ -6,8 +6,6 @@ export const graphConfig = {
   defaultHeight: 600,
   nodeWeightScaleFactor: 0.6,
   centerForceStrength: 0.5,
-  collideStrength: 0.7,
-  collidePadding: 4,
   particleWidth: 1.4,
   pointerPadding: 6,
   maxLabelScale: 60,

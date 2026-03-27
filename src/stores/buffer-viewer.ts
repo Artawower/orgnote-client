@@ -16,7 +16,6 @@ const getRouteNameForScheme = (scheme: string): string => {
     memory: RouteNames.File,
     shared: RouteNames.File,
     embedded: RouteNames.Embedded,
-    builtin: RouteNames.Builtin,
   };
   return mapping[scheme] ?? RouteNames.File;
 };
@@ -71,9 +70,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
     };
 
     const getViewers = (path: string): BufferViewerEntry[] => {
-      return viewers.value
-        .filter((v) => new RegExp(v.pattern).test(path))
-        .sort(sortByPriority);
+      return viewers.value.filter((v) => new RegExp(v.pattern).test(path)).sort(sortByPriority);
     };
 
     const getViewer = (path: string): BufferViewerEntry | undefined => {

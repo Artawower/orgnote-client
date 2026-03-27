@@ -48,10 +48,9 @@ import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppGraph from 'src/components/graph/AppGraph.vue';
 import { buildGraphFromFileMetas } from 'src/utils/build-graph';
 import type { GraphBuildResult, GraphNodeViewModel } from 'src/models/graph';
-import { useConfigStore } from 'src/stores/config';
 import { storeToRefs } from 'pinia';
 import type { GraphUiConfig } from 'orgnote-api';
-
+import { DEFAULT_GRAPH_CONFIG } from 'src/constants/graph-defaults';
 
 const EMPTY_GRAPH: GraphBuildResult = {
   graph: {
@@ -62,18 +61,7 @@ const EMPTY_GRAPH: GraphBuildResult = {
 };
 
 const { t } = useI18n();
-const { config } = storeToRefs(useConfigStore());
-
-const DEFAULT_GRAPH_CONFIG: GraphUiConfig = {
-  nodeRelSize: 4,
-  linkDistance: 50,
-  chargeStrength: -80,
-  warmupTicks: 150,
-  velocityDecay: 0.3,
-  initialZoom: 1.5,
-  labelFontSize: 12,
-  linkWidth: 0.5,
-};
+const { config } = storeToRefs(api.core.useConfig());
 
 const graphUserConfig = computed<GraphUiConfig>(() => ({
   ...DEFAULT_GRAPH_CONFIG,
@@ -199,7 +187,7 @@ onMounted(() => {
 .graph-surface {
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: var(--graph-surface-min-height);
 
   &.state-wrapper {
     border: var(--border-default);
