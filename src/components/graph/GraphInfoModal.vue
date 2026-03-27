@@ -12,13 +12,8 @@
     </card-wrapper>
 
     <card-wrapper>
-      <menu-item
-        v-for="field in configFields"
-        :key="field.key"
-        flat
-        prefer="right"
-      >
-        <span class="field-label">{{ field.label }}</span>
+      <menu-item v-for="field in configFields" :key="field.key" flat prefer="right">
+        <span class="field-label">{{ camelCaseToWords(field.key) }}</span>
         <template #right>
           <input-field
             v-model.number="localConfig[field.key]"
@@ -43,6 +38,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import InputField from 'src/components/InputField.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
+import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 
 const props = defineProps<{
   nodesCount: number;
@@ -56,15 +52,15 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const localConfig = reactive<GraphUiConfig>({ ...props.config });
 
-const configFields: Array<{ key: keyof GraphUiConfig; label: string }> = [
-  { key: 'nodeRelSize', label: 'Node size' },
-  { key: 'linkDistance', label: 'Link distance' },
-  { key: 'chargeStrength', label: 'Charge strength' },
-  { key: 'warmupTicks', label: 'Warmup ticks' },
-  { key: 'velocityDecay', label: 'Velocity decay' },
-  { key: 'initialZoom', label: 'Initial zoom' },
-  { key: 'labelFontSize', label: 'Label font size' },
-  { key: 'linkWidth', label: 'Link width' },
+const configFields: Array<{ key: keyof GraphUiConfig }> = [
+  { key: 'nodeRelSize' },
+  { key: 'linkDistance' },
+  { key: 'chargeStrength' },
+  { key: 'warmupTicks' },
+  { key: 'velocityDecay' },
+  { key: 'initialZoom' },
+  { key: 'labelFontSize' },
+  { key: 'linkWidth' },
 ];
 
 watch(localConfig, (val) => {
@@ -75,12 +71,10 @@ watch(localConfig, (val) => {
 <style lang="scss" scoped>
 .graph-info-modal {
   padding: var(--padding-md);
-  min-width: 280px;
+  min-width: var(--graph-modal-min-width);
 }
-
 
 .field-input {
-  width: 80px;
+  width: var(--graph-config-input-width);
 }
 </style>
-

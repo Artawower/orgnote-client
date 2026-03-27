@@ -14,7 +14,7 @@
       class="graph-canvas"
       data-test="graph-canvas"
       role="img"
-      aria-label="Notes graph"
+      :aria-label="t(i18n.GRAPH_TITLE)"
     />
   </div>
 </template>
@@ -35,11 +35,13 @@ export interface AppGraphProps {
   selectedNodeId?: string;
   highlightedNodeIds?: string[];
   graphConfig: GraphUiConfig;
+  dimUnrelated?: boolean;
 }
 
 const props = withDefaults(defineProps<AppGraphProps>(), {
   selectedNodeId: undefined,
   highlightedNodeIds: () => [],
+  dimUnrelated: true,
 });
 
 const emit = defineEmits<{
@@ -59,6 +61,7 @@ const colors = useGraphColors();
 const renderer = useGraphRenderer({
   colors,
   getConfig: () => props.graphConfig,
+  getDimUnrelated: () => props.dimUnrelated,
   getHighlightedSet: () => highlightedNodeSet.value,
   getSelectedNodeId: () => props.selectedNodeId,
   onNodeClick: (node) => emit('nodeClick', node),
@@ -120,9 +123,8 @@ watch(
 
 <style lang="scss" scoped>
 .app-graph {
-  width: 100%;
-  height: 100%;
-  min-height: 320px;
+  @include fit;
+  min-height: var(--graph-canvas-min-height);
   border: var(--border-default);
   border-radius: var(--border-radius-lg);
   background:
@@ -146,12 +148,7 @@ watch(
 
 .graph-canvas {
   @include fit;
-  min-height: 320px;
-  display: block;
-}
-.graph-canvas {
-  @include fit;
-  min-height: 320px;
+  min-height: var(--graph-canvas-min-height);
   display: block;
 }
 </style>

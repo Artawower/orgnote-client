@@ -66,6 +66,7 @@ const applyEdgePair = (
   const edgeId = createEdgeId(sourceId, targetId);
   if (edgesById.has(edgeId)) return;
 
+  weights.set(sourceId, (weights.get(sourceId) ?? MIN_NODE_WEIGHT) + 1);
   weights.set(targetId, (weights.get(targetId) ?? MIN_NODE_WEIGHT) + 1);
   edgesById.set(edgeId, createEdge(sourceId, targetId));
 };
@@ -79,15 +80,15 @@ const buildEdgesAndWeights = (
 
   metas
     .flatMap(collectEdgePairs)
-    .forEach(([sourceId, targetId]) => applyEdgePair(sourceId, targetId, nodeIds, edgesById, weights));
+    .forEach(([sourceId, targetId]) =>
+      applyEdgePair(sourceId, targetId, nodeIds, edgesById, weights),
+    );
 
   return { edgesById, weights };
 };
 
 const sortNodes = (nodes: GraphNodeViewModel[]): GraphNodeViewModel[] =>
-  [...nodes].sort(
-    (l, r) => r.weight - l.weight || l.label.localeCompare(r.label),
-  );
+  [...nodes].sort((l, r) => r.weight - l.weight || l.label.localeCompare(r.label));
 
 const sortEdges = (edges: GraphEdgeViewModel[]): GraphEdgeViewModel[] =>
   [...edges].sort((l, r) => l.id.localeCompare(r.id));
@@ -102,7 +103,9 @@ export const buildGraphFromFileMetas = (metas: readonly FileMeta[]): GraphBuildR
     appendNeighbor(adjacency, target, source);
   });
 
-  const nodes = sortNodes(metas.map((meta) => createNode(meta, weights.get(meta.id) ?? MIN_NODE_WEIGHT)));
+  const nodes = sortNodes(
+    metas.map((meta) => createNode(meta, weights.get(meta.id) ?? MIN_NODE_WEIGHT)),
+  );
   const edges = sortEdges(Array.from(edgesById.values()));
 
   return { graph: { nodes, edges }, adjacency };

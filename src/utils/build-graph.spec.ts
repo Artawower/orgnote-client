@@ -32,6 +32,22 @@ test('buildGraphFromFileMetas creates undirected unique edges from links and bac
   expect(result.graph.edges).toEqual([{ id: 'a::b', source: 'a', target: 'b' }]);
 });
 
+test('buildGraphFromFileMetas de-duplicates reciprocal links and increments weights once', () => {
+  const result = buildGraphFromFileMetas([
+    createMeta({ id: 'a', filePath: ['a.org'], links: ['b'] }),
+    createMeta({ id: 'b', filePath: ['b.org'], links: ['a'] }),
+  ]);
+
+  expect(result.graph.edges).toEqual([{ id: 'a::b', source: 'a', target: 'b' }]);
+
+  const nodeById = Object.fromEntries(
+    result.graph.nodes.map((node: GraphNodeViewModel) => [node.id, node]),
+  );
+
+  expect(nodeById.a?.weight).toBe(2);
+  expect(nodeById.b?.weight).toBe(2);
+});
+
 test('buildGraphFromFileMetas ignores self links and missing targets', () => {
   const result = buildGraphFromFileMetas([
     createMeta({ id: 'a', filePath: ['a.org'], links: ['a', 'missing'] }),
@@ -41,16 +57,18 @@ test('buildGraphFromFileMetas ignores self links and missing targets', () => {
   expect(result.adjacency).toEqual({ a: [] });
 });
 
-test('buildGraphFromFileMetas increments only target node weights for each edge', () => {
+test('buildGraphFromFileMetas increments both node weights for each undirected edge', () => {
   const result = buildGraphFromFileMetas([
     createMeta({ id: 'a', filePath: ['a.org'], links: ['b', 'c'] }),
     createMeta({ id: 'b', filePath: ['b.org'] }),
     createMeta({ id: 'c', filePath: ['c.org'] }),
   ]);
 
-  const nodeById = Object.fromEntries(result.graph.nodes.map((node: GraphNodeViewModel) => [node.id, node]));
+  const nodeById = Object.fromEntries(
+    result.graph.nodes.map((node: GraphNodeViewModel) => [node.id, node]),
+  );
 
-  expect(nodeById.a?.weight).toBe(1);
+  expect(nodeById.a?.weight).toBe(3);
   expect(nodeById.b?.weight).toBe(2);
   expect(nodeById.c?.weight).toBe(2);
 });

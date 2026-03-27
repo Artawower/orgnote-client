@@ -1,4 +1,10 @@
-import { buildBufferUri, splitPath, toAbsolutePath, RouteNames, type BufferScheme } from 'orgnote-api';
+import {
+  buildBufferUri,
+  splitPath,
+  toAbsolutePath,
+  RouteNames,
+  type BufferScheme,
+} from 'orgnote-api';
 import { getHostRelatedPath } from './get-host-related-path';
 import { to } from 'orgnote-api/utils';
 import type { ResultAsync } from 'neverthrow';
@@ -18,7 +24,6 @@ const externalUrlPattern = /^(?:https?:\/\/|data:)/i;
 const routeNameToScheme: Record<string, BufferScheme> = {
   [RouteNames.Remote]: 'remote',
   [RouteNames.Embedded]: 'embedded',
-  [RouteNames.Builtin]: 'builtin',
   [RouteNames.File]: 'file',
 };
 
@@ -120,7 +125,10 @@ export const resolveInternalNoteUri = (
   noteId: string,
   getFileMeta: FileMetaGetter,
 ): ResultAsync<string | undefined, Error> =>
-  to(getFileMeta, `Failed to resolve note: ${noteId}`)(noteId).map((meta) => {
+  to(
+    getFileMeta,
+    `Failed to resolve note: ${noteId}`,
+  )(noteId).map((meta) => {
     if (!meta) return undefined;
     return buildBufferUri(defaultScheme, meta.filePath.join('/'));
   });

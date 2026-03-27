@@ -1,5 +1,6 @@
 import ForceGraph, { type LinkObject, type NodeObject } from 'force-graph';
 import type { GraphUiConfig } from 'orgnote-api';
+import { isNullable } from 'orgnote-api/utils';
 import type { GraphNodeViewModel, GraphViewModel } from 'src/models/graph';
 import { getCssVar } from 'src/utils/css-utils';
 import type { GraphColorsComposable } from './use-graph-colors';
@@ -8,7 +9,10 @@ import { graphConfig } from './graph-config';
 type ForceGraphRenderer = ReturnType<ReturnType<typeof ForceGraph>>;
 type ForceGraphNode = GraphNodeViewModel & NodeObject;
 type ForceGraphData = { nodes: GraphNodeViewModel[]; links: LinkObject[] };
-type D3ForceAccessor = (name: string, force?: unknown) => { strength?: (v: number) => unknown } | undefined;
+type D3ForceAccessor = (
+  name: string,
+  force?: unknown,
+) => { strength?: (v: number) => unknown } | undefined;
 
 export interface ResizeContext {
   width: number;
@@ -22,6 +26,7 @@ export interface ResizeContext {
 export interface UseGraphRendererOptions {
   colors: GraphColorsComposable;
   getConfig: () => GraphUiConfig;
+  getDimUnrelated: () => boolean;
   getHighlightedSet: () => Set<string>;
   getSelectedNodeId: () => string | undefined;
   onNodeClick: (node: GraphNodeViewModel) => void;
@@ -34,28 +39,41 @@ const truncateLabel = (value: string): string =>
     ? value
     : `${value.slice(0, graphConfig.labelMaxLength - 1)}…`;
 
-export const resolveNodeId = (value: NodeObject | string | number | null | undefined): string => {
+export const resolveNodeId = (
+  value: NodeObject | string | number | null | undefined,
+): string | undefined => {
   if (typeof value === 'string' || typeof value === 'number') return String(value);
-  return value?.id ? String(value.id) : '';
+  if (value?.id === undefined || isNullable(value.id)) return undefined;
+  return String(value.id);
 };
 
 const getNodeSize = (node: NodeObject): number =>
   Math.max(1, (node as ForceGraphNode).weight * graphConfig.nodeWeightScaleFactor);
-
-
-
 const getRendererSize = (rootEl?: HTMLElement, graphEl?: HTMLElement) => ({
   width: graphEl?.clientWidth ?? rootEl?.clientWidth ?? graphConfig.defaultWidth,
   height: graphEl?.clientHeight ?? rootEl?.clientHeight ?? graphConfig.defaultHeight,
 });
 
 export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
-  const { colors, getConfig, getHighlightedSet, getSelectedNodeId, onNodeClick, onNodeHover, onBackgroundClick } = opts;
+  const {
+    colors,
+    getConfig,
+    getDimUnrelated,
+    getHighlightedSet,
+    getSelectedNodeId,
+    onNodeClick,
+    onNodeHover,
+    onBackgroundClick,
+  } = opts;
 
   let renderer: ForceGraphRenderer | undefined;
   let resizeFrameId = 0;
 
-  const paintPointerArea = (node: NodeObject, color: string, ctx: CanvasRenderingContext2D): void => {
+  const paintPointerArea = (
+    node: NodeObject,
+    color: string,
+    ctx: CanvasRenderingContext2D,
+  ): void => {
     const n = node as ForceGraphNode;
     const r = getConfig().nodeRelSize * Math.sqrt(getNodeSize(node)) + graphConfig.pointerPadding;
     ctx.fillStyle = color;
@@ -76,22 +94,35 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   const getNodeColor = (node: NodeObject): string => {
     const nodeId = resolveNodeId(node);
     const set = getHighlightedSet();
-    return colors.nodeColorFor(set.has(nodeId) || getSelectedNodeId() === nodeId, set.size > 0);
+    const isActive = (nodeId ? set.has(nodeId) : false) || getSelectedNodeId() === nodeId;
+    const hasDim = getDimUnrelated() && set.size > 0;
+    return colors.nodeColorFor(isActive, hasDim);
   };
 
   const getEdgeColor = (link: LinkObject): string => {
     const set = getHighlightedSet();
-    const isHighlighted = set.has(resolveNodeId(link.source)) && set.has(resolveNodeId(link.target));
-    return colors.edgeColorFor(isHighlighted, set.size > 0);
+    const sourceId = resolveNodeId(link.source);
+    const targetId = resolveNodeId(link.target);
+    const isHighlighted =
+      sourceId !== undefined && targetId !== undefined && set.has(sourceId) && set.has(targetId);
+    const hasDim = getDimUnrelated() && set.size > 0;
+    return colors.edgeColorFor(isHighlighted, hasDim);
   };
 
-  const drawNodeLabel = (node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number): void => {
+  const drawNodeLabel = (
+    node: NodeObject,
+    ctx: CanvasRenderingContext2D,
+    globalScale: number,
+  ): void => {
     const graphNode = node as ForceGraphNode;
     const cfg = getConfig();
     const scaledSize = cfg.labelFontSize / globalScale;
     if (scaledSize > graphConfig.maxLabelScale || graphNode.id === getSelectedNodeId()) return;
 
-    const fontSize = Math.min(cfg.labelFontSize, Math.max(graphConfig.minLabelFontSize, scaledSize));
+    const fontSize = Math.min(
+      cfg.labelFontSize,
+      Math.max(graphConfig.minLabelFontSize, scaledSize),
+    );
     ctx.font = `${fontSize}px ${getCssVar('--graph-label-font') ?? 'sans-serif'}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = getCssVar('--graph-label-color') ?? '';
@@ -102,7 +133,11 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     );
   };
 
-  const setSize = (rootEl?: HTMLElement, graphEl?: HTMLElement, size?: { width: number; height: number }): void => {
+  const setSize = (
+    rootEl?: HTMLElement,
+    graphEl?: HTMLElement,
+    size?: { width: number; height: number },
+  ): void => {
     if (!renderer) return;
     const s = size ?? getRendererSize(rootEl, graphEl);
     if (s.width <= 0 || s.height <= 0) return;

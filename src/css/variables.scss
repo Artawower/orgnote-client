@@ -437,6 +437,10 @@ body {
   --graph-active-color: var(--red);
   --graph-label-color: color-mix(in srgb, var(--fg-muted) 75%, transparent);
   --graph-label-font: var(--main-font-family);
+  --graph-canvas-min-height: 320px;
+  --graph-surface-min-height: 420px;
+  --graph-config-input-width: 80px;
+  --graph-modal-min-width: 280px;
 }
 
 @include desktop-below {
