@@ -66,7 +66,9 @@ const buildOrgContent = (note: DemoNote, notesById: Map<string, DemoNote>): stri
 export const seedDemoNotes = async (api: OrgNoteApi): Promise<void> => {
   const fs = api.core.useFileSystem();
   const notesById = new Map(DEMO_NOTES.map((n) => [n.id, n]));
-  await Promise.all(
-    DEMO_NOTES.map((note) => fs.writeFile(['demo', `${note.id}.org`], buildOrgContent(note, notesById))),
+
+  await DEMO_NOTES.reduce(
+    (chain, note) => chain.then(() => fs.writeFile(['demo', `${note.id}.org`], buildOrgContent(note, notesById))),
+    Promise.resolve(),
   );
 };
