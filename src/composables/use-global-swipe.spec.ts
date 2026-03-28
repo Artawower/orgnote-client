@@ -5,7 +5,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 
 const createTouchEvent = (
-  type: 'touchstart' | 'touchmove' | 'touchend',
+  type: 'touchstart' | 'touchmove' | 'touchend' | 'touchcancel',
   x: number,
   y: number,
 ): TouchEvent => {
@@ -31,15 +31,23 @@ const createTouchEvent = (
   } as unknown as TouchEvent;
 };
 
-const createTestComponent = (onPan: (details: PanEventDetails) => void, enabled: () => boolean) =>
+const createTestComponent = (
+  onPan: (details: PanEventDetails) => void,
+  enabled: () => boolean,
+  onCancel?: () => void,
+) =>
   defineComponent({
     setup() {
-      useGlobalSwipe({ onPan, enabled });
+      useGlobalSwipe({ onPan, enabled, onCancel });
       return () => null;
     },
   });
 
-const dispatchTouchEvent = (type: 'touchstart' | 'touchmove' | 'touchend', x: number, y: number) => {
+const dispatchTouchEvent = (
+  type: 'touchstart' | 'touchmove' | 'touchend' | 'touchcancel',
+  x: number,
+  y: number,
+) => {
   document.dispatchEvent(createTouchEvent(type, x, y));
 };
 
@@ -187,18 +195,25 @@ test('useGlobalSwipe should include correct offset values', () => {
   wrapper.unmount();
 });
 
-test('useGlobalSwipe should include offset values', () => {
+
+test('useGlobalSwipe should not call onCancel when reset happens without active swipe', () => {
   const onPan = vi.fn();
-  const wrapper = mount(createTestComponent(onPan, () => true));
+  const onCancel = vi.fn();
+  let resetSwipe: () => void = () => undefined;
 
-  dispatchTouchEvent('touchstart', 100, 100);
-  dispatchTouchEvent('touchmove', 150, 105);
-
-  expect(onPan).toHaveBeenCalledWith(
-    expect.objectContaining({
-      offset: { x: 50, y: 5 },
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const swipe = useGlobalSwipe({ onPan, enabled: () => true, onCancel });
+        resetSwipe = swipe.reset;
+        return () => null;
+      },
     }),
   );
+
+  resetSwipe();
+
+  expect(onCancel).not.toHaveBeenCalled();
   wrapper.unmount();
 });
 
@@ -251,6 +266,7 @@ test('useGlobalSwipe should remove event listeners on unmount', () => {
   expect(removeEventListenerSpy).toHaveBeenCalledWith('touchstart', expect.any(Function));
   expect(removeEventListenerSpy).toHaveBeenCalledWith('touchmove', expect.any(Function));
   expect(removeEventListenerSpy).toHaveBeenCalledWith('touchend', expect.any(Function));
+  expect(removeEventListenerSpy).toHaveBeenCalledWith('touchcancel', expect.any(Function));
 });
 
 test('useGlobalSwipe should reset state after touchend', () => {
@@ -317,6 +333,22 @@ test('useGlobalSwipe should handle touchend without touchstart', () => {
   const wrapper = mount(createTestComponent(onPan, () => true));
 
   dispatchTouchEvent('touchend', 50, 100);
+
+  expect(onPan).not.toHaveBeenCalled();
+  wrapper.unmount();
+});
+
+
+test('useGlobalSwipe should reset active swipe on touchcancel', () => {
+  const onPan = vi.fn();
+  const wrapper = mount(createTestComponent(onPan, () => true));
+
+  dispatchTouchEvent('touchstart', 0, 100);
+  dispatchTouchEvent('touchmove', 20, 100);
+  dispatchTouchEvent('touchcancel', 20, 100);
+
+  onPan.mockClear();
+  dispatchTouchEvent('touchmove', 40, 100);
 
   expect(onPan).not.toHaveBeenCalled();
   wrapper.unmount();

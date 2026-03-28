@@ -266,3 +266,27 @@ test('useDrawerGesture should handle missing offset and duration values', () => 
 
   expect(onClose).toHaveBeenCalled();
 });
+
+test('useDrawerGesture reset should restore closed drawer state', () => {
+  const { gesture } = createGesture({ side: 'left', drawerWidth: 300, opened: false });
+
+  gesture.handlePan(createPanEvent({ isFirst: true, direction: 'right' }));
+  gesture.handlePan(createPanEvent({ offset: { x: 120, y: 0 } }));
+
+  gesture.reset();
+
+  expect(gesture.isDragging.value).toBe(false);
+  expect(gesture.progress.value).toBe(0);
+});
+
+test('useDrawerGesture reset should restore open drawer state', () => {
+  const { gesture } = createGesture({ side: 'left', drawerWidth: 300, opened: true });
+
+  gesture.handlePan(createPanEvent({ isFirst: true, direction: 'left' }));
+  gesture.handlePan(createPanEvent({ offset: { x: -120, y: 0 } }));
+
+  gesture.reset();
+
+  expect(gesture.isDragging.value).toBe(false);
+  expect(gesture.progress.value).toBe(1);
+});

@@ -19,6 +19,7 @@ interface TouchDelta {
 interface UseGlobalSwipeOptions {
   onPan: (details: PanEventDetails) => void;
   enabled: () => boolean;
+  onCancel?: () => void;
 }
 
 const hasWindowSelection = (): boolean => {
@@ -96,8 +97,14 @@ const createInitialState = (touch: Touch): SwipeState => ({
 });
 
 export const useGlobalSwipe = (options: UseGlobalSwipeOptions) => {
-  const { onPan, enabled } = options;
+  const { onPan, enabled, onCancel } = options;
   const swipeState = ref<SwipeState | null>(null);
+
+  const reset = (): void => {
+    if (!swipeState.value) return;
+    swipeState.value = null;
+    onCancel?.();
+  };
 
   const handleTouchStart = (evt: TouchEvent) => {
     if (!enabled()) return;
@@ -161,15 +168,25 @@ export const useGlobalSwipe = (options: UseGlobalSwipeOptions) => {
     swipeState.value = null;
   };
 
+  const handleTouchCancel = (): void => {
+    reset();
+  };
+
   onMounted(() => {
     document.addEventListener('touchstart', handleTouchStart, { passive: true });
     document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    document.addEventListener('touchcancel', handleTouchCancel, { passive: true });
   });
 
   onUnmounted(() => {
     document.removeEventListener('touchstart', handleTouchStart);
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
+    document.removeEventListener('touchcancel', handleTouchCancel);
   });
+
+  return {
+    reset,
+  };
 };

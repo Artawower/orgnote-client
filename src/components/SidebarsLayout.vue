@@ -51,10 +51,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type CSSProperties, toRef } from 'vue';
+import { computed, onMounted, onUnmounted, type CSSProperties, toRef } from 'vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useDrawerGesture, type PanEventDetails } from 'src/composables/use-drawer-gesture';
 import { useGlobalSwipe } from 'src/composables/use-global-swipe';
+import { useAppResume } from 'src/composables/use-app-resume';
 
 interface Props {
   leftOpened?: boolean;
@@ -156,9 +157,39 @@ const onPan = (details: PanEventDetails) => {
   getActiveGesture(details.direction)?.handlePan(details);
 };
 
-useGlobalSwipe({
+const resetDrawerGestures = (): void => {
+  leftGesture.reset();
+  rightGesture.reset();
+};
+
+const resetGestures = (): void => {
+  resetDrawerGestures();
+  swipe.reset();
+};
+
+const handleVisibilityChange = (): void => {
+  if (document.visibilityState === 'hidden') {
+    resetGestures();
+  }
+};
+
+const swipe = useGlobalSwipe({
   onPan,
   enabled: () => props.isMobile,
+  onCancel: resetDrawerGestures,
+});
+
+const stopResumeHandling = useAppResume(resetGestures);
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('pagehide', resetGestures);
+});
+
+onUnmounted(() => {
+  stopResumeHandling();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('pagehide', resetGestures);
 });
 
 const onCloseLeft = () => {

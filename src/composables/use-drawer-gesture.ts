@@ -61,7 +61,7 @@ const shouldOpenDrawer = (
 export const useDrawerGesture = (options: DrawerGestureOptions) => {
   const { drawerWidth, opened, side, onOpen, onClose } = options;
 
-  const progress = ref(0);
+  const progress = ref(opened.value ? 1 : 0);
   const isDragging = ref(false);
   const canDrag = ref(false);
   const dragStartedWithOpenDrawer = ref(false);
@@ -101,6 +101,13 @@ export const useDrawerGesture = (options: DrawerGestureOptions) => {
     progress.value = newPosition / drawerWidth;
   };
 
+  const reset = (): void => {
+    progress.value = opened.value ? 1 : 0;
+    isDragging.value = false;
+    canDrag.value = false;
+    dragStartedWithOpenDrawer.value = false;
+  };
+
   const handlePan = (details: PanEventDetails): void => {
     const { isFirst, isFinal, offset, duration, direction } = parsePanDetails(details);
 
@@ -125,5 +132,6 @@ export const useDrawerGesture = (options: DrawerGestureOptions) => {
     progress,
     isDragging,
     handlePan,
+    reset,
   };
 };
