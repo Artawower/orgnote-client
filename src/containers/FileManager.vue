@@ -8,8 +8,16 @@
         <command-action-button :command="DefaultCommands.DESELECT_ALL_FILES" :size="iconSize" />
       </action-buttons>
       <action-buttons v-else horizontal :position="compact ? 'left' : 'right'">
-        <command-action-button v-if="pendingOperation" :command="DefaultCommands.EXECUTE_PENDING_FILE_OPERATION" :size="iconSize" />
-        <command-action-button v-if="pendingOperation" :command="DefaultCommands.CANCEL_PENDING_FILE_OPERATION" :size="iconSize" />
+        <command-action-button
+          v-if="pendingOperation"
+          :command="DefaultCommands.EXECUTE_PENDING_FILE_OPERATION"
+          :size="iconSize"
+        />
+        <command-action-button
+          v-if="pendingOperation"
+          :command="DefaultCommands.CANCEL_PENDING_FILE_OPERATION"
+          :size="iconSize"
+        />
         <action-button
           @click="emits('dirPicked', targetPath)"
           v-if="pickDir"
@@ -54,24 +62,29 @@
       </div>
       <div class="file-list">
         <card-wrapper>
-          <file-manager-item
-            v-if="targetPath && targetPath !== '/'"
-            @click="moveUp"
-            root
-            :size="menuItemSize"
-          />
-          <file-manager-item
-            :highlight="searchHighlightKeywords"
-            @click="handleFileClick(f, $event)"
-            v-for="f of searchFiles"
-            :key="f.path"
-            :file="f"
-            :size="menuItemSize"
-            :active="isActiveFile(f)"
-            :selection-mode="selectionMode"
-            :selected="selectedFiles.has(f.path)"
-            @toggle-selection="fm.toggleSelection(f.path)"
-          />
+          <div v-if="isLoading" class="loading-wrapper" :class="{ compact }">
+            <loading-dots />
+          </div>
+          <template v-else>
+            <file-manager-item
+              v-if="targetPath && targetPath !== '/'"
+              @click="moveUp"
+              root
+              :size="menuItemSize"
+            />
+            <file-manager-item
+              v-for="f of searchFiles"
+              :key="f.path"
+              :highlight="searchHighlightKeywords"
+              :file="f"
+              :size="menuItemSize"
+              :active="isActiveFile(f)"
+              :selection-mode="selectionMode"
+              :selected="selectedFiles.has(f.path)"
+              @click="handleFileClick(f, $event)"
+              @toggle-selection="fm.toggleSelection(f.path)"
+            />
+          </template>
         </card-wrapper>
       </div>
     </div>
@@ -87,7 +100,7 @@ import FileManagerItem from './FileManagerItem.vue';
 import MenuItem from './MenuItem.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButtons from 'src/components/ActionButtons.vue';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import CommandActionButton from './CommandActionButton.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { storeToRefs } from 'pinia';
@@ -95,6 +108,7 @@ import { useI18n } from 'vue-i18n';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import AppFlex from 'src/components/AppFlex.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import LoadingDots from 'src/components/LoadingDots.vue';
 
 const props = defineProps<{
   path?: string;
@@ -112,18 +126,29 @@ const emits = defineEmits<{
 const menuItemSize = computed(() => (props.compact ? 'md' : 'auto'));
 
 const fm = api.core.useFileManager();
-const { path: targetPath, searchQuery, selectionMode, selectedFiles, pendingOperation, sortedFiles } = storeToRefs(fm);
+const {
+  path: targetPath,
+  searchQuery,
+  selectionMode,
+  selectedFiles,
+  pendingOperation,
+  sortedFiles,
+  files,
+} = storeToRefs(fm);
 if (props.path) {
   targetPath.value = props.path;
 }
 
-const searchHighlightKeywords = computed(() => searchQuery.value.split(' '));
+const searchHighlightKeywords = computed(() =>
+  searchQuery.value.split(' ').filter((keyword) => keyword.trim().length > 0),
+);
 const normalizedQuery = computed(() => searchQuery.value.toLowerCase());
 const searchFiles = computed(() =>
-  sortedFiles.value.filter((f) =>
-    !normalizedQuery.value || f.name.toLowerCase().includes(normalizedQuery.value),
+  sortedFiles.value.filter(
+    (f) => !normalizedQuery.value || f.name.toLowerCase().includes(normalizedQuery.value),
   ),
 );
+const isLoading = ref(true);
 
 const bufferViewer = api.core.useBufferViewer();
 const sidebar = api.ui.useSidebar();
@@ -180,6 +205,22 @@ const isActiveFile = (file: DiskFile): boolean => {
   return file.path === activeFilePath.value;
 };
 
+watch(
+  targetPath,
+  () => {
+    isLoading.value = true;
+  },
+  { immediate: true },
+);
+
+watch(
+  files,
+  () => {
+    isLoading.value = false;
+  },
+  { immediate: true },
+);
+
 const { t } = useI18n({
   useScope: 'global',
   inheritLocale: true,
@@ -226,6 +267,19 @@ const { t } = useI18n({
     height: 100%;
     color: var(--fg-muted);
     flex: 1;
+  }
+}
+
+.loading-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--menu-item-height);
+  padding: var(--menu-item-padding);
+
+  &.compact {
+    min-height: var(--menu-item-height-md);
+    padding: var(--padding-sm) calc(var(--padding-sm) * 2);
   }
 }
 </style>
