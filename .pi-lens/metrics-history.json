@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "files": {
+    "src/infrastructure/buffer-providers/file-system-buffer-provider.spec.ts": {
+      "latest": {
+        "commit": "unknown",
+        "timestamp": "2026-04-02T21:46:06.307Z",
+        "mi": 37.4,
+        "cognitive": 0,
+        "nesting": 2,
+        "lines": 76,
+        "maxCyclomatic": 1,
+        "entropy": 4.88
+      },
+      "history": [
+        {
+          "commit": "unknown",
+          "timestamp": "2026-04-02T21:46:06.307Z",
+          "mi": 37.4,
+          "cognitive": 0,
+          "nesting": 2,
+          "lines": 76,
+          "maxCyclomatic": 1,
+          "entropy": 4.88
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/components/graph/use-graph-renderer.ts": {
+      "latest": {
+        "commit": "bb9c0a14",
+        "timestamp": "2026-04-03T09:34:02.584Z",
+        "mi": 22.4,
+        "cognitive": 53,
+        "nesting": 4,
+        "lines": 212,
+        "maxCyclomatic": 70,
+        "entropy": 7.03
+      },
+      "history": [
+        {
+          "commit": "bb9c0a14",
+          "timestamp": "2026-04-03T09:34:02.584Z",
+          "mi": 22.4,
+          "cognitive": 53,
+          "nesting": 4,
+          "lines": 212,
+          "maxCyclomatic": 70,
+          "entropy": 7.03
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/components/graph/AppGraph.spec.ts": {
+      "latest": {
+        "commit": "bb9c0a14",
+        "timestamp": "2026-04-03T09:35:06.380Z",
+        "mi": 20.5,
+        "cognitive": 2,
+        "nesting": 3,
+        "lines": 268,
+        "maxCyclomatic": 3,
+        "entropy": 6.43
+      },
+      "history": [
+        {
+          "commit": "bb9c0a14",
+          "timestamp": "2026-04-03T09:35:06.380Z",
+          "mi": 20.5,
+          "cognitive": 2,
+          "nesting": 3,
+          "lines": 268,
+          "maxCyclomatic": 3,
+          "entropy": 6.43
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/commands/right-sidebar-commands.ts": {
+      "latest": {
+        "commit": "291d7ea1",
+        "timestamp": "2026-04-03T20:53:55.075Z",
+        "mi": 36.9,
+        "cognitive": 22,
+        "nesting": 4,
+        "lines": 83,
+        "maxCyclomatic": 7,
+        "entropy": 5.33
+      },
+      "history": [
+        {
+          "commit": "291d7ea1",
+          "timestamp": "2026-04-03T20:53:55.075Z",
+          "mi": 36.9,
+          "cognitive": 22,
+          "nesting": 4,
+          "lines": 83,
+          "maxCyclomatic": 7,
+          "entropy": 5.33
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/stores/right-sidebar.ts": {
+      "latest": {
+        "commit": "291d7ea1",
+        "timestamp": "2026-04-03T21:06:13.644Z",
+        "mi": 52.5,
+        "cognitive": 3,
+        "nesting": 3,
+        "lines": 26,
+        "maxCyclomatic": 2,
+        "entropy": 4.46
+      },
+      "history": [
+        {
+          "commit": "291d7ea1",
+          "timestamp": "2026-04-03T21:06:13.644Z",
+          "mi": 52.5,
+          "cognitive": 3,
+          "nesting": 3,
+          "lines": 26,
+          "maxCyclomatic": 2,
+          "entropy": 4.46
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/commands/right-sidebar-commands.spec.ts": {
+      "latest": {
+        "commit": "291d7ea1",
+        "timestamp": "2026-04-03T21:11:38.579Z",
+        "mi": 36.7,
+        "cognitive": 0,
+        "nesting": 2,
+        "lines": 78,
+        "maxCyclomatic": 1,
+        "entropy": 5.52
+      },
+      "history": [
+        {
+          "commit": "291d7ea1",
+          "timestamp": "2026-04-03T21:11:38.579Z",
+          "mi": 36.7,
+          "cognitive": 0,
+          "nesting": 2,
+          "lines": 78,
+          "maxCyclomatic": 1,
+          "entropy": 5.52
+        }
+      ],
+      "trend": "stable"
+    },
+    "quasar.config.ts": {
+      "latest": {
+        "commit": "9072f390",
+        "timestamp": "2026-04-04T07:14:01.699Z",
+        "mi": 34.6,
+        "cognitive": 10,
+        "nesting": 2,
+        "lines": 196,
+        "maxCyclomatic": 28,
+        "entropy": 5.09
+      },
+      "history": [
+        {
+          "commit": "9072f390",
+          "timestamp": "2026-04-04T07:14:01.699Z",
+          "mi": 34.6,
+          "cognitive": 10,
+          "nesting": 2,
+          "lines": 196,
+          "maxCyclomatic": 28,
+          "entropy": 5.09
+        }
+      ],
+      "trend": "stable"
+    },
+    "src/stores/sidebar.ts": {
+      "latest": {
+        "commit": "29dd0c79",
+        "timestamp": "2026-04-04T08:07:59.440Z",
+        "mi": 48.7,
+        "cognitive": 9,
+        "nesting": 3,
+        "lines": 36,
+        "maxCyclomatic": 3,
+        "entropy": 4.68
+      },
+      "history": [
+        {
+          "commit": "29dd0c79",
+          "timestamp": "2026-04-04T08:07:59.440Z",
+          "mi": 48.7,
+          "cognitive": 9,
+          "nesting": 3,
+          "lines": 36,
+          "maxCyclomatic": 3,
+          "entropy": 4.68
+        }
+      ],
+      "trend": "stable"
+    }
+  },
+  "capturedAt": "2026-04-04T08:08:05.072Z"
+}

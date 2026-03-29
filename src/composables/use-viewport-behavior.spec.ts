@@ -67,6 +67,11 @@ beforeEach(() => {
     configurable: true,
   });
   Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true, writable: true });
+  Object.defineProperty(window.navigator, 'standalone', {
+    value: false,
+    configurable: true,
+    writable: true,
+  });
 });
 
 afterEach(() => {
@@ -131,4 +136,74 @@ test('useViewportBehavior skips keyboard-open state update during hide window', 
 
   wrapper.unmount();
   document.body.classList.remove('keyboard-opened');
+});
+
+test('useViewportBehavior locks viewport height for ios standalone pwa keyboard state', () => {
+  const addEventListener = vi.fn();
+  const removeEventListener = vi.fn();
+
+  Object.defineProperty(window.navigator, 'standalone', {
+    value: true,
+    configurable: true,
+    writable: true,
+  });
+
+  Object.defineProperty(window, 'visualViewport', {
+    value: { height: 300, offsetTop: 0, addEventListener, removeEventListener },
+    configurable: true,
+  });
+
+  const wrapper = mount(createTestComponent());
+
+  expect(document.documentElement.style.height).toBe('300px');
+  expect(document.documentElement.style.maxHeight).toBe('300px');
+  expect(document.body.style.height).toBe('300px');
+  expect(document.body.style.maxHeight).toBe('300px');
+  expect(addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+
+  wrapper.unmount();
+
+  expect(removeEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+});
+
+test('useViewportBehavior corrects stuck viewport offset after keyboard closes', () => {
+  const scrollBySpy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+
+  Object.defineProperty(window.navigator, 'standalone', {
+    value: true,
+    configurable: true,
+    writable: true,
+  });
+
+  Object.defineProperty(window, 'visualViewport', {
+    value: { height: 800, offsetTop: 24, addEventListener: vi.fn(), removeEventListener: vi.fn() },
+    configurable: true,
+  });
+
+  const wrapper = mount(createTestComponent());
+
+  expect(scrollBySpy).toHaveBeenNthCalledWith(1, 0, -1);
+  expect(scrollBySpy).toHaveBeenNthCalledWith(2, 0, 1);
+
+  wrapper.unmount();
+});
+
+test('useViewportBehavior does not correct stuck viewport offset outside standalone pwa', () => {
+  const scrollBySpy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+  const addEventListener = vi.fn();
+  const removeEventListener = vi.fn();
+
+  Object.defineProperty(window, 'visualViewport', {
+    value: { height: 800, offsetTop: 24, addEventListener, removeEventListener },
+    configurable: true,
+  });
+
+  const wrapper = mount(createTestComponent());
+
+  expect(scrollBySpy).not.toHaveBeenCalled();
+  expect(addEventListener).not.toHaveBeenCalledWith('scroll', expect.any(Function));
+
+  wrapper.unmount();
+
+  expect(removeEventListener).not.toHaveBeenCalledWith('scroll', expect.any(Function));
 });

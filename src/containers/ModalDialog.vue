@@ -13,6 +13,7 @@
         modalData.config?.position ?? 'center',
       'full-screen': modalData.config?.fullScreen,
       'modal-wide': modalData.config?.wide,
+      'keyboard-fit': modalData.config?.mini && keyboardHeight > 0,
     }"
     ref="dialogRef"
   >
@@ -32,9 +33,7 @@
         :class="{ 'no-padding': modalData.config?.noPadding }"
       >
         <app-flex
-          v-if="
-            modalData.config?.headerTitleComponent || modalData.config?.title
-          "
+          v-if="modalData.config?.headerTitleComponent || modalData.config?.title"
           class="modal-header"
           row
           between
@@ -69,13 +68,17 @@ import ActionButton from 'src/components/ActionButton.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import AppNotifications from './AppNotifications.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useKeyboardState } from 'src/composables/use-viewport-behavior';
 
 defineProps<{ modalData: Modal }>();
 
 const modal = api.ui.useModal();
 const dialogRef = ref<InstanceType<typeof AppFlex>>();
+const { keyboardHeight: keyboardHeightRef } = useKeyboardState();
+
+const keyboardHeight = computed(() => keyboardHeightRef.value);
 
 const getDialogElement = (): HTMLDialogElement | undefined =>
   dialogRef.value?.$el as HTMLDialogElement | undefined;
@@ -159,8 +162,10 @@ dialog {
     &:not(.mini) {
       width: 100%;
       border-radius: 0;
-      height: var(--screen-height, 100vh) !important;
-      max-height: var(--screen-height, 100vh) !important;
+      height: calc(var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px)) !important;
+      max-height: calc(
+        var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px)
+      ) !important;
       top: 0 !important;
       bottom: unset;
       margin: 0;
@@ -176,6 +181,34 @@ dialog {
       width: 100%;
       height: fit-content;
       max-height: 60vh;
+    }
+  }
+}
+
+@include desktop-below {
+  dialog.mini.keyboard-fit {
+    top: 0;
+    bottom: unset;
+    height: var(--screen-height, 100vh);
+    max-height: var(--screen-height, 100vh);
+
+    .safe-area-wrapper {
+      height: 100%;
+    }
+
+    .modal-content,
+    .content {
+      flex: 1 1 auto !important;
+      min-height: 0;
+    }
+
+    .modal-content {
+      overflow: hidden;
+    }
+
+    .content {
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
     }
   }
 }
@@ -222,6 +255,11 @@ dialog.full-screen {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+
+  @include desktop-below {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
 }
 
 .safe-area-wrapper {
@@ -229,7 +267,7 @@ dialog.full-screen {
 }
 
 @include desktop-below {
-  dialog.mini {
+  dialog.mini:not(.keyboard-fit) {
     .safe-area-wrapper {
       height: auto;
     }

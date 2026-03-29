@@ -47,4 +47,4 @@ storybook-static
 # AI
 .aider*
 .serena
-plans/review
+plans/reviewnode-compile-cache/

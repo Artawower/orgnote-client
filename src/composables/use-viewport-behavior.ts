@@ -2,6 +2,7 @@ import { ref, onMounted, onUnmounted, readonly, type Ref } from 'vue';
 import { platform, platformMatch } from 'src/utils/platform-detection';
 import { to } from 'orgnote-api/utils';
 import { isKeyboardHideWindowActive } from 'src/utils/android-keyboard-hide';
+import { iosPwaOnly } from 'src/utils/platform-specific';
 interface ViewportInfo {
   viewportHeight: number;
   keyboardOpened: boolean;
@@ -54,14 +55,20 @@ const updateCssVariables = (screenHeight: number, viewportOffsetTop: number): vo
   document.documentElement.style.setProperty('--viewport-offset-top', `${viewportOffsetTop}px`);
 };
 
+const lockIOSStandaloneViewport = iosPwaOnly((screenHeight: number): void => {
+  const heightValue = `${screenHeight}px`;
+  [document.documentElement, document.body].forEach((element) => {
+    element.style.setProperty('height', heightValue, 'important');
+    element.style.setProperty('max-height', heightValue, 'important');
+  });
+});
+
 const getScrollability = (element: HTMLElement): { vertical: boolean; horizontal: boolean } => {
   const { overflowY, overflowX } = getComputedStyle(element);
   const vertical =
-    (overflowY === 'auto' || overflowY === 'scroll') &&
-    element.scrollHeight > element.clientHeight;
+    (overflowY === 'auto' || overflowY === 'scroll') && element.scrollHeight > element.clientHeight;
   const horizontal =
-    (overflowX === 'auto' || overflowX === 'scroll') &&
-    element.scrollWidth > element.clientWidth;
+    (overflowX === 'auto' || overflowX === 'scroll') && element.scrollWidth > element.clientWidth;
 
   return { vertical, horizontal };
 };
@@ -121,6 +128,14 @@ const createTouchScrollPreventer = () => {
   return { handleTouchStart, preventTouchScroll };
 };
 
+const correctStuckViewportOffset = iosPwaOnly((): void => {
+  const currentOffsetTop = window.visualViewport?.offsetTop ?? 0;
+  if (globalKeyboardOpened.value || currentOffsetTop <= 0) return;
+
+  window.scrollBy(0, -1);
+  window.scrollBy(0, 1);
+});
+
 const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallback) => {
   return () => {
     const screenHeight = window.visualViewport?.height ?? window.innerHeight;
@@ -132,13 +147,15 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
       const baseHeight = initialViewportHeight || window.innerHeight;
       const height = Math.max(0, baseHeight - screenHeight);
       const opened =
-        height > KEYBOARD_HEIGHT_THRESHOLD
-        || screenHeight / baseHeight <= KEYBOARD_OPEN_RATIO_THRESHOLD;
+        height > KEYBOARD_HEIGHT_THRESHOLD ||
+        screenHeight / baseHeight <= KEYBOARD_OPEN_RATIO_THRESHOLD;
       const effectiveOpened = opened && !isKeyboardHideWindowActive();
       setKeyboardState(effectiveOpened, effectiveOpened ? height : 0);
 
       const effectiveHeight = effectiveOpened ? screenHeight : baseHeight;
       updateCssVariables(effectiveHeight, viewportOffsetTop);
+      lockIOSStandaloneViewport(effectiveHeight);
+      correctStuckViewportOffset();
 
       if (!platform.is.ios) return;
       if (effectiveOpened) {
@@ -224,6 +241,9 @@ export function useViewportBehavior(cb?: ViewportCallback) {
     captureInitialViewportHeight();
     measure();
     window.visualViewport?.addEventListener('resize', schedule);
+    iosPwaOnly(() => {
+      window.visualViewport?.addEventListener('scroll', schedule);
+    })();
     window.addEventListener('orientationchange', handleOrientationChange);
 
     platformMatch({
@@ -241,6 +261,9 @@ export function useViewportBehavior(cb?: ViewportCallback) {
 
   onUnmounted(() => {
     window.visualViewport?.removeEventListener('resize', schedule);
+    iosPwaOnly(() => {
+      window.visualViewport?.removeEventListener('scroll', schedule);
+    })();
     window.removeEventListener('orientationchange', handleOrientationChange);
     safariCleanup?.();
     capacitorCleanup?.();

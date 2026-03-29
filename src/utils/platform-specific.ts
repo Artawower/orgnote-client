@@ -31,6 +31,13 @@ export const mobileOnly = platformSpecific(() => !!process.env.CLIENT && Platfor
 export const iosOnly = platformSpecific(
   () => !!process.env.CLIENT && Platform.is.nativeMobile && Platform.is.ios,
 );
+export const iosPwaOnly = platformSpecific(
+  () =>
+    !!process.env.CLIENT &&
+    Platform.is.ios &&
+    !Platform.is.capacitor &&
+    window.navigator.standalone === true,
+);
 export const nativeMobileOnly = platformSpecific(
   () => !!process.env.CLIENT && Platform.is.nativeMobile,
 );
