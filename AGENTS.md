@@ -1148,6 +1148,19 @@ When you receive a task, BEFORE starting work:
     const pane = panes.value[activePaneId.value]; // Error: undefined in index
 
 
+## Error Handling Convention
+
+-   **PREFER the `to(...)` pattern** for recoverable sync/async operations instead of ad-hoc `try/catch` when the project already handles failures as `Result`-like values
+-   **Use meaningful error messages** in `to(...)` when the failure crosses module boundaries or would be hard to diagnose without context
+
+    const result = await to(() => fs.add(payload), 'Failed to create directory')();
+    
+    if (result.isErr()) {
+      if (isConstraintError(result.error)) return;
+      throw result.error;
+    }
+
+
 ## Testing with Vitest
 
 -   **USE `test` keyword ONLY** - never use `describe` or `it`
