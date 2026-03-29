@@ -21,12 +21,14 @@
           <span v-if="root"> .. </span>
           <template v-else>
             <highlighter
+              v-if="hasHighlight"
               class="my-highlight"
               highlightClassName="highlight"
               :searchWords="highlight ?? []"
               :autoEscape="true"
               :textToHighlight="file?.name ?? ''"
             />
+            <span v-else>{{ file?.name ?? '' }}</span>
             <q-tooltip v-if="file?.name" :delay="tooltipDelay">{{ file.name }}</q-tooltip>
           </template>
         </div>
@@ -66,6 +68,10 @@ const emits = defineEmits<{
 
 const fm = api.core.useFileManager();
 const { config } = storeToRefs(useConfigStore());
+
+const hasHighlight = computed(() =>
+  (props.highlight ?? []).some((keyword) => keyword.trim().length > 0),
+);
 const tooltipDelay = computed(() => config.value.ui.tooltipDelay);
 
 const contextMenuGroup = computed<MenuGroup>(() =>

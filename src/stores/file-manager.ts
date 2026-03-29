@@ -67,6 +67,7 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   };
 
   const pendingOperation = ref<PendingFileOperation | undefined>();
+  let lastLoadRequestId = 0;
 
   const startCopy = (paths: string[]): void => {
     pendingOperation.value = { type: 'copy', paths };
@@ -103,7 +104,15 @@ export const useFileManagerStore = defineStore<string, FileManagerStore>('file-m
   const moveFiles = (paths: string[], dest: string) => transferFiles(paths, dest, fs.rename);
 
   const loadFiles = async (): Promise<void> => {
-    files.value = await fs.readDir(path.value);
+    const currentPath = path.value;
+    const requestId = ++lastLoadRequestId;
+    const nextFiles = await fs.readDir(currentPath);
+
+    if (requestId !== lastLoadRequestId || currentPath !== path.value) {
+      return;
+    }
+
+    files.value = nextFiles;
   };
 
   const refreshFiles = debounce(() => void loadFiles(), 100);

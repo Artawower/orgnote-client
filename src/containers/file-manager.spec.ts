@@ -2,6 +2,11 @@ import { expect, test, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref, nextTick } from 'vue';
 
+const fileManagerFiles = ref<Array<{ path: string; name: string; type: 'file' | 'directory' }>>([]);
+const fileManagerSortedFiles = ref<
+  Array<{ path: string; name: string; type: 'file' | 'directory' }>
+>([]);
+
 let fileManagerPath: ReturnType<typeof ref<string>>;
 let fileManagerSearchQuery: ReturnType<typeof ref<string>>;
 let fileManagerMobileFileSearchActive: ReturnType<typeof ref<boolean>>;
@@ -26,9 +31,9 @@ vi.mock('src/boot/api', () => ({
         pendingOperation: ref(undefined),
         operationTargets: ref([]),
         focusFile: ref(undefined),
-        files: ref([]),
+        files: fileManagerFiles,
         sortConfig: ref({ field: 'name', direction: 'asc', directoriesFirst: true }),
-        sortedFiles: ref([]),
+        sortedFiles: fileManagerSortedFiles,
         toggleSelection: vi.fn(),
         clearSelection: vi.fn(),
         loadFiles: vi.fn(),
@@ -59,6 +64,8 @@ beforeEach(() => {
   fileManagerPath = ref('/initial');
   fileManagerSearchQuery = ref('');
   fileManagerMobileFileSearchActive = ref(false);
+  fileManagerFiles.value = [];
+  fileManagerSortedFiles.value = [];
   tabletBelow = ref(false);
   desktopBelow = ref(false);
 });
@@ -108,4 +115,16 @@ test('FileManager uses store search query for filtering', async () => {
   const searchInput = wrapper.findComponent({ name: 'SearchInput' });
   expect(searchInput.exists()).toBe(true);
   expect(searchInput.props('modelValue')).toBe('test-query');
+});
+
+test('FileManager does not show loading dots when files are already loaded before mount', async () => {
+  fileManagerFiles.value = [{ path: '/initial/demo-1.org', name: 'demo-1.org', type: 'file' }];
+  fileManagerSortedFiles.value = [...fileManagerFiles.value];
+
+  const wrapper = mount(FileManager, {
+    props: { path: '/initial' },
+  });
+  await nextTick();
+
+  expect(wrapper.findComponent({ name: 'LoadingDots' }).exists()).toBe(false);
 });

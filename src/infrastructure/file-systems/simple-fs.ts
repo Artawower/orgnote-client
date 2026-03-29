@@ -26,6 +26,12 @@ class ErrorDirectoryAlreadyExist extends Error {
 
 export const SIMPLE_FS_NAME = 'simple-fs';
 
+const isConstraintError = (error: unknown): error is Error =>
+  error instanceof Error && error.name === 'ConstraintError';
+
+const isExistingDirectoryError = (error: unknown): error is ErrorDirectoryAlreadyExist =>
+  error instanceof ErrorDirectoryAlreadyExist;
+
 const buildChange = (
   path: string,
   type: FileSystemChangeType,
@@ -135,7 +141,16 @@ export const useSimpleFs = (): FileSystem => {
       if (isDirExist) {
         continue;
       }
-      await mkdir(path);
+      const result = await to(() => mkdir(path))();
+      if (result.isOk()) {
+        continue;
+      }
+
+      if (isExistingDirectoryError(result.error)) {
+        continue;
+      }
+
+      throw result.error;
     }
   };
 
@@ -229,16 +244,28 @@ export const useSimpleFs = (): FileSystem => {
     }
     // TODO: master update atime/mtime for all parent directories
 
-    await fs.add({
-      size: 0,
-      mtime: Date.now(),
-      ctime: Date.now(),
-      atime: Date.now(),
-      name: getFileName(path),
-      type: 'directory',
-      path,
-    });
-    emitCreateOrModify(path);
+    const addResult = await to(() =>
+      fs.add({
+        size: 0,
+        mtime: Date.now(),
+        ctime: Date.now(),
+        atime: Date.now(),
+        name: getFileName(path),
+        type: 'directory',
+        path,
+      }),
+    )();
+
+    if (!addResult.isErr()) {
+      emitCreateOrModify(path);
+      return;
+    }
+
+    if (isConstraintError(addResult.error) && (await isDirExist(path))) {
+      return;
+    }
+
+    throw addResult.error;
   };
 
   const isDirExist: FileSystem['isDirExist'] = async (path: string) => {

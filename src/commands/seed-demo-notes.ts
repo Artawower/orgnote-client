@@ -3,72 +3,259 @@ import type { OrgNoteApi } from 'orgnote-api';
 interface DemoNote {
   id: string;
   title: string;
+  tags: string[];
   links: string[];
+  summary: string;
+  bullets: string[];
+  todoItems: string[];
+  quote?: string;
 }
 
-const DEMO_NOTES: readonly DemoNote[] = [
-  { id: 'pkm-01', title: 'Personal Knowledge Management', links: ['pkm-02', 'pkm-03', 'pkm-04', 'prog-01', 'read-01'] },
-  { id: 'pkm-02', title: 'Zettelkasten Method', links: ['pkm-03', 'pkm-05', 'read-02'] },
-  { id: 'pkm-03', title: 'Evergreen Notes', links: ['pkm-04', 'pkm-06'] },
-  { id: 'pkm-04', title: 'Atomic Notes', links: ['pkm-05'] },
-  { id: 'pkm-05', title: 'Note Linking Strategy', links: ['pkm-06', 'proj-01'] },
-  { id: 'pkm-06', title: 'Spaced Repetition', links: ['read-03'] },
+const DEMO_NOTE_COUNT = 600;
+const DEMO_FOLDER = ['demo', 'generated'];
+const MIN_LINKS = 0;
+const MAX_LINKS = 4;
+const MIN_TAGS = 1;
+const MAX_TAGS = 4;
+const BULLETS_PER_NOTE = 3;
+const TODOS_PER_NOTE = 2;
+const WRITE_BATCH_SIZE = 25;
 
-  { id: 'prog-01', title: 'Software Architecture', links: ['prog-02', 'prog-03', 'prog-04', 'proj-02'] },
-  { id: 'prog-02', title: 'Functional Programming', links: ['prog-05', 'prog-06'] },
-  { id: 'prog-03', title: 'Type Systems', links: ['prog-02', 'prog-06'] },
-  { id: 'prog-04', title: 'Design Patterns', links: ['prog-05', 'proj-03'] },
-  { id: 'prog-05', title: 'Refactoring Techniques', links: ['prog-06'] },
-  { id: 'prog-06', title: 'Code Quality', links: ['proj-01'] },
+const TOPICS = [
+  'Knowledge Graphs',
+  'Daily Planning',
+  'Project Architecture',
+  'Research Notes',
+  'Learning Systems',
+  'Mobile UX',
+  'Writing Workflow',
+  'TypeScript Patterns',
+  'Personal Knowledge',
+  'Reading Queue',
+  'Team Rituals',
+  'Design Systems',
+] as const;
 
-  { id: 'read-01', title: 'Reading Workflow', links: ['read-02', 'read-03', 'read-04'] },
-  { id: 'read-02', title: 'Literature Notes', links: ['pkm-02', 'read-05'] },
-  { id: 'read-03', title: 'Highlights and Annotations', links: ['read-04', 'read-06'] },
-  { id: 'read-04', title: 'Book Summaries', links: ['read-05'] },
-  { id: 'read-05', title: 'Reading List', links: ['read-06', 'daily-01'] },
-  { id: 'read-06', title: 'Fleeting Notes', links: ['pkm-04'] },
+const CONTEXTS = [
+  'field notes',
+  'meeting notes',
+  'implementation ideas',
+  'retrospective notes',
+  'draft principles',
+  'working definitions',
+  'review notes',
+  'experiments',
+  'benchmarks',
+  'migration plans',
+] as const;
 
-  { id: 'proj-01', title: 'Project Management', links: ['proj-02', 'proj-03', 'proj-04', 'daily-02'] },
-  { id: 'proj-02', title: 'OrgNote Development', links: ['prog-01', 'proj-05'] },
-  { id: 'proj-03', title: 'Research Projects', links: ['read-01', 'proj-06'] },
-  { id: 'proj-04', title: 'Task Inbox', links: ['proj-05', 'daily-01'] },
-  { id: 'proj-05', title: 'Weekly Goals', links: ['proj-06', 'daily-03'] },
-  { id: 'proj-06', title: 'Someday Maybe List', links: ['daily-02'] },
+const TAG_POOL = [
+  'work',
+  'home',
+  'idea',
+  'graph',
+  'orgmode',
+  'typescript',
+  'pwa',
+  'mobile',
+  'research',
+  'project',
+  'deep-work',
+  'learning',
+  'weekly',
+  'architecture',
+  'review',
+  'seeded',
+] as const;
 
-  { id: 'daily-01', title: 'Daily Notes System', links: ['daily-02', 'daily-03', 'pkm-01'] },
-  { id: 'daily-02', title: 'Morning Review', links: ['daily-04', 'daily-05'] },
-  { id: 'daily-03', title: 'Evening Reflection', links: ['daily-04', 'pkm-06'] },
-  { id: 'daily-04', title: 'Habit Tracking', links: ['daily-05', 'daily-06'] },
-  { id: 'daily-05', title: 'Gratitude Log', links: ['daily-06'] },
-  { id: 'daily-06', title: 'Weekly Review', links: ['proj-05', 'pkm-03'] },
-];
+const SUMMARY_PARTS = [
+  'This note captures a reusable pattern that benefits from small, linked ideas.',
+  'The main value here is turning scattered observations into searchable structure.',
+  'The topic is intentionally broad so related notes can connect from different angles.',
+  'A compact note ages better when it links outward instead of trying to explain everything.',
+  'This record is meant to look realistic enough for indexing, search, and graph testing.',
+  'Most of the interesting behavior appears when similar notes are created at larger scale.',
+] as const;
 
-const FILLER_TEXT =
-  'Obvious but irrefutable conclusions, as well as obvious signs of the victory of institutionalization, ' +
-  'form a global economic network and at the same time are called to account. On the other hand, ' +
-  'the further development of various forms of activity directly depends on standard approaches. ' +
-  'Thus, constant information and propaganda support of our activities entails a process of ' +
-  'introduction and modernization of the strengthening of moral values.';
+const BULLET_PARTS = [
+  'Capture one concrete example before writing a general rule.',
+  'Prefer links to neighboring notes instead of long repeated explanations.',
+  'Keep naming stable so search and backlinks remain predictable.',
+  'Write summaries that are useful even when opened months later.',
+  'Use lightweight structure first and polish only when the idea survives.',
+  'Split procedural details from conceptual notes when the list grows.',
+  'Add tags only when they help retrieval from a different angle than links.',
+  'Preserve enough context so the note still makes sense in isolation.',
+] as const;
 
-const buildOrgContent = (note: DemoNote, notesById: Map<string, DemoNote>): string => {
+const TODO_PARTS = [
+  'Review related notes and merge duplicates.',
+  'Turn the strongest idea into a project action.',
+  'Add one concrete example from real usage.',
+  'Check if this topic belongs in a weekly review.',
+  'Create a follow-up note for the unresolved question.',
+  'Link this note from a higher-level map of content.',
+] as const;
+
+const QUOTES = [
+  'Small notes become powerful when the connections remain cheap to create.',
+  'A calm system is often faster than an ambitious one.',
+  'Search helps retrieval, but links help understanding.',
+  'The best notes survive because they stay easy to revisit.',
+] as const;
+
+const createRandom = (seed: number): (() => number) => {
+  let value = seed;
+
+  return () => {
+    value += 0x6d2b79f5;
+    let nextValue = value;
+    nextValue = Math.imul(nextValue ^ (nextValue >>> 15), nextValue | 1);
+    nextValue ^= nextValue + Math.imul(nextValue ^ (nextValue >>> 7), nextValue | 61);
+    return ((nextValue ^ (nextValue >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+const pickIndex = (random: () => number, length: number): number => Math.floor(random() * length);
+
+const pickManyUnique = <T>(values: readonly T[], count: number, random: () => number): T[] => {
+  const pool = [...values];
+  const result: T[] = [];
+
+  while (pool.length > 0 && result.length < count) {
+    const index = pickIndex(random, pool.length);
+    const [item] = pool.splice(index, 1);
+    if (item !== undefined) {
+      result.push(item);
+    }
+  }
+
+  return result;
+};
+
+const randomCount = (random: () => number, min: number, max: number): number =>
+  Math.floor(random() * (max - min + 1)) + min;
+
+const buildTitle = (index: number, random: () => number): string => {
+  const topic = TOPICS[pickIndex(random, TOPICS.length)];
+  const context = CONTEXTS[pickIndex(random, CONTEXTS.length)];
+  return `${topic} ${String(index + 1).padStart(3, '0')} - ${context}`;
+};
+
+const buildId = (index: number): string => `demo-${String(index + 1).padStart(4, '0')}`;
+
+const buildSummary = (random: () => number): string =>
+  pickManyUnique(SUMMARY_PARTS, 2, random).join(' ');
+
+const buildBullets = (random: () => number): string[] =>
+  pickManyUnique(BULLET_PARTS, BULLETS_PER_NOTE, random);
+
+const buildTodos = (random: () => number): string[] =>
+  pickManyUnique(TODO_PARTS, TODOS_PER_NOTE, random);
+
+const maybeQuote = (random: () => number): string | undefined => {
+  if (random() < 0.45) {
+    return QUOTES[pickIndex(random, QUOTES.length)];
+  }
+
+  return undefined;
+};
+
+const buildTags = (random: () => number): string[] => {
+  const count = randomCount(random, MIN_TAGS, MAX_TAGS);
+  return pickManyUnique(TAG_POOL, count, random);
+};
+
+const buildLinks = (
+  noteIds: readonly string[],
+  currentId: string,
+  random: () => number,
+): string[] => {
+  const otherIds = noteIds.filter((id) => id !== currentId);
+  const count = randomCount(random, MIN_LINKS, MAX_LINKS);
+  return pickManyUnique(otherIds, count, random);
+};
+
+const createDemoNotes = (): DemoNote[] => {
+  const random = createRandom(42);
+  const noteIds = Array.from({ length: DEMO_NOTE_COUNT }, (_, index) => buildId(index));
+
+  return noteIds.map((id, index) => ({
+    id,
+    title: buildTitle(index, random),
+    tags: buildTags(random),
+    links: buildLinks(noteIds, id, random),
+    summary: buildSummary(random),
+    bullets: buildBullets(random),
+    todoItems: buildTodos(random),
+    quote: maybeQuote(random),
+  }));
+};
+
+const buildLinkSection = (note: DemoNote, notesById: Map<string, DemoNote>): string => {
+  if (note.links.length === 0) {
+    return '* Related\n\n- No explicit links yet\n';
+  }
+
   const linkLines = note.links
     .map((id) => `- [[id:${id}][${notesById.get(id)?.title ?? id}]]`)
     .join('\n');
 
+  return `* Related\n\n${linkLines}\n`;
+};
+
+const buildQuoteSection = (quote?: string): string => {
+  if (!quote) {
+    return '';
+  }
+
+  return `* Quote\n\n#+begin_quote\n${quote}\n#+end_quote\n\n`;
+};
+
+const buildOrgContent = (note: DemoNote, notesById: Map<string, DemoNote>): string => {
+  const tags = `:${note.tags.join(':')}:`;
+  const bullets = note.bullets.map((item) => `- ${item}`).join('\n');
+  const todos = note.todoItems.map((item) => `** TODO ${item}`).join('\n');
+
   return (
     `:PROPERTIES:\n:ID: ${note.id}\n:END:\n` +
-    `#+TITLE: ${note.title}\n\n` +
-    `* Overview\n\n${FILLER_TEXT}\n\n` +
-    `* Related\n\n${linkLines}\n`
+    `#+TITLE: ${note.title}\n` +
+    `#+FILETAGS: ${tags}\n\n` +
+    `* Overview\n\n${note.summary}\n\n` +
+    `* Notes\n\n${bullets}\n\n` +
+    buildQuoteSection(note.quote) +
+    buildLinkSection(note, notesById) +
+    `\n* Actions\n\n${todos}\n`
   );
+};
+
+const writeBatch = async (
+  fs: ReturnType<OrgNoteApi['core']['useFileSystem']>,
+  notes: DemoNote[],
+  notesById: Map<string, DemoNote>,
+): Promise<void> => {
+  await Promise.all(
+    notes.map((note) =>
+      fs.writeFile([...DEMO_FOLDER, `${note.id}.org`], buildOrgContent(note, notesById)),
+    ),
+  );
+};
+
+const writeNotesInBatches = async (
+  fs: ReturnType<OrgNoteApi['core']['useFileSystem']>,
+  notes: DemoNote[],
+  notesById: Map<string, DemoNote>,
+): Promise<void> => {
+  for (let index = 0; index < notes.length; index += WRITE_BATCH_SIZE) {
+    const batch = notes.slice(index, index + WRITE_BATCH_SIZE);
+    await writeBatch(fs, batch, notesById);
+  }
 };
 
 export const seedDemoNotes = async (api: OrgNoteApi): Promise<void> => {
   const fs = api.core.useFileSystem();
-  const notesById = new Map(DEMO_NOTES.map((n) => [n.id, n]));
+  const notes = createDemoNotes();
+  const notesById = new Map(notes.map((note) => [note.id, note]));
 
-  await DEMO_NOTES.reduce(
-    (chain, note) => chain.then(() => fs.writeFile(['demo', `${note.id}.org`], buildOrgContent(note, notesById))),
-    Promise.resolve(),
-  );
+  await writeNotesInBatches(fs, notes, notesById);
 };

@@ -5,7 +5,10 @@ import { nextTick } from 'vue';
 import type { DiskFile, FileSystemChange } from 'orgnote-api';
 
 const mockFs = {
-  readDir: vi.fn(async (): Promise<DiskFile[]> => []),
+  readDir: vi.fn(async (...args: [string?]): Promise<DiskFile[]> => {
+    void args;
+    return [];
+  }),
   writeFile: vi.fn(),
   mkdir: vi.fn(),
   deleteFile: vi.fn(),
@@ -257,6 +260,35 @@ test('loadFiles populates files from filesystem', async () => {
   expect(mockFs.readDir).toHaveBeenCalledWith('/');
 });
 
+test('loadFiles ignores stale directory results after path changes', async () => {
+  let resolveInitialRead: ((files: DiskFile[]) => void) | undefined;
+
+  mockFs.readDir.mockReset();
+  mockFs.readDir.mockImplementation((path?: string) => {
+    if (path === '/') {
+      return new Promise<DiskFile[]>((resolve) => {
+        resolveInitialRead = resolve;
+      });
+    }
+
+    if (path === '/docs') {
+      return Promise.resolve([createDiskFile({ path: '/docs/next.org', name: 'next.org' })]);
+    }
+
+    return Promise.resolve([]);
+  });
+
+  const store = useFileManagerStore();
+
+  store.path = '/docs';
+  await nextTick();
+
+  resolveInitialRead?.([createDiskFile({ path: '/stale.org', name: 'stale.org' })]);
+  await nextTick();
+
+  expect(store.files.map((file) => file.path)).toEqual(['/docs/next.org']);
+});
+
 test('sortedFiles returns files sorted by default config (name asc, directories first)', () => {
   const store = useFileManagerStore();
 
@@ -329,7 +361,9 @@ test('store loads files and starts fileWatcher on init', () => {
   useFileManagerStore();
 
   expect(mockFs.readDir).toHaveBeenCalledWith('/');
-  expect(mockFileWatcher.watch).toHaveBeenCalledWith('/', expect.any(Function), { recursive: false });
+  expect(mockFileWatcher.watch).toHaveBeenCalledWith('/', expect.any(Function), {
+    recursive: false,
+  });
   expect(watcherCallbacks.has('/')).toBe(true);
 });
 

@@ -89,6 +89,23 @@ test('simple-fs mkdir creates new directory successfully', async () => {
   expect(await fs.isDirExist('/new-dir')).toBe(true);
 });
 
+test('simple-fs concurrent writeFile calls share nested directory creation safely', async () => {
+  const fs = createFileSystem();
+  await ensureInitialized(fs);
+
+  await expect(
+    Promise.all(
+      Array.from({ length: 12 }, (_, index) =>
+        fs.writeFile(`/demo/generated/note-${index + 1}.org`, `content-${index + 1}`),
+      ),
+    ),
+  ).resolves.toHaveLength(12);
+
+  expect(await fs.isDirExist('/demo')).toBe(true);
+  expect(await fs.isDirExist('/demo/generated')).toBe(true);
+  expect(await fs.readFile('/demo/generated/note-1.org')).toBe('content-1');
+});
+
 test('simple-fs file operations work after repeated init', async () => {
   const fs = createFileSystem();
   await ensureInitialized(fs);

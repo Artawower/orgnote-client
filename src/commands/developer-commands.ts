@@ -171,7 +171,7 @@ export function getDeveloperCommands(): Command[] {
     {
       command: 'seed-demo-notes',
       title: 'Seed demo notes',
-      description: 'Generate 30 interconnected sample notes for graph testing',
+      description: 'Generate 600 seeded notes with tags, links, and varied org content',
       icon: 'sym_o_hub',
       group: 'developer',
       hide: (api: OrgNoteApi) => !api.core.useConfig().config.developer.developerMode,
