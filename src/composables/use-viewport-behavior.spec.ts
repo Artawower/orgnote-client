@@ -1,11 +1,16 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
-import { useViewportBehavior, useKeyboardState } from './use-viewport-behavior';
+import { useViewportBehavior, useKeyboardState, _resetForTesting } from './use-viewport-behavior';
 
 vi.mock('src/utils/platform-detection', () => ({
   platform: { is: { ios: true, safari: true, capacitor: false } },
   platformMatch: async (handlers: { default: () => unknown }) => handlers.default(),
+}));
+
+vi.mock('src/utils/platform-specific', () => ({
+  iosPwaOnly: (fn?: (...args: unknown[]) => unknown) =>
+    fn ? (...args: unknown[]) => window.navigator.standalone ? fn(...args) : undefined : () => {},
 }));
 
 vi.mock('src/utils/android-keyboard-hide', () => ({
@@ -57,6 +62,8 @@ const createTestComponent = () =>
   });
 
 beforeEach(() => {
+  _resetForTesting();
+
   Object.defineProperty(window, 'visualViewport', {
     value: {
       height: 800,
@@ -184,6 +191,30 @@ test('useViewportBehavior corrects stuck viewport offset after keyboard closes',
 
   expect(scrollBySpy).toHaveBeenNthCalledWith(1, 0, -1);
   expect(scrollBySpy).toHaveBeenNthCalledWith(2, 0, 1);
+
+  wrapper.unmount();
+});
+
+test('useViewportBehavior does not correct stuck viewport offset when keyboard is open', () => {
+  const scrollBySpy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
+
+  Object.defineProperty(window.navigator, 'standalone', {
+    value: true,
+    configurable: true,
+    writable: true,
+  });
+
+  Object.defineProperty(window, 'visualViewport', {
+    value: { height: 300, offsetTop: 24, addEventListener: vi.fn(), removeEventListener: vi.fn() },
+    configurable: true,
+  });
+
+  const wrapper = mount(createTestComponent());
+
+  expect(scrollBySpy).not.toHaveBeenCalled();
+
+  const { keyboardOpened } = useKeyboardState();
+  expect(keyboardOpened.value).toBe(true);
 
   wrapper.unmount();
 });

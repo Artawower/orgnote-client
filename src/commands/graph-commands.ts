@@ -17,12 +17,13 @@ export const getGraphCommands = (): Command[] => [
     group: I18N.GRAPH_SETTINGS_GROUP,
     icon: 'sym_o_tune',
     handler: async (api: OrgNoteApi, params: CommandHandlerParams<GraphSettingsCommandData>) => {
-      if (!params?.data) {
-        return;
-      }
       await api.core.useCommands().execute(DefaultCommands.OPEN_GRAPH_SETTINGS, undefined, {
         interactive: true,
       });
+
+      if (!params?.data) {
+        return;
+      }
 
       const modal = api.ui.useModal();
       const { default: GraphInfoModal } = await import('src/components/graph/GraphInfoModal.vue');

@@ -32,6 +32,7 @@ export function useKeyboardState(): {
 }
 
 const setKeyboardState = (opened: boolean, height: number): void => {
+  if (opened) resetOffsetCorrectionFlag();
   globalKeyboardOpened.value = opened;
   globalKeyboardHeight.value = height;
   document.body.classList.toggle('keyboard-opened', opened);
@@ -128,10 +129,35 @@ const createTouchScrollPreventer = () => {
   return { handleTouchStart, preventTouchScroll };
 };
 
+let hasCorrectedOffset = false;
+
+const resetOffsetCorrectionFlag = (): void => {
+  hasCorrectedOffset = false;
+};
+
+export function _resetForTesting(): void {
+  globalKeyboardOpened.value = false;
+  globalKeyboardHeight.value = 0;
+  globalViewportHeight.value = 0;
+  initialViewportHeight = 0;
+  hasCorrectedOffset = false;
+  document.documentElement.style.removeProperty('height');
+  document.documentElement.style.removeProperty('max-height');
+  document.body.style.removeProperty('height');
+  document.body.style.removeProperty('max-height');
+  document.body.classList.remove('keyboard-opened');
+  document.documentElement.style.removeProperty('--keyboard-height');
+  document.documentElement.style.removeProperty('--initial-viewport-height');
+  document.documentElement.style.removeProperty('--vh');
+  document.documentElement.style.removeProperty('--screen-height');
+  document.documentElement.style.removeProperty('--viewport-offset-top');
+}
+
 const correctStuckViewportOffset = iosPwaOnly((): void => {
   const currentOffsetTop = window.visualViewport?.offsetTop ?? 0;
-  if (globalKeyboardOpened.value || currentOffsetTop <= 0) return;
+  if (hasCorrectedOffset || globalKeyboardOpened.value || currentOffsetTop <= 0) return;
 
+  hasCorrectedOffset = true;
   window.scrollBy(0, -1);
   window.scrollBy(0, 1);
 });
