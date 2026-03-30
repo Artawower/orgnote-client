@@ -1,9 +1,7 @@
 import type { BufferProvider, BufferContext } from 'orgnote-api';
+import { createTitleExtractor } from './extract-title';
 
-const extractTitleFromPath = (path: string): string => {
-  const fileName = path.split('/').pop() || '';
-  return fileName.replace(/\.[^.]+$/, '') || 'Untitled';
-};
+const extractTitleFromPath = createTitleExtractor('Untitled');
 
 export const createRemoteBufferProvider = (): BufferProvider => ({
   scheme: 'remote',

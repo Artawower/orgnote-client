@@ -13,8 +13,9 @@ interface DemoNote {
 
 const DEMO_NOTE_COUNT = 600;
 const DEMO_FOLDER = ['demo', 'generated'];
-const MIN_LINKS = 0;
-const MAX_LINKS = 4;
+const HUB_SATELLITE_MIN = 4;
+const HUB_SATELLITE_MAX = 7;
+const HUB_INTERCLUSTER_CHANCE = 0.15;
 const MIN_TAGS = 1;
 const MAX_TAGS = 4;
 const BULLETS_PER_NOTE = 3;
@@ -136,10 +137,13 @@ const pickManyUnique = <T>(values: readonly T[], count: number, random: () => nu
 const randomCount = (random: () => number, min: number, max: number): number =>
   Math.floor(random() * (max - min + 1)) + min;
 
-const buildTitle = (index: number, random: () => number): string => {
-  const topic = TOPICS[pickIndex(random, TOPICS.length)];
-  const context = CONTEXTS[pickIndex(random, CONTEXTS.length)];
-  return `${topic} ${String(index + 1).padStart(3, '0')} - ${context}`;
+const buildTopicAndTitle = (
+  index: number,
+  random: () => number,
+): { topic: string; title: string } => {
+  const topic = TOPICS[pickIndex(random, TOPICS.length)] ?? TOPICS[0];
+  const context = CONTEXTS[pickIndex(random, CONTEXTS.length)] ?? CONTEXTS[0];
+  return { topic, title: `${topic} ${String(index + 1).padStart(3, '0')} - ${context}` };
 };
 
 const buildId = (index: number): string => `demo-${String(index + 1).padStart(4, '0')}`;
@@ -166,25 +170,74 @@ const buildTags = (random: () => number): string[] => {
   return pickManyUnique(TAG_POOL, count, random);
 };
 
-const buildLinks = (
-  noteIds: readonly string[],
-  currentId: string,
+const buildClusterLinks = (
+  topicIds: readonly string[],
+  allHubIds: readonly string[],
   random: () => number,
-): string[] => {
-  const otherIds = noteIds.filter((id) => id !== currentId);
-  const count = randomCount(random, MIN_LINKS, MAX_LINKS);
-  return pickManyUnique(otherIds, count, random);
+): Map<string, string[]> => {
+  const links = new Map<string, string[]>(topicIds.map((id) => [id, []]));
+  const getLinks = (id: string) => links.get(id) ?? [];
+
+  const [hubId, ...satellites] = topicIds;
+  if (!hubId || satellites.length === 0) return links;
+
+  const satelliteCount = randomCount(
+    random,
+    Math.min(HUB_SATELLITE_MIN, satellites.length),
+    Math.min(HUB_SATELLITE_MAX, satellites.length),
+  );
+  const chosen = pickManyUnique(satellites, satelliteCount, random);
+
+  for (const satId of chosen) {
+    getLinks(hubId).push(satId);
+    getLinks(satId).push(hubId);
+  }
+
+  if (random() < HUB_INTERCLUSTER_CHANCE && allHubIds.length > 1) {
+    const otherHubs = allHubIds.filter((id) => id !== hubId);
+    const bridge = pickManyUnique(otherHubs, 1, random).filter(Boolean);
+    const bridgeId = bridge[0];
+    if (bridgeId) {
+      getLinks(hubId).push(bridgeId);
+      getLinks(bridgeId).push(hubId);
+    }
+  }
+
+  return links;
 };
 
 const createDemoNotes = (): DemoNote[] => {
   const random = createRandom(42);
-  const noteIds = Array.from({ length: DEMO_NOTE_COUNT }, (_, index) => buildId(index));
+  const noteEntries = Array.from({ length: DEMO_NOTE_COUNT }, (_, index) => {
+    const id = buildId(index);
+    const { topic, title } = buildTopicAndTitle(index, random);
+    return { id, topic, title };
+  });
 
-  return noteIds.map((id, index) => ({
+  const noteIdsByTopic = new Map<string, string[]>();
+  for (const entry of noteEntries) {
+    const existing = noteIdsByTopic.get(entry.topic) ?? [];
+    existing.push(entry.id);
+    noteIdsByTopic.set(entry.topic, existing);
+  }
+
+  const allHubIds = Array.from(noteIdsByTopic.values())
+    .map((ids) => ids[0])
+    .filter((id): id is string => Boolean(id));
+
+  const linksByNote = new Map<string, string[]>();
+  for (const topicIds of noteIdsByTopic.values()) {
+    const clusterLinks = buildClusterLinks(topicIds, allHubIds, random);
+    for (const [id, linked] of clusterLinks) {
+      linksByNote.set(id, linked);
+    }
+  }
+
+  return noteEntries.map(({ id, title }) => ({
     id,
-    title: buildTitle(index, random),
+    title,
     tags: buildTags(random),
-    links: buildLinks(noteIds, id, random),
+    links: linksByNote.get(id) ?? [],
     summary: buildSummary(random),
     bullets: buildBullets(random),
     todoItems: buildTodos(random),

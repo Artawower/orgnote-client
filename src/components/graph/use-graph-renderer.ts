@@ -7,8 +7,8 @@ import type { GraphColorsComposable } from './use-graph-colors';
 import { graphConfig } from './graph-config';
 
 type ForceGraphRenderer = ReturnType<ReturnType<typeof ForceGraph>>;
-type ForceGraphNode = GraphNodeViewModel & NodeObject;
 type ForceGraphData = { nodes: GraphNodeViewModel[]; links: LinkObject[] };
+type TypedNode = GraphNodeViewModel & NodeObject;
 type D3ForceAccessor = (
   name: string,
   force?: unknown,
@@ -47,8 +47,12 @@ export const resolveNodeId = (
   return String(value.id);
 };
 
-const getNodeSize = (node: NodeObject): number =>
-  Math.max(1, (node as ForceGraphNode).weight * graphConfig.nodeWeightScaleFactor);
+const ZOOM_FIT_FLOOR = 0.15;
+const ZOOM_FIT_SCALE = 4;
+
+const estimateInitialZoom = (nodeCount: number): number =>
+  nodeCount > 0 ? Math.max(ZOOM_FIT_FLOOR, ZOOM_FIT_SCALE / Math.sqrt(nodeCount)) : ZOOM_FIT_FLOOR;
+
 const getRendererSize = (rootEl?: HTMLElement, graphEl?: HTMLElement) => ({
   width: graphEl?.clientWidth ?? rootEl?.clientWidth ?? graphConfig.defaultWidth,
   height: graphEl?.clientHeight ?? rootEl?.clientHeight ?? graphConfig.defaultHeight,
@@ -68,14 +72,16 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
 
   let renderer: ForceGraphRenderer | undefined;
   let resizeFrameId = 0;
+  let hoveredNodeId: string | undefined;
+  let zoomToFitTimerId = 0;
 
   const paintPointerArea = (
     node: NodeObject,
     color: string,
     ctx: CanvasRenderingContext2D,
   ): void => {
-    const n = node as ForceGraphNode;
-    const r = getConfig().nodeRelSize * Math.sqrt(getNodeSize(node)) + graphConfig.pointerPadding;
+    const n = node as NodeObject;
+    const r = getConfig().nodeRelSize + graphConfig.pointerPadding;
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(n.x ?? 0, n.y ?? 0, r, 0, 2 * Math.PI);
@@ -114,14 +120,20 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     ctx: CanvasRenderingContext2D,
     globalScale: number,
   ): void => {
-    const graphNode = node as ForceGraphNode;
+    const graphNode = node as TypedNode;
+    const nodeId = resolveNodeId(graphNode);
+    const isFocused = nodeId === hoveredNodeId || graphNode.id === getSelectedNodeId();
+
     const cfg = getConfig();
-    const scaledSize = cfg.labelFontSize / globalScale;
-    if (scaledSize > graphConfig.maxLabelScale || graphNode.id === getSelectedNodeId()) return;
+    const scaledFontSize = cfg.labelFontSize * globalScale * 0.8;
+    if (!isFocused && scaledFontSize < graphConfig.minLabelFontSize) return;
 
     const fontSize = Math.min(
       cfg.labelFontSize,
-      Math.max(graphConfig.minLabelFontSize, scaledSize),
+      Math.max(
+        graphConfig.minLabelFontSize,
+        isFocused ? scaledFontSize : Math.min(scaledFontSize, cfg.labelFontSize),
+      ),
     );
     ctx.font = `${fontSize}px ${getCssVar('--graph-label-font') ?? 'sans-serif'}`;
     ctx.textAlign = 'center';
@@ -129,7 +141,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     ctx.fillText(
       truncateLabel(graphNode.label),
       graphNode.x ?? 0,
-      (graphNode.y ?? 0) + cfg.nodeRelSize * graphNode.weight + graphConfig.labelOffset,
+      (graphNode.y ?? 0) + cfg.nodeRelSize + graphConfig.labelOffset,
     );
   };
 
@@ -148,29 +160,38 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     renderer?.nodeColor(getNodeColor).linkColor(getEdgeColor);
   };
 
-  const syncData = (graph: GraphViewModel): void => {
+  const syncData = (graph: GraphViewModel, fitToView = false): void => {
     if (!renderer) return;
+    window.clearTimeout(zoomToFitTimerId);
     renderer.graphData({
       nodes: graph.nodes.map((n) => ({ ...n })),
       links: graph.edges.map((e) => ({ ...e })),
     } as ForceGraphData);
     applyForces(renderer);
     renderer.d3ReheatSimulation();
+    if (fitToView) {
+      zoomToFitTimerId = window.setTimeout(() => {
+        zoomToFitTimerId = 0;
+        renderer?.zoomToFit(graphConfig.zoomToFitDuration, graphConfig.zoomToFitPadding);
+      }, graphConfig.zoomToFitDelay);
+    }
   };
 
-  const create = (el: HTMLElement): void => {
+  const create = (el: HTMLElement, nodeCount: number): void => {
     if (renderer) return;
     const cfg = getConfig();
     renderer = ForceGraph()(el)
       .nodeRelSize(cfg.nodeRelSize)
-      .nodeVal(getNodeSize)
-      .zoom(cfg.initialZoom)
+      .zoom(estimateInitialZoom(nodeCount))
       .nodeLabel('')
       .linkColor(getEdgeColor)
       .linkWidth(cfg.linkWidth)
       .nodeId('id')
       .onNodeClick((node) => onNodeClick(node as GraphNodeViewModel))
-      .onNodeHover((node) => onNodeHover(resolveNodeId(node)))
+      .onNodeHover((node) => {
+        hoveredNodeId = resolveNodeId(node);
+        onNodeHover(hoveredNodeId);
+      })
       .onBackgroundClick(onBackgroundClick)
       .nodeCanvasObjectMode(() => 'before')
       .nodePointerAreaPaint(paintPointerArea)
@@ -185,6 +206,9 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   const destroy = (graphEl?: HTMLElement): void => {
     window.cancelAnimationFrame(resizeFrameId);
     resizeFrameId = 0;
+    hoveredNodeId = undefined;
+    window.clearTimeout(zoomToFitTimerId);
+    zoomToFitTimerId = 0;
     (renderer as ForceGraphRenderer & { _destructor?: () => void })?._destructor?.();
     renderer?.pauseAnimation();
     renderer = undefined;
@@ -197,7 +221,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
       resizeFrameId = 0;
       if (!ctx.shouldRender) return;
       if (!renderer && ctx.graphEl && ctx.graph) {
-        create(ctx.graphEl);
+        create(ctx.graphEl, ctx.graph?.nodes.length ?? 0);
         syncColors();
         syncData(ctx.graph);
         setSize(ctx.rootEl, ctx.graphEl);

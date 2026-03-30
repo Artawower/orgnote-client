@@ -33,6 +33,7 @@ interface RendererMock {
   onNodeClick: ReturnType<typeof vi.fn>;
   onNodeHover: ReturnType<typeof vi.fn>;
   onBackgroundClick: ReturnType<typeof vi.fn>;
+  onEngineStop: ReturnType<typeof vi.fn>;
   nodeCanvasObjectMode: ReturnType<typeof vi.fn>;
   linkDirectionalParticleWidth: ReturnType<typeof vi.fn>;
   nodeColor: ReturnType<typeof vi.fn>;
@@ -45,6 +46,7 @@ interface RendererMock {
   width: ReturnType<typeof vi.fn>;
   height: ReturnType<typeof vi.fn>;
   d3ReheatSimulation: ReturnType<typeof vi.fn>;
+  zoomToFit: ReturnType<typeof vi.fn>;
   pauseAnimation: ReturnType<typeof vi.fn>;
   _destructor: ReturnType<typeof vi.fn>;
 }
@@ -84,6 +86,7 @@ Object.assign(renderer, {
     callbacks.backgroundClick = handler;
     return renderer;
   }),
+  onEngineStop: vi.fn(returnRenderer),
   nodeCanvasObjectMode: vi.fn(returnRenderer),
   linkDirectionalParticleWidth: vi.fn(returnRenderer),
   nodeColor: vi.fn(returnRenderer),
@@ -96,6 +99,7 @@ Object.assign(renderer, {
   width: vi.fn(returnRenderer),
   height: vi.fn(returnRenderer),
   d3ReheatSimulation: vi.fn(returnRenderer),
+  zoomToFit: vi.fn(returnRenderer),
   pauseAnimation: vi.fn(returnRenderer),
   _destructor: vi.fn(),
 });
@@ -274,4 +278,51 @@ test('AppGraph destroys force renderer on unmount', async () => {
 
   expect(renderer._destructor).toHaveBeenCalledTimes(1);
   expect(resizeObserverDisconnect).toHaveBeenCalled();
+});
+
+test('AppGraph sets zoom to floor value when graph has zero nodes', async () => {
+  mount(AppGraph, {
+    props: createProps({ graph: { nodes: [], edges: [] } }),
+  });
+
+  await flushGraphRender();
+
+  expect(renderer.zoom).not.toHaveBeenCalledWith(Infinity);
+});
+
+test('AppGraph computes dynamic initial zoom based on node count', async () => {
+  mount(AppGraph, {
+    props: createProps(),
+  });
+
+  await flushGraphRender();
+
+  const zoomCall = renderer.zoom.mock.calls.at(0);
+  expect(zoomCall).toBeDefined();
+  const zoomValue = zoomCall![0];
+  expect(zoomValue).toBeLessThan(Infinity);
+  expect(zoomValue).toBeGreaterThan(0);
+});
+
+test('AppGraph does not call zoomToFit when fitToView is not triggered on resize', async () => {
+  vi.useFakeTimers();
+
+  mount(AppGraph, {
+    props: createProps(),
+  });
+
+  await flushGraphRender();
+  vi.advanceTimersByTime(2000);
+  vi.clearAllMocks();
+
+  const graphEl = document.createElement('div');
+  Object.defineProperty(graphEl, 'clientWidth', { value: 800, configurable: true });
+  Object.defineProperty(graphEl, 'clientHeight', { value: 600, configurable: true });
+
+  resizeObserverObserve.mock.calls.at(0)?.[1]?.([{ target: graphEl } as unknown] as ResizeObserverEntry[]);
+  vi.advanceTimersByTime(2000);
+
+  expect(renderer.zoomToFit).not.toHaveBeenCalled();
+
+  vi.useRealTimers();
 });

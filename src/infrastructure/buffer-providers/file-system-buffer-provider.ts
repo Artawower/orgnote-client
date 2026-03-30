@@ -1,8 +1,9 @@
 import type { BufferProvider, BufferContext, FileSystemChange } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { useFileWatcherStore } from 'src/stores/file-watcher';
+import { createTitleExtractor } from './extract-title';
 
-const extractTitleFromPath = (path: string): string => path.split('/').pop() || 'Untitled';
+const extractTitleFromPath = createTitleExtractor('Untitled');
 
 export const createFileSystemBufferProvider = (): BufferProvider => ({
   scheme: 'file',

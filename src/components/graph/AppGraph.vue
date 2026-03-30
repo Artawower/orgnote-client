@@ -76,9 +76,9 @@ const renderGraph = (): void => {
   }
 
   if (graphRef.value) {
-    renderer.create(graphRef.value);
+    renderer.create(graphRef.value, props.graph.nodes.length);
     renderer.setSize(rootRef.value, graphRef.value);
-    renderer.syncData(props.graph);
+    renderer.syncData(props.graph, true);
     renderer.syncColors();
   }
 };

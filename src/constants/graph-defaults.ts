@@ -1,9 +1,9 @@
 import type { GraphUiConfig } from 'orgnote-api';
 
 export const DEFAULT_GRAPH_CONFIG: GraphUiConfig = {
-  nodeRelSize: 4,
-  linkDistance: 50,
-  chargeStrength: -80,
+  nodeRelSize: 16,
+  linkDistance: 120,
+  chargeStrength: -100,
   warmupTicks: 150,
   velocityDecay: 0.3,
   initialZoom: 1.5,

@@ -29,8 +29,7 @@ test('custom messages are used if provided', () => {
 test('rotation stops when component is unmounted', () => {
   vi.useFakeTimers();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, app] = withSetup(() =>
+  const [, app] = withSetup(() =>
     useLoadingMessages({ messages: ['Message A', 'Message B'], timer: 1000 }),
   );
 

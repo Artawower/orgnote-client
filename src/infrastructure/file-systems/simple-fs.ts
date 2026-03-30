@@ -108,12 +108,8 @@ export const useSimpleFs = (): FileSystem => {
     notifyListeners(listeners, { path, previousPath, type: 'rename' });
   };
 
-  const writeFile: FileSystem['writeFile'] = async (
-    path,
-    content,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _encoding,
-  ) => {
+  const writeFile: FileSystem['writeFile'] = async (path, content, _encoding) => {
+    void _encoding;
     path = toAbsolutePath(path);
     const existingFile = await fileInfo(path);
     await recursiveMkdir(path);

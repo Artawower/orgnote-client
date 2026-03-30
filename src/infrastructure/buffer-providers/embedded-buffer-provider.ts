@@ -1,14 +1,9 @@
 import type { BufferProvider, BufferContext } from 'orgnote-api';
 import { textToUint8Array } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
+import { createTitleExtractor } from './extract-title';
 
-const DEFAULT_TITLE = 'Embedded note';
-
-const extractTitleFromPath = (path: string): string => {
-  const fileName = path.split('/').pop() ?? '';
-  const withoutExtension = fileName.replace(/\.[^.]+$/, '');
-  return withoutExtension || DEFAULT_TITLE;
-};
+const extractTitleFromPath = createTitleExtractor('Embedded note');
 
 export const createEmbeddedBufferProvider = (): BufferProvider => ({
   scheme: 'embedded',

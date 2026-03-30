@@ -1,5 +1,6 @@
 import type { LogLevel, OrgNoteConfig } from 'orgnote-api';
 import { DEFAULT_FONT_FAMILIES } from './fonts';
+import { DEFAULT_GRAPH_CONFIG } from './graph-defaults';
 
 export const DEFAULT_MIN_NOTIFICATION_LEVEL: LogLevel = process.env.DEV ? 'info' : 'error';
 
@@ -55,14 +56,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
     dropZoneEdgeRatio: 0.25,
     graph: {
-      nodeRelSize: 4,
-      linkDistance: 50,
-      chargeStrength: -80,
-      warmupTicks: 150,
-      velocityDecay: 0.3,
-      initialZoom: 1.5,
-      labelFontSize: 12,
-      linkWidth: 0.5,
+      ...DEFAULT_GRAPH_CONFIG,
     },
     fonts: { ...DEFAULT_FONT_FAMILIES },
   },
