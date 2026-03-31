@@ -13,6 +13,7 @@ import {
 } from 'orgnote-api';
 import { ref, computed } from 'vue';
 import { api } from 'src/boot/api';
+import { extensionTimer } from 'src/boot/perf-timer';
 import { compileExtension, parseExtensionFromFile } from 'src/utils/read-extension';
 import { validateManifest } from 'src/utils/validate-manifest';
 import { reporter } from 'src/boot/report';
@@ -62,10 +63,23 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
 
   const sync = async (): Promise<void> => {
     loading.value++;
-    await readFromDisk();
-    registerBuiltinExtensions();
-    await mountActiveExtensions();
+
+    const runSync = to(
+      () =>
+        extensionTimer.measure('sync', async () => {
+          await readFromDisk();
+          registerBuiltinExtensions();
+          await mountActiveExtensions();
+        }),
+      'Failed to sync extensions',
+    );
+
+    const result = await runSync();
     loading.value--;
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+    }
   };
 
   const registerBuiltinExtensions = (): void => {
@@ -144,61 +158,65 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     BUILTIN_LOADERS[name]?.() ?? compileFromRepository(name);
 
   const mountExtension = async (meta: ExtensionMeta): Promise<ActiveExtension | undefined> => {
-    const existingActive = activeExtensions.value.find(
-      (e) => e.manifest.name === meta.manifest.name,
-    );
-    if (existingActive) {
-      return existingActive;
-    }
+    return extensionTimer.measure(`mount:${meta.manifest.name}`, async () => {
+      const existingActive = activeExtensions.value.find(
+        (e) => e.manifest.name === meta.manifest.name,
+      );
+      if (existingActive) {
+        return existingActive;
+      }
 
-    const module = await getExtensionModule(meta.manifest.name);
-    if (!module) {
-      return undefined;
-    }
+      const module = await getExtensionModule(meta.manifest.name);
+      if (!module) {
+        return undefined;
+      }
 
-    const safeMounted = to(
-      module.onMounted.bind(module),
-      `Failed to mount extension ${meta.manifest.name}`,
-    );
-    const mountResult = await safeMounted(api);
+      const safeMounted = to(
+        module.onMounted.bind(module),
+        `Failed to mount extension ${meta.manifest.name}`,
+      );
+      const mountResult = await safeMounted(api);
 
-    if (mountResult.isErr()) {
-      reporter.reportError(mountResult.error);
-      return undefined;
-    }
+      if (mountResult.isErr()) {
+        reporter.reportError(mountResult.error);
+        return undefined;
+      }
 
-    const activeExt: ActiveExtension = {
-      manifest: meta.manifest,
-      active: true,
-      config: meta.config,
-      module,
-    };
+      const activeExt: ActiveExtension = {
+        manifest: meta.manifest,
+        active: true,
+        config: meta.config,
+        module,
+      };
 
-    activeExtensions.value.push(activeExt);
-    return activeExt;
+      activeExtensions.value.push(activeExt);
+      return activeExt;
+    });
   };
 
   const unmountExtension = async (extensionName: string): Promise<void> => {
-    const ext = activeExtensions.value.find((e) => e.manifest.name === extensionName);
-    if (!ext) {
-      return;
-    }
-
-    if (ext.module?.onUnmounted) {
-      const safeUnmount = to(
-        ext.module.onUnmounted.bind(ext.module),
-        'Failed to unmount extension',
-      );
-      const result = await safeUnmount(api);
-
-      if (result.isErr()) {
-        reporter.reportError(result.error);
+    return extensionTimer.measure(`unmount:${extensionName}`, async () => {
+      const ext = activeExtensions.value.find((e) => e.manifest.name === extensionName);
+      if (!ext) {
+        return;
       }
-    }
 
-    activeExtensions.value = activeExtensions.value.filter(
-      (e) => e.manifest.name !== extensionName,
-    );
+      if (ext.module?.onUnmounted) {
+        const safeUnmount = to(
+          ext.module.onUnmounted.bind(ext.module),
+          'Failed to unmount extension',
+        );
+        const result = await safeUnmount(api);
+
+        if (result.isErr()) {
+          reporter.reportError(result.error);
+        }
+      }
+
+      activeExtensions.value = activeExtensions.value.filter(
+        (e) => e.manifest.name !== extensionName,
+      );
+    });
   };
 
   const isThemeExtension = (manifest: ExtensionManifest): boolean => {

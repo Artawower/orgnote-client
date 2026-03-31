@@ -6,6 +6,7 @@ import { uploadFile } from 'src/utils/file-upload';
 
 import { getHostRelatedPath } from 'src/utils/get-host-related-path';
 import { selectCommand } from 'src/utils/select-command';
+import { clearAllMeasurements } from 'src/boot/perf-timer';
 
 export function getDeveloperCommands(): Command[] {
   const openQueueManager = () => {
@@ -166,6 +167,36 @@ export function getDeveloperCommands(): Command[] {
       hide: (api: OrgNoteApi) => {
         const config = api.core.useConfig();
         return !config.config.developer.developerMode;
+      },
+    },
+    {
+      command: DefaultCommands.SHOW_PERFORMANCE_REPORT,
+      title: I18N.SHOW_PERFORMANCE_REPORT,
+      description: I18N.SHOW_PERFORMANCE_REPORT_DESCRIPTION,
+      icon: 'sym_o_speed',
+      group: 'developer',
+      hide: (api: OrgNoteApi) => !api.core.useConfig().config.developer.developerMode,
+      handler: async (api: OrgNoteApi) => {
+        const modal = api.ui.useModal();
+        modal.open(
+          defineAsyncComponent(() => import('src/containers/PerformanceReportContainer.vue')),
+          { title: I18N.SHOW_PERFORMANCE_REPORT, closable: true },
+        );
+      },
+    },
+    {
+      command: DefaultCommands.CLEAR_PERFORMANCE_REPORT,
+      title: I18N.CLEAR_PERFORMANCE_REPORT,
+      description: I18N.CLEAR_PERFORMANCE_REPORT_DESCRIPTION,
+      icon: 'sym_o_delete_sweep',
+      group: 'developer',
+      hide: (api: OrgNoteApi) => !api.core.useConfig().config.developer.developerMode,
+      handler: async (api: OrgNoteApi) => {
+        clearAllMeasurements();
+        api.core.useNotifications().notify({
+          message: I18N.CLEAR_PERFORMANCE_REPORT,
+          level: 'info',
+        });
       },
     },
     {

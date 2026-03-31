@@ -16,6 +16,7 @@ import {
 import { platform, platformMatch } from 'src/utils/platform-detection';
 import { useEncryptionStore } from 'src/stores/encryption';
 import { useSplashScreen } from 'src/composables/use-splash-screen';
+import { bootTimer } from 'src/boot/perf-timer';
 import { useQuasar } from 'quasar';
 import {
   getCssTheme,
@@ -181,21 +182,30 @@ const syncConfigurations = async (api: OrgNoteApi) => {
 export default defineBoot(async ({ app, store, router }) => {
   logger.info('Booting application and initializing API...');
   const splashScreen = useSplashScreen();
-  await splashScreen.show();
+  await bootTimer.measure('splash-screen', async () => {
+    await splashScreen.show();
+  });
   logger.info('Start initializing API');
-  await initApi(app, router);
+  await bootTimer.measure('init-api', async () => {
+    await initApi(app, router);
+  });
   logger.info('API initialized');
   store.use(() => ({ api: api as OrgNoteApi }));
 
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, api);
   logger.info('Start synchronizing configurations');
-  await syncConfigurations(api);
+  await bootTimer.measure('sync-config', async () => {
+    await syncConfigurations(api);
+  });
   if (typeof window !== 'undefined') {
     window.orgnote = api;
   }
   logger.info('Configurations synchronized');
 
-  await splashScreen.hide();
+  await bootTimer.measure('splash-hide', async () => {
+    await splashScreen.hide();
+  });
+  bootTimer.end('total');
   logger.info('Application boot process finished');
 });
 

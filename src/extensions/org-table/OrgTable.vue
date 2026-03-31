@@ -1,5 +1,5 @@
 <template>
-  <easy-data-table
+  <EasyDataTable
     class="org-table"
     :headers="headers"
     :items="items"
@@ -18,18 +18,17 @@
     <template v-for="h of headers" #[`item-${h.value}`]="slotProps" :key="h.value">
       <content-renderer :node="slotProps[h.value]" />
     </template>
-  </easy-data-table>
+  </EasyDataTable>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { NodeType, type OrgNode } from 'org-mode-ast';
 import type { Header, Item } from 'vue3-easy-data-table';
-// @ts-expect-error no types for default export
-import EasyDataTable from 'vue3-easy-data-table';
 import { storeToRefs } from 'pinia';
 
 import ContentRenderer from 'src/components/ContentRenderer.vue';
+import EasyDataTable from 'vue3-easy-data-table';
 import { useConfigStore } from 'src/stores/config';
 
 const props = defineProps<{
@@ -77,23 +76,6 @@ const items = computed<Item[]>(() =>
 
 <style lang="scss" scoped>
 .org-table {
-  --easy-table-border: var(--border-default);
-  --easy-table-row-border: var(--border-default);
-
-  --easy-table-header-font-size: var(--font-size-sm, 14px);
-  --easy-table-header-font-color: var(--fg);
-  --easy-table-header-background-color: var(--bg-secondary);
-  --easy-table-header-item-padding: 10px 15px;
-
-  --easy-table-body-row-font-size: var(--font-size-sm, 14px);
-  --easy-table-body-row-font-color: var(--fg);
-  --easy-table-body-row-background-color: var(--bg);
-  --easy-table-body-row-hover-font-color: var(--fg);
-  --easy-table-body-row-hover-background-color: var(--bg-hover);
-  --easy-table-body-item-padding: 10px 15px;
-
-  --easy-table-message-font-color: var(--fg-muted);
-
   td {
     min-width: 140px;
   }
