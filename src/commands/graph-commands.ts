@@ -17,11 +17,10 @@ export const getGraphCommands = (): Command[] => [
     group: I18N.GRAPH_SETTINGS_GROUP,
     icon: 'sym_o_tune',
     handler: async (api: OrgNoteApi, params: CommandHandlerParams<GraphSettingsCommandData>) => {
-      await api.core.useCommands().execute(DefaultCommands.OPEN_GRAPH_SETTINGS, undefined, {
-        interactive: true,
-      });
-
       if (!params?.data) {
+        await api.core.useCommands().execute(DefaultCommands.OPEN_GRAPH_SETTINGS, undefined, {
+          interactive: true,
+        });
         return;
       }
 

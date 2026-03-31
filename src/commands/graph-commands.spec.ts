@@ -70,6 +70,7 @@ test('getGraphCommands opens graph modal when data is provided', async () => {
 
   await command.handler?.(api as never, { data } as never);
 
+  expect(execute).not.toHaveBeenCalled();
   expect(open).toHaveBeenCalledTimes(1);
   expect(open.mock.calls[0]?.[1]).toMatchObject({
     mini: true,
