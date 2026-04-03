@@ -3,8 +3,8 @@ import type { GraphUiConfig } from 'orgnote-api';
 import { isNullable } from 'orgnote-api/utils';
 import type { GraphNodeViewModel, GraphViewModel } from 'src/models/graph';
 import { getCssVar } from 'src/utils/css-utils';
-import type { GraphColorsComposable } from './use-graph-colors';
 import { graphConfig } from './graph-config';
+import type { GraphColorsComposable } from './use-graph-colors';
 
 type ForceGraphRenderer = ReturnType<ReturnType<typeof ForceGraph>>;
 type ForceGraphData = { nodes: GraphNodeViewModel[]; links: LinkObject[] };
@@ -29,6 +29,8 @@ export interface UseGraphRendererOptions {
   getDimUnrelated: () => boolean;
   getHighlightedSet: () => Set<string>;
   getSelectedNodeId: () => string | undefined;
+  getMaxZoom: () => number | undefined;
+  onInitialFitDone?: () => void;
   onNodeClick: (node: GraphNodeViewModel) => void;
   onNodeHover: (nodeId?: string) => void;
   onBackgroundClick: () => void;
@@ -58,6 +60,16 @@ const getRendererSize = (rootEl?: HTMLElement, graphEl?: HTMLElement) => ({
   height: graphEl?.clientHeight ?? rootEl?.clientHeight ?? graphConfig.defaultHeight,
 });
 
+const clampZoomToMax = (
+  renderer: ForceGraphRenderer,
+  maxZoom: number | undefined,
+  duration: number,
+): void => {
+  if (maxZoom === undefined) return;
+  if (renderer.zoom() <= maxZoom) return;
+  renderer.zoom(maxZoom, duration);
+};
+
 export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   const {
     colors,
@@ -65,6 +77,8 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     getDimUnrelated,
     getHighlightedSet,
     getSelectedNodeId,
+    getMaxZoom,
+    onInitialFitDone,
     onNodeClick,
     onNodeHover,
     onBackgroundClick,
@@ -74,17 +88,18 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   let resizeFrameId = 0;
   let hoveredNodeId: string | undefined;
   let zoomToFitTimerId = 0;
+  let shouldFitOnEngineStop = false;
+  let hasCompletedInitialFit = false;
 
   const paintPointerArea = (
     node: NodeObject,
     color: string,
     ctx: CanvasRenderingContext2D,
   ): void => {
-    const n = node as NodeObject;
     const r = getConfig().nodeRelSize + graphConfig.pointerPadding;
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(n.x ?? 0, n.y ?? 0, r, 0, 2 * Math.PI);
+    ctx.arc(node.x ?? 0, node.y ?? 0, r, 0, 2 * Math.PI);
     ctx.fill();
   };
 
@@ -160,6 +175,24 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     renderer?.nodeColor(getNodeColor).linkColor(getEdgeColor);
   };
 
+  const applyZoomToFit = (duration: number): void => {
+    if (!renderer) return;
+    renderer.zoomToFit(duration, graphConfig.zoomToFitPadding);
+    clampZoomToMax(renderer, getMaxZoom(), duration);
+  };
+
+  const finalizeInitialFit = (): void => {
+    if (hasCompletedInitialFit) return;
+    hasCompletedInitialFit = true;
+    onInitialFitDone?.();
+  };
+
+  const runFitToView = (): void => {
+    const duration = hasCompletedInitialFit ? graphConfig.zoomToFitDuration : 0;
+    applyZoomToFit(duration);
+    finalizeInitialFit();
+  };
+
   const syncData = (graph: GraphViewModel, fitToView = false): void => {
     if (!renderer) return;
     window.clearTimeout(zoomToFitTimerId);
@@ -169,12 +202,15 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     } as ForceGraphData);
     applyForces(renderer);
     renderer.d3ReheatSimulation();
-    if (fitToView) {
-      zoomToFitTimerId = window.setTimeout(() => {
-        zoomToFitTimerId = 0;
-        renderer?.zoomToFit(graphConfig.zoomToFitDuration, graphConfig.zoomToFitPadding);
-      }, graphConfig.zoomToFitDelay);
-    }
+    if (!fitToView) return;
+
+    shouldFitOnEngineStop = true;
+    zoomToFitTimerId = window.setTimeout(() => {
+      zoomToFitTimerId = 0;
+      if (!shouldFitOnEngineStop) return;
+      shouldFitOnEngineStop = false;
+      runFitToView();
+    }, graphConfig.zoomToFitDelay);
   };
 
   const create = (el: HTMLElement, nodeCount: number): void => {
@@ -183,6 +219,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     renderer = ForceGraph()(el)
       .nodeRelSize(cfg.nodeRelSize)
       .zoom(estimateInitialZoom(nodeCount))
+      .maxZoom(getMaxZoom() ?? Infinity)
       .nodeLabel('')
       .linkColor(getEdgeColor)
       .linkWidth(cfg.linkWidth)
@@ -193,6 +230,13 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
         onNodeHover(hoveredNodeId);
       })
       .onBackgroundClick(onBackgroundClick)
+      .onEngineStop(() => {
+        if (!shouldFitOnEngineStop) return;
+        shouldFitOnEngineStop = false;
+        window.clearTimeout(zoomToFitTimerId);
+        zoomToFitTimerId = 0;
+        runFitToView();
+      })
       .nodeCanvasObjectMode(() => 'before')
       .nodePointerAreaPaint(paintPointerArea)
       .linkDirectionalParticleWidth(graphConfig.particleWidth)
@@ -209,6 +253,8 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     hoveredNodeId = undefined;
     window.clearTimeout(zoomToFitTimerId);
     zoomToFitTimerId = 0;
+    shouldFitOnEngineStop = false;
+    hasCompletedInitialFit = false;
     (renderer as ForceGraphRenderer & { _destructor?: () => void })?._destructor?.();
     renderer?.pauseAnimation();
     renderer = undefined;
@@ -227,11 +273,22 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
         setSize(ctx.rootEl, ctx.graphEl);
         return;
       }
-      setSize(ctx.rootEl, ctx.graphEl, { width: ctx.width, height: ctx.height });
+      setSize(ctx.rootEl, ctx.graphEl, {
+        width: ctx.width,
+        height: ctx.height,
+      });
     });
   };
 
   const isActive = (): boolean => !!renderer;
 
-  return { create, destroy, syncColors, syncData, setSize, queueResize, isActive };
+  return {
+    create,
+    destroy,
+    syncColors,
+    syncData,
+    setSize,
+    queueResize,
+    isActive,
+  };
 };

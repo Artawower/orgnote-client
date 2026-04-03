@@ -11,7 +11,7 @@
     <div
       v-else
       ref="graphRef"
-      class="graph-canvas"
+      :class="['graph-canvas', { ready: isGraphReady }]"
       data-test="graph-canvas"
       role="img"
       :aria-label="t(i18n.GRAPH_TITLE)"
@@ -36,12 +36,16 @@ export interface AppGraphProps {
   highlightedNodeIds?: string[];
   graphConfig: GraphUiConfig;
   dimUnrelated?: boolean;
+  maxZoom?: number;
+  fitOnGraphChange?: boolean;
 }
 
 const props = withDefaults(defineProps<AppGraphProps>(), {
   selectedNodeId: undefined,
   highlightedNodeIds: () => [],
   dimUnrelated: true,
+  maxZoom: undefined,
+  fitOnGraphChange: false,
 });
 
 const emit = defineEmits<{
@@ -53,6 +57,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const rootRef = ref<HTMLElement>();
 const graphRef = ref<HTMLElement>();
+const isGraphReady = ref(false);
 
 const highlightedNodeSet = computed(() => new Set(props.highlightedNodeIds));
 const shouldRenderGraph = computed(() => props.graph.nodes.length > 0);
@@ -64,6 +69,10 @@ const renderer = useGraphRenderer({
   getDimUnrelated: () => props.dimUnrelated,
   getHighlightedSet: () => highlightedNodeSet.value,
   getSelectedNodeId: () => props.selectedNodeId,
+  getMaxZoom: () => props.maxZoom,
+  onInitialFitDone: () => {
+    isGraphReady.value = true;
+  },
   onNodeClick: (node) => emit('nodeClick', node),
   onNodeHover: (nodeId) => emit('nodeHover', nodeId),
   onBackgroundClick: () => emit('backgroundClick'),
@@ -71,11 +80,13 @@ const renderer = useGraphRenderer({
 
 const renderGraph = (): void => {
   if (!shouldRenderGraph.value) {
+    isGraphReady.value = false;
     renderer.destroy(graphRef.value);
     return;
   }
 
   if (graphRef.value) {
+    isGraphReady.value = false;
     renderer.create(graphRef.value, props.graph.nodes.length);
     renderer.setSize(rootRef.value, graphRef.value);
     renderer.syncData(props.graph, true);
@@ -107,7 +118,7 @@ watch(
   () => props.graph,
   () => {
     if (!shouldRenderGraph.value || !renderer.isActive()) return;
-    renderer.syncData(props.graph);
+    renderer.syncData(props.graph, props.fitOnGraphChange);
   },
 );
 
@@ -150,5 +161,12 @@ watch(
   @include fit;
   min-height: var(--graph-canvas-min-height);
   display: block;
+  opacity: 0;
+  pointer-events: none;
+
+  &.ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 </style>

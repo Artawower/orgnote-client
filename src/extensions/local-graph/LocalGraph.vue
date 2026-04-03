@@ -8,6 +8,8 @@
       :dim-unrelated="false"
       :selected-node-id="currentNodeId"
       :highlighted-node-ids="highlightedNodeIds"
+      :max-zoom="LOCAL_GRAPH_MAX_ZOOM"
+      :fit-on-graph-change="true"
       @node-click="handleNodeClick"
       @node-hover="hoveredNodeId = $event"
     />
@@ -38,6 +40,8 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const { activeContext } = storeToRefs(api.core.useEditor());
 
+const LOCAL_GRAPH_MAX_ZOOM = 0.95;
+
 const EMPTY_GRAPH: GraphBuildResult = { graph: { nodes: [], edges: [] }, adjacency: {} };
 const localGraph = ref<GraphBuildResult>(EMPTY_GRAPH);
 
@@ -48,8 +52,8 @@ const graphConfig = computed<GraphUiConfig>(() => ({
   ...config.value.ui.graph,
 }));
 
-const currentNodeId = computed(() =>
-  localGraph.value.graph.nodes.find((n) => n.path === activeContext.value?.filePath)?.id,
+const currentNodeId = computed(
+  () => localGraph.value.graph.nodes.find((n) => n.path === activeContext.value?.filePath)?.id,
 );
 
 const hoveredNodeId = ref<string>();
