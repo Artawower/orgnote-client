@@ -13,6 +13,8 @@ type ViewportCallback = (info: ViewportInfo) => void;
 const KEYBOARD_HEIGHT_THRESHOLD = 80;
 const VH_MULTIPLIER = 0.01;
 const KEYBOARD_OPEN_RATIO_THRESHOLD = 0.6;
+const VIEWPORT_STABLE_DELTA = 1;
+const REQUIRED_STABLE_FRAMES = 2;
 
 const globalKeyboardOpened = ref(false);
 const globalKeyboardHeight = ref(0);
@@ -195,16 +197,57 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
 
 const createScheduler = (measureFn: () => void) => {
   let rafId = 0;
+  let stableFrames = 0;
+  let lastHeight = -1;
+  let lastOffsetTop = -1;
+
+  const hasStableViewport = (): boolean => {
+    const height = window.visualViewport?.height ?? window.innerHeight;
+    const offsetTop = window.visualViewport?.offsetTop ?? 0;
+    const isStable =
+      Math.abs(height - lastHeight) <= VIEWPORT_STABLE_DELTA &&
+      Math.abs(offsetTop - lastOffsetTop) <= VIEWPORT_STABLE_DELTA;
+
+    lastHeight = height;
+    lastOffsetTop = offsetTop;
+    stableFrames = isStable ? stableFrames + 1 : 0;
+
+    return stableFrames >= REQUIRED_STABLE_FRAMES;
+  };
+
+  const runMeasure = () => {
+    rafId = 0;
+    stableFrames = 0;
+    measureFn();
+  };
+
+  const waitForStableViewport = () => {
+    if (hasStableViewport()) {
+      runMeasure();
+      return;
+    }
+
+    rafId = requestAnimationFrame(waitForStableViewport);
+  };
 
   const schedule = () => {
     if (rafId) return;
-    rafId = requestAnimationFrame(() => {
-      rafId = 0;
-      measureFn();
-    });
+    if (!platform.is.ios) {
+      rafId = requestAnimationFrame(runMeasure);
+      return;
+    }
+
+    stableFrames = 0;
+    lastHeight = -1;
+    lastOffsetTop = -1;
+    rafId = requestAnimationFrame(waitForStableViewport);
   };
 
-  const cancel = () => cancelAnimationFrame(rafId);
+  const cancel = () => {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+    stableFrames = 0;
+  };
 
   return { schedule, cancel };
 };

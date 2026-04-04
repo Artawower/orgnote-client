@@ -10,7 +10,7 @@ vi.mock('src/utils/platform-detection', () => ({
 
 vi.mock('src/utils/platform-specific', () => ({
   iosPwaOnly: (fn?: (...args: unknown[]) => unknown) =>
-    fn ? (...args: unknown[]) => window.navigator.standalone ? fn(...args) : undefined : () => {},
+    fn ? (...args: unknown[]) => (window.navigator.standalone ? fn(...args) : undefined) : () => {},
 }));
 
 vi.mock('src/utils/android-keyboard-hide', () => ({
@@ -63,6 +63,9 @@ const createTestComponent = () =>
 
 beforeEach(() => {
   _resetForTesting();
+  document.documentElement.style.cssText = '';
+  document.body.style.cssText = '';
+  document.body.classList.remove('keyboard-opened');
 
   Object.defineProperty(window, 'visualViewport', {
     value: {
@@ -145,7 +148,7 @@ test('useViewportBehavior skips keyboard-open state update during hide window', 
   document.body.classList.remove('keyboard-opened');
 });
 
-test('useViewportBehavior locks viewport height for ios standalone pwa keyboard state', () => {
+test('useViewportBehavior locks viewport height for ios standalone pwa keyboard state', async () => {
   const addEventListener = vi.fn();
   const removeEventListener = vi.fn();
 
@@ -162,6 +165,8 @@ test('useViewportBehavior locks viewport height for ios standalone pwa keyboard 
 
   const wrapper = mount(createTestComponent());
 
+  await Promise.resolve();
+
   expect(document.documentElement.style.height).toBe('300px');
   expect(document.documentElement.style.maxHeight).toBe('300px');
   expect(document.body.style.height).toBe('300px');
@@ -173,7 +178,7 @@ test('useViewportBehavior locks viewport height for ios standalone pwa keyboard 
   expect(removeEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
 });
 
-test('useViewportBehavior corrects stuck viewport offset after keyboard closes', () => {
+test('useViewportBehavior corrects stuck viewport offset after keyboard closes', async () => {
   const scrollBySpy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {});
 
   Object.defineProperty(window.navigator, 'standalone', {
@@ -188,6 +193,8 @@ test('useViewportBehavior corrects stuck viewport offset after keyboard closes',
   });
 
   const wrapper = mount(createTestComponent());
+
+  await Promise.resolve();
 
   expect(scrollBySpy).toHaveBeenNthCalledWith(1, 0, -1);
   expect(scrollBySpy).toHaveBeenNthCalledWith(2, 0, 1);
