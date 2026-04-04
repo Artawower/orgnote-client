@@ -2,7 +2,7 @@ import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote
 import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
 import { to } from 'orgnote-api/utils';
-import { redo, undo } from '@codemirror/commands';
+import { cursorLineDown, cursorLineUp, redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
@@ -271,6 +271,20 @@ export const getEditorCommands = (): Command[] => {
       group: EDITOR_COMMAND_GROUP,
       hide: isEditorNotActive,
       handler: (api) => useOrgEditor(api).withOrgEditor((e) => e.insertDatetime()),
+    },
+    {
+      command: DefaultCommands.EDITOR_CARET_UP,
+      icon: 'sym_o_keyboard_arrow_up',
+      group: EDITOR_COMMAND_GROUP,
+      hide: isEditorNotActive,
+      handler: (api) => withEditorView(api, cursorLineUp),
+    },
+    {
+      command: DefaultCommands.EDITOR_CARET_DOWN,
+      icon: 'sym_o_keyboard_arrow_down',
+      group: EDITOR_COMMAND_GROUP,
+      hide: isEditorNotActive,
+      handler: (api) => withEditorView(api, cursorLineDown),
     },
     {
       command: DefaultCommands.EDITOR_HIDE_KEYBOARD,

@@ -35,6 +35,8 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
   'editor-actions': [
     DefaultCommands.EDITOR_UNDO,
     DefaultCommands.EDITOR_REDO,
+    DefaultCommands.EDITOR_CARET_UP,
+    DefaultCommands.EDITOR_CARET_DOWN,
     DefaultCommands.EDITOR_INSERT_HEADLINE,
     DefaultCommands.EDITOR_INSERT_BOLD,
     DefaultCommands.EDITOR_INSERT_ITALIC,

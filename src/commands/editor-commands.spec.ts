@@ -6,6 +6,11 @@ import { blurEditor, suspendEditorInput } from 'src/utils/editor-primitives';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { ref } from 'vue';
 
+const { mockCursorLineUp, mockCursorLineDown } = vi.hoisted(() => ({
+  mockCursorLineUp: vi.fn(),
+  mockCursorLineDown: vi.fn(),
+}));
+
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
 
 const mockFiles: FileMeta[] = [];
@@ -63,6 +68,13 @@ vi.mock('src/utils/editor-primitives', () => ({
   blurEditor: vi.fn(),
   suspendEditorInput: vi.fn(),
   resumeEditorInput: vi.fn(),
+}));
+
+vi.mock('@codemirror/commands', () => ({
+  undo: vi.fn(),
+  redo: vi.fn(),
+  cursorLineUp: mockCursorLineUp,
+  cursorLineDown: mockCursorLineDown,
 }));
 
 vi.mock('src/utils/platform-specific', async (importOriginal) => {
@@ -146,7 +158,19 @@ beforeEach(() => {
   mockInsertImage.mockReset();
   mockUploadFile.mockReset();
   mockWriteFile.mockReset();
+  mockCursorLineUp.mockReset();
+  mockCursorLineDown.mockReset();
 });
+
+const findCaretUpCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_CARET_UP)!;
+};
+
+const findCaretDownCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_CARET_DOWN)!;
+};
 
 test('editor-commands EDITOR_INSERT_INTERNAL_LINK opens completion with type choice', async () => {
   const api = createMockApi();
@@ -272,6 +296,24 @@ test('editor-commands EDITOR_INSERT_IMAGE saves image in active route file direc
 
   expect(mockWriteFile).toHaveBeenCalledWith('image.png', expect.any(Uint8Array));
   expect(mockInsertImage).toHaveBeenCalledWith('image.png');
+});
+
+test('editor-commands EDITOR_CARET_UP moves cursor to previous line', async () => {
+  const api = createMockApi();
+  const command = findCaretUpCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  expect(mockCursorLineUp).toHaveBeenCalledWith({});
+});
+
+test('editor-commands EDITOR_CARET_DOWN moves cursor to next line', async () => {
+  const api = createMockApi();
+  const command = findCaretDownCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+
+  expect(mockCursorLineDown).toHaveBeenCalledWith({});
 });
 
 const findHideKeyboardCommand = () => {
