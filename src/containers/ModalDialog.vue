@@ -211,6 +211,10 @@ dialog {
       overscroll-behavior-y: contain;
     }
   }
+
+  dialog.keyboard-fit::backdrop {
+    display: none;
+  }
 }
 
 @include desktop {
