@@ -1,3 +1,4 @@
+import { stringifyToml } from 'orgnote-api/utils';
 import type { LogLevel, OrgNoteConfig } from 'orgnote-api';
 import { DEFAULT_FONT_FAMILIES } from './fonts';
 import { DEFAULT_GRAPH_CONFIG } from './graph-defaults';
@@ -70,3 +71,5 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     preferredReaders: {},
   },
 };
+
+export const DEFAULT_CONFIG_CONTENT = stringifyToml(DEFAULT_CONFIG);

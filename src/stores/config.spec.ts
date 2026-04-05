@@ -89,12 +89,17 @@ const createDiskFile = (path: string, mtime: number, size = 0): DiskFile => ({
   mtime,
 });
 
-const createMockFs = (configToml: string): { fs: FileSystem; files: Map<string, DiskFile & { content: string }> } => {
+const createMockFs = (
+  configToml: string,
+): { fs: FileSystem; files: Map<string, DiskFile & { content: string }> } => {
   const files = new Map<string, DiskFile & { content: string }>();
   let nextMtime = 300;
 
   const configPath = '/.orgnote/config.toml';
-  files.set(configPath, { ...createDiskFile(configPath, 200, configToml.length), content: configToml });
+  files.set(configPath, {
+    ...createDiskFile(configPath, 200, configToml.length),
+    content: configToml,
+  });
 
   const fs: FileSystem = {
     readFile: async (path) => {
@@ -108,14 +113,21 @@ const createMockFs = (configToml: string): { fs: FileSystem; files: Map<string, 
     },
     readDir: async (path) => {
       if (path !== '/.orgnote') return [];
-      return [...files.values()].filter((f) => f.path.startsWith('/.orgnote/') && f.path.split('/').length === 3);
+      return [...files.values()].filter(
+        (f) => f.path.startsWith('/.orgnote/') && f.path.split('/').length === 3,
+      );
     },
     fileInfo: async (path) => files.get(path),
     rename: async (path, newPath) => {
       const file = files.get(path);
       if (!file) throw new Error(`Missing file: ${path}`);
       files.delete(path);
-      files.set(newPath, { ...file, path: newPath, name: newPath.split('/').pop() ?? '', mtime: nextMtime++ });
+      files.set(newPath, {
+        ...file,
+        path: newPath,
+        name: newPath.split('/').pop() ?? '',
+        mtime: nextMtime++,
+      });
     },
     deleteFile: async (path) => void files.delete(path),
     rmdir: async () => undefined,

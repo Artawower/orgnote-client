@@ -1,6 +1,6 @@
 import { type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
 import { defineStore, storeToRefs } from 'pinia';
-import { DEFAULT_CONFIG } from 'src/constants/config';
+import { DEFAULT_CONFIG, DEFAULT_CONFIG_CONTENT } from 'src/constants/config';
 import { computed, reactive, ref, watch } from 'vue';
 import clone from 'rfdc';
 import { useFileSystemStore } from './file-system';
@@ -62,6 +62,17 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
     return res.value?.mtime ?? 0;
   };
 
+  const writeDiskConfigContent = async (content: string): Promise<void> => {
+    const safeWrite = to(fileSystem.writeFile, 'Failed to write config.toml');
+    const writeResult = await safeWrite(diskConfigPath, content);
+    if (writeResult.isErr()) {
+      reporter.reportError(writeResult.error);
+      return;
+    }
+
+    lastSyncedMtime.value = await getConfigFileMtime();
+  };
+
   const ensureConfigFileExists = async (): Promise<void> => {
     const mtime = await getConfigFileMtime();
     if (mtime > 0) {
@@ -70,14 +81,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
     }
 
     await withFlag(isSavingDiskConfig, async () => {
-      const safeWrite = to(fileSystem.writeFile, 'Failed to write config.toml');
-      const content = stringifyToml(clone()(DEFAULT_CONFIG));
-      const writeResult = await safeWrite(diskConfigPath, content);
-      if (writeResult.isErr()) {
-        reporter.reportError(writeResult.error);
-        return;
-      }
-      lastSyncedMtime.value = await getConfigFileMtime();
+      await writeDiskConfigContent(DEFAULT_CONFIG_CONTENT);
     });
   };
 
@@ -95,7 +99,8 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
           Object.assign(config, validated);
         })
         .mapErr((error) => {
-          configErrors.value = error instanceof InvalidOrgNoteConfigSchemaError ? [...error.errors] : [];
+          configErrors.value =
+            error instanceof InvalidOrgNoteConfigSchemaError ? [...error.errors] : [];
           return error;
         }),
     );
@@ -110,14 +115,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
   };
 
   const resetDiskConfigToDefault = async (): Promise<void> => {
-    const safeWrite = to(fileSystem.writeFile, 'Failed to write config.toml');
-    const content = stringifyToml(clone()(DEFAULT_CONFIG));
-    const writeResult = await safeWrite(diskConfigPath, content);
-    if (writeResult.isErr()) {
-      reporter.reportError(writeResult.error);
-      return;
-    }
-    lastSyncedMtime.value = await getConfigFileMtime();
+    await writeDiskConfigContent(DEFAULT_CONFIG_CONTENT);
   };
 
   const quarantineBrokenConfig = async (cause: Error, rawContent: string): Promise<void> => {
@@ -183,14 +181,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
 
   const saveToDisk = async (): Promise<void> => {
     await withFlag(isSavingDiskConfig, async () => {
-      const safeWrite = to(fileSystem.writeFile, 'Failed to write config.toml');
-      const content = stringifyToml(config);
-      const writeResult = await safeWrite(diskConfigPath, content);
-      if (writeResult.isErr()) {
-        reporter.reportError(writeResult.error);
-        return;
-      }
-      lastSyncedMtime.value = await getConfigFileMtime();
+      await writeDiskConfigContent(stringifyToml(config));
     });
   };
 
@@ -275,7 +266,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
 
   watch(
     config,
-    async () => {
+    () => {
       if (!isInitialized.value) {
         return;
       }
@@ -284,7 +275,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
         return;
       }
 
-      await saveToDiskDebounced();
+      saveToDiskDebounced();
     },
     { deep: true, flush: 'post' },
   );

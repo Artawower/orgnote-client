@@ -1,0 +1,7 @@
+- generic [ref=e5]:
+  - generic [ref=e6]: choose file system
+  - button "simple-fs A simple file system based on IndexedDB. It does not provide real storage on the disk and stores all data in the browser." [ref=e8] [cursor=pointer]:
+    - generic [ref=e10]:
+      - generic [ref=e12]: web
+      - generic [ref=e13]: simple-fs
+    - generic [ref=e15]: A simple file system based on IndexedDB. It does not provide real storage on the disk and stores all data in the browser.

@@ -1,0 +1,135 @@
+import axios from 'axios';
+import { toAbsolutePath } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
+import { sdk } from 'src/boot/axios';
+import { reporter } from 'src/boot/report';
+import { DEFAULT_CONFIG_CONTENT } from 'src/constants/config';
+import { ORGNOTE_CONFIG_FILE_PATH } from 'src/constants/system-file-paths';
+import { useConfigStore } from 'src/stores/config';
+import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
+import { parseOrgNoteConfigToml } from 'src/utils/parse-orgnote-config-toml';
+
+const absoluteConfigPath = toAbsolutePath(ORGNOTE_CONFIG_FILE_PATH);
+
+const isRemoteConfigMissing = (error: unknown): boolean => {
+  return axios.isAxiosError(error) && error.response?.status === 404;
+};
+
+const readLocalConfigContent = async (): Promise<string | undefined> => {
+  const fs = useFileSystemManagerStore().currentFs;
+  if (!fs) {
+    return;
+  }
+
+  const readConfig = to(fs.readFile.bind(fs), 'Failed to read config.toml');
+  const result = await readConfig(absoluteConfigPath, 'utf8');
+  if (result.isErr()) {
+    reporter.reportError(result.error);
+    return;
+  }
+
+  return result.value || undefined;
+};
+
+const decodeRemoteConfigContent = (data: unknown): string | undefined => {
+  if (typeof data === 'string') {
+    return data;
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return new TextDecoder().decode(new Uint8Array(data));
+  }
+
+  if (ArrayBuffer.isView(data)) {
+    return new TextDecoder().decode(data);
+  }
+
+  reporter.reportError(new Error('Unexpected remote config response type'));
+  return;
+};
+
+const fetchRemoteConfigContent = async (): Promise<string | undefined> => {
+  const result = await to(() =>
+    sdk.sync.syncFilesGet(absoluteConfigPath, {
+      responseType: 'arraybuffer',
+    }),
+  )();
+
+  if (result.isOk()) {
+    return decodeRemoteConfigContent(result.value.data);
+  }
+
+  if (isRemoteConfigMissing(result.error)) {
+    return;
+  }
+
+  reporter.reportError(result.error);
+  return;
+};
+
+const parseRemoteConfig = (content: string) => {
+  const parseResult = parseOrgNoteConfigToml(content);
+  if (parseResult.isErr()) {
+    reporter.reportError(parseResult.error);
+    return;
+  }
+
+  return parseResult.value;
+};
+
+const persistRemoteConfig = async (content: string): Promise<boolean> => {
+  const fs = useFileSystemManagerStore().currentFs;
+  if (!fs) {
+    return false;
+  }
+
+  const writeConfig = to(fs.writeFile.bind(fs), 'Failed to write config.toml');
+  const writeResult = await writeConfig(absoluteConfigPath, content);
+  if (writeResult.isErr()) {
+    reporter.reportError(writeResult.error);
+    return false;
+  }
+
+  return true;
+};
+
+const updateConfigStore = (content: ReturnType<typeof parseRemoteConfig>): void => {
+  if (!content) {
+    return;
+  }
+
+  const configStore = useConfigStore();
+  configStore.configErrors = [];
+  Object.assign(configStore.config, content);
+};
+
+const applyRemoteConfig = async (content: string): Promise<void> => {
+  const parsedRemoteConfig = parseRemoteConfig(content);
+  if (!parsedRemoteConfig) {
+    return;
+  }
+
+  if (!(await persistRemoteConfig(content))) {
+    return;
+  }
+
+  updateConfigStore(parsedRemoteConfig);
+};
+
+export const bootstrapRemoteConfig = async (): Promise<void> => {
+  const configStore = useConfigStore();
+
+  await configStore.sync();
+
+  const localConfigContent = await readLocalConfigContent();
+  if (localConfigContent !== DEFAULT_CONFIG_CONTENT) {
+    return;
+  }
+
+  const remoteConfigContent = await fetchRemoteConfigContent();
+  if (!remoteConfigContent) {
+    return;
+  }
+
+  await applyRemoteConfig(remoteConfigContent);
+};

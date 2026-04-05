@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
+import { runPostActivationSync } from './post-activation-sync';
 
 type User = { active?: string } | null | undefined;
 
@@ -16,12 +17,11 @@ export interface UseAutoSyncDeps {
 
 const getDefaultDeps = (): UseAutoSyncDeps => {
   const authStore = api.core.useAuth();
-  const syncStore = api.core.useSync();
   const { user } = storeToRefs(authStore);
 
   return {
     userRef: user as Ref<User>,
-    sync: syncStore.sync,
+    sync: runPostActivationSync,
     onError: reporter.reportWarning,
   };
 };
