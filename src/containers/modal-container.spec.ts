@@ -211,6 +211,65 @@ test('does not close modal when clicking inside modal content', async () => {
   expect(mockModal.close).not.toHaveBeenCalled();
 });
 
+
+test('content-body applies no-padding class when modal disables shell padding', async () => {
+  mockModal.modals.value = [
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>NoPaddingModal</div>' }),
+      config: { noPadding: true },
+    },
+  ];
+
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.find('.content-body').classes()).toContain('no-padding');
+});
+
+test('content-body applies with-header class when modal renders a title header', async () => {
+  mockModal.modals.value = [
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>HeaderModal</div>' }),
+      config: { title: 'Header title' },
+    },
+  ];
+
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.find('.content-body').classes()).toContain('with-header');
+});
+
+test('content-body applies with-header class when modal renders a component header', async () => {
+  mockModal.modals.value = [
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>HeaderModal</div>' }),
+      config: {
+        headerTitleComponent: markRaw({ template: '<div>HeaderComponent</div>' }),
+      },
+    },
+  ];
+
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.find('.content-body').classes()).toContain('with-header');
+});
+
+test('content-body omits with-header class when modal has no header', async () => {
+  mockModal.modals.value = [
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>NoHeaderModal</div>' }),
+      config: {},
+    },
+  ];
+
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.find('.content-body').classes()).not.toContain('with-header');
+});
+
 test('removing top modal keeps previous one visible', async () => {
   mockModal.modals.value = [
     { id: ++nextId, component: markRaw({ template: '<div>First Modal</div>' }), config: {} },

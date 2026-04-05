@@ -74,10 +74,12 @@ navigate(props.initialRoute).then((result) => {
     flex: 1;
     width: 100%;
     min-width: 0;
+    min-height: 0;
   }
 
   & > div {
     height: 100%;
+    min-height: 0;
     overflow-y: auto;
   }
 }
@@ -87,6 +89,7 @@ navigate(props.initialRoute).then((result) => {
     flex: 1;
     width: 100%;
     min-width: 0;
+    min-height: 0;
   }
 }
 

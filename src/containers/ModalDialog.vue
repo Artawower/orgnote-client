@@ -49,11 +49,19 @@
           <action-button @click="modal.close" icon="close" size="sm" />
         </app-flex>
         <div class="content">
-          <component
-            :is="modalData.component"
-            v-bind="modalData.config?.modalProps"
-            v-on="modalData.config?.modalEmits ?? {}"
-          />
+          <div
+            class="content-body"
+            :class="{
+              'no-padding': modalData.config?.noPadding,
+              'with-header': modalData.config?.headerTitleComponent || modalData.config?.title,
+            }"
+          >
+            <component
+              :is="modalData.component"
+              v-bind="modalData.config?.modalProps"
+              v-on="modalData.config?.modalEmits ?? {}"
+            />
+          </div>
         </div>
       </app-flex>
     </app-flex>
@@ -245,9 +253,9 @@ dialog.full-screen {
     padding-bottom: var(--device-padding-bottom, 0px);
   }
 
-  &:not(.no-padding) {
+  &:not(.no-padding) .modal-header {
     padding: var(--modal-padding);
-    padding-bottom: calc(var(--modal-padding) + var(--device-padding-bottom, 0px));
+    padding-bottom: 0;
   }
 
   div {
@@ -259,10 +267,28 @@ dialog.full-screen {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
 
   @include desktop-below {
     overflow-y: auto;
     overscroll-behavior-y: contain;
+  }
+}
+
+.content-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+
+  &:not(.no-padding) {
+    padding: var(--modal-padding);
+  }
+
+  &.with-header {
+    padding-top: 0;
   }
 }
 
