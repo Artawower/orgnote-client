@@ -29,8 +29,8 @@
         column
         start
         align-start
-        :gap="modalData.config?.noPadding ? '0px' : 'var(--modal-padding)'"
-        :class="{ 'no-padding': modalData.config?.noPadding }"
+        :gap="modalData.config?.noHeaderPadding ? '0px' : 'var(--modal-padding)'"
+        :class="{ 'no-header-padding': modalData.config?.noHeaderPadding }"
       >
         <app-flex
           v-if="modalData.config?.headerTitleComponent || modalData.config?.title"
@@ -52,7 +52,7 @@
           <div
             class="content-body"
             :class="{
-              'no-padding': modalData.config?.noPadding,
+              'no-padding': modalData.config?.noBodyPadding,
               'with-header': modalData.config?.headerTitleComponent || modalData.config?.title,
             }"
           >
@@ -253,7 +253,7 @@ dialog.full-screen {
     padding-bottom: var(--device-padding-bottom, 0px);
   }
 
-  &:not(.no-padding) .modal-header {
+  &:not(.no-header-padding) .modal-header {
     padding: var(--modal-padding);
     padding-bottom: 0;
   }

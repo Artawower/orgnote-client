@@ -172,6 +172,7 @@ body {
   --modal-border: var(--border-default);
   --modal-radius: var(--border-radius-md);
   --modal-padding: var(--padding-lg);
+  --settings-padding: var(--padding-lg);
   --modal-max-width: min(1280px, calc(100vw - var(--padding-xl)));
   --modal-min-width: 460px;
   --modal-max-height: min(860px, calc(100vh - 2 * var(--padding-xl)));

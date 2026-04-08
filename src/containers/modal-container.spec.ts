@@ -212,19 +212,36 @@ test('does not close modal when clicking inside modal content', async () => {
 });
 
 
-test('content-body applies no-padding class when modal disables shell padding', async () => {
+test('modal-content applies no-header-padding class when modal disables header padding', async () => {
   mockModal.modals.value = [
     {
       id: ++nextId,
-      component: markRaw({ template: '<div>NoPaddingModal</div>' }),
-      config: { noPadding: true },
+      component: markRaw({ template: '<div>NoHeaderPaddingModal</div>' }),
+      config: { noHeaderPadding: true },
+    },
+  ];
+
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.find('.modal-content').classes()).toContain('no-header-padding');
+  expect(wrapper.find('.content-body').classes()).not.toContain('no-padding');
+});
+
+test('content-body applies no-padding class when modal disables body padding only', async () => {
+  mockModal.modals.value = [
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>NoBodyPaddingModal</div>' }),
+      config: { noBodyPadding: true },
     },
   ];
 
   await wrapper.vm.$nextTick();
 
   expect(wrapper.find('.content-body').classes()).toContain('no-padding');
+  expect(wrapper.find('.modal-content').classes()).not.toContain('no-padding');
 });
+
 
 test('content-body applies with-header class when modal renders a title header', async () => {
   mockModal.modals.value = [

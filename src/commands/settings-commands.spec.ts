@@ -107,6 +107,7 @@ test('openSettingsRoute opens settings modal with wide layout', async () => {
     expect.any(Object),
     expect.objectContaining({
       wide: true,
+      noBodyPadding: true,
       modalProps: expect.objectContaining({
         initialRoute: RouteNames.SettingsPage,
       }),

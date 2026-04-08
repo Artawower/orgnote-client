@@ -2,11 +2,15 @@
   <app-flex class="settings" row start align-start gap="lg">
     <visibility-wrapper desktop-above>
       <div class="menu">
-        <settings-menu />
+        <div class="menu-inner">
+          <settings-menu />
+        </div>
       </div>
     </visibility-wrapper>
     <app-flex class="content" column start align-start gap="lg">
-      <component :is="currentView" />
+      <div class="content-inner">
+        <component :is="currentView" />
+      </div>
     </app-flex>
   </app-flex>
 </template>
@@ -93,6 +97,22 @@ navigate(resolvedInitialRoute).then((result) => {
   width: 100%;
   min-width: 0;
   min-height: 0;
+}
+
+.menu-inner,
+.content-inner {
+  padding: 0 var(--settings-padding) var(--settings-padding);
+  width: 100%;
+}
+
+@include desktop {
+  .menu-inner {
+    padding-right: 0;
+  }
+
+  .content-inner {
+    padding-left: 0;
+  }
 }
 
 .settings :deep(.title),

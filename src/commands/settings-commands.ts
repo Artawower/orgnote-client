@@ -155,6 +155,7 @@ export function getSettingsCommands(): Command[] {
         title: 'settings',
         closable: true,
         wide: true,
+        noBodyPadding: true,
         headerTitleComponent: createSettingsHeaderTitle(settingsRouter),
         modalProps: {
           initialRoute: routeName,

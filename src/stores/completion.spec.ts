@@ -52,7 +52,7 @@ test('open calls modal.open with correct config', async () => {
   expect(mockModalOpen).toHaveBeenCalledWith(
     expect.anything(),
     expect.objectContaining({
-      noPadding: true,
+      noBodyPadding: true,
       position: 'top',
     }),
   );
