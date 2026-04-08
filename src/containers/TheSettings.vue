@@ -51,33 +51,37 @@ const redirectSettingsMenuForDesktop = async (isDesktopBelow: boolean) => {
   if (replaceResult.isErr()) reporter.reportError(replaceResult.error);
 };
 
-watch(desktopBelow, redirectSettingsMenuForDesktop, { immediate: true });
-
-const currentRoute = computed(() => settingsRouter.currentRoute.value);
+watch(desktopBelow, (isDesktopBelow) => {
+  void redirectSettingsMenuForDesktop(isDesktopBelow);
+});
 
 const currentView = computed(() => {
-  return currentRoute.value.matched[0]?.components?.default;
+  return settingsRouter.currentRoute.value.matched[0]?.components?.default;
 });
 
 const navigate = (routeName: RouteNames) => {
   return to(() => settingsRouter.push({ name: routeName }))();
 };
 
-navigate(props.initialRoute).then((result) => {
+const resolvedInitialRoute =
+  !desktopBelow.value && props.initialRoute === RouteNames.SettingsPage
+    ? RouteNames.SystemSettings
+    : props.initialRoute;
+
+navigate(resolvedInitialRoute).then((result) => {
   if (result.isErr()) reporter.reportError(result.error);
 });
 </script>
 
 <style lang="scss" scoped>
 .settings {
-  & {
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-  }
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 
-  & > div {
+  .menu,
+  .content {
     height: 100%;
     min-height: 0;
     overflow-y: auto;
@@ -85,12 +89,10 @@ navigate(props.initialRoute).then((result) => {
 }
 
 .content {
-  & {
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-  }
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .settings :deep(.title),
