@@ -3,6 +3,7 @@ import { api } from './api';
 import { useAutoSync } from 'src/composables/use-auto-sync';
 import { runPostActivationSync } from 'src/composables/post-activation-sync';
 import { useAppResume } from 'src/composables/use-app-resume';
+import { bootTimer } from 'src/boot/perf-timer';
 
 const hasActiveSession = (active?: string): boolean => Boolean(active);
 
@@ -18,7 +19,7 @@ export default defineBoot(async () => {
   useAutoSync();
   useAppResume(() => api.core.useSync().sync());
 
-  await authStore.verifyUser();
+  await bootTimer.measure('auth-verify-user', () => authStore.verifyUser());
 
   if (shouldSyncPersistedActiveUser(activeBeforeVerify, authStore.user?.active)) {
     await runPostActivationSync();

@@ -77,6 +77,7 @@ import { useFontStore } from 'src/stores/fonts';
 import { wsClient } from 'src/infrastructure/websocket-client';
 import { useFileContent } from 'src/composables/use-file-content';
 import { useAppResume } from 'src/composables/use-app-resume';
+import { hasWindow } from 'src/utils/platform-specific';
 
 let api: OrgNoteApi;
 async function initApi(app: App, router: Router): Promise<void> {
@@ -197,15 +198,11 @@ export default defineBoot(async ({ app, store, router }) => {
   await bootTimer.measure('sync-config', async () => {
     await syncConfigurations(api);
   });
-  if (typeof window !== 'undefined') {
+  if (hasWindow()) {
     window.orgnote = api;
   }
   logger.info('Configurations synchronized');
 
-  await bootTimer.measure('splash-hide', async () => {
-    await splashScreen.hide();
-  });
-  bootTimer.end('total');
   logger.info('Application boot process finished');
 });
 

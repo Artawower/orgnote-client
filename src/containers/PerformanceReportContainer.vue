@@ -1,9 +1,10 @@
 <template>
   <safe-area fit>
     <container-layout gap="lg">
-      <app-description v-if="totalDuration > 0" class="perf-summary" padded>
-        {{ t(I18N.TOTAL_BOOT_TIME) }}: {{ totalDuration.toFixed(1) }}{{ t(I18N.MS) }} |
-        {{ rows.length }}
+      <app-description v-if="startupWallClock > 0" class="perf-summary" padded>
+        Startup wall clock: {{ startupWallClock.toFixed(1) }}{{ t(I18N.MS) }} | Boot critical path:
+        {{ bootCriticalPath.toFixed(1) }}{{ t(I18N.MS) }} | Measurements sum:
+        {{ measurementsSum.toFixed(1) }}{{ t(I18N.MS) }} | {{ rows.length }}
         {{ t(I18N.MEASUREMENTS) }}
       </app-description>
       <easy-data-table
@@ -49,6 +50,7 @@ import SafeArea from 'src/components/SafeArea.vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
 import AppDescription from 'src/components/AppDescription.vue';
 import {
+  BOOT_SCOPE,
   reportVersion,
   getFullReport,
   getBrowserTimingReport,
@@ -156,16 +158,45 @@ const rows = computed<Item[]>(() => {
   return allRows;
 });
 
+const customMeasurements = computed(() => {
+  void reportVersion.value;
+  return getFullReport().measurements;
+});
+
+const findMeasurement = (name: string, scope = BOOT_SCOPE) =>
+  customMeasurements.value.find(
+    (measurement) => measurement.name === name && measurement.scope === scope,
+  );
+
+const startupWallClock = computed<number>(() => {
+  const start = findMeasurement('html-inline-script');
+  const end = findMeasurement('splash-hidden');
+
+  if (!start || !end) {
+    return 0;
+  }
+
+  return Math.max(0, end.startTime - start.startTime);
+});
+
+const bootCriticalPath = computed<number>(() => {
+  const total = customMeasurements.value.find(
+    (measurement) => measurement.scope === 'boot' && measurement.name === 'total',
+  );
+
+  return total?.duration ?? 0;
+});
+
+const measurementsSum = computed<number>(() => {
+  void reportVersion.value;
+  return getFullReport().totalDuration;
+});
+
 const snapshotJson = (): string => {
   const report = getFullReport();
   const browserReport = getBrowserTimingReport();
   return JSON.stringify({ custom: report, browser: browserReport }, null, 2);
 };
-
-const totalDuration = computed<number>(() => {
-  void reportVersion.value;
-  return getFullReport().totalDuration;
-});
 
 const handleCopyJson = (): void => {
   safeCopyToClipboard(snapshotJson());

@@ -1,5 +1,6 @@
 import { to } from 'orgnote-api/utils';
 import { type Ref, ref } from 'vue';
+import { hasWindow } from 'src/utils/platform-specific';
 
 export interface PerfMeasurement {
   readonly name: string;
@@ -46,7 +47,6 @@ const MARK_START_SUFFIX = ':start';
 const MARK_END_SUFFIX = ':end';
 const NAMESPACE = 'orgnote';
 const MAX_MEASUREMENTS = 500;
-const IS_CLIENT = typeof window !== 'undefined';
 
 const pendingStarts = new Map<string, PerfEntry>();
 const completedMeasurements: PerfMeasurement[] = [];
@@ -86,6 +86,16 @@ const recordMeasurement = (entry: PerfEntry, duration: number): void => {
   bumpVersion();
 };
 
+export const recordEventAt = (scope: string, label: string, startTime: number): void => {
+  if (!hasWindow()) return;
+  recordMeasurement({ scope, label, startTime }, 0);
+};
+
+export const recordEvent = (scope: string, label: string): void => {
+  if (!hasWindow()) return;
+  recordEventAt(scope, label, performance.now());
+};
+
 export interface ScopedTimer {
   readonly scope: string;
   start: (label: string) => void;
@@ -107,7 +117,7 @@ const createNoOpTimer = (scope: string): ScopedTimer => ({
 });
 
 export const createPerfTimer = (scope: string): ScopedTimer => {
-  if (!IS_CLIENT) return createNoOpTimer(scope);
+  if (!hasWindow()) return createNoOpTimer(scope);
 
   const scopedStart = (label: string): void => {
     const key = buildKey(scope, label);
@@ -195,6 +205,16 @@ const extractPhase = (
   duration: Number(nav[end]) - Number(nav[start]),
 });
 
+const extractPoint = (
+  nav: PerformanceNavigationTiming,
+  name: string,
+  time: keyof PerformanceNavigationTiming,
+): NavigationPhase => ({
+  name,
+  startTime: Number(nav[time]),
+  duration: 0,
+});
+
 const RESOURCE_TYPE_MAP: Record<string, string> = {
   script: 'JS',
   link: 'CSS',
@@ -206,7 +226,7 @@ const RESOURCE_TYPE_MAP: Record<string, string> = {
 const MAX_RESOURCES = 20;
 
 export const getBrowserTimingReport = (): BrowserTimingReport => {
-  if (!IS_CLIENT) return { navigation: [], paint: [], resources: [] };
+  if (!hasWindow()) return { navigation: [], paint: [], resources: [] };
 
   const nav = performance.getEntriesByType('navigation')[0] as
     | PerformanceNavigationTiming
@@ -214,11 +234,19 @@ export const getBrowserTimingReport = (): BrowserTimingReport => {
 
   const navigation: NavigationPhase[] = nav
     ? [
+        ...(nav.workerStart > 0 ? [extractPoint(nav, 'Service Worker Start', 'workerStart')] : []),
+        extractPoint(nav, `Navigation (${nav.type})`, 'startTime'),
         extractPhase(nav, 'DNS Lookup', 'domainLookupStart', 'domainLookupEnd'),
         extractPhase(nav, 'TCP/TLS', 'connectStart', 'connectEnd'),
         extractPhase(nav, 'Request', 'requestStart', 'responseStart'),
         extractPhase(nav, 'Download', 'responseStart', 'responseEnd'),
         extractPhase(nav, 'DOM Parse', 'domInteractive', 'domComplete'),
+        extractPhase(
+          nav,
+          'DOMContentLoaded',
+          'domContentLoadedEventStart',
+          'domContentLoadedEventEnd',
+        ),
         extractPhase(nav, 'Load Event', 'loadEventStart', 'loadEventEnd'),
       ]
     : [];
@@ -230,16 +258,19 @@ export const getBrowserTimingReport = (): BrowserTimingReport => {
   const resources: ResourceEntry[] = performance
     .getEntriesByType('resource')
     .map((e) => e as PerformanceResourceTiming)
-    .filter((e) => e.transferSize > 0)
     .sort((a, b) => b.duration - a.duration)
     .slice(0, MAX_RESOURCES)
-    .map((e) => ({
-      name: e.name.split('/').pop() || e.name,
-      type: RESOURCE_TYPE_MAP[e.initiatorType] ?? e.initiatorType,
-      size: e.transferSize,
-      duration: e.duration,
-      startTime: e.startTime,
-    }));
+    .map((e) => {
+      const isCached = e.transferSize === 0 && (e.decodedBodySize > 0 || e.duration > 0);
+      const resourceType = RESOURCE_TYPE_MAP[e.initiatorType] ?? e.initiatorType;
+      return {
+        name: e.name.split('/').pop() || e.name,
+        type: isCached ? `${resourceType} (cached)` : resourceType,
+        size: e.decodedBodySize || e.encodedBodySize || e.transferSize,
+        duration: e.duration,
+        startTime: e.startTime,
+      };
+    });
 
   return { navigation, paint, resources };
 };
@@ -286,7 +317,7 @@ export const runtimeTimer = createPerfTimer(RUNTIME_SCOPE);
 export const setupPerformanceObserver = (
   onMeasure?: (measurement: PerfMeasurement) => void,
 ): PerformanceObserver | null => {
-  if (!IS_CLIENT) return null;
+  if (!hasWindow()) return null;
 
   disconnectObserver();
 

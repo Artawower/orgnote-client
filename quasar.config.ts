@@ -48,6 +48,7 @@ export default defineConfig((ctx) => {
       { path: 'fs-sync-bridge', server: false },
       { path: 'electron-deeplink', server: false },
       { path: 'katex', server: false },
+      { path: 'app-ready-sentinel', server: false },
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#css

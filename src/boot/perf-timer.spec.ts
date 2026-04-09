@@ -299,8 +299,24 @@ test('perfTimer getFullReport and getScopeReport return correct scoped data', as
   expect(scopeB.measurements[0]?.name).toBe('y');
 });
 
+test('perfTimer recordEvent stores zero-duration event at provided time', async () => {
+  const mock = createPerformanceMock([25]);
+  const perf = await importPerfTimer(true, { performance: mock.performance });
+
+  perf.recordEventAt('boot', 'html-inline-script', 7);
+  perf.recordEvent('boot', 'app-mounted');
+
+  expect(perf.getScopeReport('boot').measurements).toEqual([
+    { name: 'html-inline-script', scope: 'boot', duration: 0, startTime: 7 },
+    { name: 'app-mounted', scope: 'boot', duration: 0, startTime: 25 },
+  ]);
+});
+
 test('perfTimer getBrowserTimingReport maps navigation paint and resources', async () => {
   const nav = {
+    startTime: 0,
+    type: 'navigate',
+    workerStart: 0.5,
     domainLookupStart: 1,
     domainLookupEnd: 3,
     connectStart: 3,
@@ -310,6 +326,8 @@ test('perfTimer getBrowserTimingReport maps navigation paint and resources', asy
     responseEnd: 28,
     domInteractive: 30,
     domComplete: 50,
+    domContentLoadedEventStart: 40,
+    domContentLoadedEventEnd: 45,
     loadEventStart: 55,
     loadEventEnd: 60,
   } as unknown as PerformanceNavigationTiming;
@@ -321,7 +339,9 @@ test('perfTimer getBrowserTimingReport maps navigation paint and resources', asy
     return {
       name: 'https://example.com/assets/file-' + n + '.js',
       initiatorType: n % 2 ? 'script' : 'fetch',
-      transferSize: n === 1 ? 0 : n * 100,
+      transferSize: n === 22 ? 0 : n * 100,
+      encodedBodySize: n * 90,
+      decodedBodySize: n * 110,
       duration: n,
       startTime: n,
     } as unknown as PerformanceResourceTiming;
@@ -331,9 +351,10 @@ test('perfTimer getBrowserTimingReport maps navigation paint and resources', asy
   const perf = await importPerfTimer(true, { performance: mock.performance });
   const report = perf.getBrowserTimingReport();
 
-  expect(report.navigation).toHaveLength(6);
+  expect(report.navigation).toHaveLength(9);
   expect(report.paint).toHaveLength(2);
   expect(report.resources).toHaveLength(20);
   expect(report.resources[0]?.duration).toBe(22);
-  expect(report.resources[0]?.type).toBe('Fetch');
+  expect(report.resources[0]?.type).toBe('Fetch (cached)');
+  expect(report.resources[0]?.size).toBe(22 * 110);
 });

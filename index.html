@@ -51,6 +51,11 @@
   </head>
   <body style="background-color: var(--bg, #9356e8)">
     <script>
+      window.__orgnoteStartup = {
+        htmlInlineScriptAt: performance.now(),
+      };
+    </script>
+    <script>
       function toReadableMessage(value, fallback) {
         if (value === null || value === undefined) return fallback || 'Unknown error';
         if (value instanceof Error) {

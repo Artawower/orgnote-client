@@ -5,6 +5,7 @@ import {
   REPOSITORIES_PROVIDER_TOKEN,
 } from 'src/constants/app-providers';
 import type { Repositories } from 'orgnote-api';
+import { bootTimer } from 'src/boot/perf-timer';
 
 let repositories: Repositories;
 
@@ -14,7 +15,7 @@ const initRepositories = async (): Promise<Repositories> => {
 };
 
 export default defineBoot(async ({ app }) => {
-  await initRepositories();
+  await bootTimer.measure('repositories-init', initRepositories);
   app.provide(REPOSITORIES_PROVIDER_TOKEN, repositories);
   app.provide(LOGS_REPOSITORY_PROVIDER_TOKEN, repositories.logRepository);
 });
