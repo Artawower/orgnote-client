@@ -7,6 +7,7 @@ import type { EmbeddedWidget, InlineEmbeddedWidget } from 'orgnote-api';
 
 export class OrgInlineWidget extends BaseOrgWidget {
   private widget: EmbeddedWidget | undefined;
+  private wrapElement: HTMLElement | undefined;
 
   constructor(
     view: EditorView,
@@ -51,14 +52,38 @@ export class OrgInlineWidget extends BaseOrgWidget {
     );
   }
 
+  private getCurrentRange(): { from: number; to: number } | undefined {
+    const nodeLength = this.orgNode.end - this.orgNode.start;
+
+    if (!this.wrapElement) {
+      return { from: this.orgNode.start, to: this.orgNode.end };
+    }
+
+    const [startOffset = 0] = this.inlineWidget.showRangeOffset ?? [0, 0];
+    const from = this.view.posAtDOM(this.wrapElement) - startOffset;
+    const to = from + nodeLength;
+    const currentText = this.view.state.doc.sliceString(from, to);
+
+    if (currentText !== this.orgNode.rawValue) {
+      return;
+    }
+
+    return { from, to };
+  }
+
   override toDOM(): HTMLElement {
     const wrap = document.createElement(this.inlineWidget.wrapComponent ?? 'span');
+    this.wrapElement = wrap;
 
     this.widget = this.embeddedWidget.widgetBuilder?.({
       wrap,
       orgNode: this.orgNode,
       rootNodeSrc: this.rootNodeSrc,
-      onUpdateFn: this.updateValue.bind(this),
+      onUpdateFn: (newValue) => {
+        const range = this.getCurrentRange();
+        if (!range) return;
+        this.updateValueAt(newValue, range.from, range.to);
+      },
       editorView: this.view as never,
       readonly: this.readonly,
     });
@@ -68,5 +93,6 @@ export class OrgInlineWidget extends BaseOrgWidget {
 
   override destroy(): void {
     this.widget?.destroy();
+    this.wrapElement = undefined;
   }
 }

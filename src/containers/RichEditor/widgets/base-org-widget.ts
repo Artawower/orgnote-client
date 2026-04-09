@@ -26,10 +26,14 @@ export class BaseOrgWidget extends WidgetType {
   }
 
   protected updateValue(newVal: string): void {
+    this.updateValueAt(newVal, this.orgNode.start, this.orgNode.end);
+  }
+
+  protected updateValueAt(newVal: string, from: number, to: number): void {
     const cursorPosition = this.view.state.selection.main.head;
     const changes = this.embeddedWidget.viewUpdater?.(this.orgNode, newVal) ?? {
-      from: this.orgNode.start,
-      to: this.orgNode.end,
+      from,
+      to,
       insert: newVal,
     };
 
