@@ -148,6 +148,11 @@ export const deleteRange = (view: EditorView, from: number, to: number): void =>
   focusEditorAsync(view);
 };
 
+export const clearEditorContent = (view: EditorView): void => {
+  if (!view.state.doc.length) return;
+  deleteRange(view, 0, view.state.doc.length);
+};
+
 export const replaceRange = (view: EditorView, from: number, to: number, text: string): void => {
   view.dispatch({
     changes: { from, to, insert: text },

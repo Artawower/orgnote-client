@@ -2,6 +2,7 @@ import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
 import { DefaultCommands, I18N, RouteNames } from 'orgnote-api';
 import { useNotePickCompletion } from 'src/composables/file-pick-completion';
 import NoteInfoModal from 'src/containers/NoteInfoModal.vue';
+import { clearEditorContent } from 'src/utils/editor-primitives';
 import { getCurrentNoteInfo } from 'src/utils/current-note-info';
 
 const getCurrentNoteText = (api: OrgNoteApi): string | undefined => {
@@ -107,6 +108,32 @@ export function getNoteCommands(): Command[] {
 
         await api.utils.copyToClipboard(text);
         notifications.notify({ message: I18N.COPIED_TO_CLIPBOARD });
+      },
+    },
+    {
+      command: DefaultCommands.CLEAR_NOTE,
+      title: DefaultCommands.CLEAR_NOTE,
+      group: 'note',
+      icon: 'sym_o_delete_sweep',
+      hide: (api) => {
+        const uri = api.core.usePane().activeBufferUri;
+        if (!uri) return true;
+        const buffer = api.core.useBuffers().getBufferByUri(uri);
+        return !buffer || buffer.guard?.readonly === true;
+      },
+      handler: async (api) => {
+        const view = api.core.useEditor().activeContext?.editorViewGetter?.();
+
+        if (view) {
+          clearEditorContent(view);
+          return;
+        }
+
+        const uri = api.core.usePane().activeBufferUri;
+        if (!uri) return;
+        const buffer = api.core.useBuffers().getBufferByUri(uri);
+        if (!buffer || !buffer.text.length) return;
+        buffer.setText('');
       },
     },
     {
