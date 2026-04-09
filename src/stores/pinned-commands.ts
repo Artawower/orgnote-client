@@ -60,6 +60,8 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
   ],
   'file-actions': [
     DefaultCommands.RENAME_FILE,
+    DefaultCommands.COPY_BUFFER_CONTENT,
+    DefaultCommands.CLEAR_NOTE,
     DefaultCommands.COPY_FILE,
     DefaultCommands.MOVE_FILE,
     DefaultCommands.DELETE_FILE,

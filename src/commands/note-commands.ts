@@ -4,6 +4,22 @@ import { useNotePickCompletion } from 'src/composables/file-pick-completion';
 import NoteInfoModal from 'src/containers/NoteInfoModal.vue';
 import { getCurrentNoteInfo } from 'src/utils/current-note-info';
 
+const getCurrentNoteText = (api: OrgNoteApi): string | undefined => {
+  const activeContext = api.core.useEditor().activeContext;
+  const view = activeContext?.editorViewGetter?.();
+  if (view) return view.state.doc.toString();
+
+  const uri = api.core.usePane().activeBufferUri;
+  if (uri) {
+    const buffer = api.core.useBuffers().getBufferByUri(uri);
+    if (buffer) return buffer.text;
+  }
+
+  return activeContext?.orgNode?.rawValue;
+};
+
+const hasActiveNote = (api: OrgNoteApi): boolean => getCurrentNoteText(api) !== undefined;
+
 export function getNoteCommands(): Command[] {
   const commands: Command[] = [
     {
@@ -72,6 +88,25 @@ export function getNoteCommands(): Command[] {
         n.notify({
           message: I18N.COPIED_TO_CLIPBOARD,
         });
+      },
+    },
+    {
+      command: DefaultCommands.COPY_BUFFER_CONTENT,
+      title: DefaultCommands.COPY_BUFFER_CONTENT,
+      group: 'note',
+      icon: 'sym_o_content_copy',
+      hide: (api) => !hasActiveNote(api),
+      handler: async (api) => {
+        const notifications = api.core.useNotifications();
+        const text = getCurrentNoteText(api);
+
+        if (text === undefined) {
+          notifications.notify({ level: 'warning', message: I18N.NO_SELECTED_NOTE });
+          return;
+        }
+
+        await api.utils.copyToClipboard(text);
+        notifications.notify({ message: I18N.COPIED_TO_CLIPBOARD });
       },
     },
     {
