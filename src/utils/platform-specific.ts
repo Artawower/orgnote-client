@@ -3,6 +3,8 @@ import { Platform } from 'quasar';
 
 type Condition = () => boolean;
 
+export const hasWindow = (): boolean => typeof window !== 'undefined';
+
 const isAsyncFn = (fn?: unknown): boolean => {
   if (!fn || typeof fn !== 'function') return false;
   return fn.constructor.name === 'AsyncFunction';
@@ -36,6 +38,7 @@ export const iosPwaOnly = platformSpecific(
     !!process.env.CLIENT &&
     Platform.is.ios &&
     !Platform.is.capacitor &&
+    hasWindow() &&
     window.navigator.standalone === true,
 );
 export const nativeMobileOnly = platformSpecific(

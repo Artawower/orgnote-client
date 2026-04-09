@@ -12,11 +12,11 @@ import { to } from 'orgnote-api/utils';
 import { version } from '../../package.json';
 import { api } from 'src/boot/api';
 import { getWebSocketUrl } from 'src/utils/server-endpoints';
+import { hasWindow } from 'src/utils/platform-specific';
 import { wsClient } from 'src/infrastructure/websocket-client';
 
 const isClientEnvironment = (): boolean => (process.env.CLIENT ?? '').toString() === 'true';
 const hasNavigator = (): boolean => isClientEnvironment() && typeof navigator !== 'undefined';
-const hasWindow = (): boolean => isClientEnvironment() && typeof window !== 'undefined';
 
 const getNavigatorLanguage = (): string => {
   if (!hasNavigator()) {

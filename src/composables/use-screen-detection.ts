@@ -1,13 +1,17 @@
 import { computed, effectScope } from 'vue';
 import { useWindowSize } from '@vueuse/core';
 import { getNumericCssVar } from 'src/utils/css-utils';
+import { hasWindow } from 'src/utils/platform-specific';
 import { TABLET_BREAKPOINT, DESKTOP_BREAKPOINT } from 'src/constants/breakpoints';
 
 export function createScreenDetection() {
   const { width } = useWindowSize({ includeScrollbar: true });
-  const hasWindow = typeof window !== 'undefined';
-  const tablet = hasWindow ? getNumericCssVar('--tablet') ?? TABLET_BREAKPOINT : TABLET_BREAKPOINT;
-  const desktop = hasWindow ? getNumericCssVar('--desktop') ?? DESKTOP_BREAKPOINT : DESKTOP_BREAKPOINT;
+  const tablet = hasWindow()
+    ? (getNumericCssVar('--tablet') ?? TABLET_BREAKPOINT)
+    : TABLET_BREAKPOINT;
+  const desktop = hasWindow()
+    ? (getNumericCssVar('--desktop') ?? DESKTOP_BREAKPOINT)
+    : DESKTOP_BREAKPOINT;
 
   const desktopAbove = computed(() => width.value > desktop);
   const desktopBelow = computed(() => width.value < desktop);

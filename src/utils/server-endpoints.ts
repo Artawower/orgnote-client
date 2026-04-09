@@ -1,4 +1,5 @@
 import { to } from 'orgnote-api/utils';
+import { hasWindow } from 'src/utils/platform-specific';
 
 const wsPathLocal = '/api/ws/events';
 const wsPathRemote = '/ws/events';
@@ -13,7 +14,7 @@ export const getApiPublicUrl = (configured?: string): string => {
     return baseUrl;
   }
 
-  if (typeof window !== 'undefined') {
+  if (hasWindow()) {
     return new URL(baseUrl, window.location.origin).toString();
   }
 

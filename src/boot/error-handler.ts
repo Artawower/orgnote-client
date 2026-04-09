@@ -3,6 +3,7 @@ import { reporter } from './report';
 import type { Router } from 'vue-router';
 import type { ComponentPublicInstance } from 'vue';
 import { RouteNames, isPresent } from 'orgnote-api';
+import { hasWindow } from 'src/utils/platform-specific';
 
 const extractComponentChain = (instance: ComponentPublicInstance | null): string[] => {
   const chain: string[] = [];
@@ -63,7 +64,7 @@ const handleError = (
 };
 
 export default defineBoot(({ app, router, ssrContext }) => {
-  if (!ssrContext && typeof window !== 'undefined') {
+  if (!ssrContext && hasWindow()) {
     window.addEventListener(
       'error',
       (event) => {
@@ -77,7 +78,8 @@ export default defineBoot(({ app, router, ssrContext }) => {
         if (event.target && event.target !== window) {
           const target = event.target as HTMLElement;
           meta.targetTag = target.tagName;
-          if (target.tagName === 'IMG') meta.imgSrc = (target as HTMLImageElement).src?.slice(0, 200);
+          if (target.tagName === 'IMG')
+            meta.imgSrc = (target as HTMLImageElement).src?.slice(0, 200);
           if (target.tagName === 'SCRIPT') meta.scriptSrc = (target as HTMLScriptElement).src;
           if (target.tagName === 'LINK') meta.linkHref = (target as HTMLLinkElement).href;
         }
