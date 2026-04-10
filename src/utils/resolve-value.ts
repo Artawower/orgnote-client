@@ -1,6 +1,17 @@
-export function resolveValue<T>(value?: T | (() => T)): T | void {
-  if (!value) {
-    return;
+type MaybeFn<TValue, TArgs extends unknown[] = []> =
+  | TValue
+  | ((...args: TArgs) => TValue)
+  | undefined;
+
+export function resolveValue<TValue, TArgs extends unknown[] = []>(
+  value?: MaybeFn<TValue, TArgs>,
+  ...args: TArgs
+): TValue | undefined {
+  if (value === undefined) {
+    return undefined;
   }
-  return typeof value === 'function' ? (value as () => T)() : value;
+
+  return typeof value === 'function'
+    ? (value as (...params: TArgs) => TValue)(...args)
+    : value;
 }

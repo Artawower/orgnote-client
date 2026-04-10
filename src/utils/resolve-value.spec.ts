@@ -37,3 +37,28 @@ test('handles functions returning complex types', () => {
   expect(result).toEqual({ key: 'value' });
   expect(valueFunction).toHaveBeenCalled();
 });
+
+
+test('preserves falsy plain values', () => {
+  expect(resolveValue('')).toBe('');
+  expect(resolveValue(0)).toBe(0);
+  expect(resolveValue(false)).toBe(false);
+});
+
+test('passes arguments to function resolvers', () => {
+  const valueFunction = vi.fn((prefix: string, count: number) => `${prefix}-${count}`);
+
+  const result = resolveValue(valueFunction, 'depth', 2);
+
+  expect(result).toBe('depth-2');
+  expect(valueFunction).toHaveBeenCalledWith('depth', 2);
+});
+
+test('returns objects from argument-aware resolvers', () => {
+  const valueFunction = vi.fn((depth: number) => ({ style: `--org-list-depth: ${depth}` }));
+
+  const result = resolveValue(valueFunction, 3);
+
+  expect(result).toEqual({ style: '--org-list-depth: 3' });
+  expect(valueFunction).toHaveBeenCalledWith(3);
+});
