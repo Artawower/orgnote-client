@@ -6,94 +6,59 @@
     @click="handlePaneClick"
   >
     <template #header>
-      <visibility-wrapper>
-        <template #desktop-above>
-          <nav-tabs>
-            <template #navigation>
-              <action-button
-                icon="keyboard_arrow_left"
-                size="sm"
-                color="fg-muted"
-                :disabled="!canGoBack"
-                @click="handleNavigation('back')"
-              />
-              <action-button
-                icon="keyboard_arrow_right"
-                size="sm"
-                color="fg-muted"
-                :disabled="!canGoForward"
-                @click="handleNavigation('forward')"
-              />
-            </template>
-            <context-menu
-              v-for="tab of tabs"
-              :key="tab.id"
-              group="tab"
-              :data="tabFileActionDataMap[tab.id]"
-              :disabled="!tabFileActionDataMap[tab.id]"
-              @open="handleTabSelect(tab.id)"
-            >
-              <nav-tab
-                @click="handleTabSelect(tab.id)"
-                @close="handleTabClose(tab.id)"
-                @dragstart="handleDragStart"
-                @dragend="handleDragEnd"
-                icon="description"
-                :active="isTabActive(tab.id)"
-                :tab-id="tab.id"
-                :pane-id="props.paneId"
-              >
-                {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
-              </nav-tab>
-            </context-menu>
-            <template #actions>
-              <command-action-button
-                :command="DefaultCommands.NEW_TAB"
-                size="sm"
-                :data="{ paneId: props.paneId }"
-              />
-            </template>
-            <template v-if="isTopRightPane" #right-actions>
-              <command-action-button
-                v-if="!opened"
-                :command="DefaultCommands.TOGGLE_RIGHT_SIDEBAR"
-                size="sm"
-              />
-            </template>
-          </nav-tabs>
+      <nav-tabs v-if="tabletAbove">
+        <template #navigation>
+          <action-button
+            icon="keyboard_arrow_left"
+            size="sm"
+            color="fg-muted"
+            :disabled="!canGoBack"
+            @click="handleNavigation('back')"
+          />
+          <action-button
+            icon="keyboard_arrow_right"
+            size="sm"
+            color="fg-muted"
+            :disabled="!canGoForward"
+            @click="handleNavigation('forward')"
+          />
         </template>
-        <template #mobile>
-          <div class="mobile-tab-header">
-            <action-button
-              v-if="canGoBack"
-              icon="keyboard_arrow_left"
-              size="sm"
-              color="fg-muted"
-              @click="handleNavigation('back')"
-            />
-            <action-button
-              v-if="canGoForward"
-              icon="keyboard_arrow_right"
-              size="sm"
-              color="fg-muted"
-              @click="handleNavigation('forward')"
-            />
-            <div class="mobile-tab-title">
-              {{
-                activeTab?.router.currentRoute.value
-                  ? generateTabTitle(activeTab.router.currentRoute.value)
-                  : activeTab?.title
-              }}
-            </div>
-            <command-action-button :command="DefaultCommands.SHOW_TAB_SWITCHER" size="sm" />
-            <command-action-button
-              :command="DefaultCommands.NEW_TAB"
-              size="sm"
-              :data="{ paneId: props.paneId }"
-            />
-          </div>
+        <context-menu
+          v-for="tab of tabs"
+          :key="tab.id"
+          group="tab"
+          :data="tabFileActionDataMap[tab.id]"
+          :disabled="!tabFileActionDataMap[tab.id]"
+          @open="handleTabSelect(tab.id)"
+        >
+          <nav-tab
+            @click="handleTabSelect(tab.id)"
+            @close="handleTabClose(tab.id)"
+            @dragstart="handleDragStart"
+            @dragend="handleDragEnd"
+            icon="description"
+            :active="isTabActive(tab.id)"
+            :tab-id="tab.id"
+            :pane-id="props.paneId"
+          >
+            {{ generateTabTitle(tab.router.currentRoute.value) || tab.title }}
+          </nav-tab>
+        </context-menu>
+        <template #actions>
+          <command-action-button
+            :command="DefaultCommands.NEW_TAB"
+            size="sm"
+            :data="{ paneId: props.paneId }"
+          />
         </template>
-      </visibility-wrapper>
+        <template v-if="isTopRightPane" #right-actions>
+          <command-action-button
+            v-if="!opened"
+            :command="DefaultCommands.TOGGLE_RIGHT_SIDEBAR"
+            size="sm"
+          />
+        </template>
+      </nav-tabs>
     </template>
 
     <template #body>
@@ -115,7 +80,6 @@ import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import NavTab from 'src/components/NavTab.vue';
 import NavTabs from 'src/components/NavTabs.vue';
-import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import DropZoneOverlay from 'src/components/DropZoneOverlay.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { generateTabTitle } from 'src/utils/generate-tab-title';
@@ -136,6 +100,7 @@ const props = defineProps<{
   paneId: string;
 }>();
 
+const { tabletAbove } = api.ui.useScreenDetection();
 const pane = api.core.usePane();
 const layout = api.core.useLayout();
 
@@ -296,23 +261,4 @@ const { opened } = storeToRefs(api.ui.useRightSidebar());
   position: relative;
 }
 
-.mobile-tab-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-sm);
-  padding: var(--padding-sm) var(--padding-md);
-  background: var(--bg);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.mobile-tab-title {
-  flex: 1;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-medium);
-  color: var(--fg);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 </style>
