@@ -294,6 +294,24 @@ test('newListItem splits parenthesized numbered list at cursor', () => {
   expect(result?.changes).toEqual({ from: 8, to: 9, insert: '\n2) ' });
 });
 
+test('newListItem preserves nested bullet indentation', () => {
+  const doc = '- Item1\n - Nested item';
+  const result = applyEnterRules(doc, 22);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 22, to: 22, insert: '\n - ' });
+  expect(result?.selection).toEqual({ anchor: 26 });
+});
+
+test('newListItem preserves nested checkbox indentation', () => {
+  const doc = '- Item1\n - [ ] Nested task';
+  const result = applyEnterRules(doc, 26);
+
+  expect(result).toBeDefined();
+  expect(result?.changes).toEqual({ from: 26, to: 26, insert: '\n - [ ] ' });
+  expect(result?.selection).toEqual({ anchor: 34 });
+});
+
 test('blockFooter adds end_quote after begin_quote', () => {
   const doc = '#+begin_quote';
   const result = applyEnterRules(doc, 13);

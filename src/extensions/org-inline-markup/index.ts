@@ -87,10 +87,15 @@ const joinClasses = (...classes: string[]): string => classes.filter(Boolean).jo
 
 const getListSectionClass = (orgNode: OrgNode): string =>
   getListSectionNode(orgNode) ? 'org-list-item-section-line' : '';
+const isListItemInListItemSection = (orgNode: OrgNode): boolean =>
+  !!(
+    orgNode.parent?.is(NodeType.List) &&
+    orgNode.parent?.parent?.is(NodeType.Section) &&
+    orgNode.parent?.parent?.parent?.is(NodeType.ListItem)
+  );
 
 const getChildListSectionClass = (orgNode: OrgNode): string =>
   hasNextLineInListItemSection(orgNode) ? getListSectionClass(orgNode.parent!) : '';
-
 const getListTextClasses = (orgNode: OrgNode): string => {
   const classes: string[] = [];
 
@@ -329,11 +334,15 @@ const lineClassWidgets: WidgetMeta[] = [
       const orderedClass = orgNode.parent?.ordered
         ? 'org-list-item-ordered-line'
         : 'org-list-item-bullet-line';
+      const nestedSectionClass = isListItemInListItemSection(orgNode)
+        ? 'org-list-item-section-line'
+        : '';
 
       return joinClasses(
         'org-list-item-line',
         checkedClass,
         orderedClass,
+        nestedSectionClass,
       );
     },
     attributes: getListDepthAttributes,

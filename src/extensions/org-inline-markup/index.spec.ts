@@ -314,6 +314,31 @@ test('orgInlineMarkupExtension: ListItem lineClass keeps nested ordered classes 
   expect(attributes).toEqual({ style: '--org-list-depth: 2' });
 });
 
+test('orgInlineMarkupExtension: ListItem lineClass marks nested list items as section lines', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
+  const listItemWidget = widgets.find(
+    (w) => w.nodeType === NodeType.ListItem,
+  ) as unknown as LineClassWidget;
+
+  const rootList = createMockNode(NodeType.List);
+  const rootListItem = createMockNode(NodeType.ListItem, { parent: rootList });
+  const nestedSection = createMockNode(NodeType.Section, { parent: rootListItem });
+  const nestedList = createMockNode(NodeType.List, { parent: nestedSection });
+  const emptyNestedItem = createMockNode(NodeType.ListItem, {
+    title: { children: { get: () => null } },
+    parent: nestedList,
+  });
+
+  const classGetter = listItemWidget.class as ClassBuilder;
+  const className = classGetter(emptyNestedItem);
+
+  expect(className).toContain('org-list-item-line');
+  expect(className).toContain('org-list-item-bullet-line');
+  expect(className).toContain('org-list-item-section-line');
+});
+
 test('orgInlineMarkupExtension: Section lineClass exposes full nested depth as css variable', async () => {
   await orgInlineMarkupExtension.onMounted!(mockApi);
 

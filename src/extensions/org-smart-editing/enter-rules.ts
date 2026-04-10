@@ -118,6 +118,24 @@ const newLineAfterEmptyBullet = (node: OrgNode): TransactionSpec | undefined => 
   };
 };
 
+const getListItemIndent = (titleNode: OrgNode): string =>
+  titleNode.children?.find((child) => child.is(NodeType.Indent))?.rawValue ?? '';
+
+const getListItemOperator = (titleNode: OrgNode): string | undefined =>
+  titleNode.children?.find((child) => child.is(NodeType.Operator))?.rawValue.trim();
+
+const hasListItemCheckbox = (titleNode: OrgNode): boolean =>
+  !!titleNode.children?.find((child) => child.is(NodeType.Checkbox));
+const getIncrementedOrderedOperator = (operator: string): string | undefined => {
+  const orderedOperatorMatch = operator.match(/^(\d+)([.)])$/);
+  if (!orderedOperatorMatch) return undefined;
+
+  const [, rawNumber, delimiter] = orderedOperatorMatch;
+  return `${Number(rawNumber) + 1}${delimiter}`;
+};
+
+
+
 const newListItem = (node: OrgNode, cursorPos: number): TransactionSpec | undefined => {
   const titleNode = findParent(node, (n) => {
     if (n.isNot(NodeType.Title)) return false;
@@ -129,19 +147,24 @@ const newListItem = (node: OrgNode, cursorPos: number): TransactionSpec | undefi
     return;
   }
 
+  const listItem = titleNode.parent;
+  if (!listItem?.is(NodeType.ListItem)) return;
+
   if (cursorPos < titleNode.start || cursorPos > titleNode.end) return;
 
-  const firstChild = titleNode.children.first;
-  if (!firstChild) return;
+  const operator = getListItemOperator(titleNode);
+  if (!operator) return;
 
-  const operator = firstChild.rawValue.trim();
-  const checkbox = titleNode.children?.get(1)?.is(NodeType.Checkbox) ? '[ ] ' : '';
-  const isNumberList = operator.match(/\d+[).]{1}/);
-  const newOperator = isNumberList ? +operator.slice(0, -1) + 1 + operator.slice(-1) : operator;
+  const indentation = getListItemIndent(titleNode);
+  const checkbox = hasListItemCheckbox(titleNode) ? '[ ] ' : '';
+  const newOperator = listItem.parent?.ordered
+    ? getIncrementedOrderedOperator(operator)
+    : operator;
+  if (!newOperator) return;
 
   const charAtCursor = titleNode.rawValue[cursorPos - titleNode.start];
   const skipSpace = charAtCursor === ' ' ? 1 : 0;
-  const prefix = `\n${newOperator} ${checkbox}`;
+  const prefix = `\n${indentation}${newOperator} ${checkbox}`;
 
   return {
     changes: { from: cursorPos, to: cursorPos + skipSpace, insert: prefix },
