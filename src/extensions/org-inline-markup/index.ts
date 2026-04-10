@@ -1,4 +1,4 @@
-import type { Extension, WidgetMeta } from 'orgnote-api';
+import type { Extension, LineAttributes, WidgetMeta } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
@@ -29,6 +29,96 @@ const markupParentTypes = [
 const isMarkupOperator = (orgNode: OrgNode): boolean =>
   orgNode.is(NodeType.Operator) &&
   markupParentTypes.some((nodeType) => orgNode.parent?.is(nodeType));
+
+
+const isListItemNode = (orgNode: OrgNode | null | undefined): boolean =>
+  orgNode?.is?.(NodeType.ListItem) ?? false;
+
+const getListDepth = (orgNode: OrgNode): number => {
+  let depth = 0;
+  let current: OrgNode | null | undefined = orgNode;
+
+  while (current) {
+    if (isListItemNode(current)) {
+      depth += 1;
+    }
+    current = current.parent;
+  }
+
+  return depth;
+};
+
+const getListDepthAttributes = (orgNode: OrgNode): LineAttributes | undefined => {
+  const depth = getListDepth(orgNode);
+  if (depth === 0) return undefined;
+
+  return {
+    style: `--org-list-depth: ${depth}`,
+  };
+};
+
+const getListSectionNode = (orgNode: OrgNode): OrgNode | undefined => {
+  if (orgNode.is(NodeType.Section) && orgNode.parent?.is(NodeType.ListItem)) {
+    return orgNode;
+  }
+
+  if (orgNode.parent?.is(NodeType.Section) && orgNode.parent?.parent?.is(NodeType.ListItem)) {
+    return orgNode.parent;
+  }
+
+  return undefined;
+};
+
+const getListSectionAttributes = (orgNode: OrgNode): LineAttributes | undefined => {
+  const section = getListSectionNode(orgNode);
+  return section ? getListDepthAttributes(section) : undefined;
+};
+
+const isNodeInListItemSection = (orgNode: OrgNode): boolean =>
+  !!(orgNode.parent?.is(NodeType.Section) && orgNode.parent?.parent?.is(NodeType.ListItem));
+
+const hasNextLineInListItemSection = (orgNode: OrgNode): boolean =>
+  isNodeInListItemSection(orgNode) && !!orgNode.next;
+
+const resolveChildSectionAttributes = (orgNode: OrgNode): LineAttributes | undefined =>
+  hasNextLineInListItemSection(orgNode) ? getListSectionAttributes(orgNode.parent!) : undefined;
+
+const joinClasses = (...classes: string[]): string => classes.filter(Boolean).join(' ');
+
+const getListSectionClass = (orgNode: OrgNode): string =>
+  getListSectionNode(orgNode) ? 'org-list-item-section-line' : '';
+
+const getChildListSectionClass = (orgNode: OrgNode): string =>
+  hasNextLineInListItemSection(orgNode) ? getListSectionClass(orgNode.parent!) : '';
+
+const getListTextClasses = (orgNode: OrgNode): string => {
+  const classes: string[] = [];
+
+  if (
+    orgNode?.parent?.parent?.is(NodeType.SrcBlock) ||
+    orgNode?.parent?.parent?.parent?.is(NodeType.SrcBlock)
+  ) {
+    classes.push('org-src-block-line');
+  }
+
+  if (orgNode?.parent?.parent?.is(NodeType.QuoteBlock)) {
+    classes.push('org-quote-block-line');
+  }
+
+  if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
+    classes.push('org-block-footer');
+  }
+
+  if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
+    classes.push('org-block-header');
+  }
+
+  if (isNodeInListItemSection(orgNode)) {
+    classes.push(getListSectionClass(orgNode.parent!));
+  }
+
+  return classes.filter(Boolean).join(' ');
+};
 
 const inlineWidgets: WidgetMeta[] = [
   {
@@ -207,24 +297,26 @@ const lineClassWidgets: WidgetMeta[] = [
       if (orgNode?.parent?.is(NodeType.SrcBlock)) {
         return 'org-src-block-line';
       }
-      if (
-        orgNode.parent?.is(NodeType.Section) &&
-        orgNode.parent?.parent?.is(NodeType.ListItem) &&
-        !!orgNode.next
-      ) {
-        return 'org-list-item-section-line';
+
+      const childSectionClass = getChildListSectionClass(orgNode);
+      if (childSectionClass) {
+        return childSectionClass;
       }
+
       if (
         orgNode.parent?.is(NodeType.QuoteBlock) &&
         orgNode.next?.isNot(NodeType.BlockFooter)
       ) {
         return 'org-quote-block-line';
       }
+
       if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
         return 'org-block-footer';
       }
+
       return '';
     },
+    attributes: resolveChildSectionAttributes,
   },
   {
     id: 'line-class-list-item',
@@ -237,19 +329,21 @@ const lineClassWidgets: WidgetMeta[] = [
       const orderedClass = orgNode.parent?.ordered
         ? 'org-list-item-ordered-line'
         : 'org-list-item-bullet-line';
-      return `org-list-item-line ${checkedClass} ${orderedClass}`;
+
+      return joinClasses(
+        'org-list-item-line',
+        checkedClass,
+        orderedClass,
+      );
     },
+    attributes: getListDepthAttributes,
   },
   {
     id: 'line-class-section',
     type: WidgetType.LineClass,
     nodeType: NodeType.Section,
-    class: (orgNode: OrgNode) => {
-      if (orgNode.parent?.is(NodeType.ListItem)) {
-        return 'org-list-item-section-line';
-      }
-      return '';
-    },
+    class: getListSectionClass,
+    attributes: getListSectionAttributes,
   },
   {
     id: 'line-class-horizontal-rule',
@@ -279,33 +373,14 @@ const lineClassWidgets: WidgetMeta[] = [
     id: 'line-class-text',
     type: WidgetType.LineClass,
     nodeType: NodeType.Text,
-    class: (orgNode: OrgNode) => {
-      const classes: string[] = [];
-      if (
-        orgNode?.parent?.parent?.is(NodeType.SrcBlock) ||
-        orgNode?.parent?.parent?.parent?.is(NodeType.SrcBlock)
-      ) {
-        classes.push('org-src-block-line');
-      }
-      if (orgNode?.parent?.parent?.is(NodeType.QuoteBlock)) {
-        classes.push('org-quote-block-line');
-      }
-      if (orgNode.parent?.parent?.is(NodeType.BlockFooter)) {
-        classes.push('org-block-footer');
-      }
-      if (orgNode.parent?.parent?.is(NodeType.BlockHeader)) {
-        classes.push('org-block-header');
-      }
-      if (
-        orgNode.parent?.is(NodeType.Section) &&
-        orgNode.parent?.parent?.is(NodeType.ListItem)
-      ) {
-        classes.push('org-list-item-section-line');
-      }
-      return classes.join(' ');
-    },
+    class: getListTextClasses,
+    attributes: (orgNode: OrgNode) =>
+      isNodeInListItemSection(orgNode)
+        ? getListSectionAttributes(orgNode.parent!)
+        : undefined,
   },
 ];
+
 
 const BUILTIN_PRIORITY = 0;
 

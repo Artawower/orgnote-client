@@ -4,43 +4,113 @@ import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, ViewPlugin } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType, findParent, walkTree } from 'org-mode-ast';
-import type { OrgLineClasses, OrgLineClass } from 'orgnote-api';
+import type { LineAttributes, OrgLineClasses, OrgLineClass } from 'orgnote-api';
+import { resolveValue } from 'src/utils/resolve-value';
 import { orgNodeGetterFacet, lineClassesFacet } from '../facets';
 
-const applyLineDecorationsForSrcParentBlock = (
-  lineDecorations: Range<Decoration>[],
+type LineDecorationRange = Range<Decoration>;
+
+interface ResolvedLineDecoration {
+  className?: string;
+  attributes?: LineAttributes;
+}
+
+const normalizeStyle = (value: string): string => value.trimEnd().replace(/;$/, '');
+
+const mergeStyles = (current: string | undefined, next: string): string => {
+  const normalizedNext = normalizeStyle(next);
+  if (!current) return normalizedNext;
+
+  return `${normalizeStyle(current)}; ${normalizedNext}`;
+};
+
+const mergeAttributes = (
+  current: LineAttributes | undefined,
+  next: LineAttributes | undefined,
+): LineAttributes | undefined => {
+  if (!next) return current;
+
+  return Object.entries(next).reduce<LineAttributes>(
+    (result, [key, value]) => {
+      if (key === 'style') {
+        return { ...result, style: mergeStyles(result.style, value) };
+      }
+
+      return { ...result, [key]: value };
+    },
+    { ...(current ?? {}) },
+  );
+};
+
+const resolveLineAttributes = (widget: OrgLineClass, node: OrgNode): LineAttributes | undefined =>
+  resolveValue(widget.attributes, node);
+
+const resolveLineClass = (widget: OrgLineClass, node: OrgNode): string | undefined =>
+  resolveValue(widget.class, node);
+
+const resolveNodeLineDecoration = (
+  widgets: OrgLineClass[] | undefined,
   node: OrgNode,
-  lineClass: string,
-): void => {
-  const srcParent = findParent(node, (n) => n.is(NodeType.SrcBlock));
-  if (!srcParent) return;
+): ResolvedLineDecoration | undefined => {
+  if (!widgets?.length) return undefined;
 
-  const linedValues = node.value?.split('\n');
-  let pos = node.start;
+  const classNames = widgets.map((widget) => resolveLineClass(widget, node)).filter(Boolean);
+  const attributes = widgets.reduce<LineAttributes | undefined>(
+    (result, widget) => mergeAttributes(result, resolveLineAttributes(widget, node)),
+    undefined,
+  );
 
-  linedValues?.forEach((v) => {
-    const lineDecoration = Decoration.line({
-      class: lineClass,
-    }).range(pos, pos);
-    pos += v.length + 1;
-    lineDecorations.push(lineDecoration);
+  if (classNames.length === 0 && !attributes) return undefined;
+
+  return {
+    className: classNames.length > 0 ? classNames.join(' ') : undefined,
+    attributes,
+  };
+};
+
+const createLineDecorationRange = (
+  decoration: ResolvedLineDecoration,
+  from: number,
+): LineDecorationRange =>
+  Decoration.line({
+    class: decoration.className,
+    attributes: decoration.attributes,
+  }).range(from, from);
+
+const buildDefaultLineDecorationRanges = (
+  node: OrgNode,
+  decoration: ResolvedLineDecoration,
+): LineDecorationRange[] => [createLineDecorationRange(decoration, node.start)];
+
+const buildSrcParentLineDecorationRanges = (
+  node: OrgNode,
+  decoration: ResolvedLineDecoration,
+): LineDecorationRange[] => {
+  const srcParent = findParent(node, (candidate) => candidate.is(NodeType.SrcBlock));
+  if (!srcParent) return [];
+
+  const lineValues = node.value?.split('\n');
+  if (!lineValues?.length) return [];
+
+  let position = node.start;
+  return lineValues.map((lineValue) => {
+    const range = createLineDecorationRange(decoration, position);
+    position += lineValue.length + 1;
+    return range;
   });
 };
 
-const collectLineClasses = (
-  widgets: OrgLineClass[] | undefined,
+const buildNodeLineDecorationRanges = (
   node: OrgNode,
-): string | undefined => {
-  if (!widgets?.length) return undefined;
+  widgets: OrgLineClass[] | undefined,
+): LineDecorationRange[] => {
+  const decoration = resolveNodeLineDecoration(widgets, node);
+  if (!decoration) return [];
 
-  const classes = widgets
-    .map((w) => {
-      const lineClass = typeof w.class === 'function' ? w.class(node) : w.class;
-      return lineClass;
-    })
-    .filter(Boolean);
-
-  return classes.length > 0 ? classes.join(' ') : undefined;
+  return [
+    ...buildSrcParentLineDecorationRanges(node, decoration),
+    ...buildDefaultLineDecorationRanges(node, decoration),
+  ];
 };
 
 const buildLineDecorations = (
@@ -49,21 +119,15 @@ const buildLineDecorations = (
 ): DecorationSet => {
   if (!orgNode) return Decoration.none;
 
-  const lineDecorations: Range<Decoration>[] = [];
+  const lineDecorationRanges: LineDecorationRange[] = [];
 
-  walkTree(orgNode, (n: OrgNode): boolean => {
-    const lineClass = collectLineClasses(orgLineClasses[n.type], n);
-    if (!lineClass) return false;
-
-    applyLineDecorationsForSrcParentBlock(lineDecorations, n, lineClass);
-
-    lineDecorations.push(Decoration.line({ class: lineClass }).range(n.start, n.start));
-
+  walkTree(orgNode, (node: OrgNode): boolean => {
+    lineDecorationRanges.push(...buildNodeLineDecorationRanges(node, orgLineClasses[node.type]));
     return false;
   });
 
-  lineDecorations.sort((p, c) => p.from - c.from);
-  return Decoration.set(lineDecorations);
+  lineDecorationRanges.sort((previous, current) => previous.from - current.from);
+  return Decoration.set(lineDecorationRanges);
 };
 
 export const orgLineDecoration = ViewPlugin.fromClass(
@@ -92,6 +156,6 @@ export const orgLineDecoration = ViewPlugin.fromClass(
     }
   },
   {
-    decorations: (v) => v.decorations,
+    decorations: (value) => value.decorations,
   },
 );

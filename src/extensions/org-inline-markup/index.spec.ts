@@ -3,18 +3,44 @@ import { readFileSync } from 'node:fs';
 import { setActivePinia, createPinia } from 'pinia';
 import { orgInlineMarkupExtension, orgInlineMarkupManifest } from './index';
 import { NodeType } from 'org-mode-ast';
-import type { WidgetMeta } from 'orgnote-api';
+import type { LineAttributes, WidgetMeta } from 'orgnote-api';
+import { resolveValue } from 'src/utils/resolve-value';
 
 type ClassGetter = string | ((node: unknown) => string);
 type ClassBuilder = (node: unknown) => string;
+type AttributesGetter =
+  | LineAttributes
+  | ((node: unknown) => LineAttributes | undefined);
 
 interface LineClassWidget {
   class: ClassGetter;
+  attributes?: AttributesGetter;
 }
 
 interface InlineWidget {
   classBuilder?: ClassBuilder;
 }
+
+type MockOrgNode = {
+  parent?: MockOrgNode;
+  title?: { children: { get: (idx: number) => unknown } };
+  next?: unknown;
+  ordered?: boolean;
+  is?: (nodeType: NodeType) => boolean;
+};
+
+const createMockNode = (
+  type: NodeType,
+  overrides: Partial<MockOrgNode> = {},
+): MockOrgNode => ({
+  ...overrides,
+  is: (nodeType: NodeType) => nodeType === type,
+});
+
+const resolveLineAttributes = (
+  attributes: AttributesGetter | undefined,
+  node: unknown,
+ ): LineAttributes | undefined => resolveValue(attributes, node);
 
 const mockAddWidgets = vi.fn();
 const mockRemoveWidget = vi.fn();
@@ -188,20 +214,24 @@ test('orgInlineMarkupExtension: ListItem lineClass returns correct class with ch
     (w) => w.nodeType === NodeType.ListItem,
   ) as unknown as LineClassWidget;
 
-  const mockCheckedNode = {
+  const topLevelList = createMockNode(NodeType.List);
+  const mockCheckedNode = createMockNode(NodeType.ListItem, {
     title: {
       children: {
         get: (idx: number) => (idx === 1 ? { checked: true } : null),
       },
     },
-    parent: { ordered: false },
-  };
+    parent: topLevelList,
+  });
 
   const classGetter = listItemWidget.class as ClassBuilder;
   const className = classGetter(mockCheckedNode);
+  const attributes = resolveLineAttributes(listItemWidget.attributes, mockCheckedNode);
+
   expect(className).toContain('org-list-item-line');
   expect(className).toContain('org-list-item-checked');
   expect(className).toContain('org-list-item-bullet-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 1' });
 });
 
 test('orgInlineMarkupExtension: ListItem lineClass returns ordered class when parent is ordered', async () => {
@@ -212,15 +242,125 @@ test('orgInlineMarkupExtension: ListItem lineClass returns ordered class when pa
     (w) => w.nodeType === NodeType.ListItem,
   ) as unknown as LineClassWidget;
 
-  const mockOrderedNode = {
+  const orderedList = createMockNode(NodeType.List, { ordered: true });
+  const mockOrderedNode = createMockNode(NodeType.ListItem, {
     title: { children: { get: () => null } },
-    parent: { ordered: true },
-  };
+    parent: orderedList,
+  });
 
   const classGetter = listItemWidget.class as ClassBuilder;
   const className = classGetter(mockOrderedNode);
+  const attributes = resolveLineAttributes(listItemWidget.attributes, mockOrderedNode);
+
   expect(className).toContain('org-list-item-ordered-line');
   expect(className).not.toContain('org-list-item-bullet-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 1' });
+});
+
+test('orgInlineMarkupExtension: ListItem lineClass keeps nested bullet classes stable', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
+  const listItemWidget = widgets.find(
+    (w) => w.nodeType === NodeType.ListItem,
+  ) as unknown as LineClassWidget;
+
+  const rootList = createMockNode(NodeType.List);
+  const rootListItem = createMockNode(NodeType.ListItem, { parent: rootList });
+  const nestedSection = createMockNode(NodeType.Section, { parent: rootListItem });
+  const nestedList = createMockNode(NodeType.List, { parent: nestedSection });
+  const nestedBulletItem = createMockNode(NodeType.ListItem, {
+    title: { children: { get: () => null } },
+    parent: nestedList,
+  });
+
+  const classGetter = listItemWidget.class as ClassBuilder;
+  const className = classGetter(nestedBulletItem);
+  const attributes = resolveLineAttributes(listItemWidget.attributes, nestedBulletItem);
+
+  expect(className).toContain('org-list-item-line');
+  expect(className).toContain('org-list-item-bullet-line');
+  expect(className).not.toContain('org-list-item-ordered-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 2' });
+});
+
+test('orgInlineMarkupExtension: ListItem lineClass keeps nested ordered classes stable', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
+  const listItemWidget = widgets.find(
+    (w) => w.nodeType === NodeType.ListItem,
+  ) as unknown as LineClassWidget;
+
+  const rootList = createMockNode(NodeType.List);
+  const rootListItem = createMockNode(NodeType.ListItem, { parent: rootList });
+  const nestedSection = createMockNode(NodeType.Section, { parent: rootListItem });
+  const nestedOrderedList = createMockNode(NodeType.List, {
+    parent: nestedSection,
+    ordered: true,
+  });
+  const nestedOrderedItem = createMockNode(NodeType.ListItem, {
+    title: { children: { get: () => null } },
+    parent: nestedOrderedList,
+  });
+
+  const classGetter = listItemWidget.class as ClassBuilder;
+  const className = classGetter(nestedOrderedItem);
+  const attributes = resolveLineAttributes(listItemWidget.attributes, nestedOrderedItem);
+
+  expect(className).toContain('org-list-item-line');
+  expect(className).toContain('org-list-item-ordered-line');
+  expect(className).not.toContain('org-list-item-bullet-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 2' });
+});
+
+test('orgInlineMarkupExtension: Section lineClass exposes full nested depth as css variable', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
+  const sectionWidget = widgets.find(
+    (w) => w.nodeType === NodeType.Section,
+  ) as unknown as LineClassWidget;
+
+  const deepSection = Array.from({ length: 11 }).reduce<MockOrgNode | undefined>(
+    (parentNode) => {
+      const currentList = createMockNode(NodeType.List, { parent: parentNode });
+      const currentItem = createMockNode(NodeType.ListItem, { parent: currentList });
+      return createMockNode(NodeType.Section, { parent: currentItem });
+    },
+    undefined,
+  );
+  expect(deepSection).toBeDefined();
+
+  const classGetter = sectionWidget.class as ClassBuilder;
+  const className = classGetter(deepSection);
+  const attributes = resolveLineAttributes(sectionWidget.attributes, deepSection);
+
+  expect(className).toContain('org-list-item-section-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 11' });
+});
+
+test('orgInlineMarkupExtension: Section lineClass adds nested list depth attributes', async () => {
+  await orgInlineMarkupExtension.onMounted!(mockApi);
+
+  const widgets = mockAddWidgets.mock.calls[0] as WidgetMeta[];
+  const sectionWidget = widgets.find(
+    (w) => w.nodeType === NodeType.Section,
+  ) as unknown as LineClassWidget;
+
+  const parentList = createMockNode(NodeType.List);
+  const rootListItem = createMockNode(NodeType.ListItem, { parent: parentList });
+  const childSection = createMockNode(NodeType.Section, { parent: rootListItem });
+  const childList = createMockNode(NodeType.List, { parent: childSection });
+  const childListItem = createMockNode(NodeType.ListItem, { parent: childList });
+  const nestedSection = createMockNode(NodeType.Section, { parent: childListItem });
+
+  const classGetter = sectionWidget.class as ClassBuilder;
+  const className = classGetter(nestedSection);
+  const attributes = resolveLineAttributes(sectionWidget.attributes, nestedSection);
+
+  expect(className).toContain('org-list-item-section-line');
+  expect(attributes).toEqual({ style: '--org-list-depth: 2' });
 });
 
 test('orgInlineMarkupExtension: Headline lineClass returns level-specific class', async () => {

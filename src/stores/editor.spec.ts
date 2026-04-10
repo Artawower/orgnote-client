@@ -50,10 +50,14 @@ test('useEditorStore.addWidgets: adds lineClass widget to registry', () => {
     type: WidgetType.LineClass,
     nodeType: NodeType.Headline,
     class: 'org-headline-line',
+    attributes: { style: '--org-list-depth: 2' },
   });
 
   expect(store.lineClasses[NodeType.Headline]).toBeDefined();
   expect(store.lineClasses[NodeType.Headline]?.[0]?.class).toBe('org-headline-line');
+  expect(store.lineClasses[NodeType.Headline]?.[0]?.attributes).toEqual({
+    style: '--org-list-depth: 2',
+  });
 });
 
 test('useEditorStore.addWidgets: adds multiple widgets in single call', () => {
