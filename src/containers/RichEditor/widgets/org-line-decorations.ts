@@ -133,7 +133,6 @@ const buildLineDecorations = (
 export const orgLineDecoration = ViewPlugin.fromClass(
   class {
     public decorations: DecorationSet = Decoration.none;
-    private lastPosition = 0;
 
     constructor(view: EditorView) {
       this.decorations = this.buildDecorations(view);
@@ -146,11 +145,7 @@ export const orgLineDecoration = ViewPlugin.fromClass(
     }
 
     public update(update: ViewUpdate): void {
-      const caretPosition = update.state.selection.main.head;
-      const caretPositionChanged = this.lastPosition !== caretPosition;
-      this.lastPosition = caretPosition;
-
-      if (update.docChanged || update.viewportChanged || caretPositionChanged) {
+      if (update.docChanged || update.viewportChanged) {
         this.decorations = this.buildDecorations(update.view);
       }
     }

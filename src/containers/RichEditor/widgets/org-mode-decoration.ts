@@ -100,15 +100,21 @@ export const orgInlineWidgets = ViewPlugin.fromClass(
     }
 
     public update(update: ViewUpdate): void {
-      const caretPosition = update.state.selection.main.head;
-      const caretPositionChanged = this.lastPosition !== caretPosition;
-      this.lastPosition = caretPosition;
+      const current = update.state.selection.main;
+      const previous = update.startState.selection.main;
+      const caretPositionChanged = this.lastPosition !== current.head;
+      this.lastPosition = current.head;
+
+      const selectionStarted = previous.empty && !current.empty;
+      const selectionJustCollapsed = !previous.empty && current.empty;
+      const shouldRebuildForCaret = current.empty && (caretPositionChanged || selectionJustCollapsed);
 
       if (
         update.docChanged ||
         update.viewportChanged ||
         update.focusChanged ||
-        caretPositionChanged
+        shouldRebuildForCaret ||
+        selectionStarted
       ) {
         this.decorations = this.buildDecorations(update.view);
       }

@@ -103,8 +103,16 @@ const buildDecorations = (
   return result;
 };
 
-const hasSignificantChanges = (tr: Transaction): boolean =>
-  tr.docChanged || tr.selection !== tr.startState.selection;
+const hasSignificantChanges = (tr: Transaction): boolean => {
+  if (tr.docChanged) return true;
+  if (tr.selection === tr.startState.selection) return false;
+
+  const current = tr.state.selection.main;
+  const previous = tr.startState.selection.main;
+
+  if (!current.empty) return previous.empty;
+  return true;
+};
 
 export const createMultilineWidgetsField = (
   editorViewRef: { current: EditorView | null },
