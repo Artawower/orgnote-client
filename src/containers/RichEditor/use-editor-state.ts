@@ -4,7 +4,7 @@ import { closeBrackets } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { bracketMatching } from '@codemirror/language';
 import { computed, shallowRef, watch, toValue } from 'vue';
-import type { OrgNode, NodeType } from 'org-mode-ast';
+import type { OrgNode } from 'org-mode-ast';
 import { api } from 'src/boot/api';
 import type {
   InlineEmbeddedWidgets,
@@ -152,30 +152,67 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     });
 
   type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget;
+  type WidgetEntries<T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets> = Array<
+    readonly [string, T[keyof T]]
+  >;
+
+  const toWidgetEntries = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
+    widgets: T,
+  ): WidgetEntries<T> => Object.entries(widgets) as WidgetEntries<T>;
+
+  const resolveInlineWidgetBuilder = (
+    widget: Widget,
+    builderFn: typeof createWidgetBuilder,
+  ) => {
+    if (!widget.component || widget.widgetBuilder) {
+      return widget.widgetBuilder;
+    }
+
+    return builderFn(widget.component, widget.componentProps);
+  };
+
+  const resolveMultilineWidgetBuilder = (widget: MultilineEmbeddedWidget) => {
+    if (!widget.component || widget.widgetBuilder) {
+      return widget.widgetBuilder;
+    }
+
+    return createMultilineWidgetBuilder(widget.component, widget);
+  };
 
   const buildWidgets = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
     widgets: T,
     builderFn: typeof createWidgetBuilder,
   ): T =>
-    Object.entries(widgets).reduce((acc, [nodeType, widgetList]) => {
-      if (!widgetList) return acc;
-      return {
-        ...acc,
-        [nodeType as NodeType]: (widgetList as Widget[]).map((widget) => ({
+    Object.fromEntries(
+      toWidgetEntries(widgets).flatMap(([nodeType, widgetList]) => {
+        if (!widgetList) return [];
+
+        const mappedWidgets = (widgetList as Widget[]).map((widget) => ({
           ...widget,
-          widgetBuilder:
-            widget.component && !widget.widgetBuilder
-              ? builderFn(widget.component, widget.componentProps)
-              : widget.widgetBuilder,
-        })),
-      };
-    }, {} as T);
+          widgetBuilder: resolveInlineWidgetBuilder(widget, builderFn),
+        }));
+
+        return [[nodeType, mappedWidgets] as const];
+      }),
+    ) as T;
 
   const buildInlineWidgets = () =>
     buildWidgets(toValue(editorStore.inlineWidgets), createWidgetBuilder);
 
-  const buildMultilineWidgets = () =>
-    buildWidgets(toValue(editorStore.multilineWidgets), createMultilineWidgetBuilder);
+  const buildMultilineWidgets = () => {
+    const result: Partial<MultilineEmbeddedWidgets> = {};
+
+    for (const [nodeType, widgetList] of toWidgetEntries(toValue(editorStore.multilineWidgets))) {
+      if (!widgetList) continue;
+
+      result[nodeType as keyof MultilineEmbeddedWidgets] = widgetList.map((widget) => ({
+        ...widget,
+        widgetBuilder: resolveMultilineWidgetBuilder(widget),
+      }));
+    }
+
+    return result as MultilineEmbeddedWidgets;
+  };
 
   const createFacetExtensions = (readonly: boolean): Extension[] => {
     return [

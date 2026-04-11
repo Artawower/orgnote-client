@@ -3,6 +3,7 @@ import { WidgetType } from 'orgnote-api';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType } from 'org-mode-ast';
 import OrgSrcBlock from './OrgSrcBlock.vue';
+import OrgSrcBlockActions from './OrgSrcBlockActions.vue';
 import styles from './styles.css?raw';
 
 const viewUpdater = (srcOrgNode: OrgNode, newText: string): ViewUpdateSchema => {
@@ -50,10 +51,12 @@ export const orgSrcBlockExtension: Extension = {
       type: WidgetType.Multiline,
       nodeType: NodeType.SrcBlock,
       component: OrgSrcBlock,
+      actionsComponent: OrgSrcBlockActions,
       viewUpdater,
       priority: 0,
       ignoreEvent: true,
     });
+
   },
 
   onUnmounted: async (api) => {
