@@ -34,6 +34,7 @@
         "axios": "1.8.4",
         "better-queue": "3.8.12",
         "dexie": "4.0.11",
+        "diff-match-patch": "^1.0.5",
         "dompurify": "3.3.1",
         "fast-deep-equal": "3.1.3",
         "flexsearch": "0.8.212",
@@ -45,7 +46,7 @@
         "neverthrow": "8.2.0",
         "notiwind": "2.1.0",
         "org-mode-ast": "0.11.8",
-        "orgnote-api": "0.41.51",
+        "orgnote-api": "0.42.0",
         "partysocket": "1.1.6",
         "pinia": "3.0.2",
         "pinia-plugin-persistedstate": "4.2.0",
@@ -1335,6 +1336,8 @@
 
     "dexie": ["dexie@4.0.11", "", {}, "sha512-SOKO002EqlvBYYKQSew3iymBoN2EQ4BDw/3yprjh7kAfFzjBYkaMNa/pZvcA7HSWlcKSQb9XhPe3wKyQ0x4A8A=="],
 
+    "diff-match-patch": ["diff-match-patch@1.0.5", "", {}, "sha512-IayShXAgj/QMXgB0IWmKx+rOPuGMhqm5w6jvFxmVenXKIzRqTAAsbBPT3kWQeGANj3jGgvcvv4yK6SxqYmikgw=="],
+
     "dir-compare": ["dir-compare@4.2.0", "", { "dependencies": { "minimatch": "^3.0.5", "p-limit": "^3.1.0 " } }, "sha512-2xMCmOoMrdQIPHdsTawECdNPwlVFB9zGcz3kuhmBO6U3oU+UQjsue0i8ayLKpgBcm+hcXPMVSGUN9d+pvJ6+VQ=="],
 
     "doctypes": ["doctypes@1.1.0", "", {}, "sha512-LLBi6pEqS6Do3EKQ3J0NqHWV5hhb78Pi8vvESYwyOy2c31ZEZVdtitdzsQsKb7878PEERhzUk0ftqGhG6Mz+pQ=="],
@@ -2009,7 +2012,7 @@
 
     "org-mode-ast": ["org-mode-ast@0.11.8", "", {}, "sha512-nfE6FlXIxgIx4Mys83t9NQwTm5+5jRRkfspDtW338oebDru2EXU3JoTFTh/GCJFi2jgHg4Jk/lpn+vR3n7xc4g=="],
 
-    "orgnote-api": ["orgnote-api@0.41.51", "", { "dependencies": { "axios": "1.8.4", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.11.8", "partysocket": "1.1.6", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-jFv3A2gMG11TEqe0X6wBLr2pq4g0pOZNL+sRC7luemv8Hp32UMIiJPwX7/mcK2GWKd98UJatM6X/px5HyIf4pg=="],
+    "orgnote-api": ["orgnote-api@0.42.0", "", { "dependencies": { "axios": "1.8.4", "diff-match-patch": "^1.0.5", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.11.8", "partysocket": "1.1.6", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-5PYWiBDIFTPnTAxsLFvQGDf7KFif+9lo8shf/7d2ANgCRL6P0Cly5UxIglqBIKP24wtjEHC8yRLBAFtNb0uQJQ=="],
 
     "own-keys": ["own-keys@1.0.1", "", { "dependencies": { "get-intrinsic": "^1.2.6", "object-keys": "^1.1.1", "safe-push-apply": "^1.0.0" } }, "sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg=="],
 

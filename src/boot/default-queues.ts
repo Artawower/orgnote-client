@@ -6,9 +6,11 @@ import { createSyncState } from 'src/utils/sync-state';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { useSyncStore } from 'src/stores/sync';
 import { storeToRefs } from 'pinia';
-import type { FileSystem, ProcessFn } from 'orgnote-api';
+import { type FileSystem, type ProcessFn, buildBufferUri } from 'orgnote-api';
 import { useFileSearchStore } from 'src/stores/file-search';
 import { INDEX_QUEUE_ID, SYNC_QUEUE_ID } from 'src/constants/queue-ids';
+import { getBaseContentStore } from 'src/infrastructure/stores/base-content-store';
+import { useBufferStore } from 'src/stores/buffer';
 
 const createSyncContextProvider = (): SyncContextProvider => ({
   getContext: (serverTime: string) => {
@@ -19,12 +21,18 @@ const createSyncContextProvider = (): SyncContextProvider => ({
     const syncStore = useSyncStore();
     const { stateData } = storeToRefs(syncStore);
     const state = createSyncState(stateData);
+    const bufferStore = useBufferStore();
 
     return {
       executor: createSyncExecutor(fs),
       state,
       fs,
       serverTime,
+      baseStore: getBaseContentStore() ?? undefined,
+      isDirtyFile: (path: string) => {
+        const uri = buildBufferUri('file', path);
+        return bufferStore.getBufferByUri(uri)?.isSaving ?? false;
+      },
     };
   },
 });

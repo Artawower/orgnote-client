@@ -1,4 +1,5 @@
 import type { Repositories } from 'orgnote-api';
+import type Dexie from 'dexie';
 import { createDatabase } from './create-database';
 import {
   createLoggerRepository,
@@ -10,7 +11,6 @@ import {
   PANE_SNAPSHOT_MIGRATIONS,
   PANE_SNAPSHOT_REPOSITORY_NAME,
 } from './layout-snapshot-repository';
-import type Dexie from 'dexie';
 import { createQueueRepository, QUEUE_MIGRATIONS, QUEUE_REPOSITORY_NAME } from './queue-repository';
 import {
   createExtensionSourceRepository,
@@ -22,11 +22,8 @@ import {
   KEY_VALUE_MIGRATIONS,
   KEY_VALUE_REPOSITORY_NAME,
 } from './key-value-repository';
-import {
-  createFileRepository,
-  FILE_MIGRATIONS,
-  FILE_REPOSITORY_NAME,
-} from './file-repository';
+import { createFileRepository, FILE_MIGRATIONS, FILE_REPOSITORY_NAME } from './file-repository';
+import { BASE_CONTENT_MIGRATIONS, BASE_CONTENT_STORE_NAME } from '../stores/base-content-store';
 
 let database: Dexie | undefined;
 
@@ -40,6 +37,7 @@ export async function initRepositories(): Promise<Repositories> {
     { storeName: QUEUE_REPOSITORY_NAME, migrations: QUEUE_MIGRATIONS },
     { storeName: EXTENSION_SOURCE_REPOSITORY_NAME, migrations: EXTENSION_SOURCE_MIGRATIONS },
     { storeName: KEY_VALUE_REPOSITORY_NAME, migrations: KEY_VALUE_MIGRATIONS },
+    { storeName: BASE_CONTENT_STORE_NAME, migrations: BASE_CONTENT_MIGRATIONS },
   ]);
   database = db;
 
