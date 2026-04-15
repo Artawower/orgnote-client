@@ -71,7 +71,7 @@ const pane = panes.value[activePaneId.value]; // Error: undefined in index
 - *Use meaningful error messages* in =to(...)= when the failure crosses module boundaries or would be hard to diagnose without context
 
 #+BEGIN_SRC typescript
-const result = await to(() => fs.add(payload), 'Failed to create directory')();
+const result = await to(fs.add), 'Optional error')(payload);
 
 if (result.isErr()) {
   if (isConstraintError(result.error)) return;
