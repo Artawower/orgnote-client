@@ -160,10 +160,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     widgets: T,
   ): WidgetEntries<T> => Object.entries(widgets) as WidgetEntries<T>;
 
-  const resolveInlineWidgetBuilder = (
-    widget: Widget,
-    builderFn: typeof createWidgetBuilder,
-  ) => {
+  const resolveInlineWidgetBuilder = (widget: Widget, builderFn: typeof createWidgetBuilder) => {
     if (!widget.component || widget.widgetBuilder) {
       return widget.widgetBuilder;
     }
@@ -303,15 +300,16 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   };
 
   const setupScrollMarginsWatcher = (viewGetter: () => EditorView | undefined): void => {
-    watch([keyboardOpened, tabletBelow], () => {
+    watch([keyboardOpened, tabletBelow], ([newKeyboard, newTablet], [oldKeyboard]) => {
       const view = viewGetter();
       if (!view) return;
-      const scrollMarginsExtension = createScrollMarginsExtension(
-        keyboardOpened.value,
-        tabletBelow.value,
-      );
+
+      const scrollMarginsExtension = createScrollMarginsExtension(newKeyboard, newTablet);
+      const isKeyboardOpening = !oldKeyboard && newKeyboard && newTablet;
+
       view.dispatch({
         effects: compartments.scrollMargins.reconfigure(scrollMarginsExtension),
+        scrollIntoView: isKeyboardOpening,
       });
     });
   };
