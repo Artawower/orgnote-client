@@ -19,7 +19,7 @@
       </menu-item>
     </card-wrapper>
 
-    <app-card v-if="currentFsName" type="danger">
+    <app-card v-if="currentFsName && !hideWarning" type="danger">
       <template #cardTitle>
         <div class="capitalize">{{ t(I18N.STORAGE_CHANGE_WARNING) }}</div>
       </template>
@@ -51,6 +51,8 @@ import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
 import { I18N } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
+
+withDefaults(defineProps<{ hideWarning?: boolean }>(), { hideWarning: false });
 
 const { t } = useI18n({
   useScope: 'global',

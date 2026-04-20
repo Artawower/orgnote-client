@@ -22,9 +22,8 @@ const routes: RouteRecordRaw[] = [
       if (isServer()) {
         return true;
       }
-      const fileManager = api.core.useFileSystemManager();
-      const available = fileManager.currentFsName;
-      if (available) {
+      const settings = api.core.useSettings();
+      if (settings.onboardingCompleted) {
         return { name: RouteNames.Home };
       }
       return true;
@@ -63,10 +62,8 @@ const routes: RouteRecordRaw[] = [
       if (isServer()) {
         return true;
       }
-      const fileManager = api.core.useFileSystemManager();
-
-      const available = fileManager.currentFsName;
-      if (!available) {
+      const settings = api.core.useSettings();
+      if (!settings.onboardingCompleted) {
         return { name: RouteNames.Onboarding };
       }
       return true;

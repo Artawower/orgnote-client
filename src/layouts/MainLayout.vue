@@ -46,7 +46,7 @@ import SafeArea from 'src/components/SafeArea.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { reporter } from 'src/boot/report';
-import { DefaultCommands, RouteNames } from 'orgnote-api';
+import { DefaultCommands } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { useCommandsStore } from 'src/stores/command';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
@@ -76,16 +76,8 @@ const handleErrorFromQuery = (): void => {
   router.replace({ query: { ...route.query, error: undefined } });
 };
 
-const checkFileSystemAvailability = (): void => {
-  const fileManager = api.core.useFileSystemManager();
-  if (!fileManager.currentFsName) {
-    router.replace({ name: RouteNames.Onboarding });
-  }
-};
-
 onMounted(() => {
   handleErrorFromQuery();
-  checkFileSystemAvailability();
 });
 
 const { keyboardOpened } = useKeyboardState();

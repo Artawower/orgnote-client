@@ -14,6 +14,8 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
 
     const settings = reactive<OrgNoteSettings>({});
 
+    const onboardingCompleted = ref(false);
+
     const auth = useAuthStore();
     const isActiveUser = computed(() => !!auth.user?.active);
 
@@ -70,6 +72,7 @@ export const useSettingsStore = defineStore<'settings', SettingsStore>(
     return {
       settings,
       tokens,
+      onboardingCompleted,
       loadApiTokens,
       createApiToken,
       removeApiToken,
