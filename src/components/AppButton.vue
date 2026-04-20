@@ -1,5 +1,9 @@
 <template>
-  <button :class="{ outline, [type]: type }" class="text-medium">
+  <button
+    :class="{ outline, [type]: type }"
+    class="text-medium"
+    :disabled="disabled"
+  >
     <slot />
   </button>
 </template>
@@ -11,6 +15,7 @@ withDefaults(
   defineProps<{
     type?: StyleVariant;
     outline?: boolean;
+    disabled?: boolean;
   }>(),
   {
     type: 'plain',
@@ -56,6 +61,32 @@ button {
 
   &.plain {
     color: var(--fg);
+  }
+
+  &.link {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    min-width: unset;
+    color: var(--accent);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: none;
+
+    @include hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: none;
+      text-decoration: underline;
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
   }
 }
 </style>
