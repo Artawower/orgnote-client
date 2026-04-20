@@ -48,6 +48,9 @@ const props = withDefaults(
     alignEnd?: boolean;
     alignStretch?: boolean;
     alignBaseline?: boolean;
+    fullWidth?: boolean;
+    fullHeight?: boolean;
+    fit?: boolean;
   }>(),
   {
     direction: 'row',
@@ -72,6 +75,9 @@ const props = withDefaults(
     alignEnd: false,
     alignStretch: false,
     alignBaseline: false,
+    fullWidth: false,
+    fullHeight: false,
+    fit: false,
   },
 );
 
@@ -107,6 +113,9 @@ const classes = computed(() => [
   `d-${computedDirection.value}`,
   `j-${computedJustify.value}`,
   `a-${computedAlign.value}`,
+  props.fullWidth && 'full-width',
+  props.fullHeight && 'full-height',
+  props.fit && 'fit',
   props.inline && 'inline',
   STYLE_SIZES.includes(props.gap as StyleSize) && `gap-${props.gap}`,
 ]);
@@ -131,6 +140,19 @@ defineExpose({
 <style lang="scss" scoped>
 .flex-container {
   display: flex;
+
+  &.full-width {
+    width: 100%;
+  }
+
+  &.full-height {
+    height: 100%;
+  }
+
+  &.fit {
+    width: fit-content;
+    height: fit-content;
+  }
 
   &.inline {
     display: inline-flex;
