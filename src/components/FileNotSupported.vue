@@ -2,7 +2,7 @@
   <page-wrapper centered>
     <app-card type="warning">
       <template #cardTitle>{{ t(I18N.NO_FILE_READER_FOR) }}</template>
-      <app-code :code="path" />
+      <app-code v-if="path" :code="path" />
     </app-card>
   </page-wrapper>
 </template>

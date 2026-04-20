@@ -1,16 +1,15 @@
 <template>
   <app-flex class="task-details" column start align-stretch gap="md">
-    <app-code class="code-block" @click="handleCopy">{{ formattedTaskData }}</app-code>
-
+    <app-code class="code-block" @click="handleCopy" :code="formattedTaskData" />
     <card-wrapper class="actions">
       <menu-item @click="handleCopy" type="info">
         <app-flex row start align-center gap="md">
-          {{ $t(I18N.COPY) }}
+          {{ t(I18N.COPY) }}
         </app-flex>
       </menu-item>
       <menu-item @click="handleClose">
         <app-flex row start align-center gap="md">
-          {{ $t(i18n.CLOSE) }}
+          {{ t(i18n.CLOSE) }}
         </app-flex>
       </menu-item>
     </card-wrapper>
