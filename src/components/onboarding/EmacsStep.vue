@@ -1,14 +1,21 @@
 <template>
-  <page-wrapper>
-    <app-flex column start align-stretch gap="md">
-      <step-title>{{ t(I18N.ONBOARDING_EMACS_TITLE) }}</step-title>
-      <app-description>
+  <page-wrapper centered>
+    <app-flex column center align-center gap="md" full-width>
+      <app-title :level="2" center>
+        {{ t(I18N.ONBOARDING_EMACS_TITLE) }}
+      </app-title>
+      <app-description center>
         {{ t(I18N.ONBOARDING_EMACS_DESCRIPTION) }}
       </app-description>
-      <pre class="config-block">{{ configContent }}</pre>
-      <app-button type="info" @click="copyConfig">
-        {{ t(I18N.ONBOARDING_EMACS_COPY_CONFIG) }}
-      </app-button>
+      <app-description center>
+        {{ t(I18N.ONBOARDING_EMACS_CONFIG_CONTENT) }}
+      </app-description>
+      <app-code :code="installationScript" />
+      <card-wrapper>
+        <menu-item @click="copyConfig" type="info">
+          {{ t(I18N.ONBOARDING_EMACS_COPY_CONFIG) }}
+        </menu-item>
+      </card-wrapper>
     </app-flex>
   </page-wrapper>
 </template>
@@ -16,36 +23,27 @@
 <script lang="ts" setup>
 import PageWrapper from 'src/components/PageWrapper.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import StepTitle from 'src/components/onboarding/StepTitle.vue';
+import AppTitle from 'src/components/AppTitle.vue';
 import AppDescription from 'src/components/AppDescription.vue';
-import AppButton from 'src/components/AppButton.vue';
+import MenuItem from 'src/containers/MenuItem.vue';
+import CardWrapper from 'src/components/CardWrapper.vue';
+import AppCode from 'src/components/AppCode.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
-import { computed } from 'vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
+import {
+  USE_PACKAGE_DEV_ENSTRUCTIONS,
+  USE_PACKAGE_MASTER_ENSTRUCTIONS,
+} from 'src/constants/install-scripts';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { safeCopyToClipboard } = useInteractiveClipboard();
 
-const configContent = computed(() => t(I18N.ONBOARDING_EMACS_CONFIG_CONTENT));
+const installationScript = process.env.DEV
+  ? USE_PACKAGE_DEV_ENSTRUCTIONS
+  : USE_PACKAGE_MASTER_ENSTRUCTIONS;
 
 const copyConfig = (): void => {
-  safeCopyToClipboard(configContent.value);
+  safeCopyToClipboard(installationScript);
 };
 </script>
-
-<style lang="scss" scoped>
-.config-block {
-  background: var(--bg-elevated);
-  border: var(--card-border);
-  border-radius: var(--card-radius);
-  padding: var(--card-padding);
-  font-family: monospace;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin: 0;
-  width: 100%;
-  box-sizing: border-box;
-}
-</style>

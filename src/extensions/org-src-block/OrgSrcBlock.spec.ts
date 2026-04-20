@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { test, expect, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
+import type { OrgNode } from 'org-mode-ast';
 import OrgSrcBlock from './OrgSrcBlock.vue';
 import { getSrcBlockCode } from './src-block-node';
 
@@ -9,37 +10,35 @@ vi.mock('./src-block-node', () => ({
 }));
 
 const AppCodeStub = defineComponent({
-  name: 'AppCode',
-  props: ['code'],
+  name: 'AppCodeStub',
+  props: { code: { type: String, default: '' } },
   render() {
-    return h('div', { class: 'app-code-stub' }, this.code ?? '');
+    return h('div', { class: 'app-code-stub' }, this.code);
   },
 });
 
-const createMockNode = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
-  rawValue: 'default code',
-  children: [],
-  ...overrides,
-});
+const createMockNode = (overrides: Partial<OrgNode> = {}): OrgNode =>
+  ({
+    rawValue: 'default code',
+    children: [],
+    ...overrides,
+  }) as OrgNode;
 
-const mountOrgSrcBlock = (props: Record<string, unknown>) =>
-  mount(OrgSrcBlock, {
-    props: props as any,
+test('OrgSrcBlock renders code content through AppCode', () => {
+  const mockNode = createMockNode();
+  const wrapper = mount(OrgSrcBlock, {
+    props: { node: mockNode },
     global: {
-      components: {
+      stubs: {
         AppCode: AppCodeStub,
       },
     },
   });
 
-test('OrgSrcBlock renders code content through AppCode', () => {
-  const mockNode = createMockNode();
-  const wrapper = mountOrgSrcBlock({ node: mockNode });
-
-  const appCode = wrapper.findComponent(AppCodeStub);
+  const appCode = wrapper.find('.app-code-stub');
   expect(appCode.exists()).toBe(true);
   expect(getSrcBlockCode).toHaveBeenCalledWith(mockNode);
-  expect(appCode.props('code')).toBe('mocked source code');
+  expect(appCode.text()).toBe('mocked source code');
 });
 
 test('OrgSrcBlock uses nodeGetter when provided', () => {
@@ -47,7 +46,14 @@ test('OrgSrcBlock uses nodeGetter when provided', () => {
   const dynamicNode = createMockNode({ rawValue: 'dynamic code' });
   const nodeGetter = () => dynamicNode;
 
-  mountOrgSrcBlock({ node: fallbackNode, nodeGetter });
+  mount(OrgSrcBlock, {
+    props: { node: fallbackNode, nodeGetter },
+    global: {
+      stubs: {
+        AppCode: AppCodeStub,
+      },
+    },
+  });
 
   expect(getSrcBlockCode).toHaveBeenCalledWith(dynamicNode);
 });

@@ -1,5 +1,9 @@
 <template>
-  <component :is="'h' + level" class="app-title" :class="[sizeClass, { 'no-margin': noMargin }]">
+  <component
+    :is="'h' + level"
+    class="app-title"
+    :class="[sizeClass, { 'no-margin': noMargin, center, capitalize }]"
+  >
     <slot />
   </component>
 </template>
@@ -15,9 +19,13 @@ const props = withDefaults(
     level?: TitleLevel;
     size?: TitleSize;
     noMargin?: boolean;
+    center?: boolean;
+    capitalize?: boolean;
   }>(),
   {
     level: 1,
+    center: false,
+    capitalize: false,
   },
 );
 
@@ -69,4 +77,9 @@ const sizeClass = computed(() => {
 .text-3xl {
   font-size: var(--font-size-3xl);
 }
+
+.center {
+  text-align: center;
+}
+
 </style>

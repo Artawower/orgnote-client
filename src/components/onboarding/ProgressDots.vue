@@ -1,15 +1,12 @@
 <template>
-  <div class="progress-dots">
-    <span
-      v-for="step in totalSteps"
-      :key="step"
-      class="dot"
-      :class="dotClass(step - 1)"
-    />
-  </div>
+  <app-flex row center align-center gap="sm" class="progress-dots">
+    <span v-for="step in totalSteps" :key="step" class="dot" :class="dotClass(step - 1)" />
+  </app-flex>
 </template>
 
 <script lang="ts" setup>
+import AppFlex from 'src/components/AppFlex.vue';
+
 const props = defineProps<{
   totalSteps: number;
   currentStep: number;
@@ -24,15 +21,12 @@ const dotClass = (index: number): string => {
 
 <style lang="scss" scoped>
 .progress-dots {
-  display: flex;
-  justify-content: center;
-  gap: var(--gap-sm);
   padding: var(--margin-sm) 0;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: var(--progress-indicator-size);
+  height: var(--progress-indicator-size);
   border-radius: 50%;
   transition: all 0.2s ease;
 

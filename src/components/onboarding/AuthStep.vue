@@ -1,0 +1,39 @@
+<template>
+  <page-wrapper centered>
+    <app-flex column center align-center gap="md" full-width>
+      <app-title :level="2" center>
+        {{ t(I18N.ONBOARDING_AUTH_TITLE) }}
+      </app-title>
+      <app-description center>
+        {{ t(I18N.ONBOARDING_AUTH_DESCRIPTION) }}
+      </app-description>
+      <card-wrapper>
+        <menu-item type="info" @click="signIn">
+          {{ t(I18N.ONBOARDING_AUTH_GITHUB) }}
+        </menu-item>
+      </card-wrapper>
+    </app-flex>
+  </page-wrapper>
+</template>
+
+<script lang="ts" setup>
+import PageWrapper from 'src/components/PageWrapper.vue';
+import AppFlex from 'src/components/AppFlex.vue';
+import AppTitle from 'src/components/AppTitle.vue';
+import AppDescription from 'src/components/AppDescription.vue';
+import MenuItem from 'src/containers/MenuItem.vue';
+import CardWrapper from 'src/components/CardWrapper.vue';
+import { useI18n } from 'vue-i18n';
+import { I18N } from 'orgnote-api';
+import { api } from 'src/boot/api';
+import { to } from 'orgnote-api/utils';
+import { reporter } from 'src/boot/report';
+
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+
+const signIn = async (): Promise<void> => {
+  const authStore = api.core.useAuth();
+  const result = await to(() => authStore.auth({ provider: 'github' }))();
+  if (result.isErr()) reporter.reportError(result.error);
+};
+</script>

@@ -12,6 +12,7 @@ const props = withDefaults(
     top?: boolean;
     bottom?: boolean;
     absolute?: boolean;
+    fit?: boolean;
   }>(),
   {
     top: false,
@@ -26,6 +27,7 @@ const classes = computed(() => ({
   top: !hasExplicitInsets.value || props.top,
   bottom: !hasExplicitInsets.value || props.bottom,
   absolute: props.absolute,
+  fit: props.fit,
 }));
 </script>
 
@@ -57,6 +59,11 @@ const classes = computed(() => ({
     &.bottom {
       bottom: var(--safe-area-bottom);
     }
+  }
+
+  .fit {
+    width: fit-content;
+    height: fit-content;
   }
 }
 

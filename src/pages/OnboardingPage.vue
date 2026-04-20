@@ -1,50 +1,37 @@
 <template>
-  <safe-area style="height: 100%">
-    <page-wrapper padding constrained>
+  <safe-area class="onboarding-root" fit>
+    <page-wrapper padding full-height constrained>
       <container-layout :body-scroll="true">
         <template #header>
-          <progress-dots :total-steps="steps.length" :current-step="currentStep" />
+          <app-flex center>
+            <progress-dots :total-steps="steps.length" :current-step="currentStep" />
+          </app-flex>
         </template>
 
-        <component :is="currentStepConfig?.component" ref="currentStepRef" />
+        <app-flex row center fit full-width>
+          <app-flex column gap="md" full-width>
+            <component :is="currentStepConfig?.component" ref="currentStepRef" />
+            <app-button v-if="canSkip" type="link" @click="skipSetup">
+              {{ t(I18N.ONBOARDING_SKIP) }}
+            </app-button>
+          </app-flex>
+        </app-flex>
 
         <template #footer>
-          <visibility-wrapper>
-            <template #desktop-below>
-              <card-wrapper>
-                <menu-item v-if="currentStep > 0" @click="goBack">
-                  {{ t(I18N.ONBOARDING_BACK) }}
-                </menu-item>
-                <menu-item v-if="canSkip" @click="skipSetup">
-                  {{ t(I18N.ONBOARDING_SKIP) }}
-                </menu-item>
-                <menu-item
-                  :type="isLastStep ? 'active' : 'info'"
-                  @click="goNext"
-                  :disabled="!canProceed"
-                >
-                  {{ isLastStep ? t(I18N.ONBOARDING_COMPLETED) : t(I18N.ONBOARDING_NEXT) }}
-                </menu-item>
-              </card-wrapper>
-            </template>
-            <template #desktop-above>
-              <app-flex row end align-center gap="md" class="desktop-actions">
-                <app-button v-if="currentStep > 0" outline @click="goBack">
-                  {{ t(I18N.ONBOARDING_BACK) }}
-                </app-button>
-                <app-button v-if="canSkip" outline @click="skipSetup">
-                  {{ t(I18N.ONBOARDING_SKIP) }}
-                </app-button>
-                <app-button
-                  :type="isLastStep ? 'active' : 'info'"
-                  @click="goNext"
-                  :disabled="!canProceed"
-                >
-                  {{ isLastStep ? t(I18N.ONBOARDING_COMPLETED) : t(I18N.ONBOARDING_NEXT) }}
-                </app-button>
-              </app-flex>
-            </template>
-          </visibility-wrapper>
+          <app-flex center class="footer">
+            <card-wrapper class="footer-card">
+              <menu-item v-if="currentStep > 0" @click="goBack">
+                {{ t(I18N.ONBOARDING_BACK) }}
+              </menu-item>
+              <menu-item
+                :type="isLastStep ? 'active' : 'info'"
+                @click="goNext"
+                :disabled="!canProceed"
+              >
+                {{ isLastStep ? t(I18N.ONBOARDING_COMPLETED) : t(I18N.ONBOARDING_NEXT) }}
+              </menu-item>
+            </card-wrapper>
+          </app-flex>
         </template>
       </container-layout>
     </page-wrapper>
@@ -59,14 +46,14 @@ import ContainerLayout from 'src/components/ContainerLayout.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import ModalContainer from 'src/containers/ModalContainer.vue';
-import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
-import AppButton from 'src/components/AppButton.vue';
-import AppFlex from 'src/components/AppFlex.vue';
 import ProgressDots from 'src/components/onboarding/ProgressDots.vue';
 import WelcomeStep from 'src/components/onboarding/WelcomeStep.vue';
 import FsSelectionStep from 'src/components/onboarding/FsSelectionStep.vue';
 import ServerStep from 'src/components/onboarding/ServerStep.vue';
 import EmacsStep from 'src/components/onboarding/EmacsStep.vue';
+import AuthStep from 'src/components/onboarding/AuthStep.vue';
+import AppFlex from 'src/components/AppFlex.vue';
+import AppButton from 'src/components/AppButton.vue';
 
 import { RouteNames } from 'orgnote-api/constants';
 import { storeToRefs } from 'pinia';
@@ -75,6 +62,7 @@ import { useRouter } from 'vue-router';
 import { api } from 'src/boot/api';
 import { computed, ref } from 'vue';
 import { I18N } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import type { Component } from 'vue';
 
@@ -91,6 +79,7 @@ const steps: StepConfig[] = [
   { component: FsSelectionStep },
   { component: ServerStep },
   { component: EmacsStep },
+  { component: AuthStep },
 ];
 
 const currentStep = ref(0);
@@ -111,7 +100,7 @@ const canProceed = computed(() => {
   return true;
 });
 
-const canSkip = computed(() => !isLastStep.value);
+const canSkip = computed(() => currentStep.value === 0);
 
 const completeOnboarding = (): void => {
   onboardingCompleted.value = true;
@@ -141,17 +130,18 @@ const goBack = (): void => {
 };
 
 const skipSetup = async (): Promise<void> => {
-  try {
-    await initDefaultFsIfNeeded();
-  } catch (e) {
-    reporter.reportError(e);
-  }
+  const result = await to(initDefaultFsIfNeeded)();
+  if (result.isErr()) reporter.reportError(result.error);
   completeOnboarding();
 };
 </script>
 
 <style lang="scss" scoped>
-.desktop-actions {
-  padding: var(--margin-sm) 0;
+.onboarding-root {
+  --page-max-width: min(100%, 38rem);
+}
+
+.footer {
+  padding-top: var(--margin-sm);
 }
 </style>
