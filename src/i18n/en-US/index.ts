@@ -73,6 +73,12 @@ const eng: Record<string, string> = {
 
   [I18N.CLEAR_ALL_NOTIFICATIONS]: 'Clear all',
   [I18N.NO_NOTIFICATIONS]: 'No notifications',
+  [I18N.SHOW_LATEST_CHANGES]: 'Latest changes',
+  [I18N.LATEST_CHANGES_NOTIFICATION_DESCRIPTION]: 'Click to see what changed',
+  [I18N.NO_LATEST_CHANGES]: 'No recent changes available',
+  [I18N.UPDATED_TO_VERSION]: 'Updated to {version}',
+  [I18N.UPDATED_FROM_VERSION]: 'From {version}',
+  [I18N.OPEN_RELEASE_NOTES]: 'Open release notes',
   [I18N.GRAPH_TITLE]: 'Graph',
   [I18N.GRAPH_DESCRIPTION]: 'Visual overview of indexed note relationships.',
   [I18N.GRAPH_EMPTY_TITLE]: 'No notes to display',

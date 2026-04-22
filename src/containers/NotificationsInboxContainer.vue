@@ -13,7 +13,7 @@
           :unread="!notification.readAt"
           flat
           clickable
-          @click="handleMarkAsRead(notification.config.id)"
+          @click="handleNotificationClick(notification.config.id)"
           @close="handleDelete(notification.config.id)"
         />
       </app-flex>
@@ -53,9 +53,22 @@ const handleDelete = (id?: string): void => {
   notificationsStore.delete(id);
 };
 
-const handleMarkAsRead = (id?: string): void => {
+const markAsRead = (id?: string): void => {
   if (!id) return;
   notificationsStore.markAsRead(id);
+};
+
+const executeNotificationAction = (id: string): void => {
+  const notification = notifications.value.find((item) => item.config.id === id);
+  const command = notification?.config.actionCommand;
+  if (!command) return;
+  void api.core.useCommands().execute(command, notification?.config.actionPayload);
+};
+
+const handleNotificationClick = (id?: string): void => {
+  if (!id) return;
+  executeNotificationAction(id);
+  markAsRead(id);
 };
 
 const clearAll = (): void => {
@@ -64,8 +77,8 @@ const clearAll = (): void => {
 
 const markAllAsRead = (): void => {
   notifications.value
-    .filter((n) => !n.readAt)
-    .forEach((n) => handleMarkAsRead(n.config.id));
+    .filter((notification) => !notification.readAt)
+    .forEach((notification) => markAsRead(notification.config.id));
 };
 
 onMounted(markAllAsRead);

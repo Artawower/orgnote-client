@@ -1,0 +1,75 @@
+<template>
+  <safe-area fit>
+    <container-layout gap="md">
+      <app-flex column start align-stretch gap="md">
+        <card-wrapper padding class="change-log-card">
+          <app-flex column start align-stretch gap="md">
+            <app-title :level="5">
+              {{ t(I18N.UPDATED_TO_VERSION, { version: props.update.version }) }}
+              <template v-if="props.update.fromVersion">
+                {{ t(I18N.UPDATED_FROM_VERSION, { version: props.update.fromVersion }) }}
+              </template>
+            </app-title>
+            <div class="change-log">{{ props.update.changeLog }}</div>
+          </app-flex>
+        </card-wrapper>
+      </app-flex>
+
+      <template v-if="props.update.url" #footer>
+        <card-wrapper>
+          <menu-item type="info" icon="open_in_new" @click="openReleaseNotes">
+            {{ t(I18N.OPEN_RELEASE_NOTES) }}
+          </menu-item>
+        </card-wrapper>
+      </template>
+    </container-layout>
+  </safe-area>
+</template>
+
+<script setup lang="ts">
+import type { ChangelogRecord } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
+import AppFlex from 'src/components/AppFlex.vue';
+import AppTitle from 'src/components/AppTitle.vue';
+import CardWrapper from 'src/components/CardWrapper.vue';
+import ContainerLayout from 'src/components/ContainerLayout.vue';
+import SafeArea from 'src/components/SafeArea.vue';
+import MenuItem from 'src/containers/MenuItem.vue';
+import { useI18n } from 'vue-i18n';
+
+const ALLOWED_RELEASE_NOTE_PROTOCOLS = ['https:', 'http:'] as const;
+
+const props = defineProps<{
+  update: ChangelogRecord;
+}>();
+
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+
+const canOpenReleaseNotes = (url: string): boolean => {
+  try {
+    return ALLOWED_RELEASE_NOTE_PROTOCOLS.includes(
+      new URL(url).protocol as (typeof ALLOWED_RELEASE_NOTE_PROTOCOLS)[number],
+    );
+  } catch {
+    return false;
+  }
+};
+
+const openReleaseNotes = (): void => {
+  if (!canOpenReleaseNotes(props.update.url)) return;
+  window.open(props.update.url, '_blank', 'noopener,noreferrer');
+};
+</script>
+
+<style scoped lang="scss">
+.change-log-card {
+  min-height: 0;
+}
+
+.change-log {
+  max-height: var(--changelog-max-height, 50vh);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  line-height: var(--line-height-md);
+}
+</style>

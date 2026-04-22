@@ -58,6 +58,7 @@ import { useLogStore } from 'src/stores/log';
 import type { Router } from 'vue-router';
 import { logger } from './logger';
 import { useSystemInfo } from 'src/composables/use-system-info';
+import { useClientUpdateStore } from 'src/stores/client-update';
 import { useContextMenuStore } from 'src/stores/context-menu';
 import { useQueueStore } from 'src/stores/queue';
 import { useCronStore } from 'src/stores/cron';
@@ -107,6 +108,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useBufferProviders: useBufferProviderStore,
       useLog: useLogStore,
       useSystemInfo,
+      useClientUpdate: useClientUpdateStore,
       useQueue: useQueueStore,
       useCron: useCronStore,
       useGit: useGitStore,

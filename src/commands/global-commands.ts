@@ -24,6 +24,8 @@ import { reporter } from 'src/boot/report';
 import { isNotActiveUser } from './command-guards';
 import { useEncryptedNotesWarning } from 'src/composables/use-encrypted-notes-warning';
 import { GRAPH_BUFFER_URI } from 'src/constants/graph-buffer';
+import { CLIENT_UPDATE_NOTIFICATION_ID } from 'src/constants/client-update';
+import { i18n as i18nInstance } from 'src/boot/i18n';
 
 const getActiveFilePath = (): string | undefined => {
   const tab = api.core.usePane().activeTab;
@@ -199,6 +201,34 @@ export function getGlobalCommands(router: Router): Command[] {
       icon: 'sym_o_bug_report',
       handler: () => {
         modalStore.open(LogsContainer, { title: I18N.LOGS, wide: true });
+      },
+    },
+    {
+      command: DefaultCommands.SHOW_LATEST_CHANGES,
+      group: 'global',
+      icon: 'sym_o_new_releases',
+      handler: async () => {
+        const clientUpdate = api.core.useClientUpdate();
+        const notifications = api.core.useNotifications();
+        const update = await clientUpdate.loadLatestChangelog();
+
+        if (!update) {
+          notifications.notify({
+            message: i18nInstance.global.t(I18N.NO_LATEST_CHANGES),
+            level: 'info',
+          });
+          return;
+        }
+
+        const { default: ClientUpdateContainer } = await import('src/containers/ClientUpdateContainer.vue');
+
+        modalStore.open(ClientUpdateContainer, {
+          title: I18N.SHOW_LATEST_CHANGES,
+          wide: true,
+          modalProps: { update },
+        });
+        clientUpdate.markChangelogAsRead();
+        notifications.delete(CLIENT_UPDATE_NOTIFICATION_ID);
       },
     },
     {
