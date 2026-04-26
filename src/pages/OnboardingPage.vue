@@ -1,5 +1,5 @@
 <template>
-  <safe-area class="onboarding-root" fit>
+  <safe-area v-if="!isNavigatingAway" class="onboarding-root" fit>
     <page-wrapper padding full-height constrained>
       <container-layout :body-scroll="true">
         <template #header>
@@ -52,6 +52,7 @@ import FsSelectionStep from 'src/components/onboarding/FsSelectionStep.vue';
 import ServerStep from 'src/components/onboarding/ServerStep.vue';
 import EmacsStep from 'src/components/onboarding/EmacsStep.vue';
 import AuthStep from 'src/components/onboarding/AuthStep.vue';
+import ActivationStep from 'src/components/onboarding/ActivationStep.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppButton from 'src/components/AppButton.vue';
 
@@ -60,7 +61,7 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { api } from 'src/boot/api';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { I18N } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
@@ -68,26 +69,38 @@ import type { Component } from 'vue';
 
 interface StepConfig {
   component: Component;
+  isCompleted?: () => boolean;
 }
 
 interface StepInstance {
   canProceed?: boolean;
 }
 
+const authStore = api.core.useAuth();
+
 const steps: StepConfig[] = [
   { component: WelcomeStep },
   { component: FsSelectionStep },
   { component: ServerStep },
-  { component: EmacsStep },
-  { component: AuthStep },
+  { component: AuthStep, isCompleted: () => !!authStore.user },
+  { component: ActivationStep, isCompleted: () => !authStore.user || !!authStore.user.active },
+  { component: EmacsStep, isCompleted: () => !authStore.user || !!authStore.user.active },
 ];
-
-const currentStep = ref(0);
-const currentStepRef = ref<StepInstance | null>(null);
 
 const router = useRouter();
 const settings = api.core.useSettings();
-const { onboardingCompleted } = storeToRefs(settings);
+const { onboardingCompleted, onboardingCurrentStep } = storeToRefs(settings);
+
+const clampStep = (step: number): number => Math.max(0, Math.min(step, steps.length - 1));
+
+const skipCompletedForward = (start: number): number => {
+  let step = start;
+  while (step < steps.length - 1 && steps[step]?.isCompleted?.()) step++;
+  return step;
+};
+
+const currentStep = ref(skipCompletedForward(clampStep(onboardingCurrentStep.value)));
+const currentStepRef = ref<StepInstance | null>(null);
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
@@ -102,8 +115,12 @@ const canProceed = computed(() => {
 
 const canSkip = computed(() => currentStep.value === 0);
 
+const isNavigatingAway = ref(false);
+
 const completeOnboarding = (): void => {
+  isNavigatingAway.value = true;
   onboardingCompleted.value = true;
+  onboardingCurrentStep.value = 0;
   router.push({ name: RouteNames.Home });
 };
 
@@ -116,6 +133,24 @@ const initDefaultFsIfNeeded = async (): Promise<void> => {
   await fsManager.useFs(firstFs.name);
 };
 
+const advanceIfCompleted = (): void => {
+  const step = steps[currentStep.value];
+  if (!step?.isCompleted?.()) return;
+
+  if (isLastStep.value) {
+    completeOnboarding();
+    return;
+  }
+  currentStep.value++;
+};
+
+watch(currentStep, () => {
+  onboardingCurrentStep.value = currentStep.value;
+  advanceIfCompleted();
+});
+
+advanceIfCompleted();
+
 const goNext = (): void => {
   if (!canProceed.value) return;
   if (isLastStep.value) {
@@ -126,7 +161,9 @@ const goNext = (): void => {
 };
 
 const goBack = (): void => {
-  if (currentStep.value > 0) currentStep.value--;
+  let prev = currentStep.value - 1;
+  while (prev > 0 && steps[prev]?.isCompleted?.()) prev--;
+  currentStep.value = prev;
 };
 
 const skipSetup = async (): Promise<void> => {

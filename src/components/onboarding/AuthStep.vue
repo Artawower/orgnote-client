@@ -28,12 +28,18 @@ import { I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import { buildOrgNoteUrl } from 'src/utils/build-orgnote-url';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const signIn = async (): Promise<void> => {
   const authStore = api.core.useAuth();
-  const result = await to(() => authStore.auth({ provider: 'github' }))();
+  const result = await to(() =>
+    authStore.auth({
+      provider: 'github',
+      redirectUrl: buildOrgNoteUrl('onboarding'),
+    }),
+  )();
   if (result.isErr()) reporter.reportError(result.error);
 };
 </script>
