@@ -30,6 +30,7 @@ const buildProfileFromApi = (api: OrgNoteApi): SyncProfile => {
     logPath: defaultLogPath,
     backupDir: '',
     backupCount: defaultBackupCount,
+    ignorePatterns: [],
   };
 };
 
