@@ -1,5 +1,5 @@
 <template>
-  <app-flex class="system-settings" column start align-start gap="sm">
+  <app-flex column start align-start gap="sm" full-width>
     <card-wrapper>
       <menu-item @click="execute(DefaultCommands.DELETE_ALL_DATA)" type="danger">
         <div class="capitalize text-medium">{{ t(I18N.CLEAR_ALL_LOCAL_DATA) }}</div>
@@ -22,11 +22,11 @@
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from './MenuItem.vue';
 import AppDescription from 'src/components/AppDescription.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 
 import { useI18n } from 'vue-i18n';
 import { I18N, DefaultCommands } from 'orgnote-api';
 import { api } from 'src/boot/api';
-import AppFlex from 'src/components/AppFlex.vue';
 
 const { t } = useI18n({
   useScope: 'global',
@@ -35,11 +35,3 @@ const { t } = useI18n({
 
 const { execute } = api.core.useCommands();
 </script>
-
-<style lang="scss" scoped>
-.system-settings {
-  & {
-    width: 100%;
-  }
-}
-</style>

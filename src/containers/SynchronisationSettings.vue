@@ -1,37 +1,39 @@
 <template>
-  <settings-scheme :scheme="syncScheme" path="synchronization"></settings-scheme>
-  <template v-if="syncAvailable">
-    <app-description v-if="!user" padded>
-      <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
-    </app-description>
+  <app-flex column start align-start gap="md">
+    <settings-scheme :scheme="syncScheme" path="synchronization"></settings-scheme>
+    <template v-if="syncAvailable">
+      <app-description v-if="!user" padded>
+        <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
+      </app-description>
 
-    <card-wrapper v-if="user && !user.active">
-      <menu-item type="warning" icon="warning">
-        {{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}
-      </menu-item>
-      <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
-    </card-wrapper>
+      <card-wrapper v-if="user && !user.active">
+        <menu-item type="warning" icon="warning">
+          {{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}
+        </menu-item>
+        <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
+      </card-wrapper>
 
-    <api-settings />
+      <api-settings />
 
-    <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
+      <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
 
-    <card-wrapper>
-      <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
-      <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
-    </card-wrapper>
+      <card-wrapper>
+        <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
+        <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
+      </card-wrapper>
 
-    <card-wrapper>
-      <command-menu-item
-        :command="DefaultCommands.SYNC_FILES"
-        type="danger"
-        :disabled="!user || !user.active"
-      >
-        <div class="capitalize text-medium">{{ t(I18N.FORCE_SYNC) }}</div>
-      </command-menu-item>
-    </card-wrapper>
-    <app-description>{{ t(I18N.FORCE_SYNC_DESCRIPTION) }}</app-description>
-  </template>
+      <card-wrapper>
+        <command-menu-item
+          :command="DefaultCommands.SYNC_FILES"
+          type="danger"
+          :disabled="!user || !user.active"
+        >
+          <div class="capitalize text-medium">{{ t(I18N.FORCE_SYNC) }}</div>
+        </command-menu-item>
+      </card-wrapper>
+      <app-description>{{ t(I18N.FORCE_SYNC_DESCRIPTION) }}</app-description>
+    </template>
+  </app-flex>
 </template>
 
 <script lang="ts" setup>
@@ -47,6 +49,7 @@ import ApiSettings from './ApiSettings.vue';
 import SettingsScheme from './SettingsScheme.vue';
 import CommandMenuItem from './CommandMenuItem.vue';
 import MenuItem from './MenuItem.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 
 const syncScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.synchronization);
 const settings = api.core.useSettings();
