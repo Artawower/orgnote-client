@@ -7,7 +7,7 @@ const linkDecoration = Decoration.mark({ class: 'markdown-link' });
 const buildLinkDecorations = (view: EditorView): DecorationSet => {
   const decorations: { from: number; to: number }[] = [];
 
-  for (const { from, to } of view.visibleRanges) {
+  view.visibleRanges.forEach(({ from, to }) => {
     syntaxTree(view.state).iterate({
       from,
       to,
@@ -16,16 +16,16 @@ const buildLinkDecorations = (view: EditorView): DecorationSet => {
         decorations.push({ from: node.from, to: node.to });
       },
     });
-  }
+  });
 
   if (decorations.length === 0) return Decoration.none;
 
   decorations.sort((a, b) => a.from - b.from || a.to - b.to);
 
   const builder = new RangeSetBuilder<Decoration>();
-  for (const { from, to } of decorations) {
+  decorations.forEach(({ from, to }) => {
     builder.add(from, to, linkDecoration);
-  }
+  });
   return builder.finish();
 };
 

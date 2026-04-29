@@ -503,3 +503,93 @@ test('readonly non-markdown does not get readonly markdown decorations', () => {
   expect(text).toContain('const');
   expect(text).toContain('=');
 });
+
+test('markdown bold text gets markdown-strong class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('normal **bold** text'),
+    parent: container,
+  });
+
+  const strongEls = container.querySelectorAll('.markdown-strong');
+  const boldContent = Array.from(strongEls).find(el => !el.classList.contains('markdown-marker'));
+  expect(boldContent).toBeDefined();
+  expect(boldContent!.textContent).toContain('bold');
+});
+
+test('markdown italic text gets markdown-emphasis class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('normal *italic* text'),
+    parent: container,
+  });
+
+  const emEls = container.querySelectorAll('.markdown-emphasis');
+  const italicContent = Array.from(emEls).find(el => !el.classList.contains('markdown-marker'));
+  expect(italicContent).toBeDefined();
+  expect(italicContent!.textContent).toContain('italic');
+});
+
+test('markdown inline code gets markdown-code class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('some `code` here'),
+    parent: container,
+  });
+
+  const codeEl = container.querySelector('.markdown-code');
+  expect(codeEl).not.toBeNull();
+  expect(codeEl!.textContent).toContain('code');
+});
+
+test('non-markdown editor does not get markdown semantic classes', () => {
+  const { createState } = useCodeEditorState({
+    language: 'ts',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const x = "bold";'),
+    parent: container,
+  });
+
+  expect(container.querySelector('.markdown-strong')).toBeNull();
+  expect(container.querySelector('.markdown-emphasis')).toBeNull();
+  expect(container.querySelector('.markdown-heading-token')).toBeNull();
+});
+
+
+test('markdown markers receive markdown-marker class in edit mode', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# heading\n**bold** *italic* `code`'),
+    parent: container,
+  });
+
+  const markers = container.querySelectorAll('.markdown-marker');
+  const markerTexts = Array.from(markers).map(el => el.textContent);
+  expect(markerTexts.some(t => t === '#')).toBe(true);
+  expect(markerTexts.some(t => t === '**')).toBe(true);
+  expect(markerTexts.some(t => t === '`')).toBe(true);
+});

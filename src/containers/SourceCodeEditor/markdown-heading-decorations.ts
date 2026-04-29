@@ -15,8 +15,8 @@ const HEADING_NODE_LEVELS: Record<string, HeadingLevel> = {
   SetextHeading2: 2,
 };
 
-const toHeadingLevel = (nodeName: string): HeadingLevel | null =>
-  HEADING_NODE_LEVELS[nodeName] ?? null;
+const toHeadingLevel = (nodeName: string): HeadingLevel | undefined =>
+  HEADING_NODE_LEVELS[nodeName];
 
 const buildHeadingDecorations = (view: EditorView): DecorationSet => {
   const builder = new RangeSetBuilder<Decoration>();
