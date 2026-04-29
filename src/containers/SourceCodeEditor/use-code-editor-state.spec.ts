@@ -439,3 +439,67 @@ test('non-markdown editor does not get markdown-link class', () => {
   const linkEl = container.querySelector('.markdown-link');
   expect(linkEl).toBeNull();
 });
+
+test('readonly markdown hides HeaderMark, EmphasisMark, LinkMark, CodeMark, URL', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    readonly: true,
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# heading\n**bold** *italic* [label](https://example.com) `code`'),
+    parent: container,
+  });
+
+  const text = container.querySelector('.cm-content')!.textContent!;
+  expect(text).not.toContain('#');
+  expect(text).not.toContain('**');
+  expect(text).not.toContain('[');
+  expect(text).not.toContain('](');
+  expect(text).not.toContain('`');
+  expect(text).toContain('heading');
+  expect(text).toContain('bold');
+  expect(text).toContain('label');
+  expect(text).toContain('code');
+  expect(text).not.toContain('https://example.com');
+});
+
+test('editable markdown keeps markers visible', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    readonly: false,
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# heading\n**bold** [label](https://example.com)'),
+    parent: container,
+  });
+
+  const text = container.querySelector('.cm-content')!.textContent!;
+  expect(text).toContain('#');
+  expect(text).toContain('**');
+  expect(text).toContain('[');
+  expect(text).toContain('https://example.com');
+});
+
+test('readonly non-markdown does not get readonly markdown decorations', () => {
+  const { createState } = useCodeEditorState({
+    language: 'ts',
+    readonly: true,
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const x = 1;'),
+    parent: container,
+  });
+
+  const text = container.querySelector('.cm-content')!.textContent!;
+  expect(text).toContain('const');
+  expect(text).toContain('=');
+});

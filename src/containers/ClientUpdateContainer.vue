@@ -10,7 +10,9 @@
                 {{ t(I18N.UPDATED_FROM_VERSION, { version: props.update.fromVersion }) }}
               </template>
             </app-title>
-            <div class="change-log">{{ props.update.changeLog }}</div>
+            <div class="change-log">
+              <markdown-preview-editor :content="props.update.changeLog" />
+            </div>
           </app-flex>
         </card-wrapper>
       </app-flex>
@@ -35,6 +37,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
+import MarkdownPreviewEditor from 'src/containers/SourceCodeEditor/MarkdownPreviewEditor.vue';
 import { useI18n } from 'vue-i18n';
 
 const ALLOWED_RELEASE_NOTE_PROTOCOLS = ['https:', 'http:'] as const;

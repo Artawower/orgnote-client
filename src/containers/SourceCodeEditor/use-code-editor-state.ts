@@ -2,12 +2,17 @@ import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap, lineNumbers } from '@codemirror/view';
 import { closeBrackets, autocompletion } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { bracketMatching, indentOnInput, foldGutter, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+import {
+  bracketMatching,
+  indentOnInput,
+  foldGutter,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+} from '@codemirror/language';
 import { loadLanguage, type LanguageName } from '@uiw/codemirror-extensions-langs';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
-import { markdownHeadingDecorations } from './markdown-heading-decorations';
-import { markdownLinkDecorations } from './markdown-link-decorations';
+import { isMarkdownLanguage, getMarkdownModeExtensions, getMarkdownReadonlyExtensions } from './markdown-mode';
 
 export interface UseCodeEditorStateOptions {
   readonly?: boolean;
@@ -68,43 +73,16 @@ const getLanguageExtension = (language?: string): Extension[] => {
   return langSupport ? [langSupport] : [];
 };
 
-const getThemeExtension = (isDark?: boolean): Extension => isDark ? githubDark : githubLight;
-
-const MARKDOWN_LANGUAGES = new Set(['md', 'markdown']);
-
-const isMarkdownLanguage = (language?: string): boolean =>
-  !!language && MARKDOWN_LANGUAGES.has(language.toLowerCase());
-
-const markdownViewTheme = EditorView.theme({
-  '&.markdown-view .cm-foldGutter': {
-    display: 'none',
-  },
-  '&.markdown-view .cm-activeLineGutter': {
-    display: 'none',
-  },
-});
-
-const markdownContentClass = EditorView.contentAttributes.of({ class: 'markdown-content' });
-
-const markdownRootClass = EditorView.editorAttributes.of({ class: 'markdown-view' });
+const getThemeExtension = (isDark?: boolean): Extension => (isDark ? githubDark : githubLight);
 
 const getEditorModeExtensions = (language?: string): Extension[] => {
-  if (isMarkdownLanguage(language)) {
-    return [
-      markdownViewTheme,
-      markdownContentClass,
-      markdownRootClass,
-      markdownHeadingDecorations(),
-      markdownLinkDecorations(),
-    ];
-  }
-  return [
-    lineNumbers(),
-    foldGutter(),
-    highlightActiveLine(),
-    bracketMatching(),
-    closeBrackets(),
-  ];
+  if (isMarkdownLanguage(language)) return getMarkdownModeExtensions();
+  return [lineNumbers(), foldGutter(), highlightActiveLine(), bracketMatching(), closeBrackets()];
+};
+
+const getReadonlyModeExtensions = (language?: string, readonly?: boolean): Extension[] => {
+  if (!isMarkdownLanguage(language) || !readonly) return [];
+  return getMarkdownReadonlyExtensions();
 };
 
 const createBaseExtensions = (editorViewGetter: () => EditorView | undefined): Extension[] => [
@@ -141,6 +119,7 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
     language: new Compartment(),
     theme: new Compartment(),
     editorMode: new Compartment(),
+    readonlyMode: new Compartment(),
   };
 
   const createState = (content: string): EditorState => {
@@ -155,13 +134,18 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
         compartments.language.of(getLanguageExtension(options.language)),
         compartments.theme.of(getThemeExtension(options.isDark)),
         compartments.editorMode.of(getEditorModeExtensions(options.language)),
+        compartments.readonlyMode.of(getReadonlyModeExtensions(options.language, readonly)),
       ],
     });
   };
 
   const reconfigureReadonly = (view: EditorView, value: boolean): void => {
+    const language = options.language;
     view.dispatch({
-      effects: compartments.readonly.reconfigure(EditorState.readOnly.of(value)),
+      effects: [
+        compartments.readonly.reconfigure(EditorState.readOnly.of(value)),
+        compartments.readonlyMode.reconfigure(getReadonlyModeExtensions(language, value)),
+      ],
     });
   };
 
@@ -170,6 +154,9 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
       effects: [
         compartments.language.reconfigure(getLanguageExtension(language)),
         compartments.editorMode.reconfigure(getEditorModeExtensions(language)),
+        compartments.readonlyMode.reconfigure(
+          getReadonlyModeExtensions(language, view.state.readOnly),
+        ),
       ],
     });
   };
