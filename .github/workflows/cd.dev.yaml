@@ -74,6 +74,8 @@ jobs:
     environment: dev
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download APK artifact
         uses: actions/download-artifact@v4
@@ -81,17 +83,49 @@ jobs:
           name: orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
           path: ./apk
 
+      - name: Generate release body
+        id: release-body
+        run: |
+          VERSION="${{ needs.check-version-changed.outputs.version }}"
+          CURRENT_TAG="v${VERSION}-dev"
+          COMMIT_FULL="${{ github.sha }}"
+
+          {
+            echo "Dev Build v${VERSION} Pre-release"
+            echo ""
+
+            PREV_DEV_TAG="$(git tag -l 'v*-dev' | grep -v "^${CURRENT_TAG}$" | sort -V -r | head -n1)"
+
+            if [ -n "${PREV_DEV_TAG}" ]; then
+              echo "### Changes since ${PREV_DEV_TAG}"
+              echo ""
+              CHANGES="$(git log --no-merges --pretty=format:'- %s' "${PREV_DEV_TAG}..HEAD")"
+            else
+              echo "### Recent changes"
+              echo ""
+              CHANGES="$(git log --no-merges --pretty=format:'- %s' -n 20 HEAD)"
+            fi
+
+            if [ -z "${CHANGES}" ]; then
+              echo "- No commit messages found."
+            else
+              echo "${CHANGES}"
+            fi
+
+            echo ""
+            echo "---"
+            echo ""
+            echo "- **Version:** ${VERSION}"
+            echo "- **Branch:** dev"
+            echo "- **Commit:** ${COMMIT_FULL}"
+          } > release-body.md
+
       - name: Create or update pre-release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ needs.check-version-changed.outputs.version }}-dev
           name: "Dev Build v${{ needs.check-version-changed.outputs.version }}"
-          body: |
-            Automated dev build from `${{ github.sha }}`
-
-            **Version:** ${{ needs.check-version-changed.outputs.version }}
-            **Branch:** dev
-            **Commit:** ${{ github.sha }}
+          body_path: release-body.md
           prerelease: true
           files: ./apk/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
         env:
