@@ -70,8 +70,7 @@ watch(
 @import '../../css/prose-editor';
 
 .source-code-editor {
-  width: 100%;
-  height: 100%;
+  @include fit;
   overflow: auto;
 
   .container {
@@ -79,6 +78,7 @@ watch(
   }
 
   :deep(.cm-editor) {
+    background: transparent !important;
     height: 100%;
     font-family: var(--code-font-family);
     font-size: var(--code-font-size);
@@ -177,11 +177,49 @@ watch(
       font-size: var(--paragraph-font-size);
     }
 
-    .markdown-link,
-    .markdown-link span {
-      color: var(--accent) !important;
+    .markdown-link {
       text-decoration: underline;
       cursor: pointer;
+    }
+
+    .markdown-strong {
+      font-weight: bold;
+      color: var(--fg) !important;
+    }
+
+    .markdown-emphasis {
+      font-style: italic;
+      color: var(--fg) !important;
+    }
+
+    .markdown-heading-token {
+      color: var(--fg) !important;
+    }
+
+    .markdown-url {
+      color: var(--accent) !important;
+    }
+
+    .markdown-link-token {
+      color: var(--accent) !important;
+    }
+
+    .markdown-code {
+      font-family: var(--editor-font-family-mono, var(--code-font-family));
+      color: var(--fg) !important;
+    }
+
+    .markdown-marker {
+      color: var(--fg-muted) !important;
+    }
+
+    .markdown-strikethrough {
+      text-decoration: line-through;
+      color: var(--fg) !important;
+    }
+
+    .markdown-label {
+      color: var(--fg) !important;
     }
   }
 

@@ -192,6 +192,8 @@
 @include mobile {
   .editor-wrapper {
     .cm-editor {
+      background: transparent !important;
+
       .cm-gutters {
         left: calc(-1 * var(--padding-lg)) !important;
         position: absolute !important;

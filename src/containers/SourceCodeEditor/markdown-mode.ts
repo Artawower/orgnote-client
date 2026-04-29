@@ -1,6 +1,7 @@
 import { type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { markdownHeadingDecorations } from './markdown-heading-decorations';
+import { markdownHighlighting } from './markdown-highlight-style';
 import { markdownLinkDecorations } from './markdown-link-decorations';
 import { markdownReadonlyDecorations } from './markdown-readonly-decorations';
 
@@ -18,6 +19,7 @@ export const getMarkdownModeExtensions = (): Extension[] => [
   markdownRootClass,
   markdownHeadingDecorations(),
   markdownLinkDecorations(),
+  markdownHighlighting(),
 ];
 
 export const getMarkdownReadonlyExtensions = (): Extension[] => [markdownReadonlyDecorations()];
