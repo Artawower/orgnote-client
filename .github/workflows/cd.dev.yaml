@@ -85,29 +85,55 @@ jobs:
 
       - name: Generate release body
         id: release-body
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ needs.check-version-changed.outputs.version }}"
           CURRENT_TAG="v${VERSION}-dev"
           COMMIT_FULL="${{ github.sha }}"
 
+          find_valid_base() {
+            local prev_tag
+            prev_tag="$(git tag -l 'v*-dev' | grep -v "^${CURRENT_TAG}$" | sort -V -r | head -n1)"
+            if [ -n "${prev_tag}" ] && git merge-base --is-ancestor "${prev_tag}" HEAD 2>/dev/null; then
+              echo "${prev_tag}"
+              return
+            fi
+
+            local prev_sha
+            local prev_release_tag
+            prev_release_tag="$(gh release list --limit 20 --json tagName,isPrerelease --jq ".[] | select(.isPrerelease == true and (.tagName | test(\"^v[0-9].*-dev$\"))) | .tagName" 2>/dev/null \
+              | grep -v "^${CURRENT_TAG}$" | head -n1)"
+            if [ -n "${prev_release_tag}" ]; then
+              prev_sha="$(gh release view "${prev_release_tag}" --json body --jq '.body' 2>/dev/null \
+                | grep -oE '\*\*Commit:\*\* [a-f0-9]{7,}' | grep -oE '[a-f0-9]{7,}$' || true)"
+            fi
+            if [ -n "${prev_sha}" ] \
+              && git cat-file -e "${prev_sha}^{commit}" 2>/dev/null \
+              && git merge-base --is-ancestor "${prev_sha}" HEAD 2>/dev/null; then
+              echo "${prev_sha}"
+              return
+            fi
+          }
+
+          BASE_REF="$(find_valid_base)"
+
           {
             echo "Dev Build v${VERSION} Pre-release"
             echo ""
 
-            PREV_DEV_TAG="$(git tag -l 'v*-dev' | grep -v "^${CURRENT_TAG}$" | sort -V -r | head -n1)"
-
-            if [ -n "${PREV_DEV_TAG}" ]; then
-              echo "### Changes since ${PREV_DEV_TAG}"
+            if [ -n "${BASE_REF}" ]; then
+              echo "### Changes since ${BASE_REF:0:7}"
               echo ""
-              CHANGES="$(git log --no-merges --pretty=format:'- %s' "${PREV_DEV_TAG}..HEAD")"
+              CHANGES="$(git log --no-merges --pretty=format:'- %s' "${BASE_REF}..HEAD")"
             else
-              echo "### Recent changes"
+              echo "> ⚠ No valid previous dev build found for comparison."
               echo ""
-              CHANGES="$(git log --no-merges --pretty=format:'- %s' -n 20 HEAD)"
+              CHANGES=""
             fi
 
             if [ -z "${CHANGES}" ]; then
-              echo "- No commit messages found."
+              echo "- No changes generated."
             else
               echo "${CHANGES}"
             fi
@@ -124,6 +150,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ needs.check-version-changed.outputs.version }}-dev
+          target_commitish: ${{ github.sha }}
           name: "Dev Build v${{ needs.check-version-changed.outputs.version }}"
           body_path: release-body.md
           prerelease: true
