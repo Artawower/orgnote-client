@@ -1,3 +1,5 @@
+@import '../../css/prose-editor';
+
 @mixin cm-hidden {
   display: none;
 }
@@ -11,30 +13,10 @@
   }
 
   .cm-editor {
-    height: 100%;
-    font-family: var(--editor-font-family-main);
-
-    &.cm-focused {
-      outline: none;
-    }
-
-    .cm-cursor,
-    .cm-dropCursor {
-      border-left-color: var(--editor-cursor-color) !important;
-      border-left-width: var(--editor-cursor-width) !important;
-    }
-
-    .cm-selectionBackground,
-    &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
-      background-color: var(--editor-selection-bg) !important;
-    }
+    @include prose-editor-base;
 
     .cm-selectionMatch {
       background-color: color-mix(in srgb, var(--editor-selection-bg) 40%, transparent);
-    }
-
-    .cm-activeLine {
-      background-color: var(--editor-active-line-bg);
     }
 
     .cm-content ::selection {
@@ -46,29 +28,6 @@
     .cm-line *::selection {
       background-color: var(--editor-selection-bg) !important;
       color: var(--editor-selection-fg) !important;
-    }
-
-    .cm-scroller {
-      overflow: auto;
-      max-width: 100%;
-      font-family: var(--editor-font-family-main);
-    }
-
-    .cm-content {
-      padding: var(--editor-padding);
-      max-width: var(--editor-max-width);
-      margin: auto;
-      padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
-      padding-bottom: var(--floating-padding-bottom);
-      min-width: 0;
-      caret-color: var(--editor-cursor-color);
-    }
-
-    .cm-gutters,
-    .cm-gutter {
-      background: transparent;
-      background-color: transparent !important;
-      border-right: 0 !important;
     }
 
     .cm-line,
@@ -83,14 +42,16 @@
     }
 
     .cm-line {
-      & {
-        padding: 0 0 0 var(--editor-line-left-padding);
-      }
+      line-height: var(--editor-line-height);
 
       &:not(.org-headline-line),
       &:not(.org-keyword-title-line) {
         white-space: pre-wrap;
         word-break: break-word;
+      }
+
+      &.org-src-block-line {
+        line-height: inherit;
       }
 
       > .org-quote-block:not(.org-keyword):first-child {
@@ -106,10 +67,6 @@
       &.org-headline-line .org-embedded-checkbox {
         vertical-align: middle;
       }
-    }
-
-    .cm-line:not(.org-src-block-line, .org-headline-line) {
-      line-height: var(--editor-line-height);
     }
 
     .cm-activeLine {

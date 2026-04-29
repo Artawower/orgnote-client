@@ -6,6 +6,8 @@ import { bracketMatching, indentOnInput, foldGutter, syntaxHighlighting, default
 import { loadLanguage, type LanguageName } from '@uiw/codemirror-extensions-langs';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
+import { markdownHeadingDecorations } from './markdown-heading-decorations';
+import { markdownLinkDecorations } from './markdown-link-decorations';
 
 export interface UseCodeEditorStateOptions {
   readonly?: boolean;
@@ -68,15 +70,47 @@ const getLanguageExtension = (language?: string): Extension[] => {
 
 const getThemeExtension = (isDark?: boolean): Extension => isDark ? githubDark : githubLight;
 
+const MARKDOWN_LANGUAGES = new Set(['md', 'markdown']);
+
+const isMarkdownLanguage = (language?: string): boolean =>
+  !!language && MARKDOWN_LANGUAGES.has(language.toLowerCase());
+
+const markdownViewTheme = EditorView.theme({
+  '&.markdown-view .cm-foldGutter': {
+    display: 'none',
+  },
+  '&.markdown-view .cm-activeLineGutter': {
+    display: 'none',
+  },
+});
+
+const markdownContentClass = EditorView.contentAttributes.of({ class: 'markdown-content' });
+
+const markdownRootClass = EditorView.editorAttributes.of({ class: 'markdown-view' });
+
+const getEditorModeExtensions = (language?: string): Extension[] => {
+  if (isMarkdownLanguage(language)) {
+    return [
+      markdownViewTheme,
+      markdownContentClass,
+      markdownRootClass,
+      markdownHeadingDecorations(),
+      markdownLinkDecorations(),
+    ];
+  }
+  return [
+    lineNumbers(),
+    foldGutter(),
+    highlightActiveLine(),
+    bracketMatching(),
+    closeBrackets(),
+  ];
+};
+
 const createBaseExtensions = (editorViewGetter: () => EditorView | undefined): Extension[] => [
   history(),
-  lineNumbers(),
-  foldGutter(),
-  highlightActiveLine(),
   highlightSelectionMatches(),
   indentOnInput(),
-  bracketMatching(),
-  closeBrackets(),
   autocompletion(),
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
   EditorView.lineWrapping,
@@ -106,6 +140,7 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
     readonly: new Compartment(),
     language: new Compartment(),
     theme: new Compartment(),
+    editorMode: new Compartment(),
   };
 
   const createState = (content: string): EditorState => {
@@ -119,6 +154,7 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
         compartments.language.of(getLanguageExtension(options.language)),
         compartments.theme.of(getThemeExtension(options.isDark)),
+        compartments.editorMode.of(getEditorModeExtensions(options.language)),
       ],
     });
   };
@@ -131,7 +167,10 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
 
   const reconfigureLanguage = (view: EditorView, language?: string): void => {
     view.dispatch({
-      effects: compartments.language.reconfigure(getLanguageExtension(language)),
+      effects: [
+        compartments.language.reconfigure(getLanguageExtension(language)),
+        compartments.editorMode.reconfigure(getEditorModeExtensions(language)),
+      ],
     });
   };
 
