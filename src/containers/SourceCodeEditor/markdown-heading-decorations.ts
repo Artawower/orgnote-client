@@ -41,9 +41,7 @@ const buildHeadingDecorations = (view: EditorView): DecorationSet => {
 
   decorations.sort((a, b) => a.pos - b.pos);
 
-  for (const { pos, deco } of decorations) {
-    builder.add(pos, pos, deco);
-  }
+  decorations.forEach(({ pos, deco }) => { builder.add(pos, pos, deco); });
 
   return builder.finish();
 };
