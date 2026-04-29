@@ -167,6 +167,157 @@ test('state includes line numbers extension', () => {
 
   const gutters = container.querySelector('.cm-gutters');
   expect(gutters).not.toBeNull();
+
+  const lineNumbersEl = container.querySelector('.cm-lineNumbers');
+  expect(lineNumbersEl).not.toBeNull();
+});
+
+test('state hides line numbers for markdown', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello\nworld'),
+    parent: container,
+  });
+
+  expect(editorView).toBeDefined();
+  const lineNumbersEl = container.querySelector('.cm-lineNumbers');
+  expect(lineNumbersEl).toBeNull();
+});
+
+test('state hides line numbers for markdown alias', () => {
+  const { createState } = useCodeEditorState({
+    language: 'markdown',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello\nworld'),
+    parent: container,
+  });
+
+  expect(editorView).toBeDefined();
+  const lineNumbersEl = container.querySelector('.cm-lineNumbers');
+  expect(lineNumbersEl).toBeNull();
+});
+
+test('markdown editor has markdown-view class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello'),
+    parent: container,
+  });
+
+  const editorEl = container.querySelector('.cm-editor.markdown-view');
+  expect(editorEl).not.toBeNull();
+});
+
+test('markdown editor has markdown-content class on content', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello'),
+    parent: container,
+  });
+
+  const contentEl = container.querySelector('.cm-content.markdown-content');
+  expect(contentEl).not.toBeNull();
+});
+
+test('markdown editor hides fold gutter', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello\n## world'),
+    parent: container,
+  });
+
+  const foldGutterEl = container.querySelector('.cm-foldGutter');
+  expect(foldGutterEl).toBeNull();
+});
+
+test('non-markdown editor does not have markdown-view class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'typescript',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const x = 1;'),
+    parent: container,
+  });
+
+  const editorEl = container.querySelector('.cm-editor.markdown-view');
+  expect(editorEl).toBeNull();
+
+  const lineNumbersEl = container.querySelector('.cm-lineNumbers');
+  expect(lineNumbersEl).not.toBeNull();
+});
+
+test('reconfigureLanguage from ts to md switches to markdown mode', () => {
+  const { createState, reconfigureLanguage } = useCodeEditorState({
+    language: 'ts',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const x = 1;'),
+    parent: container,
+  });
+
+  expect(container.querySelector('.cm-editor.markdown-view')).toBeNull();
+  expect(container.querySelector('.cm-lineNumbers')).not.toBeNull();
+  expect(container.querySelector('.cm-foldGutter')).not.toBeNull();
+
+  reconfigureLanguage(editorView, 'md');
+
+  expect(container.querySelector('.cm-editor.markdown-view')).not.toBeNull();
+  expect(container.querySelector('.cm-content.markdown-content')).not.toBeNull();
+  expect(container.querySelector('.cm-lineNumbers')).toBeNull();
+  expect(container.querySelector('.cm-foldGutter')).toBeNull();
+});
+
+test('reconfigureLanguage from md to ts switches to code mode', () => {
+  const { createState, reconfigureLanguage } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# hello'),
+    parent: container,
+  });
+
+  expect(container.querySelector('.cm-editor.markdown-view')).not.toBeNull();
+  expect(container.querySelector('.cm-lineNumbers')).toBeNull();
+
+  reconfigureLanguage(editorView, 'ts');
+
+  expect(container.querySelector('.cm-editor.markdown-view')).toBeNull();
+  expect(container.querySelector('.cm-content.markdown-content')).toBeNull();
+  expect(container.querySelector('.cm-lineNumbers')).not.toBeNull();
+  expect(container.querySelector('.cm-foldGutter')).not.toBeNull();
 });
 
 test('state includes fold gutter extension', () => {
@@ -217,4 +368,74 @@ test('language aliases work correctly', () => {
     const state = createState('content');
     expect(state).toBeDefined();
   });
+});
+
+test('markdown heading lines get heading decoration classes', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('# Heading 1\n## Heading 2\n### Heading 3\nNormal text'),
+    parent: container,
+  });
+
+  const lines = container.querySelectorAll('.cm-line');
+  expect(lines[0]!.classList.contains('markdown-heading-1')).toBe(true);
+  expect(lines[0]!.classList.contains('markdown-heading-line')).toBe(true);
+  expect(lines[1]!.classList.contains('markdown-heading-2')).toBe(true);
+  expect(lines[1]!.classList.contains('markdown-heading-line')).toBe(true);
+  expect(lines[2]!.classList.contains('markdown-heading-3')).toBe(true);
+  expect(lines[3]!.classList.contains('markdown-heading-line')).toBe(false);
+});
+
+test('non-markdown editor does not get heading decoration classes', () => {
+  const { createState } = useCodeEditorState({
+    language: 'ts',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const x = 1;'),
+    parent: container,
+  });
+
+  const headingLines = container.querySelectorAll('.markdown-heading-line');
+  expect(headingLines.length).toBe(0);
+});
+
+test('markdown link text gets markdown-link class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'md',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('[label](https://example.com)'),
+    parent: container,
+  });
+
+  const linkEl = container.querySelector('.markdown-link');
+  expect(linkEl).not.toBeNull();
+  expect(linkEl!.textContent).toContain('label');
+});
+
+test('non-markdown editor does not get markdown-link class', () => {
+  const { createState } = useCodeEditorState({
+    language: 'ts',
+    editorViewGetter: createEditorViewGetter(),
+    onContentUpdate: () => {},
+  });
+
+  editorView = new EditorView({
+    state: createState('const url = "https://example.com";'),
+    parent: container,
+  });
+
+  const linkEl = container.querySelector('.markdown-link');
+  expect(linkEl).toBeNull();
 });
