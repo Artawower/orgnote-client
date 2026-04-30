@@ -3,6 +3,16 @@
     <settings-scheme class="sync-scheme" :scheme="syncScheme" path="synchronization" />
     <api-settings v-if="syncAvailable" />
 
+    <template v-if="syncAvailable">
+      <app-description :center="centerDescriptions">
+        {{ t(I18N.CLI_INSTALL_DESCRIPTION) }}
+      </app-description>
+      <app-code :code="cliInstallInstructions" />
+      <card-wrapper>
+        <command-menu-item :command="DefaultCommands.COPY_CLI_INSTALL_COMMAND" />
+      </card-wrapper>
+    </template>
+
     <template v-if="canCopySyncProfile">
       <app-description :center="centerDescriptions">
         {{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}
@@ -26,10 +36,12 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import AppCode from 'src/components/AppCode.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import ApiSettings from 'src/containers/ApiSettings.vue';
 import CommandMenuItem from 'src/containers/CommandMenuItem.vue';
 import SettingsScheme from 'src/containers/SettingsScheme.vue';
+import { getCliInstallInstructions } from 'src/constants/cli-install-scripts';
 import { valibotScheme } from 'src/models/valibot-scheme';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -54,6 +66,7 @@ const { user } = storeToRefs(authStore);
 const { tokens } = storeToRefs(settings);
 const { config } = storeToRefs(api.core.useConfig());
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const cliInstallInstructions = getCliInstallInstructions();
 
 const syncAvailable = computed(
   () => config.value.synchronization.type && config.value.synchronization.type !== 'none',

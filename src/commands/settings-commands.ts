@@ -15,6 +15,7 @@ import { downloadTextFile } from 'src/utils/download-text-file';
 import type { Router } from 'vue-router';
 import { buildLocalSyncProfileToml } from 'src/utils/local-sync-profile-config';
 import { getUsePackageInstructions } from 'src/constants/install-scripts';
+import { getCliInstallInstructions } from 'src/constants/cli-install-scripts';
 
 type TheSettingsModalProps = {
   initialRoute?: RouteNames;
@@ -156,6 +157,21 @@ export function getSettingsCommands(): Command[] {
     });
   };
 
+  const copyCliInstallCommand = async (): Promise<void> => {
+    const result = await to(async () => api.utils.copyToClipboard(getCliInstallInstructions()))();
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return;
+    }
+
+    notifications.notify({
+      message: I18N.CLI_INSTALL_COMMAND_COPIED,
+      description: I18N.CLI_INSTALL_COMMAND_COPIED_DESCRIPTION,
+      level: 'info',
+    });
+  };
+
   const isActiveRoute = (routeName: RouteNames): boolean => {
     const settingsRouter = getRouterFromSettingsModal();
     if (!settingsRouter) {
@@ -266,14 +282,18 @@ export function getSettingsCommands(): Command[] {
       },
     },
     {
+      command: DefaultCommands.COPY_CLI_INSTALL_COMMAND,
+      group: 'settings',
+      icon: 'terminal',
+      description: I18N.CLI_INSTALL_COMMAND_COPIED_DESCRIPTION,
+      handler: copyCliInstallCommand,
+    },
+    {
       command: DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG,
       group: 'settings',
       icon: 'content_copy',
       description: I18N.SYNC_PROFILE_CONFIG_EXPORTED_DESCRIPTION,
       handler: copyLocalSyncConfig,
-      context: {
-        narrow: true,
-      },
     },
     {
       command: DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG,
@@ -281,9 +301,6 @@ export function getSettingsCommands(): Command[] {
       icon: 'download',
       description: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED_DESCRIPTION,
       handler: downloadLocalSyncConfig,
-      context: {
-        narrow: true,
-      },
     },
     {
       command: DefaultCommands.COPY_EMACS_USE_PACKAGE_CONFIG,
@@ -291,9 +308,6 @@ export function getSettingsCommands(): Command[] {
       icon: 'integration_instructions',
       description: I18N.EMACS_USE_PACKAGE_CONFIG_COPIED_DESCRIPTION,
       handler: copyEmacsUsePackageConfig,
-      context: {
-        narrow: true,
-      },
     },
     {
       command: DefaultCommands.SUBSCRIPTION_SETTINGS,
