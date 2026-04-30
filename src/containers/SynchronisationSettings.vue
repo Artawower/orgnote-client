@@ -1,6 +1,6 @@
 <template>
   <app-flex column start align-start gap="md">
-    <settings-scheme :scheme="syncScheme" path="synchronization"></settings-scheme>
+    <sync-setup-controls require-active-user-for-unavailable />
     <template v-if="syncAvailable">
       <app-description v-if="!user" padded>
         <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
@@ -12,22 +12,6 @@
         </menu-item>
         <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
       </card-wrapper>
-
-      <api-settings v-if="syncAvailable" />
-
-      <template v-if="canCopySyncProfile">
-        <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
-
-        <card-wrapper>
-          <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
-          <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
-          <command-menu-item :command="DefaultCommands.COPY_EMACS_USE_PACKAGE_CONFIG" />
-        </card-wrapper>
-      </template>
-
-      <app-description v-else-if="user?.active" padded>
-        {{ t(I18N.SYNC_PROFILE_CONFIG_UNAVAILABLE) }}
-      </app-description>
 
       <card-wrapper>
         <command-menu-item
@@ -44,35 +28,25 @@
 </template>
 
 <script lang="ts" setup>
-import { DefaultCommands, I18N, ORG_NOTE_CONFIG_SCHEMA } from 'orgnote-api';
+import { DefaultCommands, I18N } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
-import { valibotScheme } from 'src/models/valibot-scheme';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import ApiSettings from './ApiSettings.vue';
-import SettingsScheme from './SettingsScheme.vue';
 import CommandMenuItem from './CommandMenuItem.vue';
 import MenuItem from './MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-
-const syncScheme = valibotScheme(ORG_NOTE_CONFIG_SCHEMA.entries.synchronization);
-const settings = api.core.useSettings();
-settings.loadApiTokens();
+import SyncSetupControls from './SyncSetupControls.vue';
 
 const authStore = api.core.useAuth();
 const { user } = storeToRefs(authStore);
-const { tokens } = storeToRefs(settings);
-
 const { config } = storeToRefs(api.core.useConfig());
 
 const syncAvailable = computed(
   () => config.value.synchronization.type && config.value.synchronization.type !== 'none',
 );
-
-const canCopySyncProfile = computed(() => syncAvailable.value && tokens.value.length > 0);
 
 const { t } = useI18n({
   useScope: 'global',

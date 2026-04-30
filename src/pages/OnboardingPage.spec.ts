@@ -87,6 +87,7 @@ const stubs = {
   AuthStep: { template: '<div/>' },
   ActivationStep: { template: '<div/>' },
   EmacsStep: { template: '<div/>' },
+  SyncSetupStep: { template: '<div/>' },
 };
 
 beforeEach(() => {
@@ -103,7 +104,7 @@ const mountPage = async () => {
   return wrapper;
 };
 
-// Step indices: 0=Welcome, 1=Fs, 2=Server, 3=Auth, 4=Activation, 5=Emacs
+// Step indices: 0=Welcome, 1=Fs, 2=Server, 3=Auth, 4=Activation/SyncSetup, 5=Emacs
 
 test('OnboardingPage auto-skips AuthStep when user is logged in', async () => {
   mockOnboardingCurrentStep.value = 3;
@@ -116,15 +117,15 @@ test('OnboardingPage auto-skips AuthStep when user is logged in', async () => {
   expect(mockPush).not.toHaveBeenCalled();
 });
 
-test('OnboardingPage auto-skips ActivationStep and EmacsStep when user has active subscription', async () => {
+test('OnboardingPage shows SyncSetupStep when user has active subscription', async () => {
   mockOnboardingCurrentStep.value = 4;
   mockUser.value = { email: 'test@example.com', active: 'premium' };
 
-  await mountPage();
+  const wrapper = await mountPage();
 
-  expect(mockOnboardingCompleted.value).toBe(true);
-  expect(mockOnboardingCurrentStep.value).toBe(0);
-  expect(mockPush).toHaveBeenCalledWith({ name: 'Home' });
+  expect(asVm(wrapper).currentStep).toBe(4);
+  expect(mockOnboardingCompleted.value).toBe(false);
+  expect(mockPush).not.toHaveBeenCalled();
 });
 
 test('OnboardingPage stays on ActivationStep when user is logged in but not active', async () => {
@@ -171,7 +172,7 @@ test('OnboardingPage goBack skips completed ActivationStep when user is not auth
   expect(asVm(wrapper).currentStep).toBe(3);
 });
 
-test('OnboardingPage goBack skips completed ActivationStep and AuthStep when user is active', async () => {
+test('OnboardingPage goBack lands on SyncSetupStep when user is active', async () => {
   mockOnboardingCurrentStep.value = 5;
   mockUser.value = { email: 'test@example.com', active: 'premium' };
 
@@ -179,8 +180,7 @@ test('OnboardingPage goBack skips completed ActivationStep and AuthStep when use
 
   await asVm(wrapper).goBack();
 
-  // Both AuthStep(3) and ActivationStep(4) are completed → lands on ServerStep(2)
-  expect(asVm(wrapper).currentStep).toBe(2);
+  expect(asVm(wrapper).currentStep).toBe(4);
 });
 
 test('OnboardingPage hides content immediately when completing onboarding', async () => {
