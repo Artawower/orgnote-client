@@ -13,14 +13,21 @@
         <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
       </card-wrapper>
 
-      <api-settings />
+      <api-settings v-if="syncAvailable" />
 
-      <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
+      <template v-if="canCopySyncProfile">
+        <app-description>{{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}</app-description>
 
-      <card-wrapper>
-        <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
-        <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
-      </card-wrapper>
+        <card-wrapper>
+          <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
+          <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
+          <command-menu-item :command="DefaultCommands.COPY_EMACS_USE_PACKAGE_CONFIG" />
+        </card-wrapper>
+      </template>
+
+      <app-description v-else-if="user?.active" padded>
+        {{ t(I18N.SYNC_PROFILE_CONFIG_UNAVAILABLE) }}
+      </app-description>
 
       <card-wrapper>
         <command-menu-item
@@ -57,12 +64,15 @@ settings.loadApiTokens();
 
 const authStore = api.core.useAuth();
 const { user } = storeToRefs(authStore);
+const { tokens } = storeToRefs(settings);
 
 const { config } = storeToRefs(api.core.useConfig());
 
 const syncAvailable = computed(
   () => config.value.synchronization.type && config.value.synchronization.type !== 'none',
 );
+
+const canCopySyncProfile = computed(() => syncAvailable.value && tokens.value.length > 0);
 
 const { t } = useI18n({
   useScope: 'global',

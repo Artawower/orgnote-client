@@ -4,7 +4,6 @@ import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
 import TheSettings from 'src/containers/TheSettings.vue';
-import type { TheSettingsModalProps } from 'src/containers/TheSettings.vue';
 import { createSettingsRouter } from 'src/containers/modal-settings-routes';
 import AppIcon from 'src/components/AppIcon.vue';
 import { getDatabase } from 'src/infrastructure/repositories';
@@ -15,6 +14,12 @@ import { usePanePersistence } from 'src/composables/pane-persistence';
 import { downloadTextFile } from 'src/utils/download-text-file';
 import type { Router } from 'vue-router';
 import { buildLocalSyncProfileToml } from 'src/utils/local-sync-profile-config';
+import { getUsePackageInstructions } from 'src/constants/install-scripts';
+
+type TheSettingsModalProps = {
+  initialRoute?: RouteNames;
+  settingsRouter?: Router;
+};
 
 const SettingsHeaderTitle = defineAsyncComponent(
   () => import('src/containers/SettingsHeaderTitle.vue'),
@@ -132,6 +137,21 @@ export function getSettingsCommands(): Command[] {
     notifications.notify({
       message: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED,
       description: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED_DESCRIPTION,
+      level: 'info',
+    });
+  };
+
+  const copyEmacsUsePackageConfig = async (): Promise<void> => {
+    const result = await to(async () => api.utils.copyToClipboard(getUsePackageInstructions()))();
+
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return;
+    }
+
+    notifications.notify({
+      message: I18N.EMACS_USE_PACKAGE_CONFIG_COPIED,
+      description: I18N.EMACS_USE_PACKAGE_CONFIG_COPIED_DESCRIPTION,
       level: 'info',
     });
   };
@@ -261,6 +281,16 @@ export function getSettingsCommands(): Command[] {
       icon: 'download',
       description: I18N.SYNC_PROFILE_CONFIG_DOWNLOADED_DESCRIPTION,
       handler: downloadLocalSyncConfig,
+      context: {
+        narrow: true,
+      },
+    },
+    {
+      command: DefaultCommands.COPY_EMACS_USE_PACKAGE_CONFIG,
+      group: 'settings',
+      icon: 'integration_instructions',
+      description: I18N.EMACS_USE_PACKAGE_CONFIG_COPIED_DESCRIPTION,
+      handler: copyEmacsUsePackageConfig,
       context: {
         narrow: true,
       },

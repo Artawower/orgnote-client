@@ -14,3 +14,9 @@ export const USE_PACKAGE_DEV_ENSTRUCTIONS = withBaseInstrutcions(
 );
 
 export const USE_PACKAGE_MASTER_ENSTRUCTIONS = withBaseInstrutcions();
+
+const isDevDeployment = (): boolean =>
+  process.env.DEV || process.env.DEPLOYMENT_ENV === 'dev' || process.env.DEPLOYMENT_ENV === 'local';
+
+export const getUsePackageInstructions = (): string =>
+  isDevDeployment() ? USE_PACKAGE_DEV_ENSTRUCTIONS : USE_PACKAGE_MASTER_ENSTRUCTIONS;

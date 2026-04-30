@@ -13,7 +13,7 @@
       <app-code :code="installationScript" />
       <card-wrapper>
         <menu-item @click="copyConfig" type="info">
-          {{ t(I18N.ONBOARDING_EMACS_COPY_CONFIG) }}
+          {{ t(I18N.EMACS_USE_PACKAGE_COPY_CONFIG) }}
         </menu-item>
       </card-wrapper>
     </app-flex>
@@ -31,20 +31,12 @@ import AppCode from 'src/components/AppCode.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
-import {
-  USE_PACKAGE_DEV_ENSTRUCTIONS,
-  USE_PACKAGE_MASTER_ENSTRUCTIONS,
-} from 'src/constants/install-scripts';
+import { getUsePackageInstructions } from 'src/constants/install-scripts';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { safeCopyToClipboard } = useInteractiveClipboard();
 
-const isDevDeployment = (): boolean =>
-  process.env.DEV || process.env.DEPLOYMENT_ENV === 'dev' || process.env.DEPLOYMENT_ENV === 'local';
-
-const installationScript = isDevDeployment()
-  ? USE_PACKAGE_DEV_ENSTRUCTIONS
-  : USE_PACKAGE_MASTER_ENSTRUCTIONS;
+const installationScript = getUsePackageInstructions();
 
 const copyConfig = (): void => {
   safeCopyToClipboard(installationScript);

@@ -53,6 +53,7 @@ import ServerStep from 'src/components/onboarding/ServerStep.vue';
 import EmacsStep from 'src/components/onboarding/EmacsStep.vue';
 import AuthStep from 'src/components/onboarding/AuthStep.vue';
 import ActivationStep from 'src/components/onboarding/ActivationStep.vue';
+import SyncSetupStep from 'src/components/onboarding/SyncSetupStep.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppButton from 'src/components/AppButton.vue';
 
@@ -78,24 +79,31 @@ interface StepInstance {
 
 const authStore = api.core.useAuth();
 
-const steps: StepConfig[] = [
+const activationStep = { component: ActivationStep, isCompleted: () => !authStore.user || !!authStore.user.active };
+const syncSetupStep = { component: SyncSetupStep };
+
+const subscriptionStep = computed<StepConfig>(() =>
+  authStore.user?.active ? syncSetupStep : activationStep,
+);
+
+const steps = computed<StepConfig[]>(() => [
   { component: WelcomeStep },
   { component: FsSelectionStep },
   { component: ServerStep },
   { component: AuthStep, isCompleted: () => !!authStore.user },
-  { component: ActivationStep, isCompleted: () => !authStore.user || !!authStore.user.active },
+  subscriptionStep.value,
   { component: EmacsStep, isCompleted: () => !authStore.user || !!authStore.user.active },
-];
+]);
 
 const router = useRouter();
 const settings = api.core.useSettings();
 const { onboardingCompleted, onboardingCurrentStep } = storeToRefs(settings);
 
-const clampStep = (step: number): number => Math.max(0, Math.min(step, steps.length - 1));
+const clampStep = (step: number): number => Math.max(0, Math.min(step, steps.value.length - 1));
 
 const skipCompletedForward = (start: number): number => {
   let step = start;
-  while (step < steps.length - 1 && steps[step]?.isCompleted?.()) step++;
+  while (step < steps.value.length - 1 && steps.value[step]?.isCompleted?.()) step++;
   return step;
 };
 
@@ -104,8 +112,8 @@ const currentStepRef = ref<StepInstance | null>(null);
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
-const isLastStep = computed(() => currentStep.value === steps.length - 1);
-const currentStepConfig = computed(() => steps[currentStep.value]);
+const isLastStep = computed(() => currentStep.value === steps.value.length - 1);
+const currentStepConfig = computed(() => steps.value[currentStep.value]);
 
 const canProceed = computed(() => {
   const step = currentStepRef.value;
@@ -134,7 +142,7 @@ const initDefaultFsIfNeeded = async (): Promise<void> => {
 };
 
 const advanceIfCompleted = (): void => {
-  const step = steps[currentStep.value];
+  const step = steps.value[currentStep.value];
   if (!step?.isCompleted?.()) return;
 
   if (isLastStep.value) {
@@ -146,6 +154,11 @@ const advanceIfCompleted = (): void => {
 
 watch(currentStep, () => {
   onboardingCurrentStep.value = currentStep.value;
+  advanceIfCompleted();
+});
+
+watch(steps, () => {
+  currentStep.value = clampStep(currentStep.value);
   advanceIfCompleted();
 });
 
@@ -162,7 +175,7 @@ const goNext = (): void => {
 
 const goBack = (): void => {
   let prev = currentStep.value - 1;
-  while (prev > 0 && steps[prev]?.isCompleted?.()) prev--;
+  while (prev > 0 && steps.value[prev]?.isCompleted?.()) prev--;
   currentStep.value = prev;
 };
 
