@@ -39,7 +39,10 @@ import {
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { safeCopyToClipboard } = useInteractiveClipboard();
 
-const installationScript = process.env.DEV
+const isDevDeployment = (): boolean =>
+  process.env.DEV || process.env.DEPLOYMENT_ENV === 'dev' || process.env.DEPLOYMENT_ENV === 'local';
+
+const installationScript = isDevDeployment()
   ? USE_PACKAGE_DEV_ENSTRUCTIONS
   : USE_PACKAGE_MASTER_ENSTRUCTIONS;
 

@@ -44,6 +44,7 @@ jobs:
           VITE_AUTH_URL=${{ secrets.AUTH_URL }}
           VITE_WS_URL=${{ secrets.WS_URL }}
           VITE_SOURCEMAP=${{ inputs.environment == 'dev' && 'true' || 'false' }}
+          VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
           EOT
       - name: Build ssr
         run: bunx env-cmd -f ./.env.build bun run build -m ssr

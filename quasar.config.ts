@@ -98,6 +98,7 @@ export default defineConfig((ctx) => {
         API_URL: process.env.VITE_API_URL ?? '',
         AUTH_URL: process.env.VITE_AUTH_URL ?? '',
         WS_URL: process.env.VITE_WS_URL ?? '',
+        DEPLOYMENT_ENV: process.env.VITE_DEPLOYMENT_ENV ?? '',
       },
       sourcemap: process.env.VITE_SOURCEMAP === 'true',
       // rawDefine: {}

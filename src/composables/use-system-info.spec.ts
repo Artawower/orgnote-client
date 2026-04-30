@@ -48,6 +48,7 @@ beforeEach(() => {
   process.env.AUTH_URL = 'https://auth.example.com';
   process.env.NODE_ENV = 'test';
   process.env.APP_VERSION = '1.2.3';
+  process.env.DEPLOYMENT_ENV = 'dev';
 
   global.screen = {
     width: 1920,
@@ -109,7 +110,8 @@ test('getSystemInfo includes environment information', async () => {
 
   expect(info.environment.apiUrl).toBe('https://api.example.com');
   expect(info.environment.authUrl).toBe('https://auth.example.com');
-  expect(info.environment.mode).toBe('test');
+  expect(info.environment.buildMode).toBe('test');
+  expect(info.environment.deploymentTarget).toBe('dev');
 });
 
 test('getSystemInfo includes platform information', async () => {
@@ -140,7 +142,8 @@ test('getTextSystemInfo includes encryption type disabled', async () => {
   const systemInfo = useSystemInfo();
   const formatted = await systemInfo.getTextSystemInfo();
 
-  expect(formatted).toContain('Type: disabled');
+  expect(formatted).toContain('Build mode: test');
+  expect(formatted).toContain('Deployment target: dev');
 });
 
 test('getTextSystemInfo omits device section for non-native platforms', async () => {

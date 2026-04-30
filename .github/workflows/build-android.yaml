@@ -52,6 +52,7 @@ jobs:
           VITE_WS_URL=${{ secrets.WS_URL }}
           KEYPASS=${{ secrets.STOREPASS }}
           STOREPASS=${{ secrets.STOREPASS }}
+          VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
           EOT
 
       - name: Setup java

@@ -88,7 +88,8 @@ const getPlatformInfo = (): PlatformInfo => {
 const getEnvironmentInfo = (): EnvironmentInfo => ({
   apiUrl: process.env.API_URL || '',
   authUrl: process.env.AUTH_URL || '',
-  mode: process.env.NODE_ENV || '',
+  buildMode: process.env.NODE_ENV || '',
+  deploymentTarget: process.env.DEPLOYMENT_ENV || '',
 });
 
 const getWebSocketInfo = (): WebSocketInfo => {
@@ -183,7 +184,8 @@ const formatEnvironment = (env: EnvironmentInfo): string[] => [
   'Environment:',
   `  API URL: ${env.apiUrl}`,
   `  AUTH URL: ${env.authUrl}`,
-  `  Mode: ${env.mode}`,
+  `  Build mode: ${env.buildMode}`,
+  `  Deployment target: ${env.deploymentTarget}`,
 ];
 
 const formatPlatform = (platform: PlatformInfo): string[] => {
