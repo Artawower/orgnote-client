@@ -18,13 +18,19 @@ import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const fsManager = api.core.useFileSystemManager();
-const { currentFsName } = storeToRefs(fsManager);
+const { currentFsName, fileSystems } = storeToRefs(fsManager);
 
 const canProceed = computed(() => !!currentFsName.value);
+
+onMounted(() => {
+  if (currentFsName.value) return;
+  if (fileSystems.value.length !== 1) return;
+  void fsManager.useFs(fileSystems.value[0]!.name);
+});
 
 defineExpose({ canProceed });
 </script>
