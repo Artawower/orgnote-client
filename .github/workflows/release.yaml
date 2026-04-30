@@ -28,9 +28,18 @@ jobs:
       version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
       prerelease: false
 
+  build-electron:
+    name: Build Electron macOS
+    needs: [get-version]
+    uses: ./.github/workflows/build-electron.yaml
+    with:
+      environment: deploy
+      version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
+      prerelease: false
+
   upload-release-asset:
     name: Upload Release Asset
-    needs: [build-android, get-version]
+    needs: [build-android, build-electron, get-version]
     runs-on: ubuntu-latest
     environment: deploy
     steps:
@@ -38,14 +47,30 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
-          path: ./dist/capacitor/android/apk/release
+          path: ./dist/release
 
-      - name: Upload Release Asset
+      - name: Download Electron artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-electron-macos-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.zip
+          path: ./dist/release
+
+      - name: Upload APK Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/capacitor/android/apk/release/orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
+          asset_path: ./dist/release/orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
           asset_name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
           asset_content_type: application/octet-stream
+
+      - name: Upload Electron Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/release/orgnote-electron-macos-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.zip
+          asset_name: orgnote-electron-macos-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.zip
+          asset_content_type: application/zip

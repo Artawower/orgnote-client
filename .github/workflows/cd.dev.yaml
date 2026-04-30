@@ -57,6 +57,17 @@ jobs:
       prerelease: true
     secrets: inherit
 
+  build-electron:
+    name: Build Electron macOS
+    needs: [check-version-changed]
+    if: needs.check-version-changed.outputs.changed == 'true'
+    uses: ./.github/workflows/build-electron.yaml
+    with:
+      environment: dev
+      version: ${{ needs.check-version-changed.outputs.version }}-dev
+      prerelease: true
+    secrets: inherit
+
   docker-deploy:
     name: Docker Build and Deploy
     needs: [ci-checks]
@@ -69,7 +80,7 @@ jobs:
 
   create-prerelease:
     name: Create Pre-release
-    needs: [build-android, check-version-changed]
+    needs: [build-android, build-electron, check-version-changed]
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -81,7 +92,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
-          path: ./apk
+          path: ./release-assets
+
+      - name: Download Electron artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-electron-macos-${{ needs.check-version-changed.outputs.version }}-dev.zip
+          path: ./release-assets
 
       - name: Generate release body
         id: release-body
@@ -154,7 +171,9 @@ jobs:
           name: "Dev Build v${{ needs.check-version-changed.outputs.version }}"
           body_path: release-body.md
           prerelease: true
-          files: ./apk/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
+          files: |
+            ./release-assets/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
+            ./release-assets/orgnote-electron-macos-${{ needs.check-version-changed.outputs.version }}-dev.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
