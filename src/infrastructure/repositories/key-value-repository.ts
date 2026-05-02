@@ -1,5 +1,6 @@
 import type Dexie from 'dexie';
 import type { KeyValueRepository } from 'orgnote-api';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 
 interface KeyValueEntry {
@@ -8,10 +9,7 @@ interface KeyValueEntry {
 }
 
 export const KEY_VALUE_REPOSITORY_NAME = 'keyValue';
-export const KEY_VALUE_MIGRATIONS = migrator<KeyValueEntry>()
-  .v(1)
-  .indexes('&key')
-  .build();
+export const KEY_VALUE_MIGRATIONS = migrator<KeyValueEntry>().v(1).indexes('&key').build();
 
 export const createKeyValueRepository = (db: Dexie): KeyValueRepository => {
   const store = db.table<KeyValueEntry, string>(KEY_VALUE_REPOSITORY_NAME);
@@ -33,10 +31,10 @@ export const createKeyValueRepository = (db: Dexie): KeyValueRepository => {
     await store.clear();
   };
 
-  return {
+  return withDexieRecovery(db, {
     get,
     set,
     delete: del,
     clear,
-  };
+  });
 };

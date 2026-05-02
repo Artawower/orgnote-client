@@ -1,5 +1,6 @@
 import type Dexie from 'dexie';
 import type { BaseContentEntry, BaseContentStore } from 'orgnote-api';
+import { withDexieRecovery } from '../repositories/dexie-retry';
 import { migrator } from '../repositories/migrator';
 import { getDatabase } from '../repositories';
 
@@ -44,7 +45,7 @@ export const createBaseContentStore = (db: Dexie): BaseContentStore => {
     await table.delete(path);
   };
 
-  return { get, set, remove };
+  return withDexieRecovery(db, { get, set, remove });
 };
 
 export const getBaseContentStore = (): BaseContentStore | null => {

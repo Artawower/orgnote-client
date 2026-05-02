@@ -1,5 +1,6 @@
 import type { FileMeta, FileRepository } from 'orgnote-api';
 import { join } from 'orgnote-api';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 import type Dexie from 'dexie';
 import type { Collection } from 'dexie';
@@ -113,7 +114,7 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     await store.clear();
   };
 
-  return {
+  return withDexieRecovery(db, {
     getById,
     getByIds,
     getByPath,
@@ -124,5 +125,5 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     count,
     getTagsStats,
     clear,
-  };
+  });
 };

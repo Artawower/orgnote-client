@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { createKeyValueRepository, KEY_VALUE_MIGRATIONS } from './key-value-repository';
 import type Dexie from 'dexie';
-import { expect, test, beforeEach, afterEach } from 'vitest';
+import { expect, test, beforeEach, afterEach, vi } from 'vitest';
 import { createDatabase } from './create-database';
 
 let db: Dexie;
@@ -65,4 +65,25 @@ test('should handle JSON values', async () => {
   const result = await repository.get('json-key');
   expect(result).toBeDefined();
   expect(JSON.parse(result!)).toEqual(data);
+});
+
+test('should retry after reopening database when IndexedDB connection is lost', async () => {
+  await repository.set('retry-key', 'retry-value');
+
+  const table = db.table('keyValue');
+  const connectionError = new Error('Database has been closed');
+  connectionError.name = 'DatabaseClosedError';
+  const getSpy = vi
+    .spyOn(table, 'get')
+    .mockRejectedValueOnce(connectionError)
+    .mockResolvedValueOnce({ key: 'retry-key', value: 'retry-value' });
+  const closeSpy = vi.spyOn(db, 'close');
+  const openSpy = vi.spyOn(db, 'open').mockResolvedValue(db);
+
+  const result = await repository.get('retry-key');
+
+  expect(result).toBe('retry-value');
+  expect(closeSpy).toHaveBeenCalledWith({ disableAutoOpen: false });
+  expect(openSpy).toHaveBeenCalledTimes(1);
+  expect(getSpy).toHaveBeenCalledTimes(2);
 });

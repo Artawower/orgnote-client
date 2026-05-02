@@ -16,43 +16,52 @@ interface MockQueue {
   _running: number;
 }
 
-const { createMockQueue, mockQueueConstructor, mockQueueRepository } = vi.hoisted(() => {
-  const createMockQueue = (): MockQueue => ({
-    push: vi.fn(),
-    pause: vi.fn(),
-    resume: vi.fn(),
-    cancel: vi.fn((_id: string, cb: () => void) => cb()),
-    destroy: vi.fn((cb: () => void) => cb()),
-    getStats: vi.fn(() => ({
-      total: 10,
-      average: 100,
-      successRate: 0.95,
-      peak: 5,
-    })),
-    on: vi.fn(),
-    removeAllListeners: vi.fn(),
-    removeListener: vi.fn(),
-    length: 0,
-    _running: 0,
-  });
+const { createMockQueue, mockQueueConstructor, mockQueueRepository, mockLogger } = vi.hoisted(
+  () => {
+    const createMockQueue = (): MockQueue => ({
+      push: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      cancel: vi.fn((_id: string, cb: () => void) => cb()),
+      destroy: vi.fn((cb: () => void) => cb()),
+      getStats: vi.fn(() => ({
+        total: 10,
+        average: 100,
+        successRate: 0.95,
+        peak: 5,
+      })),
+      on: vi.fn(),
+      removeAllListeners: vi.fn(),
+      removeListener: vi.fn(),
+      length: 0,
+      _running: 0,
+    });
 
-  const mockQueueConstructor = vi.fn(() => createMockQueue());
+    const mockQueueConstructor = vi.fn(() => createMockQueue());
 
-  const mockQueueRepository = {
-    add: vi.fn(),
-    get: vi.fn(),
-    getAll: vi.fn(),
-    delete: vi.fn(),
-    lock: vi.fn(),
-    release: vi.fn(),
-    takeFirstN: vi.fn(),
-    getLock: vi.fn(),
-    getRunningTasks: vi.fn(),
-    clear: vi.fn(),
-  };
+    const mockQueueRepository = {
+      add: vi.fn(),
+      get: vi.fn(),
+      getAll: vi.fn(),
+      delete: vi.fn(),
+      lock: vi.fn(),
+      release: vi.fn(),
+      takeFirstN: vi.fn(),
+      getLock: vi.fn(),
+      getRunningTasks: vi.fn(),
+      clear: vi.fn(),
+      update: vi.fn(),
+    };
 
-  return { createMockQueue, mockQueueConstructor, mockQueueRepository };
-});
+    const mockLogger = {
+      debug: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+    };
+
+    return { createMockQueue, mockQueueConstructor, mockQueueRepository, mockLogger };
+  },
+);
 
 vi.mock('better-queue', () => ({
   default: mockQueueConstructor,
@@ -68,6 +77,10 @@ vi.mock('src/boot/repositories', () => ({
 
 vi.mock('src/infrastructure/stores/queue-store', () => ({
   QueueStore: vi.fn().mockImplementation(() => ({})),
+}));
+
+vi.mock('src/boot/logger', () => ({
+  logger: mockLogger,
 }));
 
 import { useQueueStore } from './queue';
@@ -92,6 +105,10 @@ beforeEach(() => {
   mockQueueRepository.getLock.mockReset().mockResolvedValue(undefined);
   mockQueueRepository.getRunningTasks.mockReset().mockResolvedValue({});
   mockQueueRepository.clear.mockReset().mockResolvedValue(undefined);
+  mockQueueRepository.update.mockReset().mockResolvedValue(undefined);
+  mockLogger.debug.mockReset();
+  mockLogger.error.mockReset();
+  mockLogger.warn.mockReset();
 
   mockQueueConstructor.mockClear();
   mockQueueConstructor.mockImplementation(() => createMockQueue());
@@ -120,6 +137,36 @@ test('useQueueStore register returns existing queue on duplicate registration', 
 
   expect(toRaw(queue1)).toBe(toRaw(queue2));
   expect(store.queueIds.filter((id) => id === 'test-queue').length).toBe(1);
+});
+
+test('useQueueStore task finish handler does not leak rejected status updates', async () => {
+  const updateError = new Error('DatabaseClosedError');
+  let taskFinishHandler: ((taskId: string) => unknown) | undefined;
+
+  mockQueueRepository.update.mockRejectedValue(updateError);
+  mockQueueConstructor.mockImplementation(() => {
+    const queue = createMockQueue();
+    queue.on = vi.fn((event: string, handler: (taskId: string) => unknown) => {
+      if (event === 'task_finish') {
+        taskFinishHandler = handler;
+      }
+    });
+    return queue;
+  });
+
+  const store = useQueueStore();
+  store.register('test-queue');
+
+  const result = taskFinishHandler?.('task-1');
+  if (result instanceof Promise) void result.catch(() => undefined);
+  await Promise.resolve();
+
+  expect(result).toBeUndefined();
+  expect(mockLogger.error).toHaveBeenCalledWith('Failed to update queue task status', {
+    error: updateError,
+    status: 'completed',
+    taskId: 'task-1',
+  });
 });
 
 test('useQueueStore getQueue returns undefined for unregistered queue', () => {

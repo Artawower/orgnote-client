@@ -1,4 +1,5 @@
 import type Dexie from 'dexie';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 import type { LayoutSnapshot, LayoutSnapshotRepository, StoredLayoutSnapshot } from 'orgnote-api';
 
@@ -31,13 +32,9 @@ export const createLayoutSnapshotRepository = (db: Dexie): LayoutSnapshotReposit
     await store.put(record);
   };
 
-  const get = async (id: string): Promise<StoredLayoutSnapshot | undefined> => {
-    return store.get(id);
-  };
+  const get = async (id: string): Promise<StoredLayoutSnapshot | undefined> => store.get(id);
 
-  const getLatest = async (): Promise<StoredLayoutSnapshot | undefined> => {
-    return store.get(AUTOSAVE_ID);
-  };
+  const getLatest = async (): Promise<StoredLayoutSnapshot | undefined> => store.get(AUTOSAVE_ID);
 
   const remove = async (id: string): Promise<void> => {
     await store.delete(id);
@@ -47,12 +44,12 @@ export const createLayoutSnapshotRepository = (db: Dexie): LayoutSnapshotReposit
     await store.clear();
   };
 
-  return {
+  return withDexieRecovery(db, {
     save,
     get,
     getLatest,
     list,
     delete: remove,
     clear,
-  };
+  });
 };

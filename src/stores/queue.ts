@@ -20,10 +20,13 @@ const createProcessFn = (options: QueueCreationOptions) => {
   return options.process ?? ((_task: unknown, cb: (err?: unknown) => void) => cb());
 };
 
-const registerQueueEvents = (queue: Queue) => {
-  const updateQueueStatus = (taskId: string, status: QueueTask['status']) =>
-    repositories.queueRepository.update(taskId, { status });
+const updateQueueStatus = (taskId: string, status: QueueTask['status']): void => {
+  void repositories.queueRepository.update(taskId, { status }).catch((error: unknown) => {
+    logger.error('Failed to update queue task status', { error, status, taskId });
+  });
+};
 
+const registerQueueEvents = (queue: Queue) => {
   queue.on('task_finish', (taskId: string) => updateQueueStatus(taskId, 'completed'));
   queue.on('task_failed', (taskId: string) => updateQueueStatus(taskId, 'failed'));
 };

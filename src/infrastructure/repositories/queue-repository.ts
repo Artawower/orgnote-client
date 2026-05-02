@@ -1,4 +1,5 @@
 import type Dexie from 'dexie';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 import type { QueueTask, QueueRepository } from 'orgnote-api';
 
@@ -34,9 +35,7 @@ export const createQueueRepository = (db: Dexie): QueueRepository => {
     await store.put(normalized);
   };
 
-  const get = async (id: string): Promise<QueueTask | undefined> => {
-    return await store.get(id);
-  };
+  const get = async (id: string): Promise<QueueTask | undefined> => store.get(id);
 
   const getAll = async (queueId?: string): Promise<QueueTask[]> => {
     if (!queueId) {
@@ -149,7 +148,7 @@ export const createQueueRepository = (db: Dexie): QueueRepository => {
     return arrayToMap(tasks);
   };
 
-  return {
+  return withDexieRecovery(db, {
     add,
     get,
     getAll,
@@ -161,5 +160,5 @@ export const createQueueRepository = (db: Dexie): QueueRepository => {
     getLock,
     getRunningTasks,
     clear,
-  };
+  });
 };

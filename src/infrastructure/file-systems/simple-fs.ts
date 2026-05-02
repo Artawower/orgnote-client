@@ -13,6 +13,7 @@ import { extractFileNameFromPath } from 'src/utils/extract-file-name-from-path';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { isNullable, to } from 'orgnote-api/utils';
 import { desktopOnly } from 'src/utils/platform-specific';
+import { withDexieRecovery } from 'src/infrastructure/repositories/dexie-retry';
 
 type File = DiskFile & { content?: string | Uint8Array };
 
@@ -324,20 +325,20 @@ export const useSimpleFs = (): FileSystem => {
     desktopOnly(indexedDB.deleteDatabase.bind(indexedDB))(SIMPLE_FS_NAME);
   };
 
-  return {
-    readFile: readFile,
-    fileInfo: fileInfo,
-    writeFile: writeFile,
-    rename: rename,
-    deleteFile: deleteFile,
-    readDir: readDir,
-    rmdir: rmdir,
-    mkdir: mkdir,
-    isDirExist: isDirExist,
-    isFileExist: isFileExist,
-    utimeSync: utimeSync,
+  const recoverableFs = withDexieRecovery(db, {
+    readFile,
+    fileInfo,
+    writeFile,
+    rename,
+    deleteFile,
+    readDir,
+    rmdir,
+    mkdir,
+    isDirExist,
+    isFileExist,
+    utimeSync,
     init,
-    wipe,
-    watch,
-  };
+  });
+
+  return { ...recoverableFs, wipe, watch };
 };

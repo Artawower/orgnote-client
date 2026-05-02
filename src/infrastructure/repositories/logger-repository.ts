@@ -1,5 +1,6 @@
 import type Dexie from 'dexie';
 import type { LoggerRepository, LogRecord, LogFilter } from 'orgnote-api';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 
 export const LOGGER_REPOSITORY_NAME = 'logs';
@@ -80,20 +81,18 @@ export const createLoggerRepository = (db: Dexie): LoggerRepository => {
     return await applyFilter(filter).count();
   };
 
-  const clear = (): Promise<void> => {
-    return store.clear();
-  };
+  const clear = (): Promise<void> => store.clear();
 
   const purgeOlderThan = async (date: Date): Promise<void> => {
     await store.where('ts').below(date).delete();
   };
 
-  return {
+  return withDexieRecovery(db, {
     add,
     bulkAdd,
     query,
     count,
     clear,
     purgeOlderThan,
-  };
+  });
 };

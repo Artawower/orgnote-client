@@ -1,5 +1,6 @@
 import type { ExtensionSource, ExtensionSourceRepository } from 'orgnote-api';
 import type Dexie from 'dexie';
+import { withDexieRecovery } from './dexie-retry';
 import { migrator } from './migrator';
 
 export const EXTENSION_SOURCE_REPOSITORY_NAME = 'extension-sources';
@@ -12,17 +13,13 @@ export const EXTENSION_SOURCE_MIGRATIONS = migrator<ExtensionSource>()
 export function createExtensionSourceRepository(db: Dexie): ExtensionSourceRepository {
   const table = db.table<ExtensionSource>(EXTENSION_SOURCE_REPOSITORY_NAME);
 
-  const get = async (extensionName: string): Promise<ExtensionSource | undefined> => {
-    return await table.get(extensionName);
-  };
+  const get = async (extensionName: string): Promise<ExtensionSource | undefined> =>
+    table.get(extensionName);
 
-  const getBySource = async (source: string): Promise<ExtensionSource | undefined> => {
-    return await table.where('source').equals(source).first();
-  };
+  const getBySource = async (source: string): Promise<ExtensionSource | undefined> =>
+    table.where('source').equals(source).first();
 
-  const getAll = async (): Promise<ExtensionSource[]> => {
-    return await table.toArray();
-  };
+  const getAll = async (): Promise<ExtensionSource[]> => table.toArray();
 
   const upsert = async (extension: ExtensionSource): Promise<void> => {
     await table.put(extension);
@@ -44,7 +41,7 @@ export function createExtensionSourceRepository(db: Dexie): ExtensionSourceRepos
     await table.clear();
   };
 
-  return {
+  return withDexieRecovery(db, {
     get,
     getBySource,
     getAll,
@@ -53,5 +50,5 @@ export function createExtensionSourceRepository(db: Dexie): ExtensionSourceRepos
     delete: deleteExtension,
     deleteBySource,
     clear,
-  };
+  });
 }
