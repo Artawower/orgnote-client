@@ -1,4 +1,5 @@
 import { test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { undoDepth } from '@codemirror/commands';
 import { useCodeEditorView } from './use-code-editor-view';
 
 let container: HTMLDivElement;
@@ -250,4 +251,25 @@ test('multiple init/destroy cycles work correctly', () => {
   expect(container.querySelector('.cm-editor')).not.toBeNull();
   destroyView();
   expect(container.querySelector('.cm-editor')).toBeNull();
+});
+
+test('syncDocument resets history when document key changes', () => {
+  const { initView, destroyView, getEditorView, syncDocument } = useCodeEditorView({
+    onContentUpdate: vi.fn(),
+  });
+
+  initView(container, 'first note', 'note-1');
+
+  const view = getEditorView()!;
+  view.dispatch({
+    changes: { from: view.state.doc.length, insert: ' changed' },
+  });
+  expect(undoDepth(view.state)).toBeGreaterThan(0);
+
+  syncDocument('second note', 'note-2');
+
+  expect(view.state.doc.toString()).toBe('second note');
+  expect(undoDepth(view.state)).toBe(0);
+
+  destroyView();
 });

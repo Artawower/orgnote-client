@@ -22,6 +22,7 @@ vi.mock('src/boot/repositories', () => ({
       getByIds: vi.fn(async (ids: string[]) => {
         return ids.map((id) => mockFiles.get(id)).filter(Boolean) as FileMeta[];
       }),
+      getAll: vi.fn(async () => Array.from(mockFiles.values())),
       delete: vi.fn(async (id: string) => {
         mockFiles.delete(id);
       }),
@@ -1013,16 +1014,11 @@ test('indexFile succeeds on retry after initial empty file', async () => {
   expect(saved.title).toBe('Parsed Title');
 });
 
-test('indexFiles limits concurrent repository checks during scan', async () => {
+test('indexFiles uses a single repository snapshot during scan', async () => {
   const { repositories } = await import('src/boot/repositories');
   const getByPathMock = repositories.fileRepository.getByPath as ReturnType<typeof vi.fn>;
+  const getAllMock = repositories.fileRepository.getAll as ReturnType<typeof vi.fn>;
   const store = useFileSearchStore();
-  let activeCount = 0;
-  let maxActiveCount = 0;
-  const sleep = (ms: number): Promise<void> =>
-    new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
 
   mockDirEntries.set(
     '/',
@@ -1031,28 +1027,12 @@ test('indexFiles limits concurrent repository checks during scan', async () => {
       type: 'file',
       path: `/note-${index + 1}.org`,
       size: 0,
-      mtime: 0,
+      mtime: Date.now(),
     })),
   );
-  mockDirEntries.forEach((entries) => {
-    entries.forEach((entry) => {
-      mockFileInfos.set(entry.path, { mtime: new Date().toISOString() });
-    });
-  });
-
-  getByPathMock.mockImplementation(async (path: string[]) => {
-    activeCount += 1;
-    maxActiveCount = Math.max(maxActiveCount, activeCount);
-    await sleep(10);
-    activeCount -= 1;
-
-    for (const file of mockFiles.values()) {
-      if (file.filePath.join('/') === path.join('/')) return file;
-    }
-    return undefined;
-  });
 
   await store.indexFiles();
 
-  expect(maxActiveCount).toBeLessThanOrEqual(4);
+  expect(getAllMock).toHaveBeenCalledTimes(1);
+  expect(getByPathMock).not.toHaveBeenCalled();
 });

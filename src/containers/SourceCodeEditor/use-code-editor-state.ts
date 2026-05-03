@@ -12,12 +12,19 @@ import {
 import { loadLanguage, type LanguageName } from '@uiw/codemirror-extensions-langs';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
-import { isMarkdownLanguage, getMarkdownModeExtensions, getMarkdownReadonlyExtensions } from './markdown-mode';
+import {
+  isMarkdownLanguage,
+  getMarkdownModeExtensions,
+  getMarkdownReadonlyExtensions,
+} from './markdown-mode';
 
 export interface UseCodeEditorStateOptions {
   readonly?: boolean;
   language?: string;
   isDark?: boolean;
+  readonlyGetter?: () => boolean;
+  languageGetter?: () => string | undefined;
+  isDarkGetter?: () => boolean | undefined;
   editorViewGetter: () => EditorView | undefined;
   onContentUpdate: (content: string) => void;
 }
@@ -122,8 +129,13 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
     readonlyMode: new Compartment(),
   };
 
+  const getReadonly = (): boolean => options.readonlyGetter?.() ?? options.readonly ?? false;
+  const getLanguage = (): string | undefined => options.languageGetter?.() ?? options.language;
+  const getIsDark = (): boolean | undefined => options.isDarkGetter?.() ?? options.isDark;
+
   const createState = (content: string): EditorState => {
-    const readonly = options.readonly ?? false;
+    const readonly = getReadonly();
+    const language = getLanguage();
 
     return EditorState.create({
       doc: content,
@@ -131,16 +143,16 @@ export const useCodeEditorState = (options: UseCodeEditorStateOptions) => {
         ...createBaseExtensions(options.editorViewGetter),
         createUpdateListener(options.onContentUpdate),
         compartments.readonly.of(EditorState.readOnly.of(readonly)),
-        compartments.language.of(getLanguageExtension(options.language)),
-        compartments.theme.of(getThemeExtension(options.isDark)),
-        compartments.editorMode.of(getEditorModeExtensions(options.language)),
-        compartments.readonlyMode.of(getReadonlyModeExtensions(options.language, readonly)),
+        compartments.language.of(getLanguageExtension(language)),
+        compartments.theme.of(getThemeExtension(getIsDark())),
+        compartments.editorMode.of(getEditorModeExtensions(language)),
+        compartments.readonlyMode.of(getReadonlyModeExtensions(language, readonly)),
       ],
     });
   };
 
   const reconfigureReadonly = (view: EditorView, value: boolean): void => {
-    const language = options.language;
+    const language = getLanguage();
     view.dispatch({
       effects: [
         compartments.readonly.reconfigure(EditorState.readOnly.of(value)),

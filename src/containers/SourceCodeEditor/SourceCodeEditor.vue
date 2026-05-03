@@ -14,17 +14,18 @@ import { useCodeEditorView } from './use-code-editor-view';
 const props = defineProps<{
   readonly?: boolean;
   language?: string;
+  documentKey?: string;
 }>();
 
 const model = defineModel<string>();
 const editorRef = ref<HTMLDivElement>();
 const themeStore = api.ui.useTheme();
 
-const { initView, destroyView, updateContent, setReadonly, setLanguage, setTheme } =
+const { initView, destroyView, syncDocument, setReadonly, setLanguage, setTheme } =
   useCodeEditorView({
-    readonly: props.readonly,
-    language: props.language,
-    isDark: themeStore.isDark,
+    readonlyGetter: () => props.readonly ?? false,
+    languageGetter: () => props.language,
+    isDarkGetter: () => themeStore.isDark,
     onContentUpdate: (content: string) => {
       model.value = content;
     },
@@ -32,7 +33,7 @@ const { initView, destroyView, updateContent, setReadonly, setLanguage, setTheme
 
 const initEditor = () => {
   if (!editorRef.value) return;
-  initView(editorRef.value, model.value ?? '');
+  initView(editorRef.value, model.value ?? '', props.documentKey);
 };
 
 const safeInitEditor = () => {
@@ -45,9 +46,8 @@ const safeInitEditor = () => {
 onMounted(safeInitEditor);
 onUnmounted(destroyView);
 
-watch(
-  () => model.value,
-  (newValue) => updateContent(newValue ?? ''),
+watch([() => model.value, () => props.documentKey], ([newValue, documentKey]) =>
+  syncDocument(newValue ?? '', documentKey),
 );
 
 watch(

@@ -6,6 +6,7 @@ export type UseEditorViewOptions = Omit<UseEditorStateOptions, 'editorViewGetter
 
 export const useEditorView = (options: UseEditorViewOptions) => {
   let editorView: EditorView | undefined;
+  let currentDocumentKey: string | undefined;
 
   const getEditorView = () => editorView;
   const editorStore = api.core.useEditor();
@@ -22,7 +23,28 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     editorViewGetter: getEditorView,
   });
 
-  const initView = (parent: HTMLElement, content: string): EditorView => {
+  const resetState = (content: string): void => {
+    if (!editorView) return;
+    editorView.setState(createState(content));
+  };
+
+  const refreshActiveContext = (): void => {
+    if (!editorView) return;
+    const isActiveEditor = editorStore.activeContext?.editorViewGetter === getEditorView;
+    if (!isActiveEditor) return;
+
+    editorStore.setActiveContext({
+      orgNode: orgNode.value,
+      cursorPosition: 0,
+      selection: '',
+      editorViewGetter: getEditorView,
+      filePath: options.filePathGetter?.(),
+      focused: editorView.hasFocus,
+    });
+  };
+
+  const initView = (parent: HTMLElement, content: string, documentKey?: string): EditorView => {
+    currentDocumentKey = documentKey;
     editorView = new EditorView({
       state: createState(content),
       parent,
@@ -44,6 +66,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     }
     editorView?.destroy();
     editorView = undefined;
+    currentDocumentKey = undefined;
     setEditorView(null);
   };
 
@@ -62,6 +85,21 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     });
   };
 
+  const syncDocument = (content: string, documentKey?: string): void => {
+    if (!editorView) return;
+
+    const isDocumentChanged = documentKey !== undefined && documentKey !== currentDocumentKey;
+    if (!isDocumentChanged) {
+      updateContent(content);
+      return;
+    }
+
+    currentDocumentKey = documentKey;
+    resetState(content);
+    setEditorView(editorView);
+    refreshActiveContext();
+  };
+
   const setReadonly = (value: boolean): void => {
     if (!editorView) return;
     reconfigureReadonly(editorView, value);
@@ -73,6 +111,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     initView,
     destroyView,
     updateContent,
+    syncDocument,
     setReadonly,
   };
 };

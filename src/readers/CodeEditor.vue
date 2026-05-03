@@ -1,5 +1,10 @@
 <template>
-  <source-code-editor v-model="content" :readonly="readonly" :language="language" />
+  <source-code-editor
+    v-model="content"
+    :readonly="readonly"
+    :language="language"
+    :document-key="buffer.uri"
+  />
 </template>
 
 <script lang="ts" setup>

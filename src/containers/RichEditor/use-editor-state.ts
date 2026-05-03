@@ -32,7 +32,8 @@ import { editorLanguages } from './editor-languages';
 
 export interface UseEditorStateOptions {
   readonly?: boolean;
-  filePath?: string;
+  readonlyGetter?: () => boolean;
+  filePathGetter?: () => string | undefined;
   editorViewGetter: () => EditorView | undefined;
   onContentUpdate: (content: string) => void;
 }
@@ -126,7 +127,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
           cursorPosition: 0,
           selection: '',
           editorViewGetter: options.editorViewGetter,
-          filePath: options.filePath,
+          filePath: options.filePathGetter?.(),
           focused: true,
         });
         return false;
@@ -235,8 +236,10 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     );
   };
 
+  const getReadonly = (): boolean => options.readonlyGetter?.() ?? false;
+
   const createState = (content: string): EditorState => {
-    const readonly = options.readonly ?? false;
+    const readonly = getReadonly();
     const widgetExtensions = editorConfig.value.showSpecialSymbols
       ? []
       : createWidgetExtensions(editorViewRef);
@@ -270,7 +273,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   };
 
   const reconfigureWidgets = (view: EditorView): void => {
-    const readonly = options.readonly ?? false;
+    const readonly = getReadonly();
     const widgetExtensions = editorConfig.value.showSpecialSymbols
       ? []
       : createWidgetExtensions(editorViewRef);

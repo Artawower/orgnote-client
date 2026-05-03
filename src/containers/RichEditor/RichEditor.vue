@@ -22,6 +22,7 @@ import { reporter } from 'src/boot/report';
 const props = defineProps<{
   readonly?: boolean;
   filePath?: string;
+  documentKey?: string;
 }>();
 
 const model = defineModel<string>();
@@ -30,9 +31,9 @@ const editorRef = ref<HTMLDivElement>();
 const configStore = api.core.useConfig();
 const editorConfig = computed(() => configStore.config.editor);
 
-const { initView, destroyView, updateContent, setReadonly } = useEditorView({
-  readonly: props.readonly,
-  filePath: props.filePath,
+const { initView, destroyView, syncDocument, setReadonly } = useEditorView({
+  readonlyGetter: () => props.readonly ?? false,
+  filePathGetter: () => props.filePath,
   onContentUpdate: (content: string) => {
     model.value = content;
   },
@@ -41,7 +42,7 @@ const { initView, destroyView, updateContent, setReadonly } = useEditorView({
 const initEditor = () => {
   if (!editorRef.value) return;
 
-  const view = initView(editorRef.value, model.value ?? '');
+  const view = initView(editorRef.value, model.value ?? '', props.documentKey);
   setCursorToEOF(view);
 };
 
@@ -55,9 +56,8 @@ const safeInitEditor = () => {
 onMounted(safeInitEditor);
 onUnmounted(destroyView);
 
-watch(
-  () => model.value,
-  (newValue) => updateContent(newValue ?? ''),
+watch([() => model.value, () => props.documentKey], ([newValue, documentKey]) =>
+  syncDocument(newValue ?? '', documentKey),
 );
 
 watch(

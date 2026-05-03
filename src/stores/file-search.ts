@@ -35,6 +35,8 @@ interface IndexedFile {
   tags: string;
 }
 
+type ExistingFileSnapshot = Map<string, FileMeta>;
+
 export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fileSearch', () => {
   let processedCount = 0;
   const index = new Document<IndexedFile>({
@@ -180,6 +182,13 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     updatedAt: new Date().toISOString(),
   });
 
+  const toFilePathKey = (filePath: string[]): string => `/${filePath.join('/')}`;
+
+  const buildExistingFileSnapshot = async (): Promise<ExistingFileSnapshot> => {
+    const files = await repositories.fileRepository.getAll();
+    return new Map(files.map((file) => [toFilePathKey(file.filePath), file]));
+  };
+
   const removeStaleRecord = async (meta: FileMeta): Promise<void> => {
     const existingByPath = await repositories.fileRepository.getByPath(meta.filePath);
     if (!existingByPath || existingByPath.id === meta.id) return;
@@ -278,9 +287,16 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     return new Date(fileInfo.mtime);
   };
 
-  const shouldIndexFile = async (entryPath: string, currentMtime?: Date): Promise<boolean> => {
+  const shouldIndexFile = async (
+    entryPath: string,
+    currentMtime?: Date,
+    existingFile?: FileMeta | null,
+  ): Promise<boolean> => {
     const filePath = entryPath.split('/').filter(Boolean);
-    const existing = await repositories.fileRepository.getByPath(filePath);
+    const existing =
+      existingFile === undefined
+        ? await repositories.fileRepository.getByPath(filePath)
+        : existingFile;
 
     if (!existing) return true;
     if (!indexedIds.has(existing.id)) return true;
@@ -320,8 +336,9 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   const scanSubdirectory = async (
     entryPath: string,
     queue: ReturnType<typeof useQueueStore>,
+    existingFiles: ExistingFileSnapshot,
   ): Promise<void> => {
-    const scanResult = await to(() => scanDirectory(entryPath, queue))();
+    const scanResult = await to(() => scanDirectory(entryPath, queue, existingFiles))();
     if (scanResult.isOk()) return;
 
     logger.error('search index failed to scan directory', {
@@ -334,10 +351,13 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     entryPath: string,
     entry: DiskFile,
     queue: ReturnType<typeof useQueueStore>,
+    existingFiles: ExistingFileSnapshot,
   ): Promise<void> => {
     if (!isOrgFile(entry.name)) return;
 
-    const shouldIndexResult = await to(() => shouldIndexFile(entryPath, new Date(entry.mtime)))();
+    const shouldIndexResult = await to(() =>
+      shouldIndexFile(entryPath, new Date(entry.mtime), existingFiles.get(entryPath) ?? null),
+    )();
     if (shouldIndexResult.isErr()) {
       logger.error('search index failed to check if file needs indexing', {
         filePath: entryPath,
@@ -355,26 +375,28 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     dirPath: string,
     entry: DiskFile,
     queue: ReturnType<typeof useQueueStore>,
+    existingFiles: ExistingFileSnapshot,
   ): Promise<void> => {
     const entryPath = buildEntryPath(dirPath, entry.name);
 
     if (entry.type === 'directory') {
-      await scanSubdirectory(entryPath, queue);
+      await scanSubdirectory(entryPath, queue, existingFiles);
       return;
     }
 
-    await scanFileEntry(entryPath, entry, queue);
+    await scanFileEntry(entryPath, entry, queue, existingFiles);
   };
 
   const scanDirectory = async (
     dirPath: string,
     queue: ReturnType<typeof useQueueStore>,
+    existingFiles: ExistingFileSnapshot,
   ): Promise<void> => {
     const entries = await readDirectoryEntries(dirPath);
     if (!entries) return;
 
     await runWithConcurrency(entries, INDEX_SCAN_CONCURRENCY, (entry) =>
-      scanEntry(dirPath, entry, queue),
+      scanEntry(dirPath, entry, queue, existingFiles),
     );
   };
 
@@ -388,7 +410,8 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   const performIndexing = async (): Promise<void> => {
     const queue = useQueueStore();
     await ensureIndexLoaded();
-    await scanDirectory('/', queue);
+    const existingFiles = await buildExistingFileSnapshot();
+    await scanDirectory('/', queue, existingFiles);
     logger.info(`File indexing scan completed, added files to queue`);
   };
 

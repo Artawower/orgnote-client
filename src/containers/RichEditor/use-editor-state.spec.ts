@@ -113,7 +113,7 @@ describe('useEditorState', () => {
       const { setupScrollMarginsWatcher } = useEditorState({
         editorViewGetter: () => fakeView,
         onContentUpdate: vi.fn(),
-        filePath: '/test.org',
+        filePathGetter: () => '/test.org',
       });
 
       setupScrollMarginsWatcher(() => fakeView);
@@ -140,7 +140,7 @@ describe('useEditorState', () => {
       const { setupScrollMarginsWatcher } = useEditorState({
         editorViewGetter: () => fakeView,
         onContentUpdate: vi.fn(),
-        filePath: '/test.org',
+        filePathGetter: () => '/test.org',
       });
 
       setupScrollMarginsWatcher(() => fakeView);
@@ -167,7 +167,7 @@ describe('useEditorState', () => {
       const { setupScrollMarginsWatcher } = useEditorState({
         editorViewGetter: () => fakeView,
         onContentUpdate: vi.fn(),
-        filePath: '/test.org',
+        filePathGetter: () => '/test.org',
       });
 
       setupScrollMarginsWatcher(() => fakeView);

@@ -5,6 +5,7 @@ export type UseCodeEditorViewOptions = Omit<UseCodeEditorStateOptions, 'editorVi
 
 export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
   let editorView: EditorView | undefined;
+  let currentDocumentKey: string | undefined;
 
   const getEditorView = () => editorView;
 
@@ -13,7 +14,13 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
     editorViewGetter: getEditorView,
   });
 
-  const initView = (parent: HTMLElement, content: string): EditorView => {
+  const resetState = (content: string): void => {
+    if (!editorView) return;
+    editorView.setState(createState(content));
+  };
+
+  const initView = (parent: HTMLElement, content: string, documentKey?: string): EditorView => {
+    currentDocumentKey = documentKey;
     editorView = new EditorView({
       state: createState(content),
       parent,
@@ -26,6 +33,7 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
   const destroyView = (): void => {
     editorView?.destroy();
     editorView = undefined;
+    currentDocumentKey = undefined;
   };
 
   const updateContent = (content: string): void => {
@@ -41,6 +49,19 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
         insert: content,
       },
     });
+  };
+
+  const syncDocument = (content: string, documentKey?: string): void => {
+    if (!editorView) return;
+
+    const isDocumentChanged = documentKey !== undefined && documentKey !== currentDocumentKey;
+    if (!isDocumentChanged) {
+      updateContent(content);
+      return;
+    }
+
+    currentDocumentKey = documentKey;
+    resetState(content);
   };
 
   const setReadonly = (value: boolean): void => {
@@ -63,6 +84,7 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
     initView,
     destroyView,
     updateContent,
+    syncDocument,
     setReadonly,
     setLanguage,
     setTheme,

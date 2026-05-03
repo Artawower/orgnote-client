@@ -1,5 +1,10 @@
 <template>
-  <rich-editor v-model="content" :readonly="readonly" :file-path="buffer.path" />
+  <rich-editor
+    v-model="content"
+    :readonly="readonly"
+    :file-path="buffer.path"
+    :document-key="buffer.uri"
+  />
 </template>
 
 <script lang="ts" setup>
