@@ -52,6 +52,8 @@ const mockFileContentRead = vi.fn(async (path: string) => {
   return new TextEncoder().encode(text);
 });
 const mockFileContentWrite = vi.fn();
+const mockFileInfo = vi.fn(async (path: string) => mockFileInfos.get(path));
+const mockReadDir = vi.fn(async (path: string) => mockDirEntries.get(path) ?? []);
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -66,8 +68,8 @@ vi.mock('src/boot/api', () => ({
 
 vi.mock('src/stores/file-system', () => ({
   useFileSystemStore: vi.fn(() => ({
-    fileInfo: vi.fn(async (path: string) => mockFileInfos.get(path)),
-    readDir: vi.fn(async (path: string) => mockDirEntries.get(path) ?? []),
+    fileInfo: mockFileInfo,
+    readDir: mockReadDir,
   })),
 }));
 
@@ -118,6 +120,8 @@ beforeEach(() => {
     return new TextEncoder().encode(text);
   });
   mockFileContentWrite.mockResolvedValue(undefined);
+  mockFileInfo.mockImplementation(async (path: string) => mockFileInfos.get(path));
+  mockReadDir.mockImplementation(async (path: string) => mockDirEntries.get(path) ?? []);
   mockParsedMeta = {
     id: 'parsed-id',
     title: 'Parsed Title',
@@ -244,7 +248,10 @@ test('processFile regression: file created without org-mode ID becomes searchabl
   expect(firstSearch[0]!.id).toBe('/lexorank.org');
 
   mockParsedMeta.id = '2F7C59C6-E48A-4F6A-9D49-08769D61E935';
-  mockFileContents.set('/lexorank.org', ':PROPERTIES:\n:ID: 2F7C59C6-E48A-4F6A-9D49-08769D61E935\n:END:\n#+TITLE: Lexorank\nContent about lexorank algorithm');
+  mockFileContents.set(
+    '/lexorank.org',
+    ':PROPERTIES:\n:ID: 2F7C59C6-E48A-4F6A-9D49-08769D61E935\n:END:\n#+TITLE: Lexorank\nContent about lexorank algorithm',
+  );
   await store.processFile('/lexorank.org');
 
   const secondSearch = await store.search('Lexorank');
@@ -313,8 +320,12 @@ test('indexFiles sets isIndexing flag', async () => {
 test('indexFiles scans directories recursively', async () => {
   const store = useFileSearchStore();
 
-  mockDirEntries.set('/', [{ name: 'subdir', type: 'directory', path: '/subdir', size: 0, mtime: 0 }]);
-  mockDirEntries.set('/subdir', [{ name: 'note.org', type: 'file', path: '/subdir/note.org', size: 0, mtime: 0 }]);
+  mockDirEntries.set('/', [
+    { name: 'subdir', type: 'directory', path: '/subdir', size: 0, mtime: 0 },
+  ]);
+  mockDirEntries.set('/subdir', [
+    { name: 'note.org', type: 'file', path: '/subdir/note.org', size: 0, mtime: 0 },
+  ]);
   mockFileInfos.set('/subdir/note.org', { mtime: new Date().toISOString() });
 
   await store.indexFiles();
@@ -350,7 +361,9 @@ test('indexFiles indexes files not in repository', async () => {
 
   await store.indexFiles();
 
-  expect(mockQueueTasks.some((t) => (t.payload as { filePath: string }).filePath === '/new.org')).toBe(true);
+  expect(
+    mockQueueTasks.some((t) => (t.payload as { filePath: string }).filePath === '/new.org'),
+  ).toBe(true);
 });
 
 test('indexFiles indexes files not in indexedIds', async () => {
@@ -379,7 +392,9 @@ test('indexFiles indexes files not in indexedIds', async () => {
 
   await store.loadIndex();
 
-  mockDirEntries.set('/', [{ name: 'existing.org', type: 'file', path: '/existing.org', size: 0, mtime: 0 }]);
+  mockDirEntries.set('/', [
+    { name: 'existing.org', type: 'file', path: '/existing.org', size: 0, mtime: 0 },
+  ]);
   mockFileInfos.set('/existing.org', { mtime: new Date().toISOString() });
 
   await store.indexFiles();
@@ -418,7 +433,9 @@ test('indexFiles skips files with old mtime when already in repo', async () => {
   await store.loadIndex();
   mockQueueTasks.length = 0;
 
-  mockDirEntries.set('/', [{ name: 'indexed.org', type: 'file', path: '/indexed.org', size: 0, mtime: 0 }]);
+  mockDirEntries.set('/', [
+    { name: 'indexed.org', type: 'file', path: '/indexed.org', size: 0, mtime: 0 },
+  ]);
   mockFileInfos.set('/indexed.org', { mtime: '2019-01-01T00:00:00.000Z' });
 
   await store.indexFiles();
@@ -453,7 +470,9 @@ test('indexFiles indexes modified files since lastIndexedAt', async () => {
   await store.loadIndex();
   mockQueueTasks.length = 0;
 
-  mockDirEntries.set('/', [{ name: 'modified.org', type: 'file', path: '/modified.org', size: 0, mtime: 0 }]);
+  mockDirEntries.set('/', [
+    { name: 'modified.org', type: 'file', path: '/modified.org', size: 0, mtime: 0 },
+  ]);
   mockFileInfos.set('/modified.org', { mtime: new Date().toISOString() });
 
   await store.indexFiles();
@@ -461,6 +480,47 @@ test('indexFiles indexes modified files since lastIndexedAt', async () => {
   expect(
     mockQueueTasks.some((t) => (t.payload as { filePath: string }).filePath === '/modified.org'),
   ).toBe(true);
+});
+
+test('indexFiles uses directory entry mtime instead of extra fileInfo lookup', async () => {
+  const store = useFileSearchStore();
+  const fileMtime = new Date('2021-01-01T00:00:00.000Z');
+
+  mockFiles.set('indexed-id', {
+    id: 'indexed-id',
+    filePath: ['indexed.org'],
+    title: 'Indexed',
+  });
+  mockKeyValue.set(
+    'file-index',
+    JSON.stringify({
+      version: 3,
+      files: {
+        'indexed-id': {
+          id: 'indexed-id',
+          indexedAt: '2020-01-01T00:00:00.000Z',
+          fileModifiedAt: '2020-01-01T00:00:00.000Z',
+        },
+      },
+    }),
+  );
+
+  await store.loadIndex();
+  mockQueueTasks.length = 0;
+  mockDirEntries.set('/', [
+    {
+      name: 'indexed.org',
+      type: 'file',
+      path: '/indexed.org',
+      size: 0,
+      mtime: fileMtime.getTime(),
+    },
+  ]);
+
+  await store.indexFiles();
+
+  expect(mockFileInfo).not.toHaveBeenCalledWith('/indexed.org');
+  expect(mockQueueTasks).toHaveLength(1);
 });
 
 test('loadIndex returns false when no stored index', async () => {
@@ -471,7 +531,19 @@ test('loadIndex returns false when no stored index', async () => {
 
 test('loadIndex returns false for wrong version', async () => {
   const store = useFileSearchStore();
-  mockKeyValue.set('file-index', JSON.stringify({ version: 999, files: { id1: { id: 'id1', indexedAt: '2020-01-01T00:00:00.000Z', fileModifiedAt: '2020-01-01T00:00:00.000Z' } } }));
+  mockKeyValue.set(
+    'file-index',
+    JSON.stringify({
+      version: 999,
+      files: {
+        id1: {
+          id: 'id1',
+          indexedAt: '2020-01-01T00:00:00.000Z',
+          fileModifiedAt: '2020-01-01T00:00:00.000Z',
+        },
+      },
+    }),
+  );
 
   const result = await store.loadIndex();
   expect(result).toBe(false);
@@ -502,7 +574,16 @@ test('loadIndex restores index from storage', async () => {
 
   mockKeyValue.set(
     'file-index',
-    JSON.stringify({ version: 3, files: { 'stored-id': { id: 'stored-id', indexedAt: '2020-01-01T00:00:00.000Z', fileModifiedAt: '2020-01-01T00:00:00.000Z' } } }),
+    JSON.stringify({
+      version: 3,
+      files: {
+        'stored-id': {
+          id: 'stored-id',
+          indexedAt: '2020-01-01T00:00:00.000Z',
+          fileModifiedAt: '2020-01-01T00:00:00.000Z',
+        },
+      },
+    }),
   );
 
   const result = await store.loadIndex();
@@ -515,7 +596,16 @@ test('loadIndex skips files missing from repository', async () => {
   const store = useFileSearchStore();
   mockKeyValue.set(
     'file-index',
-    JSON.stringify({ version: 3, files: { 'missing-id': { id: 'missing-id', indexedAt: '2020-01-01T00:00:00.000Z', fileModifiedAt: '2020-01-01T00:00:00.000Z' } } }),
+    JSON.stringify({
+      version: 3,
+      files: {
+        'missing-id': {
+          id: 'missing-id',
+          indexedAt: '2020-01-01T00:00:00.000Z',
+          fileModifiedAt: '2020-01-01T00:00:00.000Z',
+        },
+      },
+    }),
   );
 
   const result = await store.loadIndex();
@@ -758,7 +848,10 @@ test('processFile migrates ID when org-mode ID differs from stored path-based ID
   mockFiles.set(oldId, oldFile);
 
   mockParsedMeta.id = 'ORG-MODE-UUID-123';
-  mockFileContents.set('/my-note.org', '#+TITLE: New Title\n:PROPERTIES:\n:ID: ORG-MODE-UUID-123\n:END:\nContent');
+  mockFileContents.set(
+    '/my-note.org',
+    '#+TITLE: New Title\n:PROPERTIES:\n:ID: ORG-MODE-UUID-123\n:END:\nContent',
+  );
 
   await store.processFile('/my-note.org');
 
@@ -918,4 +1011,48 @@ test('indexFile succeeds on retry after initial empty file', async () => {
 
   const saved = Array.from(mockFiles.values())[0]!;
   expect(saved.title).toBe('Parsed Title');
+});
+
+test('indexFiles limits concurrent repository checks during scan', async () => {
+  const { repositories } = await import('src/boot/repositories');
+  const getByPathMock = repositories.fileRepository.getByPath as ReturnType<typeof vi.fn>;
+  const store = useFileSearchStore();
+  let activeCount = 0;
+  let maxActiveCount = 0;
+  const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
+  mockDirEntries.set(
+    '/',
+    Array.from({ length: 10 }, (_, index) => ({
+      name: `note-${index + 1}.org`,
+      type: 'file',
+      path: `/note-${index + 1}.org`,
+      size: 0,
+      mtime: 0,
+    })),
+  );
+  mockDirEntries.forEach((entries) => {
+    entries.forEach((entry) => {
+      mockFileInfos.set(entry.path, { mtime: new Date().toISOString() });
+    });
+  });
+
+  getByPathMock.mockImplementation(async (path: string[]) => {
+    activeCount += 1;
+    maxActiveCount = Math.max(maxActiveCount, activeCount);
+    await sleep(10);
+    activeCount -= 1;
+
+    for (const file of mockFiles.values()) {
+      if (file.filePath.join('/') === path.join('/')) return file;
+    }
+    return undefined;
+  });
+
+  await store.indexFiles();
+
+  expect(maxActiveCount).toBeLessThanOrEqual(4);
 });

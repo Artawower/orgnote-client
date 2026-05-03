@@ -10,7 +10,7 @@ import type {
   QueueStatus,
 } from 'orgnote-api';
 import { isOrgFile, to } from 'orgnote-api';
-import { uint8ArrayToText } from 'orgnote-api/utils';
+import { runWithConcurrency, uint8ArrayToText } from 'orgnote-api/utils';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
 import { useQueueStore } from 'src/stores/queue';
@@ -24,6 +24,7 @@ import { logger } from 'src/boot/logger';
 const FILE_INDEX_KEY = 'file-index';
 const INDEX_VERSION = 3;
 const SAVE_INDEX_EVERY_N = 10;
+const INDEX_SCAN_CONCURRENCY = 4;
 
 interface IndexedFile {
   [key: string]: string;
@@ -277,7 +278,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     return new Date(fileInfo.mtime);
   };
 
-  const shouldIndexFile = async (entryPath: string): Promise<boolean> => {
+  const shouldIndexFile = async (entryPath: string, currentMtime?: Date): Promise<boolean> => {
     const filePath = entryPath.split('/').filter(Boolean);
     const existing = await repositories.fileRepository.getByPath(filePath);
 
@@ -287,11 +288,11 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     const meta = indexMetaMap.get(existing.id);
     if (!meta) return true;
 
-    const currentMtime = await getFileMtime(entryPath);
-    if (!currentMtime) return false;
+    const resolvedMtime = currentMtime ?? (await getFileMtime(entryPath));
+    if (!resolvedMtime) return false;
 
     const storedMtime = new Date(meta.fileModifiedAt).getTime();
-    const needsIndex = currentMtime.getTime() > storedMtime;
+    const needsIndex = resolvedMtime.getTime() > storedMtime;
 
     if (!needsIndex) {
       logger.debug('search index skip unchanged file', {
@@ -336,7 +337,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
   ): Promise<void> => {
     if (!isOrgFile(entry.name)) return;
 
-    const shouldIndexResult = await to(() => shouldIndexFile(entryPath))();
+    const shouldIndexResult = await to(() => shouldIndexFile(entryPath, new Date(entry.mtime)))();
     if (shouldIndexResult.isErr()) {
       logger.error('search index failed to check if file needs indexing', {
         filePath: entryPath,
@@ -372,7 +373,9 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     const entries = await readDirectoryEntries(dirPath);
     if (!entries) return;
 
-    await Promise.all(entries.map((entry) => scanEntry(dirPath, entry, queue)));
+    await runWithConcurrency(entries, INDEX_SCAN_CONCURRENCY, (entry) =>
+      scanEntry(dirPath, entry, queue),
+    );
   };
 
   const ensureIndexLoaded = async (): Promise<void> => {
