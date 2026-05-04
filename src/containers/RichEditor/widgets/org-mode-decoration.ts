@@ -4,11 +4,12 @@ import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, EditorView, ViewPlugin } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { walkTree } from 'org-mode-ast';
-import type { InlineEmbeddedWidgets } from 'orgnote-api';
+import type { InlineEmbeddedWidgets, MultilineEmbeddedWidgets } from 'orgnote-api';
 import {
   orgNodeGetterFacet,
   readonlyFacet,
   inlineWidgetsFacet,
+  multilineWidgetsFacet,
   type OrgNodeGetter,
 } from '../facets';
 import { findHighestPriorityWidget } from '../utils';
@@ -21,11 +22,22 @@ const isNodeOnActiveLine = (view: EditorView, node: OrgNode, caretPosition: numb
   return activeLine.number === nodeLine.number;
 };
 
+const isInsideBlockWidget = (n: OrgNode, multilineWidgets: MultilineEmbeddedWidgets): boolean => {
+  let parent = n.parent;
+  while (parent) {
+    const widgetList = multilineWidgets[parent.type];
+    if (findHighestPriorityWidget(widgetList, parent)) return true;
+    parent = parent.parent;
+  }
+  return false;
+};
+
 const buildDecorations = (
   view: EditorView,
   inlineWidgets: InlineEmbeddedWidgets,
+  multilineWidgets: MultilineEmbeddedWidgets,
   readonly: boolean,
-  getRootNode: OrgNodeGetter
+  getRootNode: OrgNodeGetter,
 ): DecorationSet => {
   const orgNode = getRootNode();
   if (!orgNode) return Decoration.none;
@@ -49,13 +61,21 @@ const buildDecorations = (
     const inlineWidget = findHighestPriorityWidget(widgetList, n);
     if (!inlineWidget) return false;
 
+    if (isInsideBlockWidget(n, multilineWidgets)) return false;
+
     const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
 
-    if (view.hasFocus && inlineWidget.hideOnActiveLine && isNodeOnActiveLine(view, n, caretPosition)) {
+    if (
+      !readonly &&
+      view.hasFocus &&
+      inlineWidget.hideOnActiveLine &&
+      isNodeOnActiveLine(view, n, caretPosition)
+    ) {
       return false;
     }
 
     if (
+      !readonly &&
       view.hasFocus &&
       !inlineWidget.ignoreEditing &&
       caretPosition >= n.start - startOffset &&
@@ -64,13 +84,7 @@ const buildDecorations = (
       return false;
     }
 
-    const decoration = OrgInlineWidget.init(
-      view,
-      n,
-      inlineWidget,
-      getRootNode,
-      readonly
-    );
+    const decoration = OrgInlineWidget.init(view, n, inlineWidget, getRootNode, readonly);
 
     if (decoration) {
       atomicDecorations.push(decoration);
@@ -95,8 +109,9 @@ export const orgInlineWidgets = ViewPlugin.fromClass(
       const getRootNode = view.state.facet(orgNodeGetterFacet);
       const readonly = view.state.facet(readonlyFacet);
       const inlineWidgets = view.state.facet(inlineWidgetsFacet);
+      const multilineWidgets = view.state.facet(multilineWidgetsFacet);
 
-      return buildDecorations(view, inlineWidgets, readonly, getRootNode);
+      return buildDecorations(view, inlineWidgets, multilineWidgets, readonly, getRootNode);
     }
 
     public update(update: ViewUpdate): void {
@@ -107,14 +122,17 @@ export const orgInlineWidgets = ViewPlugin.fromClass(
 
       const selectionStarted = previous.empty && !current.empty;
       const selectionJustCollapsed = !previous.empty && current.empty;
-      const shouldRebuildForCaret = current.empty && (caretPositionChanged || selectionJustCollapsed);
+
+      const readonly = update.state.facet(readonlyFacet);
+      const shouldRebuildForCaret =
+        !readonly && current.empty && (caretPositionChanged || selectionJustCollapsed);
 
       if (
         update.docChanged ||
         update.viewportChanged ||
         update.focusChanged ||
         shouldRebuildForCaret ||
-        selectionStarted
+        (!readonly && selectionStarted)
       ) {
         this.decorations = this.buildDecorations(update.view);
       }
@@ -126,5 +144,5 @@ export const orgInlineWidgets = ViewPlugin.fromClass(
       EditorView.atomicRanges.of((view) => {
         return view.plugin(plugin)?.decorations ?? Decoration.none;
       }),
-  }
+  },
 );

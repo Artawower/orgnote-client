@@ -23,7 +23,6 @@ const removeWidgetByNode = (widgets: DecorationSet, orgNode: OrgNode): Decoratio
 
 const addOrUpdateWidget = (
   widgets: DecorationSet,
-  state: EditorState,
   orgNode: OrgNode,
   rootNodeSrc: () => OrgNode | null,
   multilineWidget: Parameters<typeof OrgMultilineWidget.init>[3],
@@ -33,7 +32,7 @@ const addOrUpdateWidget = (
   const start = orgNode.start + startOffset;
   const end = orgNode.end + endOffset;
 
-  let existingWidget: OrgMultilineWidget | null = null;
+  const foundWidget: { current: OrgMultilineWidget | null } = { current: null };
 
   const withoutExisting = widgets.update({
     filter: (from, to, value) => {
@@ -44,16 +43,17 @@ const addOrUpdateWidget = (
       if (isNotTargetWidget) return true;
       if (widget.isDestroyed() || !widget.sameNodeByOrgNode(orgNode)) return false;
 
-      existingWidget = widget;
-      widget.updateOrgNode(orgNode);
+      foundWidget.current = widget;
       return false;
     },
   });
 
+  foundWidget.current?.updateOrgNode(orgNode);
+
   if (!editorViewRef.current) return withoutExisting;
 
-  const decorationToAdd = existingWidget
-    ? OrgMultilineWidget.createDecoration(existingWidget, orgNode, multilineWidget)
+  const decorationToAdd = foundWidget.current
+    ? OrgMultilineWidget.createDecoration(foundWidget.current, orgNode, multilineWidget)
     : OrgMultilineWidget.init(editorViewRef.current, orgNode, rootNodeSrc, multilineWidget);
 
   return withoutExisting.update({
@@ -88,15 +88,14 @@ const buildDecorations = (
     if (!multilineEmbeddedWidget) return false;
 
     const caretIntoWidget = currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
-    const shouldRemove =
-      !readonly && !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
+    const shouldRemove = !readonly && !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
 
     if (shouldRemove) {
       result = removeWidgetByNode(result, n);
       return false;
     }
 
-    result = addOrUpdateWidget(result, state, n, getOrgNode, multilineEmbeddedWidget, editorViewRef);
+    result = addOrUpdateWidget(result, n, getOrgNode, multilineEmbeddedWidget, editorViewRef);
     return false;
   });
 
@@ -107,6 +106,8 @@ const hasSignificantChanges = (tr: Transaction): boolean => {
   if (tr.docChanged) return true;
   if (tr.selection === tr.startState.selection) return false;
 
+  if (tr.state.facet(readonlyFacet)) return false;
+
   const current = tr.state.selection.main;
   const previous = tr.startState.selection.main;
 
@@ -114,9 +115,9 @@ const hasSignificantChanges = (tr: Transaction): boolean => {
   return true;
 };
 
-export const createMultilineWidgetsField = (
-  editorViewRef: { current: EditorView | null },
-): StateField<DecorationSet> =>
+export const createMultilineWidgetsField = (editorViewRef: {
+  current: EditorView | null;
+}): StateField<DecorationSet> =>
   StateField.define<DecorationSet>({
     create: (state) => buildDecorations(state, Decoration.none, editorViewRef),
 
