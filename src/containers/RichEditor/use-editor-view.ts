@@ -89,7 +89,9 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     if (!editorView) return;
 
     const isDocumentChanged = documentKey !== undefined && documentKey !== currentDocumentKey;
-    if (!isDocumentChanged) {
+    const isExternalLoad = !editorView.state.doc.length && content.length > 0;
+
+    if (!isDocumentChanged && !isExternalLoad) {
       updateContent(content);
       return;
     }

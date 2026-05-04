@@ -45,6 +45,31 @@ beforeEach(() => {
   document.body.textContent = '';
 });
 
+test('syncDocument does not add async initial load to RichEditor history when document key unchanged', async () => {
+  const { useEditorView } = await import('./use-editor-view');
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+
+  const { initView, syncDocument, getEditorView, destroyView } = useEditorView({
+    filePathGetter: () => '/notes/first.org',
+    onContentUpdate: vi.fn(),
+  });
+
+  initView(container, '', 'note-1');
+  editorStore.activeContext.editorViewGetter = getEditorView;
+  const view = getEditorView()!;
+
+  expect(view.state.doc.toString()).toBe('');
+  expect(undoDepth(view.state)).toBe(0);
+
+  syncDocument('loaded content', 'note-1');
+
+  expect(view.state.doc.toString()).toBe('loaded content');
+  expect(undoDepth(view.state)).toBe(0);
+
+  destroyView();
+});
+
 test('syncDocument resets RichEditor history when document key changes', async () => {
   const { useEditorView } = await import('./use-editor-view');
   const container = document.createElement('div');

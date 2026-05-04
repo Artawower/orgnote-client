@@ -253,6 +253,25 @@ test('multiple init/destroy cycles work correctly', () => {
   expect(container.querySelector('.cm-editor')).toBeNull();
 });
 
+test('syncDocument does not add async initial load to history when document key unchanged', () => {
+  const { initView, destroyView, getEditorView, syncDocument } = useCodeEditorView({
+    onContentUpdate: vi.fn(),
+  });
+
+  initView(container, '', 'note-1');
+  const view = getEditorView()!;
+
+  expect(view.state.doc.toString()).toBe('');
+  expect(undoDepth(view.state)).toBe(0);
+
+  syncDocument('loaded content', 'note-1');
+
+  expect(view.state.doc.toString()).toBe('loaded content');
+  expect(undoDepth(view.state)).toBe(0);
+
+  destroyView();
+});
+
 test('syncDocument resets history when document key changes', () => {
   const { initView, destroyView, getEditorView, syncDocument } = useCodeEditorView({
     onContentUpdate: vi.fn(),

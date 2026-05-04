@@ -9,10 +9,11 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
 
   const getEditorView = () => editorView;
 
-  const { createState, reconfigureReadonly, reconfigureLanguage, reconfigureTheme } = useCodeEditorState({
-    ...options,
-    editorViewGetter: getEditorView,
-  });
+  const { createState, reconfigureReadonly, reconfigureLanguage, reconfigureTheme } =
+    useCodeEditorState({
+      ...options,
+      editorViewGetter: getEditorView,
+    });
 
   const resetState = (content: string): void => {
     if (!editorView) return;
@@ -55,7 +56,9 @@ export const useCodeEditorView = (options: UseCodeEditorViewOptions) => {
     if (!editorView) return;
 
     const isDocumentChanged = documentKey !== undefined && documentKey !== currentDocumentKey;
-    if (!isDocumentChanged) {
+    const isExternalLoad = !editorView.state.doc.length && content.length > 0;
+
+    if (!isDocumentChanged && !isExternalLoad) {
       updateContent(content);
       return;
     }
