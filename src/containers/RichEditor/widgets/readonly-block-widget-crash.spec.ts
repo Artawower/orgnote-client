@@ -85,14 +85,22 @@ test('orgInlineWidgets does not place inline decorations inside block widget ran
   view.destroy();
 });
 
-test('multiline widget field does not rebuild when cursor moves in readonly mode', () => {
+const countDecorationsInRange = (decorations: DecorationSet, from: number, to: number): number => {
+  let count = 0;
+  decorations.between(from, to, () => {
+    count++;
+  });
+  return count;
+};
+
+test('multiline widget field keeps block widget visible when cursor moves inside it in readonly mode', () => {
   const { view, multilineField } = createReadonlyEditorWithQuoteAndItalicWidgets();
 
-  const decorationsBeforeCursorMove = view.state.field(multilineField);
   view.dispatch({ selection: { anchor: DOC_QUOTE_WITH_ITALIC.indexOf('/italic text/') } });
-  const decorationsAfterCursorMove = view.state.field(multilineField);
 
-  expect(decorationsAfterCursorMove).toBe(decorationsBeforeCursorMove);
+  expect(
+    countDecorationsInRange(view.state.field(multilineField), 0, DOC_QUOTE_WITH_ITALIC.length),
+  ).toBe(1);
 
   view.destroy();
 });

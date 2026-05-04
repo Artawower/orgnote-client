@@ -104,9 +104,8 @@ const buildDecorations = (
 
 const hasSignificantChanges = (tr: Transaction): boolean => {
   if (tr.docChanged) return true;
+  if (tr.reconfigured) return true;
   if (tr.selection === tr.startState.selection) return false;
-
-  if (tr.state.facet(readonlyFacet)) return false;
 
   const current = tr.state.selection.main;
   const previous = tr.startState.selection.main;
