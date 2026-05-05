@@ -12,6 +12,7 @@ import type {
   InlineEmbeddedWidget,
   MultilineEmbeddedWidget,
   EditorExtension,
+  WidgetBuilder,
 } from 'orgnote-api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
@@ -169,12 +170,19 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     return builderFn(widget.component, widget.componentProps);
   };
 
+  const multilineBuilderCache = new WeakMap<MultilineEmbeddedWidget, WidgetBuilder>();
+
   const resolveMultilineWidgetBuilder = (widget: MultilineEmbeddedWidget) => {
     if (!widget.component || widget.widgetBuilder) {
       return widget.widgetBuilder;
     }
 
-    return createMultilineWidgetBuilder(widget.component, widget);
+    const cached = multilineBuilderCache.get(widget);
+    if (cached) return cached;
+
+    const builder = createMultilineWidgetBuilder(widget.component, widget);
+    multilineBuilderCache.set(widget, builder);
+    return builder;
   };
 
   const buildWidgets = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
@@ -276,8 +284,8 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     });
   };
 
-  const reconfigureWidgets = (view: EditorView): void => {
-    const readonly = getReadonly();
+  const reconfigureWidgets = (view: EditorView, readonlyOverride?: boolean): void => {
+    const readonly = readonlyOverride !== undefined ? readonlyOverride : getReadonly();
     const widgetExtensions = editorConfig.value.showSpecialSymbols
       ? []
       : createWidgetExtensions(editorViewRef);

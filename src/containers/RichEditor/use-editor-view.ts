@@ -15,6 +15,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     orgNode,
     createState,
     reconfigureReadonly,
+    reconfigureWidgets,
     setupWidgetsWatcher,
     setupScrollMarginsWatcher,
     setEditorView,
@@ -51,7 +52,7 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     });
 
     setEditorView(editorView);
-    editorView.dispatch({});
+    reconfigureWidgets(editorView);
     setupWidgetsWatcher(getEditorView);
     setupScrollMarginsWatcher(getEditorView);
 
@@ -99,12 +100,14 @@ export const useEditorView = (options: UseEditorViewOptions) => {
     currentDocumentKey = documentKey;
     resetState(content);
     setEditorView(editorView);
+    reconfigureWidgets(editorView);
     refreshActiveContext();
   };
 
   const setReadonly = (value: boolean): void => {
     if (!editorView) return;
     reconfigureReadonly(editorView, value);
+    reconfigureWidgets(editorView, value);
   };
 
   return {

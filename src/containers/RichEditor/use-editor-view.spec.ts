@@ -32,6 +32,7 @@ vi.mock('./use-editor-state', () => ({
         extensions: [history(), keymap.of(historyKeymap)],
       }),
     reconfigureReadonly: vi.fn(),
+    reconfigureWidgets: vi.fn(),
     setupWidgetsWatcher: vi.fn(),
     setupScrollMarginsWatcher: vi.fn(),
     setEditorView: vi.fn(),

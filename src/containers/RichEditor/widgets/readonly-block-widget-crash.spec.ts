@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
 import { EditorState } from '@codemirror/state';
 import type { DecorationSet } from '@codemirror/view';
-import { Decoration, EditorView } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 import { NodeType, parse, withMetaInfo } from 'org-mode-ast';
 import type { InlineEmbeddedWidget, MultilineEmbeddedWidget } from 'orgnote-api';
 import {
@@ -78,7 +78,9 @@ const createReadonlyEditorWithQuoteAndItalicWidgets = () => {
 
 test('orgInlineWidgets does not place inline decorations inside block widget ranges in readonly mode', () => {
   const { view } = createReadonlyEditorWithQuoteAndItalicWidgets();
-  const inlineDecorations = view.plugin(orgInlineWidgets)?.decorations ?? Decoration.none;
+  const inlinePlugin = view.plugin(orgInlineWidgets);
+  expect(inlinePlugin).not.toBeNull();
+  const inlineDecorations = inlinePlugin!.decorations;
 
   expect(hasDecorationsInRange(inlineDecorations, 0, DOC_QUOTE_WITH_ITALIC.length)).toBe(false);
 
@@ -105,6 +107,54 @@ test('multiline widget field keeps block widget visible when cursor moves inside
   view.destroy();
 });
 
+test('mousedown on multiline widget does not throw RangeError', () => {
+  const { view } = createReadonlyEditorWithQuoteAndItalicWidgets();
+  // Dispatch a selection change to trigger the first render with editorViewRef set
+  view.dispatch({ selection: { anchor: 1 } });
+
+  const widgetEl = container.querySelector('.org-embedded-quote-block');
+  expect(widgetEl).not.toBeNull();
+  expect(widgetEl!.getAttribute('contenteditable')).toBe('false');
+
+  expect(() => {
+    widgetEl!.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }),
+    );
+  }).not.toThrow();
+
+  view.destroy();
+});
+
+test('two identical quote blocks both get decorations when cursor moves', () => {
+  const doc = '#+begin_quote\nhello\n#+end_quote\n#+begin_quote\nhello\n#+end_quote';
+  const orgNode = withMetaInfo(parse(doc));
+  const editorViewRef = { current: null as EditorView | null };
+  const multilineField = createMultilineWidgetsField(editorViewRef);
+
+  const view = new EditorView({
+    state: EditorState.create({
+      doc,
+      extensions: [
+        readonlyFacet.of(true),
+        orgNodeGetterFacet.of(() => orgNode),
+        multilineWidgetsFacet.of({ [NodeType.QuoteBlock]: [makeQuoteBlockWidget()] }),
+        multilineField,
+      ],
+    }),
+    parent: container,
+  });
+
+  editorViewRef.current = view;
+
+  view.dispatch({ selection: { anchor: 1 } });
+
+  expect(
+    countDecorationsInRange(view.state.field(multilineField), 0, doc.length),
+  ).toBe(2);
+
+  view.destroy();
+});
+
 test('orgInlineWidgets does not rebuild decorations on cursor movement in readonly mode', () => {
   const doc = '/italic text/';
   const orgNode = withMetaInfo(parse(doc));
@@ -123,9 +173,11 @@ test('orgInlineWidgets does not rebuild decorations on cursor movement in readon
   });
 
   const plugin = view.plugin(orgInlineWidgets);
-  const decorationsBeforeCursorMove = plugin?.decorations;
+  expect(plugin).not.toBeNull();
+  const decorationsBeforeCursorMove = plugin!.decorations;
+  expect(decorationsBeforeCursorMove).toBeDefined();
   view.dispatch({ selection: { anchor: doc.indexOf('italic') } });
-  const decorationsAfterCursorMove = plugin?.decorations;
+  const decorationsAfterCursorMove = plugin!.decorations;
 
   expect(decorationsAfterCursorMove).toBe(decorationsBeforeCursorMove);
 

@@ -1,4 +1,5 @@
 import { OrgMultilineWidget } from './org-multiline-widget';
+import type { MultilineEmbeddedWidget } from 'orgnote-api';
 import type { Transaction } from '@codemirror/state';
 import { StateField, type EditorState } from '@codemirror/state';
 import type { DecorationSet } from '@codemirror/view';
@@ -8,6 +9,19 @@ import { walkTree } from 'org-mode-ast';
 import { hasIntersection } from 'src/utils/has-intersection';
 import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
 import { findHighestPriorityWidget } from '../utils';
+
+export const isWidgetConfigChanged = (
+  a: MultilineEmbeddedWidget,
+  b: MultilineEmbeddedWidget,
+): boolean =>
+  a.component !== b.component ||
+  a.componentProps !== b.componentProps ||
+  a.actionsComponent !== b.actionsComponent ||
+  a.actionsComponentProps !== b.actionsComponentProps ||
+  a.suppressEdit !== b.suppressEdit ||
+  a.widgetBuilder !== b.widgetBuilder ||
+  a.viewUpdater !== b.viewUpdater ||
+  a.ignoreEvent !== b.ignoreEvent;
 
 const removeWidgetByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =>
   widgets.update({
@@ -27,6 +41,8 @@ const addOrUpdateWidget = (
   rootNodeSrc: () => OrgNode | null,
   multilineWidget: Parameters<typeof OrgMultilineWidget.init>[3],
   editorViewRef: { current: EditorView | null },
+  docLength: number,
+  readonly: boolean,
 ): DecorationSet => {
   const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
   const start = orgNode.start + startOffset;
@@ -37,24 +53,43 @@ const addOrUpdateWidget = (
   const withoutExisting = widgets.update({
     filter: (from, to, value) => {
       const widget = value.spec.widget as OrgMultilineWidget | undefined;
-      const isNotTargetWidget =
-        !widget || widget.orgNode.isNot(orgNode.type) || !hasIntersection(from, to, start, end);
+      if (!widget || widget.orgNode.isNot(orgNode.type)) return true;
 
-      if (isNotTargetWidget) return true;
-      if (widget.isDestroyed() || !widget.sameNodeByOrgNode(orgNode)) return false;
+      const isSameNode = widget.sameNodeByOrgNode(orgNode);
+      const intersectsNewRange = hasIntersection(from, to, start, end);
 
-      foundWidget.current = widget;
+      if (!isSameNode && !intersectsNewRange) return true;
+
+      if (isSameNode && !widget.isDestroyed()) foundWidget.current = widget;
       return false;
     },
   });
+
+  if (foundWidget.current && foundWidget.current.getReadonly() !== readonly) {
+    foundWidget.current = null;
+  }
+
+  if (
+    foundWidget.current &&
+    isWidgetConfigChanged(foundWidget.current.multilineWidget, multilineWidget)
+  ) {
+    foundWidget.current = null;
+  }
 
   foundWidget.current?.updateOrgNode(orgNode);
 
   if (!editorViewRef.current) return withoutExisting;
 
   const decorationToAdd = foundWidget.current
-    ? OrgMultilineWidget.createDecoration(foundWidget.current, orgNode, multilineWidget)
-    : OrgMultilineWidget.init(editorViewRef.current, orgNode, rootNodeSrc, multilineWidget);
+    ? OrgMultilineWidget.createDecoration(foundWidget.current, orgNode, multilineWidget, docLength)
+    : OrgMultilineWidget.init(
+        editorViewRef.current,
+        orgNode,
+        rootNodeSrc,
+        multilineWidget,
+        docLength,
+        readonly,
+      );
 
   return withoutExisting.update({
     add: [decorationToAdd],
@@ -95,7 +130,15 @@ const buildDecorations = (
       return false;
     }
 
-    result = addOrUpdateWidget(result, n, getOrgNode, multilineEmbeddedWidget, editorViewRef);
+    result = addOrUpdateWidget(
+      result,
+      n,
+      getOrgNode,
+      multilineEmbeddedWidget,
+      editorViewRef,
+      state.doc.length,
+      readonly,
+    );
     return false;
   });
 
@@ -105,7 +148,7 @@ const buildDecorations = (
 const hasSignificantChanges = (tr: Transaction): boolean => {
   if (tr.docChanged) return true;
   if (tr.reconfigured) return true;
-  if (tr.selection === tr.startState.selection) return false;
+  if (tr.state.selection.eq(tr.startState.selection)) return false;
 
   const current = tr.state.selection.main;
   const previous = tr.startState.selection.main;

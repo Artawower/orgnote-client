@@ -1,10 +1,11 @@
 import { BaseOrgWidget } from './base-org-widget';
 import type { Range } from '@codemirror/state';
-import type { EditorView } from '@codemirror/view';
+import type { EditorView, WidgetType } from '@codemirror/view';
 import { Decoration } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import type { EmbeddedWidget, MultilineEmbeddedWidget } from 'orgnote-api';
 import { readonlyFacet } from '../facets';
+import { isWidgetConfigChanged } from './multiline-widgets';
 
 export class OrgMultilineWidget extends BaseOrgWidget {
   constructor(
@@ -12,6 +13,7 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     orgNode: OrgNode,
     rootNodeSrc: () => OrgNode | null,
     public readonly multilineWidget: MultilineEmbeddedWidget,
+    private readonly readonlyAtMount: boolean = false,
   ) {
     super(view, rootNodeSrc, orgNode, multilineWidget);
   }
@@ -19,16 +21,23 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   private destroyed = false;
   private widget: EmbeddedWidget | undefined;
 
+  public getReadonly(): boolean {
+    return this.readonlyAtMount;
+  }
+
   public static init(
     editorView: EditorView,
     orgNode: OrgNode,
     rootNodeSrc: () => OrgNode | null,
     multilineWidget: MultilineEmbeddedWidget,
+    docLength: number,
+    readonly: boolean = false,
   ): Range<Decoration> {
     return OrgMultilineWidget.createDecoration(
-      new OrgMultilineWidget(editorView, orgNode, rootNodeSrc, multilineWidget),
+      new OrgMultilineWidget(editorView, orgNode, rootNodeSrc, multilineWidget, readonly),
       orgNode,
       multilineWidget,
+      docLength,
     );
   }
 
@@ -36,23 +45,23 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     widget: OrgMultilineWidget,
     orgNode: OrgNode,
     multilineWidget: MultilineEmbeddedWidget,
+    docLength: number,
   ): Range<Decoration> {
     const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
+    const safeEnd = Math.min(orgNode.end + endOffset, docLength);
     return Decoration.replace({
       widget,
       side: 0,
       inclusive: true,
       block: true,
-    }).range(orgNode.start + startOffset, orgNode.end + endOffset);
+    }).range(Math.max(0, orgNode.start + startOffset), safeEnd);
   }
 
-  public override eq(other: OrgMultilineWidget): boolean {
-    if (this.destroyed) {
-      return false;
-    }
-    if (other.isDestroyed()) {
-      return false;
-    }
+  public override eq(other: WidgetType): boolean {
+    if (!(other instanceof OrgMultilineWidget)) return false;
+    if (this.destroyed || other.isDestroyed()) return false;
+    if (this.readonlyAtMount !== other.readonlyAtMount) return false;
+    if (isWidgetConfigChanged(this.multilineWidget, other.multilineWidget)) return false;
     return other.orgNode.is(this.orgNode.type) && other.orgNode.rawValue === this.orgNode.rawValue;
   }
 
@@ -66,12 +75,17 @@ export class OrgMultilineWidget extends BaseOrgWidget {
   }
 
   public sameNodeByOrgNode(orgNode: OrgNode): boolean {
-    return orgNode.is(this.orgNode.type) && orgNode.rawValue === this.orgNode.rawValue;
+    return (
+      orgNode.is(this.orgNode.type) &&
+      orgNode.rawValue === this.orgNode.rawValue &&
+      orgNode.start === this.orgNode.start
+    );
   }
 
   public override toDOM(): HTMLElement {
     this.destroyed = false;
     const wrap = document.createElement('div');
+    wrap.setAttribute('contenteditable', 'false');
     const normalizedType = this._orgNode.type.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     wrap.classList.add(`org-embedded-${normalizedType}`);
 
