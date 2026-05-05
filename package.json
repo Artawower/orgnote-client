@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.50.7",
+  "version": "0.50.8",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -89,7 +89,7 @@
     "neverthrow": "8.2.0",
     "notiwind": "2.1.0",
     "org-mode-ast": "0.11.8",
-    "orgnote-api": "file:.yalc/orgnote-api",
+    "orgnote-api": "0.50.1",
     "partysocket": "1.1.6",
     "pinia": "3.0.2",
     "pinia-plugin-persistedstate": "4.2.0",
@@ -172,13 +172,8 @@
   },
   "jscpd": {
     "threshold": 1.65,
-    "reporters": [
-      "html",
-      "console"
-    ],
-    "format": [
-      "typescript"
-    ],
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -189,10 +184,7 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": [
-      "import.*from\\s*'.*'",
-      "export.*from\\s*'.*'"
-    ],
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,
@@ -204,8 +196,6 @@
     "yarn": ">= 1.21.1"
   },
   "eslintConfig": {
-    "extends": [
-      "plugin:storybook/recommended"
-    ]
+    "extends": ["plugin:storybook/recommended"]
   }
 }

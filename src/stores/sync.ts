@@ -9,6 +9,7 @@ import { to } from 'orgnote-api/utils';
 import { enqueuePlanOperations, isPlanEmpty } from 'src/infrastructure/sync';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { api } from 'src/boot/api';
+import { withCoalescing } from 'src/utils/with-coalescing';
 import axios from 'axios';
 
 const httpUpgradeRequired = 426;
@@ -71,23 +72,14 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       currentPlan.value = null;
     };
 
-    const sync = async (): Promise<void> => {
-      if (isSyncProhibited()) {
-        return;
-      }
-
+    const runSyncCycle = async (): Promise<void> => {
+      if (isSyncProhibited()) return;
       const plan = await createPlanAction();
-
-      if (!plan) {
-        return;
-      }
-
-      if (isPlanEmpty(plan)) {
-        return;
-      }
-
+      if (!plan || isPlanEmpty(plan)) return;
       await executePlan(plan);
     };
+
+    const sync = withCoalescing(runSyncCycle);
 
     const reset = async (): Promise<void> => {
       await state.clear();
