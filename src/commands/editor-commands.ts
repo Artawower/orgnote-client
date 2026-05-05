@@ -205,13 +205,6 @@ export const getEditorCommands = (): Command[] => {
       handler: (api) => useOrgEditor(api).withOrgEditor((e) => e.insertHtmlBlock()),
     },
     {
-      command: DefaultCommands.EDITOR_INSERT_CHECKBOX,
-      icon: 'sym_o_check_box',
-      group: EDITOR_COMMAND_GROUP,
-      hide: isEditorNotActive,
-      handler: (api) => useOrgEditor(api).withOrgEditor((e) => e.insertCheckbox()),
-    },
-    {
       command: DefaultCommands.EDITOR_INSERT_TABLE,
       icon: 'sym_o_grid_on',
       group: EDITOR_COMMAND_GROUP,

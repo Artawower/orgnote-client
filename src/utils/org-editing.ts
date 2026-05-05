@@ -182,8 +182,6 @@ export const createOrgEditing = (view: EditorView, orgNode?: OrgNode) => ({
     insertTemplate(view, { template, focusOffset: IMAGE_LINK_PREFIX.length, overrideLine: true });
   },
 
-  insertCheckbox: () => insertTemplate(view, { template: '[ ] ' }),
-
   insertTable: () => insertTemplate(view, { template: '\n| ' }),
 
   insertDatetime: () =>

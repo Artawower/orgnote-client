@@ -117,7 +117,6 @@ test('createOrgEditing toggleHeadline inserts prefix on plain text', () => {
   expect(dispatchCalls[0]?.changes?.insert).toBe('* ');
 });
 
-
 test('createOrgEditing toggleHeadline should not affect headline when cursor is on different line', () => {
   const doc = '* Title\n\nAnother text';
   const caretPos = 9;
@@ -272,16 +271,6 @@ test('createOrgEditing insertImage inserts image link', () => {
   editor.insertImage('photo.png');
 
   expect(dispatchCalls[0]?.changes?.insert).toBe('[[./photo.png]]');
-});
-
-test('createOrgEditing insertCheckbox inserts checkbox', () => {
-  const doc = 'plain text';
-  const { view, dispatchCalls } = createMockView(doc, 5);
-
-  const editor = createOrgEditing(view);
-  editor.insertCheckbox();
-
-  expect(dispatchCalls[0]?.changes?.insert).toBe('[ ] ');
 });
 
 test('createOrgEditing insertTable inserts table start', () => {

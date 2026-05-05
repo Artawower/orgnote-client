@@ -51,7 +51,6 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.EDITOR_INSERT_BULLET_LIST,
     DefaultCommands.EDITOR_INSERT_NUMERIC_LIST,
     DefaultCommands.EDITOR_INSERT_CHECK_LIST,
-    DefaultCommands.EDITOR_INSERT_CHECKBOX,
     DefaultCommands.EDITOR_INSERT_TABLE,
     DefaultCommands.EDITOR_INSERT_HORIZONTAL_RULE,
     DefaultCommands.EDITOR_INSERT_TAG,
