@@ -2,6 +2,8 @@ import type { CommonEmbeddedWidget } from 'orgnote-api';
 import type { EditorView } from '@codemirror/view';
 import { WidgetType } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
+import { useKeyboardState } from 'src/composables/use-viewport-behavior';
+import { desktopOnly, mobileOnly } from 'src/utils/platform-specific';
 
 export class BaseOrgWidget extends WidgetType {
   constructor(
@@ -30,6 +32,10 @@ export class BaseOrgWidget extends WidgetType {
   }
 
   protected updateValueAt(newVal: string, from: number, to: number): void {
+    const hadFocus = this.view.hasFocus;
+    const { keyboardOpened } = useKeyboardState();
+    const keyboardWasOpen = keyboardOpened.value;
+
     const cursorPosition = this.view.state.selection.main.head;
     const changes = this.embeddedWidget.viewUpdater?.(this.orgNode, newVal) ?? {
       from,
@@ -44,7 +50,18 @@ export class BaseOrgWidget extends WidgetType {
       selection: { anchor: mappedCursor },
     });
 
-    this.view.focus();
+    mobileOnly(() => {
+      if (keyboardWasOpen) {
+        this.view.focus();
+        return;
+      }
+      (document.activeElement as HTMLElement)?.blur();
+    })();
+
+    desktopOnly(() => {
+      if (!hadFocus) return;
+      this.view.focus();
+    })();
   }
 
   public override ignoreEvent(): boolean {
