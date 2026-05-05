@@ -238,6 +238,11 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const getReadonly = (): boolean => options.readonlyGetter?.() ?? false;
 
+  const createReadonlyExtensions = (readonly: boolean): Extension[] => [
+    EditorState.readOnly.of(readonly),
+    ...(readonly ? [] : [highlightActiveLine()]),
+  ];
+
   const createState = (content: string): EditorState => {
     const readonly = getReadonly();
     const widgetExtensions = editorConfig.value.showSpecialSymbols
@@ -248,11 +253,10 @@ export const useEditorState = (options: UseEditorStateOptions) => {
       doc: content,
       extensions: [
         ...createBaseExtensions(options.editorViewGetter),
-        highlightActiveLine(),
         createUpdateListener(options.onContentUpdate),
         createCursorTracker(),
         createFocusHandler(),
-        compartments.readonly.of(EditorState.readOnly.of(readonly)),
+        compartments.readonly.of(createReadonlyExtensions(readonly)),
         compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),
         compartments.editorExtensions.of(buildEditorExtensions(readonly)),
         compartments.scrollMargins.of(
@@ -268,7 +272,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const reconfigureReadonly = (view: EditorView, value: boolean): void => {
     view.dispatch({
-      effects: compartments.readonly.reconfigure(EditorState.readOnly.of(value)),
+      effects: compartments.readonly.reconfigure(createReadonlyExtensions(value)),
     });
   };
 
