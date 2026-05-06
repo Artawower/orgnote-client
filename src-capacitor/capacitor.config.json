@@ -9,7 +9,7 @@
   "server": {
     "androidScheme": "https",
     "iosScheme": "capacitor",
-    "url": "https://192.168.5.29:3002",
+    "url": "https://192.168.10.10:3001",
     "cleartext": true
   },
   "plugins": {

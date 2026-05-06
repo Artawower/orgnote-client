@@ -228,10 +228,13 @@ const { t } = useI18n({
 </script>
 
 <style lang="scss" scoped>
-.actions,
 .file-manager-header,
 .file-list {
   padding: 0 var(--padding-lg);
+}
+
+.actions {
+  padding: var(--sidebar-padding);
 }
 
 .file-list {

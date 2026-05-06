@@ -13,7 +13,7 @@
     </template>
 
     <app-flex column class="content" start align-stretch>
-      <safe-area class="content-body">
+      <safe-area :disable="platform.is.electron" class="content-body">
         <router-view class="content-view" />
         <editor-actions-toolbar />
       </safe-area>
@@ -50,6 +50,7 @@ import { DefaultCommands } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { useCommandsStore } from 'src/stores/command';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
+import { platform } from 'src/utils/platform-detection';
 
 const commandsStore = useCommandsStore();
 

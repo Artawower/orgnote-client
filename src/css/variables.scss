@@ -520,4 +520,5 @@ body.keyboard-opened {
 body.electron.platform-mac {
   --title-bar-height: 32px;
   --full-height: calc(var(--screen-height, 100vh) - var(--title-bar-height));
+  --sidebar-mini-width: 66px;
 }

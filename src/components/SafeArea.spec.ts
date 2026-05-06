@@ -52,4 +52,18 @@ describe('SafeArea', () => {
 
     expect(wrapper.classes()).toContain('safe-area');
   });
+
+  test('adds disable class when disable prop is true', () => {
+    const wrapper = mount(SafeArea, {
+      props: { disable: true },
+    });
+
+    expect(wrapper.classes()).toContain('disable');
+  });
+
+  test('does not add disable class by default', () => {
+    const wrapper = mount(SafeArea);
+
+    expect(wrapper.classes()).not.toContain('disable');
+  });
 });

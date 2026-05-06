@@ -13,16 +13,18 @@
       @resize-start="resize.handleResizeStart"
     />
 
-    <app-flex v-if="mini" class="mini-section" column between align-center>
-      <div class="mini-top">
-        <slot name="mini-top" />
-      </div>
-      <div class="mini-footer">
-        <slot name="mini-footer" />
-      </div>
-    </app-flex>
+    <safe-area v-if="mini" :disable="!platform.is.electron">
+      <app-flex class="mini-section" column between align-center>
+        <div class="mini-top">
+          <slot name="mini-top" />
+        </div>
+        <div class="mini-footer">
+          <slot name="mini-footer" />
+        </div>
+      </app-flex>
+    </safe-area>
 
-    <safe-area top class="main-section">
+    <safe-area :disable="platform.is.electron" top class="main-section">
       <div v-if="$slots.header" class="header">
         <slot name="header" />
       </div>
@@ -43,6 +45,7 @@ import AppFlex from './AppFlex.vue';
 import ResizeSplitter from './ResizeSplitter.vue';
 import { useValueResize } from 'src/composables/use-value-resize';
 import { SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH } from 'src/constants/sidebar';
+import { platform } from 'src/utils/platform-detection';
 
 const props = withDefaults(
   defineProps<{
