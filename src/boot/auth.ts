@@ -21,7 +21,10 @@ export default defineBoot(async () => {
 
   await bootTimer.measure('auth-verify-user', () => authStore.verifyUser());
 
-  if (shouldSyncPersistedActiveUser(activeBeforeVerify, authStore.user?.active)) {
+  if (
+    shouldSyncPersistedActiveUser(activeBeforeVerify, authStore.user?.active) &&
+    navigator.onLine
+  ) {
     await runPostActivationSync();
   }
 });

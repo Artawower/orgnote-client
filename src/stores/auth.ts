@@ -53,7 +53,10 @@ export const useAuthStore = defineStore<'auth', AuthStore>(
       return `${baseUrl}/${RoutePaths.AUTH_LOGIN}/${authProvider}/login?state=${strState}`;
     };
 
-    const fetchAuthRedirectUrl = async (authProvider: string, state: AuthState): Promise<string> => {
+    const fetchAuthRedirectUrl = async (
+      authProvider: string,
+      state: AuthState,
+    ): Promise<string> => {
       const response = await sdk.auth.authProviderLoginGet(authProvider, encodeAuthState(state));
       const redirectUrl = response.data.data?.redirectUrl;
       if (!redirectUrl) {

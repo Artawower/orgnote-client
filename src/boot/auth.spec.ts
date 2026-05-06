@@ -51,6 +51,7 @@ describe('auth boot', () => {
     activeAfterVerify = undefined;
     hasVerifiedUser = false;
 
+    vi.stubGlobal('navigator', { onLine: true });
     verifyUserMock.mockImplementation(async () => {
       hasVerifiedUser = true;
     });
@@ -79,6 +80,18 @@ describe('auth boot', () => {
   test('does not start fallback sync when user becomes active during verify', async () => {
     activeBeforeVerify = undefined;
     activeAfterVerify = 'pro';
+
+    const { default: bootAuth } = await import('./auth');
+
+    await bootAuth({} as never);
+
+    expect(runPostActivationSyncMock).not.toHaveBeenCalled();
+  });
+
+  test('skips post-activation sync when offline', async () => {
+    activeBeforeVerify = 'pro';
+    activeAfterVerify = 'pro';
+    vi.stubGlobal('navigator', { onLine: false });
 
     const { default: bootAuth } = await import('./auth');
 

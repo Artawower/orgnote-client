@@ -10,6 +10,7 @@ export const createAxiosInstance = (
 ): AxiosInstance => {
   const instance = axios.create({
     baseURL: process.env.API_URL || '/v1',
+    timeout: 30_000,
   });
 
   instance.interceptors.request.use((config) => {
