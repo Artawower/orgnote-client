@@ -2,7 +2,6 @@ import { to } from 'orgnote-api/utils';
 import { hasWindow } from 'src/utils/platform-specific';
 
 const wsPathLocal = '/api/ws/events';
-const wsPathRemote = '/ws/events';
 
 export const getApiBaseUrl = (configured?: string): string =>
   configured?.trim() || import.meta.env.VITE_API_URL || '/v1';
@@ -32,7 +31,8 @@ const deriveWsFromApiUrl = (apiUrl?: string): string => {
 
   const url = parsed.value;
   url.protocol = toWsProtocol(url.protocol);
-  url.pathname = getApiBaseUrl(apiUrl) === '/v1' ? wsPathLocal : wsPathRemote;
+  const isLocalDevApi = getApiBaseUrl(apiUrl) === '/v1';
+  url.pathname = isLocalDevApi ? wsPathLocal : url.pathname.replace(/\/v\d+\/?$/, '/ws/events');
 
   return url.toString();
 };

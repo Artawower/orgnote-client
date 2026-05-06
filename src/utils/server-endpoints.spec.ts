@@ -30,12 +30,18 @@ test('server-endpoints getWebSocketUrl derives ws from configured api url', () =
   expect(wsUrl).toBe('wss://sync.example.com/ws/events');
 });
 
+test('server-endpoints getWebSocketUrl preserves api base path prefix when deriving ws url', () => {
+  const wsUrl = getWebSocketUrl({
+    configuredApiUrl: 'https://sync.example.com/api/v1',
+  });
+
+  expect(wsUrl).toBe('wss://sync.example.com/api/ws/events');
+});
+
 test('server-endpoints getWebSocketUrl derives local ws url for /v1 api path', () => {
   const wsUrl = getWebSocketUrl({
     configuredApiUrl: '/v1',
   });
 
-  expect(wsUrl).toBe(
-    `${getExpectedWsProtocol()}//${window.location.host}/api/ws/events`,
-  );
+  expect(wsUrl).toBe(`${getExpectedWsProtocol()}//${window.location.host}/api/ws/events`);
 });

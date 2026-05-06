@@ -29,8 +29,6 @@ let stopAuthCallbackServer: (() => void) | undefined;
 
 const PROTOCOL_SCHEME = 'app';
 
-// Must be called before app.whenReady() — marks app:// as a secure context
-// so WebCrypto (window.crypto.subtle) is available in production builds.
 protocol.registerSchemesAsPrivileged([
   {
     scheme: PROTOCOL_SCHEME,

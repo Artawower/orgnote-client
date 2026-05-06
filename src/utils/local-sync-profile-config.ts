@@ -22,7 +22,9 @@ const buildProfileFromApi = (api: OrgNoteApi): SyncProfile => {
   return {
     name: defaultProfileName,
     clientAddress: getClientAddress(),
-    wsAddress: getWebSocketUrl(),
+    wsAddress: getWebSocketUrl({
+      configuredWsUrl: configStore.config.network.wsUrl,
+    }),
     remoteAddress: getApiPublicUrl(configStore.config.network.apiUrl),
     token: firstToken,
     rootFolder: '',
