@@ -278,7 +278,7 @@ export default defineConfig((ctx) => {
       // specify the debugging port to use for the Electron app when running in development mode
       inspectPort: 5858,
 
-      bundler: 'packager', // 'packager' or 'builder'
+      bundler: 'builder',
 
       packager: {
         // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
@@ -295,14 +295,21 @@ export default defineConfig((ctx) => {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'orgnote-client',
+        appId: 'com.orgnote.client',
+        publish: null,
+        mac: {
+          target: [{ target: 'dir', arch: ['arm64'] }],
+          identity: '-',
+          hardenedRuntime: false,
+          gatekeeperAssess: false,
+        },
         extraResources: [
           {
             from: 'src-electron/resources',
             to: 'resources',
           },
         ],
-      },
+      } as any,
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex

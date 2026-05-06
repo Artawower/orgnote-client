@@ -52,16 +52,35 @@ jobs:
       - name: Build Electron
         run: bunx env-cmd -f ./.env.build quasar build -m electron
 
-      - name: Archive Electron artifact
+      - name: Sign and create DMG
         run: |
+          APP=$(find ./dist/electron -name "*.app" -maxdepth 4 | head -1)
+          if [ -z "$APP" ]; then echo "ERROR: .app bundle not found" && exit 1; fi
+
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --deep --strict "$APP"
+          echo "Signed: $APP"
+
+          STAGING=$(mktemp -d)
+          ditto "$APP" "$STAGING/orgnote.app"
+          xattr -rc "$STAGING"
+          ln -s /Applications "$STAGING/Applications"
+
           mkdir -p ./dist/build
-          cd ./dist/electron
-          zip -r ../build/orgnote-electron-macos-${{ inputs.version }}.zip .
-          cd -
+          hdiutil create \
+            -volname "OrgNote" \
+            -srcfolder "$STAGING" \
+            -nospotlight \
+            -ov \
+            -format UDZO \
+            "./dist/build/orgnote-macos-arm64-${{ inputs.version }}.dmg"
+
+          rm -rf "$STAGING"
+          echo "DMG created: orgnote-macos-arm64-${{ inputs.version }}.dmg"
 
       - name: Upload Electron artifact
         uses: actions/upload-artifact@v4
         with:
-          name: orgnote-electron-macos-${{ inputs.version }}.zip
-          path: ./dist/build/orgnote-electron-macos-${{ inputs.version }}.zip
+          name: orgnote-macos-arm64-${{ inputs.version }}.dmg
+          path: ./dist/build/orgnote-macos-arm64-${{ inputs.version }}.dmg
           retention-days: ${{ inputs.prerelease && 7 || 30 }}

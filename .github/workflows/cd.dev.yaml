@@ -97,7 +97,7 @@ jobs:
       - name: Download Electron artifact
         uses: actions/download-artifact@v4
         with:
-          name: orgnote-electron-macos-${{ needs.check-version-changed.outputs.version }}-dev.zip
+          name: orgnote-macos-arm64-${{ needs.check-version-changed.outputs.version }}-dev.dmg
           path: ./release-assets
 
       - name: Generate release body
@@ -168,12 +168,12 @@ jobs:
         with:
           tag_name: v${{ needs.check-version-changed.outputs.version }}-dev
           target_commitish: ${{ github.sha }}
-          name: "Dev Build v${{ needs.check-version-changed.outputs.version }}"
+          name: 'Dev Build v${{ needs.check-version-changed.outputs.version }}'
           body_path: release-body.md
           prerelease: true
           files: |
             ./release-assets/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
-            ./release-assets/orgnote-electron-macos-${{ needs.check-version-changed.outputs.version }}-dev.zip
+            ./release-assets/orgnote-macos-arm64-${{ needs.check-version-changed.outputs.version }}-dev.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
