@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron';
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, protocol } from 'electron';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { ORGNOTE_PROTOCOL } from '../src/constants/orgnote-scheme';
@@ -28,6 +28,20 @@ let mainWindow: BrowserWindow | undefined;
 let stopAuthCallbackServer: (() => void) | undefined;
 
 const PROTOCOL_SCHEME = 'app';
+
+// Must be called before app.whenReady() — marks app:// as a secure context
+// so WebCrypto (window.crypto.subtle) is available in production builds.
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: PROTOCOL_SCHEME,
+    privileges: {
+      secure: true,
+      standard: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+    },
+  },
+]);
 
 const sendNavigateEvent = (route: string): void => {
   mainWindow?.webContents.send('navigate', route);
