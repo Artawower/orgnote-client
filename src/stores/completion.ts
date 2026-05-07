@@ -146,11 +146,9 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       const { config } = useConfigStore();
       limit = config.completion.defaultCompletionLimit;
 
-      const res = activeCompletion.value.itemsGetter(
-        activeCompletion.value.searchQuery,
-        limit,
-        offset,
-      );
+      const query = activeCompletion.value.searchQuery;
+
+      const res = activeCompletion.value.itemsGetter(query, limit, offset);
       if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {
         (res as Promise<CompletionSearchResult>).then((r) => {
           setupCandidates(r, offset);

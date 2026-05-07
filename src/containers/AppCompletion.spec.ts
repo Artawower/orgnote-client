@@ -20,8 +20,8 @@ vi.mock('src/boot/api', () => ({
         }),
       }),
       useFileSearch: () => ({
-        isIndexing: ref(true),
-        isSearching: ref(false),
+        isIndexing: ref(false),
+        isSearching: ref(true),
       }),
     },
   },
@@ -36,7 +36,7 @@ vi.mock('src/constants/completion-item', () => ({
 }));
 
 describe('AppCompletion', () => {
-  test('shows loading indicator instead of NOT_FOUND when isIndexing', async () => {
+  test('shows loading indicator instead of NOT_FOUND when isSearching', async () => {
     const { default: AppCompletion } = await import('./AppCompletion.vue');
     const wrapper = mount(AppCompletion, {
       props: {},

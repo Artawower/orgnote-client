@@ -135,7 +135,11 @@ test('useNoteSearchCompletion does not provide candidate description when detail
 
   await useNoteSearchCompletion(api);
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.('', 20, 0)) as CompletionSearchResult;
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    20,
+    0,
+  )) as CompletionSearchResult;
   expect(result.result[0]!.description).toBeUndefined();
 });
 
@@ -381,7 +385,7 @@ test('search returns total from lastSearchResult', async () => {
   expect(result.total).toBeGreaterThan(0);
 });
 
-test('empty query returns total from count', async () => {
+test('empty query returns real total from count for virtual scroll', async () => {
   const api = createMockApi();
 
   for (let i = 0; i < 50; i++) {
@@ -396,7 +400,9 @@ test('empty query returns total from count', async () => {
     0,
   )) as CompletionSearchResult;
 
+  // total = real count so virtual scroll knows scrollbar size for 50 files
   expect(result.total).toBe(50);
+  expect(result.result).toHaveLength(10);
 });
 
 test('whitespace-only query returns recent files', async () => {
@@ -474,27 +480,67 @@ test('candidate description combines description and tags', async () => {
   expect(result.result[0]!.description).toContain('#tag1');
 });
 
-test('getRecentFiles fetches items and total in parallel', async () => {
-  const callOrder: string[] = [];
+test('getRecentFiles fetches items and count in parallel', async () => {
   const api = createMockApi();
+
+  const getAllMock = vi.fn(
+    async () =>
+      [
+        { id: '1', filePath: ['a.org'], title: 'A' },
+        { id: '2', filePath: ['b.org'], title: 'B' },
+      ] as FileMeta[],
+  );
+  const countMock = vi.fn(async () => 99);
+
+  (api.core as Record<string, unknown>).useFileMeta = vi.fn(() => ({
+    getAll: getAllMock,
+    count: countMock,
+  }));
+
+  await useNoteSearchCompletion(api);
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    10,
+    0,
+  )) as CompletionSearchResult;
+
+  expect(getAllMock).toHaveBeenCalled();
+  expect(countMock).toHaveBeenCalled();
+  // total = real count from count(), not from items.length
+  expect(result.total).toBe(99);
+  expect(result.result).toHaveLength(2);
+});
+
+test('getRecentFiles calls count in parallel with getAll', async () => {
+  const api = createMockApi();
+  const callOrder: string[] = [];
 
   const getAllMock = vi.fn(async () => {
     callOrder.push('getAll-start');
     await new Promise((r) => setTimeout(r, 10));
     callOrder.push('getAll-end');
-    return [] as FileMeta[];
+    return [{ id: '1', filePath: ['a.org'], title: 'A' }] as FileMeta[];
   });
   const countMock = vi.fn(async () => {
     callOrder.push('count-start');
-    return 0;
+    return 42;
   });
 
-  api.core.useFileMeta = vi.fn(() => ({ getAll: getAllMock, count: countMock }) as never);
+  (api.core as Record<string, unknown>).useFileMeta = vi.fn(() => ({
+    getAll: getAllMock,
+    count: countMock,
+  }));
 
   await useNoteSearchCompletion(api);
-  await capturedCompletionConfig?.itemsGetter?.('', 10, 0);
+  const result = (await capturedCompletionConfig?.itemsGetter?.(
+    '',
+    10,
+    0,
+  )) as CompletionSearchResult;
 
-  expect(getAllMock).toHaveBeenCalled();
   expect(countMock).toHaveBeenCalled();
+  // count started before getAll finished → parallel execution
   expect(callOrder.indexOf('count-start')).toBeLessThan(callOrder.indexOf('getAll-end'));
+  // total comes from count()
+  expect(result.total).toBe(42);
 });

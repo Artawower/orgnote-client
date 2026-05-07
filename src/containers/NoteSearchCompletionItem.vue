@@ -93,17 +93,4 @@ const secondaryLine = computed(() => {
   min-width: 0;
   color: inherit;
 }
-
-.item-path,
-.item-separator {
-  color: var(--fg-muted);
-}
-
-.item-path {
-  min-width: 0;
-}
-
-.item-separator {
-  padding: 0 var(--padding-xs);
-}
 </style>

@@ -16,7 +16,6 @@
           :item="item as CompletionCandidate"
           :index="index"
           :selected="index === activeCompletion?.selectedCandidateIndex"
-          rounded
           @select="$emit('select')"
         />
       </template>
@@ -47,9 +46,7 @@ const pendingRanges = new Set<string>();
 
 const buildRangeKey = (from: number, size: number): string => `${from}-${size}`;
 
-const resetPendingRanges = (): void => {
-  pendingRanges.clear();
-};
+const resetPendingRanges = (): void => pendingRanges.clear();
 
 watch(
   () => [activeCompletion.value, activeCompletion.value?.searchQuery],
@@ -77,7 +74,6 @@ const clearRangePending = (from: number, size: number): void => {
 
 const getPagedResult = (from: number, size: number) => {
   const fakeRows = Object.freeze(new Array(size).fill(null));
-
   if (isRangeLoaded(from, size)) {
     clearRangePending(from, size);
     return fakeRows;
@@ -85,11 +81,12 @@ const getPagedResult = (from: number, size: number) => {
   if (isRangePending(from, size)) return fakeRows;
   markRangePending(from, size);
   completion.search(size, from);
-
   return fakeRows;
 };
 
-const itemHeight = computed(() => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETION_ITEM_HEIGHT);
+const itemHeight = computed(
+  () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETION_ITEM_HEIGHT,
+);
 
 const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() => {
   const candidates = activeCompletion.value?.candidates;
@@ -98,14 +95,13 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
   }
 
   return candidates.reduce<[GroupedCompletionCandidate[], string[]]>(
-    (acc: [GroupedCompletionCandidate[], string[]], item: CompletionCandidate, index: number) => {
+    (acc, item, index) => {
       const groupName = toValue(item.group) ?? '';
       const groupChanged = acc[1][acc[1].length - 1] !== groupName;
       if (groupChanged) {
         acc[0].push({ groupTitle: groupName });
         acc[1].push(groupName);
       }
-
       acc[0].push({ ...item, index });
       return acc;
     },
@@ -122,4 +118,5 @@ const total = computed(() => {
 const candidatesAvailable = computed(() => {
   const type = activeCompletion.value?.type;
   return type ? ['choice', 'input-choice'].includes(type) : false;
-});</script>
+});
+</script>

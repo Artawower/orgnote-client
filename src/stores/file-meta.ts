@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia';
 import type { FileMeta, FileMetaStore } from 'orgnote-api';
+import { isPresent } from 'orgnote-api/utils';
 import { repositories } from 'src/boot/repositories';
+
+let countCache: number | null = null;
+
+export const invalidateCountCache = (): void => {
+  countCache = null;
+};
 
 export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-meta', () => {
   const getById = async (id: string): Promise<FileMeta | undefined> => {
@@ -24,7 +31,10 @@ export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-me
   };
 
   const count = async (tags?: string[]): Promise<number> => {
-    return repositories.fileRepository.count(tags);
+    if (!tags && isPresent(countCache)) return countCache;
+    const result = await repositories.fileRepository.count(tags);
+    if (!tags) countCache = result;
+    return result;
   };
 
   const getTagsStats = async (): Promise<{ tag: string; count: number }[]> => {
@@ -32,10 +42,12 @@ export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-me
   };
 
   const save = async (meta: FileMeta): Promise<void> => {
+    invalidateCountCache();
     await repositories.fileRepository.save(meta);
   };
 
   const saveBulk = async (metas: FileMeta[]): Promise<void> => {
+    invalidateCountCache();
     await repositories.fileRepository.saveBulk(metas);
   };
 
@@ -48,12 +60,14 @@ export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-me
   };
 
   const deleteFile = async (target: { id: string } | { path: string[] }): Promise<void> => {
+    invalidateCountCache();
     const id = await resolveFileId(target);
     if (!id) return;
     await repositories.fileRepository.delete(id);
   };
 
   const clear = async (): Promise<void> => {
+    invalidateCountCache();
     await repositories.fileRepository.clear();
   };
 

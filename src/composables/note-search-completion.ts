@@ -60,10 +60,7 @@ export const createFileItemsGetter = (
       fileMeta.count(),
     ]);
 
-    return {
-      total,
-      result: files.map(mapFile),
-    };
+    return { total, result: files.map(mapFile) };
   };
 
   return async (

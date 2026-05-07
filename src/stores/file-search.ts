@@ -13,6 +13,7 @@ import { isOrgFile, to } from 'orgnote-api';
 import { runWithConcurrency, uint8ArrayToText } from 'orgnote-api/utils';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
+import { invalidateCountCache } from 'src/stores/file-meta';
 import { useQueueStore } from 'src/stores/queue';
 import { useFileSystemStore } from 'src/stores/file-system';
 import { api } from 'src/boot/api';
@@ -194,6 +195,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     if (!existingByPath || existingByPath.id === meta.id) return;
 
     removeFromIndex(existingByPath.id);
+    invalidateCountCache();
     await repositories.fileRepository.delete(existingByPath.id);
   };
 
@@ -206,6 +208,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
 
     await removeStaleRecord(meta);
 
+    invalidateCountCache();
     await repositories.fileRepository.save(meta);
     addToIndex(meta, content);
     await updateIndexMeta(meta.id, filePath);
@@ -228,6 +231,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     if (!id) return;
 
     removeFromIndex(id);
+    invalidateCountCache();
     await repositories.fileRepository.delete(id);
   };
 

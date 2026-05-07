@@ -18,8 +18,12 @@
     </template>
     <template v-if="!isInputOnly" #body>
       <div class="body">
+        <completion-result
+          v-if="activeCompletion?.candidates?.length"
+          @select="handleResultSelect"
+        />
         <app-flex
-          v-if="isLoading"
+          v-else-if="isSearching"
           data-testid="completion-loading"
           class="not-found"
           row
@@ -29,10 +33,6 @@
         >
           <q-spinner-dots size="2em" />
         </app-flex>
-        <completion-result
-          v-else-if="activeCompletion?.candidates?.length"
-          @select="handleResultSelect"
-        />
         <app-flex
           v-else
           class="not-found"
@@ -76,8 +76,7 @@ const { config } = storeToRefs(api.ui.useModal());
 const completionStore = api.core.useCompletion();
 const { activeCompletion } = storeToRefs(completionStore);
 
-const { isIndexing, isSearching } = storeToRefs(api.core.useFileSearch());
-const isLoading = computed(() => isIndexing.value || isSearching.value);
+const { isSearching } = storeToRefs(api.core.useFileSearch());
 
 const completionInputRef = ref<InstanceType<typeof CompletionInput> | null>(null);
 const handleResultSelect = () => completionInputRef.value?.focusInput?.();

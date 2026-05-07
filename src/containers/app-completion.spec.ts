@@ -54,7 +54,6 @@ vi.mock('src/boot/api', () => ({
       ),
       useFileSearch: vi.fn(() =>
         reactive({
-          isIndexing: ref(false),
           isSearching: ref(false),
         }),
       ),
