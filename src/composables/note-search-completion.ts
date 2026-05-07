@@ -55,8 +55,10 @@ export const createFileItemsGetter = (
     offset?: number,
   ): Promise<CompletionSearchResult<FileMeta>> => {
     const fileMeta = api.core.useFileMeta();
-    const files = await fileMeta.getAll({ limit, offset });
-    const total = await fileMeta.count();
+    const [files, total] = await Promise.all([
+      fileMeta.getAll({ limit, offset }),
+      fileMeta.count(),
+    ]);
 
     return {
       total,

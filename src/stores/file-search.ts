@@ -22,7 +22,7 @@ import { INDEX_QUEUE_ID } from 'src/constants/queue-ids';
 import { logger } from 'src/boot/logger';
 
 const FILE_INDEX_KEY = 'file-index';
-const INDEX_VERSION = 3;
+const INDEX_VERSION = 4;
 const SAVE_INDEX_EVERY_N = 10;
 const INDEX_SCAN_CONCURRENCY = 4;
 
@@ -428,26 +428,18 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
 
     const files: Record<string, FileIndexMeta> = {};
     indexMetaMap.forEach((meta, id) => {
-      if (indexedIds.has(id)) {
-        files[id] = meta;
-      }
+      if (indexedIds.has(id)) files[id] = meta;
     });
 
-    const data: StoredIndex = {
-      version: INDEX_VERSION,
-      files,
-    };
+    const indexData: Record<string, unknown> = {};
+    index.export((key: string | number, data: unknown) => {
+      if (data !== undefined) indexData[String(key)] = data;
+    });
 
-    await keyValueRepo.set(FILE_INDEX_KEY, JSON.stringify(data));
-  };
-
-  const loadFileIntoIndex = async (file: FileMeta, meta: FileIndexMeta): Promise<void> => {
-    const filePath = '/' + file.filePath.join('/');
-    const readResult = await to(() => readFileContent(filePath))();
-    if (readResult.isErr()) return;
-
-    addToIndex(file, readResult.value);
-    indexMetaMap.set(file.id, meta);
+    await keyValueRepo.set(
+      FILE_INDEX_KEY,
+      JSON.stringify({ version: INDEX_VERSION, files, indexData }),
+    );
   };
 
   const loadIndex = async (): Promise<boolean> => {
@@ -461,18 +453,15 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     if (result.isErr()) return false;
 
     const parsed = result.value as StoredIndex;
-    if (parsed.version !== INDEX_VERSION) return false;
+    if (parsed.version !== INDEX_VERSION || !parsed.indexData) return false;
+    if (Object.keys(parsed.indexData).length === 0) return false;
 
-    const entries = Object.entries(parsed.files);
-    const fileIds = entries.map(([id]) => id);
-    const files = await repositories.fileRepository.getByIds(fileIds);
+    Object.entries(parsed.indexData).forEach(([key, data]) => index.import(key, data as string));
 
-    for (const file of files) {
-      const meta = parsed.files[file.id];
-      if (meta) {
-        await loadFileIntoIndex(file, meta);
-      }
-    }
+    Object.entries(parsed.files).forEach(([id, meta]) => {
+      indexMetaMap.set(id, meta);
+      indexedIds.add(id);
+    });
 
     return indexedIds.size > 0;
   };

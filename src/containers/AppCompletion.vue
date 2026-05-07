@@ -18,8 +18,19 @@
     </template>
     <template v-if="!isInputOnly" #body>
       <div class="body">
+        <app-flex
+          v-if="isLoading"
+          data-testid="completion-loading"
+          class="not-found"
+          row
+          center
+          align-center
+          :style="{ height: completionItemHeight + 'px' }"
+        >
+          <q-spinner-dots size="2em" />
+        </app-flex>
         <completion-result
-          v-if="activeCompletion?.candidates?.length"
+          v-else-if="activeCompletion?.candidates?.length"
           @select="handleResultSelect"
         />
         <app-flex
@@ -64,6 +75,9 @@ defineProps<
 const { config } = storeToRefs(api.ui.useModal());
 const completionStore = api.core.useCompletion();
 const { activeCompletion } = storeToRefs(completionStore);
+
+const { isIndexing, isSearching } = storeToRefs(api.core.useFileSearch());
+const isLoading = computed(() => isIndexing.value || isSearching.value);
 
 const completionInputRef = ref<InstanceType<typeof CompletionInput> | null>(null);
 const handleResultSelect = () => completionInputRef.value?.focusInput?.();
@@ -144,8 +158,9 @@ const { t } = useI18n({
       left: 0;
       right: 0;
       top: calc(
-        var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px)
-        - var(--completion-header-height)
+        var(--initial-viewport-height, 100vh) - var(--keyboard-height, 0px) - var(
+            --completion-header-height
+          )
       );
       z-index: 2;
       height: auto;
@@ -184,7 +199,6 @@ const { t } = useI18n({
     border-top: var(--glass-border-top);
     border-radius: var(--completion-header-border-radius);
   }
-
 }
 
 @include desktop {

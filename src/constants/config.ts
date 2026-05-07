@@ -36,7 +36,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
   },
   completion: {
     showGroup: false,
-    defaultCompletionLimit: 500,
+    defaultCompletionLimit: 20,
     fuseThreshold: DEFAULT_FUST_THRESHOLD,
     showDetails: true,
   },

@@ -473,3 +473,28 @@ test('candidate description combines description and tags', async () => {
   expect(result.result[0]!.description).toContain('A description');
   expect(result.result[0]!.description).toContain('#tag1');
 });
+
+test('getRecentFiles fetches items and total in parallel', async () => {
+  const callOrder: string[] = [];
+  const api = createMockApi();
+
+  const getAllMock = vi.fn(async () => {
+    callOrder.push('getAll-start');
+    await new Promise((r) => setTimeout(r, 10));
+    callOrder.push('getAll-end');
+    return [] as FileMeta[];
+  });
+  const countMock = vi.fn(async () => {
+    callOrder.push('count-start');
+    return 0;
+  });
+
+  api.core.useFileMeta = vi.fn(() => ({ getAll: getAllMock, count: countMock }) as never);
+
+  await useNoteSearchCompletion(api);
+  await capturedCompletionConfig?.itemsGetter?.('', 10, 0);
+
+  expect(getAllMock).toHaveBeenCalled();
+  expect(countMock).toHaveBeenCalled();
+  expect(callOrder.indexOf('count-start')).toBeLessThan(callOrder.indexOf('getAll-end'));
+});

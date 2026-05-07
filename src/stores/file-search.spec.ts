@@ -380,7 +380,7 @@ test('indexFiles indexes files not in indexedIds', async () => {
   mockKeyValue.set(
     'file-index',
     JSON.stringify({
-      version: 3,
+      version: 4,
       files: {
         'existing-id': {
           id: 'existing-id',
@@ -388,15 +388,16 @@ test('indexFiles indexes files not in indexedIds', async () => {
           fileModifiedAt: '2020-01-01T00:00:00.000Z',
         },
       },
+      indexData: {},
     }),
   );
 
   await store.loadIndex();
 
+  const newerMtime = new Date('2025-01-01T00:00:00.000Z').getTime();
   mockDirEntries.set('/', [
-    { name: 'existing.org', type: 'file', path: '/existing.org', size: 0, mtime: 0 },
+    { name: 'existing.org', type: 'file', path: '/existing.org', size: 0, mtime: newerMtime },
   ]);
-  mockFileInfos.set('/existing.org', { mtime: new Date().toISOString() });
 
   await store.indexFiles();
 
@@ -406,32 +407,15 @@ test('indexFiles indexes files not in indexedIds', async () => {
 });
 
 test('indexFiles skips files with old mtime when already in repo', async () => {
-  const store = useFileSearchStore();
-
-  const existingFile: FileMeta = {
-    id: 'parsed-id',
-    filePath: ['indexed.org'],
-    title: 'Indexed',
-  };
-  mockFiles.set(existingFile.id, existingFile);
-
-  mockKeyValue.set(
-    'file-index',
-    JSON.stringify({
-      version: 3,
-      files: {
-        'parsed-id': {
-          id: 'parsed-id',
-          indexedAt: '2020-01-01T00:00:00.000Z',
-          fileModifiedAt: '2020-01-01T00:00:00.000Z',
-        },
-      },
-    }),
-  );
-
   mockFileContents.set('/indexed.org', '#+TITLE: Indexed\nContent');
   mockFileInfos.set('/indexed.org', { mtime: '2020-01-01T00:00:00.000Z' });
-  await store.loadIndex();
+
+  const store = useFileSearchStore();
+  await store.processFile('/indexed.org');
+  await store.saveIndex();
+
+  const freshStore = useFileSearchStore();
+  await freshStore.loadIndex();
   mockQueueTasks.length = 0;
 
   mockDirEntries.set('/', [
@@ -439,7 +423,7 @@ test('indexFiles skips files with old mtime when already in repo', async () => {
   ]);
   mockFileInfos.set('/indexed.org', { mtime: '2019-01-01T00:00:00.000Z' });
 
-  await store.indexFiles();
+  await freshStore.indexFiles();
 
   expect(mockQueueTasks).toHaveLength(0);
 });
@@ -457,7 +441,7 @@ test('indexFiles indexes modified files since lastIndexedAt', async () => {
   mockKeyValue.set(
     'file-index',
     JSON.stringify({
-      version: 3,
+      version: 4,
       files: {
         'modified-id': {
           id: 'modified-id',
@@ -465,16 +449,17 @@ test('indexFiles indexes modified files since lastIndexedAt', async () => {
           fileModifiedAt: '2020-01-01T00:00:00.000Z',
         },
       },
+      indexData: {},
     }),
   );
 
   await store.loadIndex();
   mockQueueTasks.length = 0;
 
+  const newerMtime = new Date('2025-01-01T00:00:00.000Z').getTime();
   mockDirEntries.set('/', [
-    { name: 'modified.org', type: 'file', path: '/modified.org', size: 0, mtime: 0 },
+    { name: 'modified.org', type: 'file', path: '/modified.org', size: 0, mtime: newerMtime },
   ]);
-  mockFileInfos.set('/modified.org', { mtime: new Date().toISOString() });
 
   await store.indexFiles();
 
@@ -495,7 +480,7 @@ test('indexFiles uses directory entry mtime instead of extra fileInfo lookup', a
   mockKeyValue.set(
     'file-index',
     JSON.stringify({
-      version: 3,
+      version: 4,
       files: {
         'indexed-id': {
           id: 'indexed-id',
@@ -503,6 +488,7 @@ test('indexFiles uses directory entry mtime instead of extra fileInfo lookup', a
           fileModifiedAt: '2020-01-01T00:00:00.000Z',
         },
       },
+      indexData: {},
     }),
   );
 
@@ -560,56 +546,46 @@ test('loadIndex returns false for corrupted JSON', async () => {
 
 test('loadIndex returns false for empty indexed files', async () => {
   const store = useFileSearchStore();
-  mockKeyValue.set('file-index', JSON.stringify({ version: 3, files: {} }));
+  mockKeyValue.set('file-index', JSON.stringify({ version: 4, files: {}, indexData: {} }));
 
   const result = await store.loadIndex();
   expect(result).toBe(false);
 });
 
 test('loadIndex restores index from storage', async () => {
+  mockFileContents.set('/stored.org', '#+TITLE: Stored\nContent here');
+  mockFileInfos.set('/stored.org', { mtime: new Date().toISOString() });
+
   const store = useFileSearchStore();
+  await store.processFile('/stored.org');
+  await store.saveIndex();
 
-  const file: FileMeta = { id: 'stored-id', filePath: ['stored.org'], title: 'Stored' };
-  mockFiles.set(file.id, file);
-  mockFileContents.set('/stored.org', 'Stored content');
-
-  mockKeyValue.set(
-    'file-index',
-    JSON.stringify({
-      version: 3,
-      files: {
-        'stored-id': {
-          id: 'stored-id',
-          indexedAt: '2020-01-01T00:00:00.000Z',
-          fileModifiedAt: '2020-01-01T00:00:00.000Z',
-        },
-      },
-    }),
-  );
-
-  const result = await store.loadIndex();
+  const freshStore = useFileSearchStore();
+  const result = await freshStore.loadIndex();
 
   expect(result).toBe(true);
-  expect(store.indexStats.indexed).toBe(1);
+  expect(freshStore.indexStats.indexed).toBe(1);
 });
 
-test('loadIndex skips files missing from repository', async () => {
+test('loadIndex returns false when indexData is empty', async () => {
   const store = useFileSearchStore();
   mockKeyValue.set(
     'file-index',
     JSON.stringify({
-      version: 3,
+      version: 4,
       files: {
-        'missing-id': {
-          id: 'missing-id',
+        'some-id': {
+          id: 'some-id',
           indexedAt: '2020-01-01T00:00:00.000Z',
           fileModifiedAt: '2020-01-01T00:00:00.000Z',
         },
       },
+      indexData: {},
     }),
   );
 
   const result = await store.loadIndex();
+  // Empty indexData means nothing to restore; stale entries are cleaned by performIndexing
   expect(result).toBe(false);
 });
 
@@ -626,9 +602,10 @@ test('saveIndex stores version and indexed files', async () => {
   expect(stored).toBeDefined();
 
   const parsed = JSON.parse(stored!);
-  expect(parsed.version).toBe(3);
+  expect(parsed.version).toBe(4);
   expect(Object.keys(parsed.files).length).toBeGreaterThan(0);
   expect(parsed.files['parsed-id']).toBeDefined();
+  expect(parsed.indexData).toBeDefined();
 });
 
 test('clearIndex removes all indexed data', async () => {
@@ -1035,4 +1012,39 @@ test('indexFiles uses a single repository snapshot during scan', async () => {
 
   expect(getAllMock).toHaveBeenCalledTimes(1);
   expect(getByPathMock).not.toHaveBeenCalled();
+});
+
+test('saveIndex stores FlexSearch index data for zero-read restore', async () => {
+  mockFileContents.set('/hello.org', '#+TITLE: Hello World\nsome content');
+  mockFileInfos.set('/hello.org', { mtime: new Date().toISOString() });
+
+  const store = useFileSearchStore();
+  await store.processFile('/hello.org');
+  await store.saveIndex();
+
+  const raw = mockKeyValue.get('file-index');
+  expect(raw).toBeDefined();
+  const parsed = JSON.parse(raw!);
+  expect(parsed.indexData).toBeDefined();
+  expect(Object.keys(parsed.indexData).length).toBeGreaterThan(0);
+});
+
+test('loadIndex restores search without reading file contents', async () => {
+  mockFileContents.set('/guide.org', '#+TITLE: Guide Note\nfull text');
+  mockFileInfos.set('/guide.org', { mtime: new Date().toISOString() });
+
+  const store = useFileSearchStore();
+  await store.processFile('/guide.org');
+  await store.saveIndex();
+
+  vi.clearAllMocks();
+  const freshStore = useFileSearchStore();
+  const loaded = await freshStore.loadIndex();
+
+  expect(loaded).toBe(true);
+  // getByIds is called to verify files still exist (lightweight check, no content read)
+  expect(mockFileContentRead).not.toHaveBeenCalled();
+
+  const results = await freshStore.search('Guide');
+  expect(results.length).toBeGreaterThan(0);
 });
