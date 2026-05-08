@@ -1,3 +1,5 @@
+import * as v from 'valibot';
+import { watch } from 'vue';
 import type { Extension, EditorExtension, EditorExtensionParams } from 'orgnote-api';
 import type { StateCommand, TransactionSpec } from '@codemirror/state';
 import { Prec } from '@codemirror/state';
@@ -6,6 +8,7 @@ import { keymap } from '@codemirror/view';
 import { insertNewlineAndIndent } from '@codemirror/commands';
 import { walkTree, type OrgNode } from 'org-mode-ast';
 import { enterRules } from './enter-rules';
+import { orgSmartEditingManifest } from './manifest';
 import {
   PAIRS,
   findPairByOpen,
@@ -18,7 +21,10 @@ import {
   type PairConfig,
 } from './pair-rules';
 
-const getEnterTransaction = (node: OrgNode | undefined, cursorPos: number): TransactionSpec | undefined => {
+const getEnterTransaction = (
+  node: OrgNode | undefined,
+  cursorPos: number,
+): TransactionSpec | undefined => {
   if (!node) return;
 
   for (const rule of enterRules) {
@@ -81,12 +87,10 @@ const shouldSkipPair = (pair: PairConfig, view: EditorView, selection: Selection
   return false;
 };
 
-const isInsideSpecialContext = (
-  orgNode: OrgNode | null,
-  pos: number,
-  pair: PairConfig,
-): boolean =>
-  isInsideBlock(orgNode, pos) || isInsideVerbatim(orgNode, pos) || isInsideMarkup(orgNode, pos, pair);
+const isInsideSpecialContext = (orgNode: OrgNode | null, pos: number, pair: PairConfig): boolean =>
+  isInsideBlock(orgNode, pos) ||
+  isInsideVerbatim(orgNode, pos) ||
+  isInsideMarkup(orgNode, pos, pair);
 
 const buildPairInsert = (pair: PairConfig, selectedText: string): string => {
   if (!selectedText) return `${pair.open}${pair.close}`;
@@ -147,31 +151,82 @@ const handleBackspace = (view: EditorView): boolean => {
   return true;
 };
 
-const createKeymap = (getOrgNode: () => OrgNode | null) => {
-  const pairHandlers = PAIRS.map((pair) => ({
-    key: pair.open,
-    run: createPairHandler(pair, getOrgNode),
-  }));
+const settingsSchema = v.object({
+  enableSmartEnter: v.boolean(),
+  enableAutoPair: v.boolean(),
+  enableBackspacePairDelete: v.boolean(),
+});
+
+type SmartEditingConfig = v.InferOutput<typeof settingsSchema>;
+
+const defaultSettings: SmartEditingConfig = {
+  enableSmartEnter: true,
+  enableAutoPair: true,
+  enableBackspacePairDelete: true,
+};
+
+const createKeymap = (getOrgNode: () => OrgNode | null, getConfig: () => SmartEditingConfig) => {
+  const enterCmd = createEnterCommand(getOrgNode);
+  const pairHandlers = PAIRS.map((pair) => {
+    const handler = createPairHandler(pair, getOrgNode);
+    return {
+      key: pair.open,
+      run: (view: EditorView): boolean => getConfig().enableAutoPair && handler(view),
+    };
+  });
 
   return [
-    { key: 'Enter', run: createEnterCommand(getOrgNode) },
-    { key: 'Backspace', run: handleBackspace },
+    {
+      key: 'Enter',
+      run: (...args: Parameters<typeof enterCmd>): boolean =>
+        getConfig().enableSmartEnter && enterCmd(...args),
+    },
+    {
+      key: 'Backspace',
+      run: (view: EditorView): boolean =>
+        getConfig().enableBackspacePairDelete && handleBackspace(view),
+    },
     ...pairHandlers,
   ];
 };
 
-const smartEditingExtension: EditorExtension = (params: EditorExtensionParams) =>
-  Prec.highest(keymap.of(createKeymap(params.orgNodeGetter)));
+const createSmartEditingEditorExtension =
+  (getConfig: () => SmartEditingConfig): EditorExtension =>
+  (params: EditorExtensionParams) =>
+    Prec.highest(keymap.of(createKeymap(params.orgNodeGetter, getConfig)));
+
+let mountedEditorExtension: EditorExtension | null = null;
+let activeConfig: SmartEditingConfig = { ...defaultSettings };
 
 export const orgSmartEditingExtension: Extension = {
+  settingsSchema,
+  defaultSettings,
+
   onMounted: async (api) => {
-    const { addExtensions } = api.core.useEditor();
-    addExtensions(smartEditingExtension);
+    const config = api.core.useExtensions().getExtensionConfig(orgSmartEditingManifest.name);
+
+    watch(
+      config,
+      (val) => {
+        activeConfig = {
+          enableSmartEnter: (val.enableSmartEnter as boolean) ?? defaultSettings.enableSmartEnter,
+          enableAutoPair: (val.enableAutoPair as boolean) ?? defaultSettings.enableAutoPair,
+          enableBackspacePairDelete:
+            (val.enableBackspacePairDelete as boolean) ?? defaultSettings.enableBackspacePairDelete,
+        };
+      },
+      { immediate: true, deep: true },
+    );
+
+    mountedEditorExtension = createSmartEditingEditorExtension(() => activeConfig);
+    api.core.useEditor().addExtensions(mountedEditorExtension);
   },
 
   onUnmounted: async (api) => {
-    const { removeExtensions } = api.core.useEditor();
-    removeExtensions(smartEditingExtension);
+    if (mountedEditorExtension) {
+      api.core.useEditor().removeExtensions(mountedEditorExtension);
+      mountedEditorExtension = null;
+    }
   },
 };
 

@@ -1,11 +1,11 @@
 <template>
   <template v-if="actualType === 'union'">
     <menu-item
-      @click="config[props.path][props.name] = option.literal"
+      @click="fieldSet(props.name, option.literal)"
       v-for="(option, k) of actualScheme.options"
       :key="k"
-      :selected="config[props.path][props.name] === option.literal"
-      :active="config[props.path][props.name] === option.literal"
+      :selected="fieldModel === option.literal"
+      :active="fieldModel === option.literal"
     >
       <div class="capitalize menu-item-content">
         {{ option.literal }}
@@ -13,9 +13,10 @@
     </menu-item>
   </template>
   <template v-else-if="actualType === 'array'">
-    <menu-item v-for="(_, i) of config[props.path][props.name]" :key="i">
+    <menu-item v-for="(_, i) of fieldModel as unknown[]" :key="i">
       <input-field
-        v-model="config[props.path][props.name][i]"
+        :model-value="(fieldModel as (string | number | undefined)[])[i]"
+        @update:model-value="setArrayItem(i, $event)"
         :type="actualScheme.type"
         :name="name"
         ref="editInputRef"
@@ -38,7 +39,7 @@
   <template v-else-if="metadata?.textarea">
     <menu-item @click="onItemClick" :lines="4" :placeholder="camelCaseToWords(name)">
       <app-description padded>{{ camelCaseToWords(name) }}</app-description>
-      <app-text-area ref="editInputRef" v-model="config[props.path][props.name]"></app-text-area>
+      <app-text-area ref="editInputRef" v-model="fieldModel as string"></app-text-area>
     </menu-item>
     <menu-item @click="uploadConfigFile" v-if="metadata.upload" type="info">
       {{ t(I18N.UPLOAD) }} {{ camelCaseToWords(name) }}
@@ -58,12 +59,12 @@
       <toggle-button
         @click.prevent
         v-if="actualType === 'boolean'"
-        v-model="config[props.path][props.name]"
+        v-model="fieldModel as boolean"
         @click="ensureValue"
       />
       <div v-else-if="inputSchemeType" class="input-wrapper">
         <input-field
-          v-model="config[props.path][props.name]"
+          v-model="fieldModel as string"
           :textRight="true"
           :type="inputFieldType"
           :password-toggle="isPasswordField"
@@ -73,7 +74,7 @@
           class="settings-input"
         />
       </div>
-      <div v-if="isOptional && config[props.path][props.name] == null" class="optional-indicator">
+      <div v-if="isOptional && fieldModel == null" class="optional-indicator">
         <span class="text-grey-6">{{ camelCaseToWords('optional') }}</span>
       </div>
     </template>
@@ -85,11 +86,11 @@ import MenuItem from './MenuItem.vue';
 import ToggleButton from 'src/components/ToggleButton.vue';
 import InputField from 'src/components/InputField.vue';
 import ActionButton from 'src/components/ActionButton.vue';
-import type { OrgNoteConfig } from 'orgnote-api';
+
 import { I18N } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ValibotScheme } from 'src/models/valibot-scheme';
 import AppTextArea from './AppTextArea.vue';
@@ -98,7 +99,7 @@ import { isPresent, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 
 const props = defineProps<{
-  path: keyof OrgNoteConfig;
+  path: string;
   name: string;
   scheme: ValibotScheme;
 }>();
@@ -107,30 +108,53 @@ const props = defineProps<{
 const { config } = api.core.useConfig() as Record<string, any>;
 const getNestedPath = (path: string) => `${props.path}.${path}`;
 
+import type { SectionAccessor } from 'src/models/settings-section-accessor';
+import { SETTINGS_SECTION_INJECT_KEY } from 'src/models/settings-section-accessor';
+
+const accessor = inject<SectionAccessor | null>(SETTINGS_SECTION_INJECT_KEY, null);
+
+const fieldGet = (key: string): unknown =>
+  accessor ? accessor.get(key) : config[props.path]?.[key];
+
+const fieldSet = (key: string, val: unknown): void => {
+  if (accessor) {
+    accessor.set(key, val);
+    return;
+  }
+  config[props.path][key] = val;
+};
+
+const fieldModel = computed({
+  get: () => fieldGet(props.name),
+  set: (val) => fieldSet(props.name, val),
+});
+
 const editInputRef = ref<typeof InputField>();
 
 const onItemClick = () => {
   ensureValue();
-
-  if (editInputRef.value) {
-    editInputRef.value.focus();
-  }
+  editInputRef.value?.focus();
   if (actualType.value === 'boolean') {
-    config[props.path][props.name] = !config[props.path][props.name];
+    fieldSet(props.name, !fieldGet(props.name));
   }
 };
 
-const addValueToArray = () => {
-  if (actualType.value === 'array') {
-    ensureValue();
-    config[props.path][props.name].push('');
-  }
+const setArrayItem = (index: number, val: unknown): void => {
+  const arr = [...((fieldGet(props.name) as unknown[]) ?? [])];
+  arr[index] = val;
+  fieldSet(props.name, arr);
 };
 
-const removeFromArray = (index: number) => {
-  if (actualType.value === 'array') {
-    config[props.path][props.name].splice(index, 1);
-  }
+const addValueToArray = (): void => {
+  if (actualType.value !== 'array') return;
+  ensureValue();
+  fieldSet(props.name, [...((fieldGet(props.name) as unknown[]) ?? []), '']);
+};
+
+const removeFromArray = (index: number): void => {
+  const arr = [...((fieldGet(props.name) as unknown[]) ?? [])];
+  arr.splice(index, 1);
+  fieldSet(props.name, arr);
 };
 
 const uploadConfigFile = async () => {
@@ -141,7 +165,7 @@ const uploadConfigFile = async () => {
     return;
   }
   const file = await api.utils.uploadFile();
-  config[props.path][props.name] = await file?.text();
+  fieldSet(props.name, await file?.text());
 };
 
 const metadata = props.scheme.pipe?.find((e) => e.type === 'metadata')?.metadata;
@@ -171,28 +195,23 @@ const actualScheme = normalizedScheme;
 
 const isOptional = computed(() => props.scheme.type === 'optional');
 
-const DEFAULT_VALUES_BY_TYPE = {
+const DEFAULT_VALUES_BY_TYPE: Record<string, unknown> = {
   boolean: false,
   string: '',
   number: 0,
   array: [],
-} as const;
-
-type SupportedType = keyof typeof DEFAULT_VALUES_BY_TYPE;
-type DefaultValue = (typeof DEFAULT_VALUES_BY_TYPE)[SupportedType];
-
-const getDefaultValueForType = (type: string): DefaultValue | undefined => {
-  return DEFAULT_VALUES_BY_TYPE[type as SupportedType];
 };
+
+const getDefaultValueForType = (type: string): unknown => DEFAULT_VALUES_BY_TYPE[type];
 
 const ensureValue = (): void => {
   if (!isOptional.value) return;
-  if (isPresent(config[props.path][props.name])) return;
+  if (isPresent(fieldGet(props.name))) return;
 
   const defaultValue = getDefaultValueForType(actualType.value);
   if (defaultValue === undefined) return;
 
-  config[props.path][props.name] = defaultValue;
+  fieldSet(props.name, defaultValue);
 };
 
 const inputTypes = ['string', 'number'];

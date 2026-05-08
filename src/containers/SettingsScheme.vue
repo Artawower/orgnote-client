@@ -33,7 +33,7 @@
         :name="name"
         :path="path"
         :scheme="scheme"
-      ></settings-item>
+      />
     </card-wrapper>
   </div>
 </template>
@@ -43,7 +43,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import SettingsItem from './SettingsItem.vue';
 import MenuItem from './MenuItem.vue';
 import type { ValibotScheme } from 'src/models/valibot-scheme';
-import { computed } from 'vue';
+import { computed, provide } from 'vue';
 import { api } from 'src/boot/api';
 import { type OrgNoteConfig } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
@@ -53,20 +53,44 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 
 const props = defineProps<{
-  path: keyof OrgNoteConfig;
+  path: string;
   name?: string;
   scheme: ValibotScheme;
   beforeTypeChange?: () => Promise<boolean>;
+  modelValue?: Record<string, unknown>;
+}>();
+
+const emit = defineEmits<{
+  'update:modelValue': [config: Record<string, unknown>];
 }>();
 
 const { config } = storeToRefs(api.core.useConfig());
+
+import type { SectionAccessor } from 'src/models/settings-section-accessor';
+import { SETTINGS_SECTION_INJECT_KEY } from 'src/models/settings-section-accessor';
+
+const isExternalMode = computed(() => props.modelValue !== undefined);
+
+provide<SectionAccessor | null>(
+  SETTINGS_SECTION_INJECT_KEY,
+  isExternalMode.value
+    ? {
+        get: (key) => props.modelValue?.[key],
+        set: (key, val) => emit('update:modelValue', { ...props.modelValue, [key]: val }),
+      }
+    : null,
+);
+
+const activeSection = computed(() =>
+  isExternalMode.value ? (props.modelValue ?? {}) : config.value[props.path as keyof OrgNoteConfig],
+);
 
 const metadata = props.scheme.pipe?.find((e) => e.type === 'metadata')?.metadata;
 const conditionalKey: string | undefined = metadata?.conditionalKey;
 
 const encryptionConfig = computed(() => {
   if (!isPresent(conditionalKey)) return;
-  return config.value[props.path]?.[conditionalKey];
+  return activeSection.value?.[conditionalKey];
 });
 
 const isOption = (v: ValibotScheme): boolean => {
@@ -100,7 +124,12 @@ const conditionalOption = computed(() => {
 const changeConditionalType = async (newType?: string): Promise<void> => {
   if (!isPresent(conditionalKey)) return;
   if (props.beforeTypeChange && !(await props.beforeTypeChange())) return;
-  config.value[props.path][conditionalKey] = newType;
+  if (isExternalMode.value) {
+    emit('update:modelValue', { ...props.modelValue, [conditionalKey]: newType });
+    return;
+  }
+  (config.value[props.path as keyof OrgNoteConfig] as Record<string, unknown>)[conditionalKey] =
+    newType;
 };
 </script>
 

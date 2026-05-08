@@ -39,6 +39,7 @@
             @disable="disableExtension"
             @delete="confirmDeleteExtension"
             @install="installExtension"
+            @openSettings="openExtensionSettings"
           />
         </app-flex>
       </template>
@@ -77,6 +78,7 @@ import type { FileSystemFileEntry } from 'src/utils/file-traversal';
 import { readFile } from 'src/utils/file-traversal';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import ExtensionConfigSettings from './ExtensionConfigSettings.vue';
 
 interface TabOption {
   label: string;
@@ -135,6 +137,17 @@ const ensureAvailabileExtensions = async (): Promise<void> => {
     return;
   }
   await extensionRegistry.refresh();
+};
+
+const modal = api.ui.useModal();
+
+const openExtensionSettings = (extensionName: string): void => {
+  modal.open(ExtensionConfigSettings, {
+    title: extensionName,
+    closable: true,
+    wide: true,
+    modalProps: { extensionName },
+  });
 };
 
 const enableExtension = async (name: string) => {

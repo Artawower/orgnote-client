@@ -11,7 +11,7 @@ import {
   type GitSource,
   type LocalSource,
 } from 'orgnote-api';
-import { ref, computed } from 'vue';
+import { ref, computed, type ComputedRef } from 'vue';
 import { api } from 'src/boot/api';
 import { extensionTimer } from 'src/boot/perf-timer';
 import { compileExtension, parseExtensionFromFile } from 'src/utils/read-extension';
@@ -46,6 +46,11 @@ type SourceFetcher = (source: ExtensionSourceInfo) => Promise<FetchedExtension>;
 
 const extensionsFilePath = ORGNOTE_EXTENSIONS_FILE_PATH;
 const distFolder = 'dist';
+
+const applyMissingDefaults = (
+  stored: Record<string, unknown>,
+  defaults: Record<string, unknown>,
+): Record<string, unknown> => ({ ...defaults, ...stored });
 
 export const useExtensionsStore = defineStore<'extension', ExtensionStore>('extension', () => {
   const extensions = ref<ExtensionMeta[]>([]);
@@ -83,12 +88,10 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   };
 
   const registerBuiltinExtensions = (): void => {
-    BUILTIN_META.forEach((meta) => {
-      const exists = extensions.value.some((e) => e.manifest.name === meta.manifest.name);
-      if (!exists) {
-        extensions.value.push(meta);
-      }
-    });
+    const newBuiltins = BUILTIN_META.filter(
+      (meta) => !extensions.value.some((e) => e.manifest.name === meta.manifest.name),
+    );
+    extensions.value.push(...newBuiltins);
   };
 
   const writeToDisk = async (): Promise<void> => {
@@ -157,30 +160,36 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const getExtensionModule = (name: string): Promise<Extension | undefined> =>
     BUILTIN_LOADERS[name]?.() ?? compileFromRepository(name);
 
-  const mountExtension = async (meta: ExtensionMeta): Promise<ActiveExtension | undefined> => {
-    return extensionTimer.measure(`mount:${meta.manifest.name}`, async () => {
-      const existingActive = activeExtensions.value.find(
-        (e) => e.manifest.name === meta.manifest.name,
-      );
-      if (existingActive) {
-        return existingActive;
-      }
+  const syncExtensionConfig = async (meta: ExtensionMeta, module: Extension): Promise<void> => {
+    if (!module.defaultSettings) return;
+    const merged = applyMissingDefaults(meta.config ?? {}, module.defaultSettings);
+    if (JSON.stringify(merged) === JSON.stringify(meta.config ?? {})) return;
+    meta.config = merged;
+    await writeToDisk();
+  };
+
+  const callOnMounted = async (module: Extension, name: string): Promise<boolean> => {
+    const safeMounted = to(module.onMounted.bind(module), `Failed to mount extension ${name}`);
+    const result = await safeMounted(api);
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return false;
+    }
+    return true;
+  };
+
+  const mountExtension = async (meta: ExtensionMeta): Promise<ActiveExtension | undefined> =>
+    extensionTimer.measure(`mount:${meta.manifest.name}`, async () => {
+      const existing = activeExtensions.value.find((e) => e.manifest.name === meta.manifest.name);
+      if (existing) return existing;
 
       const module = await getExtensionModule(meta.manifest.name);
-      if (!module) {
-        return undefined;
-      }
+      if (!module) return undefined;
 
-      const safeMounted = to(
-        module.onMounted.bind(module),
-        `Failed to mount extension ${meta.manifest.name}`,
-      );
-      const mountResult = await safeMounted(api);
+      await syncExtensionConfig(meta, module);
 
-      if (mountResult.isErr()) {
-        reporter.reportError(mountResult.error);
-        return undefined;
-      }
+      const mounted = await callOnMounted(module, meta.manifest.name);
+      if (!mounted) return undefined;
 
       const activeExt: ActiveExtension = {
         manifest: meta.manifest,
@@ -188,11 +197,9 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
         config: meta.config,
         module,
       };
-
       activeExtensions.value.push(activeExt);
       return activeExt;
     });
-  };
 
   const unmountExtension = async (extensionName: string): Promise<void> => {
     return extensionTimer.measure(`unmount:${extensionName}`, async () => {
@@ -228,12 +235,10 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
       (e) => e.active && isThemeExtension(e.manifest) && e.manifest.name !== currentThemeName,
     );
 
-    const unmountPromises = otherActiveThemes.map(async (theme) => {
-      await unmountExtension(theme.manifest.name);
-      theme.active = false;
+    await Promise.allSettled(otherActiveThemes.map((t) => unmountExtension(t.manifest.name)));
+    otherActiveThemes.forEach((t) => {
+      t.active = false;
     });
-
-    await Promise.allSettled(unmountPromises);
   };
 
   const setConfigThemeName = (themeName: string | null): void => {
@@ -298,9 +303,8 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     await writeToDisk();
   };
 
-  const isExtensionExist = (extensionName: string): boolean => {
-    return !!extensions.value.find((e) => e.manifest.name === extensionName);
-  };
+  const isExtensionExist = (extensionName: string): boolean =>
+    extensions.value.some((e) => e.manifest.name === extensionName);
 
   const addExtension = async (meta: ExtensionMeta, source: ExtensionSource): Promise<void> => {
     extensions.value = extensions.value.filter((e) => e.manifest.name !== meta.manifest.name);
@@ -501,6 +505,28 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     await Promise.allSettled(mountPromises);
   };
 
+  const getExtensionConfig = (name: string): ComputedRef<Readonly<Record<string, unknown>>> =>
+    computed(() => {
+      const ext = extensions.value.find((e) => e.manifest.name === name);
+      return (ext?.config ?? {}) as Readonly<Record<string, unknown>>;
+    });
+
+  const setExtensionConfig = async (
+    name: string,
+    config: Record<string, unknown>,
+  ): Promise<void> => {
+    const ext = extensions.value.find((e) => e.manifest.name === name);
+    if (!ext) return;
+    ext.config = config;
+    await writeToDisk();
+  };
+
+  const hasExtensionSettings = (name: string): boolean =>
+    !!activeExtensions.value.find((e) => e.manifest.name === name)?.module?.settingsSchema;
+
+  const getActiveExtensionModule = (name: string): Extension | undefined =>
+    activeExtensions.value.find((e) => e.manifest.name === name)?.module;
+
   const store: ExtensionStore = {
     extensions,
     ready,
@@ -515,6 +541,10 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     deleteExtension,
     enableSafeMode,
     disableSafeMode,
+    getExtensionConfig,
+    setExtensionConfig,
+    hasExtensionSettings,
+    getActiveExtensionModule,
   };
 
   return store;

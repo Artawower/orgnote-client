@@ -65,7 +65,10 @@ vi.mock('src/utils/validate-manifest', () => ({
   validateManifest: vi.fn(),
 }));
 
-const createMockManifest = (name: string, overrides?: Partial<ExtensionManifest>): ExtensionManifest => ({
+const createMockManifest = (
+  name: string,
+  overrides?: Partial<ExtensionManifest>,
+): ExtensionManifest => ({
   name,
   version: '1.0.0',
   category: 'extension',
@@ -73,7 +76,10 @@ const createMockManifest = (name: string, overrides?: Partial<ExtensionManifest>
   ...overrides,
 });
 
-const createMockExtensionMeta = (name: string, overrides?: Partial<ExtensionMeta>): ExtensionMeta => ({
+const createMockExtensionMeta = (
+  name: string,
+  overrides?: Partial<ExtensionMeta>,
+): ExtensionMeta => ({
   manifest: createMockManifest(name),
   active: false,
   ...overrides,
@@ -133,8 +139,12 @@ test('addExtension adds extension to list', async () => {
 
 test('addExtension replaces existing extension with same name', async () => {
   const store = useExtensionsStore();
-  const meta1 = createMockExtensionMeta('duplicate', { manifest: createMockManifest('duplicate', { version: '1.0.0' }) });
-  const meta2 = createMockExtensionMeta('duplicate', { manifest: createMockManifest('duplicate', { version: '2.0.0' }) });
+  const meta1 = createMockExtensionMeta('duplicate', {
+    manifest: createMockManifest('duplicate', { version: '1.0.0' }),
+  });
+  const meta2 = createMockExtensionMeta('duplicate', {
+    manifest: createMockManifest('duplicate', { version: '2.0.0' }),
+  });
   const source = createMockExtensionSource('duplicate');
 
   await store.addExtension(meta1, source);
@@ -509,7 +519,7 @@ test('multiple theme extensions - only one active at a time', async () => {
     createMockExtensionMeta(name, {
       manifest: createMockManifest(name, { category: 'theme' }),
       active: false,
-    })
+    }),
   );
 
   for (const theme of themes) {
@@ -520,9 +530,7 @@ test('multiple theme extensions - only one active at a time', async () => {
   await store.enableExtension('theme-b');
   await store.enableExtension('theme-c');
 
-  const activeThemes = store.extensions.filter(
-    (e) => e.manifest.category === 'theme' && e.active
-  );
+  const activeThemes = store.extensions.filter((e) => e.manifest.category === 'theme' && e.active);
 
   expect(activeThemes).toHaveLength(1);
   expect(activeThemes[0]?.manifest.name).toBe('theme-c');
@@ -581,4 +589,94 @@ test('extension order is preserved after operations', async () => {
   await store.disableExtension('second');
 
   expect(store.extensions.map((e) => e.manifest.name)).toEqual(names);
+});
+
+const createMockModuleWithSettings = (
+  settingsSchema: Record<string, unknown>,
+  defaultSettings: Record<string, unknown>,
+) => ({
+  settingsSchema,
+  defaultSettings,
+  onMounted: vi.fn().mockResolvedValue(undefined),
+  onUnmounted: vi.fn().mockResolvedValue(undefined),
+});
+
+const setupModuleCompile = async (name: string, module: unknown) => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  const { api } = await import('src/boot/api');
+  vi.mocked(compileExtension).mockResolvedValue(module as never);
+  vi.mocked(api.infrastructure.extensionSourceRepository.get).mockResolvedValue({
+    name,
+    version: '1.0.0',
+    source: 'local',
+    module: '',
+    docFiles: [],
+  });
+};
+
+test('defaultSettings are applied before onMounted when config is empty', async () => {
+  const store = useExtensionsStore();
+  const defaults = { enabled: true, count: 5 };
+  const module = createMockModuleWithSettings({}, defaults);
+  await setupModuleCompile('settings-ext', module);
+
+  const meta = createMockExtensionMeta('settings-ext', { active: false });
+  await store.addExtension(meta, createMockExtensionSource('settings-ext'));
+  await store.enableExtension('settings-ext');
+
+  expect(module.onMounted).toHaveBeenCalled();
+  const ext = store.extensions.find((e) => e.manifest.name === 'settings-ext');
+  expect(ext?.config).toMatchObject(defaults);
+});
+
+test('saved top-level keys override defaults entirely', async () => {
+  const store = useExtensionsStore();
+  const defaults = { appearance: { theme: 'dark', compact: false }, enabled: true };
+  const saved = { appearance: { theme: 'light' } };
+  const module = createMockModuleWithSettings({}, defaults);
+  await setupModuleCompile('nested-ext', module);
+
+  const meta = createMockExtensionMeta('nested-ext', { active: false, config: saved });
+  await store.addExtension(meta, createMockExtensionSource('nested-ext'));
+  await store.enableExtension('nested-ext');
+
+  const ext = store.extensions.find((e) => e.manifest.name === 'nested-ext');
+  expect(ext?.config).toEqual({ appearance: { theme: 'light' }, enabled: true });
+});
+
+test('getExtensionConfig returns empty object for unknown extension', () => {
+  const store = useExtensionsStore();
+  const config = store.getExtensionConfig('unknown');
+  expect(config.value).toEqual({});
+});
+
+test('setExtensionConfig updates config and is reflected in getExtensionConfig', async () => {
+  const store = useExtensionsStore();
+  const meta = createMockExtensionMeta('cfg-ext', { active: false });
+  await store.addExtension(meta, createMockExtensionSource('cfg-ext'));
+
+  await store.setExtensionConfig('cfg-ext', { key: 'value' });
+
+  expect(store.getExtensionConfig('cfg-ext').value).toEqual({ key: 'value' });
+});
+
+test('hasExtensionSettings returns false for inactive extension', async () => {
+  const store = useExtensionsStore();
+  const meta = createMockExtensionMeta('inactive-ext', { active: false });
+  await store.addExtension(meta, createMockExtensionSource('inactive-ext'));
+
+  expect(store.hasExtensionSettings('inactive-ext')).toBe(false);
+});
+
+test('hasExtensionSettings returns true for active extension with settingsSchema', async () => {
+  const store = useExtensionsStore();
+  const schema = { type: 'object', entries: {} };
+  const module = createMockModuleWithSettings(schema, {});
+  await setupModuleCompile('schema-ext', module);
+
+  const meta = createMockExtensionMeta('schema-ext', { active: false });
+  await store.addExtension(meta, createMockExtensionSource('schema-ext'));
+  await store.enableExtension('schema-ext');
+
+  expect(store.hasExtensionSettings('schema-ext')).toBe(true);
 });

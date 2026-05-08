@@ -15,6 +15,14 @@
 
       <app-flex gap="sm" align="center" class="extension-actions">
         <template v-if="isInstalled">
+          <action-button
+            v-if="isActive && extensionStore.hasExtensionSettings(manifest.name)"
+            @click.stop="$emit('openSettings', manifest.name)"
+            size="sm"
+            color="fg"
+            icon="sym_o_settings"
+            :tooltip="t(i18n.EXTENSION_SETTINGS)"
+          />
           <toggle-button :model-value="isActive" @update:model-value="toggleActive" />
           <action-button
             v-if="!isBuiltin"
@@ -43,14 +51,15 @@
       {{ manifest.description }}
     </app-description>
 
-    <app-flex v-if="manifest.keywords?.length" gap="xs" class="extension-keywords" wrap justify="start">
+    <app-flex
+      v-if="manifest.keywords?.length"
+      gap="xs"
+      class="extension-keywords"
+      wrap
+      justify="start"
+    >
       <span class="keywords-label">{{ t(i18n.KEYWORDS) }}:</span>
-      <app-badge
-        v-for="keyword in manifest.keywords"
-        :key="keyword"
-        color="fg-muted"
-        size="xs"
-      >
+      <app-badge v-for="keyword in manifest.keywords" :key="keyword" color="fg-muted" size="xs">
         {{ keyword }}
       </app-badge>
     </app-flex>
@@ -59,6 +68,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
+import { api } from 'src/boot/api';
 import { useI18n } from 'vue-i18n';
 import type { ExtensionMeta, ExtensionManifest } from 'orgnote-api';
 import { i18n } from 'orgnote-api';
@@ -69,10 +79,7 @@ import CardWrapper from './CardWrapper.vue';
 import AppFlex from './AppFlex.vue';
 import ToggleButton from './ToggleButton.vue';
 import ActionButton from './ActionButton.vue';
-import {
-  EXTENSION_CATEGORY_ICONS,
-  DEFAULT_EXTENSION_ICON,
-} from 'src/constants/extension-category';
+import { EXTENSION_CATEGORY_ICONS, DEFAULT_EXTENSION_ICON } from 'src/constants/extension-category';
 
 const { t } = useI18n();
 
@@ -91,7 +98,10 @@ const emit = defineEmits<{
   (e: 'disable', name: string): void;
   (e: 'delete', name: string): void;
   (e: 'install', manifest: ExtensionManifest): void;
+  (e: 'openSettings', name: string): void;
 }>();
+
+const extensionStore = api.core.useExtensions();
 
 const manifest = computed((): ExtensionManifest => {
   if ('manifest' in props.extension) {
