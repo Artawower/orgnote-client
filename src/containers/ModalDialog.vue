@@ -270,7 +270,6 @@ dialog.full-screen {
   width: 100%;
 
   @include desktop-below {
-    overflow-y: auto;
     overscroll-behavior-y: contain;
   }
 }
