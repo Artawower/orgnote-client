@@ -36,6 +36,19 @@
       {{ t(I18N.ADD) }}
     </menu-item>
   </template>
+  <template v-else-if="metadata?.filePicker">
+    <menu-item @click="pickFile">
+      <div class="capitalize text-medium menu-item-content">
+        {{ camelCaseToWords(name) }}
+      </div>
+      <template #right>
+        <app-flex gap="xs" align-center>
+          <span class="file-picker-value text-medium">{{ fieldModel ?? '' }}</span>
+          <action-button icon="folder_open" size="sm" outline @click.stop="pickFile" />
+        </app-flex>
+      </template>
+    </menu-item>
+  </template>
   <template v-else-if="metadata?.textarea">
     <menu-item @click="onItemClick" :lines="4" :placeholder="camelCaseToWords(name)">
       <app-description padded>{{ camelCaseToWords(name) }}</app-description>
@@ -87,7 +100,7 @@ import ToggleButton from 'src/components/ToggleButton.vue';
 import InputField from 'src/components/InputField.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 
-import { I18N } from 'orgnote-api';
+import { I18N, type DiskFile } from 'orgnote-api';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { computed, inject, ref } from 'vue';
@@ -95,6 +108,7 @@ import { useI18n } from 'vue-i18n';
 import type { ValibotScheme } from 'src/models/valibot-scheme';
 import AppTextArea from './AppTextArea.vue';
 import AppDescription from 'src/components/AppDescription.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 import { isPresent, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 
@@ -155,6 +169,25 @@ const removeFromArray = (index: number): void => {
   const arr = [...((fieldGet(props.name) as unknown[]) ?? [])];
   arr.splice(index, 1);
   fieldSet(props.name, arr);
+};
+
+const ensurePathExists = async (path: string): Promise<void> => {
+  const isLikelyDir = path.endsWith('/') || !path.includes('.');
+  const dirPath = isLikelyDir ? path : path.split('/').slice(0, -1).join('/') || '/';
+  await to(api.core.useFileManager().createFolder.bind(api.core.useFileManager()))(dirPath);
+};
+
+const pickFile = async () => {
+  const { createDirItemsGetter } = await import('src/utils/dir-items-getter');
+  const result = await api.core.useCompletion().open<DiskFile, string>({
+    type: 'input-choice',
+    searchText: (fieldGet(props.name) as string) ?? '/',
+    placeholder: camelCaseToWords(props.name),
+    itemsGetter: createDirItemsGetter(api),
+  });
+  if (!result) return;
+  await ensurePathExists(result);
+  fieldSet(props.name, result);
 };
 
 const uploadConfigFile = async () => {
@@ -270,5 +303,15 @@ textarea {
 
 .input-wrapper {
   width: 100%;
+}
+
+.file-picker-value {
+  flex: 1;
+  text-align: right;
+  color: var(--text-secondary, var(--q-secondary));
+  font-size: var(--font-size-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

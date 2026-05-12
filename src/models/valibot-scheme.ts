@@ -10,6 +10,7 @@ export interface ValibotMetadata {
     upload?: boolean;
     password?: boolean;
     command?: CommandName;
+    filePicker?: boolean;
   };
   type: string;
 }
