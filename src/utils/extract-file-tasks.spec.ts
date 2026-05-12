@@ -43,6 +43,73 @@ test('extractFileTasks_withKeywords_extractsTodos', () => {
   ]);
 });
 
+test('extractFileTasks_withPriorityAndTags_extractsAgendaFields', () => {
+  const content = '* TODO [#A] My task :work:home:';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/agenda.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.priority).toBe('A');
+  expect(tasks[0]!.tags).toEqual(['work', 'home']);
+  expect(tasks[0]!.todoKeyword).toBe('TODO');
+  expect(tasks[0]!.text).toBe('My task');
+});
+
+test('extractFileTasks_withScheduledAndDeadline_extractsPlanningDates', () => {
+  const content = '* TODO Task\nSCHEDULED: <2026-05-12 Mon> DEADLINE: <2026-05-20 Tue>';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/planning.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.scheduled?.date).toBe('2026-05-12');
+  expect(tasks[0]!.deadline?.date).toBe('2026-05-20');
+});
+
+test('extractFileTasks_withHabitProperty_setsIsHabit', () => {
+  const content =
+    '* TODO Meditate\nSCHEDULED: <2026-05-12 Mon .+1d>\n:PROPERTIES:\n:STYLE: habit\n:END:';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/habits.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.isHabit).toBe(true);
+});
+
+test('extractFileTasks_withClockInLogbook_extractsClocks', () => {
+  const content =
+    '* TODO Task\n:LOGBOOK:\nCLOCK: [2026-05-11 Mon 10:00]--[2026-05-11 Mon 10:45] =>  0:45\n:END:';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/clocks.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.clocks).toHaveLength(1);
+  expect(tasks[0]!.clocks![0]!.date).toContain('2026-05-11');
+});
+
+test('extractFileTasks_withClosedDate_extractsClosed', () => {
+  const content = '* DONE Task\nCLOSED: [2026-05-10 Sun 22:00]';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/closed.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.closed?.date).toContain('2026-05-10');
+});
+
+test('extractFileTasks_listCheckbox_hasNoAgendaFields', () => {
+  const content = '- [ ] Simple list task';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/list.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.kind).toBe('list-checkbox');
+  expect(tasks[0]!.scheduled).toBeUndefined();
+  expect(tasks[0]!.deadline).toBeUndefined();
+  expect(tasks[0]!.clocks).toBeUndefined();
+  expect(tasks[0]!.isHabit).toBeUndefined();
+  expect(tasks[0]!.todoKeyword).toBeUndefined();
+  expect(tasks[0]!.priority).toBeUndefined();
+});
+
 test('extractFileTasks_setsStartEndOffsets', () => {
   const content = '- [ ] First\n- [ ] Middle\n- [ ] Last';
   const root = withMetaInfo(parse(content));
