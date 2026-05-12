@@ -1,39 +1,28 @@
 import type { FileMeta } from 'orgnote-api';
-import { NodeType, type OrgNode } from 'org-mode-ast';
+import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
+import { isHabitHeadline } from './headline-extractors';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 type ExtractedFileTask = FileTask & { line: number };
 type FileTaskState = FileTask['state'];
 type OffsetToLineResolver = (offset: number) => number;
+type HeadingsByStart = Map<number, Heading>;
 
 const doneTodoKeyword = 'DONE';
 const todoState: FileTaskState = 'todo';
 const doneState: FileTaskState = 'done';
 
-const getTitleChildren = (node: OrgNode): OrgNode[] => {
-  if (!node.title) {
-    return [];
-  }
-
-  return node.title.childrenList;
-};
+const getTitleChildren = (node: OrgNode): OrgNode[] => node.title?.childrenList ?? [];
 
 const findTitleChild = (node: OrgNode, type: NodeType): OrgNode | undefined =>
   getTitleChildren(node).find((child) => child.is(type));
 
-const resolveCheckboxState = (checkboxNode: OrgNode): FileTaskState => {
-  if (checkboxNode.checked) {
-    return doneState;
-  }
-  return todoState;
-};
+const resolveCheckboxState = (checkboxNode: OrgNode): FileTaskState =>
+  checkboxNode.checked ? doneState : todoState;
 
 const resolveTodoState = (todoKeywordNode: OrgNode): FileTaskState => {
-  const todoKeyword = todoKeywordNode.value?.trim().toUpperCase() ?? '';
-  if (todoKeyword === doneTodoKeyword) {
-    return doneState;
-  }
-  return todoState;
+  const keyword = todoKeywordNode.value?.trim().toUpperCase() ?? '';
+  return keyword === doneTodoKeyword ? doneState : todoState;
 };
 
 const extractTaskText = (node: OrgNode): string =>
@@ -43,6 +32,8 @@ const extractTaskText = (node: OrgNode): string =>
         child.isNot(NodeType.Operator) &&
         child.isNot(NodeType.Checkbox) &&
         child.isNot(NodeType.TodoKeyword) &&
+        child.isNot(NodeType.Priority) &&
+        child.isNot(NodeType.TagList) &&
         child.isNot(NodeType.NewLine),
     )
     .map((child) => child.rawValue ?? child.value ?? '')
@@ -52,73 +43,85 @@ const extractTaskText = (node: OrgNode): string =>
 const buildTaskId = (filePath: string, node: OrgNode, kind: FileTask['kind']): string =>
   `${filePath}|${kind}|${node.start}|${node.end}`;
 
-const createOffsetToLineResolver = (content: string): OffsetToLineResolver => {
-  const lineStartOffsets = [0];
-
-  for (let index = 0; index < content.length; index++) {
-    if (content[index] !== '\n') {
-      continue;
-    }
-
-    lineStartOffsets.push(index + 1);
+const findLineFromOffsets = (offsets: number[], offset: number): number => {
+  let left = 0;
+  let right = offsets.length - 1;
+  while (left <= right) {
+    const middle = Math.floor((left + right) / 2);
+    const next = offsets[middle + 1] ?? Number.POSITIVE_INFINITY;
+    const current = offsets[middle] ?? 0;
+    if (offset >= current && offset < next) return middle + 1;
+    if (offset < current) right = middle - 1;
+    else left = middle + 1;
   }
-
-  return (offset: number): number => {
-    let left = 0;
-    let right = lineStartOffsets.length - 1;
-
-    while (left <= right) {
-      const middle = Math.floor((left + right) / 2);
-      const nextLineOffset = lineStartOffsets[middle + 1] ?? Number.POSITIVE_INFINITY;
-      const currentLineOffset = lineStartOffsets[middle] ?? 0;
-
-      if (offset >= currentLineOffset && offset < nextLineOffset) {
-        return middle + 1;
-      }
-
-      if (offset < currentLineOffset) {
-        right = middle - 1;
-      } else {
-        left = middle + 1;
-      }
-    }
-
-    return lineStartOffsets.length;
-  };
+  return offsets.length;
 };
+
+const createOffsetToLineResolver = (content: string): OffsetToLineResolver => {
+  const offsets = [0];
+  for (let index = 0; index < content.length; index++) {
+    if (content[index] === '\n') offsets.push(index + 1);
+  }
+  return (offset: number): number => findLineFromOffsets(offsets, offset);
+};
+
+const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial<FileTask> => ({
+  priority: heading?.priority,
+  tags: heading?.tags,
+  todoKeyword: heading?.todoKeyword,
+  scheduled: heading?.scheduled,
+  deadline: heading?.deadline,
+  closed: heading?.closed,
+  clocks: heading?.clocks,
+  isHabit: isHabitHeadline(node) || undefined,
+});
+
+const createHeadlineTask = (
+  node: OrgNode,
+  filePath: string,
+  resolveLine: OffsetToLineResolver,
+  kind: Extract<FileTask['kind'], 'headline-checkbox' | 'headline-todo'>,
+  state: FileTaskState,
+  agendaFields: Partial<FileTask>,
+): ExtractedFileTask => ({
+  id: buildTaskId(filePath, node, kind),
+  kind,
+  state,
+  text: extractTaskText(node),
+  start: node.start,
+  end: node.end,
+  line: resolveLine(node.start),
+  ...agendaFields,
+});
 
 const createTaskFromHeadline = (
   node: OrgNode,
   filePath: string,
   resolveLine: OffsetToLineResolver,
+  headingsByStart: HeadingsByStart,
 ): ExtractedFileTask | undefined => {
+  const agendaFields = buildAgendaFields(node, headingsByStart.get(node.start));
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
   if (checkboxNode) {
-    return {
-      id: buildTaskId(filePath, node, 'headline-checkbox'),
-      kind: 'headline-checkbox',
-      state: resolveCheckboxState(checkboxNode),
-      text: extractTaskText(node),
-      start: node.start,
-      end: node.end,
-      line: resolveLine(node.start),
-    };
+    return createHeadlineTask(
+      node,
+      filePath,
+      resolveLine,
+      'headline-checkbox',
+      resolveCheckboxState(checkboxNode),
+      agendaFields,
+    );
   }
-
   const todoKeywordNode = findTitleChild(node, NodeType.TodoKeyword);
-  if (!todoKeywordNode) {
-    return undefined;
-  }
-
-  return {
-    id: buildTaskId(filePath, node, 'headline-todo'),
-    kind: 'headline-todo',
-    state: resolveTodoState(todoKeywordNode),
-    text: extractTaskText(node),
-    start: node.start,
-    end: node.end,
-    line: resolveLine(node.start),
-  };
+  if (!todoKeywordNode) return undefined;
+  return createHeadlineTask(
+    node,
+    filePath,
+    resolveLine,
+    'headline-todo',
+    resolveTodoState(todoKeywordNode),
+    agendaFields,
+  );
 };
 
 const createTaskFromListItem = (
@@ -127,14 +130,10 @@ const createTaskFromListItem = (
   resolveLine: OffsetToLineResolver,
 ): ExtractedFileTask | undefined => {
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
-  if (!checkboxNode) {
-    return undefined;
-  }
-  const kind: FileTask['kind'] = 'list-checkbox';
-
+  if (!checkboxNode) return undefined;
   return {
-    id: buildTaskId(filePath, node, kind),
-    kind,
+    id: buildTaskId(filePath, node, 'list-checkbox'),
+    kind: 'list-checkbox',
     state: resolveCheckboxState(checkboxNode),
     text: extractTaskText(node),
     start: node.start,
@@ -147,15 +146,14 @@ const createTaskFromNode = (
   node: OrgNode,
   filePath: string,
   resolveLine: OffsetToLineResolver,
+  headingsByStart: HeadingsByStart,
 ): ExtractedFileTask | undefined => {
   if (node.is(NodeType.Headline)) {
-    return createTaskFromHeadline(node, filePath, resolveLine);
+    return createTaskFromHeadline(node, filePath, resolveLine, headingsByStart);
   }
-
   if (node.is(NodeType.ListItem)) {
     return createTaskFromListItem(node, filePath, resolveLine);
   }
-
   return undefined;
 };
 
@@ -170,20 +168,20 @@ const collectTasks = (
   node: OrgNode,
   filePath: string,
   resolveLine: OffsetToLineResolver,
+  headingsByStart: HeadingsByStart,
 ): ExtractedFileTask[] => {
-  const nodeTask = createTaskFromNode(node, filePath, resolveLine);
+  const nodeTask = createTaskFromNode(node, filePath, resolveLine, headingsByStart);
   const nestedTasks = getNestedNodes(node).flatMap((child) =>
-    collectTasks(child, filePath, resolveLine),
+    collectTasks(child, filePath, resolveLine, headingsByStart),
   );
-
-  if (!nodeTask) {
-    return nestedTasks;
-  }
-
-  return [nodeTask, ...nestedTasks];
+  return nodeTask ? [nodeTask, ...nestedTasks] : nestedTasks;
 };
+
+const buildHeadingsByStart = (root: OrgNode): HeadingsByStart =>
+  new Map((root.meta?.headings ?? []).map((h: Heading) => [h.start, h]));
 
 export const extractFileTasks = (root: OrgNode, filePath: string): ExtractedFileTask[] => {
   const resolveLine = createOffsetToLineResolver(root.rawValue);
-  return collectTasks(root, filePath, resolveLine);
+  const headingsByStart = buildHeadingsByStart(root);
+  return collectTasks(root, filePath, resolveLine, headingsByStart);
 };
