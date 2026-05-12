@@ -15,6 +15,7 @@ import { recentfManifest } from './recentf/manifest';
 import { commandHistoryManifest } from './command-history/manifest';
 import { orgTasksSidebarManifest } from './org-tasks-sidebar/manifest';
 import { localGraphManifest } from './local-graph/manifest';
+import { orgAgendaManifest } from './org-agenda/manifest';
 
 type ExtensionLoader = () => Promise<Extension>;
 
@@ -43,8 +44,8 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
     import('./command-history').then((m) => m.commandHistoryExtension),
   [orgTasksSidebarManifest.name]: () =>
     import('./org-tasks-sidebar').then((m) => m.orgTasksSidebarExtension),
-  [localGraphManifest.name]: () =>
-    import('./local-graph').then((m) => m.localGraphExtension),
+  [localGraphManifest.name]: () => import('./local-graph').then((m) => m.localGraphExtension),
+  [orgAgendaManifest.name]: () => import('./org-agenda').then((m) => m.orgAgendaExtension),
 };
 
 export const BUILTIN_META: ExtensionMeta[] = [
@@ -64,4 +65,5 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: commandHistoryManifest, active: true },
   { manifest: orgTasksSidebarManifest, active: true },
   { manifest: localGraphManifest, active: true },
+  { manifest: orgAgendaManifest, active: true },
 ];
