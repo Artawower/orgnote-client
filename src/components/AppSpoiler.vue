@@ -1,5 +1,11 @@
 <template>
-  <card-wrapper class="spoiler" type="plain" :style="{ '--spoiler-max-height': maxHeight }">
+  <component
+    :is="flat ? 'div' : CardWrapper"
+    class="spoiler"
+    :class="{ flat }"
+    v-bind="flat ? {} : { type: 'plain' }"
+    :style="{ '--spoiler-max-height': maxHeight }"
+  >
     <app-flex class="spoiler-header" @click="toggle" row between align-center gap="md">
       <div class="spoiler-title">
         <slot name="title" />
@@ -17,7 +23,7 @@
         <slot name="body" />
       </div>
     </animation-wrapper>
-  </card-wrapper>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -31,10 +37,12 @@ const props = withDefaults(
   defineProps<{
     defaultExpanded?: boolean;
     maxHeight?: string;
+    flat?: boolean;
   }>(),
   {
     defaultExpanded: false,
     maxHeight: '100px',
+    flat: false,
   },
 );
 
@@ -67,8 +75,10 @@ const toggle = (): void => {
 .spoiler {
   transition: background-color 0.2s ease;
 
-  @include hover {
-    background-color: var(--menu-item-hover-bg);
+  &:not(.flat) {
+    @include hover {
+      background-color: var(--menu-item-hover-bg);
+    }
   }
 }
 
@@ -102,5 +112,9 @@ const toggle = (): void => {
   padding: var(--padding-md);
   max-height: var(--spoiler-max-height);
   overflow: auto;
+}
+
+.spoiler.flat .spoiler-body {
+  padding: 0;
 }
 </style>
