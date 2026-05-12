@@ -101,6 +101,13 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgTasksSidebarUpdatedAtFilterLastMonth]: 'Last month',
   [extensionI18nKeys.orgTasksSidebarCalendarTitle]: 'Browse by date',
   [extensionI18nKeys.orgTasksSidebarCalendarClearFilter]: 'Show all dates',
+  [extensionI18nKeys.orgAgendaFilterOverdue]: 'Overdue',
+  [extensionI18nKeys.orgAgendaFilterToday]: 'Today',
+  [extensionI18nKeys.orgAgendaFilterTomorrow]: 'Tomorrow',
+  [extensionI18nKeys.orgAgendaFilterNext7Days]: 'Next 7 Days',
+  [extensionI18nKeys.orgAgendaFilterAll]: 'All',
+  [extensionI18nKeys.orgAgendaNoTasksTitle]: 'No tasks',
+  [extensionI18nKeys.orgAgendaNoTasksDescription]: 'No tasks match the selected filter',
 };
 
 export default eng;

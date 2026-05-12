@@ -10,4 +10,11 @@ export const extensionI18nKeys = {
   orgTasksSidebarUpdatedAtFilterLastMonth: 'extensions.orgTasksSidebar.updatedAtFilter.lastMonth',
   orgTasksSidebarCalendarTitle: 'extensions.orgTasksSidebar.calendar.title',
   orgTasksSidebarCalendarClearFilter: 'extensions.orgTasksSidebar.calendar.clearFilter',
+  orgAgendaFilterOverdue: 'extensions.orgAgenda.filter.overdue',
+  orgAgendaFilterToday: 'extensions.orgAgenda.filter.today',
+  orgAgendaFilterTomorrow: 'extensions.orgAgenda.filter.tomorrow',
+  orgAgendaFilterNext7Days: 'extensions.orgAgenda.filter.next7days',
+  orgAgendaFilterAll: 'extensions.orgAgenda.filter.all',
+  orgAgendaNoTasksTitle: 'extensions.orgAgenda.noTasks.title',
+  orgAgendaNoTasksDescription: 'extensions.orgAgenda.noTasks.description',
 } as const;

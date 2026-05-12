@@ -5,6 +5,7 @@ import { reporter } from 'src/boot/report';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import { isOverdue, isToday, isTomorrow, isNextSevenDays } from '../utils/agenda-filters';
 import { resolveAgendaConfig } from '../index';
 import { orgAgendaManifest } from '../manifest';
@@ -41,7 +42,8 @@ const isUnderAgendaPath = (file: FileMeta, agendaFilesPath: string | undefined):
 
 const applyFilter = (tasks: FileTask[], filter: AgendaFilter): FileTask[] => {
   if (filter === 'all') return tasks;
-  return tasks.filter(filterPredicates[filter]);
+  const predicate = filterPredicates[filter];
+  return tasks.filter((t) => predicate(t));
 };
 
 const toGroup = (file: FileMeta, filter: AgendaFilter): AgendaTaskGroup | null => {
@@ -102,7 +104,7 @@ export const useAgendaTasks = () => {
 
   const allFiles = ref<FileMeta[]>([]);
   const loading = ref(false);
-  const activeFilter = ref<AgendaFilter>('all');
+  const filterStore = useAgendaFilterStore();
 
   const agendaConfig = computed(() =>
     resolveAgendaConfig(extensionStore.getExtensionConfig(orgAgendaManifest.name).value),
@@ -112,18 +114,18 @@ export const useAgendaTasks = () => {
     allFiles.value.filter((f) => isUnderAgendaPath(f, agendaConfig.value.agendaFilesPath)),
   );
 
-  const groups = computed(() => toGroups(agendaFiles.value, activeFilter.value));
+  const groups = computed(() => toGroups(agendaFiles.value, filterStore.activeFilter));
 
   const totalByFilter = computed(() => buildTotalsByFilter(agendaFiles.value));
 
   let loadInProgress = false;
 
-  const loadFiles = async (): Promise<void> => {
+  const loadFiles = async (silent = false): Promise<void> => {
     if (loadInProgress) return;
     loadInProgress = true;
-    loading.value = true;
+    if (!silent) loading.value = true;
     const result = await to(() => fileMeta.getAll(), 'Failed to load agenda tasks')();
-    loading.value = false;
+    if (!silent) loading.value = false;
     loadInProgress = false;
     if (result.isErr()) {
       reporter.reportError(result.error);
@@ -136,5 +138,11 @@ export const useAgendaTasks = () => {
   onMounted(loadFiles);
   onUnmounted(stopWatchers);
 
-  return { loading, groups, activeFilter, totalByFilter, loadFiles };
+  return {
+    loading,
+    groups,
+    totalByFilter,
+    loadFiles,
+    silentReload: () => loadFiles(true),
+  };
 };

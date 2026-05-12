@@ -17,3 +17,6 @@ export const AGENDA_HABITS_VIEWER_ID = 'org-agenda:habits';
 export const AGENDA_POMODORO_VIEWER_ID = 'org-agenda:pomodoro';
 
 export const POMODORO_ACTIVE_KV_KEY = 'org-agenda:pomodoro:active';
+
+export const TASK_DONE_KEYWORD = 'DONE';
+export const TASK_TODO_KEYWORD = 'TODO';
