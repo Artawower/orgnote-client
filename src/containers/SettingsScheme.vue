@@ -71,15 +71,9 @@ import { SETTINGS_SECTION_INJECT_KEY } from 'src/models/settings-section-accesso
 
 const isExternalMode = computed(() => props.modelValue !== undefined);
 
-provide<SectionAccessor | null>(
-  SETTINGS_SECTION_INJECT_KEY,
-  isExternalMode.value
-    ? {
-        get: (key) => props.modelValue?.[key],
-        set: (key, val) => emit('update:modelValue', { ...props.modelValue, [key]: val }),
-      }
-    : null,
-);
+if (!isExternalMode.value) {
+  provide<SectionAccessor | null>(SETTINGS_SECTION_INJECT_KEY, null);
+}
 
 const activeSection = computed(() =>
   isExternalMode.value ? (props.modelValue ?? {}) : config.value[props.path as keyof OrgNoteConfig],
