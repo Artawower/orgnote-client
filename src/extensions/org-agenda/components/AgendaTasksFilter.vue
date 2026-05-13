@@ -1,11 +1,11 @@
 <template>
-  <component :is="flat ? 'div' : CardWrapper">
+  <card-wrapper>
     <menu-item
       v-for="filter in filters"
       :key="filter.id"
       :selected="modelValue === filter.id"
       :active="modelValue === filter.id"
-      @click="$emit('update:modelValue', filter.id)"
+      @click="onFilterClick(filter.id)"
     >
       <app-flex row start align-center gap="sm">
         <app-icon :name="filter.icon" size="sm" />
@@ -20,7 +20,7 @@
         />
       </template>
     </menu-item>
-  </component>
+  </card-wrapper>
 </template>
 
 <script lang="ts" setup>
@@ -37,10 +37,17 @@ import type { AgendaFilter } from '../composables/use-agenda-tasks';
 defineProps<{
   modelValue: AgendaFilter;
   totals: Record<AgendaFilter, number>;
-  flat?: boolean;
 }>();
 
-defineEmits<{ 'update:modelValue': [filter: AgendaFilter] }>();
+const emit = defineEmits<{
+  'update:modelValue': [filter: AgendaFilter];
+  select: [filter: AgendaFilter];
+}>();
+
+const onFilterClick = (filter: AgendaFilter): void => {
+  emit('update:modelValue', filter);
+  emit('select', filter);
+};
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
@@ -72,3 +79,12 @@ const filters = computed(() => [
   },
 ]);
 </script>
+
+<style lang="scss" scoped>
+:deep(.right) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+</style>
