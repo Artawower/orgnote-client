@@ -6,6 +6,7 @@ import {
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { shallowRef } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
 import { usePaneStore } from './pane';
 import { useConfigStore } from './config';
 
@@ -80,13 +81,31 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       return findPreferredViewer(matching, path) ?? matching[0];
     };
 
-    const open = async (uri: string): Promise<void> => {
+    const buildRouteLocation = (uri: string): RouteLocationRaw => {
       const { scheme, path } = parseBufferUri(uri);
-      const routeName = getRouteNameForScheme(scheme);
-      await pane.navigate({
-        name: routeName,
+      return {
+        name: getRouteNameForScheme(scheme),
         params: { path },
-      });
+      };
+    };
+
+    const openInNewTab = async (route: RouteLocationRaw): Promise<boolean> => {
+      const paneId = pane.activePaneId;
+      if (!paneId) return false;
+      const tab = await pane.addTab(paneId);
+      if (!tab) return false;
+      await pane.navigate(route, tab.paneId, tab.id);
+      return true;
+    };
+
+    const open = async (uri: string): Promise<void> => {
+      const route = buildRouteLocation(uri);
+      try {
+        await pane.navigate(route);
+      } catch (error) {
+        const opened = await openInNewTab(route);
+        if (!opened) throw error;
+      }
     };
 
     return {
