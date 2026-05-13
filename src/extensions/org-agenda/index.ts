@@ -1,5 +1,6 @@
 import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata } from 'valibot';
+import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_HABITS_COMMAND,
   AGENDA_HABITS_PATTERN,
@@ -9,7 +10,6 @@ import {
   AGENDA_POMODORO_URI,
   AGENDA_TASKS_COMMAND,
   AGENDA_TASKS_PATTERN,
-  AGENDA_TASKS_URI,
   AGENDA_TASKS_VIEWER_ID,
   AGENDA_HABITS_VIEWER_ID,
   AGENDA_POMODORO_VIEWER_ID,
@@ -19,7 +19,14 @@ const createTasksCommand = (): Command => ({
   command: AGENDA_TASKS_COMMAND,
   group: 'agenda',
   icon: 'sym_o_checklist',
-  handler: (api: OrgNoteApi) => api.core.useBufferViewer().open(AGENDA_TASKS_URI),
+  handler: (api: OrgNoteApi) => {
+    const sidebar = api.ui.useSidebar();
+    if (sidebar.opened && sidebar.component === AgendaSidebarRef) {
+      sidebar.close();
+      return;
+    }
+    sidebar.openComponent(AgendaSidebarRef);
+  },
 });
 
 const createHabitsCommand = (): Command => ({
@@ -38,19 +45,16 @@ const createPomodoroCommand = (): Command => ({
 
 const registerViewers = (api: OrgNoteApi): void => {
   const viewer = api.core.useBufferViewer();
-
   viewer.register({
     pattern: AGENDA_TASKS_PATTERN,
     component: () => import('./AgendaTasksBuffer.vue'),
     meta: { id: AGENDA_TASKS_VIEWER_ID, name: 'Agenda Tasks', icon: 'sym_o_checklist' },
   });
-
   viewer.register({
     pattern: AGENDA_HABITS_PATTERN,
     component: () => import('./AgendaHabitsBuffer.vue'),
     meta: { id: AGENDA_HABITS_VIEWER_ID, name: 'Agenda Habits', icon: 'sym_o_loop' },
   });
-
   viewer.register({
     pattern: AGENDA_POMODORO_PATTERN,
     component: () => import('./AgendaPomodoroBuffer.vue'),
@@ -70,7 +74,7 @@ const registerCommands = (api: OrgNoteApi): void => {
   commands.add(createTasksCommand());
   commands.add(createHabitsCommand());
   commands.add(createPomodoroCommand());
-  api.ui.usePinnedCommands().addCommand('left-sidebar', AGENDA_TASKS_COMMAND);
+  api.ui.usePinnedCommands().addCommand('sidebar', AGENDA_TASKS_COMMAND);
 };
 
 const unregisterCommands = (api: OrgNoteApi): void => {
@@ -79,7 +83,7 @@ const unregisterCommands = (api: OrgNoteApi): void => {
     .map((cmd) => commands.get(cmd))
     .filter(Boolean)
     .forEach((cmd) => commands.remove(cmd!));
-  api.ui.usePinnedCommands().removeCommand('left-sidebar', AGENDA_TASKS_COMMAND);
+  api.ui.usePinnedCommands().removeCommand('sidebar', AGENDA_TASKS_COMMAND);
 };
 
 const settingsSchema = object({
@@ -104,7 +108,6 @@ export const orgAgendaExtension: Extension = {
     registerViewers(api);
     registerCommands(api);
   },
-
   onUnmounted: async (api) => {
     unregisterViewers(api);
     unregisterCommands(api);

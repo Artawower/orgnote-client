@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, watch } from 'vue';
+import { watch } from 'vue';
 import { DefaultCommands } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -39,40 +39,13 @@ import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
 import { useAgendaFilterStore } from './stores/agenda-filter-store';
-import AgendaSidebar from './AgendaSidebar.vue';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
-import type { ComponentConfig, VueComponent } from 'orgnote-api';
 import type { FileTask } from 'orgnote-api';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, groups, totalByFilter, silentReload } = useAgendaTasks();
 const filterStore = useAgendaFilterStore();
-
-const sidebar = api.ui.useSidebar();
-
-let savedComponent: VueComponent | undefined;
-let savedConfig: ComponentConfig<VueComponent> | undefined;
-let wasOpened = false;
-
-const isAgendaSidebarActive = (): boolean => sidebar.component.value === AgendaSidebar;
-
-onMounted(() => {
-  savedComponent = sidebar.component.value;
-  savedConfig = sidebar.componentConfig.value;
-  wasOpened = sidebar.opened.value;
-  sidebar.openComponent(AgendaSidebar);
-});
-
-onUnmounted(() => {
-  if (!isAgendaSidebarActive()) return;
-  if (savedComponent) {
-    sidebar.openComponent(savedComponent, savedConfig);
-    if (!wasOpened) sidebar.close();
-    return;
-  }
-  sidebar.close();
-});
 
 watch(totalByFilter, (value) => filterStore.setTotals(value), { immediate: true });
 
@@ -84,7 +57,8 @@ const mutationRunner = createFileMutationRunner({
 const hasRepeater = (task: FileTask): boolean =>
   !!(task.scheduled?.repeater ?? task.deadline?.repeater);
 
-const buildMutation = (task: FileTask, completedAt: Date): ContentMutator =>
+const buildMutation =
+  (task: FileTask, completedAt: Date): ContentMutator =>
   (content: string): string | undefined => {
     if (task.start === undefined) return content;
     if (task.state === 'done') return reopenTask(content, task.start);
