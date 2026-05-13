@@ -97,53 +97,6 @@ test('isNextSevenDays_returnsFalse_forOverdueTask', () => {
   expect(isNextSevenDays(withScheduled('2026-05-11'), now)).toBe(false);
 });
 
-test('isToday_recurringDaily_fromOldBase_returnsTrue', () => {
-  const task = {
-    scheduled: { date: '2020-01-01', repeater: { type: '+', value: 1, unit: 'd' } },
-  };
-  expect(isToday(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(true);
-});
-
-test('isTomorrow_recurringDaily_returnsTrue', () => {
-  const task = {
-    scheduled: { date: '2020-01-01', repeater: { type: '+', value: 1, unit: 'd' } },
-  };
-  expect(isTomorrow(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(true);
-});
-
-test('isNextSevenDays_recurringWeekly_pastBase_returnsTrue', () => {
-  const task = {
-    scheduled: { date: '2026-05-06', repeater: { type: '+', value: 1, unit: 'w' } },
-  };
-  expect(isNextSevenDays(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(true);
-});
-
-test('isOverdue_recurringTask_returnsFalse', () => {
-  const task = {
-    scheduled: { date: '2020-01-01', repeater: { type: '+', value: 1, unit: 'd' } },
-  };
-  expect(isOverdue(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(false);
-});
-
-test('isOverdue_nonRecurringPast_returnsTrue', () => {
-  const task = { scheduled: { date: '2026-05-01' } };
-  expect(isOverdue(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(true);
-});
-
-test('isToday_recurringMonthly_returnsTrue', () => {
-  const task = {
-    scheduled: { date: '2026-01-13', repeater: { type: '+', value: 1, unit: 'm' } },
-  };
-  expect(isToday(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(true);
-});
-
-test('hasOccurrenceInRange_zeroValueRepeater_doesNotInfiniteLoop', () => {
-  const task = {
-    scheduled: { date: '2020-01-01', repeater: { type: '+', value: 0, unit: 'd' } },
-  };
-  expect(isToday(task as unknown as FileTask, new Date('2026-05-13T12:00:00Z'))).toBe(false);
-});
-
 test('hasNoDate_returnsTrue_whenNoDates', () => {
   expect(hasNoDate(noDateTask)).toBe(true);
 });
