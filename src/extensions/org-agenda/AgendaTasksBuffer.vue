@@ -39,10 +39,12 @@ import type { ContentMutator } from './mutations/file-mutation-runner';
 import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
+import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
 import { useAgendaFilterStore } from './stores/agenda-filter-store';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import type { FileTask } from 'orgnote-api';
+import { isCompletedToday } from './utils/agenda-filters';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, groups, totalByFilter, silentReload } = useAgendaTasks();
@@ -64,6 +66,18 @@ const buildMutation =
     if (task.start === undefined) {
       logger.warn('[agenda] buildMutation: task.start undefined');
       return content;
+    }
+    if (isCompletedToday(task, completedAt) && hasRepeater(task) && task.lastDoneAt) {
+      logger.info('[agenda] buildMutation: branch=undoRecurringCompletion', {
+        taskStart: task.start,
+        lastDoneAt: task.lastDoneAt,
+      });
+      const result = undoRecurringCompletion(content, task.start, task.lastDoneAt);
+      logger.info('[agenda] undoRecurringCompletion returned', {
+        defined: result !== undefined,
+        sameAsInput: result === content,
+      });
+      return result;
     }
     if (task.state === 'done') {
       logger.info('[agenda] buildMutation: branch=reopenTask', { taskStart: task.start });

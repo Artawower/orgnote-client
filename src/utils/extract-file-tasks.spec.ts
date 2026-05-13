@@ -96,7 +96,8 @@ test('extractFileTasks_withClosedDate_extractsClosed', () => {
 });
 
 test('extractFileTasks_withDoneLogbookEntry_extractsLastDoneAt', () => {
-  const content = '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-13 Wed 14:30]\n:END:\n';
+  const content =
+    '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-13 Wed 14:30]\n:END:\n';
   const root = withMetaInfo(parse(content));
   const tasks = extractFileTasks(root, '/done-log.org');
 
@@ -114,7 +115,8 @@ test('extractFileTasks_withoutLogbook_hasNoLastDoneAt', () => {
 });
 
 test('extractFileTasks_withLogbookWithoutDone_hasNoLastDoneAt', () => {
-  const content = '* TODO Task\n:LOGBOOK:\n- State "TODO" from "DONE" [2026-05-13 Wed 14:30]\n:END:\n';
+  const content =
+    '* TODO Task\n:LOGBOOK:\n- State "TODO" from "DONE" [2026-05-13 Wed 14:30]\n:END:\n';
   const root = withMetaInfo(parse(content));
   const tasks = extractFileTasks(root, '/todo-log.org');
 
@@ -123,7 +125,8 @@ test('extractFileTasks_withLogbookWithoutDone_hasNoLastDoneAt', () => {
 });
 
 test('extractFileTasks_withMultipleDoneLogbookEntries_extractsLatestDoneAt', () => {
-  const content = '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-12 Tue 09:00]\n- State "DONE" from "TODO" [2026-05-14 Thu 10:00]\n:END:\n';
+  const content =
+    '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-12 Tue 09:00]\n- State "DONE" from "TODO" [2026-05-14 Thu 10:00]\n:END:\n';
   const root = withMetaInfo(parse(content));
   const tasks = extractFileTasks(root, '/multi-log.org');
 
