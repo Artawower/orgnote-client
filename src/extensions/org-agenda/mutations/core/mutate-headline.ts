@@ -1,3 +1,4 @@
+import { logger } from 'src/boot/logger';
 import { parseHeadlineContext } from './headline-context';
 import { applyTextEdits } from './text-edits';
 import type { HeadlineContext } from './headline-context';
@@ -18,8 +19,28 @@ export const mutateHeadline = (
   builders: HeadlineMutationBuilder[],
 ): string | undefined => {
   const ctx = parseHeadlineContext(content, headlineStart);
-  if (!ctx) return undefined;
+  if (!ctx) {
+    logger.warn('[agenda] mutateHeadline: parseHeadlineContext returned undefined', {
+      headlineStart,
+      contentPreview: content.slice(0, 200),
+    });
+    return undefined;
+  }
   const edits = collectEdits(ctx, builders);
+  logger.info('[agenda] mutateHeadline: collected edits', {
+    headlineStart,
+    editsCount: edits.length,
+    edits: edits.map((edit) => ({
+      start: edit.start,
+      end: edit.end,
+      replPreview: edit.replacement.slice(0, 30),
+    })),
+  });
   if (!edits.length) return content;
-  return applyTextEdits(content, edits);
+  try {
+    return applyTextEdits(content, edits);
+  } catch (error) {
+    logger.error('[agenda] mutateHeadline: applyTextEdits threw', { error });
+    return undefined;
+  }
 };

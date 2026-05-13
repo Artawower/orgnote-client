@@ -30,6 +30,7 @@ import ContainerLayout from 'src/components/ContainerLayout.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import { api } from 'src/boot/api';
+import { logger } from 'src/boot/logger';
 import { reporter } from 'src/boot/report';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
@@ -60,16 +61,55 @@ const hasRepeater = (task: FileTask): boolean =>
 const buildMutation =
   (task: FileTask, completedAt: Date): ContentMutator =>
   (content: string): string | undefined => {
-    if (task.start === undefined) return content;
-    if (task.state === 'done') return reopenTask(content, task.start);
-    if (hasRepeater(task)) return completeRepeatingTask(content, task.start, completedAt);
-    return completeTask(content, task.start, completedAt);
+    if (task.start === undefined) {
+      logger.warn('[agenda] buildMutation: task.start undefined');
+      return content;
+    }
+    if (task.state === 'done') {
+      logger.info('[agenda] buildMutation: branch=reopenTask', { taskStart: task.start });
+      const result = reopenTask(content, task.start);
+      logger.info('[agenda] reopenTask returned', {
+        defined: result !== undefined,
+        sameAsInput: result === content,
+      });
+      return result;
+    }
+    if (hasRepeater(task)) {
+      logger.info('[agenda] buildMutation: branch=completeRepeatingTask', {
+        taskStart: task.start,
+      });
+      const result = completeRepeatingTask(content, task.start, completedAt);
+      logger.info('[agenda] completeRepeatingTask returned', {
+        defined: result !== undefined,
+        sameAsInput: result === content,
+      });
+      return result;
+    }
+    logger.info('[agenda] buildMutation: branch=completeTask', { taskStart: task.start });
+    const result = completeTask(content, task.start, completedAt);
+    logger.info('[agenda] completeTask returned', {
+      defined: result !== undefined,
+      sameAsInput: result === content,
+    });
+    return result;
   };
 
 const toggleTask = async (task: FileTask, filePath: string): Promise<void> => {
-  if (task.start === undefined) return;
+  logger.info('[agenda] toggleTask called', {
+    taskStart: task.start,
+    taskState: task.state,
+    taskText: task.text,
+    hasRepeater: hasRepeater(task),
+    filePath,
+  });
+  if (task.start === undefined) {
+    logger.warn('[agenda] toggleTask: task.start is undefined, abort');
+    return;
+  }
   await mutationRunner.run(filePath, buildMutation(task, new Date()));
+  logger.info('[agenda] toggleTask: mutationRunner.run completed');
   await silentReload();
+  logger.info('[agenda] toggleTask: silentReload completed');
 };
 
 const openNote = async (_task: FileTask, filePath: string): Promise<void> => {

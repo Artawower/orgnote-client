@@ -1,4 +1,5 @@
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
+import { logger } from 'src/boot/logger';
 import { reporter } from 'src/boot/report';
 
 type FileContentStore = {
@@ -50,14 +51,45 @@ const reindexFile = async (fileSearch: FileSearchStore, filePath: string): Promi
   if (result.isErr()) reporter.reportError(result.error);
 };
 
+const toError = (error: unknown): Error =>
+  error instanceof Error ? error : new Error('Agenda mutation failed', { cause: error });
+
 export const createFileMutationRunner = (deps: FileMutationRunnerDeps) => {
   const run = async (filePath: string, mutate: ContentMutator): Promise<void> => {
     const content = await readContent(deps.fileContent, filePath);
-    if (content === undefined) return;
-    const nextContent = mutate(content);
-    if (!nextContent || nextContent === content) return;
+    if (content === undefined) {
+      logger.warn('[agenda] mutationRunner: readContent returned undefined', { filePath });
+      return;
+    }
+    let nextContent: string | undefined;
+    try {
+      nextContent = mutate(content);
+    } catch (error) {
+      logger.error('[agenda] mutationRunner: mutate threw', { error });
+      reporter.reportError(toError(error));
+      return;
+    }
+    if (!nextContent) {
+      logger.warn('[agenda] mutationRunner: mutate returned undefined/empty', { filePath });
+      return;
+    }
+    if (nextContent === content) {
+      logger.warn('[agenda] mutationRunner: mutate returned same content, skip write', {
+        filePath,
+      });
+      return;
+    }
+    logger.info('[agenda] mutationRunner: writing file', {
+      filePath,
+      contentLen: nextContent.length,
+    });
     const written = await writeContent(deps.fileContent, filePath, nextContent);
-    if (written) await reindexFile(deps.fileSearch, filePath);
+    if (written) {
+      logger.info('[agenda] mutationRunner: write success, reindexing');
+      await reindexFile(deps.fileSearch, filePath);
+      return;
+    }
+    logger.warn('[agenda] mutationRunner: write failed');
   };
 
   return { run };
