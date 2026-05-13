@@ -4,6 +4,10 @@ export interface TextEdit {
   replacement: string;
 }
 
+interface IndexedTextEdit extends TextEdit {
+  index: number;
+}
+
 const editsOverlap = (a: TextEdit, b: TextEdit): boolean => a.start < b.end && b.start < a.end;
 
 const assertNoOverlap = (edits: TextEdit[]): void => {
@@ -17,13 +21,16 @@ const assertNoOverlap = (edits: TextEdit[]): void => {
   });
 };
 
+const indexEdit = (edit: TextEdit, index: number): IndexedTextEdit => ({ ...edit, index });
+
+const compareApplicationOrder = (a: IndexedTextEdit, b: IndexedTextEdit): number =>
+  b.start - a.start || b.index - a.index;
+
+const applyEdit = (content: string, edit: TextEdit): string =>
+  content.slice(0, edit.start) + edit.replacement + content.slice(edit.end);
+
 export const applyTextEdits = (content: string, edits: TextEdit[]): string => {
   if (!edits.length) return content;
   assertNoOverlap(edits);
-  return [...edits]
-    .sort((a, b) => b.start - a.start)
-    .reduce(
-      (acc, edit) => acc.slice(0, edit.start) + edit.replacement + acc.slice(edit.end),
-      content,
-    );
+  return edits.map(indexEdit).sort(compareApplicationOrder).reduce(applyEdit, content);
 };

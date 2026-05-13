@@ -11,3 +11,11 @@ test('completeRepeatingTask_advancesRepeaterAndRecordsStateChange', () => {
     `* TODO Task\nSCHEDULED: <2026-05-14 Thu +1d>\n:LOGBOOK:\n${logLine}\n:END:\nBody\n`,
   );
 });
+
+test('completeRepeatingTask_noLogbook_createsLogbook', () => {
+  const content = '* TODO Daily\nSCHEDULED: <2026-05-13 Wed +1d>\nBody\n';
+  const result = completeRepeatingTask(content, 0, completedAt);
+
+  expect(result).toContain(':LOGBOOK:');
+  expect(result).toContain('SCHEDULED: <2026-05-14');
+});

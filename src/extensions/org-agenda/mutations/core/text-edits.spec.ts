@@ -32,6 +32,14 @@ test('applyTextEdits_editAtEnd_appendsContent', () => {
   );
 });
 
+test('applyTextEdits_samePositionInsertions_preservesInputOrder', () => {
+  const edits: TextEdit[] = [
+    { start: 5, end: 5, replacement: ' first' },
+    { start: 5, end: 5, replacement: ' second' },
+  ];
+  expect(applyTextEdits('hello', edits)).toBe('hello first second');
+});
+
 test('applyTextEdits_overlappingEdits_throws', () => {
   const edits: TextEdit[] = [
     { start: 0, end: 10, replacement: 'a' },

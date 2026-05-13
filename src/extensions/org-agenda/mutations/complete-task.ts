@@ -15,7 +15,7 @@ export const completeTask = (
 ): string | undefined =>
   mutateHeadline(content, headlineStart, [
     (ctx) => buildTodoKeywordEdit(ctx, TASK_DONE_KEYWORD),
+    (ctx) => buildClosedEdit(ctx, completedAt),
     (ctx) =>
       buildLogStateChangeEdit(ctx, getCurrentTodoKeyword(ctx), TASK_DONE_KEYWORD, completedAt),
-    (ctx) => buildClosedEdit(ctx, completedAt),
   ]);
