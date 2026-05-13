@@ -95,6 +95,42 @@ test('extractFileTasks_withClosedDate_extractsClosed', () => {
   expect(tasks[0]!.closed?.date).toContain('2026-05-10');
 });
 
+test('extractFileTasks_withDoneLogbookEntry_extractsLastDoneAt', () => {
+  const content = '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-13 Wed 14:30]\n:END:\n';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/done-log.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.lastDoneAt).toBe('2026-05-13');
+});
+
+test('extractFileTasks_withoutLogbook_hasNoLastDoneAt', () => {
+  const content = '* TODO Task\nBody\n';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/no-log.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.lastDoneAt).toBeUndefined();
+});
+
+test('extractFileTasks_withLogbookWithoutDone_hasNoLastDoneAt', () => {
+  const content = '* TODO Task\n:LOGBOOK:\n- State "TODO" from "DONE" [2026-05-13 Wed 14:30]\n:END:\n';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/todo-log.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.lastDoneAt).toBeUndefined();
+});
+
+test('extractFileTasks_withMultipleDoneLogbookEntries_extractsLatestDoneAt', () => {
+  const content = '* TODO Task\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-12 Tue 09:00]\n- State "DONE" from "TODO" [2026-05-14 Thu 10:00]\n:END:\n';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/multi-log.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.lastDoneAt).toBe('2026-05-14');
+});
+
 test('extractFileTasks_listCheckbox_hasNoAgendaFields', () => {
   const content = '- [ ] Simple list task';
   const root = withMetaInfo(parse(content));
