@@ -122,3 +122,12 @@ test('extractFileTasks_setsStartEndOffsets', () => {
     [25, 35],
   ]);
 });
+
+test('extractFileTasks_headlineTaskStart_matchesHeadlineStart', () => {
+  const content = '#+TITLE: Notes\n\n* TODO Headline task';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/headline.org');
+
+  expect(tasks).toHaveLength(1);
+  expect(tasks[0]!.start).toBe(content.indexOf('* TODO'));
+});

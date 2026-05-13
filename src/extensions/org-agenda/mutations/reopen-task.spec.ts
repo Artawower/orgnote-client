@@ -11,3 +11,11 @@ test('reopenTask_removesClosedAndRecordsStateChange', () => {
     `* TODO Task\nSCHEDULED: <2026-05-13 Wed>\n:LOGBOOK:\n${logLine}\n:END:\nBody\n`,
   );
 });
+
+test('reopenTask_noClosedNoLogbook_handlesGracefully', () => {
+  const content = '* DONE Task\nBody\n';
+  const result = reopenTask(content, 0, reopenedAt);
+
+  expect(result).toContain('TODO');
+  expect(result).toContain(':LOGBOOK:');
+});

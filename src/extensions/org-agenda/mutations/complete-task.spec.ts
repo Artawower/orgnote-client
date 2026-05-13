@@ -11,3 +11,11 @@ test('completeTask_recordsStateChangeInLogbook', () => {
     `* DONE Task\nCLOSED: [2026-05-13 Wed 12:34] SCHEDULED: <2026-05-13 Wed>\n:LOGBOOK:\n${logLine}\n:END:\nBody\n`,
   );
 });
+
+test('completeTask_noPlanningLine_addsClosedAndLogbook', () => {
+  const content = '* TODO Simple\nBody\n';
+
+  expect(completeTask(content, 0, completedAt)).toBe(
+    '* DONE Simple\nCLOSED: [2026-05-13 Wed 12:34]\n:LOGBOOK:\n- State "DONE" from "TODO" [2026-05-13 Wed 12:34]\n:END:\nBody\n',
+  );
+});
