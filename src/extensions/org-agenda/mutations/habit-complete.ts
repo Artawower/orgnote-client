@@ -1,6 +1,7 @@
 import { parse, withMetaInfo, NodeType, findNextSibling } from 'org-mode-ast';
 import type { OrgNode, OrgDate } from 'org-mode-ast';
 import { nextDateFromRepeater } from '../utils/repeater';
+import { findLogbookInsertPoint, wrapLogbookEntry } from './core/find-logbook';
 
 const utcDayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -50,13 +51,9 @@ const formatClockEntry = (completedAt: Date): string => {
 
 const insertClockIntoLogbook = (content: string, section: OrgNode, completedAt: Date): string => {
   const clockLine = formatClockEntry(completedAt);
-  const logbookIdx = content.indexOf(':LOGBOOK:', section.start);
-  if (logbookIdx !== -1 && logbookIdx < section.end) {
-    const insertAt = logbookIdx + ':LOGBOOK:'.length + 1;
-    return content.slice(0, insertAt) + clockLine + content.slice(insertAt);
-  }
-  const logbook = `:LOGBOOK:\n${clockLine}:END:\n`;
-  return content.slice(0, section.start) + logbook + content.slice(section.start);
+  const point = findLogbookInsertPoint(section, content);
+  const insertion = point.shouldCreateDrawer ? wrapLogbookEntry(clockLine) : clockLine;
+  return content.slice(0, point.insertAt) + insertion + content.slice(point.insertAt);
 };
 
 const applyStatusReset = (content: string, headline: OrgNode): string => {

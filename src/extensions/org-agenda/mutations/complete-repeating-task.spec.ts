@@ -1,0 +1,13 @@
+import { expect, test } from 'vitest';
+import { completeRepeatingTask } from './complete-repeating-task';
+
+const completedAt = new Date(2026, 4, 13, 12, 34);
+const logLine = '- State "DONE" from "WAIT" [2026-05-13 Wed 12:34]';
+
+test('completeRepeatingTask_advancesRepeaterAndRecordsStateChange', () => {
+  const content = '* WAIT Task\nSCHEDULED: <2026-05-13 Wed +1d>\nBody\n';
+
+  expect(completeRepeatingTask(content, 0, completedAt)).toBe(
+    `* TODO Task\nSCHEDULED: <2026-05-14 Thu +1d>\n:LOGBOOK:\n${logLine}\n:END:\nBody\n`,
+  );
+});

@@ -1,5 +1,6 @@
 import { parse, withMetaInfo, NodeType } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
+import { findLogbookInsertPoint, wrapLogbookEntry } from './core/find-logbook';
 
 const replaceRange = (content: string, start: number, end: number, replacement: string): string =>
   content.slice(0, start) + replacement + content.slice(end);
@@ -28,18 +29,6 @@ const formatDuration = (startedAt: Date, endedAt: Date): string => {
   return `${h}:${String(m).padStart(2, '0')}`;
 };
 
-const findOrBuildLogbookInsertPoint = (
-  section: OrgNode,
-  content: string,
-): { insertAt: number; withLogbook: boolean } => {
-  const logbookStart = content.indexOf(':LOGBOOK:', section.start);
-  const logbookEnd = content.indexOf(':END:', logbookStart);
-  if (logbookStart !== -1 && logbookEnd !== -1 && logbookStart < section.end) {
-    return { insertAt: logbookStart + ':LOGBOOK:'.length + 1, withLogbook: false };
-  }
-  return { insertAt: section.start, withLogbook: true };
-};
-
 const buildOpenClockSearchTerm = (startedAt: Date): string =>
   `CLOCK: ${formatOrgTimestamp(startedAt)}\n`;
 
@@ -51,10 +40,10 @@ export const openClock = (
   const root = withMetaInfo(parse(content));
   const headline = findHeadlineAt(root, headlineStart);
   if (!headline?.section) return undefined;
-  const { insertAt, withLogbook } = findOrBuildLogbookInsertPoint(headline.section, content);
+  const point = findLogbookInsertPoint(headline.section, content);
   const clockLine = buildOpenClockSearchTerm(startedAt);
-  const insertion = withLogbook ? `:LOGBOOK:\n${clockLine}:END:\n` : clockLine;
-  return content.slice(0, insertAt) + insertion + content.slice(insertAt);
+  const insertion = point.shouldCreateDrawer ? wrapLogbookEntry(clockLine) : clockLine;
+  return content.slice(0, point.insertAt) + insertion + content.slice(point.insertAt);
 };
 
 export const closeClock = (
