@@ -2,6 +2,7 @@ import type { FileMeta } from 'orgnote-api';
 import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
 import { logger } from 'src/boot/logger';
 import { isHabitHeadline } from './headline-extractors';
+import { extractLastDoneAt } from './extract-logbook-last-done';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 type ExtractedFileTask = FileTask & { line: number };
@@ -83,6 +84,7 @@ const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial
   deadline: heading?.deadline,
   closed: heading?.closed,
   clocks: heading?.clocks,
+  lastDoneAt: extractLastDoneAt(node),
   isHabit: isHabitHeadline(node) || undefined,
 });
 
