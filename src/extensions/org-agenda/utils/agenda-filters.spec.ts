@@ -1,7 +1,14 @@
 import { expect, test } from 'vitest';
 import type { FileMeta } from 'orgnote-api';
 import type { OrgRepeater } from 'org-mode-ast';
-import { isOverdue, isToday, isTomorrow, isNextSevenDays, hasNoDate } from './agenda-filters';
+import {
+  isOverdue,
+  isToday,
+  isTomorrow,
+  isNextSevenDays,
+  hasNoDate,
+  isCompletedToday,
+} from './agenda-filters';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 
@@ -46,6 +53,14 @@ const monthlyRepeater = { type: '+', value: 1, unit: 'm' } as const;
 const zeroDayRepeater = { type: '+', value: 0, unit: 'd' } as const;
 
 const noDateTask: FileTask = { id: '1', kind: 'headline-todo', state: 'todo', text: 'Task' };
+
+const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
+  id: '1',
+  kind: 'headline-todo',
+  state: 'todo',
+  text: 'Task',
+  lastDoneAt,
+});
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
 
@@ -159,6 +174,18 @@ test('isNextSevenDays_returnsFalse_forEightDaysAhead', () => {
 
 test('isNextSevenDays_returnsTrue_forOverdueTask', () => {
   expect(isNextSevenDays(withScheduled('2026-05-11'), now)).toBe(true);
+});
+
+test('isCompletedToday_returnsTrue_forToday', () => {
+  expect(isCompletedToday(withLastDoneAt('2026-05-12'), now)).toBe(true);
+});
+
+test('isCompletedToday_returnsFalse_forYesterday', () => {
+  expect(isCompletedToday(withLastDoneAt('2026-05-11'), now)).toBe(false);
+});
+
+test('isCompletedToday_returnsFalse_withoutLastDoneAt', () => {
+  expect(isCompletedToday(withLastDoneAt(), now)).toBe(false);
 });
 
 test('hasNoDate_returnsTrue_whenNoDates', () => {

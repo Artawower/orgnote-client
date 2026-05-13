@@ -2,13 +2,13 @@
   <app-flex class="task-row" row between align-start gap="md">
     <app-flex gap="sm" align-start class="task-main">
       <app-checkbox
-        :model-value="task.state === 'done'"
+        :model-value="isChecked"
         :style="priorityStyle"
         @change="onCheckboxChange"
         @click.stop
       />
       <app-flex column gap="xs" align-start class="task-body">
-        <span class="task-title" :class="{ done: task.state === 'done' }">{{ task.text }}</span>
+        <span class="task-title" :class="{ done: isChecked }">{{ task.text }}</span>
         <app-flex v-if="hasMeta" row start align-center gap="xs" wrap>
           <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
             <app-icon name="sym_o_event" size="xs" />
@@ -36,7 +36,7 @@ import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { FileTask } from 'orgnote-api';
 import { logger } from 'src/boot/logger';
 import { computed } from 'vue';
-import { isOverdue } from '../utils/agenda-filters';
+import { isCompletedToday, isOverdue } from '../utils/agenda-filters';
 import { useAgendaDate } from '../composables/use-agenda-date';
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -65,6 +65,8 @@ const priorityStyle = computed(() => {
 const { prettyAgendaDate } = useAgendaDate();
 
 const isTaskOverdue = computed(() => isOverdue(props.task));
+
+const isChecked = computed(() => props.task.state === 'done' || isCompletedToday(props.task));
 
 const rawDate = computed(() => props.task.scheduled?.date ?? props.task.deadline?.date ?? null);
 

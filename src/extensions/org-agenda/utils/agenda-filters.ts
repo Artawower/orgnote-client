@@ -118,4 +118,9 @@ export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
 export const isOverdue = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now);
 
+export const isCompletedToday = (task: FileTask, now = new Date()): boolean => {
+  if (!task.lastDoneAt) return false;
+  return dayDiff(toUtcMidnight(task.lastDoneAt), now) === 0;
+};
+
 export const hasNoDate = (task: FileTask): boolean => !task.scheduled?.date && !task.deadline?.date;
