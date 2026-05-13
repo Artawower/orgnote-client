@@ -8,13 +8,27 @@ export interface HeadlineContext {
   heading?: Heading;
 }
 
+const getSearchChildren = (node: OrgNode): OrgNode[] =>
+  [node.title, node.section, ...node.childrenList].filter((child): child is OrgNode => !!child);
+
+const containsOffset = (node: OrgNode, offset: number): boolean =>
+  node.start <= offset && offset < node.end;
+
 const findHeadlineAt = (root: OrgNode, headlineStart: number): OrgNode | undefined => {
-  if (root.is(NodeType.Headline) && root.start === headlineStart) return root;
-  return root.childrenList
-    .flatMap((child) => [child, ...(child.section?.childrenList ?? [])])
+  const nested = getSearchChildren(root)
     .map((child) => findHeadlineAt(child, headlineStart))
     .find(Boolean);
+  if (nested) return nested;
+  if (root.is(NodeType.Headline) && containsOffset(root, headlineStart)) return root;
+  return undefined;
 };
+
+const findHeading = (
+  root: OrgNode,
+  headline: OrgNode,
+  headlineStart: number,
+): Heading | undefined =>
+  root.meta?.headings?.find((h) => h.start === headline.start || h.start === headlineStart);
 
 export const parseHeadlineContext = (
   content: string,
@@ -27,6 +41,6 @@ export const parseHeadlineContext = (
     content,
     root,
     headline,
-    heading: root.meta?.headings?.find((h) => h.start === headlineStart),
+    heading: findHeading(root, headline, headlineStart),
   };
 };
