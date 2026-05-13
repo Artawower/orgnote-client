@@ -4,7 +4,7 @@
       <app-checkbox
         :model-value="task.state === 'done'"
         :style="priorityStyle"
-        @change="$emit('toggle')"
+        @change="onCheckboxChange"
         @click.stop
       />
       <app-flex column gap="xs" align-start class="task-body">
@@ -34,6 +34,7 @@ import AppIcon from 'src/components/AppIcon.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { FileTask } from 'orgnote-api';
+import { logger } from 'src/boot/logger';
 import { computed } from 'vue';
 import { isOverdue } from '../utils/agenda-filters';
 import { useAgendaDate } from '../composables/use-agenda-date';
@@ -45,7 +46,16 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const props = defineProps<{ task: FileTask }>();
-defineEmits<{ toggle: []; 'open-note': [] }>();
+const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
+
+const onCheckboxChange = (): void => {
+  logger.info('[agenda] AgendaTaskRow: checkbox changed', {
+    taskStart: props.task.start,
+    taskState: props.task.state,
+    taskText: props.task.text,
+  });
+  emit('toggle');
+};
 
 const priorityStyle = computed(() => {
   const color = props.task.priority ? PRIORITY_COLORS[props.task.priority] : undefined;

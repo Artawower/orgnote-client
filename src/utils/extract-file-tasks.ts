@@ -1,5 +1,6 @@
 import type { FileMeta } from 'orgnote-api';
 import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
+import { logger } from 'src/boot/logger';
 import { isHabitHeadline } from './headline-extractors';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
@@ -65,6 +66,15 @@ const createOffsetToLineResolver = (content: string): OffsetToLineResolver => {
   return (offset: number): number => findLineFromOffsets(offsets, offset);
 };
 
+const logExtractedTask = <T extends ExtractedFileTask>(task: T): T => {
+  logger.debug('[agenda] extracted task', {
+    start: task.start,
+    text: task.text,
+    state: task.state,
+  });
+  return task;
+};
+
 const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial<FileTask> => ({
   priority: heading?.priority,
   tags: heading?.tags,
@@ -83,16 +93,17 @@ const createHeadlineTask = (
   kind: Extract<FileTask['kind'], 'headline-checkbox' | 'headline-todo'>,
   state: FileTaskState,
   agendaFields: Partial<FileTask>,
-): ExtractedFileTask => ({
-  id: buildTaskId(filePath, node, kind),
-  kind,
-  state,
-  text: extractTaskText(node),
-  start: node.start,
-  end: node.end,
-  line: resolveLine(node.start),
-  ...agendaFields,
-});
+): ExtractedFileTask =>
+  logExtractedTask({
+    id: buildTaskId(filePath, node, kind),
+    kind,
+    state,
+    text: extractTaskText(node),
+    start: node.start,
+    end: node.end,
+    line: resolveLine(node.start),
+    ...agendaFields,
+  });
 
 const createTaskFromHeadline = (
   node: OrgNode,
@@ -131,7 +142,7 @@ const createTaskFromListItem = (
 ): ExtractedFileTask | undefined => {
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
   if (!checkboxNode) return undefined;
-  return {
+  return logExtractedTask({
     id: buildTaskId(filePath, node, 'list-checkbox'),
     kind: 'list-checkbox',
     state: resolveCheckboxState(checkboxNode),
@@ -139,7 +150,7 @@ const createTaskFromListItem = (
     start: node.start,
     end: node.end,
     line: resolveLine(node.start),
-  };
+  });
 };
 
 const createTaskFromNode = (
