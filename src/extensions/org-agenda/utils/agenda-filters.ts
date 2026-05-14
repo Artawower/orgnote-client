@@ -185,8 +185,11 @@ export const isToday = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now) ||
   isCompletedToday(task, now);
 
-export const isTomorrow = (task: FileTask, now = new Date()): boolean =>
-  hasOccurrenceInRange(task, 1, 1, now);
+export const isTomorrow = (task: FileTask, now = new Date()): boolean => {
+  if (hasOccurrenceInRange(task, 1, 1, now)) return true;
+  const tomorrow = addUtcDays(toUtcMidnight(now.toISOString()), 1);
+  return isCompletedOn(task, tomorrow);
+};
 
 export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
   hasOccurrenceInRange(task, 0, 7, now) ||
