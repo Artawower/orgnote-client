@@ -112,26 +112,37 @@ const hasOccurrenceInRange = (
 };
 
 const isOverdueInternal = (task: FileTask, now: Date): boolean => {
+  if (task.state === 'done') return false;
   const isoDate = task.deadline?.date ?? task.scheduled?.date;
   if (!isoDate) return false;
   return dayDiff(toUtcMidnight(isoDate), now) < 0;
 };
 
 export const isToday = (task: FileTask, now = new Date()): boolean =>
-  hasOccurrenceInRange(task, 0, 0, now) || isOverdueInternal(task, now);
+  hasOccurrenceInRange(task, 0, 0, now) ||
+  isOverdueInternal(task, now) ||
+  isCompletedToday(task, now);
 
 export const isTomorrow = (task: FileTask, now = new Date()): boolean =>
   hasOccurrenceInRange(task, 1, 1, now);
 
 export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
-  hasOccurrenceInRange(task, 0, 7, now) || isOverdueInternal(task, now);
+  hasOccurrenceInRange(task, 0, 7, now) ||
+  isOverdueInternal(task, now) ||
+  isCompletedToday(task, now);
 
 export const isOverdue = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now);
 
-export const isCompletedToday = (task: FileTask, now = new Date()): boolean => {
-  if (!task.lastDoneAt) return false;
-  return localDayDiff(toLocalMidnight(task.lastDoneAt), now) === 0;
+const getDoneDates = (task: FileTask): string[] => {
+  if (task.doneDates?.length) return task.doneDates;
+  return task.lastDoneAt ? [task.lastDoneAt] : [];
 };
+
+export const isCompletedOn = (task: FileTask, date: Date): boolean =>
+  getDoneDates(task).some((doneDate) => localDayDiff(toLocalMidnight(doneDate), date) === 0);
+
+export const isCompletedToday = (task: FileTask, now = new Date()): boolean =>
+  isCompletedOn(task, now);
 
 export const hasNoDate = (task: FileTask): boolean => !task.scheduled?.date && !task.deadline?.date;

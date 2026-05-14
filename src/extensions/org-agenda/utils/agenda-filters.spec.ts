@@ -8,6 +8,9 @@ import {
   isNextSevenDays,
   hasNoDate,
   isCompletedToday,
+  isCompletedOn,
+  getOccurrencesInRange,
+  getFirstUnfinishedOccurrence,
 } from './agenda-filters';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
@@ -64,6 +67,113 @@ const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
 
+// NEW: getOccurrencesInRange — collect all occurrence dates in window
+test('getOccurrencesInRange_singleNonRecurringInWindow_returnsBase', () => {
+  const task = withScheduled('2026-05-14');
+  const range = getOccurrencesInRange(task, now, 0, 7);
+  expect(range.map((d) => d.toISOString().slice(0, 10))).toEqual(['2026-05-14']);
+});
+
+test('getOccurrencesInRange_singleNonRecurringOutsideWindow_returnsEmpty', () => {
+  const task = withScheduled('2026-06-01');
+  const range = getOccurrencesInRange(task, now, 0, 7);
+  expect(range).toEqual([]);
+});
+
+test('getOccurrencesInRange_recurringDailyFromToday_returns8Days', () => {
+  // base today, +1d, window [0, 7] → 8 occurrences (inclusive)
+  const task = withScheduledRepeater('2026-05-12', dailyRepeater);
+  const range = getOccurrencesInRange(task, now, 0, 7);
+  expect(range).toHaveLength(8);
+  expect(range[0]?.toISOString().slice(0, 10)).toBe('2026-05-12');
+  expect(range[7]?.toISOString().slice(0, 10)).toBe('2026-05-19');
+});
+
+test('getOccurrencesInRange_recurringEvery2Days_returnsAlternateDays', () => {
+  // base today, +2d, window [0, 7] → occurrences on days 0, 2, 4, 6 (4 total)
+  const task = withScheduledRepeater('2026-05-12', everyTwoDaysRepeater);
+  const range = getOccurrencesInRange(task, now, 0, 7);
+  expect(range.map((d) => d.toISOString().slice(0, 10))).toEqual([
+    '2026-05-12',
+    '2026-05-14',
+    '2026-05-16',
+    '2026-05-18',
+  ]);
+});
+
+test('getOccurrencesInRange_zeroValueRepeater_returnsEmpty', () => {
+  const task = withScheduledRepeater('2026-05-12', zeroDayRepeater);
+  const range = getOccurrencesInRange(task, now, 0, 7);
+  expect(range).toEqual([]);
+});
+
+test('getOccurrencesInRange_recurringMonthly_returnsMonthlyDates', () => {
+  // base previous month, +1m, window large enough to catch one occurrence
+  const task = withScheduledRepeater('2026-04-13', monthlyRepeater);
+  const range = getOccurrencesInRange(task, now, 0, 30);
+  // base 2026-04-13 < windowStart 2026-05-12, next is 2026-05-13 → in window
+  expect(range.map((d) => d.toISOString().slice(0, 10))).toContain('2026-05-13');
+});
+
+// NEW: getFirstUnfinishedOccurrence — first occurrence not in doneDates
+test('getFirstUnfinishedOccurrence_recurringNoDoneDates_returnsFirstOccurrence', () => {
+  const task = withScheduledRepeater('2026-05-12', dailyRepeater);
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-12');
+});
+
+test('getFirstUnfinishedOccurrence_recurringTodayDone_returnsTomorrow', () => {
+  // Real bug case: daily done today, viewing Next 7 Days → next pending = tomorrow
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-12', dailyRepeater),
+    doneDates: ['2026-05-12'],
+  };
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-13');
+});
+
+test('getFirstUnfinishedOccurrence_recurringFirstThreeDone_returnsFourth', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-12', dailyRepeater),
+    doneDates: ['2026-05-12', '2026-05-13', '2026-05-14'],
+  };
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+});
+
+test('getFirstUnfinishedOccurrence_recurringAllDone_returnsUndefined', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-12', dailyRepeater),
+    doneDates: [
+      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
+      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+    ],
+  };
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result).toBeUndefined();
+});
+
+test('getFirstUnfinishedOccurrence_nonRecurringDone_returnsUndefined', () => {
+  const task: FileTask = {
+    ...withScheduled('2026-05-14'),
+    doneDates: ['2026-05-14'],
+  };
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result).toBeUndefined();
+});
+
+test('getFirstUnfinishedOccurrence_nonRecurringNotDone_returnsBase', () => {
+  const task = withScheduled('2026-05-14');
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-14');
+});
+
+test('getFirstUnfinishedOccurrence_outsideWindow_returnsUndefined', () => {
+  const task = withScheduled('2026-06-01');
+  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  expect(result).toBeUndefined();
+});
+
 test('isOverdue_returnsTrue_forPastScheduledDate', () => {
   expect(isOverdue(withScheduled('2026-05-11'), now)).toBe(true);
 });
@@ -74,6 +184,67 @@ test('isOverdue_returnsFalse_forToday', () => {
 
 test('isOverdue_returnsFalse_forFutureDate', () => {
   expect(isOverdue(withScheduled('2026-05-13'), now)).toBe(false);
+});
+
+// REGRESSION: Bug 3 — viewing Tomorrow on task completed today: checkbox should be unchecked
+test('isCompletedOn_taskWithDoneOnSameDate_returnsTrue', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: ['2026-05-12', '2026-05-14'],
+  };
+  expect(isCompletedOn(task, new Date('2026-05-14T12:00:00'))).toBe(true);
+  expect(isCompletedOn(task, new Date('2026-05-12T12:00:00'))).toBe(true);
+});
+
+test('isCompletedOn_taskWithoutDoneOnViewDate_returnsFalse', () => {
+  // bug from user: task completed today, viewing tomorrow — must be unchecked
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: ['2026-05-14'],
+  };
+  expect(isCompletedOn(task, new Date('2026-05-15T12:00:00'))).toBe(false);
+  expect(isCompletedOn(task, new Date('2026-05-13T12:00:00'))).toBe(false);
+});
+
+test('isCompletedOn_taskWithoutDoneDates_returnsFalse', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+  };
+  expect(isCompletedOn(task, new Date('2026-05-14T12:00:00'))).toBe(false);
+});
+
+test('isCompletedOn_taskWithEmptyDoneDates_returnsFalse', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: [],
+  };
+  expect(isCompletedOn(task, new Date('2026-05-14T12:00:00'))).toBe(false);
+});
+
+test('isCompletedToday_isWrapperForIsCompletedOnToday', () => {
+  // isCompletedToday should be equivalent to isCompletedOn(task, now)
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: ['2026-05-14'],
+  };
+  const today = new Date('2026-05-14T12:00:00');
+  expect(isCompletedToday(task, today)).toBe(isCompletedOn(task, today));
+  expect(isCompletedToday(task, today)).toBe(true);
 });
 
 // REGRESSION: Bug 1 — DONE tasks should NOT appear in Overdue
