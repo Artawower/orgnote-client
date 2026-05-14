@@ -1,9 +1,9 @@
 <template>
   <component
-    :is="flat ? 'div' : CardWrapper"
+    :is="variant === 'flat' ? 'div' : CardWrapper"
     class="spoiler"
-    :class="{ flat, hoverable: isHoverable }"
-    v-bind="flat ? {} : { type: 'plain' }"
+    :class="`variant-${variant}`"
+    v-bind="variant === 'flat' ? {} : { type: 'plain' }"
     :style="{ '--spoiler-max-height': maxHeight }"
   >
     <app-flex class="spoiler-header" @click="toggle" row between align-center gap="md">
@@ -33,18 +33,18 @@ import AppIcon from './AppIcon.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 
+type AppSpoilerVariant = 'card' | 'card-static' | 'flat';
+
 const props = withDefaults(
   defineProps<{
     defaultExpanded?: boolean;
     maxHeight?: string;
-    flat?: boolean;
-    hoverable?: boolean;
+    variant?: AppSpoilerVariant;
   }>(),
   {
     defaultExpanded: false,
     maxHeight: '100px',
-    flat: false,
-    hoverable: true,
+    variant: 'card',
   },
 );
 
@@ -56,7 +56,7 @@ const localExpanded = ref(props.defaultExpanded ?? false);
 
 const expanded = computed(() => model.value ?? localExpanded.value);
 
-const isHoverable = computed(() => props.hoverable !== false);
+const variant = computed(() => props.variant);
 
 watch(
   model,
@@ -79,7 +79,7 @@ const toggle = (): void => {
 .spoiler {
   transition: background-color 0.2s ease;
 
-  &:not(.flat).hoverable {
+  &.variant-card {
     @include hover {
       background-color: var(--menu-item-hover-bg);
     }
@@ -118,7 +118,7 @@ const toggle = (): void => {
   overflow: auto;
 }
 
-.spoiler.flat .spoiler-body {
+.spoiler.variant-flat .spoiler-body {
   padding: 0;
 }
 </style>
