@@ -25,7 +25,6 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import AgendaTaskRow from './AgendaTaskRow.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
-import { logger } from 'src/boot/logger';
 import type { AgendaTaskGroup } from '../composables/use-agenda-tasks';
 
 const props = defineProps<{ group: AgendaTaskGroup }>();
@@ -35,12 +34,6 @@ const emit = defineEmits<{
 }>();
 
 const onTaskToggle = (task: AgendaTaskView): void => {
-  logger.info('[agenda] AgendaTaskGroup: forwarding task-toggle', {
-    taskStart: task.start,
-    taskState: task.state,
-    taskText: task.text,
-    filePath: props.group.filePath,
-  });
   emit('task-toggle', task, props.group.filePath);
 };
 </script>
