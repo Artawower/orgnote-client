@@ -24,7 +24,14 @@
           <slot />
         </div>
       </app-flex>
-      <app-flex v-if="slots.right || narrow || selected" class="right" row end align-center gap="sm">
+      <app-flex
+        v-if="slots.right || narrow || selected"
+        class="right"
+        row
+        end
+        align-center
+        gap="sm"
+      >
         <slot name="right" />
         <app-icon
           v-if="narrow"
