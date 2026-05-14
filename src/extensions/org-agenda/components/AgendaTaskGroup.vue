@@ -11,6 +11,7 @@
         v-for="task in group.tasks"
         :key="task.id"
         :task="task"
+        :view-date="viewDate"
         @toggle="onTaskToggle(task)"
         @open-note="$emit('task-click', task, group.filePath)"
       />
@@ -28,7 +29,7 @@ import type { FileTask } from 'orgnote-api';
 import { logger } from 'src/boot/logger';
 import type { AgendaTaskGroup } from '../composables/use-agenda-tasks';
 
-const props = defineProps<{ group: AgendaTaskGroup }>();
+const props = defineProps<{ group: AgendaTaskGroup; viewDate?: Date }>();
 const emit = defineEmits<{
   'task-click': [task: FileTask, filePath: string];
   'task-toggle': [task: FileTask, filePath: string];

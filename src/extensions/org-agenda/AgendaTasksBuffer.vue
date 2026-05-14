@@ -13,6 +13,7 @@
           v-for="group in groups"
           :key="group.filePath"
           :group="group"
+          :view-date="viewDate"
           @task-click="openNote"
           @task-toggle="toggleTask"
         />
@@ -22,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { DefaultCommands } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -59,6 +60,14 @@ const mutationRunner = createFileMutationRunner({
 
 const hasRepeater = (task: FileTask): boolean =>
   !!(task.scheduled?.repeater ?? task.deadline?.repeater);
+
+const viewDate = computed(() => {
+  const today = new Date();
+  if (filterStore.activeFilter !== 'tomorrow') return today;
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow;
+});
 
 const buildMutation =
   (task: FileTask, completedAt: Date): ContentMutator =>

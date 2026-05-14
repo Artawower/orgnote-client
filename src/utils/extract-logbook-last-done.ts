@@ -34,14 +34,16 @@ const collectLogbookListItems = (node: OrgNode, bounds: LogbookBounds): OrgNode[
 const extractDoneDate = (item: OrgNode): string | undefined =>
   DONE_STATE_LINE.exec(item.rawValue ?? '')?.[1];
 
-export const extractLastDoneAt = (headline: OrgNode): string | undefined => {
+export const extractDoneDates = (headline: OrgNode): string[] => {
   const section = headline.section;
-  if (!section) return undefined;
+  if (!section) return [];
   const bounds = findLogbookBounds(section);
-  if (!bounds) return undefined;
-  return collectLogbookListItems(section, bounds)
-    .map(extractDoneDate)
-    .filter((date): date is string => !!date)
-    .sort()
-    .at(-1);
+  if (!bounds) return [];
+  return collectLogbookListItems(section, bounds).flatMap((item) => {
+    const date = extractDoneDate(item);
+    return date ? [date] : [];
+  });
 };
+
+export const extractLastDoneAt = (headline: OrgNode): string | undefined =>
+  extractDoneDates(headline).sort().at(-1);

@@ -179,6 +179,29 @@ test('extractFileTasks_levelTwoTaskWithoutTags_parsesLogbook', () => {
   expect(subtask?.lastDoneAt).toBe('2026-05-14');
 });
 
+test('extractFileTasks_logbookMultipleDoneEntries_returnsAllDoneDates', () => {
+  const content = `* TODO Daily
+:LOGBOOK:
+- State "DONE" from "TODO" [2026-05-14 Thu 10:00]
+- State "DONE" from "TODO" [2026-05-12 Tue 09:00]
+:END:
+`;
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/done-dates.org');
+
+  expect(tasks[0]?.doneDates).toContain('2026-05-14');
+  expect(tasks[0]?.doneDates).toContain('2026-05-12');
+  expect(tasks[0]?.doneDates).toHaveLength(2);
+});
+
+test('extractFileTasks_noLogbook_doneDatesEmpty', () => {
+  const content = '* TODO Task\n';
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/empty-done-dates.org');
+
+  expect(tasks[0]?.doneDates ?? []).toEqual([]);
+});
+
 test('extractFileTasks_listCheckbox_hasNoAgendaFields', () => {
   const content = '- [ ] Simple list task';
   const root = withMetaInfo(parse(content));

@@ -36,7 +36,7 @@ import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { FileTask } from 'orgnote-api';
 import { logger } from 'src/boot/logger';
 import { computed } from 'vue';
-import { isCompletedToday, isOverdue } from '../utils/agenda-filters';
+import { isCompletedOn, isCompletedToday, isOverdue } from '../utils/agenda-filters';
 import { useAgendaDate } from '../composables/use-agenda-date';
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -45,7 +45,7 @@ const PRIORITY_COLORS: Record<string, string> = {
   C: 'var(--blue, var(--q-info))',
 };
 
-const props = defineProps<{ task: FileTask }>();
+const props = defineProps<{ task: FileTask; viewDate?: Date }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
 
 const onCheckboxChange = (): void => {
@@ -66,7 +66,11 @@ const { prettyAgendaDate } = useAgendaDate();
 
 const isTaskOverdue = computed(() => isOverdue(props.task));
 
-const isChecked = computed(() => props.task.state === 'done' || isCompletedToday(props.task));
+const isChecked = computed(
+  () =>
+    props.task.state === 'done' ||
+    (props.viewDate ? isCompletedOn(props.task, props.viewDate) : isCompletedToday(props.task)),
+);
 
 const rawDate = computed(() => props.task.scheduled?.date ?? props.task.deadline?.date ?? null);
 
