@@ -1,3 +1,4 @@
+import { addDays, startOfDay } from 'date-fns';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -23,18 +24,7 @@ export interface AgendaTaskGroup {
   tasks: AgendaTaskView[];
 }
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-const toUtcMidnight = (isoDate: string): Date => new Date(`${isoDate.slice(0, 10)}T00:00:00Z`);
-
-const addUtcDays = (date: Date, days: number): Date => new Date(date.getTime() + days * MS_PER_DAY);
-
-const toLocalCalendarDate = (date: Date): Date => {
-  const [year, month, day] = date.toISOString().slice(0, 10).split('-').map(Number);
-  return new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
-};
-
-const todayForAgenda = (now: Date): Date => toLocalCalendarDate(toUtcMidnight(now.toISOString()));
+const todayForAgenda = (now: Date): Date => startOfDay(now);
 
 const filterPredicates: Record<
   Exclude<AgendaFilter, 'all' | 'next7days'>,
@@ -68,11 +58,10 @@ const isTaskVisible = (task: FileTask, filter: AgendaFilter, now: Date): boolean
 };
 
 const computeViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date => {
-  if (filter === 'tomorrow')
-    return toLocalCalendarDate(addUtcDays(toUtcMidnight(now.toISOString()), 1));
+  if (filter === 'tomorrow') return addDays(todayForAgenda(now), 1);
   if (filter !== 'next7days') return todayForAgenda(now);
   const viewDate = findNextOccurrenceInRange(task, now, 7);
-  return viewDate ? toLocalCalendarDate(viewDate) : todayForAgenda(now);
+  return viewDate ?? todayForAgenda(now);
 };
 
 const toTaskView = (task: FileTask, filter: AgendaFilter, now: Date): AgendaTaskView => ({

@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { expect, test } from 'vitest';
 import type { FileMeta } from 'orgnote-api';
 import type { OrgRepeater } from 'org-mode-ast';
@@ -68,11 +69,14 @@ const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
 
+const dateKey = (date: Date | undefined): string | undefined =>
+  date ? format(date, 'yyyy-MM-dd') : undefined;
+
 // NEW: findNextOccurrenceInRange — unified helper for agenda range views
 test('findNextOccurrenceInRange_recurringNothingDone_returnsFirstOccurrence', () => {
   const task = withScheduledRepeater('2026-05-12', dailyRepeater);
   const result = findNextOccurrenceInRange(task, now, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-12');
+  expect(dateKey(result)).toBe('2026-05-12');
 });
 
 test('findNextOccurrenceInRange_recurringTodayDone_returnsTomorrow', () => {
@@ -82,7 +86,7 @@ test('findNextOccurrenceInRange_recurringTodayDone_returnsTomorrow', () => {
   };
   // base 2026-05-13 (advanced after today's done), first unfinished = 2026-05-13
   const result = findNextOccurrenceInRange(task, now, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-13');
+  expect(dateKey(result)).toBe('2026-05-13');
 });
 
 test('findNextOccurrenceInRange_recurringAllDone_returnsLastOccurrence', () => {
@@ -100,7 +104,7 @@ test('findNextOccurrenceInRange_recurringAllDone_returnsLastOccurrence', () => {
     ],
   };
   const result = findNextOccurrenceInRange(task, now, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-19');
+  expect(dateKey(result)).toBe('2026-05-19');
 });
 
 test('findNextOccurrenceInRange_nonRecurringDoneInWindow_returnsBase', () => {
@@ -109,13 +113,13 @@ test('findNextOccurrenceInRange_nonRecurringDoneInWindow_returnsBase', () => {
     doneDates: ['2026-05-15'],
   };
   const result = findNextOccurrenceInRange(task, now, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+  expect(dateKey(result)).toBe('2026-05-15');
 });
 
 test('findNextOccurrenceInRange_nonRecurringNotDoneInWindow_returnsBase', () => {
   const task = withScheduled('2026-05-15');
   const result = findNextOccurrenceInRange(task, now, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+  expect(dateKey(result)).toBe('2026-05-15');
 });
 
 test('findNextOccurrenceInRange_nothingInWindow_returnsUndefined', () => {
@@ -197,7 +201,7 @@ test('isTomorrow_taskNotCompletedOnTomorrow_returnsFalse', () => {
 test('getOccurrencesInRange_singleNonRecurringInWindow_returnsBase', () => {
   const task = withScheduled('2026-05-14');
   const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range.map((d) => d.toISOString().slice(0, 10))).toEqual(['2026-05-14']);
+  expect(range.map(dateKey)).toEqual(['2026-05-14']);
 });
 
 test('getOccurrencesInRange_singleNonRecurringOutsideWindow_returnsEmpty', () => {
@@ -211,15 +215,15 @@ test('getOccurrencesInRange_recurringDailyFromToday_returns8Days', () => {
   const task = withScheduledRepeater('2026-05-12', dailyRepeater);
   const range = getOccurrencesInRange(task, now, 0, 7);
   expect(range).toHaveLength(8);
-  expect(range[0]?.toISOString().slice(0, 10)).toBe('2026-05-12');
-  expect(range[7]?.toISOString().slice(0, 10)).toBe('2026-05-19');
+  expect(dateKey(range[0])).toBe('2026-05-12');
+  expect(dateKey(range[7])).toBe('2026-05-19');
 });
 
 test('getOccurrencesInRange_recurringEvery2Days_returnsAlternateDays', () => {
   // base today, +2d, window [0, 7] → occurrences on days 0, 2, 4, 6 (4 total)
   const task = withScheduledRepeater('2026-05-12', everyTwoDaysRepeater);
   const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range.map((d) => d.toISOString().slice(0, 10))).toEqual([
+  expect(range.map(dateKey)).toEqual([
     '2026-05-12',
     '2026-05-14',
     '2026-05-16',
@@ -238,14 +242,14 @@ test('getOccurrencesInRange_recurringMonthly_returnsMonthlyDates', () => {
   const task = withScheduledRepeater('2026-04-13', monthlyRepeater);
   const range = getOccurrencesInRange(task, now, 0, 30);
   // base 2026-04-13 < windowStart 2026-05-12, next is 2026-05-13 → in window
-  expect(range.map((d) => d.toISOString().slice(0, 10))).toContain('2026-05-13');
+  expect(range.map(dateKey)).toContain('2026-05-13');
 });
 
 // NEW: getFirstUnfinishedOccurrence — first occurrence not in doneDates
 test('getFirstUnfinishedOccurrence_recurringNoDoneDates_returnsFirstOccurrence', () => {
   const task = withScheduledRepeater('2026-05-12', dailyRepeater);
   const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-12');
+  expect(dateKey(result)).toBe('2026-05-12');
 });
 
 test('getFirstUnfinishedOccurrence_recurringTodayDone_returnsTomorrow', () => {
@@ -255,7 +259,7 @@ test('getFirstUnfinishedOccurrence_recurringTodayDone_returnsTomorrow', () => {
     doneDates: ['2026-05-12'],
   };
   const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-13');
+  expect(dateKey(result)).toBe('2026-05-13');
 });
 
 test('getFirstUnfinishedOccurrence_recurringFirstThreeDone_returnsFourth', () => {
@@ -264,7 +268,7 @@ test('getFirstUnfinishedOccurrence_recurringFirstThreeDone_returnsFourth', () =>
     doneDates: ['2026-05-12', '2026-05-13', '2026-05-14'],
   };
   const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+  expect(dateKey(result)).toBe('2026-05-15');
 });
 
 test('getFirstUnfinishedOccurrence_recurringAllDone_returnsUndefined', () => {
@@ -297,7 +301,7 @@ test('getFirstUnfinishedOccurrence_nonRecurringDone_returnsUndefined', () => {
 test('getFirstUnfinishedOccurrence_nonRecurringNotDone_returnsBase', () => {
   const task = withScheduled('2026-05-14');
   const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-14');
+  expect(dateKey(result)).toBe('2026-05-14');
 });
 
 test('getFirstUnfinishedOccurrence_outsideWindow_returnsUndefined', () => {
