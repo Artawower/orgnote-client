@@ -89,8 +89,14 @@ test('findNext7DaysViewDate_recurringAllDone_returnsLastOccurrence', () => {
   const task: FileTask = {
     ...withScheduledRepeater('2026-05-12', dailyRepeater),
     doneDates: [
-      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
-      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+      '2026-05-16',
+      '2026-05-17',
+      '2026-05-18',
+      '2026-05-19',
     ],
   };
   const result = findNext7DaysViewDate(task, now);
@@ -130,8 +136,14 @@ test('isNextSevenDays_recurringAllCompletedInWindow_returnsTrue', () => {
   const task: FileTask = {
     ...withScheduledRepeater('2026-05-12', dailyRepeater),
     doneDates: [
-      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
-      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+      '2026-05-16',
+      '2026-05-17',
+      '2026-05-18',
+      '2026-05-19',
     ],
   };
   expect(isNextSevenDays(task, now)).toBe(true);
