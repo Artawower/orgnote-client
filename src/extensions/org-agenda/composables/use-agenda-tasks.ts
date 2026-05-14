@@ -6,23 +6,47 @@ import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
-import { isOverdue, isToday, isTomorrow, isNextSevenDays } from '../utils/agenda-filters';
+import {
+  getFirstUnfinishedOccurrence,
+  isOverdue,
+  isToday,
+  isTomorrow,
+} from '../utils/agenda-filters';
 import { resolveAgendaConfig } from '../index';
 import { orgAgendaManifest } from '../manifest';
 
 export type AgendaFilter = 'overdue' | 'today' | 'tomorrow' | 'next7days' | 'all';
 
+export interface AgendaTaskView extends FileTask {
+  viewDate: Date;
+}
+
 export interface AgendaTaskGroup {
   fileTitle: string;
   filePath: string;
-  tasks: FileTask[];
+  tasks: AgendaTaskView[];
 }
 
-const filterPredicates: Record<Exclude<AgendaFilter, 'all'>, (t: FileTask) => boolean> = {
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const toUtcMidnight = (isoDate: string): Date => new Date(`${isoDate.slice(0, 10)}T00:00:00Z`);
+
+const addUtcDays = (date: Date, days: number): Date => new Date(date.getTime() + days * MS_PER_DAY);
+
+const toLocalCalendarDate = (date: Date): Date => {
+  const [year, month, day] = date.toISOString().slice(0, 10).split('-').map(Number);
+  return new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
+};
+
+const todayForAgenda = (now: Date): Date => toLocalCalendarDate(toUtcMidnight(now.toISOString()));
+
+const filterPredicates: Record<
+  Exclude<AgendaFilter, 'all' | 'next7days'>,
+  (t: FileTask) => boolean
+> = {
   overdue: isOverdue,
   today: isToday,
   tomorrow: isTomorrow,
-  next7days: isNextSevenDays,
 };
 
 const resolveFileTitle = (file: FileMeta): string => {
@@ -40,34 +64,56 @@ const isUnderAgendaPath = (file: FileMeta, agendaFilesPath: string | undefined):
   return absolute === agendaFilesPath || absolute.startsWith(normalizeDirPath(agendaFilesPath));
 };
 
-const applyFilter = (tasks: FileTask[], filter: AgendaFilter): FileTask[] => {
-  if (filter === 'all') return tasks;
-  const predicate = filterPredicates[filter];
-  return tasks.filter((t) => predicate(t));
+const isNextSevenDaysVisible = (task: FileTask, now: Date): boolean =>
+  !!getFirstUnfinishedOccurrence(task, now, 0, 7) || isOverdue(task, now);
+
+const isTaskVisible = (task: FileTask, filter: AgendaFilter, now: Date): boolean => {
+  if (filter === 'all') return true;
+  if (filter === 'next7days') return isNextSevenDaysVisible(task, now);
+  return filterPredicates[filter](task);
 };
 
-const toGroup = (file: FileMeta, filter: AgendaFilter): AgendaTaskGroup | null => {
-  const tasks = applyFilter(file.tasks ?? [], filter);
+const computeViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date => {
+  if (filter === 'tomorrow')
+    return toLocalCalendarDate(addUtcDays(toUtcMidnight(now.toISOString()), 1));
+  if (filter !== 'next7days') return todayForAgenda(now);
+  const firstUnfinished = getFirstUnfinishedOccurrence(task, now, 0, 7);
+  return firstUnfinished ? toLocalCalendarDate(firstUnfinished) : todayForAgenda(now);
+};
+
+const toTaskView = (task: FileTask, filter: AgendaFilter, now: Date): AgendaTaskView => ({
+  ...task,
+  viewDate: computeViewDate(task, filter, now),
+});
+
+const applyFilter = (tasks: FileTask[], filter: AgendaFilter, now: Date): AgendaTaskView[] =>
+  tasks
+    .filter((task) => isTaskVisible(task, filter, now))
+    .map((task) => toTaskView(task, filter, now));
+
+const toGroup = (file: FileMeta, filter: AgendaFilter, now: Date): AgendaTaskGroup | null => {
+  const tasks = applyFilter(file.tasks ?? [], filter, now);
   if (!tasks.length) return null;
   return { fileTitle: resolveFileTitle(file), filePath: resolveAbsolutePath(file), tasks };
 };
 
-const toGroups = (files: FileMeta[], filter: AgendaFilter): AgendaTaskGroup[] =>
-  files.flatMap((f) => {
-    const group = toGroup(f, filter);
+const toGroups = (files: FileMeta[], filter: AgendaFilter, now = new Date()): AgendaTaskGroup[] =>
+  files.flatMap((file) => {
+    const group = toGroup(file, filter, now);
     return group ? [group] : [];
   });
 
 const countFileTasks = (
   acc: Record<AgendaFilter, number>,
   file: FileMeta,
+  now: Date,
 ): Record<AgendaFilter, number> => {
   const tasks = file.tasks ?? [];
   acc.all += tasks.length;
-  acc.overdue += tasks.filter((t) => isOverdue(t)).length;
-  acc.today += tasks.filter((t) => isToday(t)).length;
-  acc.tomorrow += tasks.filter((t) => isTomorrow(t)).length;
-  acc.next7days += tasks.filter((t) => isNextSevenDays(t)).length;
+  acc.overdue += tasks.filter((task) => isOverdue(task, now)).length;
+  acc.today += tasks.filter((task) => isToday(task, now)).length;
+  acc.tomorrow += tasks.filter((task) => isTomorrow(task, now)).length;
+  acc.next7days += tasks.filter((task) => isNextSevenDaysVisible(task, now)).length;
   return acc;
 };
 
@@ -79,8 +125,8 @@ const emptyTotals = (): Record<AgendaFilter, number> => ({
   all: 0,
 });
 
-const buildTotalsByFilter = (files: FileMeta[]): Record<AgendaFilter, number> =>
-  files.reduce(countFileTasks, emptyTotals());
+const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<AgendaFilter, number> =>
+  files.reduce((acc, file) => countFileTasks(acc, file, now), emptyTotals());
 
 const setupWatchers = (loadFiles: () => Promise<void>): (() => void) => {
   const fileWatcher = api.core.useFileWatcher();

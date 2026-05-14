@@ -67,6 +67,50 @@ const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
 
+// REGRESSION: Bug 4 — task completed-for-tomorrow should be visible in Tomorrow filter
+test('isTomorrow_taskCompletedOnTomorrow_returnsTrue', () => {
+  // User scenario: SCHEDULED advanced past tomorrow,
+  // but LOGBOOK has DONE entry on tomorrow → should appear in Tomorrow with checked checkbox
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Test',
+    scheduled: {
+      date: '2026-05-14',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: { type: '++', value: 1, unit: 'd' },
+    },
+    doneDates: ['2026-05-12', '2026-05-13'],
+  };
+  // today = 2026-05-12, tomorrow = 2026-05-13
+  // doneDates includes 2026-05-13 → isTomorrow should be true
+  expect(isTomorrow(task, now)).toBe(true);
+});
+
+test('isTomorrow_taskNotCompletedOnTomorrow_returnsFalse', () => {
+  // Negative: doneDates only for today, not tomorrow → not in Tomorrow
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    scheduled: {
+      date: '2026-05-15',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: { type: '+', value: 1, unit: 'd' },
+    },
+    doneDates: ['2026-05-12'],
+  };
+  expect(isTomorrow(task, now)).toBe(false);
+});
+
 // NEW: getOccurrencesInRange — collect all occurrence dates in window
 test('getOccurrencesInRange_singleNonRecurringInWindow_returnsBase', () => {
   const task = withScheduled('2026-05-14');
@@ -145,8 +189,14 @@ test('getFirstUnfinishedOccurrence_recurringAllDone_returnsUndefined', () => {
   const task: FileTask = {
     ...withScheduledRepeater('2026-05-12', dailyRepeater),
     doneDates: [
-      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
-      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+      '2026-05-12',
+      '2026-05-13',
+      '2026-05-14',
+      '2026-05-15',
+      '2026-05-16',
+      '2026-05-17',
+      '2026-05-18',
+      '2026-05-19',
     ],
   };
   const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
