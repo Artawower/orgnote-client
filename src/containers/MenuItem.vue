@@ -24,7 +24,7 @@
           <slot />
         </div>
       </app-flex>
-      <div v-if="slots.right || narrow || selected" class="right">
+      <app-flex v-if="slots.right || narrow || selected" class="right" row end align-center gap="sm">
         <slot name="right" />
         <app-icon
           v-if="narrow"
@@ -33,7 +33,7 @@
           :color="active ? 'accent' : 'fg-muted'"
         />
         <app-icon v-else-if="selected" name="sym_o_check" color="accent" size="sm" />
-      </div>
+      </app-flex>
     </app-flex>
     <div v-if="slots.content" class="content">
       <slot name="content" />
