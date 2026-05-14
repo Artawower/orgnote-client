@@ -72,6 +72,8 @@ const logExtractedTask = <T extends ExtractedFileTask>(task: T): T => {
     start: task.start,
     text: task.text,
     state: task.state,
+    lastDoneAt: task.lastDoneAt,
+    hasRepeater: !!task.scheduled?.repeater,
   });
   return task;
 };

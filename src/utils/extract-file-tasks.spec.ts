@@ -134,6 +134,51 @@ test('extractFileTasks_withMultipleDoneLogbookEntries_extractsLatestDoneAt', () 
   expect(tasks[0]!.lastDoneAt).toBe('2026-05-14');
 });
 
+test('extractFileTasks_levelTwoTaskWithTagsAndMultipleLogbookEntries_parsesLastDoneAt', () => {
+  const content = `* Parent
+** TODO 10 minutes of silent                                          :live:
+SCHEDULED: <2026-05-16 Sat +1d>
+:LOGBOOK:
+- State "DONE" from "TODO" [2026-05-14 Thu 03:19]
+- State "DONE" from "TODO" [2026-05-14 Thu 03:18]
+- State "DONE" from "TODO" [2026-05-13 Wed 22:00]
+:END:
+`;
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/real-log.org');
+  const silentTask = tasks.find((task) => task.text.includes('10 minutes'));
+
+  expect(silentTask).toBeDefined();
+  expect(silentTask?.lastDoneAt).toBe('2026-05-14');
+});
+
+test('extractFileTasks_taskWithoutParent_parsesLogbook', () => {
+  const content = `* TODO Daily
+SCHEDULED: <2026-05-14 Thu +1d>
+:LOGBOOK:
+- State "DONE" from "TODO" [2026-05-14 Thu 12:00]
+:END:
+`;
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/root-log.org');
+
+  expect(tasks[0]?.lastDoneAt).toBe('2026-05-14');
+});
+
+test('extractFileTasks_levelTwoTaskWithoutTags_parsesLogbook', () => {
+  const content = `* Parent
+** TODO Subtask
+:LOGBOOK:
+- State "DONE" from "TODO" [2026-05-14 Thu 12:00]
+:END:
+`;
+  const root = withMetaInfo(parse(content));
+  const tasks = extractFileTasks(root, '/subtask-log.org');
+  const subtask = tasks.find((task) => task.text.includes('Subtask'));
+
+  expect(subtask?.lastDoneAt).toBe('2026-05-14');
+});
+
 test('extractFileTasks_listCheckbox_hasNoAgendaFields', () => {
   const content = '- [ ] Simple list task';
   const root = withMetaInfo(parse(content));

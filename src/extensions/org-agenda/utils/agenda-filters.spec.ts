@@ -76,6 +76,89 @@ test('isOverdue_returnsFalse_forFutureDate', () => {
   expect(isOverdue(withScheduled('2026-05-13'), now)).toBe(false);
 });
 
+// REGRESSION: Bug 1 — DONE tasks should NOT appear in Overdue
+test('isOverdue_doneTaskWithPastDate_returnsFalse', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'done',
+    text: 'Done task',
+    scheduled: { date: '2026-05-10', active: true, hasTime: false, start: 0, end: 0 },
+  };
+  expect(isOverdue(task, now)).toBe(false);
+});
+
+test('isOverdue_doneTaskWithDeadlinePast_returnsFalse', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'done',
+    text: 'Done task',
+    deadline: { date: '2026-05-10', active: true, hasTime: false, start: 0, end: 0 },
+  };
+  expect(isOverdue(task, now)).toBe(false);
+});
+
+// REGRESSION: Bug 2 — recurring task completed today should stay visible in Today/Next7Days
+test('isToday_recurringCompletedToday_advancedScheduled_returnsTrue', () => {
+  // After DONE: scheduled advanced to tomorrow, lastDoneAt = today
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Daily task',
+    scheduled: {
+      date: '2026-05-13',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: dailyRepeater,
+    },
+    lastDoneAt: '2026-05-12',
+  };
+  expect(isToday(task, now)).toBe(true);
+});
+
+test('isNextSevenDays_recurringCompletedToday_advancedScheduled_returnsTrue', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Daily task',
+    scheduled: {
+      date: '2026-05-13',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: dailyRepeater,
+    },
+    lastDoneAt: '2026-05-12',
+  };
+  expect(isNextSevenDays(task, now)).toBe(true);
+});
+
+test('isTomorrow_recurringCompletedToday_advancedToTomorrow_returnsTrue', () => {
+  // base = tomorrow → projection occurrence есть на завтра, не зависит от lastDoneAt
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Daily task',
+    scheduled: {
+      date: '2026-05-13',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: dailyRepeater,
+    },
+    lastDoneAt: '2026-05-12',
+  };
+  expect(isTomorrow(task, now)).toBe(true);
+});
+
 test('isOverdue_returnsFalse_forTaskWithoutDate', () => {
   expect(isOverdue(noDateTask, now)).toBe(false);
 });
@@ -178,6 +261,16 @@ test('isNextSevenDays_returnsTrue_forOverdueTask', () => {
 
 test('isCompletedToday_returnsTrue_forToday', () => {
   expect(isCompletedToday(withLastDoneAt('2026-05-12'), now)).toBe(true);
+});
+
+test('isCompletedToday_usesLocalDayForLogbookDate', () => {
+  const originalTimeZone = process.env.TZ;
+  process.env.TZ = 'Australia/Sydney';
+  try {
+    expect(isCompletedToday(withLastDoneAt('2026-05-14'), new Date(2026, 4, 14, 3, 19))).toBe(true);
+  } finally {
+    process.env.TZ = originalTimeZone;
+  }
 });
 
 test('isCompletedToday_returnsFalse_forYesterday', () => {

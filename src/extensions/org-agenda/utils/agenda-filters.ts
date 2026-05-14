@@ -24,6 +24,17 @@ const dayDiff = (date: Date, now: Date): number =>
       MS_PER_DAY,
   );
 
+const toLocalMidnight = (value: Date | string): Date => {
+  if (typeof value !== 'string') {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  }
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year ?? 0, (month ?? 1) - 1, day ?? 1);
+};
+
+const localDayDiff = (date: Date, now: Date): number =>
+  Math.round((toLocalMidnight(date).getTime() - toLocalMidnight(now).getTime()) / MS_PER_DAY);
+
 const firstTaskDate = (task: FileTask): OrgDate | undefined => task.scheduled ?? task.deadline;
 
 const parseTaskDate = (date: OrgDate): Date | undefined => {
@@ -120,7 +131,7 @@ export const isOverdue = (task: FileTask, now = new Date()): boolean =>
 
 export const isCompletedToday = (task: FileTask, now = new Date()): boolean => {
   if (!task.lastDoneAt) return false;
-  return dayDiff(toUtcMidnight(task.lastDoneAt), now) === 0;
+  return localDayDiff(toLocalMidnight(task.lastDoneAt), now) === 0;
 };
 
 export const hasNoDate = (task: FileTask): boolean => !task.scheduled?.date && !task.deadline?.date;
