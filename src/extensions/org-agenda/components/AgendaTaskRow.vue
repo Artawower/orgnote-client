@@ -26,7 +26,6 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
-import { logger } from 'src/boot/logger';
 import { computed } from 'vue';
 import { isCompletedOn, isOverdue } from '../utils/agenda-filters';
 import { useAgendaDate } from '../composables/use-agenda-date';
@@ -81,8 +80,7 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
 }
 
 .task-meta {
-  font-size: var(--font-size-xs);
-  color: var(--fg-muted);
+  @include fontify(var(--font-size-xs), normal, var(--fg-muted));
 }
 
 .task-date {
