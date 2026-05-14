@@ -149,13 +149,13 @@
 
 /* Priority */
 .org-priority-1 {
-  color: var(--red);
+  color: var(--priority-a);
 }
 .org-priority-2 {
-  color: var(--orange);
+  color: var(--priority-b);
 }
 .org-priority-3 {
-  color: var(--yellow);
+  color: var(--priority-c);
 }
 .org-priority-4 {
   color: var(--blue);

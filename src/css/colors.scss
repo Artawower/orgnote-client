@@ -29,6 +29,10 @@
   --cyan: var(--default-cyan);
   --dark-cyan: dark-var(--default-cyan);
   --white: var(--default-white);
+
+  --priority-a: var(--red, var(--q-negative));
+  --priority-b: var(--yellow, var(--q-warning));
+  --priority-c: var(--blue, var(--q-info));
 }
 
 @include dark-mode {
