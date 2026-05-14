@@ -12,7 +12,7 @@
       <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
         {{ dateLabel }}
       </span>
-      <app-icon name="sym_o_open_in_new" size="xs" class="task-open" @click="$emit('open-note')" />
+      <app-icon name="sym_o_open_in_new" size="md" class="task-open" @click="$emit('open-note')" />
     </app-flex>
   </div>
 </template>
