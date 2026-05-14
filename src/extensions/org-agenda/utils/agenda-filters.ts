@@ -7,6 +7,7 @@ type ConstantRepeater = OrgRepeater & { unit: 'h' | 'd' | 'w' };
 type CalendarRepeater = OrgRepeater & { unit: 'm' | 'y' };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const CONSTANT_OCCURRENCE_LIMIT = 100;
 const CALENDAR_PROJECTION_LIMIT = 1000;
 const msPerUnit = {
   h: 60 * 60 * 1000,
@@ -49,52 +50,109 @@ const isConstantStep = (repeater: OrgRepeater): repeater is ConstantRepeater =>
 const isCalendarStep = (repeater: OrgRepeater): repeater is CalendarRepeater =>
   repeater.unit === 'm' || repeater.unit === 'y';
 
-const hasConstantOccurrenceInRange = (
+const buildWindow = (now: Date, startOffset: number, endOffset: number): [Date, Date] => {
+  const today = toUtcMidnight(now.toISOString());
+  return [addUtcDays(today, startOffset), addUtcDays(today, endOffset)];
+};
+
+const collectConstantOccurrences = (
   base: Date,
   repeater: ConstantRepeater,
   windowStart: Date,
   windowEnd: Date,
-): boolean => {
-  if (repeater.value <= 0) return false;
-  if (windowEnd < base) return false;
-  if (windowStart <= base) return base <= windowEnd;
+): Date[] => {
   const stepMs = repeater.value * msPerUnit[repeater.unit];
-  const steps = Math.ceil((windowStart.getTime() - base.getTime()) / stepMs);
-  const first = new Date(base.getTime() + steps * stepMs);
-  return first <= windowEnd;
+  if (stepMs <= 0 || windowEnd < base) return [];
+  const steps = windowStart <= base ? 0 : Math.ceil((windowStart.getTime() - base.getTime()) / stepMs);
+  return collectSteppedOccurrences(new Date(base.getTime() + steps * stepMs), stepMs, windowEnd);
 };
 
-const hasCalendarOccurrenceInRange = (
+const collectSteppedOccurrences = (first: Date, stepMs: number, windowEnd: Date): Date[] => {
+  const occurrences: Date[] = [];
+  for (let count = 0, current = first; current <= windowEnd && count < CONSTANT_OCCURRENCE_LIMIT; count += 1) {
+    occurrences.push(current);
+    current = new Date(current.getTime() + stepMs);
+  }
+  return occurrences;
+};
+
+const collectCalendarOccurrences = (
   base: Date,
   repeater: CalendarRepeater,
   windowStart: Date,
   windowEnd: Date,
-): boolean => {
-  if (repeater.value <= 0) return false;
-  let occurrence = base;
-  for (
-    let safety = 0;
-    safety < CALENDAR_PROJECTION_LIMIT && occurrence < windowStart;
-    safety += 1
-  ) {
-    const next = addInterval(occurrence, repeater);
-    if (next.getTime() <= occurrence.getTime()) return false;
-    occurrence = next;
-  }
-  return occurrence >= windowStart && occurrence <= windowEnd;
+): Date[] => {
+  if (repeater.value <= 0) return [];
+  const first = firstCalendarOccurrenceOnOrAfter(base, repeater, windowStart);
+  if (!first) return [];
+  return collectCalendarUntil(first, repeater, windowEnd);
 };
 
-const hasDateOccurrenceInRange = (date: OrgDate, windowStart: Date, windowEnd: Date): boolean => {
+const firstCalendarOccurrenceOnOrAfter = (
+  base: Date,
+  repeater: CalendarRepeater,
+  windowStart: Date,
+): Date | undefined => {
+  let occurrence = base;
+  for (let safety = 0; safety < CALENDAR_PROJECTION_LIMIT && occurrence < windowStart; safety += 1) {
+    const next = addInterval(occurrence, repeater);
+    if (next.getTime() <= occurrence.getTime()) return undefined;
+    occurrence = next;
+  }
+  return occurrence >= windowStart ? occurrence : undefined;
+};
+
+const collectCalendarUntil = (
+  first: Date,
+  repeater: CalendarRepeater,
+  windowEnd: Date,
+): Date[] => {
+  const occurrences: Date[] = [];
+  for (let safety = 0, current = first; current <= windowEnd && safety < CALENDAR_PROJECTION_LIMIT; safety += 1) {
+    occurrences.push(current);
+    const next = addInterval(current, repeater);
+    if (next.getTime() <= current.getTime()) return occurrences;
+    current = next;
+  }
+  return occurrences;
+};
+
+const getDateOccurrencesInRange = (date: OrgDate, windowStart: Date, windowEnd: Date): Date[] => {
   const base = parseTaskDate(date);
-  if (!base) return false;
-  if (!date.repeater) return base >= windowStart && base <= windowEnd;
-  if (isConstantStep(date.repeater)) {
-    return hasConstantOccurrenceInRange(base, date.repeater, windowStart, windowEnd);
-  }
-  if (isCalendarStep(date.repeater)) {
-    return hasCalendarOccurrenceInRange(base, date.repeater, windowStart, windowEnd);
-  }
-  return false;
+  if (!base) return [];
+  if (!date.repeater) return base >= windowStart && base <= windowEnd ? [base] : [];
+  if (isConstantStep(date.repeater)) return collectConstantOccurrences(base, date.repeater, windowStart, windowEnd);
+  if (isCalendarStep(date.repeater)) return collectCalendarOccurrences(base, date.repeater, windowStart, windowEnd);
+  return [];
+};
+
+export const getOccurrencesInRange = (
+  task: FileTask,
+  now: Date,
+  startOffset: number,
+  endOffset: number,
+): Date[] => {
+  const date = firstTaskDate(task);
+  if (!date?.date) return [];
+  const [windowStart, windowEnd] = buildWindow(now, startOffset, endOffset);
+  return getDateOccurrencesInRange(date, windowStart, windowEnd);
+};
+
+const getDoneDates = (task: FileTask): string[] => {
+  if (task.doneDates?.length) return task.doneDates;
+  return task.lastDoneAt ? [task.lastDoneAt] : [];
+};
+
+export const getFirstUnfinishedOccurrence = (
+  task: FileTask,
+  now: Date,
+  startOffset: number,
+  endOffset: number,
+): Date | undefined => {
+  const done = new Set(getDoneDates(task));
+  return getOccurrencesInRange(task, now, startOffset, endOffset).find(
+    (date) => !done.has(date.toISOString().slice(0, 10)),
+  );
 };
 
 const hasOccurrenceInRange = (
@@ -102,14 +160,7 @@ const hasOccurrenceInRange = (
   startOffset: number,
   endOffset: number,
   now = new Date(),
-): boolean => {
-  const date = firstTaskDate(task);
-  if (!date?.date) return false;
-  const today = toUtcMidnight(now.toISOString());
-  const windowStart = addUtcDays(today, startOffset);
-  const windowEnd = addUtcDays(today, endOffset);
-  return hasDateOccurrenceInRange(date, windowStart, windowEnd);
-};
+): boolean => getOccurrencesInRange(task, now, startOffset, endOffset).length > 0;
 
 const isOverdueInternal = (task: FileTask, now: Date): boolean => {
   if (task.state === 'done') return false;
@@ -133,11 +184,6 @@ export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
 
 export const isOverdue = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now);
-
-const getDoneDates = (task: FileTask): string[] => {
-  if (task.doneDates?.length) return task.doneDates;
-  return task.lastDoneAt ? [task.lastDoneAt] : [];
-};
 
 export const isCompletedOn = (task: FileTask, date: Date): boolean =>
   getDoneDates(task).some((doneDate) => localDayDiff(toLocalMidnight(doneDate), date) === 0);
