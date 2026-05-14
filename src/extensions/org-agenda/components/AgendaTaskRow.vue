@@ -1,26 +1,29 @@
 <template>
-  <div class="task-row" @click="$emit('open-note')">
-    <app-checkbox
-      :model-value="isChecked"
-      :style="priorityStyle"
-      @change="onCheckboxChange"
-      @click.stop
-    />
-    <span class="task-title" :class="{ done: isChecked }">{{ task.text }}</span>
-    <app-flex row align-center gap="xs" class="task-meta" @click.stop>
-      <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
-      <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
-        {{ dateLabel }}
-      </span>
-      <app-icon name="sym_o_open_in_new" size="md" class="task-open" @click="$emit('open-note')" />
+  <menu-item :capitalize="false" :lines="1" @click="$emit('open-note')">
+    <app-flex row align-center gap="sm" class="task-content">
+      <app-checkbox
+        :model-value="isChecked"
+        :style="priorityStyle"
+        @change="onCheckboxChange"
+        @click.stop
+      />
+      <span class="task-title" :class="{ done: isChecked }">{{ task.text }}</span>
     </app-flex>
-  </div>
+    <template #right>
+      <app-flex row align-center gap="xs" class="task-meta" @click.stop>
+        <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
+        <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
+          {{ dateLabel }}
+        </span>
+      </app-flex>
+    </template>
+  </menu-item>
 </template>
 
 <script lang="ts" setup>
+import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
-import AppIcon from 'src/components/AppIcon.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { logger } from 'src/boot/logger';
@@ -38,11 +41,6 @@ const props = defineProps<{ task: AgendaTaskView }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
 
 const onCheckboxChange = (): void => {
-  logger.info('[agenda] AgendaTaskRow: checkbox changed', {
-    taskStart: props.task.start,
-    taskState: props.task.state,
-    taskText: props.task.text,
-  });
   emit('toggle');
 };
 
@@ -65,22 +63,9 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
 </script>
 
 <style lang="scss" scoped>
-.task-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-sm);
-  padding: var(--menu-item-padding);
-  min-height: var(--menu-item-height);
-  cursor: pointer;
-  border-bottom: var(--border-default);
-
-  @include hover {
-    background-color: var(--menu-item-hover-bg);
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
+.task-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .task-title {
@@ -89,9 +74,6 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--font-size-sm);
-  color: var(--fg);
-
   &.done {
     text-decoration: line-through;
     color: var(--fg-muted);
@@ -99,7 +81,6 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
 }
 
 .task-meta {
-  flex-shrink: 0;
   font-size: var(--font-size-xs);
   color: var(--fg-muted);
 }
