@@ -1,37 +1,26 @@
 <template>
-  <app-flex class="task-row" row between align-start gap="md">
-    <app-flex gap="sm" align-start class="task-main">
-      <app-checkbox
-        :model-value="isChecked"
-        :style="priorityStyle"
-        @change="onCheckboxChange"
-        @click.stop
-      />
-      <app-flex column gap="xs" align-start class="task-body">
-        <span class="task-title" :class="{ done: isChecked }">{{ task.text }}</span>
-        <app-flex v-if="hasMeta" row start align-center gap="xs" wrap>
-          <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
-            <app-icon name="sym_o_event" size="xs" />
-            {{ dateLabel }}
-          </span>
-          <org-tags v-if="task.tags?.length" :tags="task.tags" :clickable="false" badge-size="xs" />
-        </app-flex>
-      </app-flex>
-    </app-flex>
-    <action-button
-      icon="sym_o_open_in_new"
-      size="sm"
-      color="fg-muted"
-      @click.stop="$emit('open-note')"
+  <div class="task-row" @click="$emit('open-note')">
+    <app-checkbox
+      :model-value="isChecked"
+      :style="priorityStyle"
+      @change="onCheckboxChange"
+      @click.stop
     />
-  </app-flex>
+    <span class="task-title" :class="{ done: isChecked }">{{ task.text }}</span>
+    <app-flex row align-center gap="xs" class="task-meta" @click.stop>
+      <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
+      <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
+        {{ dateLabel }}
+      </span>
+      <app-icon name="sym_o_open_in_new" size="xs" class="task-open" @click="$emit('open-note')" />
+    </app-flex>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
 import AppIcon from 'src/components/AppIcon.vue';
-import ActionButton from 'src/components/ActionButton.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { logger } from 'src/boot/logger';
@@ -73,19 +62,20 @@ const isChecked = computed(
 const rawDate = computed(() => props.task.scheduled?.date ?? props.task.deadline?.date ?? null);
 
 const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value) : null));
-
-const hasMeta = computed(() => !!dateLabel.value || !!props.task.tags?.length);
 </script>
 
 <style lang="scss" scoped>
 .task-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
   padding: var(--menu-item-padding);
   min-height: var(--menu-item-height);
+  cursor: pointer;
   border-bottom: var(--border-default);
 
   @include hover {
     background-color: var(--menu-item-hover-bg);
-    border-radius: var(--radius-sm);
   }
 
   &:last-child {
@@ -93,21 +83,14 @@ const hasMeta = computed(() => !!dateLabel.value || !!props.task.tags?.length);
   }
 }
 
-.task-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.task-body {
-  flex: 1;
-  min-width: 0;
-}
-
 .task-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: var(--font-size-sm);
   color: var(--fg);
-  line-height: var(--line-height-sm);
-  word-break: break-word;
 
   &.done {
     text-decoration: line-through;
@@ -115,15 +98,26 @@ const hasMeta = computed(() => !!dateLabel.value || !!props.task.tags?.length);
   }
 }
 
-.task-date {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--gap-xs);
+.task-meta {
+  flex-shrink: 0;
   font-size: var(--font-size-xs);
   color: var(--fg-muted);
+}
+
+.task-date {
+  white-space: nowrap;
 
   &.overdue {
     color: var(--red, var(--q-negative));
+  }
+}
+
+.task-open {
+  color: var(--fg-muted);
+  cursor: pointer;
+
+  @include hover {
+    color: var(--fg);
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <app-spoiler flat max-height="none" default-expanded>
+  <app-spoiler max-height="none" default-expanded>
     <template #title>
       <app-flex row between align-center gap="sm">
         <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
@@ -37,3 +37,9 @@ const onTaskToggle = (task: AgendaTaskView): void => {
   emit('task-toggle', task, props.group.filePath);
 };
 </script>
+
+<style lang="scss" scoped>
+:deep(.spoiler-body) {
+  padding: 0;
+}
+</style>
