@@ -63,13 +63,18 @@ const collectConstantOccurrences = (
 ): Date[] => {
   const stepMs = repeater.value * msPerUnit[repeater.unit];
   if (stepMs <= 0 || windowEnd < base) return [];
-  const steps = windowStart <= base ? 0 : Math.ceil((windowStart.getTime() - base.getTime()) / stepMs);
+  const steps =
+    windowStart <= base ? 0 : Math.ceil((windowStart.getTime() - base.getTime()) / stepMs);
   return collectSteppedOccurrences(new Date(base.getTime() + steps * stepMs), stepMs, windowEnd);
 };
 
 const collectSteppedOccurrences = (first: Date, stepMs: number, windowEnd: Date): Date[] => {
   const occurrences: Date[] = [];
-  for (let count = 0, current = first; current <= windowEnd && count < CONSTANT_OCCURRENCE_LIMIT; count += 1) {
+  for (
+    let count = 0, current = first;
+    current <= windowEnd && count < CONSTANT_OCCURRENCE_LIMIT;
+    count += 1
+  ) {
     occurrences.push(current);
     current = new Date(current.getTime() + stepMs);
   }
@@ -94,7 +99,11 @@ const firstCalendarOccurrenceOnOrAfter = (
   windowStart: Date,
 ): Date | undefined => {
   let occurrence = base;
-  for (let safety = 0; safety < CALENDAR_PROJECTION_LIMIT && occurrence < windowStart; safety += 1) {
+  for (
+    let safety = 0;
+    safety < CALENDAR_PROJECTION_LIMIT && occurrence < windowStart;
+    safety += 1
+  ) {
     const next = addInterval(occurrence, repeater);
     if (next.getTime() <= occurrence.getTime()) return undefined;
     occurrence = next;
@@ -102,13 +111,13 @@ const firstCalendarOccurrenceOnOrAfter = (
   return occurrence >= windowStart ? occurrence : undefined;
 };
 
-const collectCalendarUntil = (
-  first: Date,
-  repeater: CalendarRepeater,
-  windowEnd: Date,
-): Date[] => {
+const collectCalendarUntil = (first: Date, repeater: CalendarRepeater, windowEnd: Date): Date[] => {
   const occurrences: Date[] = [];
-  for (let safety = 0, current = first; current <= windowEnd && safety < CALENDAR_PROJECTION_LIMIT; safety += 1) {
+  for (
+    let safety = 0, current = first;
+    current <= windowEnd && safety < CALENDAR_PROJECTION_LIMIT;
+    safety += 1
+  ) {
     occurrences.push(current);
     const next = addInterval(current, repeater);
     if (next.getTime() <= current.getTime()) return occurrences;
@@ -121,8 +130,10 @@ const getDateOccurrencesInRange = (date: OrgDate, windowStart: Date, windowEnd: 
   const base = parseTaskDate(date);
   if (!base) return [];
   if (!date.repeater) return base >= windowStart && base <= windowEnd ? [base] : [];
-  if (isConstantStep(date.repeater)) return collectConstantOccurrences(base, date.repeater, windowStart, windowEnd);
-  if (isCalendarStep(date.repeater)) return collectCalendarOccurrences(base, date.repeater, windowStart, windowEnd);
+  if (isConstantStep(date.repeater))
+    return collectConstantOccurrences(base, date.repeater, windowStart, windowEnd);
+  if (isCalendarStep(date.repeater))
+    return collectCalendarOccurrences(base, date.repeater, windowStart, windowEnd);
   return [];
 };
 

@@ -19,3 +19,19 @@ test('completeRepeatingTask_noLogbook_createsLogbook', () => {
   expect(result).toContain(':LOGBOOK:');
   expect(result).toContain('SCHEDULED: <2026-05-14');
 });
+
+test('completeRepeatingTask_withRetroactiveCompletedAt_writesPastTimestamp', () => {
+  const content = '* TODO Daily\nSCHEDULED: <2026-05-15 Fri +1d>\n';
+  const pastDate = new Date(2026, 4, 13, 12, 0);
+  const result = completeRepeatingTask(content, 0, pastDate);
+
+  expect(result).toContain('[2026-05-13');
+});
+
+test('completeRepeatingTask_withFutureCompletedAt_writesFutureTimestamp', () => {
+  const content = '* TODO Daily\nSCHEDULED: <2026-05-15 Fri +1d>\n';
+  const futureDate = new Date(2026, 4, 20, 12, 0);
+  const result = completeRepeatingTask(content, 0, futureDate);
+
+  expect(result).toContain('[2026-05-20');
+});
