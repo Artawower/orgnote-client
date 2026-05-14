@@ -223,12 +223,7 @@ test('getOccurrencesInRange_recurringEvery2Days_returnsAlternateDays', () => {
   // base today, +2d, window [0, 7] → occurrences on days 0, 2, 4, 6 (4 total)
   const task = withScheduledRepeater('2026-05-12', everyTwoDaysRepeater);
   const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range.map(dateKey)).toEqual([
-    '2026-05-12',
-    '2026-05-14',
-    '2026-05-16',
-    '2026-05-18',
-  ]);
+  expect(range.map(dateKey)).toEqual(['2026-05-12', '2026-05-14', '2026-05-16', '2026-05-18']);
 });
 
 test('getOccurrencesInRange_zeroValueRepeater_returnsEmpty', () => {

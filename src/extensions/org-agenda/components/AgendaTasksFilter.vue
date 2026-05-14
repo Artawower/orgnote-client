@@ -85,11 +85,4 @@ const filters = computed(
 );
 </script>
 
-<style lang="scss" scoped>
-:deep(.right) {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--gap-sm);
-}
-</style>
+<style lang="scss" scoped></style>

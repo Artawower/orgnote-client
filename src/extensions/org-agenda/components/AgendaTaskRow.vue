@@ -12,23 +12,22 @@
     <template #right>
       <app-flex row align-center gap="xs" class="task-meta" @click.stop>
         <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
-        <span v-if="dateLabel" class="task-date" :class="{ overdue: isTaskOverdue }">
-          {{ dateLabel }}
-        </span>
+        <relative-date-label v-if="rawDate" :date="rawDate" />
       </app-flex>
     </template>
   </menu-item>
 </template>
 
 <script lang="ts" setup>
+import { parseISO } from 'date-fns';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
+import RelativeDateLabel from 'src/components/RelativeDateLabel.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { computed } from 'vue';
-import { isCompletedOn, isOverdue } from '../utils/agenda-filters';
-import { useAgendaDate } from '../composables/use-agenda-date';
+import { isCompletedOn } from '../utils/agenda-filters';
 
 const props = defineProps<{ task: AgendaTaskView }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
@@ -41,17 +40,14 @@ const priorityClass = computed(() =>
   props.task.priority ? `priority-${props.task.priority.toLowerCase()}` : '',
 );
 
-const { prettyAgendaDate } = useAgendaDate();
-
-const isTaskOverdue = computed(() => isOverdue(props.task));
-
 const isChecked = computed(
   () => props.task.state === 'done' || isCompletedOn(props.task, props.task.viewDate),
 );
 
-const rawDate = computed(() => props.task.scheduled?.date ?? props.task.deadline?.date ?? null);
-
-const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value) : null));
+const rawDate = computed(() => {
+  const raw = props.task.scheduled?.date ?? props.task.deadline?.date;
+  return raw ? parseISO(raw) : null;
+});
 </script>
 
 <style lang="scss" scoped>
@@ -86,14 +82,6 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
 
 .task-meta {
   @include fontify(var(--font-size-xs), normal, var(--fg-muted));
-}
-
-.task-date {
-  white-space: nowrap;
-
-  &.overdue {
-    color: var(--red, var(--q-negative));
-  }
 }
 
 .task-open {

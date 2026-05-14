@@ -13,7 +13,8 @@ export const useAgendaDate = () => {
     if (!raw) return '';
     const date = parseOrgDateStr(raw);
     if (Number.isNaN(date.getTime())) return '';
-    if (isSameDay(date, addDays(new Date(), 1))) return t(extensionI18nKeys.orgAgendaFilterTomorrow);
+    if (isSameDay(date, addDays(new Date(), 1)))
+      return t(extensionI18nKeys.orgAgendaFilterTomorrow);
     if (isSameDay(date, new Date())) return t(extensionI18nKeys.orgAgendaFilterToday);
     return prettyDate(date);
   };
