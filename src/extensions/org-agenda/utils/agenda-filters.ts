@@ -62,7 +62,8 @@ const collectConstantOccurrences = (
 ): Date[] => {
   const stepMs = constantStepMilliseconds(base, repeater);
   if (stepMs <= 0 || windowEnd < base) return [];
-  const steps = windowStart <= base ? 0 : Math.ceil(differenceInMilliseconds(windowStart, base) / stepMs);
+  const steps =
+    windowStart <= base ? 0 : Math.ceil(differenceInMilliseconds(windowStart, base) / stepMs);
   return collectSteppedOccurrences(addConstantStep(base, repeater, steps), repeater, windowEnd);
 };
 
