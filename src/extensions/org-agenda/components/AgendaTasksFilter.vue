@@ -51,33 +51,35 @@ const onFilterClick = (filter: AgendaFilter): void => {
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
+type AgendaFilterOption = { id: AgendaFilter; label: string; icon: string };
+
 const filters = computed(() => [
   {
-    id: 'overdue' as AgendaFilter,
+    id: 'overdue',
     label: t(extensionI18nKeys.orgAgendaFilterOverdue),
     icon: 'sym_o_running_with_errors',
   },
   {
-    id: 'today' as AgendaFilter,
+    id: 'today',
     label: t(extensionI18nKeys.orgAgendaFilterToday),
     icon: 'sym_o_today',
   },
   {
-    id: 'tomorrow' as AgendaFilter,
+    id: 'tomorrow',
     label: t(extensionI18nKeys.orgAgendaFilterTomorrow),
     icon: 'sym_o_wb_sunny',
   },
   {
-    id: 'next7days' as AgendaFilter,
+    id: 'next7days',
     label: t(extensionI18nKeys.orgAgendaFilterNext7Days),
     icon: 'sym_o_date_range',
   },
   {
-    id: 'all' as AgendaFilter,
+    id: 'all',
     label: t(extensionI18nKeys.orgAgendaFilterAll),
     icon: 'sym_o_checklist',
   },
-]);
+] satisfies ReadonlyArray<AgendaFilterOption>);
 </script>
 
 <style lang="scss" scoped>
