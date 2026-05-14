@@ -11,6 +11,7 @@ import {
   isCompletedOn,
   getOccurrencesInRange,
   getFirstUnfinishedOccurrence,
+  findNext7DaysViewDate,
 } from './agenda-filters';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
@@ -66,6 +67,75 @@ const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
 });
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
+
+// NEW: findNext7DaysViewDate — unified helper for Next 7 Days view
+test('findNext7DaysViewDate_recurringNothingDone_returnsFirstOccurrence', () => {
+  const task = withScheduledRepeater('2026-05-12', dailyRepeater);
+  const result = findNext7DaysViewDate(task, now);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-12');
+});
+
+test('findNext7DaysViewDate_recurringTodayDone_returnsTomorrow', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-13', dailyRepeater),
+    doneDates: ['2026-05-12'],
+  };
+  // base 2026-05-13 (advanced after today's done), first unfinished = 2026-05-13
+  const result = findNext7DaysViewDate(task, now);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-13');
+});
+
+test('findNext7DaysViewDate_recurringAllDone_returnsLastOccurrence', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-12', dailyRepeater),
+    doneDates: [
+      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
+      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+    ],
+  };
+  const result = findNext7DaysViewDate(task, now);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-19');
+});
+
+test('findNext7DaysViewDate_nonRecurringDoneInWindow_returnsBase', () => {
+  const task: FileTask = {
+    ...withScheduled('2026-05-15'),
+    doneDates: ['2026-05-15'],
+  };
+  const result = findNext7DaysViewDate(task, now);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+});
+
+test('findNext7DaysViewDate_nonRecurringNotDoneInWindow_returnsBase', () => {
+  const task = withScheduled('2026-05-15');
+  const result = findNext7DaysViewDate(task, now);
+  expect(result?.toISOString().slice(0, 10)).toBe('2026-05-15');
+});
+
+test('findNext7DaysViewDate_nothingInWindow_returnsUndefined', () => {
+  const task = withScheduled('2026-06-15');
+  expect(findNext7DaysViewDate(task, now)).toBeUndefined();
+});
+
+// REGRESSION: filter visibility — completed in window stays visible
+test('isNextSevenDays_nonRecurringCompletedInWindow_returnsTrue', () => {
+  const task: FileTask = {
+    ...withScheduled('2026-05-15'),
+    doneDates: ['2026-05-15'],
+  };
+  expect(isNextSevenDays(task, now)).toBe(true);
+});
+
+test('isNextSevenDays_recurringAllCompletedInWindow_returnsTrue', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-12', dailyRepeater),
+    doneDates: [
+      '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
+      '2026-05-16', '2026-05-17', '2026-05-18', '2026-05-19',
+    ],
+  };
+  expect(isNextSevenDays(task, now)).toBe(true);
+});
 
 // REGRESSION: Bug 4 — task completed-for-tomorrow should be visible in Tomorrow filter
 test('isTomorrow_taskCompletedOnTomorrow_returnsTrue', () => {
