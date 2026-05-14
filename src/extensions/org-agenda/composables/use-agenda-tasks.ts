@@ -6,12 +6,7 @@ import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
-import {
-  getFirstUnfinishedOccurrence,
-  isOverdue,
-  isToday,
-  isTomorrow,
-} from '../utils/agenda-filters';
+import { findNext7DaysViewDate, isOverdue, isToday, isTomorrow } from '../utils/agenda-filters';
 import { resolveAgendaConfig } from '../index';
 import { orgAgendaManifest } from '../manifest';
 
@@ -65,7 +60,7 @@ const isUnderAgendaPath = (file: FileMeta, agendaFilesPath: string | undefined):
 };
 
 const isNextSevenDaysVisible = (task: FileTask, now: Date): boolean =>
-  !!getFirstUnfinishedOccurrence(task, now, 0, 7) || isOverdue(task, now);
+  findNext7DaysViewDate(task, now) !== undefined || isOverdue(task, now);
 
 const isTaskVisible = (task: FileTask, filter: AgendaFilter, now: Date): boolean => {
   if (filter === 'all') return true;
@@ -77,8 +72,8 @@ const computeViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date 
   if (filter === 'tomorrow')
     return toLocalCalendarDate(addUtcDays(toUtcMidnight(now.toISOString()), 1));
   if (filter !== 'next7days') return todayForAgenda(now);
-  const firstUnfinished = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  return firstUnfinished ? toLocalCalendarDate(firstUnfinished) : todayForAgenda(now);
+  const viewDate = findNext7DaysViewDate(task, now);
+  return viewDate ? toLocalCalendarDate(viewDate) : todayForAgenda(now);
 };
 
 const toTaskView = (task: FileTask, filter: AgendaFilter, now: Date): AgendaTaskView => ({

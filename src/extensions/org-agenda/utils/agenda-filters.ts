@@ -166,6 +166,14 @@ export const getFirstUnfinishedOccurrence = (
   );
 };
 
+export const findNext7DaysViewDate = (task: FileTask, now: Date): Date | undefined => {
+  const occurrences = getOccurrencesInRange(task, now, 0, 7);
+  if (!occurrences.length) return undefined;
+  const done = new Set(getDoneDates(task));
+  const firstUnfinished = occurrences.find((date) => !done.has(date.toISOString().slice(0, 10)));
+  return firstUnfinished ?? occurrences.at(-1);
+};
+
 const hasOccurrenceInRange = (
   task: FileTask,
   startOffset: number,
@@ -192,7 +200,7 @@ export const isTomorrow = (task: FileTask, now = new Date()): boolean => {
 };
 
 export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
-  hasOccurrenceInRange(task, 0, 7, now) ||
+  findNext7DaysViewDate(task, now) !== undefined ||
   isOverdueInternal(task, now) ||
   isCompletedToday(task, now);
 
