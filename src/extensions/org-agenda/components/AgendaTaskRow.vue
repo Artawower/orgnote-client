@@ -3,7 +3,7 @@
     <app-flex row align-center gap="sm" class="task-content">
       <app-checkbox
         :model-value="isChecked"
-        :style="priorityStyle"
+        :class="priorityClass"
         @change="onCheckboxChange"
         @click.stop
       />
@@ -30,12 +30,6 @@ import { computed } from 'vue';
 import { isCompletedOn, isOverdue } from '../utils/agenda-filters';
 import { useAgendaDate } from '../composables/use-agenda-date';
 
-const PRIORITY_COLORS: Record<string, string> = {
-  A: 'var(--red, var(--q-negative))',
-  B: 'var(--yellow, var(--q-warning))',
-  C: 'var(--blue, var(--q-info))',
-};
-
 const props = defineProps<{ task: AgendaTaskView }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
 
@@ -43,10 +37,9 @@ const onCheckboxChange = (): void => {
   emit('toggle');
 };
 
-const priorityStyle = computed(() => {
-  const color = props.task.priority ? PRIORITY_COLORS[props.task.priority] : undefined;
-  return color ? { '--checkbox-color': color } : undefined;
-});
+const priorityClass = computed(() =>
+  props.task.priority ? `priority-${props.task.priority.toLowerCase()}` : '',
+);
 
 const { prettyAgendaDate } = useAgendaDate();
 
@@ -62,6 +55,18 @@ const dateLabel = computed(() => (rawDate.value ? prettyAgendaDate(rawDate.value
 </script>
 
 <style lang="scss" scoped>
+.priority-a {
+  --checkbox-color: var(--priority-a);
+}
+
+.priority-b {
+  --checkbox-color: var(--priority-b);
+}
+
+.priority-c {
+  --checkbox-color: var(--priority-c);
+}
+
 .task-content {
   flex: 1;
   min-width: 0;

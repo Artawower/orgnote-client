@@ -237,8 +237,7 @@
 .org-list-item-section-line {
   --org-list-depth: 1;
   --org-list-line-offset: calc(
-    var(--org-list-item-bullet-margin-left) +
-    ((var(--org-list-depth) - 1) * var(--padding-lg))
+    var(--org-list-item-bullet-margin-left) + ((var(--org-list-depth) - 1) * var(--padding-lg))
   );
   position: relative;
 }
@@ -281,7 +280,6 @@
   height: 100%;
   border-left: 1px solid var(--bg-hover);
 }
-
 
 @media (max-width: 768px) {
   .org-list-item-section-line::before {
