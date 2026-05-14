@@ -2,6 +2,7 @@ import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
+import { createDirPath } from 'src/utils/create-dir-path';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -51,12 +52,10 @@ const resolveFileTitle = (file: FileMeta): string => {
 
 const resolveAbsolutePath = (file: FileMeta): string => join('/', ...file.filePath);
 
-const normalizeDirPath = (path: string): string => (path.endsWith('/') ? path : `${path}/`);
-
 const isUnderAgendaPath = (file: FileMeta, agendaFilesPath: string | undefined): boolean => {
   if (!agendaFilesPath) return true;
   const absolute = resolveAbsolutePath(file);
-  return absolute === agendaFilesPath || absolute.startsWith(normalizeDirPath(agendaFilesPath));
+  return absolute === agendaFilesPath || absolute.startsWith(createDirPath(agendaFilesPath));
 };
 
 const isNextSevenDaysVisible = (task: FileTask, now: Date): boolean =>
