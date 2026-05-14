@@ -67,7 +67,15 @@ const buildMutation =
       logger.warn('[agenda] buildMutation: task.start undefined');
       return content;
     }
-    if (isCompletedToday(task, completedAt) && hasRepeater(task) && task.lastDoneAt) {
+    const completedToday = isCompletedToday(task, completedAt);
+    logger.info('[agenda] buildMutation: state check', {
+      taskState: task.state,
+      hasRepeater: hasRepeater(task),
+      lastDoneAt: task.lastDoneAt,
+      isCompletedToday: completedToday,
+      now: completedAt.toISOString(),
+    });
+    if (completedToday && hasRepeater(task) && task.lastDoneAt) {
       logger.info('[agenda] buildMutation: branch=undoRecurringCompletion', {
         taskStart: task.start,
         lastDoneAt: task.lastDoneAt,
