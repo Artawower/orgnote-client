@@ -2,7 +2,7 @@
   <component
     :is="flat ? 'div' : CardWrapper"
     class="spoiler"
-    :class="{ flat }"
+    :class="{ flat, hoverable: isHoverable }"
     v-bind="flat ? {} : { type: 'plain' }"
     :style="{ '--spoiler-max-height': maxHeight }"
   >
@@ -38,11 +38,13 @@ const props = withDefaults(
     defaultExpanded?: boolean;
     maxHeight?: string;
     flat?: boolean;
+    hoverable?: boolean;
   }>(),
   {
     defaultExpanded: false,
     maxHeight: '100px',
     flat: false,
+    hoverable: true,
   },
 );
 
@@ -53,6 +55,8 @@ const model = defineModel<boolean | undefined>({
 const localExpanded = ref(props.defaultExpanded ?? false);
 
 const expanded = computed(() => model.value ?? localExpanded.value);
+
+const isHoverable = computed(() => props.hoverable !== false);
 
 watch(
   model,
@@ -75,7 +79,7 @@ const toggle = (): void => {
 .spoiler {
   transition: background-color 0.2s ease;
 
-  &:not(.flat) {
+  &:not(.flat).hoverable {
     @include hover {
       background-color: var(--menu-item-hover-bg);
     }
