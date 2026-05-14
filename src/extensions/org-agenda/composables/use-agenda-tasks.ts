@@ -111,19 +111,6 @@ const emptyTotals = (): Record<AgendaFilter, number> => ({
 const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<AgendaFilter, number> =>
   files.reduce((acc, file) => countFileTasks(acc, file, now), emptyTotals());
 
-const createSingleFlight = <TArgs extends unknown[]>(
-  action: (...args: TArgs) => Promise<void>,
-): ((...args: TArgs) => Promise<void>) => {
-  let inFlight: Promise<void> | null = null;
-  return (...args: TArgs) => {
-    if (inFlight) return inFlight;
-    inFlight = action(...args).finally(() => {
-      inFlight = null;
-    });
-    return inFlight;
-  };
-};
-
 const setupWatchers = (loadFiles: () => Promise<void>): (() => void) => {
   const fileWatcher = api.core.useFileWatcher();
   const fileSearch = api.core.useFileSearch();
@@ -160,21 +147,16 @@ export const useAgendaTasks = () => {
 
   const totalByFilter = computed(() => buildTotalsByFilter(agendaFiles.value));
 
-  const loadFilesNow = async (silent = false): Promise<void> => {
+  const loadFiles = async (silent = false): Promise<void> => {
     if (!silent) loading.value = true;
-    try {
-      const result = await to(() => fileMeta.getAll(), 'Failed to load agenda tasks')();
-      if (result.isErr()) {
-        reporter.reportError(result.error);
-        return;
-      }
-      allFiles.value = result.value;
-    } finally {
-      if (!silent) loading.value = false;
+    const result = await to(() => fileMeta.getAll(), 'Failed to load agenda tasks')();
+    if (!silent) loading.value = false;
+    if (result.isErr()) {
+      reporter.reportError(result.error);
+      return;
     }
+    allFiles.value = result.value;
   };
-
-  const loadFiles = createSingleFlight(loadFilesNow);
 
   const stopWatchers = setupWatchers(loadFiles);
   onMounted(loadFiles);
