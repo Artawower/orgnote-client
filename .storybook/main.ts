@@ -21,14 +21,13 @@ const config: StorybookConfig = {
       config.plugins = [vue()];
     }
 
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        src: path.resolve(__dirname, '../src'),
-        '#q-app/wrappers': path.resolve(__dirname, './mocks/q-app-wrappers.ts'),
-        'vue-i18n': path.resolve(__dirname, './mocks/vue-i18n.ts'),
-      };
-    }
+    config.resolve = config.resolve ?? {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      src: path.resolve(__dirname, '../src'),
+      '#q-app/wrappers': path.resolve(__dirname, './mocks/q-app-wrappers.ts'),
+      'vue-i18n': path.resolve(__dirname, './mocks/vue-i18n.ts'),
+    };
 
     config.css = {
       preprocessorOptions: {
