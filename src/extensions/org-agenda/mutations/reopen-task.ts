@@ -1,13 +1,8 @@
 import { editOrgDocument } from 'orgnote-api/utils';
 import { TASK_DONE_KEYWORD, TASK_TODO_KEYWORD } from '../constants';
 
-export const reopenTask = (
-  content: string,
-  headlineStart: number,
-  now = new Date(),
-): string | undefined => {
-  let applied = false;
-  const next = editOrgDocument(content, (doc) => {
+export const reopenTask = (content: string, headlineStart: number, now = new Date()): string =>
+  editOrgDocument(content, (doc) => {
     const h = doc.headlineAt(headlineStart);
     if (!h || h.todoKeyword === undefined) return;
     h.setTodoKeyword(TASK_TODO_KEYWORD);
@@ -17,7 +12,4 @@ export const reopenTask = (
       to: TASK_TODO_KEYWORD,
       at: now,
     });
-    applied = true;
   });
-  return applied ? next : undefined;
-};

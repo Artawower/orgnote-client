@@ -15,10 +15,12 @@ test('changeTaskStatus_changesKeyword_toCustom', () => {
   expect(changeTaskStatus('* TODO My task', 0, 'WAIT')).toBe('* WAIT My task');
 });
 
-test('changeTaskStatus_returnsUndefined_whenHeadlineNotFound', () => {
-  expect(changeTaskStatus('* TODO My task', 99, 'DONE')).toBeUndefined();
+test('changeTaskStatus_returnsInput_whenHeadlineNotFound', () => {
+  const content = '* TODO My task';
+  expect(changeTaskStatus(content, 99, 'DONE')).toBe(content);
 });
 
-test('changeTaskStatus_returnsUndefined_whenNoTodoKeyword', () => {
-  expect(changeTaskStatus('* My plain headline', 0, 'DONE')).toBeUndefined();
+test('changeTaskStatus_returnsInput_whenNoTodoKeyword', () => {
+  const content = '* My plain headline';
+  expect(changeTaskStatus(content, 0, 'DONE')).toBe(content);
 });

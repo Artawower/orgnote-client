@@ -1,6 +1,5 @@
 import type { FileMeta } from 'orgnote-api';
 import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
-import { logger } from 'src/boot/logger';
 import { isHabitHeadline } from './headline-extractors';
 import { extractDoneDates, extractLastDoneAt } from './extract-logbook-last-done';
 
@@ -67,18 +66,6 @@ const createOffsetToLineResolver = (content: string): OffsetToLineResolver => {
   return (offset: number): number => findLineFromOffsets(offsets, offset);
 };
 
-const logExtractedTask = <T extends ExtractedFileTask>(task: T): T => {
-  logger.debug('[agenda] extracted task', {
-    start: task.start,
-    text: task.text,
-    state: task.state,
-    lastDoneAt: task.lastDoneAt,
-    doneDates: task.doneDates,
-    hasRepeater: !!task.scheduled?.repeater,
-  });
-  return task;
-};
-
 const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial<FileTask> => ({
   priority: heading?.priority,
   tags: heading?.tags,
@@ -99,17 +86,16 @@ const createHeadlineTask = (
   kind: Extract<FileTask['kind'], 'headline-checkbox' | 'headline-todo'>,
   state: FileTaskState,
   agendaFields: Partial<FileTask>,
-): ExtractedFileTask =>
-  logExtractedTask({
-    id: buildTaskId(filePath, node, kind),
-    kind,
-    state,
-    text: extractTaskText(node),
-    start: node.start,
-    end: node.end,
-    line: resolveLine(node.start),
-    ...agendaFields,
-  });
+): ExtractedFileTask => ({
+  id: buildTaskId(filePath, node, kind),
+  kind,
+  state,
+  text: extractTaskText(node),
+  start: node.start,
+  end: node.end,
+  line: resolveLine(node.start),
+  ...agendaFields,
+});
 
 const createTaskFromHeadline = (
   node: OrgNode,
@@ -148,7 +134,7 @@ const createTaskFromListItem = (
 ): ExtractedFileTask | undefined => {
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
   if (!checkboxNode) return undefined;
-  return logExtractedTask({
+  return {
     id: buildTaskId(filePath, node, 'list-checkbox'),
     kind: 'list-checkbox',
     state: resolveCheckboxState(checkboxNode),
@@ -156,7 +142,7 @@ const createTaskFromListItem = (
     start: node.start,
     end: node.end,
     line: resolveLine(node.start),
-  });
+  };
 };
 
 const createTaskFromNode = (
