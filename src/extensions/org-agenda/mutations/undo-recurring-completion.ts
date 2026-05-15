@@ -11,6 +11,9 @@ export const undoRecurringCompletion = (
     const h = doc.headlineAt(headlineStart);
     if (!h) return;
     removed = h.logbook.removeStateChange({ to: TASK_DONE_KEYWORD, date: doneDate });
+    if (!removed) return;
+    h.scheduled.rewindRepeater();
+    h.deadline.rewindRepeater();
   });
   return removed ? next : undefined;
 };
