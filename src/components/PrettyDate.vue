@@ -50,11 +50,11 @@ const label = computed(() => {
   white-space: nowrap;
 
   &.tone-overdue {
-    color: var(--red, var(--q-negative));
+    color: var(--red);
   }
 
   &.tone-today {
-    color: var(--accent, var(--q-primary));
+    color: var(--accent);
   }
 
   &.tone-tomorrow {

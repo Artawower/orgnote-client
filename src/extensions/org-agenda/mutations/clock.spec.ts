@@ -17,8 +17,9 @@ test('openClock_insertsClockIntoExistingLogbook', () => {
   expect(result!.indexOf(':LOGBOOK:')).toBeLessThan(result!.indexOf('CLOCK:'));
 });
 
-test('openClock_returnsUndefined_whenHeadlineNotFound', () => {
-  expect(openClock('* TODO Task\n', 99, startedAt)).toBeUndefined();
+test('openClock_returnsInput_whenHeadlineNotFound', () => {
+  const content = '* TODO Task\n';
+  expect(openClock(content, 99, startedAt)).toBe(content);
 });
 
 test('closeClock_closesMatchingClock_withDuration', () => {
@@ -37,6 +38,7 @@ test('closeClock_closesOnlyMatchingClock_notOthers', () => {
   expect(result).toContain('--');
 });
 
-test('closeClock_returnsUndefined_whenOpenClockNotFound', () => {
-  expect(closeClock('* TODO Task\n', 0, startedAt, endedAt)).toBeUndefined();
+test('closeClock_returnsInput_whenOpenClockNotFound', () => {
+  const content = '* TODO Task\n';
+  expect(closeClock(content, 0, startedAt, endedAt)).toBe(content);
 });

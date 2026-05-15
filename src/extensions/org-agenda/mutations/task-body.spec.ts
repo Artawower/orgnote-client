@@ -32,6 +32,7 @@ test('changeTaskBody_doesNotTouchPropertiesDrawer', () => {
   expect(result).toContain(':ID: abc');
 });
 
-test('changeTaskBody_returnsUndefined_whenHeadlineNotFound', () => {
-  expect(changeTaskBody('* TODO Task\n', 99, 'Body')).toBeUndefined();
+test('changeTaskBody_returnsInput_whenHeadlineNotFound', () => {
+  const content = '* TODO Task\n';
+  expect(changeTaskBody(content, 99, 'Body')).toBe(content);
 });

@@ -2262,7 +2262,7 @@
 
     "ora": ["ora@5.4.1", "", { "dependencies": { "bl": "^4.1.0", "chalk": "^4.1.0", "cli-cursor": "^3.1.0", "cli-spinners": "^2.5.0", "is-interactive": "^1.0.0", "is-unicode-supported": "^0.1.0", "log-symbols": "^4.1.0", "strip-ansi": "^6.0.0", "wcwidth": "^1.0.1" } }, "sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ=="],
 
-    "org-mode-ast": ["org-mode-ast@0.13.2", "", {}, "sha512-FKVOWGp/3uXrW0mC459SWDJD3SUuldfILk15Hm4ukq0h4dmgtAX1lC51NAIQlxRO9+WmRDK3cUSKeDtmAcZoTw=="],
+    "org-mode-ast": ["org-mode-ast@0.12.2", "", {}, "sha512-6Nm2ICWKyavNXVnZnT27fgLdJi+5AjdaDFtnlqqw1oOOeleTY/XhTEJj4z82YAIFgwg2T0g6U9XaDna5x9DwRQ=="],
 
     "orgnote-api": ["orgnote-api@0.50.5", "", { "dependencies": { "axios": "1.8.4", "diff-match-patch": "^1.0.5", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.12.2", "partysocket": "1.1.6", "picomatch": "4.0.4", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-n3fHdEjN4YSqJi5CnCZCf3ArJ5WjlQLNNd58+jsuEWkC2NJmHEaf0aIs+McNxLNmvAcN8VHh3NqixgxF5STy5A=="],
 
@@ -3395,8 +3395,6 @@
     "npm-run-path/path-key": ["path-key@4.0.0", "", {}, "sha512-haREypq7xkM7ErfgIyA0z+Bj4AGKlMSdlQE2jvJo6huWD1EdkKYV+G/T4nq0YEF2vgTT8kqMFKo1uHn950r4SQ=="],
 
     "ora/strip-ansi": ["strip-ansi@6.0.1", "", { "dependencies": { "ansi-regex": "^5.0.1" } }, "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A=="],
-
-    "orgnote-api/org-mode-ast": ["org-mode-ast@0.12.2", "", {}, "sha512-6Nm2ICWKyavNXVnZnT27fgLdJi+5AjdaDFtnlqqw1oOOeleTY/XhTEJj4z82YAIFgwg2T0g6U9XaDna5x9DwRQ=="],
 
     "package-json/got": ["got@12.6.1", "", { "dependencies": { "@sindresorhus/is": "^5.2.0", "@szmarczak/http-timer": "^5.0.1", "cacheable-lookup": "^7.0.0", "cacheable-request": "^10.2.8", "decompress-response": "^6.0.0", "form-data-encoder": "^2.1.2", "get-stream": "^6.0.1", "http2-wrapper": "^2.1.10", "lowercase-keys": "^3.0.0", "p-cancelable": "^3.0.0", "responselike": "^3.0.0" } }, "sha512-mThBblvlAF1d4O5oqyvN+ZxLAYwIJK7bpMxgYqPD9okW0C3qm5FFn7k811QrcuEBwaogR3ngOFoCfs6mRv7teQ=="],
 

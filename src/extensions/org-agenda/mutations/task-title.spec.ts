@@ -25,6 +25,7 @@ test('changeTaskTitle_preservesTags', () => {
   expect(result).toContain('My new title');
 });
 
-test('changeTaskTitle_returnsUndefined_whenHeadlineNotFound', () => {
-  expect(changeTaskTitle('* TODO Task', 99, 'New')).toBeUndefined();
+test('changeTaskTitle_returnsInput_whenHeadlineNotFound', () => {
+  const content = '* TODO Task';
+  expect(changeTaskTitle(content, 99, 'New')).toBe(content);
 });

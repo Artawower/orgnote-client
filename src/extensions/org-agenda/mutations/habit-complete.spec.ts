@@ -25,12 +25,11 @@ test('completeHabit_insertsClockEntry_intoLogbook', () => {
   expect(result).toContain(':END:');
 });
 
-test('completeHabit_returnsUndefined_whenHeadlineNotFound', () => {
-  expect(completeHabit(habitDoc, 99, completedAt)).toBeUndefined();
+test('completeHabit_returnsInput_whenHeadlineNotFound', () => {
+  expect(completeHabit(habitDoc, 99, completedAt)).toBe(habitDoc);
 });
 
-test('completeHabit_returnsUndefined_whenNoScheduledRepeater', () => {
-  expect(
-    completeHabit('* TODO Task\nSCHEDULED: <2026-05-12 Mon>\n', 0, completedAt),
-  ).toBeUndefined();
+test('completeHabit_returnsInput_whenNoScheduledRepeater', () => {
+  const content = '* TODO Task\nSCHEDULED: <2026-05-12 Mon>\n';
+  expect(completeHabit(content, 0, completedAt)).toBe(content);
 });
