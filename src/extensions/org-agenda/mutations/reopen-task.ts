@@ -1,16 +1,23 @@
-import { mutateHeadline } from './core/mutate-headline';
-import { buildTodoKeywordEdit } from './core/build-todo-keyword-edit';
-import { buildClosedEdit } from './core/build-closed-edit';
-import { buildLogStateChangeEdit } from './core/build-log-state-change-edit';
+import { editOrgDocument } from 'orgnote-api/utils';
 import { TASK_DONE_KEYWORD, TASK_TODO_KEYWORD } from '../constants';
 
 export const reopenTask = (
   content: string,
   headlineStart: number,
   now = new Date(),
-): string | undefined =>
-  mutateHeadline(content, headlineStart, [
-    (ctx) => buildTodoKeywordEdit(ctx, TASK_TODO_KEYWORD),
-    (ctx) => buildClosedEdit(ctx, null),
-    (ctx) => buildLogStateChangeEdit(ctx, TASK_DONE_KEYWORD, TASK_TODO_KEYWORD, now),
-  ]);
+): string | undefined => {
+  let applied = false;
+  const next = editOrgDocument(content, (doc) => {
+    const h = doc.headlineAt(headlineStart);
+    if (!h || h.todoKeyword === undefined) return;
+    h.setTodoKeyword(TASK_TODO_KEYWORD);
+    h.closed.clear();
+    h.logbook.appendStateChange({
+      from: TASK_DONE_KEYWORD,
+      to: TASK_TODO_KEYWORD,
+      at: now,
+    });
+    applied = true;
+  });
+  return applied ? next : undefined;
+};
