@@ -12,7 +12,7 @@
     <template #right>
       <app-flex row align-center gap="xs" class="task-meta" @click.stop>
         <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
-        <relative-date-label v-if="rawDate" :date="rawDate" />
+        <pretty-date v-if="rawDate" :date="rawDate" />
       </app-flex>
     </template>
   </menu-item>
@@ -23,7 +23,7 @@ import { parseISO } from 'date-fns';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
-import RelativeDateLabel from 'src/components/RelativeDateLabel.vue';
+import PrettyDate from 'src/components/PrettyDate.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { computed } from 'vue';

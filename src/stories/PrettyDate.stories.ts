@@ -1,18 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { addDays, subDays } from 'date-fns';
-import RelativeDateLabel from 'src/components/RelativeDateLabel.vue';
+import PrettyDate from 'src/components/PrettyDate.vue';
 import StoryList from './StoryList.vue';
 import { computed } from 'vue';
 
-interface RelativeDateLabelStoryArgs {
+interface PrettyDateStoryArgs {
   date: Date;
   tone?: 'overdue' | 'today' | 'tomorrow' | 'future' | 'past';
   dateFormat?: string;
 }
 
 const meta = {
-  component: RelativeDateLabel,
-  title: 'Relative Date Label',
+  component: PrettyDate,
+  title: 'Pretty Date',
   tags: ['autodocs'],
   args: {
     date: new Date(),
@@ -25,50 +25,50 @@ const meta = {
       options: ['overdue', 'today', 'tomorrow', 'future', 'past'],
     },
   },
-} as Meta<RelativeDateLabelStoryArgs>;
+} as Meta<PrettyDateStoryArgs>;
 
 export default meta;
 
-type Story = StoryObj<RelativeDateLabelStoryArgs>;
+type Story = StoryObj<PrettyDateStoryArgs>;
 
 export const Default: Story = {
   render: (args) => ({
-    components: { RelativeDateLabel },
+    components: { PrettyDate },
     setup() {
       return { args };
     },
-    template: '<relative-date-label v-bind="args" />',
+    template: '<pretty-date v-bind="args" />',
   }),
 };
 
 export const Tones: Story = {
   render: (args) => ({
-    components: { StoryList, RelativeDateLabel },
+    components: { StoryList, PrettyDate },
     setup() {
       const today = new Date();
       const items = computed(() => [
         {
-          component: RelativeDateLabel,
+          component: PrettyDate,
           props: { ...args, date: subDays(today, 2), tone: 'overdue' },
           description: 'overdue',
         },
         {
-          component: RelativeDateLabel,
+          component: PrettyDate,
           props: { ...args, date: today, tone: 'today' },
           description: 'today',
         },
         {
-          component: RelativeDateLabel,
+          component: PrettyDate,
           props: { ...args, date: addDays(today, 1), tone: 'tomorrow' },
           description: 'tomorrow',
         },
         {
-          component: RelativeDateLabel,
+          component: PrettyDate,
           props: { ...args, date: addDays(today, 5), tone: 'future' },
           description: 'future',
         },
         {
-          component: RelativeDateLabel,
+          component: PrettyDate,
           props: { ...args, date: subDays(today, 1), tone: 'past' },
           description: 'past',
         },

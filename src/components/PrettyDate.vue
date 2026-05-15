@@ -1,5 +1,5 @@
 <template>
-  <span class="relative-date-label" :class="toneClass">
+  <span class="pretty-date" :class="toneClass">
     <slot>{{ label }}</slot>
   </span>
 </template>
@@ -46,7 +46,7 @@ const label = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.relative-date-label {
+.pretty-date {
   white-space: nowrap;
 
   &.tone-overdue {
