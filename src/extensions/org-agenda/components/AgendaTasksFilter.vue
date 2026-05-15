@@ -84,5 +84,3 @@ const filters = computed(
     ] satisfies ReadonlyArray<AgendaFilterOption>,
 );
 </script>
-
-<style lang="scss" scoped></style>
