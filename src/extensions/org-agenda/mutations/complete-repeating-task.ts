@@ -1,21 +1,25 @@
-import { mutateHeadline } from './core/mutate-headline';
-import { buildTodoKeywordEdit } from './core/build-todo-keyword-edit';
-import { buildAdvanceRepeaterEdits } from './core/build-advance-repeater-edits';
-import { buildLogStateChangeEdit } from './core/build-log-state-change-edit';
-import type { HeadlineContext } from './core/headline-context';
+import { editOrgDocument } from 'orgnote-api/utils';
 import { TASK_DONE_KEYWORD, TASK_TODO_KEYWORD } from '../constants';
-
-const getCurrentTodoKeyword = (ctx: HeadlineContext): string =>
-  ctx.heading?.todoKeyword ?? TASK_TODO_KEYWORD;
 
 export const completeRepeatingTask = (
   content: string,
   headlineStart: number,
   completedAt: Date,
-): string | undefined =>
-  mutateHeadline(content, headlineStart, [
-    (ctx) => buildTodoKeywordEdit(ctx, TASK_TODO_KEYWORD),
-    (ctx) => buildAdvanceRepeaterEdits(ctx, completedAt),
-    (ctx) =>
-      buildLogStateChangeEdit(ctx, getCurrentTodoKeyword(ctx), TASK_DONE_KEYWORD, completedAt),
-  ]);
+): string | undefined => {
+  let applied = false;
+  const next = editOrgDocument(content, (doc) => {
+    const h = doc.headlineAt(headlineStart);
+    if (!h || h.todoKeyword === undefined) return;
+    const fromKeyword = h.todoKeyword ?? TASK_TODO_KEYWORD;
+    h.setTodoKeyword(TASK_TODO_KEYWORD);
+    h.scheduled.advanceRepeater(completedAt);
+    h.deadline.advanceRepeater(completedAt);
+    h.logbook.appendStateChange({
+      from: fromKeyword,
+      to: TASK_DONE_KEYWORD,
+      at: completedAt,
+    });
+    applied = true;
+  });
+  return applied ? next : undefined;
+};
