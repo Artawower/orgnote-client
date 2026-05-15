@@ -13,13 +13,6 @@
       <app-flex row align-center gap="xs" class="task-meta" @click.stop>
         <org-tags v-if="task.tags?.length" :tags="task.tags" badge-size="xs" :clickable="false" />
         <relative-date-label v-if="rawDate" :date="rawDate" />
-        <app-icon
-          name="sym_o_open_in_new"
-          size="sm"
-          color="fg-muted"
-          class="task-open"
-          @click.stop="$emit('open-note')"
-        />
       </app-flex>
     </template>
   </menu-item>
@@ -30,7 +23,6 @@ import { parseISO } from 'date-fns';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
-import AppIcon from 'src/components/AppIcon.vue';
 import RelativeDateLabel from 'src/components/RelativeDateLabel.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
