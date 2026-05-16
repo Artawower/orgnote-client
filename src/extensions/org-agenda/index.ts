@@ -110,7 +110,7 @@ const settingsSchema = object({
   agendaFilesPath: pipe(optional(string()), metadata({ filePicker: true })),
 });
 
-export type AgendaConfig = { agendaFilesPath?: string };
+type AgendaConfig = { agendaFilesPath?: string };
 
 const defaultSettings: AgendaConfig = {
   agendaFilesPath: undefined,
