@@ -24,7 +24,7 @@
 <script lang="ts" setup>
 import { watch } from 'vue';
 import { DefaultCommands } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
+import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import EmptyState from 'src/components/EmptyState.vue';
@@ -34,8 +34,6 @@ import { reporter } from 'src/boot/report';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
 import type { AgendaTaskView } from './composables/use-agenda-tasks';
-import { createFileMutationRunner } from './mutations/file-mutation-runner';
-import type { ContentMutator } from './mutations/file-mutation-runner';
 import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
@@ -47,15 +45,11 @@ import type { FileTask } from 'orgnote-api';
 import { isCompletedOn } from './utils/agenda-filters';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-const { loading, groups, totalByFilter, silentReload } = useAgendaTasks();
+const { loading, groups, totalByFilter } = useAgendaTasks();
 const filterStore = useAgendaFilterStore();
+const fileContent = api.core.useFileContent();
 
 watch(totalByFilter, (value) => filterStore.setTotals(value), { immediate: true });
-
-const mutationRunner = createFileMutationRunner({
-  fileContent: api.core.useFileContent(),
-  fileSearch: api.core.useFileSearch(),
-});
 
 const hasRepeater = (task: FileTask): boolean =>
   !!(task.scheduled?.repeater ?? task.deadline?.repeater);
@@ -75,25 +69,38 @@ const findDoneDateForView = (task: AgendaTaskView): string | undefined =>
     isCompletedOn({ ...task, doneDates: [doneDate] }, task.viewDate),
   );
 
-const buildMutation =
-  (task: AgendaTaskView): ContentMutator =>
-  (content: string): string => {
-    if (task.start === undefined) return content;
-    const completedAt = resolveCompletedAt(task.viewDate);
-    const completedOnViewDate = isCompletedOn(task, task.viewDate);
-    const doneDate = findDoneDateForView(task);
-    if (completedOnViewDate && hasRepeater(task) && doneDate) {
-      return undoRecurringCompletion(content, task.start, doneDate);
-    }
-    if (task.state === 'done') return reopenTask(content, task.start);
-    if (hasRepeater(task)) return completeRepeatingTask(content, task.start, completedAt);
-    return completeTask(content, task.start, completedAt);
-  };
+const applyToggle = (task: AgendaTaskView, content: string): string => {
+  if (task.start === undefined) return content;
+  const completedAt = resolveCompletedAt(task.viewDate);
+  const completedOnViewDate = isCompletedOn(task, task.viewDate);
+  const doneDate = findDoneDateForView(task);
+  if (completedOnViewDate && hasRepeater(task) && doneDate) {
+    return undoRecurringCompletion(content, task.start, doneDate);
+  }
+  if (task.state === 'done') return reopenTask(content, task.start);
+  if (hasRepeater(task)) return completeRepeatingTask(content, task.start, completedAt);
+  return completeTask(content, task.start, completedAt);
+};
 
 const toggleTask = async (task: AgendaTaskView, filePath: string): Promise<void> => {
   if (task.start === undefined) return;
-  await mutationRunner.run(filePath, buildMutation(task));
-  await silentReload();
+  const readResult = await to(fileContent.read, 'Failed to read file')(filePath);
+  if (readResult.isErr()) {
+    reporter.reportError(readResult.error);
+    return;
+  }
+  const content = uint8ArrayToText(readResult.value);
+  const nextContent = to(applyToggle, 'Failed to apply agenda mutation')(task, content);
+  if (nextContent.isErr()) {
+    reporter.reportError(nextContent.error);
+    return;
+  }
+  if (nextContent.value === content) return;
+  const writeResult = await to(fileContent.write, 'Failed to write file')(
+    filePath,
+    textToUint8Array(nextContent.value),
+  );
+  if (writeResult.isErr()) reporter.reportError(writeResult.error);
 };
 
 const openNote = async (_task: FileTask, filePath: string): Promise<void> => {

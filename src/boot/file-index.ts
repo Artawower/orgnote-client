@@ -106,7 +106,7 @@ const handleDirectoryRename = async (change: FileSystemChange): Promise<void> =>
   await Promise.all(staleFiles.map((file) => fileSearch.removeFile({ id: file.id })));
 
   const orgFilesInNewPath = await listOrgFilesRecursively(change.path);
-  await Promise.all(orgFilesInNewPath.map((filePath) => fileSearch.indexFile(filePath)));
+  await Promise.all(orgFilesInNewPath.map((filePath) => fileSearch.processFile(filePath)));
 };
 
 const setupOrgFileWatcher = (fileWatcher: ReturnType<typeof useFileWatcherStore>): void => {
@@ -152,7 +152,7 @@ const processChange = async (change: FileSystemChange): Promise<void> => {
     }
 
     if (isOrgFile(change.path)) {
-      await fileSearch.indexFile(change.path);
+      await fileSearch.processFile(change.path);
     }
 
     return;
@@ -163,5 +163,5 @@ const processChange = async (change: FileSystemChange): Promise<void> => {
     return;
   }
 
-  await fileSearch.indexFile(change.path);
+  await fileSearch.processFile(change.path);
 };
