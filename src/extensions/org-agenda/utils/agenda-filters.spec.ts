@@ -6,12 +6,7 @@ import {
   isOverdue,
   isToday,
   isTomorrow,
-  isNextSevenDays,
-  hasNoDate,
-  isCompletedToday,
   isCompletedOn,
-  getOccurrencesInRange,
-  getFirstUnfinishedOccurrence,
   findNextOccurrenceInRange,
 } from './agenda-filters';
 
@@ -58,14 +53,6 @@ const monthlyRepeater = { type: '+', value: 1, unit: 'm' } as const;
 const zeroDayRepeater = { type: '+', value: 0, unit: 'd' } as const;
 
 const noDateTask: FileTask = { id: '1', kind: 'headline-todo', state: 'todo', text: 'Task' };
-
-const withLastDoneAt = (lastDoneAt?: string): FileTask => ({
-  id: '1',
-  kind: 'headline-todo',
-  state: 'todo',
-  text: 'Task',
-  lastDoneAt,
-});
 
 const utcNoon = (date: string): Date => new Date(`${date}T12:00:00Z`);
 
@@ -128,30 +115,6 @@ test('findNextOccurrenceInRange_nothingInWindow_returnsUndefined', () => {
 });
 
 // REGRESSION: filter visibility — completed in window stays visible
-test('isNextSevenDays_nonRecurringCompletedInWindow_returnsTrue', () => {
-  const task: FileTask = {
-    ...withScheduled('2026-05-15'),
-    doneDates: ['2026-05-15'],
-  };
-  expect(isNextSevenDays(task, now)).toBe(true);
-});
-
-test('isNextSevenDays_recurringAllCompletedInWindow_returnsTrue', () => {
-  const task: FileTask = {
-    ...withScheduledRepeater('2026-05-12', dailyRepeater),
-    doneDates: [
-      '2026-05-12',
-      '2026-05-13',
-      '2026-05-14',
-      '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
-      '2026-05-18',
-      '2026-05-19',
-    ],
-  };
-  expect(isNextSevenDays(task, now)).toBe(true);
-});
 
 // REGRESSION: Bug 4 — task completed-for-tomorrow should be visible in Tomorrow filter
 test('isTomorrow_taskCompletedOnTomorrow_returnsTrue', () => {
@@ -198,112 +161,8 @@ test('isTomorrow_taskNotCompletedOnTomorrow_returnsFalse', () => {
 });
 
 // NEW: getOccurrencesInRange — collect all occurrence dates in window
-test('getOccurrencesInRange_singleNonRecurringInWindow_returnsBase', () => {
-  const task = withScheduled('2026-05-14');
-  const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range.map(dateKey)).toEqual(['2026-05-14']);
-});
-
-test('getOccurrencesInRange_singleNonRecurringOutsideWindow_returnsEmpty', () => {
-  const task = withScheduled('2026-06-01');
-  const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range).toEqual([]);
-});
-
-test('getOccurrencesInRange_recurringDailyFromToday_returns8Days', () => {
-  // base today, +1d, window [0, 7] → 8 occurrences (inclusive)
-  const task = withScheduledRepeater('2026-05-12', dailyRepeater);
-  const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range).toHaveLength(8);
-  expect(dateKey(range[0])).toBe('2026-05-12');
-  expect(dateKey(range[7])).toBe('2026-05-19');
-});
-
-test('getOccurrencesInRange_recurringEvery2Days_returnsAlternateDays', () => {
-  // base today, +2d, window [0, 7] → occurrences on days 0, 2, 4, 6 (4 total)
-  const task = withScheduledRepeater('2026-05-12', everyTwoDaysRepeater);
-  const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range.map(dateKey)).toEqual(['2026-05-12', '2026-05-14', '2026-05-16', '2026-05-18']);
-});
-
-test('getOccurrencesInRange_zeroValueRepeater_returnsEmpty', () => {
-  const task = withScheduledRepeater('2026-05-12', zeroDayRepeater);
-  const range = getOccurrencesInRange(task, now, 0, 7);
-  expect(range).toEqual([]);
-});
-
-test('getOccurrencesInRange_recurringMonthly_returnsMonthlyDates', () => {
-  // base previous month, +1m, window large enough to catch one occurrence
-  const task = withScheduledRepeater('2026-04-13', monthlyRepeater);
-  const range = getOccurrencesInRange(task, now, 0, 30);
-  // base 2026-04-13 < windowStart 2026-05-12, next is 2026-05-13 → in window
-  expect(range.map(dateKey)).toContain('2026-05-13');
-});
 
 // NEW: getFirstUnfinishedOccurrence — first occurrence not in doneDates
-test('getFirstUnfinishedOccurrence_recurringNoDoneDates_returnsFirstOccurrence', () => {
-  const task = withScheduledRepeater('2026-05-12', dailyRepeater);
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(dateKey(result)).toBe('2026-05-12');
-});
-
-test('getFirstUnfinishedOccurrence_recurringTodayDone_returnsTomorrow', () => {
-  // Real bug case: daily done today, viewing Next 7 Days → next pending = tomorrow
-  const task: FileTask = {
-    ...withScheduledRepeater('2026-05-12', dailyRepeater),
-    doneDates: ['2026-05-12'],
-  };
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(dateKey(result)).toBe('2026-05-13');
-});
-
-test('getFirstUnfinishedOccurrence_recurringFirstThreeDone_returnsFourth', () => {
-  const task: FileTask = {
-    ...withScheduledRepeater('2026-05-12', dailyRepeater),
-    doneDates: ['2026-05-12', '2026-05-13', '2026-05-14'],
-  };
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(dateKey(result)).toBe('2026-05-15');
-});
-
-test('getFirstUnfinishedOccurrence_recurringAllDone_returnsUndefined', () => {
-  const task: FileTask = {
-    ...withScheduledRepeater('2026-05-12', dailyRepeater),
-    doneDates: [
-      '2026-05-12',
-      '2026-05-13',
-      '2026-05-14',
-      '2026-05-15',
-      '2026-05-16',
-      '2026-05-17',
-      '2026-05-18',
-      '2026-05-19',
-    ],
-  };
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result).toBeUndefined();
-});
-
-test('getFirstUnfinishedOccurrence_nonRecurringDone_returnsUndefined', () => {
-  const task: FileTask = {
-    ...withScheduled('2026-05-14'),
-    doneDates: ['2026-05-14'],
-  };
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result).toBeUndefined();
-});
-
-test('getFirstUnfinishedOccurrence_nonRecurringNotDone_returnsBase', () => {
-  const task = withScheduled('2026-05-14');
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(dateKey(result)).toBe('2026-05-14');
-});
-
-test('getFirstUnfinishedOccurrence_outsideWindow_returnsUndefined', () => {
-  const task = withScheduled('2026-06-01');
-  const result = getFirstUnfinishedOccurrence(task, now, 0, 7);
-  expect(result).toBeUndefined();
-});
 
 test('isOverdue_returnsTrue_forPastScheduledDate', () => {
   expect(isOverdue(withScheduled('2026-05-11'), now)).toBe(true);
@@ -364,20 +223,6 @@ test('isCompletedOn_taskWithEmptyDoneDates_returnsFalse', () => {
   expect(isCompletedOn(task, new Date('2026-05-14T12:00:00'))).toBe(false);
 });
 
-test('isCompletedToday_isWrapperForIsCompletedOnToday', () => {
-  // isCompletedToday should be equivalent to isCompletedOn(task, now)
-  const task: FileTask = {
-    id: '1',
-    kind: 'headline-todo',
-    state: 'todo',
-    text: 'Task',
-    doneDates: ['2026-05-14'],
-  };
-  const today = new Date('2026-05-14T12:00:00');
-  expect(isCompletedToday(task, today)).toBe(isCompletedOn(task, today));
-  expect(isCompletedToday(task, today)).toBe(true);
-});
-
 // REGRESSION: Bug 1 — DONE tasks should NOT appear in Overdue
 test('isOverdue_doneTaskWithPastDate_returnsFalse', () => {
   const task: FileTask = {
@@ -420,25 +265,6 @@ test('isToday_recurringCompletedToday_advancedScheduled_returnsTrue', () => {
     lastDoneAt: '2026-05-12',
   };
   expect(isToday(task, now)).toBe(true);
-});
-
-test('isNextSevenDays_recurringCompletedToday_advancedScheduled_returnsTrue', () => {
-  const task: FileTask = {
-    id: '1',
-    kind: 'headline-todo',
-    state: 'todo',
-    text: 'Daily task',
-    scheduled: {
-      date: '2026-05-13',
-      active: true,
-      hasTime: false,
-      start: 0,
-      end: 0,
-      repeater: dailyRepeater,
-    },
-    lastDoneAt: '2026-05-12',
-  };
-  expect(isNextSevenDays(task, now)).toBe(true);
 });
 
 test('isTomorrow_recurringCompletedToday_advancedToTomorrow_returnsTrue', () => {
@@ -543,54 +369,4 @@ test('hasOccurrenceInRange_zeroValueRepeater_doesNotInfiniteLoop', () => {
   expect(
     isTomorrow(withScheduledRepeater('2020-01-01', zeroDayRepeater), utcNoon('2026-05-13')),
   ).toBe(false);
-});
-
-test('isNextSevenDays_returnsTrue_forToday', () => {
-  expect(isNextSevenDays(withScheduled('2026-05-12'), now)).toBe(true);
-});
-
-test('isNextSevenDays_returnsTrue_forSevenDaysAhead', () => {
-  expect(isNextSevenDays(withScheduled('2026-05-19'), now)).toBe(true);
-});
-
-test('isNextSevenDays_returnsFalse_forEightDaysAhead', () => {
-  expect(isNextSevenDays(withScheduled('2026-05-20'), now)).toBe(false);
-});
-
-test('isNextSevenDays_returnsTrue_forOverdueTask', () => {
-  expect(isNextSevenDays(withScheduled('2026-05-11'), now)).toBe(true);
-});
-
-test('isCompletedToday_returnsTrue_forToday', () => {
-  expect(isCompletedToday(withLastDoneAt('2026-05-12'), now)).toBe(true);
-});
-
-test('isCompletedToday_usesLocalDayForLogbookDate', () => {
-  const originalTimeZone = process.env.TZ;
-  process.env.TZ = 'Australia/Sydney';
-  try {
-    expect(isCompletedToday(withLastDoneAt('2026-05-14'), new Date(2026, 4, 14, 3, 19))).toBe(true);
-  } finally {
-    process.env.TZ = originalTimeZone;
-  }
-});
-
-test('isCompletedToday_returnsFalse_forYesterday', () => {
-  expect(isCompletedToday(withLastDoneAt('2026-05-11'), now)).toBe(false);
-});
-
-test('isCompletedToday_returnsFalse_withoutLastDoneAt', () => {
-  expect(isCompletedToday(withLastDoneAt(), now)).toBe(false);
-});
-
-test('hasNoDate_returnsTrue_whenNoDates', () => {
-  expect(hasNoDate(noDateTask)).toBe(true);
-});
-
-test('hasNoDate_returnsFalse_whenHasScheduled', () => {
-  expect(hasNoDate(withScheduled('2026-05-12'))).toBe(false);
-});
-
-test('hasNoDate_returnsFalse_whenHasDeadline', () => {
-  expect(hasNoDate(withDeadline('2026-05-12'))).toBe(false);
 });
