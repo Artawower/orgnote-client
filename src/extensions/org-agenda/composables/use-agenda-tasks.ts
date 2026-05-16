@@ -74,8 +74,14 @@ const applyFilter = (tasks: FileTask[], filter: AgendaFilter, now: Date): Agenda
     .filter((task) => isTaskVisible(task, filter, now))
     .map((task) => toTaskView(task, filter, now));
 
+export const isAgendaEligible = (task: FileTask): boolean =>
+  task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
+
+const eligibleTasks = (file: FileMeta): FileTask[] =>
+  (file.tasks ?? []).filter(isAgendaEligible);
+
 const toGroup = (file: FileMeta, filter: AgendaFilter, now: Date): AgendaTaskGroup | null => {
-  const tasks = applyFilter(file.tasks ?? [], filter, now);
+  const tasks = applyFilter(eligibleTasks(file), filter, now);
   if (!tasks.length) return null;
   return { fileTitle: resolveFileTitle(file), filePath: resolveAbsolutePath(file), tasks };
 };
@@ -91,7 +97,7 @@ const countFileTasks = (
   file: FileMeta,
   now: Date,
 ): Record<AgendaFilter, number> => {
-  const tasks = file.tasks ?? [];
+  const tasks = eligibleTasks(file);
   acc.all += tasks.length;
   acc.overdue += tasks.filter((task) => isOverdue(task, now)).length;
   acc.today += tasks.filter((task) => isToday(task, now)).length;
