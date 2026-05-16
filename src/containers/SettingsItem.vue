@@ -36,6 +36,21 @@
       {{ t(I18N.ADD) }}
     </menu-item>
   </template>
+  <template v-else-if="metadata?.filePicker">
+    <menu-item @click="pickFile">
+      <div class="capitalize text-medium menu-item-content">
+        {{ camelCaseToWords(name) }}
+      </div>
+      <template #right>
+        <app-flex gap="xs" align-center>
+          <span class="file-picker-value text-medium">{{
+            fieldModel ?? metadata.defaultValue ?? ''
+          }}</span>
+          <action-button icon="sym_o_description" size="sm" outline @click.stop="pickFile" />
+        </app-flex>
+      </template>
+    </menu-item>
+  </template>
   <template v-else-if="metadata?.directoryPicker">
     <menu-item @click="pickDirectory">
       <div class="capitalize text-medium menu-item-content">
@@ -171,19 +186,29 @@ const removeFromArray = (index: number): void => {
   fieldSet(props.name, arr);
 };
 
-const pickDirectory = async () => {
+const pickPath = async (mode: 'file' | 'directory'): Promise<void> => {
   const { createDirItemsGetter } = await import('src/utils/dir-items-getter');
   const result = await api.core.useCompletion().open<DiskFile, string>({
     type: 'input-choice',
     searchText: (fieldGet(props.name) as string) ?? '/',
     placeholder: camelCaseToWords(props.name),
-    itemsGetter: createDirItemsGetter(api),
+    itemsGetter: createDirItemsGetter(api, mode === 'file'),
   });
   if (!result) return;
-  const fileManager = api.core.useFileManager();
-  await to(fileManager.createFolder.bind(fileManager))(result);
+  if (mode === 'directory') {
+    const fileManager = api.core.useFileManager();
+    await to(fileManager.createFolder.bind(fileManager))(result);
+    fieldSet(props.name, result);
+    return;
+  }
+  const { ensureFileExists } = await import('src/utils/ensure-file-exists');
+  const ok = await ensureFileExists(api.core.useFileContent(), result);
+  if (!ok) return;
   fieldSet(props.name, result);
 };
+
+const pickFile = (): Promise<void> => pickPath('file');
+const pickDirectory = (): Promise<void> => pickPath('directory');
 
 const uploadConfigFile = async () => {
   const command = metadata?.command;

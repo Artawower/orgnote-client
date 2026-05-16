@@ -1,8 +1,10 @@
 import type { AsyncComponentLoader } from 'vue';
 import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata } from 'valibot';
+import { createTaskCommand } from './commands/create-task-command';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
+  AGENDA_CREATE_TASK,
   AGENDA_HABITS_COMMAND,
   AGENDA_HABITS_PATTERN,
   AGENDA_HABITS_URI,
@@ -92,6 +94,7 @@ const registerViews = (api: OrgNoteApi): void => {
     commands.add(buildCommand(view));
     if (view.pinned) pinned.addCommand('sidebar', view.command);
   });
+  commands.add(createTaskCommand);
 };
 
 const unregisterViews = (api: OrgNoteApi): void => {
@@ -104,21 +107,29 @@ const unregisterViews = (api: OrgNoteApi): void => {
     if (existing) commands.remove(existing);
     if (view.pinned) pinned.removeCommand('sidebar', view.command);
   });
+  const existing = commands.get(AGENDA_CREATE_TASK);
+  if (existing) commands.remove(existing);
 };
 
 const settingsSchema = object({
   agendaFilesPath: pipe(optional(string()), metadata({ directoryPicker: true })),
+  inboxFilePath: pipe(
+    optional(string()),
+    metadata({ filePicker: true, defaultValue: 'inbox.org' }),
+  ),
 });
 
-type AgendaConfig = { agendaFilesPath?: string };
+type AgendaConfig = { agendaFilesPath?: string; inboxFilePath?: string };
 
 const defaultSettings: AgendaConfig = {
   agendaFilesPath: undefined,
+  inboxFilePath: undefined,
 };
 
 export const resolveAgendaConfig = (rawConfig: Record<string, unknown>): AgendaConfig => ({
   agendaFilesPath:
     (rawConfig.agendaFilesPath as string | undefined) ?? defaultSettings.agendaFilesPath,
+  inboxFilePath: (rawConfig.inboxFilePath as string | undefined) ?? defaultSettings.inboxFilePath,
 });
 
 export const orgAgendaExtension: Extension = {

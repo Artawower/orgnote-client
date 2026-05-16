@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
-import { join, type FileMeta, type FileTask } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
+import { ErrorFileNotFound, join, type FileMeta, type FileTask } from 'orgnote-api';
+import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { createDirPath } from 'src/utils/create-dir-path';
@@ -9,6 +9,7 @@ import { findNextOccurrenceInRange, isOverdue, isToday, isTomorrow } from '../ut
 import { resolveAgendaConfig } from '../index';
 import { orgAgendaManifest } from '../manifest';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
+import { createTask, type CreateTaskInput } from '../mutations/create-task';
 
 const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
@@ -94,5 +95,47 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
     await loadFiles();
   };
 
-  return { allFiles, agendaFiles, loading, totalByFilter, loadFiles, ensureLoaded };
+  const resolveInboxPath = (targetFile?: string): string => {
+    if (targetFile) return targetFile;
+    if (agendaConfig.value.inboxFilePath) return agendaConfig.value.inboxFilePath;
+    const basePath = agendaConfig.value.agendaFilesPath ?? '/';
+    return join(basePath, 'inbox.org');
+  };
+
+  const readFileOrEmpty = async (path: string): Promise<string | undefined> => {
+    const result = await to(api.core.useFileContent().read)(path);
+    if (result.isOk()) return uint8ArrayToText(result.value);
+    if (result.error instanceof ErrorFileNotFound) return '';
+    reporter.reportError(result.error);
+    return undefined;
+  };
+
+  const createTaskInFile = async (
+    input: CreateTaskInput & { targetFile?: string },
+  ): Promise<boolean> => {
+    const target = resolveInboxPath(input.targetFile);
+    const content = await readFileOrEmpty(target);
+    if (content === undefined) return false;
+    const nextContent = createTask(content, input);
+    const writeResult = await to(api.core.useFileContent().write, 'Failed to write task')(
+      target,
+      textToUint8Array(nextContent),
+    );
+    if (writeResult.isErr()) {
+      reporter.reportError(writeResult.error);
+      return false;
+    }
+    return true;
+  };
+
+  return {
+    allFiles,
+    agendaFiles,
+    agendaConfig,
+    loading,
+    totalByFilter,
+    loadFiles,
+    ensureLoaded,
+    createTaskInFile,
+  };
 });
