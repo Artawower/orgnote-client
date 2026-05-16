@@ -5,6 +5,7 @@ import { defineComponent } from 'vue';
 const mockNavigate = vi.fn();
 const mockAddTab = vi.fn();
 let mockActivePaneId: string | undefined = 'pane-1';
+let mockActiveTab: { router: object } | undefined = { router: {} };
 const mockConfig = {
   fileReaders: {
     preferredReaders: {} as Record<string, string>,
@@ -17,6 +18,9 @@ vi.mock('./pane', () => ({
     addTab: mockAddTab,
     get activePaneId() {
       return mockActivePaneId;
+    },
+    get activeTab() {
+      return mockActiveTab;
     },
   }),
 }));
@@ -61,6 +65,7 @@ beforeEach(() => {
   mockNavigate.mockReset();
   mockAddTab.mockReset();
   mockActivePaneId = 'pane-1';
+  mockActiveTab = { router: {} };
   mockConfig.fileReaders.preferredReaders = {};
 });
 
@@ -221,28 +226,30 @@ test('open defaults to file route for unknown scheme', async () => {
   });
 });
 
-test('open creates a tab and retries navigation when active tab navigation fails', async () => {
+test('open creates a new tab when no active tab is available', async () => {
   const store = useBufferViewerStore();
   const route = { name: 'Builtin', params: { path: '/agenda/tasks' } };
-  mockNavigate.mockRejectedValueOnce(new Error('Tab not found'));
+  mockActiveTab = undefined;
   mockAddTab.mockResolvedValueOnce({ id: 'tab-2', paneId: 'pane-1' });
 
   await store.open('builtin:///agenda/tasks');
 
   expect(mockAddTab).toHaveBeenCalledWith('pane-1');
-  expect(mockNavigate).toHaveBeenNthCalledWith(1, route);
-  expect(mockNavigate).toHaveBeenNthCalledWith(2, route, 'pane-1', 'tab-2');
+  expect(mockNavigate).toHaveBeenCalledWith(route, 'pane-1', 'tab-2');
+  expect(mockNavigate).toHaveBeenCalledTimes(1);
 });
 
-test('open rejects original navigation error when no active pane exists', async () => {
+test('open rejects when neither active tab nor active pane exists', async () => {
   const store = useBufferViewerStore();
-  const error = new Error('No active pane');
+  mockActiveTab = undefined;
   mockActivePaneId = undefined;
-  mockNavigate.mockRejectedValueOnce(error);
 
-  await expect(store.open('builtin:///agenda/tasks')).rejects.toBe(error);
+  await expect(store.open('builtin:///agenda/tasks')).rejects.toThrow(
+    'no active pane available',
+  );
 
   expect(mockAddTab).not.toHaveBeenCalled();
+  expect(mockNavigate).not.toHaveBeenCalled();
 });
 
 test('pattern matches correctly with regex', () => {
