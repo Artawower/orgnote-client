@@ -50,20 +50,16 @@ const reindexFile = async (fileSearch: FileSearchStore, filePath: string): Promi
   if (result.isErr()) reporter.reportError(result.error);
 };
 
-const toError = (error: unknown): Error =>
-  error instanceof Error ? error : new Error('Agenda mutation failed', { cause: error });
-
 export const createFileMutationRunner = (deps: FileMutationRunnerDeps) => {
   const run = async (filePath: string, mutate: ContentMutator): Promise<void> => {
     const content = await readContent(deps.fileContent, filePath);
     if (content === undefined) return;
-    let nextContent: string;
-    try {
-      nextContent = mutate(content);
-    } catch (error) {
-      reporter.reportError(toError(error));
+    const mutationResult = to(mutate, 'Agenda mutation failed')(content);
+    if (mutationResult.isErr()) {
+      reporter.reportError(mutationResult.error);
       return;
     }
+    const nextContent = mutationResult.value;
     if (nextContent === content) return;
     const written = await writeContent(deps.fileContent, filePath, nextContent);
     if (written) await reindexFile(deps.fileSearch, filePath);
