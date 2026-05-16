@@ -2,23 +2,30 @@
   <app-flex class="agenda-sidebar" column start align-stretch gap="md">
     <agenda-tasks-filter
       v-model="filterStore.activeFilter"
-      :totals="filterStore.totalByFilter"
+      :totals="tasksStore.totalByFilter"
       @select="onFilterSelect"
     />
   </app-flex>
 </template>
 
 <script lang="ts" setup>
+import { onMounted } from 'vue';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import AppFlex from 'src/components/AppFlex.vue';
 import AgendaTasksFilter from './components/AgendaTasksFilter.vue';
 import { useAgendaFilterStore } from './stores/agenda-filter-store';
+import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import { AGENDA_TASKS_URI } from './constants';
 import type { AgendaFilter } from './composables/use-agenda-tasks';
 
 const filterStore = useAgendaFilterStore();
+const tasksStore = useAgendaTasksStore();
+
+onMounted(() => {
+  void tasksStore.ensureLoaded();
+});
 
 const onFilterSelect = async (filter: AgendaFilter): Promise<void> => {
   filterStore.activeFilter = filter;
