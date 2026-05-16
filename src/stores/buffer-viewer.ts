@@ -100,12 +100,12 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
 
     const open = async (uri: string): Promise<void> => {
       const route = buildRouteLocation(uri);
-      try {
+      if (pane.activeTab?.router) {
         await pane.navigate(route);
-      } catch (error) {
-        const opened = await openInNewTab(route);
-        if (!opened) throw error;
+        return;
       }
+      const opened = await openInNewTab(route);
+      if (!opened) throw new Error('buffer-viewer.open: no active pane available');
     };
 
     return {
