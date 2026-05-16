@@ -36,15 +36,15 @@
       {{ t(I18N.ADD) }}
     </menu-item>
   </template>
-  <template v-else-if="metadata?.filePicker">
-    <menu-item @click="pickFile">
+  <template v-else-if="metadata?.directoryPicker">
+    <menu-item @click="pickDirectory">
       <div class="capitalize text-medium menu-item-content">
         {{ camelCaseToWords(name) }}
       </div>
       <template #right>
         <app-flex gap="xs" align-center>
           <span class="file-picker-value text-medium">{{ fieldModel ?? '' }}</span>
-          <action-button icon="folder_open" size="sm" outline @click.stop="pickFile" />
+          <action-button icon="folder_open" size="sm" outline @click.stop="pickDirectory" />
         </app-flex>
       </template>
     </menu-item>
@@ -171,13 +171,7 @@ const removeFromArray = (index: number): void => {
   fieldSet(props.name, arr);
 };
 
-const ensurePathExists = async (path: string): Promise<void> => {
-  const isLikelyDir = path.endsWith('/') || !path.includes('.');
-  const dirPath = isLikelyDir ? path : path.split('/').slice(0, -1).join('/') || '/';
-  await to(api.core.useFileManager().createFolder.bind(api.core.useFileManager()))(dirPath);
-};
-
-const pickFile = async () => {
+const pickDirectory = async () => {
   const { createDirItemsGetter } = await import('src/utils/dir-items-getter');
   const result = await api.core.useCompletion().open<DiskFile, string>({
     type: 'input-choice',
@@ -186,7 +180,8 @@ const pickFile = async () => {
     itemsGetter: createDirItemsGetter(api),
   });
   if (!result) return;
-  await ensurePathExists(result);
+  const fileManager = api.core.useFileManager();
+  await to(fileManager.createFolder.bind(fileManager))(result);
   fieldSet(props.name, result);
 };
 
