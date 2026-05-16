@@ -108,6 +108,22 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaFilterAll]: 'All',
   [extensionI18nKeys.orgAgendaNoTasksTitle]: 'No tasks',
   [extensionI18nKeys.orgAgendaNoTasksDescription]: 'No tasks match the selected filter',
+  [extensionI18nKeys.orgAgendaQuickAddPlaceholder]: '+ Add task to "{target}"',
+  [extensionI18nKeys.orgAgendaQuickAddBodyPlaceholder]: 'Description (optional)',
+  [extensionI18nKeys.orgAgendaQuickAddShortcutHint]: 'Cmd+\u21b5 to add task',
+  [extensionI18nKeys.orgAgendaQuickAddAddButton]: 'Add',
+  [extensionI18nKeys.orgAgendaQuickAddToday]: 'Today',
+  [extensionI18nKeys.orgAgendaQuickAddTomorrow]: 'Tomorrow',
+  [extensionI18nKeys.orgAgendaQuickAddNextWeek]: 'Next 7 days',
+  [extensionI18nKeys.orgAgendaQuickAddNoDate]: 'Clear date',
+  [extensionI18nKeys.orgAgendaQuickAddToastAdded]: 'Task added to {target}',
+  [extensionI18nKeys.orgAgendaQuickAddTargetPlaceholder]: 'Select target file...',
+  [extensionI18nKeys.orgAgendaQuickAddDateTooltip]: 'Set due date',
+  [extensionI18nKeys.orgAgendaQuickAddTargetTooltip]: 'Select target file',
+  [extensionI18nKeys.orgAgendaQuickAddPriorityTooltip]: 'Set priority (coming soon)',
+  [extensionI18nKeys.orgAgendaQuickAddTagTooltip]: 'Add tags (coming soon)',
+  [extensionI18nKeys.orgAgendaCommandCreateTaskTitle]: 'Task title...',
+  [extensionI18nKeys.orgAgendaCommandCreateTaskTarget]: 'Select target file (optional)...',
 };
 
 export default eng;
