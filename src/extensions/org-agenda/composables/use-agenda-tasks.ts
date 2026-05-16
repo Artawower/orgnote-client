@@ -61,8 +61,7 @@ const toTaskView = (task: FileTask, filter: AgendaFilter, now: Date): AgendaTask
 export const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
 
-const eligibleTasks = (file: FileMeta): FileTask[] =>
-  (file.tasks ?? []).filter(isAgendaEligible);
+const eligibleTasks = (file: FileMeta): FileTask[] => (file.tasks ?? []).filter(isAgendaEligible);
 
 const applyFilter = (tasks: FileTask[], filter: AgendaFilter, now: Date): AgendaTaskView[] =>
   tasks
