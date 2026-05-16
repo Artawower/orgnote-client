@@ -244,9 +244,7 @@ test('open rejects when neither active tab nor active pane exists', async () => 
   mockActiveTab = undefined;
   mockActivePaneId = undefined;
 
-  await expect(store.open('builtin:///agenda/tasks')).rejects.toThrow(
-    'no active pane available',
-  );
+  await expect(store.open('builtin:///agenda/tasks')).rejects.toThrow('no active pane available');
 
   expect(mockAddTab).not.toHaveBeenCalled();
   expect(mockNavigate).not.toHaveBeenCalled();

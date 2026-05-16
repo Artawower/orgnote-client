@@ -1,8 +1,7 @@
 import type { ClockEntry } from 'org-mode-ast';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 
-const calendarDayFromIso = (isoDate: string): string =>
-  format(parseISO(isoDate), 'yyyy-MM-dd');
+const calendarDayFromIso = (isoDate: string): string => format(parseISO(isoDate), 'yyyy-MM-dd');
 
 const calendarDay = (date: Date): string => format(date, 'yyyy-MM-dd');
 
@@ -22,8 +21,6 @@ export const calcCurrentStreak = (clocks: ClockEntry[], now = new Date()): numbe
   const days = [...uniqueClockDays(clocks)].sort().reverse();
   if (!days.length) return 0;
   if (diffDays(today, days[0]!) > 1) return 0;
-  const breakIndex = days
-    .slice(1)
-    .findIndex((day, index) => diffDays(days[index]!, day) !== 1);
+  const breakIndex = days.slice(1).findIndex((day, index) => diffDays(days[index]!, day) !== 1);
   return breakIndex === -1 ? days.length : breakIndex + 1;
 };
