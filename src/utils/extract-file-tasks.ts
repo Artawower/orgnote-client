@@ -1,7 +1,12 @@
 import type { FileMeta } from 'orgnote-api';
+import { createProperties } from 'orgnote-api/utils';
 import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
-import { isHabitHeadline } from './headline-extractors';
 import { extractDoneDates, extractLastDoneAt } from './extract-logbook-last-done';
+
+const isHabitHeadline = (node: OrgNode): boolean =>
+  Object.entries(createProperties(node).entries).some(
+    ([key, value]) => key.toLowerCase() === 'style' && value.toLowerCase() === 'habit',
+  );
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 type ExtractedFileTask = FileTask & { line: number };
