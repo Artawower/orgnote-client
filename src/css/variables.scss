@@ -94,6 +94,7 @@ body {
   --header-wrapper-padding-y: var(--padding-md);
   --header-wrapper-padding-x: var(--padding-lg);
   --header-wrapper-padding: var(--header-wrapper-padding-y) var(--header-wrapper-padding-x);
+  --main-header-total-height: calc(var(--header-wrapper-padding-y) * 2 + var(--bar-height));
 
   // Header items (left/center/right sections)
   --header-item-bg: var(--glass-bg);

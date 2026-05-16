@@ -18,3 +18,5 @@ export const AGENDA_POMODORO_VIEWER_ID = 'org-agenda:pomodoro';
 
 export const TASK_DONE_KEYWORD = 'DONE';
 export const TASK_TODO_KEYWORD = 'TODO';
+
+export const AGENDA_CREATE_TASK = 'agenda: create task';

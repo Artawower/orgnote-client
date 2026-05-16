@@ -11,6 +11,8 @@ export interface ValibotMetadata {
     password?: boolean;
     command?: CommandName;
     directoryPicker?: boolean;
+    filePicker?: boolean;
+    defaultValue?: string;
   };
   type: string;
 }
