@@ -16,7 +16,7 @@ const watcherState = {
 const searchState = {
   isIndexing: false,
   isIndexingRef: ref(false),
-  indexFile: vi.fn(async () => {}),
+  processFile: vi.fn(async () => {}),
   removeFile: vi.fn(async () => {}),
 };
 
@@ -95,7 +95,7 @@ vi.mock('src/stores/file-watcher', () => ({
 vi.mock('src/stores/file-search', () => ({
   useFileSearchStore: vi.fn(() => ({
     isIndexing: searchState.isIndexing,
-    indexFile: searchState.indexFile,
+    processFile: searchState.processFile,
     removeFile: searchState.removeFile,
   })),
 }));
@@ -124,7 +124,7 @@ beforeEach(() => {
   watcherState.isWatching.value = true;
   searchState.isIndexing = false;
   searchState.isIndexingRef.value = false;
-  searchState.indexFile.mockClear();
+  searchState.processFile.mockClear();
   searchState.removeFile.mockClear();
   commandsState.execute.mockClear();
   mockDirEntries.clear();
@@ -150,8 +150,8 @@ test('file-index watcher removes old path and indexes new path on rename', async
   expect(searchState.removeFile).toHaveBeenCalledTimes(1);
   expect(searchState.removeFile).toHaveBeenCalledWith({ path: ['old-name.org'] });
 
-  expect(searchState.indexFile).toHaveBeenCalledTimes(1);
-  expect(searchState.indexFile).toHaveBeenCalledWith('/new-name.org');
+  expect(searchState.processFile).toHaveBeenCalledTimes(1);
+  expect(searchState.processFile).toHaveBeenCalledWith('/new-name.org');
 });
 
 test('file-index watcher handles bulk rename by updating all old and new paths', async () => {
@@ -173,8 +173,8 @@ test('file-index watcher handles bulk rename by updating all old and new paths',
   expect(searchState.removeFile).toHaveBeenNthCalledWith(1, { path: ['inbox', 'old-a.org'] });
   expect(searchState.removeFile).toHaveBeenNthCalledWith(2, { path: ['inbox', 'old-b.org'] });
 
-  expect(searchState.indexFile).toHaveBeenNthCalledWith(1, '/archive/new-a.org');
-  expect(searchState.indexFile).toHaveBeenNthCalledWith(2, '/archive/new-b.org');
+  expect(searchState.processFile).toHaveBeenNthCalledWith(1, '/archive/new-a.org');
+  expect(searchState.processFile).toHaveBeenNthCalledWith(2, '/archive/new-b.org');
 });
 
 test('file-index watcher removes stale index paths and reindexes on directory rename', async () => {
@@ -242,6 +242,6 @@ test('file-index watcher removes stale index paths and reindexes on directory re
   expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/markdown/python/asyncio.org' });
   expect(searchState.removeFile).not.toHaveBeenCalledWith({ id: '/other/keep.org' });
 
-  expect(searchState.indexFile).toHaveBeenCalledWith('/python/with, context-manager.org');
-  expect(searchState.indexFile).toHaveBeenCalledWith('/python/sub/asyncio.org');
+  expect(searchState.processFile).toHaveBeenCalledWith('/python/with, context-manager.org');
+  expect(searchState.processFile).toHaveBeenCalledWith('/python/sub/asyncio.org');
 });

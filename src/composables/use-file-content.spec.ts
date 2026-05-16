@@ -22,10 +22,20 @@ const mockEncryptionConfig: { config: { encryption: { type: string } } } = {
   },
 };
 
+const mockFileSystem = {
+  writeFile: async (path: string, content: Uint8Array) => {
+    if (!mockFileSystemManager.currentFs) {
+      throw new Error('No file system selected');
+    }
+    await mockWriteFile(path, content, 'binary');
+  },
+};
+
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
       useFileSystemManager: () => mockFileSystemManager,
+      useFileSystem: () => mockFileSystem,
       useEncryption: () => ({
         decrypt: mockDecrypt,
         encrypt: mockEncrypt,

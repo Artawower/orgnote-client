@@ -111,14 +111,14 @@ const emptyTotals = (): Record<AgendaFilter, number> => ({
 const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<AgendaFilter, number> =>
   files.reduce((acc, file) => countFileTasks(acc, file, now), emptyTotals());
 
-const setupWatchers = (loadFiles: () => Promise<void>): (() => void) => {
+const setupWatchers = (loadFiles: (silent?: boolean) => Promise<void>): (() => void) => {
   const fileWatcher = api.core.useFileWatcher();
   const fileSearch = api.core.useFileSearch();
   const { isIndexing } = storeToRefs(fileSearch);
 
-  const stopFileWatch = fileWatcher.watch('/', loadFiles, { recursive: true });
+  const stopFileWatch = fileWatcher.watch('/', () => loadFiles(true), { recursive: true });
   const stopIndexWatch = watch(isIndexing, (now, was) => {
-    if (!now && was) void loadFiles();
+    if (!now && was) void loadFiles(true);
   });
 
   return () => {

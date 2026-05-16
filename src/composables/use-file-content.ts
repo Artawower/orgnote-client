@@ -18,9 +18,7 @@ const decryptContent = async (content: Uint8Array): Promise<Uint8Array> => {
   if (!isEncryptionEnabled()) {
     throw new EncryptionConfigRequiredError();
   }
-  const input: string | Uint8Array = isArmoredPgp(content)
-    ? uint8ArrayToText(content)
-    : content;
+  const input: string | Uint8Array = isArmoredPgp(content) ? uint8ArrayToText(content) : content;
   const decrypted = await api.core.useEncryption().decrypt(input);
   return textToUint8Array(decrypted);
 };
@@ -48,14 +46,8 @@ export const useFileContent = (): FileContent => {
   };
 
   const writeFile = async (path: string, content: Uint8Array): Promise<void> => {
-    const fm = api.core.useFileSystemManager();
-    if (!fm.currentFs) {
-      throw new Error('No file system selected');
-    }
-    const toWrite = isOrgGpgFile(path)
-      ? await encryptContent(content)
-      : content;
-    await fm.currentFs.writeFile(path, toWrite, 'binary');
+    const toWrite = isOrgGpgFile(path) ? await encryptContent(content) : content;
+    await api.core.useFileSystem().writeFile(path, toWrite);
   };
 
   return {

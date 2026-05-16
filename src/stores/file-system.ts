@@ -8,6 +8,7 @@ import { mobileOnly } from 'src/utils/platform-specific';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { storeToRefs } from 'pinia';
 import { useFileSystemManagerStore } from './file-system-manager';
+import { useFileWatcherStore } from './file-watcher';
 import { useSettingsStore } from './settings';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
@@ -17,6 +18,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
   'file-system',
   () => {
     const { currentFs, currentFsInfo } = storeToRefs(useFileSystemManagerStore());
+    const fileWatcher = useFileWatcherStore();
 
     const safeFs = computed(() => {
       if (!currentFs.value) {
@@ -79,7 +81,13 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       const realPath = normalizePath(path);
       const isEncrypted = isOrgGpgFile(realPath);
       const format = isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
-      return await safeFs.value.writeFile(realPath, content, format);
+      await safeFs.value.writeFile(realPath, content, format);
+      const info = await safeFs.value.fileInfo(realPath);
+      await fileWatcher.emitChange({
+        path: realPath,
+        type: 'modify',
+        mtime: info?.mtime,
+      });
     };
 
     const syncFile = async <T extends string | Uint8Array>(
@@ -111,11 +119,22 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
     };
 
     const rename = async (path: string | string[], newPath: string | string[]): Promise<void> => {
-      return currentFs.value!.rename(normalizePath(path), normalizePath(newPath));
+      const previousPath = normalizePath(path);
+      const realPath = normalizePath(newPath);
+      await currentFs.value!.rename(previousPath, realPath);
+      const info = await safeFs.value.fileInfo(realPath);
+      await fileWatcher.emitChange({
+        path: realPath,
+        type: 'rename',
+        previousPath,
+        mtime: info?.mtime,
+      });
     };
 
     const deleteFile = async (path: string | string[]) => {
-      return await currentFs.value!.deleteFile(normalizePath(path));
+      const realPath = normalizePath(path);
+      await currentFs.value!.deleteFile(realPath);
+      await fileWatcher.emitChange({ path: realPath, type: 'delete' });
     };
 
     const removeAllFiles = async () => {

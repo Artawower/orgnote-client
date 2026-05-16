@@ -152,9 +152,12 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     let baseInterval = DEFAULT_INTERVAL;
     let maxInterval = DEFAULT_INTERVAL * MAX_BACKOFF_MULTIPLIER;
 
-    const notifySubscribers = (change: FileSystemChange): void => {
+    const notifySubscribers = async (change: FileSystemChange): Promise<void> => {
       const matching = findMatchingSubscriptions(change, subscriptions.value);
-      matching.forEach((sub) => sub.listener(change));
+      for (const sub of matching) {
+        const result = await to(() => Promise.resolve(sub.listener(change)))();
+        if (result.isErr()) reporter.reportError(result.error);
+      }
     };
 
     const matchesFilter = (path: string): boolean => {
@@ -168,7 +171,11 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       if (!matchesFilter(change.path)) {
         return;
       }
-      notifySubscribers(change);
+      notifySubscribers(change).catch((error) => {
+        reporter.reportError(
+          error instanceof Error ? error : new Error('file watcher native notify failed'),
+        );
+      });
     };
 
     const performScan = async (): Promise<{ changes: number; files: number }> => {
@@ -177,12 +184,32 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       const detected = computeChanges(currentSnapshot, previousSnapshot);
 
       snapshot.value = currentSnapshot;
-      detected.forEach(notifySubscribers);
+      for (const change of detected) {
+        await notifySubscribers(change);
+      }
 
       return {
         changes: detected.length,
         files: currentSnapshot.size,
       };
+    };
+
+    const recordSnapshot = (change: FileSystemChange): void => {
+      if (change.type === 'delete') {
+        const updated = new Map(snapshot.value);
+        updated.delete(change.path);
+        snapshot.value = updated;
+        return;
+      }
+      if (change.mtime === undefined) return;
+      const updated = new Map(snapshot.value);
+      updated.set(change.path, change.mtime);
+      snapshot.value = updated;
+    };
+
+    const emitChange = async (change: FileSystemChange): Promise<void> => {
+      await notifySubscribers(change);
+      recordSnapshot(change);
     };
 
     const buildScanResult = async (): Promise<{ changes: number; files: number } | null> => {
@@ -310,6 +337,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       start,
       stop,
       watch,
+      emitChange,
     };
 
     return store;
