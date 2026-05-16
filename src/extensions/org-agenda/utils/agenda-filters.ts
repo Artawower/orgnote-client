@@ -27,6 +27,9 @@ const toDateKey = (date: Date): string => format(date, 'yyyy-MM-dd');
 
 const firstTaskDate = (task: FileTask): OrgDate | undefined => task.scheduled ?? task.deadline;
 
+export const getActiveDate = (task: FileTask): string | undefined =>
+  task.deadline?.date ?? task.scheduled?.date;
+
 const parseTaskDate = (date: OrgDate): Date | undefined => {
   if (!date.date) return undefined;
   const parsed = parseOrgDate(date.date);
@@ -183,7 +186,7 @@ const hasOccurrenceInRange = (
 
 const isOverdueInternal = (task: FileTask, now: Date): boolean => {
   if (task.state === 'done') return false;
-  const isoDate = task.deadline?.date ?? task.scheduled?.date;
+  const isoDate = getActiveDate(task);
   if (!isoDate) return false;
   return differenceInCalendarDays(parseOrgDate(isoDate), now) < 0;
 };
