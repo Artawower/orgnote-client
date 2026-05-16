@@ -145,7 +145,7 @@ const getDateOccurrencesInRange = (date: OrgDate, windowStart: Date, windowEnd: 
   return [];
 };
 
-export const getOccurrencesInRange = (
+const getOccurrencesInRange = (
   task: FileTask,
   now: Date,
   startOffset: number,
@@ -160,18 +160,6 @@ export const getOccurrencesInRange = (
 const getDoneDates = (task: FileTask): string[] => {
   if (task.doneDates?.length) return task.doneDates;
   return task.lastDoneAt ? [task.lastDoneAt] : [];
-};
-
-export const getFirstUnfinishedOccurrence = (
-  task: FileTask,
-  now: Date,
-  startOffset: number,
-  endOffset: number,
-): Date | undefined => {
-  const done = new Set(getDoneDates(task));
-  return getOccurrencesInRange(task, now, startOffset, endOffset).find(
-    (date) => !done.has(toDateKey(date)),
-  );
 };
 
 export const findNextOccurrenceInRange = (
@@ -201,27 +189,15 @@ const isOverdueInternal = (task: FileTask, now: Date): boolean => {
 };
 
 export const isToday = (task: FileTask, now = new Date()): boolean =>
-  hasOccurrenceInRange(task, 0, 0, now) ||
-  isOverdueInternal(task, now) ||
-  isCompletedToday(task, now);
+  hasOccurrenceInRange(task, 0, 0, now) || isOverdueInternal(task, now) || isCompletedOn(task, now);
 
 export const isTomorrow = (task: FileTask, now = new Date()): boolean => {
   if (hasOccurrenceInRange(task, 1, 1, now)) return true;
   return isCompletedOn(task, addDays(startOfDay(now), 1));
 };
 
-export const isNextSevenDays = (task: FileTask, now = new Date()): boolean =>
-  findNextOccurrenceInRange(task, now, 7) !== undefined ||
-  isOverdueInternal(task, now) ||
-  isCompletedToday(task, now);
-
 export const isOverdue = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now);
 
 export const isCompletedOn = (task: FileTask, date: Date): boolean =>
   getDoneDates(task).some((doneDate) => isSameDay(parseOrgDate(doneDate), date));
-
-export const isCompletedToday = (task: FileTask, now = new Date()): boolean =>
-  isCompletedOn(task, now);
-
-export const hasNoDate = (task: FileTask): boolean => !task.scheduled?.date && !task.deadline?.date;
