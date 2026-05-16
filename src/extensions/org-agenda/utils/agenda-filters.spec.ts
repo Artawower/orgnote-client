@@ -8,6 +8,7 @@ import {
   isTomorrow,
   isCompletedOn,
   findNextOccurrenceInRange,
+  getActiveDate,
 } from './agenda-filters';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
@@ -369,4 +370,20 @@ test('hasOccurrenceInRange_zeroValueRepeater_doesNotInfiniteLoop', () => {
   expect(
     isTomorrow(withScheduledRepeater('2020-01-01', zeroDayRepeater), utcNoon('2026-05-13')),
   ).toBe(false);
+});
+
+test('getActiveDate_returnsDeadlineWhenBothPresent', () => {
+  expect(getActiveDate(withBoth('2026-06-01', '2026-05-10'))).toBe('2026-05-10');
+});
+
+test('getActiveDate_returnsScheduledWhenOnlyScheduledPresent', () => {
+  expect(getActiveDate(withScheduled('2026-05-15'))).toBe('2026-05-15');
+});
+
+test('getActiveDate_returnsDeadlineWhenOnlyDeadlinePresent', () => {
+  expect(getActiveDate(withDeadline('2026-05-15'))).toBe('2026-05-15');
+});
+
+test('isOverdue_returnsTrueWhenDeadlinePastEvenIfScheduledFuture', () => {
+  expect(isOverdue(withBoth('2026-06-01', '2026-05-10'), now)).toBe(true);
 });

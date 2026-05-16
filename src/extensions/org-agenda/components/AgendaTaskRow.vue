@@ -27,7 +27,7 @@ import PrettyDate from 'src/components/PrettyDate.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { computed } from 'vue';
-import { isCompletedOn } from '../utils/agenda-filters';
+import { getActiveDate, isCompletedOn } from '../utils/agenda-filters';
 
 const props = defineProps<{ task: AgendaTaskView }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
@@ -45,7 +45,7 @@ const isChecked = computed(
 );
 
 const rawDate = computed(() => {
-  const raw = props.task.scheduled?.date ?? props.task.deadline?.date;
+  const raw = getActiveDate(props.task);
   return raw ? parseISO(raw) : null;
 });
 </script>
