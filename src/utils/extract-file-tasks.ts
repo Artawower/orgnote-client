@@ -17,9 +17,7 @@ const extractLastDoneAt = (headline: OrgNode): string | undefined =>
   extractDoneDates(headline).sort().at(-1);
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
-type ExtractedFileTask = FileTask & { line: number };
 type FileTaskState = FileTask['state'];
-type OffsetToLineResolver = (offset: number) => number;
 type HeadingsByStart = Map<number, Heading>;
 
 const doneTodoKeyword = 'DONE';
@@ -57,28 +55,6 @@ const extractTaskText = (node: OrgNode): string =>
 const buildTaskId = (filePath: string, node: OrgNode, kind: FileTask['kind']): string =>
   `${filePath}|${kind}|${node.start}|${node.end}`;
 
-const findLineFromOffsets = (offsets: number[], offset: number): number => {
-  let left = 0;
-  let right = offsets.length - 1;
-  while (left <= right) {
-    const middle = Math.floor((left + right) / 2);
-    const next = offsets[middle + 1] ?? Number.POSITIVE_INFINITY;
-    const current = offsets[middle] ?? 0;
-    if (offset >= current && offset < next) return middle + 1;
-    if (offset < current) right = middle - 1;
-    else left = middle + 1;
-  }
-  return offsets.length;
-};
-
-const createOffsetToLineResolver = (content: string): OffsetToLineResolver => {
-  const offsets = [0];
-  for (let index = 0; index < content.length; index++) {
-    if (content[index] === '\n') offsets.push(index + 1);
-  }
-  return (offset: number): number => findLineFromOffsets(offsets, offset);
-};
-
 const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial<FileTask> => ({
   priority: heading?.priority,
   tags: heading?.tags,
@@ -95,34 +71,30 @@ const buildAgendaFields = (node: OrgNode, heading: Heading | undefined): Partial
 const createHeadlineTask = (
   node: OrgNode,
   filePath: string,
-  resolveLine: OffsetToLineResolver,
   kind: Extract<FileTask['kind'], 'headline-checkbox' | 'headline-todo'>,
   state: FileTaskState,
   agendaFields: Partial<FileTask>,
-): ExtractedFileTask => ({
+): FileTask => ({
   id: buildTaskId(filePath, node, kind),
   kind,
   state,
   text: extractTaskText(node),
   start: node.start,
   end: node.end,
-  line: resolveLine(node.start),
   ...agendaFields,
 });
 
 const createTaskFromHeadline = (
   node: OrgNode,
   filePath: string,
-  resolveLine: OffsetToLineResolver,
   headingsByStart: HeadingsByStart,
-): ExtractedFileTask | undefined => {
+): FileTask | undefined => {
   const agendaFields = buildAgendaFields(node, headingsByStart.get(node.start));
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
   if (checkboxNode) {
     return createHeadlineTask(
       node,
       filePath,
-      resolveLine,
       'headline-checkbox',
       resolveCheckboxState(checkboxNode),
       agendaFields,
@@ -133,18 +105,13 @@ const createTaskFromHeadline = (
   return createHeadlineTask(
     node,
     filePath,
-    resolveLine,
     'headline-todo',
     resolveTodoState(todoKeywordNode),
     agendaFields,
   );
 };
 
-const createTaskFromListItem = (
-  node: OrgNode,
-  filePath: string,
-  resolveLine: OffsetToLineResolver,
-): ExtractedFileTask | undefined => {
+const createTaskFromListItem = (node: OrgNode, filePath: string): FileTask | undefined => {
   const checkboxNode = findTitleChild(node, NodeType.Checkbox);
   if (!checkboxNode) return undefined;
   return {
@@ -154,21 +121,19 @@ const createTaskFromListItem = (
     text: extractTaskText(node),
     start: node.start,
     end: node.end,
-    line: resolveLine(node.start),
   };
 };
 
 const createTaskFromNode = (
   node: OrgNode,
   filePath: string,
-  resolveLine: OffsetToLineResolver,
   headingsByStart: HeadingsByStart,
-): ExtractedFileTask | undefined => {
+): FileTask | undefined => {
   if (node.is(NodeType.Headline)) {
-    return createTaskFromHeadline(node, filePath, resolveLine, headingsByStart);
+    return createTaskFromHeadline(node, filePath, headingsByStart);
   }
   if (node.is(NodeType.ListItem)) {
-    return createTaskFromListItem(node, filePath, resolveLine);
+    return createTaskFromListItem(node, filePath);
   }
   return undefined;
 };
@@ -183,12 +148,11 @@ const getNestedNodes = (node: OrgNode): OrgNode[] => {
 const collectTasks = (
   node: OrgNode,
   filePath: string,
-  resolveLine: OffsetToLineResolver,
   headingsByStart: HeadingsByStart,
-): ExtractedFileTask[] => {
-  const nodeTask = createTaskFromNode(node, filePath, resolveLine, headingsByStart);
+): FileTask[] => {
+  const nodeTask = createTaskFromNode(node, filePath, headingsByStart);
   const nestedTasks = getNestedNodes(node).flatMap((child) =>
-    collectTasks(child, filePath, resolveLine, headingsByStart),
+    collectTasks(child, filePath, headingsByStart),
   );
   return nodeTask ? [nodeTask, ...nestedTasks] : nestedTasks;
 };
@@ -196,8 +160,5 @@ const collectTasks = (
 const buildHeadingsByStart = (root: OrgNode): HeadingsByStart =>
   new Map((root.meta?.headings ?? []).map((h: Heading) => [h.start, h]));
 
-export const extractFileTasks = (root: OrgNode, filePath: string): ExtractedFileTask[] => {
-  const resolveLine = createOffsetToLineResolver(root.rawValue);
-  const headingsByStart = buildHeadingsByStart(root);
-  return collectTasks(root, filePath, resolveLine, headingsByStart);
-};
+export const extractFileTasks = (root: OrgNode, filePath: string): FileTask[] =>
+  collectTasks(root, filePath, buildHeadingsByStart(root));
