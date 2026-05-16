@@ -22,7 +22,6 @@
 </template>
 
 <script lang="ts" setup>
-import { watch } from 'vue';
 import { DefaultCommands } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -38,18 +37,14 @@ import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
 import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
-import { useAgendaFilterStore } from './stores/agenda-filter-store';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import type { FileTask } from 'orgnote-api';
 import { isCompletedOn } from './utils/agenda-filters';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-const { loading, groups, totalByFilter } = useAgendaTasks();
-const filterStore = useAgendaFilterStore();
+const { loading, groups } = useAgendaTasks();
 const fileContent = api.core.useFileContent();
-
-watch(totalByFilter, (value) => filterStore.setTotals(value), { immediate: true });
 
 const hasRepeater = (task: FileTask): boolean =>
   !!(task.scheduled?.repeater ?? task.deadline?.repeater);
