@@ -107,7 +107,7 @@ const unregisterViews = (api: OrgNoteApi): void => {
 };
 
 const settingsSchema = object({
-  agendaFilesPath: pipe(optional(string()), metadata({ filePicker: true })),
+  agendaFilesPath: pipe(optional(string()), metadata({ directoryPicker: true })),
 });
 
 type AgendaConfig = { agendaFilesPath?: string };
