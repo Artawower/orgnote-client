@@ -1,12 +1,20 @@
 import type { FileMeta } from 'orgnote-api';
-import { createProperties } from 'orgnote-api/utils';
+import { createLogbook, createProperties } from 'orgnote-api/utils';
+import { format } from 'date-fns';
 import { NodeType, type OrgNode, type Heading } from 'org-mode-ast';
-import { extractDoneDates, extractLastDoneAt } from './extract-logbook-last-done';
 
 const isHabitHeadline = (node: OrgNode): boolean =>
   Object.entries(createProperties(node).entries).some(
     ([key, value]) => key.toLowerCase() === 'style' && value.toLowerCase() === 'habit',
   );
+
+const extractDoneDates = (headline: OrgNode): string[] =>
+  createLogbook(headline)
+    .entries.filter((entry) => entry.toKeyword === 'DONE' && entry.timestamp)
+    .map((entry) => format(entry.timestamp!, 'yyyy-MM-dd'));
+
+const extractLastDoneAt = (headline: OrgNode): string | undefined =>
+  extractDoneDates(headline).sort().at(-1);
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 type ExtractedFileTask = FileTask & { line: number };
