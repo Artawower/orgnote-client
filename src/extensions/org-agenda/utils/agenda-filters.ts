@@ -57,6 +57,46 @@ const addConstantStep = (date: Date, repeater: ConstantRepeater, steps: number):
 const constantStepMilliseconds = (base: Date, repeater: ConstantRepeater): number =>
   differenceInMilliseconds(addConstantStep(base, repeater, 1), base);
 
+type Stepper = (date: Date) => Date;
+
+const safeStep = (current: Date, step: Stepper): Date | undefined => {
+  const next = step(current);
+  return next.getTime() > current.getTime() ? next : undefined;
+};
+
+const advanceWhile = (
+  start: Date,
+  step: Stepper,
+  shouldContinue: (date: Date) => boolean,
+  limit: number,
+): Date | undefined => {
+  let current = start;
+  for (let i = 0; i < limit; i += 1) {
+    if (!shouldContinue(current)) return current;
+    const next = safeStep(current, step);
+    if (!next) return undefined;
+    current = next;
+  }
+  return undefined;
+};
+
+const collectWhileInWindow = (
+  first: Date,
+  step: Stepper,
+  windowEnd: Date,
+  limit: number,
+): Date[] => {
+  const occurrences: Date[] = [];
+  let current = first;
+  for (let i = 0; i < limit && current <= windowEnd; i += 1) {
+    occurrences.push(current);
+    const next = safeStep(current, step);
+    if (!next) return occurrences;
+    current = next;
+  }
+  return occurrences;
+};
+
 const collectConstantOccurrences = (
   base: Date,
   repeater: ConstantRepeater,
@@ -65,26 +105,11 @@ const collectConstantOccurrences = (
 ): Date[] => {
   const stepMs = constantStepMilliseconds(base, repeater);
   if (stepMs <= 0 || windowEnd < base) return [];
-  const steps =
+  const stepsToWindow =
     windowStart <= base ? 0 : Math.ceil(differenceInMilliseconds(windowStart, base) / stepMs);
-  return collectSteppedOccurrences(addConstantStep(base, repeater, steps), repeater, windowEnd);
-};
-
-const collectSteppedOccurrences = (
-  first: Date,
-  repeater: ConstantRepeater,
-  windowEnd: Date,
-): Date[] => {
-  const occurrences: Date[] = [];
-  for (
-    let count = 0, current = first;
-    current <= windowEnd && count < CONSTANT_OCCURRENCE_LIMIT;
-    count += 1
-  ) {
-    occurrences.push(current);
-    current = addConstantStep(current, repeater, 1);
-  }
-  return occurrences;
+  const first = addConstantStep(base, repeater, stepsToWindow);
+  const step: Stepper = (date) => addConstantStep(date, repeater, 1);
+  return collectWhileInWindow(first, step, windowEnd, CONSTANT_OCCURRENCE_LIMIT);
 };
 
 const addCalendarStep = (date: Date, repeater: CalendarRepeater): Date => {
@@ -99,42 +124,10 @@ const collectCalendarOccurrences = (
   windowEnd: Date,
 ): Date[] => {
   if (repeater.value <= 0) return [];
-  const first = firstCalendarOccurrenceOnOrAfter(base, repeater, windowStart);
-  if (!first) return [];
-  return collectCalendarUntil(first, repeater, windowEnd);
-};
-
-const firstCalendarOccurrenceOnOrAfter = (
-  base: Date,
-  repeater: CalendarRepeater,
-  windowStart: Date,
-): Date | undefined => {
-  let occurrence = base;
-  for (
-    let safety = 0;
-    safety < CALENDAR_PROJECTION_LIMIT && occurrence < windowStart;
-    safety += 1
-  ) {
-    const next = addCalendarStep(occurrence, repeater);
-    if (next.getTime() <= occurrence.getTime()) return undefined;
-    occurrence = next;
-  }
-  return occurrence >= windowStart ? occurrence : undefined;
-};
-
-const collectCalendarUntil = (first: Date, repeater: CalendarRepeater, windowEnd: Date): Date[] => {
-  const occurrences: Date[] = [];
-  for (
-    let safety = 0, current = first;
-    current <= windowEnd && safety < CALENDAR_PROJECTION_LIMIT;
-    safety += 1
-  ) {
-    occurrences.push(current);
-    const next = addCalendarStep(current, repeater);
-    if (next.getTime() <= current.getTime()) return occurrences;
-    current = next;
-  }
-  return occurrences;
+  const step: Stepper = (date) => addCalendarStep(date, repeater);
+  const first = advanceWhile(base, step, (date) => date < windowStart, CALENDAR_PROJECTION_LIMIT);
+  if (!first || first > windowEnd) return [];
+  return collectWhileInWindow(first, step, windowEnd, CALENDAR_PROJECTION_LIMIT);
 };
 
 const getDateOccurrencesInRange = (date: OrgDate, windowStart: Date, windowEnd: Date): Date[] => {

@@ -3,7 +3,6 @@
     <menu-item
       v-for="filter in filters"
       :key="filter.id"
-      :selected="modelValue === filter.id"
       :active="modelValue === filter.id"
       @click="onFilterClick(filter.id)"
     >
