@@ -37,7 +37,7 @@ const addUtcYears = (date: Date, years: number): Date => {
   return next;
 };
 
-export const addInterval = (date: Date, repeater: OrgRepeater): Date => {
+const addInterval = (date: Date, repeater: OrgRepeater): Date => {
   if (repeater.unit === 'm') return addUtcMonths(date, repeater.value);
   if (repeater.unit === 'y') return addUtcYears(date, repeater.value);
   return new Date(date.getTime() + repeater.value * msPerUnit[repeater.unit]);
