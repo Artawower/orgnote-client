@@ -13,8 +13,7 @@ import type { AgendaFilter } from '../composables/use-agenda-tasks';
 const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
 
-const eligibleTasks = (file: FileMeta): FileTask[] =>
-  (file.tasks ?? []).filter(isAgendaEligible);
+const eligibleTasks = (file: FileMeta): FileTask[] => (file.tasks ?? []).filter(isAgendaEligible);
 
 const resolveAbsolutePath = (file: FileMeta): string => join('/', ...file.filePath);
 
