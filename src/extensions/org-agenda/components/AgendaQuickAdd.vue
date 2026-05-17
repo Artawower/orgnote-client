@@ -74,9 +74,9 @@
           />
         </app-flex>
 
-        <app-flex row align-center gap="xs">
+        <app-flex row align-center gap="md">
           <span class="hint">{{ t(i18nKeys.orgAgendaQuickAddShortcutHint) }}</span>
-          <app-button type="active" :disabled="loading" @click="submitTask">
+          <app-button type="active" size="sm" :disabled="loading" @click="submitTask">
             {{ t(i18nKeys.orgAgendaQuickAddAddButton) }}
           </app-button>
         </app-flex>

@@ -156,8 +156,18 @@ body {
   --btn-action-text-width: 180px;
 
   --button-radius: var(--border-radius-md);
-  --button-padding: 12px var(--padding-lg);
-  --button-min-width: 120px;
+
+  --button-xs-padding: var(--padding-xs) var(--padding-sm);
+  --button-xs-min-width: 48px;
+
+  --button-sm-padding: var(--padding-sm) var(--padding-md);
+  --button-sm-min-width: 72px;
+
+  --button-md-padding: 12px var(--padding-lg);
+  --button-md-min-width: 120px;
+
+  --button-lg-padding: var(--padding-md) var(--padding-xl);
+  --button-lg-min-width: 160px;
 
   // Platform specific value
   --device-padding-bottom: 0px;
