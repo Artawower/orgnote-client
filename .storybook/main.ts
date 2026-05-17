@@ -31,8 +31,15 @@ const config: StorybookConfig = {
     config.css = {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "src/css/quasar.variables.scss";
-          @import "src/css/app.scss";`,
+          additionalData: (content: string, filename: string): string => {
+            if (filename.endsWith('app.scss')) {
+              return `@import "src/css/quasar.variables.scss";\n${content}`;
+            }
+            if (filename.endsWith('quasar.variables.scss')) {
+              return content;
+            }
+            return `@import "src/css/quasar.variables.scss";\n@import "src/css/app.scss";\n${content}`;
+          },
         },
       },
     };

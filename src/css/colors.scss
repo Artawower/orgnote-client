@@ -13,6 +13,7 @@
   --default-cyan: #34bfd0;
   --default-dark-cyan: #5699af;
   --default-white: #f8f9fc;
+  --default-black: #1a1a1a;
 }
 
 :root {
@@ -29,6 +30,10 @@
   --cyan: var(--default-cyan);
   --dark-cyan: dark-var(--default-cyan);
   --white: var(--default-white);
+  --black: var(--default-black);
+
+  --fg-on-color: var(--white); // legible text on saturated colored backgrounds
+  --fg-on-yellow: var(--black); // yellow needs dark text for contrast
 
   --priority-a: var(--red, var(--q-negative));
   --priority-b: var(--orange, var(--q-warning));

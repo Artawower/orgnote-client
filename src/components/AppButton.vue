@@ -1,9 +1,5 @@
 <template>
-  <button
-    :class="{ outline, [type]: type }"
-    class="text-medium"
-    :disabled="disabled"
-  >
+  <button :class="[size, { outline, [type]: type }]" class="text-medium" :disabled="disabled">
     <slot />
   </button>
 </template>
@@ -16,51 +12,85 @@ withDefaults(
     type?: StyleVariant;
     outline?: boolean;
     disabled?: boolean;
+    size?: 'xs' | 'sm' | 'md' | 'lg';
   }>(),
   {
     type: 'plain',
+    size: 'md',
   },
 );
 </script>
 
 <style lang="scss" scoped>
-$type-colors: (
-  plain: var(--bg-elevated),
-  active: var(--accent),
-  info: var(--blue),
-  warning: var(--yellow),
-  danger: var(--red),
+// Each entry: (background, foreground)
+$type-styles: (
+  plain: (
+    var(--bg-elevated),
+    var(--fg),
+  ),
+  active: (
+    var(--accent),
+    var(--fg-on-color),
+  ),
+  info: (
+    var(--blue),
+    var(--fg-on-color),
+  ),
+  warning: (
+    var(--yellow),
+    var(--fg-on-yellow),
+  ),
+  danger: (
+    var(--red),
+    var(--fg-on-color),
+  ),
 );
 
 button {
   border: none;
   border-radius: var(--button-radius);
-  padding: var(--button-padding);
-  min-width: var(--button-min-width);
   box-sizing: border-box;
 
-  @each $type, $color in $type-colors {
+  &.xs {
+    padding: var(--button-xs-padding);
+    min-width: var(--button-xs-min-width);
+  }
+
+  &.sm {
+    padding: var(--button-sm-padding);
+    min-width: var(--button-sm-min-width);
+  }
+
+  &.md {
+    padding: var(--button-md-padding);
+    min-width: var(--button-md-min-width);
+  }
+
+  &.lg {
+    padding: var(--button-lg-padding);
+    min-width: var(--button-lg-min-width);
+  }
+
+  @each $type, $pair in $type-styles {
+    $bg: nth($pair, 1);
+    $fg: nth($pair, 2);
+
     &.#{$type} {
       &:not(.outline) {
-        background: color-mix(in srgb, $color, var(--bg) 15%) !important;
+        background: $bg;
+        color: $fg;
       }
 
       &.outline {
-        background: var(--bg);
-        border: 1px solid $color;
-        color: var(--fg);
+        background: transparent;
+        border: 1px solid $bg;
+        color: $bg;
       }
-
-      color: var(--bg);
 
       @include hover {
-        background: color-mix(in srgb, $color, var(--bg) 5%) !important;
+        background: color-mix(in srgb, $bg, var(--bg) 10%);
       }
     }
-  }
-
-  &.plain {
-    color: var(--fg);
   }
 
   &.link {

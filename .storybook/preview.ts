@@ -12,6 +12,7 @@ import '@quasar/extras/material-symbols-outlined/material-symbols-outlined.css';
 import '@quasar/extras/fontawesome-v6/fontawesome-v6.css';
 
 import 'quasar/dist/quasar.css';
+import '../src/css/app.scss';
 import { setup } from '@storybook/vue3-vite';
 import { i18n } from '../src/boot/i18n';
 import { ORGNOTE_API_PROVIDER_TOKEN } from '../src/constants/app-providers';
@@ -19,7 +20,6 @@ import { ORGNOTE_API_PROVIDER_TOKEN } from '../src/constants/app-providers';
 import { QBtn, QDate, QIcon, QLinearProgress, Quasar } from 'quasar';
 import { createPinia } from 'pinia';
 import './global.css';
-
 
 setup((app) => {
   (app.config as typeof app.config & { devtools?: boolean }).devtools = false;
@@ -49,9 +49,13 @@ setup((app) => {
   app.provide(ORGNOTE_API_PROVIDER_TOKEN, mockApi);
   window.orgnote = mockApi;
 
-  import('../src/boot/api').then(({ api }) => {
-    Object.assign(api, mockApi);
-  });
+  import('../src/boot/api')
+    .then(({ api }) => {
+      if (api) Object.assign(api, mockApi);
+    })
+    .catch(() => {
+      // api boot not available in storybook context — mock covered via provide + window
+    });
 });
 
 const preview: Preview = {
