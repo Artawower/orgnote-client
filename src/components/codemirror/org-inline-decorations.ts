@@ -13,7 +13,13 @@ const MARKUP_PARENT_TYPES = [
   NodeType.Underline,
 ] as const;
 
+// Matches whole org tag chains: :tag: / :tag1:tag2: / :работа: / :tag_1:
+// Unicode-aware via \p{L}\p{N}. The chain pattern avoids the shared-colon
+// overlap issue that a per-tag regex would cause with adjacent tags.
+const ORG_TAG_CHAIN_PATTERN = /:[\p{L}\p{N}_@#%]+(?::[\p{L}\p{N}_@#%]+)*:/gu;
+
 const invisibleReplace = Decoration.replace({});
+const tagMark = Decoration.mark({ class: 'org-file-tag' });
 
 class BulletWidget extends WidgetType {
   constructor(private readonly char: string) {
@@ -39,6 +45,9 @@ class BulletWidget extends WidgetType {
 const isMarkupOperator = (node: OrgNode): boolean =>
   node.is(NodeType.Operator) && MARKUP_PARENT_TYPES.some((t) => node.parent?.is(t));
 
+const isHeadlineOperator = (node: OrgNode): boolean =>
+  node.is(NodeType.Operator) && (node.parent?.is(NodeType.Headline) ?? false);
+
 const isListItemOperator = (node: OrgNode): boolean =>
   node.is(NodeType.Operator) &&
   !!(
@@ -62,6 +71,7 @@ const isCaretInParentRange = (caret: number, node: OrgNode): boolean => {
 const buildMarkupHideDecorations = (
   view: EditorView,
   getOrgNode: () => OrgNode | null,
+  singleLine: boolean,
 ): DecorationSet => {
   const orgNode = getOrgNode();
   if (!orgNode) return Decoration.none;
@@ -71,8 +81,33 @@ const buildMarkupHideDecorations = (
 
   walkTree(orgNode, (node: OrgNode): boolean => {
     if (!isMarkupOperator(node)) return false;
-    if (view.hasFocus && isOnActiveLine(view, node, caret)) return false;
+    // In singleLine mode every node is on the "active line" so the line-based
+    // check would always prevent hiding — use cursor-range check only.
+    if (!singleLine && view.hasFocus && isOnActiveLine(view, node, caret)) return false;
     if (view.hasFocus && isCaretInParentRange(caret, node)) return false;
+
+    ranges.push(invisibleReplace.range(node.start, node.end));
+    return false;
+  });
+
+  ranges.sort((a, b) => a.from - b.from);
+  return Decoration.set(ranges);
+};
+
+const buildHeadlineOperatorDecorations = (
+  view: EditorView,
+  getOrgNode: () => OrgNode | null,
+): DecorationSet => {
+  const orgNode = getOrgNode();
+  if (!orgNode) return Decoration.none;
+
+  const ranges: Range<Decoration>[] = [];
+  const caret = view.state.selection.main.head;
+
+  walkTree(orgNode, (node: OrgNode): boolean => {
+    if (!isHeadlineOperator(node)) return false;
+    // Show stars when cursor is on the same line as the headline
+    if (view.hasFocus && isOnActiveLine(view, node, caret)) return false;
 
     ranges.push(invisibleReplace.range(node.start, node.end));
     return false;
@@ -104,13 +139,30 @@ const buildListBulletDecorations = (
   return Decoration.set(ranges);
 };
 
-export const createOrgInlineDecorations = (getOrgNode: () => OrgNode | null) => {
+const buildTagMarkDecorations = (view: EditorView): DecorationSet => {
+  const docText = view.state.doc.toString();
+  const ranges: Range<Decoration>[] = Array.from(docText.matchAll(ORG_TAG_CHAIN_PATTERN)).map(
+    (match) => tagMark.range(match.index, match.index + match[0].length),
+  );
+  return ranges.length ? Decoration.set(ranges) : Decoration.none;
+};
+
+export interface OrgInlineDecorationsOptions {
+  singleLine?: boolean;
+}
+
+export const createOrgInlineDecorations = (
+  getOrgNode: () => OrgNode | null,
+  options: OrgInlineDecorationsOptions = {},
+) => {
+  const { singleLine = false } = options;
+
   const markupPlugin = ViewPlugin.fromClass(
     class {
       decorations: DecorationSet = Decoration.none;
 
       constructor(view: EditorView) {
-        this.decorations = buildMarkupHideDecorations(view, getOrgNode);
+        this.decorations = buildMarkupHideDecorations(view, getOrgNode, singleLine);
       }
 
       update(update: ViewUpdate): void {
@@ -120,7 +172,33 @@ export const createOrgInlineDecorations = (getOrgNode: () => OrgNode | null) => 
           update.focusChanged ||
           update.selectionSet
         ) {
-          this.decorations = buildMarkupHideDecorations(update.view, getOrgNode);
+          this.decorations = buildMarkupHideDecorations(update.view, getOrgNode, singleLine);
+        }
+      }
+    },
+    {
+      decorations: (v) => v.decorations,
+      provide: (plugin) =>
+        EditorView.atomicRanges.of((view) => view.plugin(plugin)?.decorations ?? Decoration.none),
+    },
+  );
+
+  const headlinePlugin = ViewPlugin.fromClass(
+    class {
+      decorations: DecorationSet = Decoration.none;
+
+      constructor(view: EditorView) {
+        this.decorations = buildHeadlineOperatorDecorations(view, getOrgNode);
+      }
+
+      update(update: ViewUpdate): void {
+        if (
+          update.docChanged ||
+          update.viewportChanged ||
+          update.focusChanged ||
+          update.selectionSet
+        ) {
+          this.decorations = buildHeadlineOperatorDecorations(update.view, getOrgNode);
         }
       }
     },
@@ -152,5 +230,22 @@ export const createOrgInlineDecorations = (getOrgNode: () => OrgNode | null) => 
     },
   );
 
-  return [markupPlugin, listPlugin];
+  const tagPlugin = ViewPlugin.fromClass(
+    class {
+      decorations: DecorationSet = Decoration.none;
+
+      constructor(view: EditorView) {
+        this.decorations = buildTagMarkDecorations(view);
+      }
+
+      update(update: ViewUpdate): void {
+        if (update.docChanged || update.viewportChanged) {
+          this.decorations = buildTagMarkDecorations(update.view);
+        }
+      }
+    },
+    { decorations: (v) => v.decorations },
+  );
+
+  return [markupPlugin, headlinePlugin, listPlugin, tagPlugin];
 };
