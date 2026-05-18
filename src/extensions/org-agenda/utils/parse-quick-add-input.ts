@@ -1,13 +1,11 @@
 import { fileBaseName } from 'src/utils/file-path';
 
 const TILDE_PATTERN = /~([^\s]+)/g;
-const TAG_PATTERN = /:(\w+):/g;
 
 export interface ParsedQuickAdd {
   title: string;
   body?: string;
   targetFile?: string;
-  tags?: string[];
 }
 
 const splitLines = (raw: string): [string, string | undefined] => {
@@ -19,15 +17,6 @@ const splitLines = (raw: string): [string, string | undefined] => {
 
 const findMatchingFile = (token: string, knownFiles: string[]): string | undefined =>
   knownFiles.find((f) => fileBaseName(f).toLowerCase() === token.toLowerCase());
-
-const extractTags = (titleLine: string): { cleaned: string; tags: string[] } => {
-  const tags: string[] = [];
-  const cleaned = titleLine.replace(TAG_PATTERN, (_match, tag: string) => {
-    tags.push(tag);
-    return '';
-  });
-  return { cleaned, tags };
-};
 
 const resolveTildeMatches = (
   titleLine: string,
@@ -46,12 +35,10 @@ const resolveTildeMatches = (
 
 export const parseQuickAddInput = (raw: string, knownFiles: string[]): ParsedQuickAdd => {
   const [titleLine, body] = splitLines(raw);
-  const { cleaned, tags } = extractTags(titleLine);
-  const { title, targetFile } = resolveTildeMatches(cleaned, knownFiles);
+  const { title, targetFile } = resolveTildeMatches(titleLine, knownFiles);
   return {
     title,
     ...(body ? { body } : {}),
     ...(targetFile ? { targetFile } : {}),
-    ...(tags.length ? { tags } : {}),
   };
 };
