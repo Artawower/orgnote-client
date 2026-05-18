@@ -17,13 +17,16 @@
         class="tags-row"
       />
 
-      <app-input
+      <org-inline-editor
         ref="titleInputRef"
         v-model="titleText"
+        :single-line="true"
         class="title-input"
         :placeholder="t(i18nKeys.orgAgendaQuickAddPlaceholder, { target: inboxLabel })"
-        @keydown="onTitleKeydown"
-        @input="onTitleInput"
+        @submit="submitTask"
+        @escape="onTitleEscape"
+        @expand="expand"
+        @update:model-value="onTitleInput"
       />
 
       <agenda-date-popover v-model="selectedDate">
@@ -94,7 +97,6 @@ import { useI18n } from 'vue-i18n';
 import { addDays, format } from 'date-fns';
 import type { DiskFile } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
-import AppInput from 'src/components/AppInput.vue';
 import AppButton from 'src/components/AppButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
@@ -124,7 +126,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
-const titleInputRef = ref<InstanceType<typeof AppInput> | null>(null);
+const titleInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
 const bodyInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
 
 const titleText = ref('');
@@ -234,30 +236,8 @@ const submitTask = (): void => {
   titleInputRef.value?.focus();
 };
 
-const onTitleKeydown = (e: KeyboardEvent): void => {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    (e.target as HTMLElement).blur();
-    return;
-  }
-  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-    e.preventDefault();
-    submitTask();
-    return;
-  }
-  if (e.key === 'Enter' && e.shiftKey) {
-    e.preventDefault();
-    void expand();
-    return;
-  }
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    submitTask();
-    return;
-  }
-  if (e.key === 'Backspace' && titleText.value === '' && targetFile.value) {
-    targetFile.value = undefined;
-  }
+const onTitleEscape = (): void => {
+  titleInputRef.value?.blur?.();
 };
 
 const onBodyEscape = (): void => {

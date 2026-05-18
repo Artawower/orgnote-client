@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="org-inline-editor" />
+  <div ref="containerRef" class="org-inline-editor" :class="{ 'single-line': singleLine }" />
 </template>
 
 <script lang="ts" setup>
@@ -12,7 +12,11 @@ import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration } from '@codemirror/view';
 import type { Range } from '@codemirror/state';
+import type { OrgNode } from 'org-mode-ast';
 import { orgMode } from 'src/containers/RichEditor/org-parser';
+import { createOrgInlineDecorations } from './codemirror/org-inline-decorations';
+import { orgInlineTheme } from './codemirror/org-inline-theme';
+import 'src/extensions/org-inline-markup/styles.css';
 
 interface Props {
   modelValue: string;
@@ -21,6 +25,7 @@ interface Props {
   minHeight?: string;
   maxHeight?: string;
   autofocus?: boolean;
+  singleLine?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,6 +34,7 @@ const props = withDefaults(defineProps<Props>(), {
   minHeight: '60px',
   maxHeight: '200px',
   autofocus: false,
+  singleLine: false,
 });
 
 const emit = defineEmits<{
@@ -37,10 +43,14 @@ const emit = defineEmits<{
   blur: [];
   submit: [];
   escape: [];
+  expand: [];
 }>();
 
 const containerRef = ref<HTMLDivElement | null>(null);
 let view: EditorView | undefined;
+let currentOrgNode: OrgNode | null = null;
+
+const getOrgNode = (): OrgNode | null => currentOrgNode;
 
 const level1WarningMark = Decoration.mark({ class: 'cm-headline-warning' });
 
@@ -70,50 +80,96 @@ const level1WarningPlugin = ViewPlugin.fromClass(
   { decorations: (v) => v.decorations },
 );
 
-const customKeymap = keymap.of([
-  {
-    key: 'Mod-Enter',
-    run: () => {
-      emit('submit');
-      return true;
+const buildSingleLineKeymap = () =>
+  keymap.of([
+    {
+      key: 'Enter',
+      run: () => {
+        emit('submit');
+        return true;
+      },
     },
-  },
-  {
-    key: 'Escape',
-    run: () => {
-      emit('escape');
-      return true;
+    {
+      key: 'Shift-Enter',
+      run: () => {
+        emit('expand');
+        return true;
+      },
     },
-  },
-]);
+  ]);
 
-const buildExtensions = () => [
-  history(),
-  bracketMatching(),
-  closeBrackets(),
-  EditorView.lineWrapping,
-  EditorView.theme({
-    '&': {
-      minHeight: props.minHeight,
-      maxHeight: props.maxHeight,
-      overflow: 'auto',
+const buildCustomKeymap = () =>
+  keymap.of([
+    {
+      key: 'Mod-Enter',
+      run: () => {
+        emit('submit');
+        return true;
+      },
     },
-  }),
-  customKeymap,
-  keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap]),
-  props.placeholder ? cmPlaceholder(props.placeholder) : [],
-  orgMode(),
-  level1WarningPlugin,
-  EditorState.readOnly.of(props.readonly),
-  EditorView.updateListener.of((update) => {
-    if (!update.docChanged) return;
-    emit('update:modelValue', update.state.doc.toString());
-  }),
-  EditorView.domEventHandlers({
-    focus: () => emit('focus'),
-    blur: () => emit('blur'),
-  }),
-];
+    {
+      key: 'Escape',
+      run: () => {
+        emit('escape');
+        return true;
+      },
+    },
+  ]);
+
+const buildExtensions = () => {
+  const inlineDecorations = createOrgInlineDecorations(getOrgNode);
+
+  const baseExtensions = [
+    history(),
+    bracketMatching(),
+    closeBrackets(),
+    orgInlineTheme,
+    buildCustomKeymap(),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap]),
+    props.placeholder ? cmPlaceholder(props.placeholder) : [],
+    orgMode({
+      orgAstChanged: (node) => {
+        currentOrgNode = node;
+      },
+    }),
+    ...inlineDecorations,
+    EditorState.readOnly.of(props.readonly),
+    EditorView.updateListener.of((update) => {
+      if (!update.docChanged) return;
+      emit('update:modelValue', update.state.doc.toString());
+    }),
+    EditorView.domEventHandlers({
+      focus: () => emit('focus'),
+      blur: () => emit('blur'),
+    }),
+  ];
+
+  if (props.singleLine) {
+    return [
+      ...baseExtensions,
+      buildSingleLineKeymap(),
+      EditorState.transactionFilter.of((tr) => {
+        if (!tr.docChanged) return tr;
+        const newDoc = tr.newDoc.toString();
+        if (newDoc.includes('\n')) return [];
+        return tr;
+      }),
+    ];
+  }
+
+  return [
+    ...baseExtensions,
+    EditorView.lineWrapping,
+    EditorView.theme({
+      '&': {
+        minHeight: props.minHeight,
+        maxHeight: props.maxHeight,
+        overflow: 'auto',
+      },
+    }),
+    level1WarningPlugin,
+  ];
+};
 
 onMounted(() => {
   if (!containerRef.value) return;
@@ -130,6 +186,7 @@ onMounted(() => {
 onUnmounted(() => {
   view?.destroy();
   view = undefined;
+  currentOrgNode = null;
 });
 
 watch(
@@ -157,7 +214,7 @@ defineExpose({ focus, blur, getView });
     font-family: inherit;
     font-size: var(--font-size-md);
     color: var(--fg);
-    background: var(--bg);
+    background: transparent;
     outline: none;
 
     &.cm-focused {
@@ -176,6 +233,28 @@ defineExpose({ focus, blur, getView });
 
   :deep(.cm-headline-warning) {
     text-decoration: underline wavy var(--red);
+  }
+
+  :deep(.org-list-bullet) {
+    color: var(--fg-muted);
+    display: inline-block;
+    width: 1em;
+    margin-right: 0.25em;
+  }
+
+  &.single-line {
+    :deep(.cm-editor) {
+      max-height: none;
+      overflow: hidden;
+    }
+
+    :deep(.cm-scroller) {
+      overflow: hidden;
+    }
+
+    :deep(.cm-content) {
+      white-space: nowrap;
+    }
   }
 }
 </style>
