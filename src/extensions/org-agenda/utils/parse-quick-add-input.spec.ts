@@ -41,17 +41,17 @@ test('parseQuickAddInput_returnsEmptyTitle_forWhitespaceOnly', () => {
   expect(result).toEqual({ title: '' });
 });
 
-test('parseQuickAddInput_extractsTags_fromColonSyntax', () => {
+test('parseQuickAddInput_keepsOrgTagSyntax_inTitle', () => {
   const result = parseQuickAddInput('buy milk :work:', []);
-  expect(result).toEqual({ title: 'buy milk', tags: ['work'] });
+  expect(result).toEqual({ title: 'buy milk :work:' });
 });
 
-test('parseQuickAddInput_extractsMultipleTags', () => {
+test('parseQuickAddInput_keepsMultipleTags_inTitle', () => {
   const result = parseQuickAddInput('task :work::home:', []);
-  expect(result).toEqual({ title: 'task', tags: ['work', 'home'] });
+  expect(result).toEqual({ title: 'task :work::home:' });
 });
 
-test('parseQuickAddInput_combinesTagsAndTargetFile', () => {
+test('parseQuickAddInput_keepsTagsAndResolvesTargetFile', () => {
   const result = parseQuickAddInput('task :work: ~projects', ['projects.org']);
-  expect(result).toEqual({ title: 'task', tags: ['work'], targetFile: 'projects.org' });
+  expect(result).toEqual({ title: 'task :work:', targetFile: 'projects.org' });
 });

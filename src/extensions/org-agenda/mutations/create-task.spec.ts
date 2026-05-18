@@ -42,14 +42,9 @@ test('createTask_scheduledIsoDate_appliesLocalDayName', () => {
   expect(result).toMatch(/SCHEDULED: <2026-05-17 \w{3}>/);
 });
 
-test('createTask_includesTags_inHeadline', () => {
-  const result = createTask('', { title: 'Task', tags: ['work', 'home'] });
-  expect(result).toContain('* TODO Task :work:home:\n');
-});
-
-test('createTask_omitsTags_whenEmpty', () => {
-  const result = createTask('', { title: 'Task', tags: [] });
-  expect(result).toBe('* TODO Task\n');
+test('createTask_keepsInlineOrgTags_inTitle', () => {
+  const result = createTask('', { title: 'Task :work:home:' });
+  expect(result).toBe('* TODO Task :work:home:\n');
 });
 
 test('createTask_promotesLevel1Headlines_inBody', () => {
