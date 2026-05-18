@@ -9,14 +9,6 @@
         @click="openFileCompletion"
       />
 
-      <org-tags
-        v-if="parsedTags.length"
-        :tags="parsedTags"
-        :clickable="false"
-        badge-size="xs"
-        class="tags-row"
-      />
-
       <org-inline-editor
         ref="titleInputRef"
         v-model="titleText"
@@ -100,7 +92,6 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import AppButton from 'src/components/AppButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
-import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
@@ -140,11 +131,6 @@ const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
 const targetLabel = computed(() =>
   targetFile.value ? fileBaseName(targetFile.value) : inboxLabel.value,
 );
-
-const parsedTags = computed(() => {
-  const parsed = parseQuickAddInput(titleText.value, []);
-  return parsed.tags ?? [];
-});
 
 const toIsoDate = (date: Date): string => format(date, 'yyyy-MM-dd');
 
@@ -216,7 +202,6 @@ const collectPayload = (): CreateTaskInput & { targetFile?: string } => {
     title: parsed.title,
     ...(body ? { body } : {}),
     ...(selectedDate.value ? { scheduledDate: selectedDate.value } : {}),
-    ...(parsed.tags?.length ? { tags: parsed.tags } : {}),
     ...(resolvedTarget ? { targetFile: resolvedTarget } : {}),
   };
 };
@@ -271,10 +256,6 @@ const onBodyEscape = (): void => {
 .date-trigger {
   display: inline-flex;
   cursor: pointer;
-}
-
-.tags-row {
-  flex-shrink: 0;
 }
 
 .body-area {

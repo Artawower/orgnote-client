@@ -119,7 +119,34 @@ const buildCustomKeymap = () =>
 const buildExtensions = () => {
   const inlineDecorations = createOrgInlineDecorations(getOrgNode);
 
-  const baseExtensions = [
+  // singleLine keymaps must be registered first so they take priority over
+  // defaultKeymap / closeBracketsKeymap (earlier extensions win in CodeMirror)
+  const singleLineExtensions = props.singleLine
+    ? [
+        buildSingleLineKeymap(),
+        EditorState.transactionFilter.of((tr) => {
+          if (!tr.docChanged) return tr;
+          return tr.newDoc.toString().includes('\n') ? [] : tr;
+        }),
+      ]
+    : [];
+
+  const multilineExtensions = props.singleLine
+    ? []
+    : [
+        EditorView.lineWrapping,
+        EditorView.theme({
+          '&': {
+            minHeight: props.minHeight,
+            maxHeight: props.maxHeight,
+            overflow: 'auto',
+          },
+        }),
+        level1WarningPlugin,
+      ];
+
+  return [
+    ...singleLineExtensions,
     history(),
     bracketMatching(),
     closeBrackets(),
@@ -142,32 +169,7 @@ const buildExtensions = () => {
       focus: () => emit('focus'),
       blur: () => emit('blur'),
     }),
-  ];
-
-  if (props.singleLine) {
-    return [
-      ...baseExtensions,
-      buildSingleLineKeymap(),
-      EditorState.transactionFilter.of((tr) => {
-        if (!tr.docChanged) return tr;
-        const newDoc = tr.newDoc.toString();
-        if (newDoc.includes('\n')) return [];
-        return tr;
-      }),
-    ];
-  }
-
-  return [
-    ...baseExtensions,
-    EditorView.lineWrapping,
-    EditorView.theme({
-      '&': {
-        minHeight: props.minHeight,
-        maxHeight: props.maxHeight,
-        overflow: 'auto',
-      },
-    }),
-    level1WarningPlugin,
+    ...multilineExtensions,
   ];
 };
 
