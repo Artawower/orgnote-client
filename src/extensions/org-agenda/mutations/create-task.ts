@@ -1,4 +1,18 @@
 import { format, parseISO } from 'date-fns';
+import { editOrgDocument } from 'orgnote-api/utils';
+
+const PARENT_TASK_LEVEL = 1;
+const MIN_SAFE_SUBTASK_LEVEL = PARENT_TASK_LEVEL + 1;
+
+const promoteSubtaskHeadlines = (body: string): string => {
+  if (!body.trim()) return body;
+  return editOrgDocument(body, (doc) => {
+    doc
+      .headlines()
+      .filter((h) => h.level < MIN_SAFE_SUBTASK_LEVEL)
+      .forEach((h) => h.setLevel(MIN_SAFE_SUBTASK_LEVEL));
+  });
+};
 
 export interface CreateTaskInput {
   title: string;
@@ -31,7 +45,8 @@ const buildScheduledLine = (date: string): string => `SCHEDULED: <${date} ${getD
 const buildPlanningBlock = (scheduledDate: string | undefined): string =>
   scheduledDate ? buildScheduledLine(scheduledDate) : '';
 
-const buildBodyBlock = (body: string | undefined): string => (body ? `${body.trim()}\n` : '');
+const buildBodyBlock = (body: string | undefined): string =>
+  body ? `${promoteSubtaskHeadlines(body.trim())}\n` : '';
 
 export const createTask = (content: string, input: CreateTaskInput): string => {
   const base = normalizeContent(content);

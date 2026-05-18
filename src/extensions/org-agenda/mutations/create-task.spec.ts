@@ -52,6 +52,24 @@ test('createTask_omitsTags_whenEmpty', () => {
   expect(result).toBe('* TODO Task\n');
 });
 
+test('createTask_promotesLevel1Headlines_inBody', () => {
+  const result = createTask('', { title: 'Task', body: 'some text\n* foo\nmore text' });
+  expect(result).toContain('** foo');
+  expect(result).not.toContain('\n* foo');
+});
+
+test('createTask_keepsLevel2Headlines_inBody', () => {
+  const result = createTask('', { title: 'Task', body: '** existing subtask' });
+  expect(result).toContain('** existing subtask');
+});
+
+test('createTask_handlesMixedHeadlineLevels_inBody', () => {
+  const result = createTask('', { title: 'Task', body: '* one\n** two\n*** three' });
+  expect(result).toContain('** one');
+  expect(result).toContain('** two');
+  expect(result).toContain('*** three');
+});
+
 test('createTask_includesBothBodyAndScheduled', () => {
   const result = createTask('', { title: 'Task', body: 'Notes', scheduledDate: '2026-05-20' });
   expect(result).toContain('* TODO Task\n');
