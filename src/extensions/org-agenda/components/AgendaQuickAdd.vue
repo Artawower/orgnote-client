@@ -44,12 +44,15 @@
     </app-flex>
 
     <template v-if="isExpanded">
-      <app-text-area
+      <org-inline-editor
         ref="bodyInputRef"
         v-model="bodyText"
         :placeholder="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
+        min-height="60px"
+        max-height="200px"
         class="body-area"
-        @keydown="onBodyKeydown"
+        @submit="submitTask"
+        @escape="onBodyEscape"
       />
 
       <app-flex row align-center justify="between" class="toolbar">
@@ -97,7 +100,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import ActionButton from 'src/components/ActionButton.vue';
-import AppTextArea from 'src/containers/AppTextArea.vue';
+import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { api } from 'src/boot/api';
 import { createAgendaFilesGetter } from '../utils/agenda-files-completion';
@@ -122,7 +125,7 @@ const emit = defineEmits<{
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const titleInputRef = ref<InstanceType<typeof AppInput> | null>(null);
-const bodyInputRef = ref<InstanceType<typeof AppTextArea> | null>(null);
+const bodyInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
 
 const titleText = ref('');
 const bodyText = ref('');
@@ -155,7 +158,7 @@ const selectedDateLabel = computed(() => {
 const focusBodyAfterRender = async (): Promise<void> => {
   await nextTick();
   await nextTick();
-  bodyInputRef.value?.focus();
+  bodyInputRef.value?.focus?.();
 };
 
 const expand = async (): Promise<void> => {
@@ -257,16 +260,8 @@ const onTitleKeydown = (e: KeyboardEvent): void => {
   }
 };
 
-const onBodyKeydown = (e: KeyboardEvent): void => {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    (e.target as HTMLElement).blur();
-    return;
-  }
-  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-    e.preventDefault();
-    submitTask();
-  }
+const onBodyEscape = (): void => {
+  bodyInputRef.value?.blur?.();
 };
 </script>
 
