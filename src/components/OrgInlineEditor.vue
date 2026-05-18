@@ -117,7 +117,9 @@ const buildCustomKeymap = () =>
   ]);
 
 const buildExtensions = () => {
-  const inlineDecorations = createOrgInlineDecorations(getOrgNode);
+  const inlineDecorations = createOrgInlineDecorations(getOrgNode, {
+    singleLine: props.singleLine,
+  });
 
   // singleLine keymaps must be registered first so they take priority over
   // defaultKeymap / closeBracketsKeymap (earlier extensions win in CodeMirror)
@@ -225,8 +227,12 @@ defineExpose({ focus, blur, getView });
   }
 
   :deep(.cm-content) {
-    padding: 0;
+    padding: 0 !important;
     caret-color: var(--accent);
+  }
+
+  :deep(.cm-line) {
+    padding: 0 !important;
   }
 
   :deep(.cm-placeholder) {
