@@ -19,7 +19,7 @@ beforeEach(() => {
   mockWrite.mockResolvedValue(undefined);
 });
 
-test('pickFile_doesNotOverwrite_existingFile', async () => {
+test('ensureFileExists_doesNotOverwrite_existingFile', async () => {
   mockRead.mockResolvedValue(new Uint8Array([1, 2, 3]));
 
   const ok = await ensureFileExists(fileContent, '/notes/inbox.org');
@@ -28,7 +28,7 @@ test('pickFile_doesNotOverwrite_existingFile', async () => {
   expect(mockWrite).not.toHaveBeenCalled();
 });
 
-test('pickFile_createsEmpty_whenFileNotFound', async () => {
+test('ensureFileExists_createsEmpty_whenFileNotFound', async () => {
   mockRead.mockRejectedValue(new ErrorFileNotFound('/notes/new.org'));
   mockWrite.mockResolvedValue(undefined);
 

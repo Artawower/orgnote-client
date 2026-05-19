@@ -1,7 +1,7 @@
 <template>
   <div class="date-sheet">
     <app-flex column gap="sm">
-      <app-flex row align-center justify="around" class="shortcuts">
+      <app-flex row align-end full-width justify="end" class="shortcuts">
         <action-button
           icon="sym_o_today"
           size="md"

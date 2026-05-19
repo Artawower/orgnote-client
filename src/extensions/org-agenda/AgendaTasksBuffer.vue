@@ -53,9 +53,10 @@ import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import type { FileTask } from 'orgnote-api';
-import { isCompletedOn } from './utils/agenda-filters';
+import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
+import { AGENDA_DEFAULT_INBOX_FILENAME } from './constants';
 import type { CreateTaskInput } from './mutations/create-task';
 import { fileBaseName } from 'src/utils/file-path';
 
@@ -71,7 +72,7 @@ const knownOrgFiles = computed(() => tasksStore.agendaFiles.map((f) => join('/',
 const resolvedInboxPath = computed(() => {
   if (agendaConfig.inboxFilePath) return agendaConfig.inboxFilePath;
   const base = agendaConfig.agendaFilesPath ?? '/';
-  return join(base, 'inbox.org');
+  return join(base, AGENDA_DEFAULT_INBOX_FILENAME);
 });
 
 const onQuickAddSubmit = async (
@@ -88,9 +89,6 @@ const onQuickAddSubmit = async (
     level: 'info',
   });
 };
-
-const hasRepeater = (task: FileTask): boolean =>
-  !!(task.scheduled?.repeater ?? task.deadline?.repeater);
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() &&
@@ -153,6 +151,6 @@ const openNote = async (_task: FileTask, filePath: string): Promise<void> => {
 <style lang="scss" scoped>
 .agenda-buffer {
   @include fit;
-  padding: 0 var(--padding-md);
+  padding: var(--editor-padding);
 }
 </style>

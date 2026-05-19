@@ -2,18 +2,18 @@ import { expect, test } from 'vitest';
 import { parseQuickAddInput } from './parse-quick-add-input';
 
 test('parseQuickAddInput_returnsTitle_whenNoSpecialSyntax', () => {
-  const result = parseQuickAddInput('купить молоко', []);
-  expect(result).toEqual({ title: 'купить молоко' });
+  const result = parseQuickAddInput('buy milk', []);
+  expect(result).toEqual({ title: 'buy milk' });
 });
 
 test('parseQuickAddInput_resolvesTargetFile_fromKnownFiles', () => {
-  const result = parseQuickAddInput('купить молоко ~projects', ['projects.org']);
-  expect(result).toEqual({ title: 'купить молоко', targetFile: 'projects.org' });
+  const result = parseQuickAddInput('buy milk ~projects', ['projects.org']);
+  expect(result).toEqual({ title: 'buy milk', targetFile: 'projects.org' });
 });
 
 test('parseQuickAddInput_leavesUnknownTilde_inTitle', () => {
-  const result = parseQuickAddInput('купить ~unknown молоко', ['projects.org']);
-  expect(result).toEqual({ title: 'купить ~unknown молоко' });
+  const result = parseQuickAddInput('buy ~unknown milk', ['projects.org']);
+  expect(result).toEqual({ title: 'buy ~unknown milk' });
 });
 
 test('parseQuickAddInput_extractsBody_fromMultilineInput', () => {

@@ -1,35 +1,31 @@
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
-import { closeBrackets } from '@codemirror/autocomplete';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { bracketMatching } from '@codemirror/language';
-import { computed, shallowRef, watch, toValue } from 'vue';
 import type { OrgNode } from 'org-mode-ast';
-import { api } from 'src/boot/api';
 import type {
-  InlineEmbeddedWidgets,
-  MultilineEmbeddedWidgets,
-  InlineEmbeddedWidget,
-  MultilineEmbeddedWidget,
-  EditorExtension,
-  WidgetBuilder,
+    EditorExtension,
+    InlineEmbeddedWidget,
+    InlineEmbeddedWidgets,
+    MultilineEmbeddedWidget,
+    MultilineEmbeddedWidgets,
+    WidgetBuilder,
 } from 'orgnote-api';
+import { api } from 'src/boot/api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
-import { useDynamicComponent } from 'src/utils/dynamic-component';
-import { getNumericCssVar } from 'src/utils/css-utils';
-
 import {
-  orgNodeGetterFacet,
-  readonlyFacet,
-  inlineWidgetsFacet,
-  multilineWidgetsFacet,
-  lineClassesFacet,
-  type OrgNodeGetter,
-} from './facets';
-import { orgInlineWidgets, orgLineDecoration, readOnlyTransactionFilter } from './widgets';
-import { createMultilineWidgetsField } from './widgets/multiline-widgets';
-import { orgMode } from './org-parser';
+    createBaseEditorExtensions,
+    createOrgLanguageExtension,
+    orgSelectionTheme,
+} from 'src/utils/org-editor';
+import { useDynamicComponent } from 'src/utils/dynamic-component';
+import { computed, shallowRef, toValue, watch } from 'vue';
 import { editorLanguages } from './editor-languages';
+import { type OrgNodeGetter } from './facets';
+import {
+    createFacetExtensions,
+    createScrollMarginsExtension,
+    createWidgetExtensions,
+} from './store-extensions';
+import { createActiveContextExtensions } from './use-active-context';
 
 export interface UseEditorStateOptions {
   readonly?: boolean;
@@ -39,11 +35,12 @@ export interface UseEditorStateOptions {
   onContentUpdate: (content: string) => void;
 }
 
-const createBaseExtensions = (editorViewGetter: () => EditorView | undefined): Extension[] => [
-  history(),
-  keymap.of([...defaultKeymap, ...historyKeymap]),
-  bracketMatching(),
-  closeBrackets(),
+const createBaseRichEditorExtensions = (
+  editorViewGetter: () => EditorView | undefined,
+  onContentUpdate: (content: string) => void,
+): Extension[] => [
+  ...createBaseEditorExtensions({ onContentUpdate }),
+  orgSelectionTheme,
   EditorView.lineWrapping,
   keymap.of([
     {
@@ -56,31 +53,19 @@ const createBaseExtensions = (editorViewGetter: () => EditorView | undefined): E
   ]),
 ];
 
-const createUpdateListener = (onUpdate: (content: string) => void): Extension =>
-  EditorView.updateListener.of((update) => {
-    if (!update.docChanged) return;
-    onUpdate(update.state.doc.toString());
-  });
-
-const createWidgetExtensions = (editorViewRef: { current: EditorView | null }): Extension[] => [
-  readOnlyTransactionFilter,
-  orgInlineWidgets,
-  createMultilineWidgetsField(editorViewRef),
-  orgLineDecoration,
+const createReadonlyExtensions = (readonly: boolean): Extension[] => [
+  EditorState.readOnly.of(readonly),
+  ...(readonly ? [] : [highlightActiveLine()]),
 ];
 
-const getToolbarHeight = (): number => {
-  const toolbarHeight = getNumericCssVar('--editor-toolbar-height') ?? 52;
-  const footerPadding = getNumericCssVar('--footer-wrapper-padding-y') ?? 0;
-  const additionalOffset = 8;
-  return toolbarHeight + footerPadding + additionalOffset;
-};
+type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget;
+type WidgetEntries<T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets> = Array<
+  readonly [string, T[keyof T]]
+>;
 
-const createScrollMarginsExtension = (keyboardOpened: boolean, isMobile: boolean): Extension =>
-  EditorView.scrollMargins.of(() => {
-    if (!isMobile || !keyboardOpened) return null;
-    return { bottom: getToolbarHeight() };
-  });
+const toWidgetEntries = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
+  widgets: T,
+): WidgetEntries<T> => Object.entries(widgets) as WidgetEntries<T>;
 
 export const useEditorState = (options: UseEditorStateOptions) => {
   const configStore = api.core.useConfig();
@@ -103,83 +88,17 @@ export const useEditorState = (options: UseEditorStateOptions) => {
   const orgNode = shallowRef<OrgNode | null>(null);
   const getOrgNode: OrgNodeGetter = () => orgNode.value;
 
-  const handleOrgNodeChanged = (node: OrgNode) => {
-    orgNode.value = node;
-    editorStore.updateActiveContext({ orgNode: node });
-  };
-
-  const createCursorTracker = (): Extension =>
-    EditorView.updateListener.of((update) => {
-      if (!update.selectionSet) return;
-      const { from, to, head } = update.state.selection.main;
-      const selection = from !== to ? update.state.sliceDoc(from, to) : '';
-
-      editorStore.updateActiveContext({
-        cursorPosition: head,
-        selection,
-      });
-    });
-
-  const createFocusHandler = (): Extension =>
-    EditorView.domEventHandlers({
-      focus: () => {
-        editorStore.setActiveContext({
-          orgNode: orgNode.value,
-          cursorPosition: 0,
-          selection: '',
-          editorViewGetter: options.editorViewGetter,
-          filePath: options.filePathGetter?.(),
-          focused: true,
-        });
-        return false;
-      },
-      blur: () => {
-        editorStore.updateActiveContext({ focused: false });
-        return false;
-      },
-      touchstart: (evt, view) => {
-        const { from, to } = view.state.selection.main;
-        if (from !== to) {
-          evt.stopPropagation();
-        }
-        return false;
-      },
-      touchmove: (evt, view) => {
-        const { from, to } = view.state.selection.main;
-        if (from !== to) {
-          evt.stopPropagation();
-        }
-        return false;
-      },
-    });
-
-  type Widget = InlineEmbeddedWidget | MultilineEmbeddedWidget;
-  type WidgetEntries<T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets> = Array<
-    readonly [string, T[keyof T]]
-  >;
-
-  const toWidgetEntries = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidgets>(
-    widgets: T,
-  ): WidgetEntries<T> => Object.entries(widgets) as WidgetEntries<T>;
-
   const resolveInlineWidgetBuilder = (widget: Widget, builderFn: typeof createWidgetBuilder) => {
-    if (!widget.component || widget.widgetBuilder) {
-      return widget.widgetBuilder;
-    }
-
+    if (!widget.component || widget.widgetBuilder) return widget.widgetBuilder;
     return builderFn(widget.component, widget.componentProps);
   };
 
   const multilineBuilderCache = new WeakMap<MultilineEmbeddedWidget, WidgetBuilder>();
 
   const resolveMultilineWidgetBuilder = (widget: MultilineEmbeddedWidget) => {
-    if (!widget.component || widget.widgetBuilder) {
-      return widget.widgetBuilder;
-    }
-
+    if (!widget.component || widget.widgetBuilder) return widget.widgetBuilder;
     const cached = multilineBuilderCache.get(widget);
     if (cached) return cached;
-
     const builder = createMultilineWidgetBuilder(widget.component, widget);
     multilineBuilderCache.set(widget, builder);
     return builder;
@@ -192,13 +111,11 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     Object.fromEntries(
       toWidgetEntries(widgets).flatMap(([nodeType, widgetList]) => {
         if (!widgetList) return [];
-
-        const mappedWidgets = (widgetList as Widget[]).map((widget) => ({
-          ...widget,
-          widgetBuilder: resolveInlineWidgetBuilder(widget, builderFn),
+        const mapped = (widgetList as Widget[]).map((w) => ({
+          ...w,
+          widgetBuilder: resolveInlineWidgetBuilder(w, builderFn),
         }));
-
-        return [[nodeType, mappedWidgets] as const];
+        return [[nodeType, mapped] as const];
       }),
     ) as T;
 
@@ -207,32 +124,18 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const buildMultilineWidgets = () => {
     const result: Partial<MultilineEmbeddedWidgets> = {};
-
     for (const [nodeType, widgetList] of toWidgetEntries(toValue(editorStore.multilineWidgets))) {
       if (!widgetList) continue;
-
-      result[nodeType as keyof MultilineEmbeddedWidgets] = widgetList.map((widget) => ({
-        ...widget,
-        widgetBuilder: resolveMultilineWidgetBuilder(widget),
+      result[nodeType as keyof MultilineEmbeddedWidgets] = widgetList.map((w) => ({
+        ...w,
+        widgetBuilder: resolveMultilineWidgetBuilder(w),
       }));
     }
-
     return result as MultilineEmbeddedWidgets;
-  };
-
-  const createFacetExtensions = (readonly: boolean): Extension[] => {
-    return [
-      orgNodeGetterFacet.of(getOrgNode),
-      readonlyFacet.of(readonly),
-      inlineWidgetsFacet.of(buildInlineWidgets()),
-      multilineWidgetsFacet.of(buildMultilineWidgets()),
-      lineClassesFacet.of(toValue(editorStore.lineClasses)),
-    ];
   };
 
   const buildEditorExtensions = (readonly: boolean): Extension[] => {
     const extensions = toValue(editorStore.extensions) as EditorExtension[];
-
     return extensions.map((ext) =>
       ext({
         orgNodeGetter: getOrgNode,
@@ -246,53 +149,69 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const getReadonly = (): boolean => options.readonlyGetter?.() ?? false;
 
-  const createReadonlyExtensions = (readonly: boolean): Extension[] => [
-    EditorState.readOnly.of(readonly),
-    ...(readonly ? [] : [highlightActiveLine()]),
-  ];
-
   const createState = (content: string): EditorState => {
     const readonly = getReadonly();
-    const widgetExtensions = editorConfig.value.showSpecialSymbols
+    const widgetExts = editorConfig.value.showSpecialSymbols
       ? []
       : createWidgetExtensions(editorViewRef);
 
     return EditorState.create({
       doc: content,
       extensions: [
-        ...createBaseExtensions(options.editorViewGetter),
-        createUpdateListener(options.onContentUpdate),
-        createCursorTracker(),
-        createFocusHandler(),
+        ...createBaseRichEditorExtensions(options.editorViewGetter, options.onContentUpdate),
+        ...createActiveContextExtensions({
+          editorViewGetter: options.editorViewGetter,
+          filePathGetter: options.filePathGetter,
+          getOrgNode,
+        }),
         compartments.readonly.of(createReadonlyExtensions(readonly)),
-        compartments.widgets.of([...createFacetExtensions(readonly), ...widgetExtensions]),
+        compartments.widgets.of([
+          ...createFacetExtensions(
+            getOrgNode,
+            readonly,
+            buildInlineWidgets(),
+            buildMultilineWidgets(),
+            toValue(editorStore.lineClasses),
+          ),
+          ...widgetExts,
+        ]),
         compartments.editorExtensions.of(buildEditorExtensions(readonly)),
         compartments.scrollMargins.of(
           createScrollMarginsExtension(keyboardOpened.value, tabletBelow.value),
         ),
-        orgMode({
+        createOrgLanguageExtension({
           wrap: editorLanguages,
-          orgAstChanged: handleOrgNodeChanged,
+          onAstChanged: (node) => {
+            orgNode.value = node;
+            editorStore.updateActiveContext({ orgNode: node });
+          },
         }),
       ],
     });
   };
 
   const reconfigureReadonly = (view: EditorView, value: boolean): void => {
-    view.dispatch({
-      effects: compartments.readonly.reconfigure(createReadonlyExtensions(value)),
-    });
+    view.dispatch({ effects: compartments.readonly.reconfigure(createReadonlyExtensions(value)) });
   };
 
   const reconfigureWidgets = (view: EditorView, readonlyOverride?: boolean): void => {
     const readonly = readonlyOverride !== undefined ? readonlyOverride : getReadonly();
-    const widgetExtensions = editorConfig.value.showSpecialSymbols
+    const widgetExts = editorConfig.value.showSpecialSymbols
       ? []
       : createWidgetExtensions(editorViewRef);
 
     view.dispatch({
       effects: [
-        compartments.widgets.reconfigure([...createFacetExtensions(readonly), ...widgetExtensions]),
+        compartments.widgets.reconfigure([
+          ...createFacetExtensions(
+            getOrgNode,
+            readonly,
+            buildInlineWidgets(),
+            buildMultilineWidgets(),
+            toValue(editorStore.lineClasses),
+          ),
+          ...widgetExts,
+        ]),
         compartments.editorExtensions.reconfigure(buildEditorExtensions(readonly)),
       ],
     });
@@ -318,12 +237,10 @@ export const useEditorState = (options: UseEditorStateOptions) => {
     watch([keyboardOpened, tabletBelow], ([newKeyboard, newTablet], [oldKeyboard]) => {
       const view = viewGetter();
       if (!view) return;
-
-      const scrollMarginsExtension = createScrollMarginsExtension(newKeyboard, newTablet);
+      const scrollExt = createScrollMarginsExtension(newKeyboard, newTablet);
       const isKeyboardOpening = !oldKeyboard && newKeyboard && newTablet;
-
       view.dispatch({
-        effects: compartments.scrollMargins.reconfigure(scrollMarginsExtension),
+        effects: compartments.scrollMargins.reconfigure(scrollExt),
         scrollIntoView: isKeyboardOpening,
       });
     });

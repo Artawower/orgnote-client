@@ -3,7 +3,12 @@
     :is="buttonTag"
     @click="onButtonClick"
     v-bind="dynamicAttrs"
-    :class="[`icon-${size}`, active, { outline, border, text: slots.text, 'hover-effect': hoverEffect }, props.classes]"
+    :class="[
+      `icon-${size}`,
+      active,
+      { outline, border, text: slots.text, 'hover-effect': hoverEffect, 'auto-width': autoWidth },
+      props.classes,
+    ]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
       '--btn-action-hover-color': safeHoverColor,
@@ -48,20 +53,18 @@ export interface ActionButtonProps {
   classes?: string;
   copyText?: string;
   alignment?: ButtonAlignment;
+  autoWidth?: boolean;
 }
 
-const props = withDefaults(
-  defineProps<ActionButtonProps>(),
-  {
-    active: false,
-    size: 'md',
-    color: 'fg',
-    classes: '',
-    fireColor: 'red',
-    alignment: 'center',
-    hoverEffect: true,
-  },
-);
+const props = withDefaults(defineProps<ActionButtonProps>(), {
+  active: false,
+  size: 'md',
+  color: 'fg',
+  classes: '',
+  fireColor: 'red',
+  alignment: 'center',
+  hoverEffect: true,
+});
 
 const fired = ref<boolean>(false);
 
@@ -162,6 +165,11 @@ button,
 
   &.text {
     width: var(--btn-action-text-width);
+
+    &.auto-width {
+      width: auto;
+      padding-inline: var(--btn-action-padding);
+    }
   }
 
   & {
@@ -194,7 +202,11 @@ button,
 
   &.hover-effect {
     @include hover {
-      border-color: color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black);
+      border-color: color-mix(
+        in srgb,
+        var(--action-border-color, var(--border-default)),
+        20% black
+      );
 
       .icon {
         color: var(

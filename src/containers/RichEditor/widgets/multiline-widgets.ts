@@ -1,14 +1,14 @@
-import { OrgMultilineWidget } from './org-multiline-widget';
-import type { MultilineEmbeddedWidget } from 'orgnote-api';
 import type { Transaction } from '@codemirror/state';
 import { StateField, type EditorState } from '@codemirror/state';
 import type { DecorationSet } from '@codemirror/view';
 import { Decoration, EditorView } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { walkTree } from 'org-mode-ast';
+import type { MultilineEmbeddedWidget } from 'orgnote-api';
+import { findHighestPriorityWidget } from 'src/utils/org-editor/widgets/find-highest-priority-widget';
 import { hasIntersection } from 'src/utils/has-intersection';
-import { orgNodeGetterFacet, readonlyFacet, multilineWidgetsFacet } from '../facets';
-import { findHighestPriorityWidget } from '../utils';
+import { multilineWidgetsFacet, orgNodeGetterFacet, readonlyFacet } from '../facets';
+import { OrgMultilineWidget } from './org-multiline-widget';
 
 export const isWidgetConfigChanged = (
   a: MultilineEmbeddedWidget,

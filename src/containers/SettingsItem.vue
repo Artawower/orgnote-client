@@ -201,6 +201,7 @@ const pickPath = async (mode: 'file' | 'directory'): Promise<void> => {
     fieldSet(props.name, result);
     return;
   }
+  if (result.endsWith('/')) return;
   const { ensureFileExists } = await import('src/utils/ensure-file-exists');
   const ok = await ensureFileExists(api.core.useFileContent(), result);
   if (!ok) return;

@@ -7,6 +7,7 @@ import {
   isToday,
   isTomorrow,
   isCompletedOn,
+  hasRepeater,
   findNextOccurrenceInRange,
   getActiveDate,
 } from './agenda-filters';
@@ -386,4 +387,61 @@ test('getActiveDate_returnsDeadlineWhenOnlyDeadlinePresent', () => {
 
 test('isOverdue_returnsTrueWhenDeadlinePastEvenIfScheduledFuture', () => {
   expect(isOverdue(withBoth('2026-06-01', '2026-05-10'), now)).toBe(true);
+});
+
+test('hasRepeater_returnsTrue_whenScheduledHasRepeater', () => {
+  expect(hasRepeater(withScheduledRepeater('2026-05-12', dailyRepeater))).toBe(true);
+});
+
+test('hasRepeater_returnsTrue_whenDeadlineHasRepeater', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    deadline: {
+      date: '2026-05-12',
+      active: true,
+      hasTime: false,
+      start: 0,
+      end: 0,
+      repeater: dailyRepeater,
+    },
+  };
+  expect(hasRepeater(task)).toBe(true);
+});
+
+test('hasRepeater_returnsFalse_whenNoRepeater', () => {
+  expect(hasRepeater(withScheduled('2026-05-12'))).toBe(false);
+});
+
+test('hasRepeater_returnsFalse_whenNoDateFields', () => {
+  expect(hasRepeater(noDateTask)).toBe(false);
+});
+
+// REGRESSION: TODO task previously marked DONE and reverted should not show as checked
+// Before fix: isChecked used `state === 'done' || isCompletedOn(...)` causing stale doneDates
+// to make a TODO task appear checked, and subsequent toggle would complete instead of reopen.
+test('isCompletedOn_todoTaskWithStaleDoneDate_returnsTrueForDate', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: ['2026-05-12'],
+  };
+  expect(isCompletedOn(task, now)).toBe(true);
+  expect(hasRepeater(task)).toBe(false);
+});
+
+test('hasRepeater_falseAndTodoState_means_isCheckedShouldBeFalse', () => {
+  const task: FileTask = {
+    id: '1',
+    kind: 'headline-todo',
+    state: 'todo',
+    text: 'Task',
+    doneDates: ['2026-05-12'],
+  };
+  const isChecked = task.state === 'done' || (hasRepeater(task) && isCompletedOn(task, now));
+  expect(isChecked).toBe(false);
 });
