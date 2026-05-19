@@ -1,26 +1,15 @@
-import { OrgInlineWidget } from './org-inline-widget';
-import type { Range } from '@codemirror/state';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import { Decoration, EditorView, ViewPlugin } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
-import { walkTree } from 'org-mode-ast';
-import type { InlineEmbeddedWidgets, MultilineEmbeddedWidgets } from 'orgnote-api';
+import type { MultilineEmbeddedWidgets } from 'orgnote-api';
+import { buildInlineWidgetDecorations } from 'src/utils/org-editor/widgets/build-inline-widget-decorations';
+import { findHighestPriorityWidget } from 'src/utils/org-editor/widgets/find-highest-priority-widget';
 import {
-  orgNodeGetterFacet,
-  readonlyFacet,
   inlineWidgetsFacet,
   multilineWidgetsFacet,
-  type OrgNodeGetter,
+  orgNodeGetterFacet,
+  readonlyFacet,
 } from '../facets';
-import { findHighestPriorityWidget } from '../utils';
-
-const isNodeOnActiveLine = (view: EditorView, node: OrgNode, caretPosition: number): boolean => {
-  const activeLine = view.state.doc.lineAt(caretPosition);
-  const clampedStart = Math.min(node.start, view.state.doc.length);
-  const nodeLine = view.state.doc.lineAt(clampedStart);
-
-  return activeLine.number === nodeLine.number;
-};
 
 const isInsideBlockWidget = (n: OrgNode, multilineWidgets: MultilineEmbeddedWidgets): boolean => {
   let parent = n.parent;
@@ -32,86 +21,32 @@ const isInsideBlockWidget = (n: OrgNode, multilineWidgets: MultilineEmbeddedWidg
   return false;
 };
 
-const buildDecorations = (
-  view: EditorView,
-  inlineWidgets: InlineEmbeddedWidgets,
-  multilineWidgets: MultilineEmbeddedWidgets,
-  readonly: boolean,
-  getRootNode: OrgNodeGetter,
-): DecorationSet => {
-  const orgNode = getRootNode();
-  if (!orgNode) return Decoration.none;
-
-  const atomicDecorations: Range<Decoration>[] = [];
-  const caretPosition = view.state.selection.main.head;
-
-  const visibleRanges = view.visibleRanges;
-  if (!visibleRanges.length) return Decoration.none;
-
-  const firstRange = visibleRanges[0];
-  const lastRange = visibleRanges[visibleRanges.length - 1];
-  const visibleStart = firstRange?.from ?? 0;
-  const visibleEnd = lastRange?.to ?? 0;
-
-  walkTree(orgNode, (n: OrgNode): boolean => {
-    if (n.start > visibleEnd) return true;
-    if (n.start < visibleStart) return false;
-
-    const widgetList = inlineWidgets[n.type];
-    const inlineWidget = findHighestPriorityWidget(widgetList, n);
-    if (!inlineWidget) return false;
-
-    if (isInsideBlockWidget(n, multilineWidgets)) return false;
-
-    const [startOffset, endOffset] = inlineWidget.showRangeOffset ?? [0, 0];
-
-    if (
-      !readonly &&
-      view.hasFocus &&
-      inlineWidget.hideOnActiveLine &&
-      isNodeOnActiveLine(view, n, caretPosition)
-    ) {
-      return false;
-    }
-
-    if (
-      !readonly &&
-      view.hasFocus &&
-      !inlineWidget.ignoreEditing &&
-      caretPosition >= n.start - startOffset &&
-      caretPosition <= n.end + endOffset
-    ) {
-      return false;
-    }
-
-    const decoration = OrgInlineWidget.init(view, n, inlineWidget, getRootNode, readonly);
-
-    if (decoration) {
-      atomicDecorations.push(decoration);
-    }
-
-    return false;
-  });
-
-  return Decoration.set(atomicDecorations);
-};
-
 export const orgInlineWidgets = ViewPlugin.fromClass(
   class {
     public decorations: DecorationSet = Decoration.none;
     private lastPosition = 0;
 
     constructor(view: EditorView) {
-      this.decorations = this.buildDecorations(view);
+      this.decorations = this.build(view);
     }
 
-    private buildDecorations(view: EditorView): DecorationSet {
+    private build(view: EditorView): DecorationSet {
       const getRootNode = view.state.facet(orgNodeGetterFacet);
       const readonly = view.state.facet(readonlyFacet);
       const inlineWidgets = view.state.facet(inlineWidgetsFacet);
       const multilineWidgets = view.state.facet(multilineWidgetsFacet);
 
-      return buildDecorations(view, inlineWidgets, multilineWidgets, readonly, getRootNode);
+      const orgNode = getRootNode();
+      if (!orgNode) return Decoration.none;
+
+      return buildInlineWidgetDecorations({
+        view,
+        orgNode,
+        inlineWidgets,
+        getRootNode,
+        readonly,
+        shouldSkipNode: (n) => isInsideBlockWidget(n, multilineWidgets),
+      });
     }
 
     public update(update: ViewUpdate): void {
@@ -127,14 +62,17 @@ export const orgInlineWidgets = ViewPlugin.fromClass(
       const shouldRebuildForCaret =
         !readonly && current.empty && (caretPositionChanged || selectionJustCollapsed);
 
+      const facetsReconfigured = update.transactions.some((tr) => tr.reconfigured);
+
       if (
         update.docChanged ||
         update.viewportChanged ||
         update.focusChanged ||
+        facetsReconfigured ||
         shouldRebuildForCaret ||
         (!readonly && selectionStarted)
       ) {
-        this.decorations = this.buildDecorations(update.view);
+        this.decorations = this.build(update.view);
       }
     }
   },

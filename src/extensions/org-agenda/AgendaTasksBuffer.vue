@@ -53,7 +53,7 @@ import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import type { FileTask } from 'orgnote-api';
-import { isCompletedOn } from './utils/agenda-filters';
+import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import type { CreateTaskInput } from './mutations/create-task';
@@ -88,9 +88,6 @@ const onQuickAddSubmit = async (
     level: 'info',
   });
 };
-
-const hasRepeater = (task: FileTask): boolean =>
-  !!(task.scheduled?.repeater ?? task.deadline?.repeater);
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() &&

@@ -71,10 +71,6 @@ vi.mock('./widgets/multiline-widgets', () => ({
   createMultilineWidgetsField: vi.fn(() => ({})),
 }));
 
-vi.mock('./org-parser', () => ({
-  orgMode: vi.fn(() => ({})),
-}));
-
 const keyboardOpenedRef = ref(false);
 const tabletBelowRef = ref(false);
 

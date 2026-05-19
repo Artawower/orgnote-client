@@ -1,6 +1,5 @@
-import { OrgNode } from 'org-mode-ast';
+import { NodeType } from 'org-mode-ast';
 
-// TODO: master use enum
 export const cmNodes = [
   'FileTag',
   'ListBullet',
@@ -17,9 +16,9 @@ export const cmNodes = [
   'Headline-11',
   'Headline-12',
 ];
-export const nodeIds = [...Object.keys(OrgNode), ...cmNodes];
+export const nodeIds = [...Object.keys(NodeType), ...cmNodes];
 
-type NodeId = typeof nodeIds[number];
+type NodeId = (typeof nodeIds)[number];
 
 export const getOrgNodeId = (nodeId: NodeId): number => {
   return nodeIds.indexOf(nodeId);

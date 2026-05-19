@@ -195,5 +195,8 @@ export const isTomorrow = (task: FileTask, now = new Date()): boolean => {
 export const isOverdue = (task: FileTask, now = new Date()): boolean =>
   isOverdueInternal(task, now);
 
+export const hasRepeater = (task: FileTask): boolean =>
+  !!(task.scheduled?.repeater ?? task.deadline?.repeater);
+
 export const isCompletedOn = (task: FileTask, date: Date): boolean =>
   getDoneDates(task).some((doneDate) => isSameDay(parseOrgDate(doneDate), date));

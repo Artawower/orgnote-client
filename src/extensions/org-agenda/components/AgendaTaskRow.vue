@@ -27,7 +27,7 @@ import PrettyDate from 'src/components/PrettyDate.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { computed } from 'vue';
-import { getActiveDate, isCompletedOn } from '../utils/agenda-filters';
+import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filters';
 
 const props = defineProps<{ task: AgendaTaskView }>();
 const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
@@ -41,7 +41,9 @@ const priorityClass = computed(() =>
 );
 
 const isChecked = computed(
-  () => props.task.state === 'done' || isCompletedOn(props.task, props.task.viewDate),
+  () =>
+    props.task.state === 'done' ||
+    (hasRepeater(props.task) && isCompletedOn(props.task, props.task.viewDate)),
 );
 
 const rawDate = computed(() => {

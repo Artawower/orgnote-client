@@ -12,6 +12,6 @@ export const findHighestPriorityWidget = <T extends CommonEmbeddedWidget>(
   if (matched.length === 1) return matched[0];
 
   return matched.reduce((highest, current) =>
-    (current.priority ?? 0) > (highest.priority ?? 0) ? current : highest
+    (current.priority ?? 0) > (highest.priority ?? 0) ? current : highest,
   );
 };
