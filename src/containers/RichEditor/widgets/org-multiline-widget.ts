@@ -1,4 +1,4 @@
-import { BaseOrgWidget } from './base-org-widget';
+import { BaseOrgWidget } from 'src/utils/org-editor/widgets/base-org-widget';
 import type { Range } from '@codemirror/state';
 import type { EditorView, WidgetType } from '@codemirror/view';
 import { Decoration } from '@codemirror/view';

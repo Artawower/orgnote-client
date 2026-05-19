@@ -7,6 +7,7 @@ import { reporter } from 'src/boot/report';
 import { createDirPath } from 'src/utils/create-dir-path';
 import { findNextOccurrenceInRange, isOverdue, isToday, isTomorrow } from '../utils/agenda-filters';
 import { resolveAgendaConfig } from '../index';
+import { AGENDA_DEFAULT_INBOX_FILENAME } from '../constants';
 import { orgAgendaManifest } from '../manifest';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
 import { createTask, type CreateTaskInput } from '../mutations/create-task';
@@ -99,7 +100,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
     if (targetFile) return targetFile;
     if (agendaConfig.value.inboxFilePath) return agendaConfig.value.inboxFilePath;
     const basePath = agendaConfig.value.agendaFilesPath ?? '/';
-    return join(basePath, 'inbox.org');
+    return join(basePath, AGENDA_DEFAULT_INBOX_FILENAME);
   };
 
   const readFileOrEmpty = async (path: string): Promise<string | undefined> => {

@@ -131,7 +131,5 @@ function initLanguage(config?: OrgModeParserConfig): Language {
 }
 
 export function orgMode(config?: OrgModeParserConfig): LanguageSupport {
-  return new LanguageSupport(initLanguage(config), [
-    syntaxHighlighting(orgHighlightStyle),
-  ]);
+  return new LanguageSupport(initLanguage(config), [syntaxHighlighting(orgHighlightStyle)]);
 }

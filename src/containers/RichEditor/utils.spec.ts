@@ -1,10 +1,9 @@
-import { test, expect } from 'vitest';
-import { findHighestPriorityWidget } from './utils';
-import type { CommonEmbeddedWidget } from 'orgnote-api';
 import type { OrgNode } from 'org-mode-ast';
+import type { CommonEmbeddedWidget } from 'orgnote-api';
+import { findHighestPriorityWidget } from 'src/utils/org-editor/widgets/find-highest-priority-widget';
+import { expect, test } from 'vitest';
 
-const createNode = (type = 'Text'): OrgNode =>
-  ({ type, start: 0, end: 10 }) as unknown as OrgNode;
+const createNode = (type = 'Text'): OrgNode => ({ type, start: 0, end: 10 }) as unknown as OrgNode;
 
 const createWidget = (
   id: string,

@@ -32,9 +32,6 @@
   --white: var(--default-white);
   --black: var(--default-black);
 
-  --fg-on-color: var(--white); // legible text on saturated colored backgrounds
-  --fg-on-yellow: var(--black); // yellow needs dark text for contrast
-
   --priority-a: var(--red, var(--q-negative));
   --priority-b: var(--orange, var(--q-warning));
   --priority-c: var(--yellow);

@@ -28,6 +28,7 @@
               icon="sym_o_calendar_today"
               size="sm"
               :active="!!selectedDate"
+              :auto-width="true"
               :disable-click-handling="true"
               :aria-label="t(i18nKeys.orgAgendaQuickAddDateTooltip)"
             >
@@ -38,13 +39,11 @@
       </agenda-date-popover>
     </app-flex>
 
-    <template v-if="isExpanded">
+    <app-flex v-if="isExpanded" column gap="sm">
       <org-inline-editor
         ref="bodyInputRef"
         v-model="bodyText"
         :placeholder="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
-        min-height="60px"
-        max-height="200px"
         class="body-area"
         @submit="submitTask"
         @escape="onBodyEscape"
@@ -79,7 +78,7 @@
           </app-button>
         </app-flex>
       </app-flex>
-    </template>
+    </app-flex>
   </card-wrapper>
 </template>
 
@@ -124,6 +123,7 @@ const titleText = ref('');
 const bodyText = ref('');
 const isExpanded = ref(false);
 const targetFile = ref<string | undefined>();
+const isTildeCompletionOpen = ref(false);
 const selectedDate = ref<string | undefined>();
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
@@ -187,9 +187,13 @@ const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
 };
 
 const onTitleInput = (): void => {
+  if (isTildeCompletionOpen.value) return;
   const tildeIdx = titleText.value.indexOf('~');
   if (tildeIdx === -1) return;
-  void openFileCompletionFromTilde(tildeIdx);
+  isTildeCompletionOpen.value = true;
+  openFileCompletionFromTilde(tildeIdx).finally(() => {
+    isTildeCompletionOpen.value = false;
+  });
 };
 
 const isSubmittable = (): boolean => titleText.value.trim().length > 0;
@@ -241,7 +245,7 @@ const onBodyEscape = (): void => {
 }
 
 .input-row {
-  min-height: 32px;
+  min-height: var(--btn-action-sm-size);
 }
 
 .title-input {
@@ -259,14 +263,12 @@ const onBodyEscape = (): void => {
 }
 
 .body-area {
-  margin-top: var(--gap-xs);
   min-height: calc(2 * var(--font-size-md) * 1.5 + var(--padding-xs) * 2);
 }
 
 .toolbar {
-  margin-top: var(--gap-sm);
   padding-top: var(--gap-xs);
-  border-top: 1px solid var(--border);
+  border-top: var(--border-default);
 }
 
 .hint {

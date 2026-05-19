@@ -22,7 +22,6 @@ withDefaults(
 </script>
 
 <style lang="scss" scoped>
-// Each entry: (background, foreground)
 $type-styles: (
   plain: (
     var(--bg-elevated),
@@ -30,19 +29,19 @@ $type-styles: (
   ),
   active: (
     var(--accent),
-    var(--fg-on-color),
+    var(--white),
   ),
   info: (
     var(--blue),
-    var(--fg-on-color),
+    var(--white),
   ),
   warning: (
     var(--yellow),
-    var(--fg-on-yellow),
+    var(--black),
   ),
   danger: (
     var(--red),
-    var(--fg-on-color),
+    var(--white),
   ),
 );
 
