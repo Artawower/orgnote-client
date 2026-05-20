@@ -1,3 +1,7 @@
+import { format, parseISO } from 'date-fns';
+
+const ISO_DATE_FORMAT = 'yyyy-MM-dd';
+const SLASH_DATE_FORMAT = 'yyyy/MM/dd';
 const calendarDatePattern = /^(\d{4})\/(\d{2})\/(\d{2})$/;
 const orgDatePattern = /^([<[])(\d{4})-(\d{2})-(\d{2})\s+[^\s>\]]+(.*)([>\]])\s*$/;
 
@@ -69,6 +73,18 @@ export const parseCalendarDate = (value: string): Date | undefined => {
   }
 
   return date;
+};
+
+export const isoToSlashDate = (iso: string): string => {
+  const date = parseISO(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return format(date, SLASH_DATE_FORMAT);
+};
+
+export const slashToIsoDate = (slash: string): string => {
+  const date = parseCalendarDate(slash);
+  if (!date) return slash;
+  return format(date, ISO_DATE_FORMAT);
 };
 
 const resolveComparisonDate = (date: Date, suffix: string): Date => {

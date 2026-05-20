@@ -1,16 +1,23 @@
 <template>
-  <app-date
+  <date-picker-popover
     v-if="resolvedDate"
-    class="org-date"
-    :class="{ active: !isInactiveTimestamp, inactive: isInactiveTimestamp, expired }"
-    :date="resolvedDate"
-    :label="currentNode.rawValue"
-    focus-tone="current"
-    format="date"
-    :editable="!readonly"
-    @open="handleOpenPicker"
-  />
-  <inline-date-token v-else class="org-date" :class="{ expired }">
+    :model-value="datePickerModel"
+    @update:model-value="handleSelect"
+  >
+    <template #trigger="{ open }">
+      <app-date
+        class="org-date"
+        :class="{ active: !isInactiveTimestamp, inactive: isInactiveTimestamp, expired }"
+        :date="resolvedDate"
+        :label="currentNode.rawValue"
+        focus-tone="current"
+        format="date"
+        :editable="!readonly"
+        @open="open"
+      />
+    </template>
+  </date-picker-popover>
+  <inline-date-token v-if="!resolvedDate" class="org-date" :class="{ expired }">
     {{ currentNode.rawValue }}
   </inline-date-token>
 </template>
@@ -18,12 +25,11 @@
 <script lang="ts" setup>
 import type { OrgNode } from 'org-mode-ast';
 import { computed } from 'vue';
-import { to } from 'orgnote-api/utils';
-import { api } from 'src/boot/api';
-import { logger } from 'src/boot/logger';
+import { format } from 'date-fns';
 import AppDate from 'src/components/AppDate.vue';
+import DatePickerPopover from 'src/components/DatePickerPopover.vue';
 import InlineDateToken from 'src/components/InlineDateToken.vue';
-import { formatCalendarDate, parseOrgDate, updateOrgDateCalendar } from 'src/utils/org-date';
+import { isoToSlashDate, parseOrgDate, updateOrgDateCalendar } from 'src/utils/org-date';
 
 const props = defineProps<{
   node: OrgNode;
@@ -37,6 +43,9 @@ const emit = defineEmits<{
 const currentNode = computed(() => props.node);
 const parsedDate = computed(() => parseOrgDate(currentNode.value.rawValue));
 const resolvedDate = computed(() => parsedDate.value?.date);
+const datePickerModel = computed(
+  () => resolvedDate.value && format(resolvedDate.value, 'yyyy-MM-dd'),
+);
 const isInactiveTimestamp = computed(() => parsedDate.value?.openingBracket === '[');
 const expired = computed(() => {
   if (!parsedDate.value || isInactiveTimestamp.value) {
@@ -46,43 +55,12 @@ const expired = computed(() => {
   return new Date() > parsedDate.value.comparisonDate;
 });
 
-const handleSelect = (calendarDate: string): void => {
-  const nextValue = updateOrgDateCalendar(currentNode.value.rawValue, calendarDate);
-  if (!nextValue) {
-    return;
-  }
+const handleSelect = (isoDate: string | undefined): void => {
+  if (!isoDate) return;
+  const nextValue = updateOrgDateCalendar(currentNode.value.rawValue, isoToSlashDate(isoDate));
+  if (!nextValue) return;
 
   emit('update', nextValue);
-};
-
-const handleOpenPicker = async (): Promise<void> => {
-  if (props.readonly || !resolvedDate.value) {
-    return;
-  }
-
-  const initialDate = formatCalendarDate(resolvedDate.value);
-  const result = await to(async () => {
-    const { default: DatePickerModal } = await import('src/components/DatePickerModal.vue');
-    return await api.ui.useModal().open<string>(DatePickerModal, {
-      mini: true,
-      modalProps: {
-        initialDate,
-      },
-    });
-  }, 'Failed to open org date picker')();
-
-  if (result.isErr()) {
-    logger.error('Failed to open org date picker', {
-      error: result.error.message,
-    });
-    return;
-  }
-
-  if (!result.value) {
-    return;
-  }
-
-  handleSelect(result.value);
 };
 </script>
 

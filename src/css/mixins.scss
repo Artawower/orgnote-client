@@ -246,6 +246,16 @@ $type-colors: (
   --btn-action-active-scale: 0.92;
 }
 
+$org-priority-letters: a, b, c, d, e;
+
+@mixin org-priority-colors($property: color) {
+  @each $letter in $org-priority-letters {
+    .priority-#{$letter} {
+      #{$property}: var(--priority-#{$letter});
+    }
+  }
+}
+
 @mixin glass-specular {
   position: relative;
   overflow: hidden;

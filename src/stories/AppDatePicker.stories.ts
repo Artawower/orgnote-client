@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import AppDatePicker from 'src/components/AppDatePicker.vue';
 import { ref, computed } from 'vue';
 import type { DateMarker, DateMarkerType, DatePickerMode } from 'src/models/date-picker';
+import { parseCalendarDate } from 'src/utils/org-date';
 
 type DatePickerView = 'Calendar' | 'Months' | 'Years';
 
@@ -231,8 +232,9 @@ export const WithDisabledDates: Story = {
     setup() {
       const date = ref(formatDate(today));
       const isWeekend = (dateStr: string) => {
-        const d = new Date(dateStr.replace(/\//g, '-'));
-        const day = d.getDay();
+        const date = parseCalendarDate(dateStr);
+        if (!date) return false;
+        const day = date.getDay();
         return day === 0 || day === 6;
       };
       return { args, date, isWeekend };

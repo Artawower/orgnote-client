@@ -22,3 +22,6 @@ export const TASK_TODO_KEYWORD = 'TODO';
 export const AGENDA_CREATE_TASK = 'agenda: create task';
 
 export const AGENDA_DEFAULT_INBOX_FILENAME = 'inbox.org';
+
+export { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
+export type { OrgPriorityLetter } from 'src/constants/org-mode';

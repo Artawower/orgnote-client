@@ -1,5 +1,6 @@
 import type { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
 
 export const orgSelectionTheme = EditorView.theme({
   '.cm-selectionBackground, &.cm-focused .cm-selectionLayer .cm-selectionBackground': {
@@ -75,5 +76,15 @@ export const orgEditorTheme: Extension = [
       textDecoration: 'underline',
       cursor: 'pointer',
     },
+    ...Object.fromEntries(
+      ORG_PRIORITY_LETTERS.map((l) => [
+        `.org-priority-${l.toLowerCase()}`,
+        {
+          color: `var(--priority-${l.toLowerCase()})`,
+          fontWeight: 'var(--font-weight-medium)',
+          cursor: 'pointer',
+        },
+      ]),
+    ),
   }),
 ];

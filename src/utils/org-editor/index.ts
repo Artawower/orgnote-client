@@ -9,6 +9,9 @@ import {
   createOrgTextRenderingExtensions,
   ORG_LIST_BULLET_INLINE_CLASS,
 } from './extensions/rendering';
+import type { TagClickHandler, PriorityClickHandler } from './extensions/rendering';
+
+export type { TagClickHandler, PriorityClickHandler } from './extensions/rendering';
 import {
   orgEditorTheme,
   orgInlineBulletStyle,
@@ -37,6 +40,8 @@ export interface OrgEditorExtensionsOptions {
   placeholder?: string;
   readonly?: boolean;
   inlineWidgets?: InlineEmbeddedWidgets;
+  onTagClick?: TagClickHandler;
+  onPriorityClick?: PriorityClickHandler;
 }
 
 export const createOrgEditorExtensions = (
@@ -58,6 +63,8 @@ export const createOrgEditorExtensions = (
     showSpecialSymbols: opts.showSpecialSymbols,
     singleLine: opts.singleLine,
     bulletClass: opts.mode === 'inline' ? ORG_LIST_BULLET_INLINE_CLASS : undefined,
+    onTagClick: opts.onTagClick,
+    onPriorityClick: opts.onPriorityClick,
   });
 
   const singleLineExts: Extension[] = opts.singleLine

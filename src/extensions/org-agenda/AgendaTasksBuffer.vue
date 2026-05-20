@@ -25,6 +25,11 @@
             :group="group"
             @task-click="openNote"
             @task-toggle="toggleTask"
+            @task-edit-title="editTaskTitle"
+            @task-edit-priority="editTaskPriority"
+            @task-edit-tags="editTaskTags"
+            @task-edit-scheduled="editTaskScheduled"
+            @task-edit-save="editTaskSave"
           />
         </app-flex>
       </template>
@@ -34,7 +39,7 @@
 
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import { DefaultCommands, join } from 'orgnote-api';
+import { join } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -58,6 +63,17 @@ import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import { AGENDA_DEFAULT_INBOX_FILENAME } from './constants';
 import type { CreateTaskInput } from './mutations/create-task';
+import { openNoteAtPosition } from 'src/utils/editor-navigation';
+import { changeTaskTitle } from './mutations/task-title';
+import { changeTaskPriority } from './mutations/task-priority';
+import { changeTaskTags } from './mutations/task-tags';
+import { changeTaskScheduled } from './mutations/task-scheduled';
+import { changeTaskBody } from './mutations/task-body';
+import type { AgendaTaskDraft } from './types';
+import {
+  extractPriorityFromTitle,
+  removePriorityFromTitle,
+} from 'src/utils/org-editor/org-title-parser';
 import { fileBaseName } from 'src/utils/file-path';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -139,10 +155,68 @@ const toggleTask = async (task: AgendaTaskView, filePath: string): Promise<void>
   if (writeResult.isErr()) reporter.reportError(writeResult.error);
 };
 
-const openNote = async (_task: FileTask, filePath: string): Promise<void> => {
-  const result = await to(() =>
-    api.core.useCommands().execute(DefaultCommands.OPEN_NOTE, { path: filePath }),
-  )();
+const applyTaskMutation = async (
+  task: AgendaTaskView,
+  filePath: string,
+  mutation: (content: string) => string,
+): Promise<void> => {
+  if (task.start === undefined) return;
+  const readResult = await to(fileContent.read, 'Failed to read file')(filePath);
+  if (readResult.isErr()) {
+    reporter.reportError(readResult.error);
+    return;
+  }
+  const next = mutation(uint8ArrayToText(readResult.value));
+  const writeResult = await to(fileContent.write, 'Failed to write file')(
+    filePath,
+    textToUint8Array(next),
+  );
+  if (writeResult.isErr()) reporter.reportError(writeResult.error);
+};
+
+const editTaskTitle = (task: AgendaTaskView, filePath: string, title: string): Promise<void> =>
+  applyTaskMutation(task, filePath, (c) => changeTaskTitle(c, task.start!, title));
+
+const editTaskPriority = (
+  task: AgendaTaskView,
+  filePath: string,
+  priority: string | undefined,
+): Promise<void> =>
+  applyTaskMutation(task, filePath, (c) => changeTaskPriority(c, task.start!, priority));
+
+const editTaskTags = (task: AgendaTaskView, filePath: string, tags: string[]): Promise<void> =>
+  applyTaskMutation(task, filePath, (c) => changeTaskTags(c, task.start!, tags));
+
+const editTaskScheduled = (
+  task: AgendaTaskView,
+  filePath: string,
+  date: string | undefined,
+): Promise<void> =>
+  applyTaskMutation(task, filePath, (c) => changeTaskScheduled(c, task.start!, date));
+
+const editTaskSave = async (
+  task: AgendaTaskView,
+  filePath: string,
+  draft: AgendaTaskDraft,
+): Promise<void> => {
+  const cleanTitle = removePriorityFromTitle(draft.title);
+  const priority = extractPriorityFromTitle(draft.title)?.letter;
+  const mutations: Array<(c: string) => string> = [];
+
+  if (cleanTitle && cleanTitle !== task.text)
+    mutations.push((c) => changeTaskTitle(c, task.start!, cleanTitle));
+  if (priority !== task.priority)
+    mutations.push((c) => changeTaskPriority(c, task.start!, priority));
+  if (draft.scheduledDate !== task.scheduled?.date)
+    mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduledDate));
+  if (draft.body.trim()) mutations.push((c) => changeTaskBody(c, task.start!, draft.body));
+
+  if (!mutations.length) return;
+  await applyTaskMutation(task, filePath, (c) => mutations.reduce((acc, fn) => fn(acc), c));
+};
+
+const openNote = async (task: FileTask, filePath: string): Promise<void> => {
+  const result = await to(() => openNoteAtPosition(api, filePath, task.start))();
   if (result.isErr())
     reporter.reportError(new Error('Failed to open note', { cause: result.error }));
 };

@@ -2,8 +2,10 @@ import { expect, test } from 'vitest';
 import {
   formatCalendarDate,
   formatOrgDate,
+  isoToSlashDate,
   parseCalendarDate,
   parseOrgDate,
+  slashToIsoDate,
   updateOrgDateCalendar,
 } from './org-date';
 
@@ -57,4 +59,44 @@ test('updateOrgDateCalendar preserves time and inactive brackets', () => {
 
 test('updateOrgDateCalendar returns undefined for invalid org date', () => {
   expect(updateOrgDateCalendar('not-a-date', '2025/03/20')).toBeUndefined();
+});
+
+test('isoToSlashDate_convertsValidIsoDate', () => {
+  expect(isoToSlashDate('2026-05-17')).toBe('2026/05/17');
+});
+
+test('isoToSlashDate_padsSingleDigitMonthAndDay', () => {
+  expect(isoToSlashDate('2026-01-05')).toBe('2026/01/05');
+});
+
+test('isoToSlashDate_returnsOriginal_whenInvalid', () => {
+  expect(isoToSlashDate('invalid')).toBe('invalid');
+});
+
+test('isoToSlashDate_returnsOriginal_whenEmpty', () => {
+  expect(isoToSlashDate('')).toBe('');
+});
+
+test('slashToIsoDate_convertsValidSlashDate', () => {
+  expect(slashToIsoDate('2026/05/17')).toBe('2026-05-17');
+});
+
+test('slashToIsoDate_padsSingleDigitMonthAndDay', () => {
+  expect(slashToIsoDate('2026/01/05')).toBe('2026-01-05');
+});
+
+test('slashToIsoDate_returnsOriginal_whenInvalid', () => {
+  expect(slashToIsoDate('invalid')).toBe('invalid');
+});
+
+test('slashToIsoDate_returnsOriginal_whenEmpty', () => {
+  expect(slashToIsoDate('')).toBe('');
+});
+
+test('isoToSlashDate_andBack_isIdentity', () => {
+  expect(slashToIsoDate(isoToSlashDate('2026-05-17'))).toBe('2026-05-17');
+});
+
+test('slashToIsoDate_andBack_isIdentity', () => {
+  expect(isoToSlashDate(slashToIsoDate('2026/05/17'))).toBe('2026/05/17');
 });

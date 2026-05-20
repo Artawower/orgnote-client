@@ -41,6 +41,12 @@ test('parseQuickAddInput_returnsEmptyTitle_forWhitespaceOnly', () => {
   expect(result).toEqual({ title: '' });
 });
 
+test('parseQuickAddInput_returnsEmptyTitle_forOnlyTargetSyntax', () => {
+  const result = parseQuickAddInput('~projects', ['projects.org']);
+  expect(result.title).toBe('');
+  expect(result.targetFile).toBe('projects.org');
+});
+
 test('parseQuickAddInput_keepsOrgTagSyntax_inTitle', () => {
   const result = parseQuickAddInput('buy milk :work:', []);
   expect(result).toEqual({ title: 'buy milk :work:' });

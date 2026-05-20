@@ -6,6 +6,21 @@ test('createTask_createsFirstHeadline_inEmptyFile', () => {
   expect(result).toBe('* TODO Buy milk\n');
 });
 
+test('createTask_includesPriorityMark_whenPrioritySet', () => {
+  const result = createTask('', { title: 'Buy milk', priority: 'A' });
+  expect(result).toBe('* TODO [#A] Buy milk\n');
+});
+
+test('createTask_omitsPriorityMark_whenPriorityAbsent', () => {
+  const result = createTask('', { title: 'Buy milk' });
+  expect(result).not.toContain('[#');
+});
+
+test('createTask_supportsPriorityB_andC', () => {
+  expect(createTask('', { title: 'Task', priority: 'B' })).toBe('* TODO [#B] Task\n');
+  expect(createTask('', { title: 'Task', priority: 'C' })).toBe('* TODO [#C] Task\n');
+});
+
 test('createTask_appendsHeadline_afterTrailingNewline', () => {
   const result = createTask('* TODO Existing\n', { title: 'New task' });
   expect(result).toBe('* TODO Existing\n* TODO New task\n');

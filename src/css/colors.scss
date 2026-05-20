@@ -33,8 +33,10 @@
   --black: var(--default-black);
 
   --priority-a: var(--red, var(--q-negative));
-  --priority-b: var(--orange, var(--q-warning));
+  --priority-b: var(--orange);
   --priority-c: var(--yellow);
+  --priority-d: var(--blue);
+  --priority-e: var(--green);
 }
 
 @include dark-mode {

@@ -1,6 +1,6 @@
 import { Decoration, EditorView, WidgetType, ViewPlugin } from '@codemirror/view';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
-import type { Range } from '@codemirror/state';
+import type { Extension, Range } from '@codemirror/state';
 import { NodeType, walkTree, parse, withMetaInfo } from 'org-mode-ast';
 import type { OrgNode } from 'org-mode-ast';
 import { isPresent } from 'orgnote-api';
@@ -147,6 +147,94 @@ const buildListBulletDecorations = (
 };
 
 const HEADLINE_PREFIX = '* ';
+
+export type ReplaceTextFn = (newText: string) => void;
+export type TagClickHandler = (tag: string, replaceWith: ReplaceTextFn) => void;
+
+const findTagAtPos = (
+  doc: string,
+  pos: number,
+): { tag: string; from: number; to: number } | null => {
+  const ast = withMetaInfo(parse(`${HEADLINE_PREFIX}${doc}`));
+  let found: { tag: string; from: number; to: number } | null = null;
+  walkTree(ast, (node: OrgNode): boolean => {
+    if (!node.is(NodeType.Text) || !node.parent?.is(NodeType.TagList)) return false;
+    const from = node.start - HEADLINE_PREFIX.length;
+    const to = node.end - HEADLINE_PREFIX.length;
+    if (pos >= from && pos < to) found = { tag: node.value ?? '', from, to };
+    return false;
+  });
+  return found;
+};
+
+export type PriorityClickHandler = () => void;
+
+const makePriorityClickPlugin = (onPriorityClick: PriorityClickHandler): Extension =>
+  EditorView.domEventHandlers({
+    mousedown: (event: MouseEvent): boolean => {
+      const target = event.target as HTMLElement;
+      const el = target.closest('[class*="org-priority-"]') as HTMLElement | null;
+      if (!el) return false;
+      event.preventDefault();
+      onPriorityClick();
+      return true;
+    },
+  });
+
+const makeTagClickPlugin = (onTagClick: TagClickHandler): Extension =>
+  EditorView.domEventHandlers({
+    mousedown: (event: MouseEvent, view: EditorView): boolean => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.org-file-tag')) return false;
+      const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+      if (!pos) return false;
+      const tagInfo = findTagAtPos(view.state.doc.toString(), pos);
+      if (!tagInfo) return false;
+      event.preventDefault();
+      const replaceWith: ReplaceTextFn = (newText) =>
+        view.dispatch({ changes: { from: tagInfo.from, to: tagInfo.to, insert: newText } });
+      onTagClick(tagInfo.tag, replaceWith);
+      return true;
+    },
+  });
+
+const buildPriorityDecorations = (view: EditorView): DecorationSet => {
+  const doc = view.state.doc.toString();
+  const ast = withMetaInfo(parse(`${HEADLINE_PREFIX}${doc}`));
+  const ranges: Range<Decoration>[] = [];
+
+  walkTree(ast, (node: OrgNode): boolean => {
+    if (!node.is(NodeType.Priority)) return false;
+    const textNode = node.childrenList?.find((c) => c.is(NodeType.Text));
+    const letter = textNode?.value?.slice(1)?.toLowerCase();
+    if (!letter) return false;
+    const start = node.start - HEADLINE_PREFIX.length;
+    const end = node.end - HEADLINE_PREFIX.length;
+    if (start >= 0 && start < end)
+      ranges.push(Decoration.mark({ class: `org-priority-${letter}` }).range(start, end));
+    return false;
+  });
+
+  return ranges.length ? Decoration.set(ranges) : Decoration.none;
+};
+
+const makePriorityPlugin = () =>
+  ViewPlugin.fromClass(
+    class {
+      decorations: DecorationSet = Decoration.none;
+
+      constructor(view: EditorView) {
+        this.decorations = buildPriorityDecorations(view);
+      }
+
+      update(update: ViewUpdate): void {
+        if (update.docChanged || update.viewportChanged) {
+          this.decorations = buildPriorityDecorations(update.view);
+        }
+      }
+    },
+    { decorations: (v) => v.decorations },
+  );
 
 const buildTagMarkDecorations = (view: EditorView): DecorationSet => {
   const doc = view.state.doc.toString();
@@ -348,11 +436,11 @@ export interface OrgTextRenderingOptions {
   showSpecialSymbols?: boolean;
   singleLine?: boolean;
   bulletClass?: string;
+  onTagClick?: TagClickHandler;
+  onPriorityClick?: PriorityClickHandler;
 }
 
-export const createOrgTextRenderingExtensions = (
-  opts: OrgTextRenderingOptions,
-): ReturnType<typeof makeMarkupPlugin>[] => {
+export const createOrgTextRenderingExtensions = (opts: OrgTextRenderingOptions): Extension[] => {
   if (opts.showSpecialSymbols) return [];
 
   const bulletClass = opts.bulletClass ?? ORG_LIST_BULLET_CLASS;
@@ -362,6 +450,9 @@ export const createOrgTextRenderingExtensions = (
     makeHeadlinePlugin(opts.getOrgNode),
     makeListPlugin(opts.getOrgNode, bulletClass),
     makeTagPlugin(),
+    makePriorityPlugin(),
     makeLinkPlugin(opts.getOrgNode),
+    ...(opts.onTagClick ? [makeTagClickPlugin(opts.onTagClick)] : []),
+    ...(opts.onPriorityClick ? [makePriorityClickPlugin(opts.onPriorityClick)] : []),
   ];
 };

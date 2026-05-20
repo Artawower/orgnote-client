@@ -28,6 +28,7 @@
 
 .org-file-tag {
   color: var(--accent) !important;
+  cursor: pointer;
 }
 
 /* Verbatim & Inline Code */

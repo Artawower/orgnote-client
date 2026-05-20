@@ -34,6 +34,8 @@ const emit = defineEmits<{
   submit: [];
   escape: [];
   expand: [];
+  'tag-click': [{ tag: string; replaceWith: (newText: string) => void }];
+  'priority-click': [];
 }>();
 
 const { createWidgetBuilder } = useWidgetBuilder();
@@ -114,6 +116,8 @@ const buildExtensions = () => {
     placeholder: props.placeholder,
     readonly: props.readonly,
     inlineWidgets: props.singleLine ? undefined : inlineWidgets,
+    onTagClick: (tag, replaceWith) => emit('tag-click', { tag, replaceWith }),
+    onPriorityClick: () => emit('priority-click'),
   });
 
   const singleLineKeymap = props.singleLine ? [buildSingleLineKeymap()] : [];
@@ -161,6 +165,5 @@ watch(
 const focus = (): void => view?.focus();
 const blur = (): void => (view?.contentDOM as HTMLElement | undefined)?.blur();
 const getView = (): EditorView | undefined => view;
-
 defineExpose({ focus, blur, getView });
 </script>

@@ -19,6 +19,7 @@ export interface CreateTaskInput {
   body?: string;
   scheduledDate?: string;
   todoKeyword?: string;
+  priority?: string;
 }
 
 const DEFAULT_TODO_KEYWORD = 'TODO';
@@ -30,9 +31,13 @@ const normalizeContent = (content: string): string => {
   return trimmed ? `${trimmed}\n` : '';
 };
 
+const buildPriorityMark = (priority: string | undefined): string =>
+  priority ? `[#${priority}] ` : '';
+
 const buildHeadlineLine = (input: CreateTaskInput): string => {
   const keyword = input.todoKeyword ?? DEFAULT_TODO_KEYWORD;
-  return `* ${keyword} ${input.title.trim()}\n`;
+  const priorityMark = buildPriorityMark(input.priority);
+  return `* ${keyword} ${priorityMark}${input.title.trim()}\n`;
 };
 
 const buildScheduledLine = (date: string): string => `SCHEDULED: <${date} ${getDayName(date)}>\n`;

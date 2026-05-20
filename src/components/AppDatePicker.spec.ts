@@ -3,6 +3,7 @@ import { expect, test } from 'vitest';
 import { defineComponent, h } from 'vue';
 import AppDatePicker from './AppDatePicker.vue';
 import type { DateMarker } from 'src/models/date-picker';
+import { parseCalendarDate } from 'src/utils/org-date';
 
 const QDateStub = defineComponent({
   name: 'QDate',
@@ -168,9 +169,10 @@ test('AppDatePicker handles disabledDates as array', () => {
 });
 
 test('AppDatePicker handles disabledDates as function', () => {
-  const isWeekend = (date: string) => {
-    const d = new Date(date.replace(/\//g, '-'));
-    const day = d.getDay();
+  const isWeekend = (value: string) => {
+    const date = parseCalendarDate(value);
+    if (!date) return false;
+    const day = date.getDay();
     return day === 0 || day === 6;
   };
   const wrapper = createWrapper({ disabledDates: isWeekend });

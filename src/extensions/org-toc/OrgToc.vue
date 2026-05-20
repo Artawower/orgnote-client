@@ -16,11 +16,11 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
-import { EditorView } from '@codemirror/view';
 import { i18n } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import AppTree from 'src/components/AppTree.vue';
 import { getNumericCssVar } from 'src/utils/css-utils';
+import { navigateToPosition } from 'src/utils/editor-navigation';
 import { collectTocTree, flattenTocTree } from './toc-utils';
 import type { TocTreeNode } from './toc-tree';
 
@@ -86,27 +86,11 @@ const navigateTo = (node: TocTreeNode) => {
   if (!editorView) return;
 
   const docLength = editorView.state.doc.length;
-  const position = node.position;
-  const endPosition = node.endPosition;
+  if (!isValidRange(node.position, node.endPosition, docLength)) return;
 
-  if (!isValidRange(position, endPosition, docLength)) return;
+  navigateToPosition(editorView, node.position, { yMargin: getScrollYMargin() });
 
-  requestAnimationFrame(() => {
-    const yMargin = getScrollYMargin();
-
-    editorView.focus();
-    editorView.dispatch({
-      selection: {
-        anchor: endPosition,
-        head: endPosition,
-      },
-      effects: EditorView.scrollIntoView(position, { y: 'start', yMargin }),
-    });
-  });
-
-  if (tabletBelow.value) {
-    api.ui.useRightSidebar().close();
-  }
+  if (tabletBelow.value) api.ui.useRightSidebar().close();
 };
 </script>
 

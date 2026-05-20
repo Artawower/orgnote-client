@@ -1,5 +1,5 @@
 <template>
-  <div class="date-sheet">
+  <div class="date-picker-sheet">
     <app-flex column gap="sm">
       <app-flex row align-end full-width justify="end" class="shortcuts">
         <action-button
@@ -41,6 +41,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppDatePicker from 'src/components/AppDatePicker.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
+import { isoToSlashDate, slashToIsoDate } from 'src/utils/org-date';
 
 const props = defineProps<{ modelValue?: string }>();
 
@@ -65,16 +66,18 @@ const onClear = (): void => {
 };
 
 const onDateClick = ({ date }: { date: string }): void => {
-  emit('update:modelValue', date.replace(/\//g, '-'));
+  emit('update:modelValue', slashToIsoDate(date));
 };
 
-const calendarModel = computed(() => props.modelValue?.replace(/-/g, '/'));
+const calendarModel = computed(() =>
+  props.modelValue ? isoToSlashDate(props.modelValue) : undefined,
+);
 </script>
 
 <style lang="scss" scoped>
-.date-sheet {
+.date-picker-sheet {
+  box-sizing: border-box;
   width: 320px;
   max-width: 100vw;
-  padding: var(--padding-md);
 }
 </style>

@@ -120,10 +120,18 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaQuickAddTargetPlaceholder]: 'Select target file...',
   [extensionI18nKeys.orgAgendaQuickAddDateTooltip]: 'Set due date',
   [extensionI18nKeys.orgAgendaQuickAddTargetTooltip]: 'Select target file',
-  [extensionI18nKeys.orgAgendaQuickAddPriorityTooltip]: 'Set priority (coming soon)',
+  [extensionI18nKeys.orgAgendaQuickAddPriorityTooltip]: 'Set priority',
   [extensionI18nKeys.orgAgendaQuickAddTagTooltip]: 'Add tags (coming soon)',
+  [extensionI18nKeys.orgAgendaPriorityA]: '[#A] High',
+  [extensionI18nKeys.orgAgendaPriorityB]: '[#B] Medium',
+  [extensionI18nKeys.orgAgendaPriorityC]: '[#C] Low',
+  [extensionI18nKeys.orgAgendaPriorityD]: '[#D] Very low',
+  [extensionI18nKeys.orgAgendaPriorityE]: '[#E] Minimal',
+  [extensionI18nKeys.orgAgendaPriorityNone]: 'No priority',
   [extensionI18nKeys.orgAgendaCommandCreateTaskTitle]: 'Task title...',
   [extensionI18nKeys.orgAgendaCommandCreateTaskTarget]: 'Select target file (optional)...',
+  [extensionI18nKeys.orgAgendaOpenNote]: 'Open in editor',
+  [extensionI18nKeys.orgAgendaEditSave]: 'Save',
 };
 
 export default eng;

@@ -1,104 +1,66 @@
 <template>
   <card-wrapper border class="quick-add" :class="{ expanded: isExpanded }">
-    <app-flex row align-center gap="xs" class="input-row">
-      <app-badge
-        :label="targetLabel"
-        color="accent"
-        size="xs"
-        class="target-badge"
-        @click="openFileCompletion"
-      />
+    <agenda-task-form
+      v-model:title="draft.title"
+      v-model:body="draft.body"
+      :show-body="isExpanded"
+      :title-placeholder="t(i18nKeys.orgAgendaQuickAddPlaceholder, { target: inboxLabel })"
+      :loading="loading"
+      @submit="submitTask"
+      @cancel="onFormCancel"
+      @expand="expand"
+      @update:title="onTitleInput"
+    >
+      <template #before-title>
+        <app-badge
+          :label="targetLabel"
+          color="accent"
+          size="xs"
+          class="target-badge"
+          @click="openFileCompletion"
+        />
+      </template>
 
-      <org-inline-editor
-        ref="titleInputRef"
-        v-model="titleText"
-        :single-line="true"
-        class="title-input"
-        :placeholder="t(i18nKeys.orgAgendaQuickAddPlaceholder, { target: inboxLabel })"
-        @submit="submitTask"
-        @escape="onTitleEscape"
-        @expand="expand"
-        @update:model-value="onTitleInput"
-      />
+      <template #title-actions>
+        <agenda-date-button v-model="draft.scheduledDate" />
+      </template>
 
-      <agenda-date-popover v-model="selectedDate">
-        <template #default="{ toggle }">
-          <div class="date-trigger" @click="toggle">
-            <action-button
-              icon="sym_o_calendar_today"
-              size="sm"
-              :active="!!selectedDate"
-              :auto-width="true"
-              :disable-click-handling="true"
-              :aria-label="t(i18nKeys.orgAgendaQuickAddDateTooltip)"
-            >
-              <template v-if="selectedDate" #text>{{ selectedDateLabel }}</template>
-            </action-button>
-          </div>
-        </template>
-      </agenda-date-popover>
-    </app-flex>
+      <template #toolbar-start>
+        <action-button
+          icon="sym_o_inbox"
+          size="sm"
+          :aria-label="t(i18nKeys.orgAgendaQuickAddTargetTooltip)"
+          @click="openFileCompletion"
+        />
+      </template>
 
-    <app-flex v-if="isExpanded" column gap="sm">
-      <org-inline-editor
-        ref="bodyInputRef"
-        v-model="bodyText"
-        :placeholder="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
-        class="body-area"
-        @submit="submitTask"
-        @escape="onBodyEscape"
-      />
-
-      <app-flex row align-center justify="between" class="toolbar">
-        <app-flex row align-center gap="xs">
-          <action-button
-            icon="sym_o_inbox"
-            size="sm"
-            :aria-label="t(i18nKeys.orgAgendaQuickAddTargetTooltip)"
-            @click="openFileCompletion"
-          />
-          <action-button
-            icon="sym_o_flag"
-            size="sm"
-            :disabled="true"
-            :aria-label="t(i18nKeys.orgAgendaQuickAddPriorityTooltip)"
-          />
-          <action-button
-            icon="sym_o_label"
-            size="sm"
-            :disabled="true"
-            :aria-label="t(i18nKeys.orgAgendaQuickAddTagTooltip)"
-          />
-        </app-flex>
-
-        <app-flex row align-center gap="md">
-          <span class="hint">{{ t(i18nKeys.orgAgendaQuickAddShortcutHint) }}</span>
-          <app-button type="active" size="sm" :disabled="loading" @click="submitTask">
-            {{ t(i18nKeys.orgAgendaQuickAddAddButton) }}
-          </app-button>
-        </app-flex>
-      </app-flex>
-    </app-flex>
+      <template #toolbar-end>
+        <span class="hint">{{ t(i18nKeys.orgAgendaQuickAddShortcutHint) }}</span>
+      </template>
+    </agenda-task-form>
   </card-wrapper>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { addDays, format } from 'date-fns';
+
 import type { DiskFile } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
-import AppButton from 'src/components/AppButton.vue';
-import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import ActionButton from 'src/components/ActionButton.vue';
-import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { api } from 'src/boot/api';
 import { createAgendaFilesGetter } from '../utils/agenda-files-completion';
 import { parseQuickAddInput } from '../utils/parse-quick-add-input';
 import type { CreateTaskInput } from '../mutations/create-task';
-import AgendaDatePopover from './AgendaDatePopover.vue';
+import type { AgendaTaskDraft } from '../types';
+import AgendaTaskForm from './AgendaTaskForm.vue';
+import AgendaDateButton from './AgendaDateButton.vue';
+import {
+  extractPriorityFromTitle,
+  removePriorityFromTitle,
+} from 'src/utils/org-editor/org-title-parser';
 import { fileBaseName } from 'src/utils/file-path';
 
 interface Props {
@@ -116,15 +78,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
-const titleInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
-const bodyInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
-
-const titleText = ref('');
-const bodyText = ref('');
 const isExpanded = ref(false);
 const targetFile = ref<string | undefined>();
 const isTildeCompletionOpen = ref(false);
-const selectedDate = ref<string | undefined>();
+const formRef = ref<InstanceType<typeof AgendaTaskForm> | null>(null);
+
+const draft = reactive<AgendaTaskDraft>({ title: '', body: '', scheduledDate: undefined });
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
 
@@ -132,26 +91,11 @@ const targetLabel = computed(() =>
   targetFile.value ? fileBaseName(targetFile.value) : inboxLabel.value,
 );
 
-const toIsoDate = (date: Date): string => format(date, 'yyyy-MM-dd');
-
-const selectedDateLabel = computed(() => {
-  if (!selectedDate.value) return '';
-  const today = toIsoDate(new Date());
-  const tomorrow = toIsoDate(addDays(new Date(), 1));
-  if (selectedDate.value === today) return t(i18nKeys.orgAgendaQuickAddToday);
-  if (selectedDate.value === tomorrow) return t(i18nKeys.orgAgendaQuickAddTomorrow);
-  return selectedDate.value;
-});
-
-const focusBodyAfterRender = async (): Promise<void> => {
-  await nextTick();
-  await nextTick();
-  bodyInputRef.value?.focus?.();
-};
-
 const expand = async (): Promise<void> => {
   isExpanded.value = true;
-  await focusBodyAfterRender();
+  await nextTick();
+  await nextTick();
+  formRef.value?.focusBody();
 };
 
 const openFileCompletion = async (): Promise<void> => {
@@ -163,12 +107,12 @@ const openFileCompletion = async (): Promise<void> => {
   });
   if (!result) return;
   targetFile.value = result;
-  titleInputRef.value?.focus();
+  formRef.value?.focusTitle();
 };
 
 const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
-  const originalTitle = titleText.value;
-  const fragment = titleText.value.slice(tildeIdx + 1);
+  const originalTitle = draft.title;
+  const fragment = draft.title.slice(tildeIdx + 1);
   const getter = createAgendaFilesGetter(api, props.agendaFilesPath, inboxLabel.value);
   const result = await api.core.useCompletion().open<DiskFile, string>({
     type: 'choice',
@@ -177,18 +121,18 @@ const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
     searchText: fragment,
   });
   if (!result) {
-    titleText.value = originalTitle;
-    titleInputRef.value?.focus();
+    draft.title = originalTitle;
+    formRef.value?.focusTitle();
     return;
   }
-  titleText.value = titleText.value.slice(0, tildeIdx).trimEnd();
+  draft.title = draft.title.slice(0, tildeIdx).trimEnd();
   targetFile.value = result;
-  titleInputRef.value?.focus();
+  formRef.value?.focusTitle();
 };
 
 const onTitleInput = (): void => {
   if (isTildeCompletionOpen.value) return;
-  const tildeIdx = titleText.value.indexOf('~');
+  const tildeIdx = draft.title.indexOf('~');
   if (tildeIdx === -1) return;
   isTildeCompletionOpen.value = true;
   openFileCompletionFromTilde(tildeIdx).finally(() => {
@@ -196,41 +140,43 @@ const onTitleInput = (): void => {
   });
 };
 
-const isSubmittable = (): boolean => titleText.value.trim().length > 0;
-
-const collectPayload = (): CreateTaskInput & { targetFile?: string } => {
-  const parsed = parseQuickAddInput(titleText.value, props.knownFiles);
+const buildPayload = (): CreateTaskInput & { targetFile?: string } => {
+  const rawTitle = removePriorityFromTitle(draft.title);
+  const parsed = parseQuickAddInput(rawTitle, props.knownFiles);
   const resolvedTarget = targetFile.value ?? parsed.targetFile;
-  const body = bodyText.value.trim() || parsed.body;
+  const body = draft.body.trim() || parsed.body;
+  const priority = extractPriorityFromTitle(draft.title)?.letter;
   return {
     title: parsed.title,
     ...(body ? { body } : {}),
-    ...(selectedDate.value ? { scheduledDate: selectedDate.value } : {}),
+    ...(draft.scheduledDate ? { scheduledDate: draft.scheduledDate } : {}),
     ...(resolvedTarget ? { targetFile: resolvedTarget } : {}),
+    ...(priority ? { priority } : {}),
   };
 };
 
 const resetState = (): void => {
-  titleText.value = '';
-  bodyText.value = '';
+  draft.title = '';
+  draft.body = '';
+  draft.scheduledDate = undefined;
   isExpanded.value = false;
   targetFile.value = undefined;
-  selectedDate.value = undefined;
 };
 
 const submitTask = (): void => {
-  if (!isSubmittable()) return;
-  emit('submit', collectPayload());
+  const payload = buildPayload();
+  if (!payload.title.trim()) return;
+  emit('submit', payload);
   resetState();
-  titleInputRef.value?.focus();
+  formRef.value?.focusTitle();
 };
 
-const onTitleEscape = (): void => {
-  titleInputRef.value?.blur?.();
-};
-
-const onBodyEscape = (): void => {
-  bodyInputRef.value?.blur?.();
+const onFormCancel = (): void => {
+  if (isExpanded.value) {
+    isExpanded.value = false;
+    return;
+  }
+  formRef.value?.blurTitle();
 };
 </script>
 
@@ -244,14 +190,6 @@ const onBodyEscape = (): void => {
   }
 }
 
-.input-row {
-  min-height: var(--btn-action-sm-size);
-}
-
-.title-input {
-  flex: 1;
-}
-
 .target-badge {
   cursor: pointer;
   flex-shrink: 0;
@@ -260,15 +198,6 @@ const onBodyEscape = (): void => {
 .date-trigger {
   display: inline-flex;
   cursor: pointer;
-}
-
-.body-area {
-  min-height: calc(2 * var(--font-size-md) * 1.5 + var(--padding-xs) * 2);
-}
-
-.toolbar {
-  padding-top: var(--gap-xs);
-  border-top: var(--border-default);
 }
 
 .hint {
