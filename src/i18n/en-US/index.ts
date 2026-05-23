@@ -132,6 +132,13 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaCommandCreateTaskTarget]: 'Select target file (optional)...',
   [extensionI18nKeys.orgAgendaOpenNote]: 'Open in editor',
   [extensionI18nKeys.orgAgendaEditSave]: 'Save',
+  [extensionI18nKeys.orgAgendaHabitsEmptyTitle]: 'No habits yet',
+  [extensionI18nKeys.orgAgendaHabitsEmptySubtitle]:
+    'Add an org headline with :STYLE: habit to track habits here.',
+  [extensionI18nKeys.orgAgendaHabitsTotalDays]: 'Total: {count} days',
+  [extensionI18nKeys.orgAgendaHabitsCurrentStreak]: 'Streak: {count} days',
+  [extensionI18nKeys.orgAgendaHabitsCompleteToday]: 'Mark as done today',
+  [extensionI18nKeys.orgAgendaHabitsCompletedToday]: 'Done today',
 };
 
 export default eng;
