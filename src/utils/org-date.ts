@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 
-const ISO_DATE_FORMAT = 'yyyy-MM-dd';
+export const ISO_DATE_FORMAT = 'yyyy-MM-dd';
+export const todayIsoDate = (): string => format(new Date(), ISO_DATE_FORMAT);
 const SLASH_DATE_FORMAT = 'yyyy/MM/dd';
 const calendarDatePattern = /^(\d{4})\/(\d{2})\/(\d{2})$/;
 const orgDatePattern = /^([<[])(\d{4})-(\d{2})-(\d{2})\s+[^\s>\]]+(.*)([>\]])\s*$/;

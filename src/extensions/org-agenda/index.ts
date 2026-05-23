@@ -58,10 +58,11 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     viewerId: AGENDA_HABITS_VIEWER_ID,
     pattern: AGENDA_HABITS_PATTERN,
     name: 'Agenda Habits',
-    icon: 'sym_o_loop',
+    icon: 'sym_o_check_circle_unread',
     command: AGENDA_HABITS_COMMAND,
     component: () => import('./AgendaHabitsBuffer.vue'),
     handler: openBuffer(AGENDA_HABITS_URI),
+    pinned: true,
   },
   {
     viewerId: AGENDA_POMODORO_VIEWER_ID,

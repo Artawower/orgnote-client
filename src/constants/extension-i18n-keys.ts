@@ -41,4 +41,10 @@ export const extensionI18nKeys = {
   orgAgendaCommandCreateTaskTarget: 'extensions.orgAgenda.command.createTask.target',
   orgAgendaOpenNote: 'extensions.orgAgenda.openNote',
   orgAgendaEditSave: 'extensions.orgAgenda.editSave',
+  orgAgendaHabitsEmptyTitle: 'extensions.orgAgenda.habits.emptyTitle',
+  orgAgendaHabitsEmptySubtitle: 'extensions.orgAgenda.habits.emptySubtitle',
+  orgAgendaHabitsTotalDays: 'extensions.orgAgenda.habits.totalDays',
+  orgAgendaHabitsCurrentStreak: 'extensions.orgAgenda.habits.currentStreak',
+  orgAgendaHabitsCompleteToday: 'extensions.orgAgenda.habits.completeToday',
+  orgAgendaHabitsCompletedToday: 'extensions.orgAgenda.habits.completedToday',
 } as const;
