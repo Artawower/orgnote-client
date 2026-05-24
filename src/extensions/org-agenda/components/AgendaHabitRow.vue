@@ -32,6 +32,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { todayIsoDate } from 'src/utils/org-date';
 import AppFlex from 'src/components/AppFlex.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppRadioButton from 'src/components/AppRadioButton.vue';
@@ -46,13 +47,16 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const completedOnDay = computed(() => clockMatchesDate(props.habit, props.selectedDate));
 
-const toggleLabel = computed(() =>
-  t(
-    completedOnDay.value
-      ? i18nKeys.orgAgendaHabitsCompletedToday
-      : i18nKeys.orgAgendaHabitsCompleteToday,
-  ),
-);
+const isToday = computed(() => props.selectedDate === todayIsoDate());
+
+const toggleLabel = computed(() => {
+  if (completedOnDay.value) {
+    return t(isToday.value ? i18nKeys.orgAgendaHabitsCompletedToday : i18nKeys.orgAgendaHabitsDone);
+  }
+  return t(
+    isToday.value ? i18nKeys.orgAgendaHabitsCompleteToday : i18nKeys.orgAgendaHabitsMarkDone,
+  );
+});
 </script>
 
 <style lang="scss" scoped>

@@ -139,6 +139,8 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaHabitsCurrentStreak]: 'Streak: {count} days',
   [extensionI18nKeys.orgAgendaHabitsCompleteToday]: 'Mark as done today',
   [extensionI18nKeys.orgAgendaHabitsCompletedToday]: 'Done today',
+  [extensionI18nKeys.orgAgendaHabitsMarkDone]: 'Mark as done',
+  [extensionI18nKeys.orgAgendaHabitsDone]: 'Done',
 };
 
 export default eng;

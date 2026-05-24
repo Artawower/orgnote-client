@@ -4,6 +4,7 @@
       v-for="day in weekDays"
       :key="day.date"
       tag="button"
+      type="button"
       column
       align-center
       gap="sm"

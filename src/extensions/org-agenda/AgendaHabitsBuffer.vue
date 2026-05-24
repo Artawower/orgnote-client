@@ -109,7 +109,7 @@ const onToggle = (habit: AgendaHabitView): Promise<void> => {
   if (clockMatchesDate(habit, date)) {
     return applyHabitMutation(habit, (c) => removeHabitClock(c, headlineStart, date));
   }
-  if (date === todayIsoDate()) {
+  if (date === todayIsoDate() && habit.scheduled?.repeater) {
     return applyHabitMutation(habit, (c) => completeHabit(c, headlineStart, new Date()));
   }
   const dateObj = parseISO(date);

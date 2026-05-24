@@ -47,4 +47,6 @@ export const extensionI18nKeys = {
   orgAgendaHabitsCurrentStreak: 'extensions.orgAgenda.habits.currentStreak',
   orgAgendaHabitsCompleteToday: 'extensions.orgAgenda.habits.completeToday',
   orgAgendaHabitsCompletedToday: 'extensions.orgAgenda.habits.completedToday',
+  orgAgendaHabitsMarkDone: 'extensions.orgAgenda.habits.markDone',
+  orgAgendaHabitsDone: 'extensions.orgAgenda.habits.done',
 } as const;
