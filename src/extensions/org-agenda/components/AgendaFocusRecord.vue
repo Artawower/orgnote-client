@@ -1,0 +1,193 @@
+<template>
+  <app-flex column start align-stretch gap="sm">
+    <span v-if="groupedRecords.length === 0" class="empty-state">
+      {{ t(i18nKeys.orgAgendaNoTasksTitle) }}
+    </span>
+
+    <div v-for="group in groupedRecords" :key="group.date" class="date-group">
+      <span class="group-date">{{ group.label }}</span>
+      <card-wrapper>
+        <menu-item
+          v-for="(entry, idx) in group.entries"
+          :key="idx"
+          :lines="2"
+          :capitalize="false"
+          flat
+          @click="onEntryClick(entry)"
+        >
+          <div class="entry-content">
+            <span class="entry-time">{{ entry.timeRange }}</span>
+            <div class="entry-task-row">
+              <app-icon name="sym_o_task_alt" size="xs" class="entry-icon" />
+              <span class="entry-task">{{ entry.taskText }}</span>
+            </div>
+          </div>
+          <template #right>
+            <span class="entry-duration">{{ entry.duration }}</span>
+          </template>
+        </menu-item>
+      </card-wrapper>
+    </div>
+  </app-flex>
+</template>
+
+<script lang="ts" setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { format, isToday, isYesterday } from 'date-fns';
+import AppFlex from 'src/components/AppFlex.vue';
+import AppIcon from 'src/components/AppIcon.vue';
+import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuItem from 'src/containers/MenuItem.vue';
+import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
+import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
+import { openNoteAtPosition } from 'src/utils/editor-navigation';
+import { api } from 'src/boot/api';
+import { reporter } from 'src/boot/report';
+import { to } from 'orgnote-api/utils';
+import type { ClockEntry } from 'org-mode-ast';
+import type { FileTask, FileMeta } from 'orgnote-api';
+
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const store = useAgendaTasksStore();
+
+const DATE_FORMAT = 'MMM d';
+const TIME_FORMAT = 'HH:mm';
+const MINUTES_PER_HOUR = 60;
+
+interface FocusEntry {
+  timeRange: string;
+  duration: string;
+  taskText: string;
+  startDate: Date;
+  filePath: string;
+  taskStart: number;
+}
+
+interface FocusGroup {
+  date: string;
+  label: string;
+  entries: FocusEntry[];
+}
+
+const clockDurationMin = (c: ClockEntry): number => {
+  if (!c.to || !c.date) return 0;
+  return Math.floor((new Date(c.to).getTime() - new Date(c.date).getTime()) / 60000);
+};
+
+const formatDurationMin = (min: number): string => {
+  const h = Math.floor(min / MINUTES_PER_HOUR);
+  const m = min % MINUTES_PER_HOUR;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+};
+
+const dateGroupLabel = (d: Date): string => {
+  if (isToday(d)) return 'Today';
+  if (isYesterday(d)) return 'Yesterday';
+  return format(d, DATE_FORMAT);
+};
+
+const resolveFilePath = (file: FileMeta): string => `/${file.filePath.join('/')}`;
+
+const toEntry = (clock: ClockEntry, task: FileTask, filePath: string): FocusEntry => {
+  const start = new Date(clock.date!);
+  const end = new Date(clock.to!);
+  return {
+    startDate: start,
+    timeRange: `${format(start, TIME_FORMAT)} – ${format(end, TIME_FORMAT)}`,
+    duration: formatDurationMin(clockDurationMin(clock)),
+    taskText: task.text,
+    filePath,
+    taskStart: task.start ?? 0,
+  };
+};
+
+const allEntries = computed<FocusEntry[]>(() =>
+  store.allFiles
+    .flatMap((file) => {
+      const filePath = resolveFilePath(file);
+      return (file.tasks ?? []).flatMap((task) =>
+        (task.clocks ?? [])
+          .filter((c) => !!c.to && clockDurationMin(c) > 0)
+          .map((c) => toEntry(c, task, filePath)),
+      );
+    })
+    .sort((a, b) => b.startDate.getTime() - a.startDate.getTime()),
+);
+
+const groupedRecords = computed<FocusGroup[]>(() => {
+  const map = new Map<string, FocusGroup>();
+  allEntries.value.forEach((entry) => {
+    const key = format(entry.startDate, 'yyyy-MM-dd');
+    if (!map.has(key)) {
+      map.set(key, { date: key, label: dateGroupLabel(entry.startDate), entries: [] });
+    }
+    map.get(key)!.entries.push(entry);
+  });
+  return [...map.values()];
+});
+
+const onEntryClick = async (entry: FocusEntry): Promise<void> => {
+  const result = await to(() => openNoteAtPosition(api, entry.filePath, entry.taskStart))();
+  if (result.isErr()) reporter.reportError(result.error);
+};
+</script>
+
+<style lang="scss" scoped>
+.date-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.group-date {
+  font-size: var(--font-size-sm);
+  color: var(--fg-muted);
+  padding: 0 var(--menu-item-padding-x);
+}
+
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xxs);
+  white-space: normal;
+  min-width: 0;
+}
+
+.entry-time {
+  font-size: var(--font-size-sm);
+  color: var(--fg);
+}
+
+.entry-task-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.entry-icon {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.entry-task {
+  font-size: var(--font-size-sm);
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-duration {
+  font-size: var(--font-size-sm);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.empty-state {
+  color: var(--fg-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--gap-md) var(--menu-item-padding-x);
+}
+</style>
