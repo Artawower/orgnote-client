@@ -141,6 +141,23 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaHabitsCompletedToday]: 'Done today',
   [extensionI18nKeys.orgAgendaHabitsMarkDone]: 'Mark as done',
   [extensionI18nKeys.orgAgendaHabitsDone]: 'Done',
+  [extensionI18nKeys.orgAgendaPomodoroSelectTask]: 'Select task',
+  [extensionI18nKeys.orgAgendaPomodoroNoTaskSelected]: 'No task selected',
+  [extensionI18nKeys.orgAgendaPomodoroStart]: 'Start',
+  [extensionI18nKeys.orgAgendaPomodoroStop]: 'Stop',
+  [extensionI18nKeys.orgAgendaPomorodoPause]: 'Pause',
+  [extensionI18nKeys.orgAgendaPomodoroResume]: 'Resume',
+  [extensionI18nKeys.orgAgendaPomodoroComplete]: 'Session complete!',
+  [extensionI18nKeys.orgAgendaPomodoroReplaceTitle]: 'Session in progress',
+  [extensionI18nKeys.orgAgendaPomodoroReplaceMessage]: 'Stop current session and start a new one?',
+  [extensionI18nKeys.orgAgendaPomodoroOverviewTitle]: 'Overview',
+  [extensionI18nKeys.orgAgendaPomodoroTodayPomo]: "Today's Pomo",
+  [extensionI18nKeys.orgAgendaPomodoroTodayFocus]: "Today's Focus",
+  [extensionI18nKeys.orgAgendaPomodoroTotalPomo]: 'Total Pomo',
+  [extensionI18nKeys.orgAgendaPomodoroTotalFocus]: 'Total Focus',
+  [extensionI18nKeys.orgAgendaPomodoroFocusRecord]: 'Focus Record',
+  [extensionI18nKeys.orgAgendaTaskStartPomodoro]: 'Start Pomodoro',
+  [extensionI18nKeys.orgAgendaTaskDelete]: 'Delete task',
 };
 
 export default eng;

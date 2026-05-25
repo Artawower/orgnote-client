@@ -13,6 +13,7 @@
     </app-flex>
 
     <app-flex row align-center gap="md" class="habit-actions" @click.stop>
+      <command-action-button :command="AGENDA_POMODORO_START_COMMAND" :data="habit" size="md" />
       <action-button
         icon="sym_o_open_in_new"
         size="md"
@@ -35,6 +36,8 @@ import { useI18n } from 'vue-i18n';
 import { todayIsoDate } from 'src/utils/org-date';
 import AppFlex from 'src/components/AppFlex.vue';
 import ActionButton from 'src/components/ActionButton.vue';
+import CommandActionButton from 'src/containers/CommandActionButton.vue';
+import { AGENDA_POMODORO_START_COMMAND } from '../constants';
 import AppRadioButton from 'src/components/AppRadioButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { clockMatchesDate } from '../composables/use-habits';

@@ -1,18 +1,30 @@
 import type { AsyncComponentLoader } from 'vue';
 import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
-import { object, optional, string, pipe, metadata } from 'valibot';
+import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
+import { startPomodoroCommand } from './commands/start-pomodoro-command';
+import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
+import { i18n } from 'src/boot/i18n';
+import type { AgendaTaskView } from './composables/use-agenda-tasks';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_CREATE_TASK,
+  AGENDA_TASK_CONTEXT_MENU_GROUP,
+  AGENDA_POMODORO_URI,
+  AGENDA_POMODORO_VIEWER_ID,
+  AGENDA_POMODORO_PAUSE_COMMAND,
+  AGENDA_POMODORO_RESUME_COMMAND,
+  AGENDA_POMODORO_STOP_COMMAND,
+  AGENDA_POMODORO_STATS_URI,
+  AGENDA_POMODORO_STATS_PATTERN,
+  AGENDA_POMODORO_STATS_VIEWER_ID,
+  AGENDA_POMODORO_STATS_COMMAND,
   AGENDA_HABITS_COMMAND,
   AGENDA_HABITS_PATTERN,
   AGENDA_HABITS_URI,
   AGENDA_HABITS_VIEWER_ID,
   AGENDA_POMODORO_COMMAND,
   AGENDA_POMODORO_PATTERN,
-  AGENDA_POMODORO_URI,
-  AGENDA_POMODORO_VIEWER_ID,
   AGENDA_TASKS_COMMAND,
   AGENDA_TASKS_PATTERN,
   AGENDA_TASKS_VIEWER_ID,
@@ -73,6 +85,15 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     component: () => import('./AgendaPomodoroBuffer.vue'),
     handler: openBuffer(AGENDA_POMODORO_URI),
   },
+  {
+    viewerId: AGENDA_POMODORO_STATS_VIEWER_ID,
+    pattern: AGENDA_POMODORO_STATS_PATTERN,
+    name: 'Agenda Pomodoro Stats',
+    icon: 'sym_o_bar_chart',
+    command: AGENDA_POMODORO_STATS_COMMAND,
+    component: () => import('./AgendaPomodoroStatsBuffer.vue'),
+    handler: openBuffer(AGENDA_POMODORO_STATS_URI),
+  },
 ];
 
 const buildCommand = (view: AgendaView): Command => ({
@@ -81,6 +102,41 @@ const buildCommand = (view: AgendaView): Command => ({
   icon: view.icon,
   handler: view.handler,
 });
+
+const t = i18n.global.t;
+
+const startPomodoroForTask = async (api: OrgNoteApi, task: AgendaTaskView): Promise<void> => {
+  const { usePomodoroStore } = await import('./stores/pomodoro-store');
+  const store = usePomodoroStore();
+  await api.core.useBufferViewer().open(AGENDA_POMODORO_URI);
+  await store.startSession({ ...task, filePath: task.filePath as string }, store.sessionType);
+};
+
+const deleteTaskFromFile = async (api: OrgNoteApi, task: AgendaTaskView): Promise<void> => {
+  const { deleteTask } = await import('./mutations/delete-task');
+  const { uint8ArrayToText, textToUint8Array, to } = await import('orgnote-api/utils');
+  const fileContent = api.core.useFileContent();
+  const filePath = task.filePath as string;
+  const readResult = await to(fileContent.read)(filePath);
+  if (readResult.isErr()) return;
+  const next = deleteTask(uint8ArrayToText(readResult.value), task.start ?? 0);
+  await to(fileContent.write)(filePath, textToUint8Array(next));
+};
+
+const registerTaskContextMenu = (api: OrgNoteApi): void => {
+  const contextMenu = api.ui.useContextMenu();
+  contextMenu.registerGroup(AGENDA_TASK_CONTEXT_MENU_GROUP);
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    icon: 'sym_o_timer',
+    title: t(extensionI18nKeys.orgAgendaTaskStartPomodoro),
+    handler: (task: unknown) => startPomodoroForTask(api, task as AgendaTaskView),
+  });
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    icon: 'sym_o_delete',
+    title: t(extensionI18nKeys.orgAgendaTaskDelete),
+    handler: (task: unknown) => deleteTaskFromFile(api, task as AgendaTaskView),
+  });
+};
 
 const registerViews = (api: OrgNoteApi): void => {
   const viewer = api.core.useBufferViewer();
@@ -96,6 +152,35 @@ const registerViews = (api: OrgNoteApi): void => {
     if (view.pinned) pinned.addCommand('sidebar', view.command);
   });
   commands.add(createTaskCommand);
+  commands.add(startPomodoroCommand);
+  commands.add({
+    command: AGENDA_POMODORO_PAUSE_COMMAND,
+    group: 'agenda',
+    icon: 'sym_o_pause',
+    handler: async () => {
+      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+      await usePomodoroStore().pauseSession();
+    },
+  });
+  commands.add({
+    command: AGENDA_POMODORO_RESUME_COMMAND,
+    group: 'agenda',
+    icon: 'sym_o_play_arrow',
+    handler: async () => {
+      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+      await usePomodoroStore().resumeSession();
+    },
+  });
+  commands.add({
+    command: AGENDA_POMODORO_STOP_COMMAND,
+    group: 'agenda',
+    icon: 'sym_o_stop',
+    handler: async () => {
+      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+      await usePomodoroStore().stopSession();
+    },
+  });
+  registerTaskContextMenu(api);
 };
 
 const unregisterViews = (api: OrgNoteApi): void => {
@@ -118,19 +203,30 @@ const settingsSchema = object({
     optional(string()),
     metadata({ filePicker: true, defaultValue: 'inbox.org' }),
   ),
+  pomoDuration: pipe(optional(number()), metadata({ defaultValue: 25 })),
+  soundEnabled: pipe(optional(boolean()), metadata({ defaultValue: true })),
 });
 
-type AgendaConfig = { agendaFilesPath?: string; inboxFilePath?: string };
+export type AgendaConfig = {
+  agendaFilesPath?: string;
+  inboxFilePath?: string;
+  pomoDuration: number;
+  soundEnabled: boolean;
+};
 
 const defaultSettings: AgendaConfig = {
   agendaFilesPath: undefined,
   inboxFilePath: undefined,
+  pomoDuration: 25,
+  soundEnabled: true,
 };
 
 export const resolveAgendaConfig = (rawConfig: Record<string, unknown>): AgendaConfig => ({
   agendaFilesPath:
     (rawConfig.agendaFilesPath as string | undefined) ?? defaultSettings.agendaFilesPath,
   inboxFilePath: (rawConfig.inboxFilePath as string | undefined) ?? defaultSettings.inboxFilePath,
+  pomoDuration: (rawConfig.pomoDuration as number | undefined) ?? defaultSettings.pomoDuration,
+  soundEnabled: (rawConfig.soundEnabled as boolean | undefined) ?? defaultSettings.soundEnabled,
 });
 
 export const orgAgendaExtension: Extension = {

@@ -11,6 +11,7 @@ export type AgendaFilter = 'overdue' | 'today' | 'tomorrow' | 'next7days' | 'all
 
 export interface AgendaTaskView extends FileTask {
   viewDate: Date;
+  filePath: string;
 }
 
 export interface AgendaTaskGroup {
@@ -53,8 +54,14 @@ const computeViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date 
   return viewDate ?? todayForAgenda(now);
 };
 
-const toTaskView = (task: FileTask, filter: AgendaFilter, now: Date): AgendaTaskView => ({
+const toTaskView = (
+  task: FileTask,
+  filter: AgendaFilter,
+  now: Date,
+  filePath = '',
+): AgendaTaskView => ({
   ...task,
+  filePath,
   viewDate: computeViewDate(task, filter, now),
 });
 
@@ -63,13 +70,18 @@ export const isAgendaEligible = (task: FileTask): boolean =>
 
 const eligibleTasks = (file: FileMeta): FileTask[] => (file.tasks ?? []).filter(isAgendaEligible);
 
-const applyFilter = (tasks: FileTask[], filter: AgendaFilter, now: Date): AgendaTaskView[] =>
+const applyFilter = (
+  tasks: FileTask[],
+  filter: AgendaFilter,
+  now: Date,
+  filePath = '',
+): AgendaTaskView[] =>
   tasks
     .filter((task) => isTaskVisible(task, filter, now))
-    .map((task) => toTaskView(task, filter, now));
+    .map((task) => toTaskView(task, filter, now, filePath));
 
 const toGroup = (file: FileMeta, filter: AgendaFilter, now: Date): AgendaTaskGroup | null => {
-  const tasks = applyFilter(eligibleTasks(file), filter, now);
+  const tasks = applyFilter(eligibleTasks(file), filter, now, resolveAbsolutePath(file));
   if (!tasks.length) return null;
   return { fileTitle: resolveFileTitle(file), filePath: resolveAbsolutePath(file), tasks };
 };
