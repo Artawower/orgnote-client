@@ -1,36 +1,24 @@
 <template>
-  <app-flex column align-center center full-height gap="xl" class="pomodoro-timer">
-    <app-flex row gap="xs" class="type-tabs">
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: sessionType === 'pomo' }"
-        :disabled="hasSession"
-        @click="onTabClick('pomo')"
-      >
-        Pomo
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: sessionType === 'stopwatch' }"
-        :disabled="hasSession"
-        @click="onTabClick('stopwatch')"
-      >
-        Stopwatch
-      </button>
-    </app-flex>
-
-    <button
-      type="button"
-      class="task-btn"
+  <app-flex column align-center center full-height gap="lg" class="pomodoro-timer">
+    <app-segmented-control
+      v-model="sessionType"
+      :options="modeOptions"
       :disabled="hasSession"
-      :class="{ disabled: hasSession }"
+      size="md"
+    />
+
+    <app-button
+      class="task-eyebrow"
+      type="plain"
+      size="sm"
+      :disabled="hasSession"
       @click="onSelectTask"
     >
-      <span class="task-btn-text">{{ taskLabel }}</span>
-      <app-icon name="sym_o_chevron_right" size="sm" class="task-chevron" />
-    </button>
+      <app-flex row align-center gap="xs">
+        <app-icon name="sym_o_task_alt" size="xs" />
+        <span class="task-label">{{ taskLabel }}</span>
+      </app-flex>
+    </app-button>
 
     <div class="ring-wrapper">
       <svg
@@ -58,47 +46,74 @@
           stroke-dashoffset="0"
         />
       </svg>
-      <div class="ring-content" @click="onRingClick">
+      <app-flex class="ring-content" column align-center center gap="xxs" @click="onRingClick">
         <span v-if="hasSession" class="display-time">{{ displayTime }}</span>
-        <div v-else-if="sessionType === 'pomo'" class="duration-row">
-          <input
-            v-model.number="localDuration"
+        <app-flex v-else-if="sessionType === 'pomo'" row align-end gap="xs" class="duration-row">
+          <app-input
+            v-model="localDuration"
             class="duration-input"
             type="number"
-            min="1"
-            max="180"
             @click.stop
             @change="onDurationChange"
           />
           <span class="duration-unit">min</span>
-        </div>
+        </app-flex>
         <span v-else class="display-time muted">00:00</span>
-      </div>
+        <span class="phase-label">{{ phaseLabel }}</span>
+      </app-flex>
     </div>
 
-    <app-flex row align-center gap="md">
+    <app-flex column align-center gap="sm" class="actions">
       <command-action-button
         v-if="!hasSession"
         :command="AGENDA_POMODORO_START_COMMAND"
-        size="lg"
+        :text="t(i18nKeys.orgAgendaPomodoroStart)"
+        size="md"
+        alignment="left"
+        include-text
       />
       <command-action-button
         v-else-if="isPaused"
         :command="AGENDA_POMODORO_RESUME_COMMAND"
-        size="lg"
+        :text="t(i18nKeys.orgAgendaPomodoroResume)"
+        size="md"
+        alignment="left"
+        include-text
       />
-      <command-action-button v-else :command="AGENDA_POMODORO_PAUSE_COMMAND" size="lg" />
-      <command-action-button v-if="hasSession" :command="AGENDA_POMODORO_STOP_COMMAND" size="lg" />
+      <command-action-button
+        v-else
+        :command="AGENDA_POMODORO_PAUSE_COMMAND"
+        :text="t(i18nKeys.orgAgendaPomorodoPause)"
+        alignment="left"
+        size="md"
+        include-text
+      />
+      <command-action-button
+        :command="AGENDA_POMODORO_STOP_COMMAND"
+        :text="t(i18nKeys.orgAgendaPomodoroStop)"
+        :class="{ invisible: !hasSession }"
+        alignment="left"
+        size="md"
+        include-text
+      />
     </app-flex>
+
+    <span v-if="todayPomoCount > 0" class="session-counter">
+      {{ t(i18nKeys.orgAgendaPomodoroTodayCount, { count: todayPomoCount }) }}
+    </span>
   </app-flex>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { isToday } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import AppFlex from 'src/components/AppFlex.vue';
+import AppButton from 'src/components/AppButton.vue';
+import AppSegmentedControl from 'src/components/AppSegmentedControl.vue';
 import AppIcon from 'src/components/AppIcon.vue';
+import AppInput from 'src/components/AppInput.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import {
@@ -108,9 +123,11 @@ import {
   AGENDA_POMODORO_STOP_COMMAND,
 } from '../constants';
 import { usePomodoroStore } from '../stores/pomodoro-store';
+import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const store = usePomodoroStore();
+const tasksStore = useAgendaTasksStore();
 
 const SVG_SIZE = 280;
 const SVG_CENTER = SVG_SIZE / 2;
@@ -130,7 +147,7 @@ const {
   pendingTask,
 } = storeToRefs(store);
 
-const localDuration = ref(durationMin.value);
+const localDuration = ref<number>(durationMin.value);
 watch(durationMin, (v) => {
   localDuration.value = v;
 });
@@ -138,16 +155,33 @@ watch(durationMin, (v) => {
 const dashOffset = computed(() => circumference * (1 - progress.value));
 
 const taskLabel = computed(
-  () => session.value?.taskText ?? t(i18nKeys.orgAgendaPomodoroNoTaskSelected),
+  () =>
+    session.value?.taskText ??
+    pendingTask.value?.text ??
+    t(i18nKeys.orgAgendaPomodoroNoTaskSelected),
+);
+
+const modeOptions = computed(() => [
+  { value: 'pomo' as const, label: t(i18nKeys.orgAgendaPomodoroPhasePomodoro) },
+  { value: 'stopwatch' as const, label: t(i18nKeys.orgAgendaPomodoroPhaseStopwatch) },
+]);
+
+const phaseLabel = computed(() =>
+  sessionType.value === 'pomo'
+    ? t(i18nKeys.orgAgendaPomodoroPhasePomodoro)
+    : t(i18nKeys.orgAgendaPomodoroPhaseStopwatch),
+);
+
+const todayPomoCount = computed(
+  () =>
+    tasksStore.allFiles
+      .flatMap((f) => f.tasks ?? [])
+      .flatMap((task) => task.clocks ?? [])
+      .filter((c) => !!c.to && !!c.date && isToday(new Date(c.date))).length,
 );
 
 const onDurationChange = (): void => {
   store.durationMin = localDuration.value;
-};
-
-const onTabClick = (type: 'pomo' | 'stopwatch'): void => {
-  if (hasSession.value) return;
-  store.sessionType = type;
 };
 
 const onSelectTask = async (): Promise<void> => {
@@ -167,66 +201,27 @@ const onRingClick = (): void => {
   padding: var(--gap-xl) var(--gap-md);
 }
 
-.type-tabs {
-  background: var(--bg-alt);
-  border-radius: 999px;
-  padding: 3px;
-}
+.task-eyebrow {
+  background: transparent !important;
+  opacity: 0.55;
+  max-width: 260px;
 
-.tab-btn {
-  padding: var(--gap-xs) var(--gap-lg);
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--fg-muted);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
-
-  &.active {
-    background: var(--bg);
-    color: var(--fg);
+  @include hover {
+    background: transparent !important;
+    opacity: 1;
   }
 
   &:disabled {
-    opacity: 0.4;
-    cursor: default;
+    background: transparent !important;
+    opacity: 0.3;
   }
 }
 
-.task-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-xs);
-  border: none;
-  background: transparent;
-  color: var(--fg-muted);
-  cursor: pointer;
-  font-size: var(--font-size-sm);
-  max-width: 260px;
-  transition: color 0.15s;
-
-  &:hover:not(.disabled) {
-    color: var(--fg);
-  }
-
-  &.disabled {
-    cursor: default;
-    opacity: 0.5;
-  }
-}
-
-.task-btn-text {
+.task-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.task-chevron {
-  flex-shrink: 0;
-  opacity: 0.5;
+  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
 }
 
 .ring-wrapper {
@@ -284,15 +279,12 @@ const onRingClick = (): void => {
 .ring-content {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
 }
 
 .display-time {
   font-size: 56px;
-  font-weight: 300;
+  font-weight: var(--font-weight-regular);
   color: var(--fg);
   letter-spacing: 4px;
   line-height: 1;
@@ -304,20 +296,14 @@ const onRingClick = (): void => {
 }
 
 .duration-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
+  line-height: 1;
 }
 
 .duration-input {
   width: 80px;
   font-size: 56px;
-  font-weight: 300;
+  font-weight: var(--font-weight-regular);
   text-align: right;
-  background: transparent;
-  border: none;
-  color: var(--fg);
-  outline: none;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 
@@ -328,8 +314,27 @@ const onRingClick = (): void => {
 }
 
 .duration-unit {
-  font-size: var(--font-size-md);
+  @include fontify(var(--font-size-md), var(--font-weight-regular), false);
   color: var(--fg-muted);
-  padding-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.phase-label {
+  @include fontify(var(--font-size-xs), var(--font-weight-regular), false);
+  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.invisible {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.session-counter {
+  @include fontify(var(--font-size-xs), var(--font-weight-regular), false);
+  color: var(--fg-muted);
+  opacity: 0.4;
 }
 </style>

@@ -156,6 +156,9 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaPomodoroTotalPomo]: 'Total Pomo',
   [extensionI18nKeys.orgAgendaPomodoroTotalFocus]: 'Total Focus',
   [extensionI18nKeys.orgAgendaPomodoroFocusRecord]: 'Focus Record',
+  [extensionI18nKeys.orgAgendaPomodoroPhasePomodoro]: 'Focus',
+  [extensionI18nKeys.orgAgendaPomodoroPhaseStopwatch]: 'Stopwatch',
+  [extensionI18nKeys.orgAgendaPomodoroTodayCount]: '{count} today',
   [extensionI18nKeys.orgAgendaTaskStartPomodoro]: 'Start Pomodoro',
   [extensionI18nKeys.orgAgendaTaskDelete]: 'Delete task',
 };

@@ -28,8 +28,12 @@ export const AGENDA_POMODORO_START_COMMAND = 'agenda: start pomodoro';
 export const AGENDA_POMODORO_PAUSE_COMMAND = 'agenda: pomodoro pause';
 export const AGENDA_POMODORO_RESUME_COMMAND = 'agenda: pomodoro resume';
 export const AGENDA_POMODORO_STOP_COMMAND = 'agenda: pomodoro stop';
+export const AGENDA_POMODORO_SET_POMO_COMMAND = 'agenda: pomodoro set pomo';
+export const AGENDA_POMODORO_SET_STOPWATCH_COMMAND = 'agenda: pomodoro set stopwatch';
 
 export const STOPWATCH_MAX_SECONDS = 5999;
+export const MINUTES_PER_HOUR = 60;
+export const SECONDS_PER_MINUTE = 60;
 
 export const AGENDA_DEFAULT_INBOX_FILENAME = 'inbox.org';
 

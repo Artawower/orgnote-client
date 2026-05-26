@@ -12,6 +12,7 @@ import {
   POMODORO_ACTIVE_SESSION_KEY,
   POMODORO_LAST_TASK_KEY,
   POMODORO_DEFAULT_DURATION_MIN,
+  SECONDS_PER_MINUTE,
 } from '../constants';
 import { useAgendaTasksStore } from './agenda-tasks-store';
 import { orgAgendaManifest } from '../manifest';
@@ -33,7 +34,6 @@ interface ActiveSession extends PomodoroTask {
 }
 
 const TIMER_INTERVAL_MS = 1000;
-const SECONDS_PER_MINUTE = 60;
 const t = i18n.global.t;
 
 const formatTwoDigits = (n: number): string => String(Math.floor(n)).padStart(2, '0');

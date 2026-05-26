@@ -64,6 +64,9 @@ export const extensionI18nKeys = {
   orgAgendaPomodoroTotalPomo: 'extensions.orgAgenda.pomodoro.totalPomo',
   orgAgendaPomodoroTotalFocus: 'extensions.orgAgenda.pomodoro.totalFocus',
   orgAgendaPomodoroFocusRecord: 'extensions.orgAgenda.pomodoro.focusRecord',
+  orgAgendaPomodoroPhasePomodoro: 'extensions.orgAgenda.pomodoro.phasePomodoro',
+  orgAgendaPomodoroPhaseStopwatch: 'extensions.orgAgenda.pomodoro.phaseStopwatch',
+  orgAgendaPomodoroTodayCount: 'extensions.orgAgenda.pomodoro.todayCount',
   orgAgendaTaskStartPomodoro: 'extensions.orgAgenda.task.startPomodoro',
   orgAgendaTaskDelete: 'extensions.orgAgenda.task.delete',
 } as const;

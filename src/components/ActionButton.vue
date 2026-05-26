@@ -195,6 +195,13 @@ button,
     color: var(--btn-action-active-fg);
   }
 
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
   &.border {
     border: var(--border-default);
     border-color: var(--action-border-color, var(--border-default));

@@ -2,10 +2,12 @@
   <action-button
     v-if="command && !command.hide?.(api)"
     v-bind="$attrs"
+    :disabled="isDisabled"
     @mousedown="handleMouseDown"
     @click="handleClick"
     :icon="iconString"
     :aria-label="resolvedAriaLabel"
+    :alignment="props.alignment"
   >
     <template v-if="iconComponent" #icon>
       <component :is="iconComponent" />
@@ -20,10 +22,10 @@
 </template>
 
 <script lang="ts" setup>
-import ActionButton from 'src/components/ActionButton.vue';
+import ActionButton, { type ButtonAlignment } from 'src/components/ActionButton.vue';
 import type { CommandName } from 'orgnote-api';
 import { useCommandsStore } from 'src/stores/command';
-import { computed, toValue } from 'vue';
+import { computed, toValue, useAttrs } from 'vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
 import { api } from 'src/boot/api';
 import { useResolvedIcon } from 'src/composables/use-resolved-icon';
@@ -42,6 +44,7 @@ const props = defineProps<{
   ariaLabel?: string;
   data?: unknown;
   executeOnPointerDown?: boolean;
+  alignment?: ButtonAlignment;
 }>();
 
 const { config } = storeToRefs(useConfigStore());
@@ -51,6 +54,10 @@ const commandsStore = useCommandsStore();
 const editorStore = api.core.useEditor();
 
 const command = computed(() => commandsStore.get(props.command));
+const attrs = useAttrs();
+const isDisabled = computed(
+  () => (command.value?.disabled?.(api) ?? false) || (attrs.disabled as boolean) === true,
+);
 
 const { iconString, iconComponent } = useResolvedIcon(computed(() => toValue(command.value?.icon)));
 
