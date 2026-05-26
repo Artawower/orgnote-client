@@ -1,9 +1,11 @@
 <template>
   <card-wrapper>
-    <div v-for="stat in statList" :key="stat.label" class="stat-row">
-      <span class="stat-label">{{ stat.label }}</span>
-      <span class="stat-value">{{ stat.value }}</span>
-    </div>
+    <menu-item v-for="stat in statList" :key="stat.label" flat :capitalize="false">
+      {{ stat.label }}
+      <template #right>
+        <span class="stat-value">{{ stat.value }}</span>
+      </template>
+    </menu-item>
   </card-wrapper>
 </template>
 
@@ -12,14 +14,14 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isToday } from 'date-fns';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuItem from 'src/containers/MenuItem.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
+import { MINUTES_PER_HOUR } from '../constants';
 import type { ClockEntry } from 'org-mode-ast';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const store = useAgendaTasksStore();
-
-const MINUTES_PER_HOUR = 60;
 
 const clockDurationMin = (c: ClockEntry): number => {
   if (!c.to || !c.date) return 0;
@@ -59,28 +61,8 @@ const statList = computed(() => [
 </script>
 
 <style lang="scss" scoped>
-.stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
-  min-height: var(--menu-item-height-sm);
-
-  & + & {
-    border-top: var(--border-default);
-  }
-}
-
-.stat-label {
-  font-size: var(--font-size-md);
-  color: var(--fg);
-}
-
 .stat-value {
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  color: var(--fg);
+  @include fontify(var(--font-size-md), var(--font-weight-medium), false);
   white-space: nowrap;
-  margin-left: var(--gap-md);
 }
 </style>

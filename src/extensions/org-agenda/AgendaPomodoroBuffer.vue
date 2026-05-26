@@ -1,13 +1,23 @@
 <template>
   <app-buffer-content>
-    <agenda-pomodoro-timer />
-    <command-action-button :command="AGENDA_POMODORO_STATS_COMMAND" size="md" class="stats-btn" />
+    <container-layout>
+      <template #header>
+        <app-flex row end align-center class="pomo-header">
+          <command-action-button :command="AGENDA_POMODORO_STATS_COMMAND" size="md" />
+        </app-flex>
+      </template>
+      <template #body>
+        <agenda-pomodoro-timer />
+      </template>
+    </container-layout>
   </app-buffer-content>
 </template>
 
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 import AppBufferContent from 'src/components/AppBufferContent.vue';
+import AppFlex from 'src/components/AppFlex.vue';
+import ContainerLayout from 'src/components/ContainerLayout.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AgendaPomodoroTimer from './components/AgendaPomodoroTimer.vue';
 import { usePomodoroStore } from './stores/pomodoro-store';
@@ -24,9 +34,7 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.stats-btn {
-  position: absolute;
-  top: var(--gap-md);
-  right: var(--gap-md);
+.pomo-header {
+  padding: var(--gap-sm) var(--gap-md);
 }
 </style>

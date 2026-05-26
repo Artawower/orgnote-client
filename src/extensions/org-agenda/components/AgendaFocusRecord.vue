@@ -4,9 +4,15 @@
       {{ t(i18nKeys.orgAgendaNoTasksTitle) }}
     </span>
 
-    <div v-for="group in groupedRecords" :key="group.date" class="date-group">
-      <span class="group-date">{{ group.label }}</span>
-      <card-wrapper>
+    <app-spoiler
+      v-for="group in groupedRecords"
+      :key="group.date"
+      variant="card-static"
+      max-height="none"
+      default-expanded
+    >
+      <template #title>{{ group.label }}</template>
+      <template #body>
         <menu-item
           v-for="(entry, idx) in group.entries"
           :key="idx"
@@ -15,19 +21,19 @@
           flat
           @click="onEntryClick(entry)"
         >
-          <div class="entry-content">
+          <app-flex column align-start gap="xxs" class="entry-content">
             <span class="entry-time">{{ entry.timeRange }}</span>
-            <div class="entry-task-row">
-              <app-icon name="sym_o_task_alt" size="xs" class="entry-icon" />
+            <app-flex row start align-center gap="xs">
+              <app-icon name="sym_o_task_alt" size="xs" color="fg-muted" />
               <span class="entry-task">{{ entry.taskText }}</span>
-            </div>
-          </div>
+            </app-flex>
+          </app-flex>
           <template #right>
             <span class="entry-duration">{{ entry.duration }}</span>
           </template>
         </menu-item>
-      </card-wrapper>
-    </div>
+      </template>
+    </app-spoiler>
   </app-flex>
 </template>
 
@@ -37,7 +43,7 @@ import { useI18n } from 'vue-i18n';
 import { format, isToday, isYesterday } from 'date-fns';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import AppSpoiler from 'src/components/AppSpoiler.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
@@ -45,6 +51,7 @@ import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
+import { MINUTES_PER_HOUR } from '../constants';
 import type { ClockEntry } from 'org-mode-ast';
 import type { FileTask, FileMeta } from 'orgnote-api';
 
@@ -53,7 +60,6 @@ const store = useAgendaTasksStore();
 
 const DATE_FORMAT = 'MMM d';
 const TIME_FORMAT = 'HH:mm';
-const MINUTES_PER_HOUR = 60;
 
 interface FocusEntry {
   timeRange: string;
@@ -134,45 +140,22 @@ const onEntryClick = async (entry: FocusEntry): Promise<void> => {
 </script>
 
 <style lang="scss" scoped>
-.date-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
-}
-
-.group-date {
-  font-size: var(--font-size-sm);
-  color: var(--fg-muted);
-  padding: 0 var(--menu-item-padding-x);
+:deep(.spoiler-body) {
+  padding: 0;
 }
 
 .entry-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xxs);
   white-space: normal;
   min-width: 0;
 }
 
 .entry-time {
-  font-size: var(--font-size-sm);
+  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
   color: var(--fg);
 }
 
-.entry-task-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-xs);
-  min-width: 0;
-}
-
-.entry-icon {
-  color: var(--fg-muted);
-  flex-shrink: 0;
-}
-
 .entry-task {
-  font-size: var(--font-size-sm);
+  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
   color: var(--fg-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -180,14 +163,14 @@ const onEntryClick = async (entry: FocusEntry): Promise<void> => {
 }
 
 .entry-duration {
-  font-size: var(--font-size-sm);
+  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
   color: var(--fg-muted);
   white-space: nowrap;
 }
 
 .empty-state {
+  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
   color: var(--fg-muted);
-  font-size: var(--font-size-sm);
   padding: var(--gap-md) var(--menu-item-padding-x);
 }
 </style>

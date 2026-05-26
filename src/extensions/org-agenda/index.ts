@@ -1,4 +1,5 @@
 import type { AsyncComponentLoader } from 'vue';
+import { getActivePinia } from 'pinia';
 import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
@@ -28,6 +29,10 @@ import {
   AGENDA_TASKS_COMMAND,
   AGENDA_TASKS_PATTERN,
   AGENDA_TASKS_VIEWER_ID,
+  AGENDA_POMODORO_SET_POMO_COMMAND,
+  AGENDA_POMODORO_SET_STOPWATCH_COMMAND,
+  AGENDA_DEFAULT_INBOX_FILENAME,
+  POMODORO_DEFAULT_DURATION_MIN,
 } from './constants';
 
 interface AgendaView {
@@ -84,6 +89,7 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     command: AGENDA_POMODORO_COMMAND,
     component: () => import('./AgendaPomodoroBuffer.vue'),
     handler: openBuffer(AGENDA_POMODORO_URI),
+    pinned: true,
   },
   {
     viewerId: AGENDA_POMODORO_STATS_VIEWER_ID,
@@ -180,6 +186,31 @@ const registerViews = (api: OrgNoteApi): void => {
       await usePomodoroStore().stopSession();
     },
   });
+  const isPomodoroRunning = (): boolean =>
+    !!(getActivePinia()?.state.value['pomodoro'] as { session?: unknown } | undefined)?.session;
+
+  commands.add({
+    command: AGENDA_POMODORO_SET_POMO_COMMAND,
+    group: 'agenda',
+    icon: 'sym_o_timer',
+    disabled: isPomodoroRunning,
+    handler: async () => {
+      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+      const store = usePomodoroStore();
+      if (!store.hasSession) store.sessionType = 'pomo';
+    },
+  });
+  commands.add({
+    command: AGENDA_POMODORO_SET_STOPWATCH_COMMAND,
+    group: 'agenda',
+    icon: 'sym_o_hourglass_empty',
+    disabled: isPomodoroRunning,
+    handler: async () => {
+      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+      const store = usePomodoroStore();
+      if (!store.hasSession) store.sessionType = 'stopwatch';
+    },
+  });
   registerTaskContextMenu(api);
 };
 
@@ -201,9 +232,9 @@ const settingsSchema = object({
   agendaFilesPath: pipe(optional(string()), metadata({ directoryPicker: true })),
   inboxFilePath: pipe(
     optional(string()),
-    metadata({ filePicker: true, defaultValue: 'inbox.org' }),
+    metadata({ filePicker: true, defaultValue: AGENDA_DEFAULT_INBOX_FILENAME }),
   ),
-  pomoDuration: pipe(optional(number()), metadata({ defaultValue: 25 })),
+  pomoDuration: pipe(optional(number()), metadata({ defaultValue: POMODORO_DEFAULT_DURATION_MIN })),
   soundEnabled: pipe(optional(boolean()), metadata({ defaultValue: true })),
 });
 
