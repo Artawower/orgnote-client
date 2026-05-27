@@ -121,6 +121,8 @@ import {
   AGENDA_POMODORO_PAUSE_COMMAND,
   AGENDA_POMODORO_RESUME_COMMAND,
   AGENDA_POMODORO_STOP_COMMAND,
+  POMODORO_MIN_DURATION_MIN,
+  POMODORO_MAX_DURATION_MIN,
 } from '../constants';
 import { usePomodoroStore } from '../stores/pomodoro-store';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
@@ -177,11 +179,17 @@ const todayPomoCount = computed(
     tasksStore.allFiles
       .flatMap((f) => f.tasks ?? [])
       .flatMap((task) => task.clocks ?? [])
-      .filter((c) => !!c.to && !!c.date && isToday(new Date(c.date))).length,
+      .filter((c) => !!c.to && !!c.date && isToday(new Date(c.date)))
+      .filter((c) => new Date(c.to!).getTime() - new Date(c.date!).getTime() > 0).length,
 );
 
 const onDurationChange = (): void => {
-  store.durationMin = localDuration.value;
+  const clamped = Math.max(
+    POMODORO_MIN_DURATION_MIN,
+    Math.min(POMODORO_MAX_DURATION_MIN, localDuration.value || POMODORO_MIN_DURATION_MIN),
+  );
+  store.durationMin = clamped;
+  localDuration.value = clamped;
 };
 
 const onSelectTask = async (): Promise<void> => {

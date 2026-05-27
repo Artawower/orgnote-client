@@ -6,12 +6,13 @@ const mockKvSet = vi.fn();
 const mockKvDelete = vi.fn();
 const mockFileRead = vi.fn();
 const mockFileWrite = vi.fn();
+const mockGetExtensionConfig = vi.fn(() => ({ value: {} as Record<string, unknown> }));
 
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
       useFileContent: () => ({ read: mockFileRead, write: mockFileWrite }),
-      useExtensions: () => ({ getExtensionConfig: vi.fn(() => ({ value: {} })) }),
+      useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
       useNotifications: () => ({ notify: vi.fn() }),
     },
     infrastructure: {
@@ -78,6 +79,7 @@ beforeEach(() => {
   mockKvDelete.mockResolvedValue(undefined);
   mockFileRead.mockResolvedValue(mockUint8);
   mockFileWrite.mockResolvedValue(undefined);
+  mockGetExtensionConfig.mockReturnValue({ value: {} });
 });
 
 afterEach(() => {
@@ -205,4 +207,29 @@ test('restoreSession_paused_doesNotStartTick', async () => {
 
   expect(freshStore.elapsed).toBe(frozen);
   expect(freshStore.isPaused).toBe(true);
+});
+
+test('restoreSession_corruptJson_doesNotThrowAndClearsKv', async () => {
+  mockKvGet.mockResolvedValue('{invalid json{');
+  const store = usePomodoroStore();
+
+  await expect(store.restoreSession()).resolves.not.toThrow();
+  expect(store.hasSession).toBe(false);
+  expect(mockKvDelete).toHaveBeenCalled();
+});
+
+test('loadLastTask_corruptJson_returnsNull', async () => {
+  mockKvGet.mockResolvedValue('{invalid json{');
+  const store = usePomodoroStore();
+
+  const result = await store.loadLastTask();
+
+  expect(result).toBeNull();
+});
+
+test('durationMin_initializesFromAgendaConfig_pomoDuration', () => {
+  mockGetExtensionConfig.mockReturnValue({ value: { pomoDuration: 42 } });
+  const store = usePomodoroStore();
+
+  expect(store.durationMin).toBe(42);
 });

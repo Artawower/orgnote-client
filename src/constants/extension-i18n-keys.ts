@@ -69,4 +69,6 @@ export const extensionI18nKeys = {
   orgAgendaPomodoroTodayCount: 'extensions.orgAgenda.pomodoro.todayCount',
   orgAgendaTaskStartPomodoro: 'extensions.orgAgenda.task.startPomodoro',
   orgAgendaTaskDelete: 'extensions.orgAgenda.task.delete',
+  orgAgendaFocusToday: 'extensions.orgAgenda.focus.today',
+  orgAgendaFocusYesterday: 'extensions.orgAgenda.focus.yesterday',
 } as const;

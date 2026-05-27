@@ -88,8 +88,8 @@ const formatDurationMin = (min: number): string => {
 };
 
 const dateGroupLabel = (d: Date): string => {
-  if (isToday(d)) return 'Today';
-  if (isYesterday(d)) return 'Yesterday';
+  if (isToday(d)) return t(i18nKeys.orgAgendaFocusToday);
+  if (isYesterday(d)) return t(i18nKeys.orgAgendaFocusYesterday);
   return format(d, DATE_FORMAT);
 };
 

@@ -11,7 +11,6 @@ import {
   STOPWATCH_MAX_SECONDS,
   POMODORO_ACTIVE_SESSION_KEY,
   POMODORO_LAST_TASK_KEY,
-  POMODORO_DEFAULT_DURATION_MIN,
   SECONDS_PER_MINUTE,
 } from '../constants';
 import { useAgendaTasksStore } from './agenda-tasks-store';
@@ -55,6 +54,7 @@ const playBeep = (): void => {
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + 0.8);
+  osc.onended = () => void ctx.close();
 };
 
 const applyFileMutation = async (
@@ -83,17 +83,17 @@ const writeSegmentClock = async (s: ActiveSession, endedAt: Date): Promise<void>
   );
 
 export const usePomodoroStore = defineStore('pomodoro', () => {
-  const session = ref<ActiveSession | null>(null);
-  const elapsed = ref(0);
-  const isPaused = ref(false);
-  const durationMin = ref(POMODORO_DEFAULT_DURATION_MIN);
-  const sessionType = ref<'pomo' | 'stopwatch'>('pomo');
-  const pendingTask = ref<(FileTask & { filePath: string }) | null>(null);
-  let intervalHandle: ReturnType<typeof setInterval> | null = null;
-
   const agendaConfig = computed(() =>
     resolveAgendaConfig(api.core.useExtensions().getExtensionConfig(orgAgendaManifest.name).value),
   );
+
+  const session = ref<ActiveSession | null>(null);
+  const elapsed = ref(0);
+  const isPaused = ref(false);
+  const durationMin = ref(agendaConfig.value.pomoDuration);
+  const sessionType = ref<'pomo' | 'stopwatch'>('pomo');
+  const pendingTask = ref<(FileTask & { filePath: string }) | null>(null);
+  let intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   const kvRepo = computed(() => api.infrastructure.keyValueRepository);
   const durationSeconds = computed(() => durationMin.value * SECONDS_PER_MINUTE);
@@ -224,7 +224,12 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const restoreSession = async (): Promise<void> => {
     const raw = await to(kvRepo.value.get)(POMODORO_ACTIVE_SESSION_KEY);
     if (raw.isErr() || !raw.value) return;
-    const s = JSON.parse(raw.value) as ActiveSession;
+    const parseResult = to(JSON.parse)(raw.value);
+    if (parseResult.isErr()) {
+      await clearPersistedSession();
+      return;
+    }
+    const s = parseResult.value as ActiveSession;
 
     if (s.paused) {
       session.value = s;
@@ -258,7 +263,9 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const loadLastTask = async (): Promise<PomodoroTask | null> => {
     const raw = await to(kvRepo.value.get)(POMODORO_LAST_TASK_KEY);
     if (raw.isErr() || !raw.value) return null;
-    return JSON.parse(raw.value) as PomodoroTask;
+    const parseResult = to(JSON.parse)(raw.value);
+    if (parseResult.isErr()) return null;
+    return parseResult.value as PomodoroTask;
   };
 
   const openTaskCompletion = async (): Promise<(FileTask & { filePath: string }) | null> => {
