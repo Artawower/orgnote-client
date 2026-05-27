@@ -45,10 +45,10 @@ const actions = computed<MenuAction[]>(() => contextMenuStore.getContextMenuActi
 
 const handleContextMenu = () => {
   if (desktopBelow.value) {
+    openMobileMenu();
     return;
   }
-
-  openDesktopMenu();
+  emit('open');
 };
 
 const openMobileMenu = () => {

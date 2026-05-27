@@ -4,14 +4,13 @@ import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
-import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
-import { i18n } from 'src/boot/i18n';
-import { reporter } from 'src/boot/report';
-import type { AgendaTaskView } from './composables/use-agenda-tasks';
+import { deleteTaskCommand } from './commands/delete-task-command';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_CREATE_TASK,
   AGENDA_TASK_CONTEXT_MENU_GROUP,
+  AGENDA_POMODORO_START_COMMAND,
+  AGENDA_TASK_DELETE_COMMAND,
   AGENDA_POMODORO_URI,
   AGENDA_POMODORO_VIEWER_ID,
   AGENDA_POMODORO_PAUSE_COMMAND,
@@ -110,42 +109,14 @@ const buildCommand = (view: AgendaView): Command => ({
   handler: view.handler,
 });
 
-const t = i18n.global.t;
-
-const startPomodoroForTask = async (api: OrgNoteApi, task: AgendaTaskView): Promise<void> => {
-  const { usePomodoroStore } = await import('./stores/pomodoro-store');
-  const store = usePomodoroStore();
-  await api.core.useBufferViewer().open(AGENDA_POMODORO_URI);
-  await store.startSession({ ...task, filePath: task.filePath as string }, store.sessionType);
-};
-
-const deleteTaskFromFile = async (api: OrgNoteApi, task: AgendaTaskView): Promise<void> => {
-  const { deleteTask } = await import('./mutations/delete-task');
-  const { uint8ArrayToText, textToUint8Array, to } = await import('orgnote-api/utils');
-  const fileContent = api.core.useFileContent();
-  const filePath = task.filePath as string;
-  const readResult = await to(fileContent.read)(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-  const next = deleteTask(uint8ArrayToText(readResult.value), task.start ?? 0);
-  const writeResult = await to(fileContent.write)(filePath, textToUint8Array(next));
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
-};
-
 const registerTaskContextMenu = (api: OrgNoteApi): void => {
   const contextMenu = api.ui.useContextMenu();
   contextMenu.registerGroup(AGENDA_TASK_CONTEXT_MENU_GROUP);
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
-    icon: 'sym_o_timer',
-    title: t(extensionI18nKeys.orgAgendaTaskStartPomodoro),
-    handler: (task: unknown) => startPomodoroForTask(api, task as AgendaTaskView),
+    command: AGENDA_POMODORO_START_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
-    icon: 'sym_o_delete',
-    title: t(extensionI18nKeys.orgAgendaTaskDelete),
-    handler: (task: unknown) => deleteTaskFromFile(api, task as AgendaTaskView),
+    command: AGENDA_TASK_DELETE_COMMAND,
   });
 };
 
@@ -164,6 +135,7 @@ const registerViews = (api: OrgNoteApi): void => {
   });
   commands.add(createTaskCommand);
   commands.add(startPomodoroCommand);
+  commands.add(deleteTaskCommand);
   commands.add({
     command: AGENDA_POMODORO_PAUSE_COMMAND,
     group: 'agenda',

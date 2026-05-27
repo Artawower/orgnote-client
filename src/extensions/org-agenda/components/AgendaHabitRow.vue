@@ -1,7 +1,7 @@
 <template>
   <app-flex row align-center gap="md" class="habit-row">
     <app-flex column start align-start class="habit-body" gap="xs">
-      <span class="habit-title">{{ habit.text }}</span>
+      <overflow-line class="habit-title">{{ habit.text }}</overflow-line>
       <app-flex row align-center gap="sm" class="habit-stats">
         <span class="stat-item stat-total"
           >⚡ {{ t(i18nKeys.orgAgendaHabitsTotalDays, { count: habit.totalDays }) }}</span
@@ -39,6 +39,7 @@ import ActionButton from 'src/components/ActionButton.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { AGENDA_POMODORO_START_COMMAND } from '../constants';
 import AppRadioButton from 'src/components/AppRadioButton.vue';
+import OverflowLine from 'src/components/OverflowLine.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { clockMatchesDate } from '../composables/use-habits';
 import type { AgendaHabitView } from '../types';
@@ -75,10 +76,6 @@ const toggleLabel = computed(() => {
 
 .habit-title {
   font-size: var(--font-size-md);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
   color: var(--fg);
 }
 

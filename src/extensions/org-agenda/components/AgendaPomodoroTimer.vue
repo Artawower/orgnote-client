@@ -16,7 +16,7 @@
     >
       <app-flex row align-center gap="xs">
         <app-icon name="sym_o_task_alt" size="xs" />
-        <span class="task-label">{{ taskLabel }}</span>
+        <overflow-line class="task-label">{{ taskLabel }}</overflow-line>
       </app-flex>
     </app-button>
 
@@ -113,6 +113,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppButton from 'src/components/AppButton.vue';
 import AppSegmentedControl from 'src/components/AppSegmentedControl.vue';
 import AppIcon from 'src/components/AppIcon.vue';
+import OverflowLine from 'src/components/OverflowLine.vue';
 import AppInput from 'src/components/AppInput.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
@@ -226,9 +227,6 @@ const onRingClick = (): void => {
 }
 
 .task-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
 }
 

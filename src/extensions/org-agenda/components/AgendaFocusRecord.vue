@@ -8,6 +8,7 @@
       v-for="group in groupedRecords"
       :key="group.date"
       variant="card-static"
+      no-padding
       max-height="none"
       default-expanded
     >
@@ -25,7 +26,7 @@
             <span class="entry-time">{{ entry.timeRange }}</span>
             <app-flex row start align-center gap="xs">
               <app-icon name="sym_o_task_alt" size="xs" color="fg-muted" />
-              <span class="entry-task">{{ entry.taskText }}</span>
+              <overflow-line class="entry-task">{{ entry.taskText }}</overflow-line>
             </app-flex>
           </app-flex>
           <template #right>
@@ -44,6 +45,7 @@ import { format, isToday, isYesterday } from 'date-fns';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
+import OverflowLine from 'src/components/OverflowLine.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
@@ -140,10 +142,6 @@ const onEntryClick = async (entry: FocusEntry): Promise<void> => {
 </script>
 
 <style lang="scss" scoped>
-:deep(.spoiler-body) {
-  padding: 0;
-}
-
 .entry-content {
   white-space: normal;
   min-width: 0;
@@ -157,9 +155,6 @@ const onEntryClick = async (entry: FocusEntry): Promise<void> => {
 .entry-task {
   @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
   color: var(--fg-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .entry-duration {
