@@ -25,7 +25,7 @@
           @click="handleNodeClick(scope.node)"
         >
           <app-icon v-if="scope.node.icon" :name="scope.node.icon" size="xs" />
-          <span class="app-tree-label">{{ scope.node[labelKey] }}</span>
+          <overflow-line class="app-tree-label">{{ scope.node[labelKey] }}</overflow-line>
         </div>
       </slot>
     </template>
@@ -36,6 +36,7 @@
 import { ref } from 'vue';
 import { QTree } from 'quasar';
 import AppIcon from './AppIcon.vue';
+import OverflowLine from './OverflowLine.vue';
 
 const treeRef = ref<InstanceType<typeof QTree> | null>(null);
 
@@ -150,11 +151,5 @@ const handleNodeClick = (node: T) => {
     color: var(--accent);
     background-color: var(--menu-item-active-bg);
   }
-}
-
-.app-tree-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

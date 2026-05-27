@@ -4,6 +4,7 @@
     column
     start
     align-stretch
+    @pointerdown="handleDialogPointerDown"
     @pointerup="handleDialogPointerUp"
     @click="handleDialogClick"
     @cancel.prevent="modal.close()"
@@ -104,11 +105,15 @@ onBeforeUnmount(() => {
 
 const shouldCloseFromBackdrop = (event: Event) => event.target === event.currentTarget;
 
-const handleDialogPointerUp = (event: PointerEvent) => {
-  if (!shouldCloseFromBackdrop(event)) {
-    return;
-  }
+let backdropPointerDownId: number | null = null;
 
+const handleDialogPointerDown = (event: PointerEvent) => {
+  backdropPointerDownId = shouldCloseFromBackdrop(event) ? event.pointerId : null;
+};
+
+const handleDialogPointerUp = (event: PointerEvent) => {
+  if (!shouldCloseFromBackdrop(event) || event.pointerId !== backdropPointerDownId) return;
+  backdropPointerDownId = null;
   modal.close();
 };
 

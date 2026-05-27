@@ -19,7 +19,7 @@
       />
     </app-flex>
     <animation-wrapper animation-name="expand">
-      <div v-if="expanded" class="spoiler-body">
+      <div v-if="expanded" class="spoiler-body" :class="{ 'no-padding': noPadding }">
         <slot name="body" />
       </div>
     </animation-wrapper>
@@ -40,6 +40,7 @@ const props = withDefaults(
     defaultExpanded?: boolean;
     maxHeight?: string;
     variant?: AppSpoilerVariant;
+    noPadding?: boolean;
   }>(),
   {
     defaultExpanded: false,
@@ -118,7 +119,8 @@ const toggle = (): void => {
   overflow: auto;
 }
 
-.spoiler.variant-flat .spoiler-body {
+.spoiler.variant-flat .spoiler-body,
+.spoiler-body.no-padding {
   padding: 0;
 }
 </style>

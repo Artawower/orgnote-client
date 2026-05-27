@@ -43,9 +43,9 @@
       </div>
       <template #right>
         <app-flex gap="xs" align-center>
-          <span class="file-picker-value text-medium">{{
+          <overflow-line class="file-picker-value text-medium">{{
             fieldModel ?? metadata.defaultValue ?? ''
-          }}</span>
+          }}</overflow-line>
           <action-button icon="sym_o_description" size="sm" outline @click.stop="pickFile" />
         </app-flex>
       </template>
@@ -58,7 +58,9 @@
       </div>
       <template #right>
         <app-flex gap="xs" align-center>
-          <span class="file-picker-value text-medium">{{ fieldModel ?? '' }}</span>
+          <overflow-line class="file-picker-value text-medium">{{
+            fieldModel ?? ''
+          }}</overflow-line>
           <action-button icon="folder_open" size="sm" outline @click.stop="pickDirectory" />
         </app-flex>
       </template>
@@ -139,6 +141,7 @@ const getNestedPath = (path: string) => `${props.path}.${path}`;
 
 import type { SectionAccessor } from 'src/models/settings-section-accessor';
 import { SETTINGS_SECTION_INJECT_KEY } from 'src/models/settings-section-accessor';
+import OverflowLine from 'src/components/OverflowLine.vue';
 
 const accessor = inject<SectionAccessor | null>(SETTINGS_SECTION_INJECT_KEY, null);
 
@@ -331,8 +334,5 @@ textarea {
   text-align: right;
   color: var(--text-secondary, var(--q-secondary));
   font-size: var(--font-size-sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 </style>

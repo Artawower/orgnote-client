@@ -23,13 +23,13 @@ export const AGENDA_POMODORO_STATS_VIEWER_ID = 'org-agenda:pomodoro-stats';
 export const TASK_DONE_KEYWORD = 'DONE';
 export const TASK_TODO_KEYWORD = 'TODO';
 
-export const AGENDA_CREATE_TASK = 'agenda: create task';
-export const AGENDA_POMODORO_START_COMMAND = 'agenda: start pomodoro';
-export const AGENDA_POMODORO_PAUSE_COMMAND = 'agenda: pomodoro pause';
-export const AGENDA_POMODORO_RESUME_COMMAND = 'agenda: pomodoro resume';
-export const AGENDA_POMODORO_STOP_COMMAND = 'agenda: pomodoro stop';
-export const AGENDA_POMODORO_SET_POMO_COMMAND = 'agenda: pomodoro set pomo';
-export const AGENDA_POMODORO_SET_STOPWATCH_COMMAND = 'agenda: pomodoro set stopwatch';
+export const AGENDA_CREATE_TASK = 'create task';
+export const AGENDA_POMODORO_START_COMMAND = 'start pomodoro';
+export const AGENDA_POMODORO_PAUSE_COMMAND = 'pause pomodoro';
+export const AGENDA_POMODORO_RESUME_COMMAND = 'resume pomodoro';
+export const AGENDA_POMODORO_STOP_COMMAND = 'stop pomodoro';
+export const AGENDA_POMODORO_SET_POMO_COMMAND = 'pomodoro mode';
+export const AGENDA_POMODORO_SET_STOPWATCH_COMMAND = 'stopwatch mode';
 
 export const STOPWATCH_MAX_SECONDS = 5999;
 export const MINUTES_PER_HOUR = 60;
@@ -38,6 +38,7 @@ export const SECONDS_PER_MINUTE = 60;
 export const AGENDA_DEFAULT_INBOX_FILENAME = 'inbox.org';
 
 export const AGENDA_TASK_CONTEXT_MENU_GROUP = 'agenda-task';
+export const AGENDA_TASK_DELETE_COMMAND = 'delete task';
 
 export const POMODORO_ACTIVE_SESSION_KEY = 'org-agenda:pomodoro:active';
 export const POMODORO_LAST_TASK_KEY = 'org-agenda:pomodoro:last-task';
