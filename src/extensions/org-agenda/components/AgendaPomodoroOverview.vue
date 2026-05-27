@@ -17,7 +17,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
-import { MINUTES_PER_HOUR } from '../constants';
+import { formatDurationMin } from '../utils/format-duration';
 import type { ClockEntry } from 'org-mode-ast';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -40,22 +40,16 @@ const todayClocks = computed(() =>
   allClocks.value.filter((c) => c.date && isToday(new Date(c.date))),
 );
 
-const formatDuration = (min: number): string => {
-  const h = Math.floor(min / MINUTES_PER_HOUR);
-  const m = min % MINUTES_PER_HOUR;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-};
-
 const statList = computed(() => [
   { label: t(i18nKeys.orgAgendaPomodoroTodayPomo), value: String(todayClocks.value.length) },
   {
     label: t(i18nKeys.orgAgendaPomodoroTodayFocus),
-    value: formatDuration(todayClocks.value.reduce((s, c) => s + clockDurationMin(c), 0)),
+    value: formatDurationMin(todayClocks.value.reduce((s, c) => s + clockDurationMin(c), 0)),
   },
   { label: t(i18nKeys.orgAgendaPomodoroTotalPomo), value: String(allClocks.value.length) },
   {
     label: t(i18nKeys.orgAgendaPomodoroTotalFocus),
-    value: formatDuration(allClocks.value.reduce((s, c) => s + clockDurationMin(c), 0)),
+    value: formatDurationMin(allClocks.value.reduce((s, c) => s + clockDurationMin(c), 0)),
   },
 ]);
 </script>
