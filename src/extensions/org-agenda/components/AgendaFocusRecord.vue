@@ -53,7 +53,7 @@ import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
-import { MINUTES_PER_HOUR } from '../constants';
+import { formatDurationMin } from '../utils/format-duration';
 import type { ClockEntry } from 'org-mode-ast';
 import type { FileTask, FileMeta } from 'orgnote-api';
 
@@ -81,12 +81,6 @@ interface FocusGroup {
 const clockDurationMin = (c: ClockEntry): number => {
   if (!c.to || !c.date) return 0;
   return Math.floor((new Date(c.to).getTime() - new Date(c.date).getTime()) / 60000);
-};
-
-const formatDurationMin = (min: number): string => {
-  const h = Math.floor(min / MINUTES_PER_HOUR);
-  const m = min % MINUTES_PER_HOUR;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 };
 
 const dateGroupLabel = (d: Date): string => {
