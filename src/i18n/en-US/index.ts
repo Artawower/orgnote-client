@@ -161,6 +161,8 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaPomodoroTodayCount]: '{count} today',
   [extensionI18nKeys.orgAgendaTaskStartPomodoro]: 'Start Pomodoro',
   [extensionI18nKeys.orgAgendaTaskDelete]: 'Delete task',
+  [extensionI18nKeys.orgAgendaFocusToday]: 'Today',
+  [extensionI18nKeys.orgAgendaFocusYesterday]: 'Yesterday',
 };
 
 export default eng;

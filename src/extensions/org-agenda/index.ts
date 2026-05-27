@@ -6,6 +6,7 @@ import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { i18n } from 'src/boot/i18n';
+import { reporter } from 'src/boot/report';
 import type { AgendaTaskView } from './composables/use-agenda-tasks';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
@@ -124,9 +125,13 @@ const deleteTaskFromFile = async (api: OrgNoteApi, task: AgendaTaskView): Promis
   const fileContent = api.core.useFileContent();
   const filePath = task.filePath as string;
   const readResult = await to(fileContent.read)(filePath);
-  if (readResult.isErr()) return;
+  if (readResult.isErr()) {
+    reporter.reportError(readResult.error);
+    return;
+  }
   const next = deleteTask(uint8ArrayToText(readResult.value), task.start ?? 0);
-  await to(fileContent.write)(filePath, textToUint8Array(next));
+  const writeResult = await to(fileContent.write)(filePath, textToUint8Array(next));
+  if (writeResult.isErr()) reporter.reportError(writeResult.error);
 };
 
 const registerTaskContextMenu = (api: OrgNoteApi): void => {

@@ -55,9 +55,7 @@ const editorStore = api.core.useEditor();
 
 const command = computed(() => commandsStore.get(props.command));
 const attrs = useAttrs();
-const isDisabled = computed(
-  () => (command.value?.disabled?.(api) ?? false) || (attrs.disabled as boolean) === true,
-);
+const isDisabled = computed(() => (command.value?.disabled?.(api) ?? false) || !!attrs.disabled);
 
 const { iconString, iconComponent } = useResolvedIcon(computed(() => toValue(command.value?.icon)));
 

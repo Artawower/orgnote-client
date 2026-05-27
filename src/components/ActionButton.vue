@@ -197,7 +197,7 @@ button,
 
   &:disabled,
   &[aria-disabled='true'] {
-    opacity: 0.4;
+    opacity: var(--disabled-opacity);
     cursor: not-allowed;
     pointer-events: none;
   }

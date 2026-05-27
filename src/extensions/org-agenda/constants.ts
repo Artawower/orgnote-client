@@ -42,6 +42,8 @@ export const AGENDA_TASK_CONTEXT_MENU_GROUP = 'agenda-task';
 export const POMODORO_ACTIVE_SESSION_KEY = 'org-agenda:pomodoro:active';
 export const POMODORO_LAST_TASK_KEY = 'org-agenda:pomodoro:last-task';
 export const POMODORO_DEFAULT_DURATION_MIN = 25;
+export const POMODORO_MIN_DURATION_MIN = 1;
+export const POMODORO_MAX_DURATION_MIN = 999;
 
 export { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
 export type { OrgPriorityLetter } from 'src/constants/org-mode';
