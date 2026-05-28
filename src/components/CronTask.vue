@@ -1,6 +1,6 @@
 <template>
   <div class="task-wrapper">
-    <app-spoiler style="--spoiler-max-height: unset">
+    <app-spoiler>
       <template #title>
         <app-flex row between class="full-width">
           <app-flex gap="md" align="center">

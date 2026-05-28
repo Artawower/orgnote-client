@@ -205,20 +205,14 @@ test('AppSpoiler should render expand icon with correct props', () => {
   expect(icon.props('color')).toBe('fg-muted');
 });
 
-test('AppSpoiler should wrap content in AnimationWrapper with expand animation', () => {
+test('AppSpoiler body is rendered when expanded', () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      defaultExpanded: true,
-    },
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    props: { defaultExpanded: true },
+    slots: { title: 'Test Title', body: 'Test Body' },
   });
 
-  const animationWrapper = wrapper.findComponent({ name: 'AnimationWrapper' });
-  expect(animationWrapper.exists()).toBe(true);
-  expect(animationWrapper.props('animationName')).toBe('expand');
+  expect(wrapper.find('.spoiler-body').exists()).toBe(true);
+  expect(wrapper.find('.spoiler-body').text()).toBe('Test Body');
 });
 
 test('AppSpoiler should use CardWrapper with plain type', () => {

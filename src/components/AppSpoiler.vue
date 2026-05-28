@@ -4,7 +4,6 @@
     class="spoiler"
     :class="`variant-${variant}`"
     v-bind="variant === 'flat' ? {} : { type: 'plain' }"
-    :style="{ '--spoiler-max-height': maxHeight }"
   >
     <app-flex class="spoiler-header" @click="toggle" row between align-center gap="md">
       <div class="spoiler-title">
@@ -18,11 +17,11 @@
         class="spoiler-icon"
       />
     </app-flex>
-    <animation-wrapper animation-name="expand">
+    <slide-transition>
       <div v-if="expanded" class="spoiler-body" :class="{ 'no-padding': noPadding }">
         <slot name="body" />
       </div>
-    </animation-wrapper>
+    </slide-transition>
   </component>
 </template>
 
@@ -30,21 +29,19 @@
 import { computed, ref, watch } from 'vue';
 import CardWrapper from './CardWrapper.vue';
 import AppIcon from './AppIcon.vue';
-import AnimationWrapper from './AnimationWrapper.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import SlideTransition from './SlideTransition.vue';
 
 type AppSpoilerVariant = 'card' | 'card-static' | 'flat';
 
 const props = withDefaults(
   defineProps<{
     defaultExpanded?: boolean;
-    maxHeight?: string;
     variant?: AppSpoilerVariant;
     noPadding?: boolean;
   }>(),
   {
     defaultExpanded: false,
-    maxHeight: '100px',
     variant: 'card',
   },
 );
@@ -115,8 +112,7 @@ const toggle = (): void => {
 
 .spoiler-body {
   padding: var(--padding-md);
-  max-height: var(--spoiler-max-height);
-  overflow: auto;
+  transition: height 0.22s ease;
 }
 
 .spoiler.variant-flat .spoiler-body,
