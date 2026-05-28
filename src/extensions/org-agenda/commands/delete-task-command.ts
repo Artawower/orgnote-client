@@ -2,13 +2,7 @@ import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
 import { to, uint8ArrayToText, textToUint8Array } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { AGENDA_TASK_DELETE_COMMAND } from '../constants';
-import type { AgendaTaskView } from '../composables/use-agenda-tasks';
-
-const isAgendaTaskView = (data: unknown): data is AgendaTaskView =>
-  !!data &&
-  typeof data === 'object' &&
-  typeof (data as AgendaTaskView).filePath === 'string' &&
-  typeof (data as AgendaTaskView).id === 'string';
+import { isAgendaTaskView } from '../utils/is-agenda-task-view';
 
 const handleDeleteTask = async (api: OrgNoteApi, params: CommandHandlerParams): Promise<void> => {
   if (!isAgendaTaskView(params.data)) return;

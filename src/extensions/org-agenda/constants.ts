@@ -39,6 +39,8 @@ export const AGENDA_DEFAULT_INBOX_FILENAME = 'inbox.org';
 
 export const AGENDA_TASK_CONTEXT_MENU_GROUP = 'agenda-task';
 export const AGENDA_TASK_DELETE_COMMAND = 'delete task';
+export const AGENDA_TASK_SET_PRIORITY_COMMAND = 'set task priority';
+export const AGENDA_TASK_OPEN_COMMAND = 'open task in editor';
 
 export const POMODORO_ACTIVE_SESSION_KEY = 'org-agenda:pomodoro:active';
 export const POMODORO_LAST_TASK_KEY = 'org-agenda:pomodoro:last-task';

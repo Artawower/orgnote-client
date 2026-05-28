@@ -5,12 +5,16 @@ import { object, optional, string, pipe, metadata, number, boolean } from 'valib
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
+import { setTaskPriorityCommand } from './commands/set-task-priority-command';
+import { openTaskCommand } from './commands/open-task-command';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_CREATE_TASK,
   AGENDA_TASK_CONTEXT_MENU_GROUP,
   AGENDA_POMODORO_START_COMMAND,
   AGENDA_TASK_DELETE_COMMAND,
+  AGENDA_TASK_SET_PRIORITY_COMMAND,
+  AGENDA_TASK_OPEN_COMMAND,
   AGENDA_POMODORO_URI,
   AGENDA_POMODORO_VIEWER_ID,
   AGENDA_POMODORO_PAUSE_COMMAND,
@@ -113,7 +117,13 @@ const registerTaskContextMenu = (api: OrgNoteApi): void => {
   const contextMenu = api.ui.useContextMenu();
   contextMenu.registerGroup(AGENDA_TASK_CONTEXT_MENU_GROUP);
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    command: AGENDA_TASK_SET_PRIORITY_COMMAND,
+  });
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
     command: AGENDA_POMODORO_START_COMMAND,
+  });
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    command: AGENDA_TASK_OPEN_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
     command: AGENDA_TASK_DELETE_COMMAND,
@@ -136,6 +146,8 @@ const registerViews = (api: OrgNoteApi): void => {
   commands.add(createTaskCommand);
   commands.add(startPomodoroCommand);
   commands.add(deleteTaskCommand);
+  commands.add(setTaskPriorityCommand);
+  commands.add(openTaskCommand);
   commands.add({
     command: AGENDA_POMODORO_PAUSE_COMMAND,
     group: 'agenda',

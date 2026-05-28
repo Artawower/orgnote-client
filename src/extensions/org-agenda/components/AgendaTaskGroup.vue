@@ -1,5 +1,5 @@
 <template>
-  <app-spoiler max-height="none" default-expanded variant="card-static">
+  <app-spoiler default-expanded variant="card-static">
     <template #title>
       <app-flex row between align-center gap="sm">
         <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>

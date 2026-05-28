@@ -15,41 +15,12 @@
 
       <template #right>
         <app-flex row align-center gap="xs" class="task-meta" @click.stop>
-          <action-button
-            icon="sym_o_flag"
-            size="md"
-            :active="!!task.priority"
-            :class="priorityClass"
-            :aria-label="t(i18nKeys.orgAgendaQuickAddPriorityTooltip)"
-            @click="onPriorityClick"
-          />
-          <org-tags
-            v-if="task.tags?.length"
-            :tags="task.tags"
-            badge-size="xs"
-            :clickable="true"
-            :wrap="false"
-            :max-visible="2"
-            :search-on-click="false"
-            @tag-click="onTagClick"
-          />
           <agenda-date-button v-model="localDate" class="date-picker" />
           <action-button
             icon="sym_o_expand_more"
             size="md"
             :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
             @click="$emit('edit-expand')"
-          />
-          <command-action-button
-            :command="AGENDA_POMODORO_START_COMMAND"
-            :data="task"
-            size="md"
-          />
-          <action-button
-            icon="sym_o_open_in_new"
-            size="md"
-            :aria-label="t(i18nKeys.orgAgendaOpenNote)"
-            @click="$emit('open-note')"
           />
         </app-flex>
       </template>
@@ -60,22 +31,16 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { isNullable } from 'orgnote-api/utils';
+
 import MenuItem from 'src/containers/MenuItem.vue';
 import ContextMenu from 'src/components/ContextMenu.vue';
 import { AGENDA_TASK_CONTEXT_MENU_GROUP } from '../constants';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
 import AgendaDateButton from './AgendaDateButton.vue';
-import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import ActionButton from 'src/components/ActionButton.vue';
-import CommandActionButton from 'src/containers/CommandActionButton.vue';
-import { AGENDA_POMODORO_START_COMMAND } from '../constants';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
-import { api } from 'src/boot/api';
-import { openOrgPriorityCompletion } from 'src/utils/org-priority-completion';
-import { openOrgTagCompletion } from 'src/utils/org-tag-completion';
 import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
@@ -136,19 +101,6 @@ const onTitleSubmit = (): void => {
 
   if (cleanTitle && cleanTitle !== props.task.text) emit('edit-title', cleanTitle);
   if (extractedPriority !== props.task.priority) emit('edit-priority', extractedPriority);
-};
-
-const onPriorityClick = async (): Promise<void> => {
-  const result = await openOrgPriorityCompletion(api, t);
-  if (isNullable(result)) return;
-  emit('edit-priority', result || undefined);
-};
-
-const onTagClick = async (tag: string): Promise<void> => {
-  const newTag = await openOrgTagCompletion(api, t, tag);
-  if (isNullable(newTag)) return;
-  const updatedTags = (props.task.tags ?? []).map((t) => (t === tag ? newTag : t));
-  emit('edit-tags', newTag ? updatedTags : updatedTags.filter((t) => t !== tag));
 };
 </script>
 

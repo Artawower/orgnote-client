@@ -9,7 +9,6 @@
       :key="group.date"
       variant="card-static"
       no-padding
-      max-height="none"
       default-expanded
     >
       <template #title>{{ group.label }}</template>
