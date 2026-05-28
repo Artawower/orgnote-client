@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount } from 'vue';
 import { useConfigStore } from 'src/stores/config';
 
 const props = withDefaults(
@@ -40,6 +40,38 @@ const transitionName = computed(() =>
   animationsEnabled.value && !isSlide.value ? props.animationName : undefined,
 );
 
+const SLIDE_TRANSITION = 'height 220ms ease';
+
+let pendingDone: (() => void) | null = null;
+
+const clearSlideStyles = (el: HTMLElement): void => {
+  el.style.height = '';
+  el.style.overflow = '';
+  el.style.transition = '';
+};
+
+const animateHeight = (el: HTMLElement, targetPx: number, done: () => void): void => {
+  if (parseFloat(el.style.height) === targetPx) {
+    done();
+    return;
+  }
+  el.style.transition = SLIDE_TRANSITION;
+  el.style.height = `${targetPx}px`;
+  const onEnd = (e: TransitionEvent): void => {
+    if (e.target !== el || e.propertyName !== 'height') return;
+    el.removeEventListener('transitionend', onEnd);
+    pendingDone = null;
+    done();
+  };
+  pendingDone = () => el.removeEventListener('transitionend', onEnd);
+  el.addEventListener('transitionend', onEnd);
+};
+
+onBeforeUnmount(() => {
+  pendingDone?.();
+  pendingDone = null;
+});
+
 const onBeforeEnter = (el: Element): void => {
   if (!isSlide.value || !animationsEnabled.value) return;
   (el as HTMLElement).style.height = '0';
@@ -47,21 +79,18 @@ const onBeforeEnter = (el: Element): void => {
 };
 
 const onEnter = (el: Element, done: () => void): void => {
-  if (!isSlide.value || !animationsEnabled.value) {
+  if (!isSlide.value) return;
+  if (!animationsEnabled.value) {
     done();
     return;
   }
   const htmlEl = el as HTMLElement;
-  requestAnimationFrame(() => {
-    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
-    htmlEl.addEventListener('transitionend', done, { once: true });
-  });
+  requestAnimationFrame(() => animateHeight(htmlEl, htmlEl.scrollHeight, done));
 };
 
 const onAfterEnter = (el: Element): void => {
   if (!isSlide.value) return;
-  (el as HTMLElement).style.height = '';
-  (el as HTMLElement).style.overflow = '';
+  clearSlideStyles(el as HTMLElement);
 };
 
 const onBeforeLeave = (el: Element): void => {
@@ -72,15 +101,13 @@ const onBeforeLeave = (el: Element): void => {
 };
 
 const onLeave = (el: Element, done: () => void): void => {
-  if (!isSlide.value || !animationsEnabled.value) {
+  if (!isSlide.value) return;
+  if (!animationsEnabled.value) {
     done();
     return;
   }
   const htmlEl = el as HTMLElement;
-  requestAnimationFrame(() => {
-    htmlEl.style.height = '0';
-    htmlEl.addEventListener('transitionend', done, { once: true });
-  });
+  requestAnimationFrame(() => animateHeight(htmlEl, 0, done));
 };
 </script>
 
