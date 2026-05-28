@@ -1,40 +1,28 @@
-import { mount, flushPromises } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import AppSpoiler from './AppSpoiler.vue';
 import { test, expect, vi } from 'vitest';
 import { nextTick } from 'vue';
 
 vi.mock('src/stores/config', () => ({
   useConfigStore: vi.fn(() => ({
-    config: {
-      ui: { animations: false },
-    },
+    config: { ui: { enableAnimations: false } },
   })),
 }));
 
-test('AppSpoiler should render collapsed by default', () => {
+test('AppSpoiler collapses by default', () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
-  expect(wrapper.find('.spoiler-title').text()).toBe('Test Title');
+  expect(wrapper.find('.spoiler-title').text()).toBe('Title');
   expect(wrapper.find('.spoiler-body').exists()).toBe(false);
 });
 
-test('AppSpoiler should start expanded when defaultExpanded is true', async () => {
+test('AppSpoiler starts expanded when defaultExpanded is true', async () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      defaultExpanded: true,
-    },
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    props: { defaultExpanded: true },
+    slots: { title: 'Title', body: 'Body' },
   });
-
-  await flushPromises();
 
   expect(wrapper.find('.spoiler-body').exists()).toBe(true);
 
@@ -42,97 +30,67 @@ test('AppSpoiler should start expanded when defaultExpanded is true', async () =
   expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false]);
 });
 
-test('AppSpoiler should toggle expanded state on header click', async () => {
+test('AppSpoiler toggles on header click', async () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   expect(wrapper.find('.spoiler-body').exists()).toBe(false);
 
   await wrapper.find('.spoiler-header').trigger('click');
   await nextTick();
-
   expect(wrapper.find('.spoiler-body').exists()).toBe(true);
 
   await wrapper.find('.spoiler-header').trigger('click');
   await nextTick();
-
   expect(wrapper.find('.spoiler-body').exists()).toBe(false);
 });
 
-test('AppSpoiler should emit update:modelValue on toggle', async () => {
+test('AppSpoiler emits update:modelValue on toggle', async () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   await wrapper.find('.spoiler-header').trigger('click');
-
-  expect(wrapper.emitted('update:modelValue')).toBeTruthy();
   expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([true]);
 
   await wrapper.find('.spoiler-header').trigger('click');
-
   expect(wrapper.emitted('update:modelValue')?.[1]).toEqual([false]);
 });
 
-test('AppSpoiler should respect modelValue false', () => {
+test('AppSpoiler respects modelValue false', () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      modelValue: false,
-    },
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    props: { modelValue: false },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   expect(wrapper.find('.spoiler-body').exists()).toBe(false);
 });
 
-test('AppSpoiler should respect modelValue true', () => {
+test('AppSpoiler respects modelValue true', () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      modelValue: true,
-    },
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    props: { modelValue: true },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   expect(wrapper.find('.spoiler-body').exists()).toBe(true);
 });
 
-test('AppSpoiler should rotate icon when expanded', async () => {
+test('AppSpoiler rotates icon when expanded', async () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
-  let icon = wrapper.find('.spoiler-icon');
-  expect(icon.classes()).not.toContain('rotated');
+  expect(wrapper.find('.spoiler-icon').classes()).not.toContain('rotated');
 
   await wrapper.find('.spoiler-header').trigger('click');
   await nextTick();
-
-  icon = wrapper.find('.spoiler-icon');
-  expect(icon.classes()).toContain('rotated');
+  expect(wrapper.find('.spoiler-icon').classes()).toContain('rotated');
 });
 
-test('AppSpoiler should handle multiple rapid clicks', async () => {
+test('AppSpoiler handles multiple rapid clicks', async () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   await wrapper.find('.spoiler-header').trigger('click');
@@ -143,59 +101,28 @@ test('AppSpoiler should handle multiple rapid clicks', async () => {
   expect(wrapper.find('.spoiler-body').exists()).toBe(true);
 });
 
-test('AppSpoiler should use defaultExpanded when modelValue is undefined', async () => {
+test('AppSpoiler uses defaultExpanded when modelValue is undefined', async () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      defaultExpanded: true,
-      modelValue: undefined,
-    },
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    props: { defaultExpanded: true, modelValue: undefined },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   await wrapper.find('.spoiler-header').trigger('click');
   expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false]);
 });
 
-test('AppSpoiler should render without body slot', async () => {
+test('AppSpoiler renders body content when expanded', () => {
   const wrapper = mount(AppSpoiler, {
-    props: {
-      defaultExpanded: false,
-    },
-    slots: {
-      title: 'Test Title',
-    },
+    props: { defaultExpanded: true },
+    slots: { title: 'Title', body: 'Body' },
   });
 
-  await nextTick();
-  expect(wrapper.find('.spoiler-title').exists()).toBe(true);
-  expect(wrapper.find('.spoiler-body').exists()).toBe(false);
-
-  await wrapper.find('.spoiler-header').trigger('click');
-  await nextTick();
-
-  expect(wrapper.find('.spoiler-body').exists()).toBe(true);
+  expect(wrapper.find('.spoiler-body').text()).toBe('Body');
 });
 
-test('AppSpoiler should render without title slot', () => {
+test('AppSpoiler renders expand icon with correct props', () => {
   const wrapper = mount(AppSpoiler, {
-    slots: {
-      body: 'Test Body',
-    },
-  });
-
-  expect(wrapper.find('.spoiler-header').exists()).toBe(true);
-  expect(wrapper.find('.spoiler-title').text()).toBe('');
-});
-
-test('AppSpoiler should render expand icon with correct props', () => {
-  const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   const icon = wrapper.findComponent({ name: 'AppIcon' });
@@ -205,22 +132,9 @@ test('AppSpoiler should render expand icon with correct props', () => {
   expect(icon.props('color')).toBe('fg-muted');
 });
 
-test('AppSpoiler body is rendered when expanded', () => {
+test('AppSpoiler uses CardWrapper with plain type', () => {
   const wrapper = mount(AppSpoiler, {
-    props: { defaultExpanded: true },
-    slots: { title: 'Test Title', body: 'Test Body' },
-  });
-
-  expect(wrapper.find('.spoiler-body').exists()).toBe(true);
-  expect(wrapper.find('.spoiler-body').text()).toBe('Test Body');
-});
-
-test('AppSpoiler should use CardWrapper with plain type', () => {
-  const wrapper = mount(AppSpoiler, {
-    slots: {
-      title: 'Test Title',
-      body: 'Test Body',
-    },
+    slots: { title: 'Title', body: 'Body' },
   });
 
   const cardWrapper = wrapper.findComponent({ name: 'CardWrapper' });

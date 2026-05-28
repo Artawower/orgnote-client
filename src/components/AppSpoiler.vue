@@ -46,22 +46,15 @@ const props = withDefaults(
   },
 );
 
-const model = defineModel<boolean | undefined>({
-  type: null,
-});
-
+const model = defineModel<boolean | undefined>({ type: null });
 const localExpanded = ref(props.defaultExpanded ?? false);
-
 const expanded = computed(() => model.value ?? localExpanded.value);
-
 const variant = computed(() => props.variant);
 
 watch(
   model,
   (newValue) => {
-    if (newValue !== undefined) {
-      localExpanded.value = newValue;
-    }
+    if (newValue !== undefined) localExpanded.value = newValue;
   },
   { immediate: true },
 );
@@ -78,27 +71,14 @@ const toggle = (): void => {
   transition: background-color 0.2s ease;
 
   &.variant-card {
-    @include hover {
-      background-color: var(--menu-item-hover-bg);
-    }
+    overflow: hidden;
   }
 }
 
 .spoiler-header {
-  & {
-    @include interactive-no-select;
-    cursor: pointer;
-    min-height: var(--menu-item-height);
-    padding: var(--menu-item-padding);
-  }
-}
-
-.spoiler-title {
-  @include fontify(var(--font-size-base), var(--font-weight-medium), var(--fg));
-
-  & {
-    flex: 1;
-  }
+  padding: var(--padding-md);
+  cursor: pointer;
+  user-select: none;
 }
 
 .spoiler-icon {
@@ -112,7 +92,6 @@ const toggle = (): void => {
 
 .spoiler-body {
   padding: var(--padding-md);
-  transition: height 0.22s ease;
 }
 
 .spoiler.variant-flat .spoiler-body,
