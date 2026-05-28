@@ -31,12 +31,12 @@ test('AnimationWrapper should render slot content', () => {
 
 test('AnimationWrapper should apply animation name when enableAnimations is true', () => {
   const wrapper = mount(AnimationWrapper, {
-    props: { animationName: 'expand' },
+    props: { animationName: 'bounce' },
     slots: { default: '<div>Content</div>' },
   });
 
   const transition = wrapper.findComponent({ name: 'Transition' });
-  expect(transition.props('name')).toBe('expand');
+  expect(transition.props('name')).toBe('bounce');
 });
 
 test('AnimationWrapper should disable animation name when enableAnimations is false', () => {

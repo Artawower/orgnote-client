@@ -1,5 +1,14 @@
 <template>
-  <transition :name="transitionName" :mode="transitionMode" :css="shouldUseCss">
+  <transition
+    :name="transitionName"
+    :mode="transitionMode"
+    :css="shouldUseCss"
+    @before-enter="onBeforeEnter"
+    @enter="onEnter"
+    @after-enter="onAfterEnter"
+    @before-leave="onBeforeLeave"
+    @leave="onLeave"
+  >
     <slot />
   </transition>
 </template>
@@ -10,7 +19,7 @@ import { useConfigStore } from 'src/stores/config';
 
 const props = withDefaults(
   defineProps<{
-    animationName?: 'bounce' | 'expand' | 'fade';
+    animationName?: 'bounce' | 'fade' | 'slide';
     mode?: 'in-out' | 'out-in';
     css?: boolean;
   }>(),
@@ -23,11 +32,56 @@ const props = withDefaults(
 
 const { config } = useConfigStore();
 
-const shouldUseCss = computed(() => config.ui.enableAnimations && props.css);
-const transitionMode = computed(() => (config.ui.enableAnimations ? props.mode : undefined));
+const isSlide = computed(() => props.animationName === 'slide');
+const animationsEnabled = computed(() => config.ui.enableAnimations);
+const shouldUseCss = computed(() => !isSlide.value && animationsEnabled.value && props.css);
+const transitionMode = computed(() => (animationsEnabled.value ? props.mode : undefined));
 const transitionName = computed(() =>
-  config.ui.enableAnimations ? props.animationName : undefined,
+  animationsEnabled.value && !isSlide.value ? props.animationName : undefined,
 );
+
+const onBeforeEnter = (el: Element): void => {
+  if (!isSlide.value || !animationsEnabled.value) return;
+  (el as HTMLElement).style.height = '0';
+  (el as HTMLElement).style.overflow = 'hidden';
+};
+
+const onEnter = (el: Element, done: () => void): void => {
+  if (!isSlide.value || !animationsEnabled.value) {
+    done();
+    return;
+  }
+  const htmlEl = el as HTMLElement;
+  requestAnimationFrame(() => {
+    htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+    htmlEl.addEventListener('transitionend', done, { once: true });
+  });
+};
+
+const onAfterEnter = (el: Element): void => {
+  if (!isSlide.value) return;
+  (el as HTMLElement).style.height = '';
+  (el as HTMLElement).style.overflow = '';
+};
+
+const onBeforeLeave = (el: Element): void => {
+  if (!isSlide.value || !animationsEnabled.value) return;
+  const htmlEl = el as HTMLElement;
+  htmlEl.style.height = `${htmlEl.scrollHeight}px`;
+  htmlEl.style.overflow = 'hidden';
+};
+
+const onLeave = (el: Element, done: () => void): void => {
+  if (!isSlide.value || !animationsEnabled.value) {
+    done();
+    return;
+  }
+  const htmlEl = el as HTMLElement;
+  requestAnimationFrame(() => {
+    htmlEl.style.height = '0';
+    htmlEl.addEventListener('transitionend', done, { once: true });
+  });
+};
 </script>
 
 <style scoped>
@@ -56,32 +110,6 @@ const transitionName = computed(() =>
 .bounce-leave-to {
   transform: scale(0.5) rotate(90deg);
   opacity: 0;
-}
-
-.expand-enter-active,
-.expand-leave-active {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition:
-    grid-template-rows 0.3s ease,
-    opacity 0.3s ease;
-}
-
-.expand-enter-active > *,
-.expand-leave-active > * {
-  overflow: hidden;
-}
-
-.expand-enter-from,
-.expand-leave-to {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-.expand-enter-to,
-.expand-leave-from {
-  grid-template-rows: 1fr;
-  opacity: 1;
 }
 
 .fade-enter-active,

@@ -17,11 +17,11 @@
         class="spoiler-icon"
       />
     </app-flex>
-    <slide-transition>
+    <animation-wrapper animation-name="slide">
       <div v-if="expanded" class="spoiler-body" :class="{ 'no-padding': noPadding }">
         <slot name="body" />
       </div>
-    </slide-transition>
+    </animation-wrapper>
   </component>
 </template>
 
@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue';
 import CardWrapper from './CardWrapper.vue';
 import AppIcon from './AppIcon.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import SlideTransition from './SlideTransition.vue';
+import AnimationWrapper from './AnimationWrapper.vue';
 
 type AppSpoilerVariant = 'card' | 'card-static' | 'flat';
 
