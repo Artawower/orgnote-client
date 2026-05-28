@@ -159,7 +159,8 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 
 .prefer-left {
   .left {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
 }
 
@@ -171,6 +172,10 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 
 .content {
   width: 100%;
+}
+
+.right {
+  flex-shrink: 0;
 }
 
 .left,
