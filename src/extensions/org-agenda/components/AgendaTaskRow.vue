@@ -19,6 +19,8 @@
           <action-button
             icon="sym_o_expand_more"
             size="md"
+            class="expand-btn"
+            :class="{ 'expand-btn--open': props.expanded }"
             :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
             @click="$emit('edit-expand')"
           />
@@ -50,7 +52,7 @@ import { buildTaskEditorTitle } from 'src/utils/org-editor/build-task-title';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filters';
 
-const props = defineProps<{ task: AgendaTaskView }>();
+const props = defineProps<{ task: AgendaTaskView; expanded?: boolean }>();
 const emit = defineEmits<{
   toggle: [];
   'open-note': [];
@@ -125,6 +127,18 @@ const onTitleSubmit = (): void => {
   :deep(.cm-content) {
     text-decoration: v-bind("isChecked ? 'line-through' : 'none'");
     color: v-bind("isChecked ? 'var(--fg-muted)' : 'inherit'");
+  }
+}
+
+.expand-btn {
+  :deep(.icon) {
+    transition: transform 0.2s ease;
+  }
+}
+
+.expand-btn--open {
+  :deep(.icon) {
+    transform: rotate(180deg);
   }
 }
 
