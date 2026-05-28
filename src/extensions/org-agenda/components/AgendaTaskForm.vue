@@ -147,7 +147,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .input-row {
-  min-height: var(--btn-action-sm-size);
+  min-height: var(--control-height);
 }
 
 .title-input {
