@@ -545,6 +545,7 @@ body {
 
 body.keyboard-opened {
   --device-padding-bottom: 0px;
+  --floating-footer-height: 0px;
 }
 
 body.electron.platform-mac {
