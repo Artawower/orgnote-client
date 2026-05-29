@@ -22,7 +22,10 @@
       </template>
 
       <template #title-actions>
-        <agenda-date-button v-model="draft.scheduledDate" />
+        <agenda-date-button
+          v-model="draft.scheduledDate"
+          @update:model-value="onDateChange"
+        />
       </template>
 
       <template #toolbar-start>
@@ -44,6 +47,7 @@
 <script lang="ts" setup>
 import { computed, nextTick, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { format } from 'date-fns';
 
 import type { DiskFile } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
@@ -83,7 +87,11 @@ const targetFile = ref<string | undefined>();
 const isTildeCompletionOpen = ref(false);
 const formRef = ref<InstanceType<typeof AgendaTaskForm> | null>(null);
 
-const draft = reactive<AgendaTaskDraft>({ title: '', body: '', scheduledDate: undefined });
+const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');
+
+const lastUserSelectedDate = ref<string | null>(null);
+
+const draft = reactive<AgendaTaskDraft>({ title: '', body: '', scheduledDate: todayIsoDate() });
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
 
@@ -155,10 +163,14 @@ const buildPayload = (): CreateTaskInput & { targetFile?: string } => {
   };
 };
 
+const onDateChange = (date: string | undefined): void => {
+  lastUserSelectedDate.value = date ?? null;
+};
+
 const resetState = (): void => {
   draft.title = '';
   draft.body = '';
-  draft.scheduledDate = undefined;
+  draft.scheduledDate = lastUserSelectedDate.value ?? todayIsoDate();
   isExpanded.value = false;
   targetFile.value = undefined;
 };
