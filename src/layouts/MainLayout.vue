@@ -69,10 +69,8 @@ const modal = api.ui.useModal();
 const hasOpenModals = computed(() => modal.modals.length > 0);
 
 const handleErrorFromQuery = (): void => {
-  const errorMessage = route.query.error;
-  if (!errorMessage || typeof errorMessage !== 'string') {
-    return;
-  }
+  const errorMessage = route?.query?.error;
+  if (!errorMessage || typeof errorMessage !== 'string') return;
   reporter.reportError(new Error(errorMessage));
   router.replace({ query: { ...route.query, error: undefined } });
 };
