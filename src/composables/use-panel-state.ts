@@ -19,6 +19,10 @@ export const usePanelState = () => {
   };
 
   const openComponent = <T extends VueComponent>(cmp: T, config?: ComponentConfig<T>) => {
+    if (opened.value && component.value === cmp) {
+      close();
+      return;
+    }
     componentConfig.value = config;
     component.value = cmp;
     open();

@@ -17,7 +17,7 @@ import { deleteFileCompletion } from 'src/composables/delete-file-completion';
 import { useFileRenameCompletion } from 'src/composables/file-rename-completion';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { to } from 'orgnote-api/utils';
-import { defineAsyncComponent } from 'vue';
+import { FileManagerRef as FileManagerComponent } from 'src/containers/file-manager-ref';
 import { buildSortCandidates } from 'src/composables/sort-files-completion';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import {
@@ -47,7 +47,10 @@ const getTargetPathsFromCommandData = (data?: FileTargetsCommandData): string[] 
   }
 };
 
-const cancelAndThrow = (fm: ReturnType<OrgNoteApi['core']['useFileManager']>, error: Error): never => {
+const cancelAndThrow = (
+  fm: ReturnType<OrgNoteApi['core']['useFileManager']>,
+  error: Error,
+): never => {
   fm.cancelPending();
   throw error;
 };
@@ -320,17 +323,14 @@ export function getFileManagerCommands(): Command[] {
       icon: 'sym_o_fit_screen',
       handler: (api: OrgNoteApi) => {
         const modal = api.ui.useModal();
-        modal.open(
-          defineAsyncComponent(() => import('src/containers/FileManager.vue')),
-          {
-            modalProps: {
-              closable: true,
-            },
-            modalEmits: {
-              close: () => modal.close(),
-            },
+        modal.open(FileManagerComponent, {
+          modalProps: {
+            closable: true,
           },
-        );
+          modalEmits: {
+            close: () => modal.close(),
+          },
+        });
       },
     },
     {
@@ -339,20 +339,13 @@ export function getFileManagerCommands(): Command[] {
       icon: 'folder',
       handler: (api: OrgNoteApi) => {
         const sidebar = api.ui.useSidebar();
-        if (sidebar.opened) {
-          sidebar.close();
-          return;
-        }
-        sidebar.openComponent(
-          defineAsyncComponent(() => import('src/containers/FileManager.vue')),
-          {
-            componentProps: {
-              closable: false,
-              tree: true,
-              compact: true,
-            },
+        sidebar.openComponent(FileManagerComponent, {
+          componentProps: {
+            closable: false,
+            tree: true,
+            compact: true,
           },
-        );
+        });
       },
     },
     {
@@ -522,16 +515,13 @@ export function getFileManagerCommands(): Command[] {
         fm.path = getFileDirPath(filePath);
         const sidebar = api.ui.useSidebar();
         if (!sidebar.opened) {
-          sidebar.openComponent(
-            defineAsyncComponent(() => import('src/containers/FileManager.vue')),
-            {
-              componentProps: {
-                closable: false,
-                tree: true,
-                compact: true,
-              },
+          sidebar.openComponent(FileManagerComponent, {
+            componentProps: {
+              closable: false,
+              tree: true,
+              compact: true,
             },
-          );
+          });
         }
       },
     },

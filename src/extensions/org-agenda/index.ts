@@ -51,12 +51,7 @@ interface AgendaView {
 }
 
 const toggleTasksSidebar = (api: OrgNoteApi): void => {
-  const sidebar = api.ui.useSidebar();
-  if (sidebar.opened && sidebar.component === AgendaSidebarRef) {
-    sidebar.close();
-    return;
-  }
-  sidebar.openComponent(AgendaSidebarRef);
+  api.ui.useSidebar().openComponent(AgendaSidebarRef);
 };
 
 const openBuffer =
