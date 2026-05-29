@@ -3,11 +3,7 @@
     :name="transitionName"
     :mode="transitionMode"
     :css="shouldUseCss"
-    @before-enter="onBeforeEnter"
-    @enter="onEnter"
-    @after-enter="onAfterEnter"
-    @before-leave="onBeforeLeave"
-    @leave="onLeave"
+    v-bind="slideHooks"
   >
     <slot />
   </transition>
@@ -38,6 +34,12 @@ const shouldUseCss = computed(() => !isSlide.value && animationsEnabled.value &&
 const transitionMode = computed(() => (animationsEnabled.value ? props.mode : undefined));
 const transitionName = computed(() =>
   animationsEnabled.value && !isSlide.value ? props.animationName : undefined,
+);
+
+const slideHooks = computed(() =>
+  isSlide.value
+    ? { onBeforeEnter, onEnter, onAfterEnter, onBeforeLeave, onLeave }
+    : {},
 );
 
 const SLIDE_TRANSITION = 'height 220ms ease';
@@ -73,39 +75,30 @@ onBeforeUnmount(() => {
 });
 
 const onBeforeEnter = (el: Element): void => {
-  if (!isSlide.value || !animationsEnabled.value) return;
+  if (!animationsEnabled.value) return;
   (el as HTMLElement).style.height = '0';
   (el as HTMLElement).style.overflow = 'hidden';
 };
 
 const onEnter = (el: Element, done: () => void): void => {
-  if (!isSlide.value) return;
-  if (!animationsEnabled.value) {
-    done();
-    return;
-  }
+  if (!animationsEnabled.value) { done(); return; }
   const htmlEl = el as HTMLElement;
   requestAnimationFrame(() => animateHeight(htmlEl, htmlEl.scrollHeight, done));
 };
 
 const onAfterEnter = (el: Element): void => {
-  if (!isSlide.value) return;
   clearSlideStyles(el as HTMLElement);
 };
 
 const onBeforeLeave = (el: Element): void => {
-  if (!isSlide.value || !animationsEnabled.value) return;
+  if (!animationsEnabled.value) return;
   const htmlEl = el as HTMLElement;
   htmlEl.style.height = `${htmlEl.scrollHeight}px`;
   htmlEl.style.overflow = 'hidden';
 };
 
 const onLeave = (el: Element, done: () => void): void => {
-  if (!isSlide.value) return;
-  if (!animationsEnabled.value) {
-    done();
-    return;
-  }
+  if (!animationsEnabled.value) { done(); return; }
   const htmlEl = el as HTMLElement;
   requestAnimationFrame(() => animateHeight(htmlEl, 0, done));
 };
