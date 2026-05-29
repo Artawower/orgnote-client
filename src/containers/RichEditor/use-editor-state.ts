@@ -16,6 +16,7 @@ import {
     createOrgLanguageExtension,
     orgSelectionTheme,
 } from 'src/utils/org-editor';
+import { createImagePasteExtension } from 'src/utils/org-editor/extensions/image-paste';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
 import { computed, shallowRef, toValue, watch } from 'vue';
 import { editorLanguages } from './editor-languages';
@@ -159,6 +160,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
       doc: content,
       extensions: [
         ...createBaseRichEditorExtensions(options.editorViewGetter, options.onContentUpdate),
+        ...(options.filePathGetter ? [createImagePasteExtension(options.filePathGetter)] : []),
         ...createActiveContextExtensions({
           editorViewGetter: options.editorViewGetter,
           filePathGetter: options.filePathGetter,
