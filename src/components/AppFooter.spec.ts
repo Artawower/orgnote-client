@@ -1,38 +1,38 @@
 import { mount } from '@vue/test-utils';
 import AppFooter from './AppFooter.vue';
-import { describe, test, expect } from 'vitest';
+import { test, expect } from 'vitest';
 
-describe('AppFooter', () => {
-  test('renders slot content', () => {
-    const wrapper = mount(AppFooter, {
-      slots: {
-        default: '<button>Action</button>',
-      },
-    });
-
-    expect(wrapper.find('button').text()).toBe('Action');
+test('AppFooter_default_rendersSlotContent', () => {
+  const wrapper = mount(AppFooter, {
+    slots: { default: '<button>Action</button>' },
   });
+  expect(wrapper.find('button').text()).toBe('Action');
+});
 
-  test('has footer-wrapper class on root and footer class inside', () => {
-    const wrapper = mount(AppFooter);
+test('AppFooter_default_hasFooterWrapperAndFooterClasses', () => {
+  const wrapper = mount(AppFooter);
+  expect(wrapper.classes()).toContain('footer-wrapper');
+  expect(wrapper.find('.footer').exists()).toBe(true);
+});
 
-    expect(wrapper.classes()).toContain('footer-wrapper');
-    expect(wrapper.find('.footer').exists()).toBe(true);
-  });
+test('AppFooter_default_centerJustifyContent', () => {
+  const wrapper = mount(AppFooter);
+  const footer = wrapper.find('.footer');
+  expect(footer.attributes('style')).toContain('center');
+});
 
-  test('uses center justify by default', () => {
-    const wrapper = mount(AppFooter);
-    const flex = wrapper.findComponent({ name: 'AppFlex' });
+test('AppFooter_justifyBetween_spaceBetweenJustifyContent', () => {
+  const wrapper = mount(AppFooter, { props: { justify: 'between' } });
+  const footer = wrapper.find('.footer');
+  expect(footer.attributes('style')).toContain('space-between');
+});
 
-    expect(flex.props('justify')).toBe('center');
-  });
+test('AppFooter_openTop_addsOpenTopClass', () => {
+  const wrapper = mount(AppFooter, { props: { openTop: true } });
+  expect(wrapper.find('.footer').classes()).toContain('open-top');
+});
 
-  test('accepts custom justify prop', () => {
-    const wrapper = mount(AppFooter, {
-      props: { justify: 'between' },
-    });
-    const flex = wrapper.findComponent({ name: 'AppFlex' });
-
-    expect(flex.props('justify')).toBe('between');
-  });
+test('AppFooter_openBottom_addsOpenBottomClass', () => {
+  const wrapper = mount(AppFooter, { props: { openBottom: true } });
+  expect(wrapper.find('.footer').classes()).toContain('open-bottom');
 });

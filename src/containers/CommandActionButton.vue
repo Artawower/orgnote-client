@@ -3,6 +3,7 @@
     v-if="command && !command.hide?.(api)"
     v-bind="$attrs"
     :disabled="isDisabled"
+    :active="isActive"
     @mousedown="handleMouseDown"
     @click="handleClick"
     :icon="iconString"
@@ -56,6 +57,7 @@ const editorStore = api.core.useEditor();
 const command = computed(() => commandsStore.get(props.command));
 const attrs = useAttrs();
 const isDisabled = computed(() => (command.value?.disabled?.(api) ?? false) || !!attrs.disabled);
+const isActive = computed(() => command.value?.isActive?.(api) ?? false);
 
 const { iconString, iconComponent } = useResolvedIcon(computed(() => toValue(command.value?.icon)));
 

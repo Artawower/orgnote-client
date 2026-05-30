@@ -315,6 +315,8 @@ const createTransferHandler =
     await executeInteractiveTransfer(api, fm.pendingOperation);
   };
 
+const OPEN_FILE_MANAGER_NAV_COMMAND = 'open file manager';
+
 export function getFileManagerCommands(): Command[] {
   const commands: Command[] = [
     {
@@ -337,6 +339,10 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.TOGGLE_FILE_MANAGER,
       group,
       icon: 'folder',
+      isActive: (api: OrgNoteApi) => {
+        const sidebar = api.ui.useSidebar();
+        return sidebar.opened && sidebar.component === FileManagerComponent;
+      },
       handler: (api: OrgNoteApi) => {
         const sidebar = api.ui.useSidebar();
         sidebar.openComponent(FileManagerComponent, {
@@ -345,6 +351,23 @@ export function getFileManagerCommands(): Command[] {
             tree: true,
             compact: true,
           },
+        });
+      },
+    },
+    {
+      command: OPEN_FILE_MANAGER_NAV_COMMAND,
+      icon: 'folder',
+      title: 'File Manager',
+      system: true,
+      isActive: (api: OrgNoteApi) => {
+        const sidebar = api.ui.useSidebar();
+        return sidebar.opened && sidebar.component === FileManagerComponent;
+      },
+      handler: (api: OrgNoteApi) => {
+        const sidebar = api.ui.useSidebar();
+        if (sidebar.opened && sidebar.component === FileManagerComponent) return;
+        sidebar.openComponent(FileManagerComponent, {
+          componentProps: { closable: false, tree: true, compact: true },
         });
       },
     },

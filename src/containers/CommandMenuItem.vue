@@ -53,11 +53,12 @@ const resolvedIcon = computed(() => {
 const isActive = computed(() => command?.isActive?.(api));
 const isNarrow = computed(() => command?.context?.narrow);
 
+const emit = defineEmits<{ executed: [] }>();
+
 const executeCommand = () => {
-  if (props.disabled) {
-    return;
-  }
+  if (props.disabled) return;
   execute(props.command, props.data);
+  emit('executed');
 };
 
 const { t } = useI18n({

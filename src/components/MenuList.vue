@@ -81,5 +81,16 @@ const handleAction = async (item: MenuAction) => {
 <style lang="scss" scoped>
 .context-menu-list {
   min-width: 160px;
+  width: 100%;
+
+  // No extra space at the very top/bottom of the list — the container
+  // itself (modal or q-menu) already provides the visual boundary.
+  :deep(.menu-item:first-child) {
+    padding-top: 0;
+  }
+
+  :deep(.menu-item:last-child) {
+    padding-bottom: 0;
+  }
 }
 </style>

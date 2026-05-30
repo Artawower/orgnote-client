@@ -16,6 +16,8 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.SHOW_TAB_SWITCHER,
     DefaultCommands.OPEN_GRAPH,
   ],
+  'sidebar-sections': ['open file manager'],
+  'sidebar-essentials': [DefaultCommands.SETTINGS, DefaultCommands.TOGGLE_SIDEBAR],
   'sidebar-footer': [
     DefaultCommands.TOGGLE_COMMANDS,
     DefaultCommands.PROJECT_INFO,

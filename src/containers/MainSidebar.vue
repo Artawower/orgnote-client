@@ -10,16 +10,22 @@
         <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" />
       </app-flex>
     </template>
+
     <app-flex column class="content-wrapper">
+      <animation-wrapper animation-name="fade">
+        <div
+          v-if="sectionsMenuOpen && !tabletAbove"
+          class="sections-overlay"
+          @click="closeSectionsMenu"
+        />
+      </animation-wrapper>
+
       <div class="sidebar-content">
         <component :is="component" v-bind="componentConfig?.componentProps || {}" />
       </div>
+
       <visibility-wrapper tablet-below>
         <floating-footer>
-          <app-footer v-if="opened && !mobileFileSearchActive" class="sidebar-footer" float>
-            <command-action-button v-for="cmd of footerCommands" :command="cmd" :key="cmd" @executed="closeSidebar" />
-            <command-action-button :command="DefaultCommands.SHOW_MOBILE_FILE_SEARCH" @executed="closeSidebar" />
-          </app-footer>
           <div v-if="opened && mobileFileSearchActive" class="sidebar-footer-search">
             <search-input
               ref="mobileSearchInputRef"
@@ -32,6 +38,18 @@
               </template>
             </search-input>
           </div>
+          <template v-else>
+            <animation-wrapper animation-name="fade">
+              <div
+                v-if="sectionsMenuOpen"
+                class="sections-menu"
+                @click.stop
+              >
+                <mobile-sidebar-menu />
+              </div>
+            </animation-wrapper>
+            <mobile-sidebar-selector />
+          </template>
         </floating-footer>
       </visibility-wrapper>
     </app-flex>
@@ -42,7 +60,6 @@
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import { DefaultCommands, I18N } from 'orgnote-api';
-import AppFooter from 'src/components/AppFooter.vue';
 import AppSidebar from 'src/components/AppSidebar.vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import SearchInput from 'src/components/SearchInput.vue';
@@ -51,6 +68,10 @@ import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import FloatingFooter from 'src/components/FloatingFooter.vue';
 import { nextTick, ref, watch } from 'vue';
+import MobileSidebarSelector from 'src/containers/MobileSidebarSelector.vue';
+import MobileSidebarMenu from 'src/containers/MobileSidebarMenu.vue';
+import AnimationWrapper from 'src/components/AnimationWrapper.vue';
+
 
 const { opened, component, componentConfig } = storeToRefs(api.ui.useSidebar());
 const pinnedCommands = api.ui.usePinnedCommands();
@@ -59,16 +80,20 @@ const footerCommands = pinnedCommands.getCommands('sidebar-footer');
 const { tabletAbove } = useScreenDetection();
 
 const { searchQuery, mobileFileSearchActive } = storeToRefs(api.core.useFileManager());
+const sidebar = api.ui.useSidebar();
+const { navMenuOpen: sectionsMenuOpen } = storeToRefs(sidebar);
+const { closeNavMenu: closeSectionsMenu } = sidebar;
 
-const closeSidebar = () => {
-  api.ui.useSidebar().close();
-};
 const mobileSearchInputRef = ref<InstanceType<typeof SearchInput>>();
 
 watch(mobileFileSearchActive, async (active) => {
   if (!active) return;
   await nextTick();
   mobileSearchInputRef.value?.focus();
+});
+
+watch(opened, (isOpen) => {
+  if (!isOpen) closeSectionsMenu();
 });
 </script>
 
@@ -87,6 +112,7 @@ watch(mobileFileSearchActive, async (active) => {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .sidebar-content {
@@ -94,6 +120,27 @@ watch(mobileFileSearchActive, async (active) => {
   min-height: 0;
   width: 100%;
   overflow-y: auto;
+  z-index: 0;
+  position: relative;
+}
+
+.sections-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--sidebar-sections-z-index);
+}
+
+.sections-menu {
+  margin: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x) 0;
+  background: var(--footer-bg);
+  border: var(--footer-border);
+  border-bottom: none;
+  border-radius: var(--footer-border-radius) var(--footer-border-radius) 0 0;
+  -webkit-backdrop-filter: var(--footer-backdrop-filter);
+  backdrop-filter: var(--footer-backdrop-filter);
+  background-clip: padding-box;
+  overflow: hidden;
+  @include glass-specular;
 }
 
 .sidebar-footer {
@@ -105,4 +152,5 @@ watch(mobileFileSearchActive, async (active) => {
   padding: var(--footer-wrapper-padding);
   padding-top: 0;
 }
+
 </style>

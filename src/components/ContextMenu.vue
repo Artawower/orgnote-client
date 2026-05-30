@@ -54,16 +54,17 @@ const handleContextMenu = () => {
 const openMobileMenu = () => {
   emit('open');
   modal.open(MenuList, {
-    mini: true,
-    position: 'bottom',
-    modalProps: {
-      actions: actions.value,
-      data: props.data,
-    },
-    modalEmits: {
-      close: () => modal.close(),
-    },
-  });
+      mini: true,
+      position: 'bottom',
+      noBodyPadding: true,
+      modalProps: {
+        actions: actions.value,
+        data: props.data,
+      },
+      modalEmits: {
+        close: () => modal.close(),
+      },
+    });
 };
 
 const openDesktopMenu = () => {

@@ -20,10 +20,19 @@ export const useRightSidebarStore = defineStore<'rightSidebar', RightSidebarStor
       width.value = Math.max(RIGHT_SIDEBAR_MIN_WIDTH, Math.min(w, RIGHT_SIDEBAR_MAX_WIDTH));
     };
 
+    const navMenuOpen = ref(false);
+    const openNavMenu = () => { navMenuOpen.value = true; };
+    const closeNavMenu = () => { navMenuOpen.value = false; };
+    const toggleNavMenu = () => { navMenuOpen.value = !navMenuOpen.value; };
+
     const store: RightSidebarStore = {
       ...panel,
       width,
       setWidth,
+      navMenuOpen,
+      openNavMenu,
+      closeNavMenu,
+      toggleNavMenu,
     };
 
     return store;

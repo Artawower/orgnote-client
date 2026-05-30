@@ -50,3 +50,5 @@ export const POMODORO_MAX_DURATION_MIN = 999;
 
 export { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
 export type { OrgPriorityLetter } from 'src/constants/org-mode';
+
+export const AGENDA_TASKS_NAV_COMMAND = 'navigate agenda tasks';

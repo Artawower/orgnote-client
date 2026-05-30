@@ -37,6 +37,7 @@ import {
   AGENDA_POMODORO_SET_STOPWATCH_COMMAND,
   AGENDA_DEFAULT_INBOX_FILENAME,
   POMODORO_DEFAULT_DURATION_MIN,
+  AGENDA_TASKS_NAV_COMMAND,
 } from './constants';
 
 interface AgendaView {
@@ -47,7 +48,10 @@ interface AgendaView {
   command: string;
   component: AsyncComponentLoader;
   handler: (api: OrgNoteApi) => void | Promise<void>;
+  isActive?: (api: OrgNoteApi) => boolean;
   pinned?: boolean;
+  sidebarSection?: boolean;
+  sectionNavCommand?: string;
 }
 
 const toggleTasksSidebar = (api: OrgNoteApi): void => {
@@ -68,7 +72,13 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     command: AGENDA_TASKS_COMMAND,
     component: () => import('./AgendaTasksBuffer.vue'),
     handler: toggleTasksSidebar,
+    isActive: (api: OrgNoteApi) => {
+      const sidebar = api.ui.useSidebar();
+      return sidebar.opened && sidebar.component === AgendaSidebarRef;
+    },
     pinned: true,
+    sidebarSection: true,
+    sectionNavCommand: AGENDA_TASKS_NAV_COMMAND,
   },
   {
     viewerId: AGENDA_HABITS_VIEWER_ID,
@@ -101,10 +111,25 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
   },
 ];
 
+const buildNavCommand = (view: AgendaView): Command => ({
+  command: view.sectionNavCommand!,
+  group: 'agenda',
+  icon: view.icon,
+  title: view.name,
+  system: true,
+  isActive: view.isActive,
+  handler: (api: OrgNoteApi) => {
+    const sidebar = api.ui.useSidebar();
+    if (sidebar.opened && sidebar.component === AgendaSidebarRef) return;
+    sidebar.openComponent(AgendaSidebarRef);
+  },
+});
+
 const buildCommand = (view: AgendaView): Command => ({
   command: view.command,
   group: 'agenda',
   icon: view.icon,
+  isActive: view.isActive,
   handler: view.handler,
 });
 
@@ -137,6 +162,12 @@ const registerViews = (api: OrgNoteApi): void => {
     });
     commands.add(buildCommand(view));
     if (view.pinned) pinned.addCommand('sidebar', view.command);
+    if (view.sectionNavCommand) {
+      commands.add(buildNavCommand(view));
+      pinned.addCommand('sidebar-sections', view.sectionNavCommand);
+      return;
+    }
+    if (view.sidebarSection) pinned.addCommand('sidebar-sections', view.command);
   });
   commands.add(createTaskCommand);
   commands.add(startPomodoroCommand);
@@ -207,6 +238,13 @@ const unregisterViews = (api: OrgNoteApi): void => {
     const existing = commands.get(view.command);
     if (existing) commands.remove(existing);
     if (view.pinned) pinned.removeCommand('sidebar', view.command);
+    if (view.sectionNavCommand) {
+      pinned.removeCommand('sidebar-sections', view.sectionNavCommand);
+      const navCmd = commands.get(view.sectionNavCommand);
+      if (navCmd) commands.remove(navCmd);
+      return;
+    }
+    if (view.sidebarSection) pinned.removeCommand('sidebar-sections', view.command);
   });
   const existing = commands.get(AGENDA_CREATE_TASK);
   if (existing) commands.remove(existing);

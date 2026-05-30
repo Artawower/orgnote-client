@@ -188,5 +188,6 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
   --fg: var(--menu-item-active-fg);
   color: var(--menu-item-active-fg);
   background-color: var(--menu-item-active-bg);
+  border-radius: var(--menu-item-active-radius);
 }
 </style>

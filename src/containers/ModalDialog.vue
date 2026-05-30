@@ -194,6 +194,7 @@ dialog {
       width: 100%;
       height: fit-content;
       max-height: 60vh;
+      border: none;
     }
   }
 }

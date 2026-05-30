@@ -213,6 +213,8 @@ body {
   --menu-item-height-lg: 50px;
   --menu-item-active-fg: var(--fg);
   --menu-item-active-bg: var(--bg-hover);
+  --menu-item-active-radius: 0;
+  --sidebar-sections-z-index: 10;
 
   // File Manager
   --file-item-active-bg: var(--bg-hover);
