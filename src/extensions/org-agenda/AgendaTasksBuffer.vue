@@ -1,5 +1,5 @@
 <template>
-  <app-buffer-content>
+  <app-buffer-content no-padding-bottom>
     <container-layout class="agenda-buffer" :body-scroll="true" gap="sm">
       <template #header>
         <agenda-quick-add
@@ -11,15 +11,15 @@
         />
       </template>
       <template #body>
-        <loading-dots v-if="loading" />
-        <empty-state
-          v-else-if="!groups.length"
-          icon="sym_o_checklist"
-          :title="t(extensionI18nKeys.orgAgendaNoTasksTitle)"
-          :description="t(extensionI18nKeys.orgAgendaNoTasksDescription)"
-        />
-        <app-flex v-else column start align-stretch gap="sm">
-          <agenda-task-group
+        <app-flex column start align-stretch gap="sm" class="body-content">
+          <loading-dots v-if="loading" />
+          <empty-state
+            v-else-if="!groups.length"
+            icon="sym_o_checklist"
+            :title="t(extensionI18nKeys.orgAgendaNoTasksTitle)"
+            :description="t(extensionI18nKeys.orgAgendaNoTasksDescription)"
+          />
+          <agenda-task-group v-else
             v-for="group in groups"
             :key="group.filePath"
             :group="group"
@@ -226,5 +226,15 @@ const openNote = async (task: FileTask, filePath: string): Promise<void> => {
 .agenda-buffer {
   @include fit;
   padding: var(--editor-padding);
+
+  @include tablet-below {
+    padding-bottom: 0;
+  }
+}
+
+.body-content {
+  @include tablet-below {
+    padding-bottom: var(--floating-padding-bottom);
+  }
 }
 </style>
