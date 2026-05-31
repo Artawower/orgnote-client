@@ -152,6 +152,8 @@ defineExpose({
 
 .title-input {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .date-trigger {
