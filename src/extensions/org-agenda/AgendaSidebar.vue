@@ -27,11 +27,17 @@ onMounted(() => {
   void tasksStore.ensureLoaded();
 });
 
+const { desktopBelow } = api.ui.useScreenDetection();
+
 const onFilterSelect = async (filter: AgendaFilter): Promise<void> => {
   filterStore.activeFilter = filter;
   const result = await to(() => api.core.useBufferViewer().open(AGENDA_TASKS_URI))();
   if (result.isErr()) {
     reporter.reportError(new Error('Failed to open agenda tasks', { cause: result.error }));
+    return;
+  }
+  if (desktopBelow.value) {
+    api.ui.useSidebar().close();
   }
 };
 </script>
