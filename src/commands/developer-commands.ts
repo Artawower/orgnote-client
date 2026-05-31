@@ -212,6 +212,22 @@ export function getDeveloperCommands(): Command[] {
         api.core.useNotifications().notify({ message: 'Demo notes seeded', level: 'info' });
       },
     },
+    {
+      command: 'seed-agenda-todos',
+      title: 'Seed agenda TODO files',
+      description: 'Generate 100 debug files with random TODOs in agenda/debug/ for completion testing',
+      icon: 'sym_o_add_task',
+      group: 'developer',
+      hide: (api: OrgNoteApi) => !api.core.useConfig().config.developer.developerMode,
+      handler: async (api: OrgNoteApi) => {
+        const { seedAgendaTodos } = await import('src/commands/seed-agenda-todos');
+        await seedAgendaTodos(api);
+        api.core.useNotifications().notify({
+          message: 'Agenda TODO files seeded in agenda/debug/',
+          level: 'info',
+        });
+      },
+    },
   ];
 
   return commands;
