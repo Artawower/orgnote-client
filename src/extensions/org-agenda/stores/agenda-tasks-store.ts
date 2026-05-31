@@ -93,6 +93,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
 
   const ensureLoaded = async (): Promise<void> => {
     attachWatchersOnce();
+    if (allFiles.value.length > 0) return;
     await loadFiles();
   };
 
