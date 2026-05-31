@@ -172,7 +172,6 @@ const resetState = (): void => {
   draft.body = '';
   draft.scheduledDate = lastUserSelectedDate.value ?? todayIsoDate();
   isExpanded.value = false;
-  targetFile.value = undefined;
 };
 
 const submitTask = (): void => {
