@@ -131,6 +131,7 @@ watch(opened, (isOpen) => {
 }
 
 .sections-menu {
+  font-size: var(--font-size-sm);
   margin: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x) 0;
   background: var(--footer-bg);
   border: var(--footer-border);
