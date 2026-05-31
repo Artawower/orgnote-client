@@ -57,7 +57,9 @@
   --glass-backdrop-filter: blur(20px) saturate(180%);
   --glass-border-color: rgba(255, 255, 255, 0.1);
   --glass-border-top-color: rgba(255, 255, 255, 0.2);
-  --glass-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.12);
+  --glass-box-shadow-outer: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --glass-box-shadow-inset: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.12);
+  --glass-box-shadow: var(--glass-box-shadow-outer), var(--glass-box-shadow-inset);
 
   // Tab overview for dark theme
   --tab-preview-overlay-bg: linear-gradient(
@@ -87,9 +89,9 @@
   --glass-backdrop-filter: blur(5px) saturate(150%);
   --glass-border-color: rgba(255, 255, 255, 0.3);
   --glass-border-top-color: rgba(255, 255, 255, 0.6);
-  --glass-box-shadow:
-    0 2px 3px rgba(0, 0, 0, 0.09), 0 0 5px rgba(0, 0, 0, 0.04),
-    inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-box-shadow-outer: 0 2px 3px rgba(0, 0, 0, 0.09), 0 0 5px rgba(0, 0, 0, 0.04);
+  --glass-box-shadow-inset: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-box-shadow: var(--glass-box-shadow-outer), var(--glass-box-shadow-inset);
 
   // Tab overview for light theme
   --tab-preview-overlay-bg: linear-gradient(

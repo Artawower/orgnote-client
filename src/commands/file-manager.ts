@@ -24,6 +24,7 @@ import {
   useTransferDestinationCompletion,
   type TransferDestination,
 } from 'src/composables/transfer-destination-completion';
+import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 
 const group = 'file manager';
 
@@ -357,7 +358,7 @@ export function getFileManagerCommands(): Command[] {
     {
       command: OPEN_FILE_MANAGER_NAV_COMMAND,
       icon: 'folder',
-      title: 'File Manager',
+      title: extensionI18nKeys.fileManagerNavTitle,
       system: true,
       isActive: (api: OrgNoteApi) => {
         const sidebar = api.ui.useSidebar();

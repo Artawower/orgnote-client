@@ -10,7 +10,7 @@
       @click="toggle()"
     >
       <app-icon :name="activeIcon" size="sm" color="fg" :rounded="true" />
-      <span class="active-label">{{ activeLabel }}</span>
+      <overflow-line class="active-label">{{ activeLabel }}</overflow-line>
       <app-icon
         name="sym_o_unfold_more"
         size="sm"
@@ -31,6 +31,7 @@ import { useI18n } from 'vue-i18n';
 import type { CommandName } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppFooter from 'src/components/AppFooter.vue';
+import OverflowLine from 'src/components/OverflowLine.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
@@ -80,9 +81,6 @@ const activeLabel = computed(() => {
 
 .active-label {
   @include fontify(var(--font-size-sm), medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   text-transform: capitalize;
 }
 

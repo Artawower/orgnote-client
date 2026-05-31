@@ -113,7 +113,11 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
     height: auto;
     width: 100%;
     position: relative;
-    padding: var(--padding-sm) calc(var(--padding-sm) * 2);
+    padding:
+      var(--menu-item-padding-top, var(--padding-sm))
+      calc(var(--padding-sm) * 2)
+      var(--menu-item-padding-bottom, var(--padding-sm))
+      calc(var(--padding-sm) * 2);
   }
 
   &:not(.size-auto) {
@@ -122,7 +126,11 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 
   &.size-auto {
     min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
-    padding: var(--menu-item-padding);
+    padding:
+      var(--menu-item-padding-top, var(--menu-item-padding-y))
+      var(--menu-item-padding-x)
+      var(--menu-item-padding-bottom, var(--menu-item-padding-y))
+      var(--menu-item-padding-x);
   }
 
   @include hover {

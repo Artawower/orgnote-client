@@ -163,6 +163,7 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaTaskDelete]: 'Delete task',
   [extensionI18nKeys.orgAgendaFocusToday]: 'Today',
   [extensionI18nKeys.orgAgendaFocusYesterday]: 'Yesterday',
+  [extensionI18nKeys.fileManagerNavTitle]: 'File Manager',
 };
 
 export default eng;

@@ -140,6 +140,7 @@ watch(opened, (isOpen) => {
   backdrop-filter: var(--footer-backdrop-filter);
   background-clip: padding-box;
   overflow: hidden;
+  box-shadow: var(--glass-box-shadow-inset);
   @include glass-specular;
 }
 

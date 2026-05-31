@@ -55,9 +55,7 @@ const props = withDefaults(
 }
 
 .footer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  @include flexify(row, flex-start, center);
   width: 100%;
   min-height: var(--footer-height);
   background: var(--footer-bg);
@@ -75,7 +73,7 @@ const props = withDefaults(
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     border-top: none;
-    box-shadow: none;
+    box-shadow: var(--glass-box-shadow-outer);
   }
 
   &.open-bottom {

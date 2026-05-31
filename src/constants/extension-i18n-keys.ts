@@ -71,4 +71,5 @@ export const extensionI18nKeys = {
   orgAgendaTaskDelete: 'extensions.orgAgenda.task.delete',
   orgAgendaFocusToday: 'extensions.orgAgenda.focus.today',
   orgAgendaFocusYesterday: 'extensions.orgAgenda.focus.yesterday',
+  fileManagerNavTitle: 'extensions.fileManager.navTitle',
 } as const;
