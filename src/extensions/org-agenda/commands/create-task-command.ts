@@ -1,4 +1,4 @@
-import type { Command, DiskFile, OrgNoteApi } from 'orgnote-api';
+import type { Command, FileMeta, OrgNoteApi } from 'orgnote-api';
 import { i18n } from 'src/boot/i18n';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { AGENDA_CREATE_TASK } from '../constants';
@@ -22,7 +22,7 @@ const promptTargetFile = async (
   inboxLabel: string,
 ): Promise<string | undefined> => {
   const getter = createAgendaFilesGetter(api, agendaFilesPath, inboxLabel);
-  const result = await api.core.useCompletion().open<DiskFile, string>({
+  const result = await api.core.useCompletion().open<FileMeta, string>({
     type: 'choice',
     placeholder: t(i18nKeys.orgAgendaCommandCreateTaskTarget),
     itemsGetter: getter,

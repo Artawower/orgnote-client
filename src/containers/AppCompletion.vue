@@ -56,11 +56,10 @@
 <script lang="ts" setup>
 import { I18N, type CompletionConfig } from 'orgnote-api';
 import CompletionInput from './CompletionInput.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import CompletionResult from './CompletionResult.vue';
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -76,7 +75,7 @@ const { config } = storeToRefs(api.ui.useModal());
 const completionStore = api.core.useCompletion();
 const { activeCompletion } = storeToRefs(completionStore);
 
-const { isSearching } = storeToRefs(api.core.useFileSearch());
+const { isLoading: isSearching } = storeToRefs(completionStore);
 
 const completionInputRef = ref<InstanceType<typeof CompletionInput> | null>(null);
 const handleResultSelect = () => completionInputRef.value?.focusInput?.();

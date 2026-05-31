@@ -95,6 +95,9 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       () => openedCompletions.value[openedCompletions.value.length - 1],
     );
 
+    const isLoading = ref(false);
+    let searchVersion = 0;
+
     const nextCandidate = () => {
       if (isNoCompletion.value) return;
 
@@ -147,15 +150,24 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       limit = config.completion.defaultCompletionLimit;
 
       const query = activeCompletion.value.searchQuery;
+      const version = ++searchVersion;
+      isLoading.value = true;
 
       const res = activeCompletion.value.itemsGetter(query, limit, offset);
       if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {
-        (res as Promise<CompletionSearchResult>).then((r) => {
-          setupCandidates(r, offset);
-        });
+        (res as Promise<CompletionSearchResult>)
+          .then((r) => {
+            if (version !== searchVersion) return;
+            return setupCandidates(r, offset, version);
+          })
+          .finally(() => {
+            if (version === searchVersion) isLoading.value = false;
+          });
         return;
       }
-      setupCandidates(res as CompletionSearchResult, offset);
+      setupCandidates(res as CompletionSearchResult, offset, version).finally(() => {
+        if (version === searchVersion) isLoading.value = false;
+      });
     };
 
     const applyInterceptors = async (
@@ -175,7 +187,11 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       );
     };
 
-    const setupCandidates = async (r: CompletionSearchResult, offset: number): Promise<void> => {
+    const setupCandidates = async (
+      r: CompletionSearchResult,
+      offset: number,
+      version: number,
+    ): Promise<void> => {
       const completion = activeCompletion.value;
       if (!completion) return;
 
@@ -183,6 +199,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       const searchQuery = completion.searchQuery;
       const processedCandidates = await applyInterceptors(r.result, completionName, searchQuery);
 
+      if (version !== searchVersion) return;
       if (!activeCompletion.value) return;
 
       const isLengthChanged = processedCandidates.length !== r.result.length;
@@ -229,6 +246,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       previousCandidate,
       search,
       registerInterceptor,
+      isLoading,
     };
 
     return store;

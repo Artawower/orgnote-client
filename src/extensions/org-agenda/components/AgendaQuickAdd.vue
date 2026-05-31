@@ -49,7 +49,7 @@ import { computed, nextTick, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 
-import type { DiskFile } from 'orgnote-api';
+import type { FileMeta } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import ActionButton from 'src/components/ActionButton.vue';
@@ -108,7 +108,7 @@ const expand = async (): Promise<void> => {
 
 const openFileCompletion = async (): Promise<void> => {
   const getter = createAgendaFilesGetter(api, props.agendaFilesPath, inboxLabel.value);
-  const result = await api.core.useCompletion().open<DiskFile, string>({
+  const result = await api.core.useCompletion().open<FileMeta, string>({
     type: 'choice',
     placeholder: t(i18nKeys.orgAgendaQuickAddTargetPlaceholder),
     itemsGetter: getter,
@@ -122,7 +122,7 @@ const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
   const originalTitle = draft.title;
   const fragment = draft.title.slice(tildeIdx + 1);
   const getter = createAgendaFilesGetter(api, props.agendaFilesPath, inboxLabel.value);
-  const result = await api.core.useCompletion().open<DiskFile, string>({
+  const result = await api.core.useCompletion().open<FileMeta, string>({
     type: 'choice',
     placeholder: t(i18nKeys.orgAgendaQuickAddTargetPlaceholder),
     itemsGetter: getter,

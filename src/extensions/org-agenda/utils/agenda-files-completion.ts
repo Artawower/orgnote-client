@@ -1,44 +1,50 @@
-import type { DiskFile, OrgNoteApi, CompletionSearchResult } from 'orgnote-api';
-import { walkDir } from 'src/utils/dir-items-getter';
+import type { OrgNoteApi, CompletionSearchResult } from 'orgnote-api';
+import type { FileMeta } from 'orgnote-api';
+import { join } from 'orgnote-api';
 import { fileBaseName } from 'src/utils/file-path';
+import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
 
-const isOrgFile = (file: DiskFile): boolean => file.type === 'file' && file.path.endsWith('.org');
+const resolveFilePath = (file: FileMeta): string => join('/', ...file.filePath);
 
-const matchesSearch = (file: DiskFile, search: string): boolean => {
+const isOrgFile = (file: FileMeta): boolean =>
+  file.filePath[file.filePath.length - 1]?.endsWith('.org') ?? false;
+
+const matchesSearch = (file: FileMeta, search: string): boolean => {
   if (!search) return true;
-  return fileBaseName(file.path).toLowerCase().includes(search.toLowerCase());
+  const name = fileBaseName(resolveFilePath(file));
+  return name.toLowerCase().includes(search.toLowerCase());
 };
 
-const isInboxFile = (file: DiskFile, inboxFileName: string): boolean =>
-  file.path.endsWith(`/${inboxFileName}`) || file.path === inboxFileName;
+const isInboxFile = (file: FileMeta, inboxFileName: string): boolean => {
+  const path = resolveFilePath(file);
+  return path.endsWith(`/${inboxFileName}`) || path === inboxFileName;
+};
 
 const toCompletionCandidate = (
-  file: DiskFile,
+  file: FileMeta,
   completion: ReturnType<OrgNoteApi['core']['useCompletion']>,
-) => ({
-  icon: 'sym_o_description' as const,
-  title: fileBaseName(file.path),
-  description: file.path,
-  data: file,
-  commandHandler: (f: DiskFile) => completion.close(f.path),
-});
+) => {
+  const path = resolveFilePath(file);
+  return {
+    icon: 'sym_o_description' as const,
+    title: fileBaseName(path),
+    description: path,
+    data: file,
+    commandHandler: () => completion.close(path),
+  };
+};
 
 export const createAgendaFilesGetter = (
   api: OrgNoteApi,
-  agendaFilesPath: string,
+  _agendaFilesPath: string,
   inboxFileName: string,
 ) => {
-  let cachedFiles: DiskFile[] | null = null;
   const completion = api.core.useCompletion();
+  const store = useAgendaTasksStore();
 
-  return async (search: string): Promise<CompletionSearchResult<DiskFile>> => {
-    if (!cachedFiles) {
-      const fs = api.core.useFileSystem();
-      const all = await walkDir(fs.readDir, agendaFilesPath || '/', true);
-      cachedFiles = all.filter(isOrgFile);
-    }
-
-    const filtered = cachedFiles.filter((f) => matchesSearch(f, search));
+  return (search: string): CompletionSearchResult<FileMeta> => {
+    const files = store.agendaFiles.filter(isOrgFile);
+    const filtered = files.filter((f) => matchesSearch(f, search));
     const inbox = filtered.filter((f) => isInboxFile(f, inboxFileName));
     const rest = filtered.filter((f) => !isInboxFile(f, inboxFileName));
     const sorted = [...inbox, ...rest];

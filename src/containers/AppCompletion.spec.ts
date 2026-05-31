@@ -18,10 +18,11 @@ vi.mock('src/boot/api', () => ({
           type: 'choice',
           itemHeight: 64,
         }),
+        isLoading: ref(true),
       }),
       useFileSearch: () => ({
         isIndexing: ref(false),
-        isSearching: ref(true),
+        isSearching: ref(false),
       }),
     },
   },
