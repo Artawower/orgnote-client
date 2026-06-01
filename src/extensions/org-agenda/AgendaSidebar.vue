@@ -29,7 +29,7 @@ onMounted(() => {
   void tasksStore.ensureLoaded();
 });
 
-const { desktopBelow } = api.ui.useScreenDetection();
+const { tabletBelow } = api.ui.useScreenDetection();
 
 const onViewNavigate = async (uri: string): Promise<void> => {
   const result = await to(() => api.core.useBufferViewer().open(uri))();
@@ -37,7 +37,7 @@ const onViewNavigate = async (uri: string): Promise<void> => {
     reporter.reportError(new Error('Failed to open agenda view', { cause: result.error }));
     return;
   }
-  if (desktopBelow.value) {
+  if (tabletBelow.value) {
     api.ui.useSidebar().close();
   }
 };
@@ -49,7 +49,7 @@ const onFilterSelect = async (filter: AgendaFilter): Promise<void> => {
     reporter.reportError(new Error('Failed to open agenda tasks', { cause: result.error }));
     return;
   }
-  if (desktopBelow.value) {
+  if (tabletBelow.value) {
     api.ui.useSidebar().close();
   }
 };
