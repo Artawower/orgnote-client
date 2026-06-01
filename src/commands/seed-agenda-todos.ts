@@ -4,6 +4,10 @@ const FILE_COUNT = 100;
 const TODOS_PER_FILE_MIN = 3;
 const TODOS_PER_FILE_MAX = 8;
 const AGENDA_DEBUG_FOLDER = ['agenda', 'debug'];
+const HABITS_DEBUG_FOLDER = ['agenda', 'debug', 'habits'];
+const HABIT_FILE_COUNT = 3;
+const HABITS_PER_FILE_MIN = 4;
+const HABITS_PER_FILE_MAX = 8;
 const WRITE_BATCH_SIZE = 20;
 
 const TODO_KEYWORDS = ['TODO', 'TODO', 'TODO', 'IN-PROGRESS', 'WAITING', 'DONE'] as const;
@@ -160,13 +164,103 @@ const writeBatch = async (
   await Promise.all(batch.map(({ path, content }) => fs.writeFile(path, content)));
 };
 
+const HABIT_TITLES = [
+  'Drink 8 glasses of water',
+  'Morning meditation',
+  'Read for 30 minutes',
+  'Exercise',
+  'Journal writing',
+  'Review daily goals',
+  'Evening walk',
+  'Practice language learning',
+  'Stretching',
+  'Review flashcards',
+  'Cold shower',
+  'No social media before noon',
+  'Gratitude log',
+  'Plan tomorrow',
+  'Learn something new',
+] as const;
+
+const HABIT_REPEATERS = ['.+1d', '.+1d', '.+1d', '++1d', '.+1w'] as const;
+
+const HABIT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+const isoDate = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const orgDateTime = (d: Date): string => {
+  const day = HABIT_DAYS[d.getDay() === 0 ? 6 : d.getDay() - 1];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${isoDate(d)} ${day} ${hh}:${mm}`;
+};
+
+const buildClockEntry = (date: Date): string => {
+  const start = orgDateTime(date);
+  const end = new Date(date.getTime() + 10 * 60 * 1000);
+  return `CLOCK: [${start}]--[${orgDateTime(end)}] =>  0:10`;
+};
+
+const buildHabitHeadline = (random: () => number, index: number): string => {
+  const title = pick(HABIT_TITLES, random);
+  const repeater = pick(HABIT_REPEATERS, random);
+  const scheduled = new Date();
+  scheduled.setDate(scheduled.getDate() + 1);
+  const day = HABIT_DAYS[scheduled.getDay() === 0 ? 6 : scheduled.getDay() - 1];
+
+  const completionCount = Math.floor(random() * 14);
+  const clocks = Array.from({ length: completionCount }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i - 1);
+    d.setHours(7 + Math.floor(random() * 4), Math.floor(random() * 60));
+    return buildClockEntry(d);
+  });
+
+  const logbook =
+    clocks.length > 0 ? `:LOGBOOK:\n${clocks.join('\n')}\n:END:` : '';
+
+  return [
+    `** TODO ${title} ${index + 1}`,
+    `   SCHEDULED: <${isoDate(scheduled)} ${day} ${repeater}>`,
+    ...(logbook ? [logbook] : []),
+    `   :PROPERTIES:`,
+    `   :STYLE:    habit`,
+    `   :END:`,
+  ].join('\n');
+};
+
+const buildHabitFileContent = (
+  fileIndex: number,
+  random: () => number,
+): { path: string[]; content: string } => {
+  const fileName = `habits-${String(fileIndex + 1).padStart(2, '0')}.org`;
+  const title = `Habits ${fileIndex + 1}`;
+  const habitCount = pickCount(random, HABITS_PER_FILE_MIN, HABITS_PER_FILE_MAX);
+  const habits = Array.from({ length: habitCount }, (_, i) => buildHabitHeadline(random, i));
+
+  const content =
+    `:PROPERTIES:\n:ID: agenda-habits-debug-${String(fileIndex + 1).padStart(3, '0')}\n:END:\n` +
+    `#+TITLE: ${title}\n` +
+    `#+FILETAGS: :habit:debug:\n\n` +
+    `* Habits\n\n` +
+    habits.join('\n\n') +
+    '\n';
+
+  return { path: [...HABITS_DEBUG_FOLDER, fileName], content };
+};
+
 export const seedAgendaTodos = async (api: OrgNoteApi): Promise<void> => {
   const fs = api.core.useFileSystem();
   const random = createRandom(Date.now());
 
-  const files = Array.from({ length: FILE_COUNT }, (_, i) => buildFileContent(i, random));
+  const todoFiles = Array.from({ length: FILE_COUNT }, (_, i) => buildFileContent(i, random));
+  const habitFiles = Array.from({ length: HABIT_FILE_COUNT }, (_, i) =>
+    buildHabitFileContent(i, random),
+  );
+  const allFiles = [...todoFiles, ...habitFiles];
 
-  for (let i = 0; i < files.length; i += WRITE_BATCH_SIZE) {
-    await writeBatch(fs, files.slice(i, i + WRITE_BATCH_SIZE));
+  for (let i = 0; i < allFiles.length; i += WRITE_BATCH_SIZE) {
+    await writeBatch(fs, allFiles.slice(i, i + WRITE_BATCH_SIZE));
   }
 };
