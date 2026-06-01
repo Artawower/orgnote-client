@@ -1,4 +1,10 @@
-import { DefaultCommands, I18N, type Command, type OrgNoteApi } from 'orgnote-api';
+import {
+  DefaultCommands,
+  I18N,
+  KEYBINDING_CONTEXTS,
+  type Command,
+  type OrgNoteApi,
+} from 'orgnote-api';
 import { selectCommand } from 'src/utils/select-command';
 
 const toggleCommandsHandler = async (api: OrgNoteApi) => {
@@ -15,7 +21,34 @@ export function getCompletionCommands(): Command[] {
       icon: 'terminal',
       description: 'toggle commands',
       group: 'completion',
+      interactive: true,
+      defaultHotkeys: [{ key: 'p', modifiers: ['Mod', 'Shift'] }],
+      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
       handler: toggleCommandsHandler,
+    },
+    {
+      command: DefaultCommands.NEXT_CANDIDATE,
+      icon: 'keyboard_arrow_down',
+      group: 'completion',
+      system: true,
+      interactive: true,
+      defaultHotkeys: [{ key: 'ArrowDown' }, { key: 'n', modifiers: ['Ctrl'] }],
+      keybindingContext: KEYBINDING_CONTEXTS.COMPLETION,
+      handler: (api: OrgNoteApi) => {
+        api.core.useCompletion().nextCandidate();
+      },
+    },
+    {
+      command: DefaultCommands.PREV_CANDIDATE,
+      icon: 'keyboard_arrow_up',
+      group: 'completion',
+      system: true,
+      interactive: true,
+      defaultHotkeys: [{ key: 'ArrowUp' }, { key: 'p', modifiers: ['Ctrl'] }],
+      keybindingContext: KEYBINDING_CONTEXTS.COMPLETION,
+      handler: (api: OrgNoteApi) => {
+        api.core.useCompletion().previousCandidate();
+      },
     },
   ];
 

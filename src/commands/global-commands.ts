@@ -1,6 +1,7 @@
 import type { Command } from 'orgnote-api';
 import {
   DefaultCommands,
+  KEYBINDING_CONTEXTS,
   i18n,
   I18N,
   isOrgGpgFile,
@@ -220,7 +221,9 @@ export function getGlobalCommands(router: Router): Command[] {
           return;
         }
 
-        const { default: ClientUpdateContainer } = await import('src/containers/ClientUpdateContainer.vue');
+        const { default: ClientUpdateContainer } = await import(
+          'src/containers/ClientUpdateContainer.vue'
+        );
 
         modalStore.open(ClientUpdateContainer, {
           title: I18N.SHOW_LATEST_CHANGES,
@@ -251,6 +254,9 @@ export function getGlobalCommands(router: Router): Command[] {
     {
       command: DefaultCommands.TOGGLE_SIDEBAR,
       group: 'global',
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+      defaultHotkeys: [{ key: 'b', modifiers: ['Mod'] }],
       icon: () => {
         // TODO: feat/stable-beta also make as ref
         return sidebarStore.opened ? 'arrow_circle_left' : 'menu';
@@ -303,6 +309,9 @@ export function getGlobalCommands(router: Router): Command[] {
       command: DefaultCommands.SYNC_FILES,
       icon: 'sync',
       group: 'global',
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+      defaultHotkeys: [{ key: 's', modifiers: ['Mod', 'Shift'] }],
       hide: isNotActiveUser,
       disabled: isNotActiveUser,
       handler: async (api) => {

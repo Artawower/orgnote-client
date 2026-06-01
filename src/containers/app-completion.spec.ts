@@ -70,6 +70,10 @@ vi.mock('src/boot/api', () => ({
       useNotifications: vi.fn(() => ({
         notifications: ref([]),
       })),
+      useKeybindings: vi.fn(() => ({
+        pushContext: vi.fn(() => vi.fn()),
+        popContext: vi.fn(),
+      })),
     },
   },
 }));

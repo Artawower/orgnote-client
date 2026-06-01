@@ -54,9 +54,9 @@
 </template>
 
 <script lang="ts" setup>
-import { I18N, type CompletionConfig } from 'orgnote-api';
+import { I18N, KEYBINDING_CONTEXTS, type CompletionConfig } from 'orgnote-api';
 import CompletionInput from './CompletionInput.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import CompletionResult from './CompletionResult.vue';
@@ -70,6 +70,9 @@ defineProps<
     placeholder?: string;
   } & Partial<CompletionConfig>
 >();
+
+const stopKeybindingContext = api.core.useKeybindings().pushContext(KEYBINDING_CONTEXTS.COMPLETION);
+onUnmounted(stopKeybindingContext);
 
 const { config } = storeToRefs(api.ui.useModal());
 const completionStore = api.core.useCompletion();
