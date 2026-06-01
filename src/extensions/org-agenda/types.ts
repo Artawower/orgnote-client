@@ -23,3 +23,4 @@ export interface AgendaHabitView extends FileTask {
   currentStreak: number;
   completedToday: boolean;
 }
+

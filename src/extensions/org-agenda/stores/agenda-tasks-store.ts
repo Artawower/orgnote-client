@@ -10,7 +10,7 @@ import { resolveAgendaConfig } from '../index';
 import { AGENDA_DEFAULT_INBOX_FILENAME } from '../constants';
 import { orgAgendaManifest } from '../manifest';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
-import { createTask, type CreateTaskInput } from '../mutations/create-task';
+import { createTask, type CreateTaskInput } from 'orgnote-api/utils';
 
 const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';

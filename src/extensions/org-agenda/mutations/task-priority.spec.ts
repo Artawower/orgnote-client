@@ -26,6 +26,22 @@ test('changeTaskPriority_preservesTags_whenChangingPriority', () => {
   expect(result).toBe('* TODO [#B] My task :work:');
 });
 
+test('changeTaskPriority_replacesPriority_onNestedHeadline', () => {
+  const prefix = '* Root headline\n\n';
+  const content = `${prefix}** TODO [#C] Implement pagination for list view 6\n   SCHEDULED: <2026-05-28 Fri>`;
+  const headlineStart = prefix.length;
+  expect(changeTaskPriority(content, headlineStart, 'D'))
+    .toBe(`${prefix}** TODO [#D] Implement pagination for list view 6\n   SCHEDULED: <2026-05-28 Fri>`);
+});
+
+test('changeTaskPriority_addsPriority_toNestedHeadlineWithoutPriority', () => {
+  const prefix = '* Root\n\n';
+  const content = `${prefix}** TODO My nested task`;
+  const headlineStart = prefix.length;
+  expect(changeTaskPriority(content, headlineStart, 'A'))
+    .toBe(`${prefix}** TODO [#A] My nested task`);
+});
+
 test('changeTaskPriority_onlyModifiesTargetHeadline_withOffset', () => {
   const content = '* TODO First task\n* TODO [#A] Second task';
   const secondStart = content.indexOf('* TODO [#A]');

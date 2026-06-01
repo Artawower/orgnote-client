@@ -1,10 +1,6 @@
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import {
-  extractPriorityFromTitle,
-  removePriorityFromTitle,
-} from 'src/utils/org-editor/org-title-parser';
 import { changeTaskTitle } from '../mutations/task-title';
 import { changeTaskPriority } from '../mutations/task-priority';
 import { changeTaskTags } from '../mutations/task-tags';
@@ -27,7 +23,9 @@ export const useAgendaTaskEdit = () => {
       reporter.reportError(readResult.error);
       return;
     }
-    const next = mutateFn(uint8ArrayToText(readResult.value));
+    const original = uint8ArrayToText(readResult.value);
+    const next = mutateFn(original);
+    if (next === original) return;
     const writeResult = await to(fileContent.write, 'Failed to write file')(
       filePath,
       textToUint8Array(next),
@@ -41,23 +39,18 @@ export const useAgendaTaskEdit = () => {
     draft: AgendaTaskDraft,
   ): Promise<void> => {
     if (task.start === undefined) return;
-    const cleanTitle = removePriorityFromTitle(draft.title);
-    const priority = draft.priority ?? extractPriorityFromTitle(draft.title)?.letter;
     const mutations: Array<(c: string) => string> = [];
 
-    if (cleanTitle && cleanTitle !== task.text)
-      mutations.push((c) => changeTaskTitle(c, task.start!, cleanTitle));
-    if (priority !== task.priority)
-      mutations.push((c) => changeTaskPriority(c, task.start!, priority));
-    if (JSON.stringify(draft.tags) !== JSON.stringify(task.tags ?? []))
-      mutations.push((c) => changeTaskTags(c, task.start!, draft.tags));
+    if (draft.title && draft.title !== task.text)
+      mutations.push((c) => changeTaskTitle(c, task.start!, draft.title));
+    if (draft.priority !== task.priority)
+      mutations.push((c) => changeTaskPriority(c, task.start!, draft.priority));
+    const draftTags = draft.tags ?? [];
+    if (JSON.stringify(draftTags) !== JSON.stringify(task.tags ?? []))
+      mutations.push((c) => changeTaskTags(c, task.start!, draftTags));
     if (draft.scheduledDate !== task.scheduled?.date)
       mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduledDate));
-    if (
-      draft.body !==
-      (((task as unknown as Record<string, unknown>).body as string | undefined) ?? '')
-    )
-      mutations.push((c) => changeTaskBody(c, task.start!, draft.body));
+    mutations.push((c) => changeTaskBody(c, task.start!, draft.body));
 
     if (!mutations.length) return;
     await applyMutation(task, filePath, (c) => mutations.reduce((acc, fn) => fn(acc), c));

@@ -10,8 +10,12 @@ const findTagListNode = (content: string, headlineStart: number): OrgNode | null
 
   walkTree(ast, (node: OrgNode): boolean => {
     if (node.is(NodeType.Headline)) {
-      inTarget = node.start === headlineStart;
-      return !inTarget;
+      if (node.start === headlineStart) {
+        inTarget = true;
+        return false;
+      }
+      if (inTarget) return true;
+      return false;
     }
     if (inTarget && node.is(NodeType.TagList)) found = node;
     return false;

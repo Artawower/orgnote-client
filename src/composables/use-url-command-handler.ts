@@ -1,4 +1,4 @@
-import { watch, onScopeDispose } from 'vue';
+import { onScopeDispose, watch } from 'vue';
 import { useRoute, useRouter, type LocationQueryValue, type Router } from 'vue-router';
 import type { URLOpenListenerEvent } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
@@ -22,38 +22,23 @@ export function useUrlCommandHandler(): void {
   setupMobileDeepLinkHandler();
 }
 
-async function setupRouteWatcher(): Promise<void> {
+function setupRouteWatcher(): void {
   const router = useRouter();
   const route = useRoute();
-
-  let disposed = false;
-
-  await router.isReady();
-
-  if (disposed) return;
 
   const stopWatch = watch(
     () => route.query[EXECUTE_PARAM],
     async (executeParam) => {
+      await router.isReady();
       const payload = parseExecuteParam(executeParam);
-
-      if (!payload) {
-        return;
-      }
-
+      if (!payload) return;
       const success = await executeCommand(payload.command, payload.data ?? {});
-
-      if (success) {
-        await clearExecuteParam(router, route);
-      }
+      if (success) await clearExecuteParam(router, route);
     },
     { immediate: true },
   );
 
-  onScopeDispose(() => {
-    disposed = true;
-    stopWatch?.();
-  });
+  onScopeDispose(stopWatch);
 }
 
 function setupMobileDeepLinkHandler(): void {
