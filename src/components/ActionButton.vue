@@ -15,7 +15,7 @@
       color: getCssVariableName(activeColor),
     }"
   >
-    <animation-wrapper>
+    <animation-wrapper v-if="activeIcon || slots.icon">
       <slot name="icon" :size="size" :color="activeColor">
         <app-icon :key="activeIcon" :name="activeIcon" :size="size" :color="activeColor" />
       </slot>

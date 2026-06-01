@@ -18,7 +18,7 @@
           <agenda-date-button v-model="localDate" class="date-picker" />
           <action-button
             icon="sym_o_expand_more"
-            size="md"
+            size="sm"
             class="expand-btn"
             :class="{ 'expand-btn--open': props.expanded }"
             :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
@@ -143,11 +143,6 @@ const onTitleSubmit = (): void => {
 }
 
 .task-meta {
-  @include fontify(var(--font-size-xs), normal, var(--fg-muted));
-
-  :deep(.date-picker) {
-    font-size: initial;
-    color: initial;
-  }
+  @include fontify(var(--font-size-sm), normal, var(--fg-muted));
 }
 </style>

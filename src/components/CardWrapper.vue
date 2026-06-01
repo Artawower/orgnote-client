@@ -24,6 +24,7 @@ withDefaults(
 <style lang="scss">
 .card-wrapper {
   border-radius: var(--card-radius);
+  overflow: hidden;
   width: 100%;
 
   > :first-child {

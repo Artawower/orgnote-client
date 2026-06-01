@@ -2,7 +2,7 @@
   <date-picker-popover v-model="model">
     <template #trigger="{ open }">
       <action-button
-        icon="sym_o_calendar_today"
+        :icon="model ? undefined : 'sym_o_calendar_today'"
         size="sm"
         :active="!!model"
         :auto-width="!!model"

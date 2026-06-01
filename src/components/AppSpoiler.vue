@@ -70,7 +70,8 @@ const toggle = (): void => {
 .spoiler {
   transition: background-color 0.2s ease;
 
-  &.variant-card {
+  &.variant-card,
+  &.variant-card-static {
     overflow: hidden;
   }
 }
