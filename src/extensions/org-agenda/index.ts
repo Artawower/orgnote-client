@@ -88,7 +88,6 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     command: AGENDA_HABITS_COMMAND,
     component: () => import('./AgendaHabitsBuffer.vue'),
     handler: openBuffer(AGENDA_HABITS_URI),
-    pinned: true,
   },
   {
     viewerId: AGENDA_POMODORO_VIEWER_ID,
@@ -98,7 +97,6 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     command: AGENDA_POMODORO_COMMAND,
     component: () => import('./AgendaPomodoroBuffer.vue'),
     handler: openBuffer(AGENDA_POMODORO_URI),
-    pinned: true,
   },
   {
     viewerId: AGENDA_POMODORO_STATS_VIEWER_ID,

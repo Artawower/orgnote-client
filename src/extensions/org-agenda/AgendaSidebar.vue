@@ -5,6 +5,7 @@
       :totals="tasksStore.totalByFilter"
       @select="onFilterSelect"
     />
+    <agenda-views-nav @navigate="onViewNavigate" />
   </app-flex>
 </template>
 
@@ -15,6 +16,7 @@ import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import AppFlex from 'src/components/AppFlex.vue';
 import AgendaTasksFilter from './components/AgendaTasksFilter.vue';
+import AgendaViewsNav from './components/AgendaViewsNav.vue';
 import { useAgendaFilterStore } from './stores/agenda-filter-store';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import { AGENDA_TASKS_URI } from './constants';
@@ -28,6 +30,17 @@ onMounted(() => {
 });
 
 const { desktopBelow } = api.ui.useScreenDetection();
+
+const onViewNavigate = async (uri: string): Promise<void> => {
+  const result = await to(() => api.core.useBufferViewer().open(uri))();
+  if (result.isErr()) {
+    reporter.reportError(new Error('Failed to open agenda view', { cause: result.error }));
+    return;
+  }
+  if (desktopBelow.value) {
+    api.ui.useSidebar().close();
+  }
+};
 
 const onFilterSelect = async (filter: AgendaFilter): Promise<void> => {
   filterStore.activeFilter = filter;

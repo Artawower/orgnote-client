@@ -3,7 +3,7 @@
     <menu-item
       v-for="filter in filters"
       :key="filter.id"
-      :active="modelValue === filter.id"
+      :active="isTasksBufferActive && modelValue === filter.id"
       @click="onFilterClick(filter.id)"
     >
       <app-flex row start align-center gap="sm">
@@ -25,12 +25,15 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
+import { api } from 'src/boot/api';
+import { AGENDA_TASKS_URI } from '../constants';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
 
 defineProps<{
@@ -49,6 +52,9 @@ const onFilterClick = (filter: AgendaFilter): void => {
 };
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+
+const { activeBufferUri } = storeToRefs(api.core.usePane());
+const isTasksBufferActive = computed(() => activeBufferUri.value === AGENDA_TASKS_URI);
 
 type AgendaFilterOption = { id: AgendaFilter; label: string; icon: string };
 

@@ -41,6 +41,8 @@ export const extensionI18nKeys = {
   orgAgendaCommandCreateTaskTarget: 'extensions.orgAgenda.command.createTask.target',
   orgAgendaOpenNote: 'extensions.orgAgenda.openNote',
   orgAgendaEditSave: 'extensions.orgAgenda.editSave',
+  orgAgendaViewHabits: 'extensions.orgAgenda.view.habits',
+  orgAgendaViewPomodoro: 'extensions.orgAgenda.view.pomodoro',
   orgAgendaHabitsEmptyTitle: 'extensions.orgAgenda.habits.emptyTitle',
   orgAgendaHabitsEmptySubtitle: 'extensions.orgAgenda.habits.emptySubtitle',
   orgAgendaHabitsTotalDays: 'extensions.orgAgenda.habits.totalDays',

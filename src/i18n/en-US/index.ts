@@ -132,6 +132,8 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaCommandCreateTaskTarget]: 'Select target file (optional)...',
   [extensionI18nKeys.orgAgendaOpenNote]: 'Open in editor',
   [extensionI18nKeys.orgAgendaEditSave]: 'Save',
+  [extensionI18nKeys.orgAgendaViewHabits]: 'Habits',
+  [extensionI18nKeys.orgAgendaViewPomodoro]: 'Pomodoro',
   [extensionI18nKeys.orgAgendaHabitsEmptyTitle]: 'No habits yet',
   [extensionI18nKeys.orgAgendaHabitsEmptySubtitle]:
     'Add an org headline with :STYLE: habit to track habits here.',
