@@ -117,13 +117,16 @@ const buildTodoHeadline = (random: () => number, index: number): string => {
 
   const lines: string[] = [header];
 
-  if (random() > 0.5) {
-    lines.push(`   SCHEDULED: <${randomFutureDate(random)} ${pick(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], random)}>`);
-  }
-
-  if (random() > 0.7) {
-    lines.push(`   DEADLINE: <${randomFutureDate(random)} ${pick(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], random)}>`);
-  }
+  const hasScheduled = random() > 0.5;
+  const hasDeadline = random() > 0.7;
+  const scheduledPart = hasScheduled
+    ? `SCHEDULED: <${randomFutureDate(random)} ${pick(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], random)}>`
+    : '';
+  const deadlinePart = hasDeadline
+    ? `DEADLINE: <${randomFutureDate(random)} ${pick(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], random)}>`
+    : '';
+  const planningLine = [scheduledPart, deadlinePart].filter(Boolean).join(' ');
+  if (planningLine) lines.push(`   ${planningLine}`);
 
   if (random() > 0.6) {
     lines.push(`   - ${pick(TODO_TITLES, random)}`);

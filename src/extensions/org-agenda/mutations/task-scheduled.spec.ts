@@ -79,3 +79,21 @@ test('replacesScheduled_inMixedLine_whenScheduledFirst', () => {
   expect(result).toContain('SCHEDULED: <2026-06-01 Mon> CLOSED: [2026-05-21 Thu]');
   expect(result).not.toContain('2026-05-17');
 });
+
+test('changeTaskScheduled_setsDate_onNestedHeadline', () => {
+  const prefix = '* Root\n\n';
+  const content = `${prefix}** TODO My nested task`;
+  const headlineStart = prefix.length;
+  const result = changeTaskScheduled(content, headlineStart, '2026-06-01');
+  expect(result).toContain('SCHEDULED: <2026-06-01 Mon>');
+  expect(result.indexOf('** TODO')).toBe(prefix.length);
+});
+
+test('changeTaskScheduled_replacesDate_onNestedHeadline', () => {
+  const prefix = '* Root\n\n';
+  const content = `${prefix}** TODO My task\nSCHEDULED: <2026-05-28 Fri>`;
+  const headlineStart = prefix.length;
+  const result = changeTaskScheduled(content, headlineStart, '2026-06-01');
+  expect(result).toContain('SCHEDULED: <2026-06-01 Mon>');
+  expect(result).not.toContain('2026-05-28');
+});

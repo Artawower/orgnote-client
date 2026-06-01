@@ -62,7 +62,7 @@ import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import { AGENDA_DEFAULT_INBOX_FILENAME } from './constants';
-import type { CreateTaskInput } from './mutations/create-task';
+import type { CreateTaskInput } from 'orgnote-api/utils';
 import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { changeTaskTitle } from './mutations/task-title';
 import { changeTaskPriority } from './mutations/task-priority';

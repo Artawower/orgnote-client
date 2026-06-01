@@ -50,7 +50,10 @@
           <action-button @click="modal.close" icon="close" size="sm" />
         </app-flex>
         <div class="content">
-          <div
+          <app-flex
+            column
+            start
+            align-stretch
             class="content-body"
             :class="{
               'no-padding': modalData.config?.noBodyPadding,
@@ -62,7 +65,7 @@
               v-bind="modalData.config?.modalProps"
               v-on="modalData.config?.modalEmits ?? {}"
             />
-          </div>
+          </app-flex>
         </div>
       </app-flex>
     </app-flex>
@@ -193,7 +196,7 @@ dialog {
       bottom: 0;
       width: 100%;
       height: fit-content;
-      max-height: 60vh;
+      max-height: 85vh;
       border: none;
     }
   }
@@ -243,11 +246,27 @@ dialog {
 
 dialog.full-screen {
   width: 100%;
-  height: 100%;
+  height: var(--screen-height, 100vh);
   max-width: unset;
-  max-height: unset;
+  max-height: var(--screen-height, 100vh);
   top: 0;
-  border-radius: 0;
+  bottom: unset;
+
+  .safe-area-wrapper {
+    height: 100%;
+  }
+
+  .modal-content,
+  .content {
+    flex: 1 1 auto !important;
+    min-height: 0;
+  }
+
+  .content-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: hidden;
+  }
 }
 
 .modal-content {
@@ -302,7 +321,7 @@ dialog.full-screen {
 }
 
 @include desktop-below {
-  dialog.mini:not(.keyboard-fit) {
+  dialog.mini:not(.keyboard-fit):not(.full-screen) {
     .safe-area-wrapper {
       height: auto;
     }

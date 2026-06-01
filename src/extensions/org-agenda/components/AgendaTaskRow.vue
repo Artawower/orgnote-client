@@ -1,9 +1,15 @@
 <template>
   <context-menu :group="AGENDA_TASK_CONTEXT_MENU_GROUP" :data="task">
-    <menu-item :capitalize="false" :lines="1" class="task-row">
+    <menu-item
+      :capitalize="false"
+      :lines="1"
+      class="task-row"
+      :style="priorityBarStyle"
+    >
       <app-flex row align-center gap="sm" class="task-content" @click.stop>
         <app-checkbox :model-value="isChecked" :class="priorityClass" @change="onCheckboxChange" />
         <org-inline-editor
+          v-if="!tabletBelow"
           v-model="localTitle"
           :single-line="true"
           :readonly="false"
@@ -11,6 +17,9 @@
           @submit="onTitleSubmit"
           @blur="onTitleSubmit"
         />
+        <div v-else class="task-title-mobile" @click.stop="$emit('open-task')">
+          {{ task.text }}
+        </div>
       </app-flex>
 
       <template #right>
@@ -48,6 +57,7 @@ import {
   removePriorityFromTitle,
 } from 'src/utils/org-editor/org-title-parser';
 import { buildTaskEditorTitle } from 'src/utils/org-editor/build-task-title';
+import { api } from 'src/boot/api';
 
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filters';
@@ -61,9 +71,11 @@ const emit = defineEmits<{
   'edit-tags': [tags: string[]];
   'edit-scheduled': [date: string | undefined];
   'edit-expand': [];
+  'open-task': [];
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const { tabletBelow } = api.ui.useScreenDetection();
 
 const localTitle = ref(buildTaskEditorTitle(props.task.text, props.task.priority));
 const localDate = ref<string | undefined>(getActiveDate(props.task) ?? undefined);
@@ -88,6 +100,12 @@ const priorityClass = computed(() =>
   props.task.priority ? `priority-${props.task.priority.toLowerCase()}` : '',
 );
 
+const priorityBarStyle = computed(() => ({
+  '--priority-bar-color': props.task.priority
+    ? `var(--priority-${props.task.priority.toLowerCase()})`
+    : 'transparent',
+}));
+
 const isChecked = computed(
   () =>
     props.task.state === 'done' ||
@@ -109,6 +127,22 @@ const onTitleSubmit = (): void => {
 <style lang="scss" scoped>
 @include org-priority-colors(--checkbox-color);
 
+.task-row {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--priority-bar-color, transparent);
+    pointer-events: none;
+  }
+}
+
 .task-content {
   flex: 1;
   min-width: 0;
@@ -128,6 +162,15 @@ const onTitleSubmit = (): void => {
     text-decoration: v-bind("isChecked ? 'line-through' : 'none'");
     color: v-bind("isChecked ? 'var(--fg-muted)' : 'inherit'");
   }
+}
+
+.task-title-mobile {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .expand-btn {

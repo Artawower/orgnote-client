@@ -17,6 +17,7 @@
           @edit-priority="(priority) => $emit('task-edit-priority', task, group.filePath, priority)"
           @edit-tags="(tags) => $emit('task-edit-tags', task, group.filePath, tags)"
           @edit-scheduled="(date) => $emit('task-edit-scheduled', task, group.filePath, date)"
+          @open-task="onTaskOpen(task)"
           @edit-expand="onEditExpand(task)"
         />
         <card-wrapper v-if="expandedTaskId === task.id" class="edit-form" border padding>
@@ -51,7 +52,7 @@ import { buildTaskEditorTitle } from 'src/utils/org-editor/build-task-title';
 import { api } from 'src/boot/api';
 import { uint8ArrayToText, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
-import { getTaskBody } from '../utils/get-task-body';
+import { editOrgDocument } from 'orgnote-api/utils';
 
 const props = defineProps<{ group: AgendaTaskGroup }>();
 const emit = defineEmits<{
@@ -66,6 +67,11 @@ const emit = defineEmits<{
 
 const { openEdit } = useAgendaMiniEditor();
 const { tabletBelow } = api.ui.useScreenDetection();
+
+const onTaskOpen = (task: AgendaTaskView): void => {
+  if (!tabletBelow.value) return;
+  openEdit(task, props.group.filePath);
+};
 
 const expandedTaskId = ref<string | null>(null);
 
@@ -105,7 +111,11 @@ const onEditExpand = async (task: AgendaTaskView): Promise<void> => {
     reporter.reportError(result.error);
     return;
   }
-  editDraft.body = getTaskBody(uint8ArrayToText(result.value), task.start);
+  if (task.start === undefined) return;
+  const content = uint8ArrayToText(result.value);
+  editOrgDocument(content, (doc) => {
+    editDraft.body = doc.headlineAt(task.start!)?.body ?? '';
+  });
 };
 
 const onBodyBlur = (task: AgendaTaskView): void => {

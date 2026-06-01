@@ -55,7 +55,7 @@ import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys
 import { api } from 'src/boot/api';
 import { createAgendaFilesGetter } from '../utils/agenda-files-completion';
 import { parseQuickAddInput } from '../utils/parse-quick-add-input';
-import type { CreateTaskInput } from '../mutations/create-task';
+import type { CreateTaskInput } from 'orgnote-api/utils';
 import type { AgendaTaskDraft } from '../types';
 import AgendaTaskForm from './AgendaTaskForm.vue';
 import AgendaDateButton from './AgendaDateButton.vue';
