@@ -209,3 +209,9 @@ export default defineBoot(async ({ app, store, router }) => {
 });
 
 export { api };
+
+// Force full reload on HMR — module-level `api` variable cannot be
+// re-initialized without re-running the boot sequence.
+if (import.meta.hot) {
+  import.meta.hot.invalidate();
+}

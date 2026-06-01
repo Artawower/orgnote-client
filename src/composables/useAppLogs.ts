@@ -1,8 +1,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
-import { I18N, type LogLevel, type LogRecord } from 'orgnote-api';
 import { computedAsync } from '@vueuse/core';
+import { I18N, type LogLevel, type LogRecord } from 'orgnote-api';
 
 interface BufferError {
   timestamp: number;
