@@ -22,10 +22,7 @@
       </template>
 
       <template #title-actions>
-        <agenda-date-button
-          v-model="draft.scheduledDate"
-          @update:model-value="onDateChange"
-        />
+        <agenda-date-button v-model="draft.scheduledDate" @update:model-value="onDateChange" />
       </template>
 
       <template #toolbar-start>
@@ -46,6 +43,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, reactive, ref } from 'vue';
+import { useAgendaMiniEditor } from '../composables/use-agenda-mini-editor';
 import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 
@@ -91,7 +89,13 @@ const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');
 
 const lastUserSelectedDate = ref<string | null>(null);
 
-const draft = reactive<AgendaTaskDraft>({ title: '', body: '', scheduledDate: todayIsoDate() });
+const draft = reactive<AgendaTaskDraft>({
+  title: '',
+  body: '',
+  tags: [],
+  priority: undefined,
+  scheduledDate: todayIsoDate(),
+});
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
 
@@ -99,7 +103,21 @@ const targetLabel = computed(() =>
   targetFile.value ? fileBaseName(targetFile.value) : inboxLabel.value,
 );
 
+const { openCreate } = useAgendaMiniEditor();
+const { tabletBelow } = api.ui.useScreenDetection();
+
 const expand = async (): Promise<void> => {
+  if (tabletBelow.value) {
+    const result = await openCreate({
+      title: draft.title,
+      scheduledDate: draft.scheduledDate,
+    });
+    if (result) {
+      emit('submit', { ...result, targetFile: targetFile.value });
+      resetState();
+    }
+    return;
+  }
   isExpanded.value = true;
   await nextTick();
   await nextTick();

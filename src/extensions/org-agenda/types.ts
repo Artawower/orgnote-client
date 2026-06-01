@@ -3,6 +3,8 @@ import type { FileTask } from 'orgnote-api';
 export interface AgendaTaskDraft {
   title: string;
   body: string;
+  tags: string[];
+  priority?: string;
   scheduledDate?: string;
 }
 

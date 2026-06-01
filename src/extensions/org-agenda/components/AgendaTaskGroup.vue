@@ -36,6 +36,7 @@
 
 <script lang="ts" setup>
 import { reactive, ref } from 'vue';
+import { useAgendaMiniEditor } from '../composables/use-agenda-mini-editor';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
 import AppTitle from 'src/components/AppTitle.vue';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -63,15 +64,29 @@ const emit = defineEmits<{
   'task-edit-save': [task: AgendaTaskView, filePath: string, draft: AgendaTaskDraft];
 }>();
 
+const { openEdit } = useAgendaMiniEditor();
+const { tabletBelow } = api.ui.useScreenDetection();
+
 const expandedTaskId = ref<string | null>(null);
 
-const editDraft = reactive<AgendaTaskDraft>({ title: '', body: '', scheduledDate: undefined });
+const editDraft = reactive<AgendaTaskDraft>({
+  title: '',
+  body: '',
+  tags: [],
+  priority: undefined,
+  scheduledDate: undefined,
+});
 
 const onTaskToggle = (task: AgendaTaskView): void => {
   emit('task-toggle', task, props.group.filePath);
 };
 
 const onEditExpand = async (task: AgendaTaskView): Promise<void> => {
+  if (tabletBelow.value) {
+    openEdit(task, props.group.filePath);
+    return;
+  }
+
   if (expandedTaskId.value === task.id) {
     expandedTaskId.value = null;
     return;
