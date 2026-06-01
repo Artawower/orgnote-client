@@ -1,5 +1,10 @@
 <template>
-  <div class="date-picker-sheet">
+  <div
+      v-swipe-stop
+      class="date-picker-sheet"
+      @swipe-left="datePickerRef?.navigateMonth(1)"
+      @swipe-right="datePickerRef?.navigateMonth(-1)"
+    >
     <app-flex column gap="sm">
       <app-flex row align-end full-width justify="end" class="shortcuts">
         <action-button
@@ -28,13 +33,13 @@
           @click="onClear"
         />
       </app-flex>
-      <app-date-picker :model-value="calendarModel" minimal @date-click="onDateClick" />
+      <app-date-picker ref="datePickerRef" :model-value="calendarModel" minimal @date-click="onDateClick" />
     </app-flex>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { addDays, format } from 'date-fns';
 import { useI18n } from 'vue-i18n';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -48,6 +53,8 @@ const props = defineProps<{ modelValue?: string }>();
 const emit = defineEmits<{ 'update:modelValue': [value: string | undefined] }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+
+const datePickerRef = ref<InstanceType<typeof AppDatePicker> | null>(null);
 
 const toIsoDate = (date: Date): string => format(date, 'yyyy-MM-dd');
 

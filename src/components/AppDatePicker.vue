@@ -165,9 +165,14 @@ const formatDateStr = (year: number, month: number, day: number): string => {
 const setToday = () => qDateRef.value?.setToday();
 const setView = (view: 'Calendar' | 'Months' | 'Years') => qDateRef.value?.setView(view);
 
+const navigateMonth = (direction: 1 | -1): void => {
+  qDateRef.value?.offsetCalendar('month', direction < 0);
+};
+
 defineExpose({
   setToday,
   setView,
+  navigateMonth,
 });
 </script>
 
