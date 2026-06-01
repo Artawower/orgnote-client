@@ -34,6 +34,14 @@ vi.mock('src/boot/api', () => ({
           extensions: [],
         }),
       ),
+      useKeybindings: vi.fn(() => ({
+        keybindings: [],
+        pushContext: vi.fn(() => vi.fn()),
+        popContext: vi.fn(),
+      })),
+      useCommands: vi.fn(() => ({
+        execute: vi.fn(),
+      })),
     },
   },
 }));

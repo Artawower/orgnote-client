@@ -24,6 +24,10 @@ vi.mock('src/boot/api', () => ({
         isIndexing: ref(false),
         isSearching: ref(false),
       }),
+      useKeybindings: vi.fn(() => ({
+        pushContext: vi.fn(() => vi.fn()),
+        popContext: vi.fn(),
+      })),
     },
   },
 }));

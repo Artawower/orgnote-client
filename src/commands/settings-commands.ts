@@ -1,5 +1,5 @@
 import type { Command, CommandHandlerParams, CommandIcon } from 'orgnote-api';
-import { DefaultCommands, RouteNames, i18n, I18N } from 'orgnote-api';
+import { DefaultCommands, KEYBINDING_CONTEXTS, RouteNames, i18n, I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { useRouteActive } from 'src/composables/use-route-active';
@@ -218,6 +218,9 @@ export function getSettingsCommands(): Command[] {
       command: DefaultCommands.SETTINGS,
       group: 'global',
       icon: settingsIcon,
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+      defaultHotkeys: [{ key: ',', modifiers: ['Mod'] }],
       handler: () => openSettingsRoute(RouteNames.SettingsPage),
       isActive: () => isActiveRoute(RouteNames.SettingsPage),
     },

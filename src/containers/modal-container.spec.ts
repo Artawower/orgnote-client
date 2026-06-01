@@ -17,6 +17,10 @@ vi.mock('src/boot/api', () => ({
       useNotifications: vi.fn(() => ({
         notifications: ref([]),
       })),
+      useKeybindings: vi.fn(() => ({
+        pushContext: vi.fn(() => vi.fn()),
+        popContext: vi.fn(),
+      })),
     },
   },
 }));
@@ -158,8 +162,16 @@ test('renders component in topmost modal', async () => {
 
 test('renders title from config.title', async () => {
   mockModal.modals.value = [
-    { id: ++nextId, component: markRaw({ template: '<div>First</div>' }), config: { title: 'First Title' } },
-    { id: ++nextId, component: markRaw({ template: '<div>Second</div>' }), config: { title: 'Second Title' } },
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>First</div>' }),
+      config: { title: 'First Title' },
+    },
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>Second</div>' }),
+      config: { title: 'Second Title' },
+    },
   ];
   await wrapper.vm.$nextTick();
   const allTitles = wrapper.findAll('h1.title');
@@ -183,7 +195,11 @@ test('renders close button when config.closable is true', async () => {
 
 test('does not render close button when config.closable is false', async () => {
   mockModal.modals.value = [
-    { id: ++nextId, component: markRaw({ template: '<div>ModalNoClose</div>' }), config: { closable: false } },
+    {
+      id: ++nextId,
+      component: markRaw({ template: '<div>ModalNoClose</div>' }),
+      config: { closable: false },
+    },
   ];
   await wrapper.vm.$nextTick();
   const closeButton = wrapper.find('action-button-stub');
@@ -210,7 +226,6 @@ test('does not close modal when clicking inside modal content', async () => {
   await modalContent.trigger('click');
   expect(mockModal.close).not.toHaveBeenCalled();
 });
-
 
 test('modal-content applies no-header-padding class when modal disables header padding', async () => {
   mockModal.modals.value = [
@@ -241,7 +256,6 @@ test('content-body applies no-padding class when modal disables body padding onl
   expect(wrapper.find('.content-body').classes()).toContain('no-padding');
   expect(wrapper.find('.modal-content').classes()).not.toContain('no-padding');
 });
-
 
 test('content-body applies with-header class when modal renders a title header', async () => {
   mockModal.modals.value = [

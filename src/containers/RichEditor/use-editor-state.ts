@@ -2,19 +2,19 @@ import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import type {
-    EditorExtension,
-    InlineEmbeddedWidget,
-    InlineEmbeddedWidgets,
-    MultilineEmbeddedWidget,
-    MultilineEmbeddedWidgets,
-    WidgetBuilder,
+  EditorExtension,
+  InlineEmbeddedWidget,
+  InlineEmbeddedWidgets,
+  MultilineEmbeddedWidget,
+  MultilineEmbeddedWidgets,
+  WidgetBuilder,
 } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 import {
-    createBaseEditorExtensions,
-    createOrgLanguageExtension,
-    orgSelectionTheme,
+  createBaseEditorExtensions,
+  createOrgLanguageExtension,
+  orgSelectionTheme,
 } from 'src/utils/org-editor';
 import { createImagePasteExtension } from 'src/utils/org-editor/extensions/image-paste';
 import { useDynamicComponent } from 'src/utils/dynamic-component';
@@ -22,11 +22,12 @@ import { computed, shallowRef, toValue, watch } from 'vue';
 import { editorLanguages } from './editor-languages';
 import { type OrgNodeGetter } from './facets';
 import {
-    createFacetExtensions,
-    createScrollMarginsExtension,
-    createWidgetExtensions,
+  createFacetExtensions,
+  createScrollMarginsExtension,
+  createWidgetExtensions,
 } from './store-extensions';
 import { createActiveContextExtensions } from './use-active-context';
+import { useEditorKeybindings } from 'src/composables/use-editor-keybindings';
 
 export interface UseEditorStateOptions {
   readonly?: boolean;
@@ -71,6 +72,7 @@ const toWidgetEntries = <T extends InlineEmbeddedWidgets | MultilineEmbeddedWidg
 export const useEditorState = (options: UseEditorStateOptions) => {
   const configStore = api.core.useConfig();
   const editorStore = api.core.useEditor();
+  const editorKeybindings = useEditorKeybindings();
   const editorConfig = computed(() => configStore.config.editor);
   const { createWidgetBuilder, createMultilineWidgetBuilder } = useWidgetBuilder();
   const dynamicComponent = useDynamicComponent();
@@ -181,6 +183,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
         compartments.scrollMargins.of(
           createScrollMarginsExtension(keyboardOpened.value, tabletBelow.value),
         ),
+        editorKeybindings.initialExtension,
         createOrgLanguageExtension({
           wrap: editorLanguages,
           onAstChanged: (node) => {
@@ -250,6 +253,7 @@ export const useEditorState = (options: UseEditorStateOptions) => {
 
   const setEditorView = (view: EditorView | null): void => {
     editorViewRef.current = view;
+    editorKeybindings.watchKeybindings(view ?? undefined);
   };
 
   return {

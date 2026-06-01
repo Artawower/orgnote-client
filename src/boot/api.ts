@@ -79,6 +79,7 @@ import { wsClient } from 'src/infrastructure/websocket-client';
 import { useFileContent } from 'src/composables/use-file-content';
 import { useAppResume } from 'src/composables/use-app-resume';
 import { hasWindow } from 'src/utils/platform-specific';
+import { useKeybindingsStore } from 'src/stores/keybindings';
 
 let api: OrgNoteApi;
 async function initApi(app: App, router: Router): Promise<void> {
@@ -122,6 +123,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useFileMeta: useFileMetaStore,
       useEmbeddedBuffer: useEmbeddedBufferStore,
       useFileContent,
+      useKeybindings: useKeybindingsStore,
       app,
     },
     utils: {
