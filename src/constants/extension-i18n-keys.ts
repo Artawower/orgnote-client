@@ -19,6 +19,7 @@ export const extensionI18nKeys = {
   orgAgendaNoTasksDescription: 'extensions.orgAgenda.noTasks.description',
   orgAgendaQuickAddPlaceholder: 'extensions.orgAgenda.quickAdd.placeholder',
   orgAgendaQuickAddBodyPlaceholder: 'extensions.orgAgenda.quickAdd.bodyPlaceholder',
+  orgAgendaToggleFullscreenEditor: 'extensions.orgAgenda.miniEditor.toggleFullscreen',
   orgAgendaQuickAddShortcutHint: 'extensions.orgAgenda.quickAdd.shortcutHint',
   orgAgendaQuickAddAddButton: 'extensions.orgAgenda.quickAdd.addButton',
   orgAgendaQuickAddToday: 'extensions.orgAgenda.quickAdd.today',

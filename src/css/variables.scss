@@ -333,6 +333,9 @@ body {
   // Badge
   --badge-radius: 6px;
 
+  // Modal overlay (below notifications so toasts render above the modal)
+  --modal-z-index: 9000;
+
   // Notifications
   --notification-z-index: 9999;
   --notification-max-width: 480px;

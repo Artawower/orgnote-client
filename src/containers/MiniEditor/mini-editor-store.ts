@@ -12,6 +12,22 @@ export const buildEmptySession = (): MiniEditorSession => ({
   fullSize: false,
 });
 
+// Temporary hidden <input> used to raise the iOS keyboard within a user gesture
+// before the async modal mount. Not app state — a transient DOM bridge.
+let iosCarrier: HTMLInputElement | null = null;
+
+export const setIosCarrier = (el: HTMLInputElement): void => {
+  // Remove any orphaned carrier (e.g. previous open whose modal never mounted)
+  iosCarrier?.remove();
+  iosCarrier = el;
+};
+
+export const consumeIosCarrier = (): HTMLInputElement | null => {
+  const carrier = iosCarrier;
+  iosCarrier = null;
+  return carrier;
+};
+
 export const useMiniEditorStore = defineStore('miniEditor', () => {
   const title = ref('');
   const body = ref('');

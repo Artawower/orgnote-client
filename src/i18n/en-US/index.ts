@@ -110,6 +110,7 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaNoTasksDescription]: 'No tasks match the selected filter',
   [extensionI18nKeys.orgAgendaQuickAddPlaceholder]: '+ Add task to "{target}"',
   [extensionI18nKeys.orgAgendaQuickAddBodyPlaceholder]: 'Description (optional)',
+  [extensionI18nKeys.orgAgendaToggleFullscreenEditor]: 'Toggle fullscreen editor',
   [extensionI18nKeys.orgAgendaQuickAddShortcutHint]: 'Cmd+\u21b5 to add task',
   [extensionI18nKeys.orgAgendaQuickAddAddButton]: 'Add',
   [extensionI18nKeys.orgAgendaQuickAddToday]: 'Today',

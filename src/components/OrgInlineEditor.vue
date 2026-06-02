@@ -12,12 +12,14 @@ import { useWidgetBuilder } from 'src/composables/use-widget-builder';
 import { buildOrgInlineEditorWidgets, createOrgEditorExtensions } from 'src/utils/org-editor';
 import 'src/extensions/org-inline-markup/styles.css';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { isIosWebkit } from 'src/utils/platform-specific';
 interface Props {
   modelValue: string;
   placeholder?: string;
   readonly?: boolean;
   autofocus?: boolean;
   singleLine?: boolean;
+  preventFocusScroll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -25,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   autofocus: false,
   singleLine: false,
+  preventFocusScroll: false,
 });
 
 const emit = defineEmits<{
@@ -43,6 +46,17 @@ const inlineWidgets = buildOrgInlineEditorWidgets(createWidgetBuilder);
 
 const containerRef = ref<HTMLDivElement | null>(null);
 let view: EditorView | undefined;
+
+// iOS WebKit scrolls the document ~40ms after focusing an editable to "reveal"
+// it, even when it's already visible in a fixed panel — a jarring jump. Safari
+// skips that scroll if the element is transparent at the check moment, so blink
+// opacity to 0 past the window, then restore (imperceptible).
+const suppressIosFocusScroll = (): void => {
+  if (!isIosWebkit() || !containerRef.value) return;
+  const el = containerRef.value;
+  el.style.opacity = '0';
+  setTimeout(() => (el.style.opacity = ''), 60);
+};
 
 const headlineLevel1WarningMark = Decoration.mark({ class: 'cm-headline-warning' });
 
@@ -126,7 +140,10 @@ const buildExtensions = () => {
     buildCustomKeymap(),
     ...orgExtensions,
     EditorView.domEventHandlers({
-      focus: () => emit('focus'),
+      focus: () => {
+        if (props.preventFocusScroll) suppressIosFocusScroll();
+        emit('focus');
+      },
       blur: () => emit('blur'),
     }),
     ...(props.singleLine ? [] : [level1HeadlineWarningPlugin]),
@@ -142,7 +159,13 @@ onMounted(() => {
     }),
     parent: containerRef.value,
   });
-  if (props.autofocus) view.focus();
+  if (props.autofocus) {
+    // [autofocus] lets the modal container focus this editor after mount
+    // (it queries [autofocus] in a rAF, since the editor mounts before the modal).
+    view.contentDOM.setAttribute('autofocus', '');
+    view.dispatch({ selection: { anchor: view.state.doc.length }, scrollIntoView: true });
+    view.focus();
+  }
 });
 
 onUnmounted(() => {

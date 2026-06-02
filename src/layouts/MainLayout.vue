@@ -28,7 +28,7 @@
   </sidebars-layout>
 
   <modal-container />
-  <app-notifications v-show="!hasOpenModals" />
+  <app-notifications />
 </template>
 
 <script setup lang="ts">
@@ -40,7 +40,7 @@ import AppNotifications from 'src/containers/AppNotifications.vue';
 import EditorActionsToolbar from 'src/containers/EditorActionsToolbar.vue';
 import SidebarsLayout from 'src/components/SidebarsLayout.vue';
 import { api } from 'src/boot/api';
-import { computed, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import VisibilityWrapper from 'src/components/VisibilityWrapper.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -65,8 +65,6 @@ const { opened: rightOpened } = storeToRefs(rightSidebar);
 
 const { tabletBelow } = api.ui.useScreenDetection();
 
-const modal = api.ui.useModal();
-const hasOpenModals = computed(() => modal.modals.length > 0);
 
 const handleErrorFromQuery = (): void => {
   const errorMessage = route?.query?.error;

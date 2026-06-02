@@ -17,6 +17,7 @@
       <org-inline-editor
         v-model="store.title"
         :single-line="true"
+        :prevent-focus-scroll="true"
         autofocus
         class="title"
         :placeholder="titlePlaceholder"
@@ -29,6 +30,7 @@
     <div class="body">
       <org-inline-editor
         v-model="store.body"
+        :prevent-focus-scroll="true"
         class="body-editor"
         :placeholder="bodyPlaceholder"
         @tag-click="onBodyTagClick"
@@ -71,7 +73,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isNullable } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -84,7 +86,7 @@ import DatePickerSheet from 'src/components/DatePickerSheet.vue';
 import { openOrgPriorityCompletion } from 'src/utils/org-priority-completion';
 import { openOrgTagCompletion } from 'src/utils/org-tag-completion';
 import { formatOrgDateLabel } from 'src/utils/format-org-date';
-import { useMiniEditorStore } from './mini-editor-store';
+import { useMiniEditorStore, consumeIosCarrier } from './mini-editor-store';
 import type { MiniEditorSession } from './types';
 
 defineProps<{
@@ -100,6 +102,13 @@ const emit = defineEmits<{
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const store = useMiniEditorStore();
 const showDatePicker = ref(false);
+
+onMounted(() => {
+  // ModalDialog focuses the [autofocus] editor; here we just release the iOS
+  // keyboard carrier in a rAF, after focus has moved to the editor.
+  const carrier = consumeIosCarrier();
+  requestAnimationFrame(() => carrier?.remove());
+});
 
 const toPayload = () => ({
   title: store.title,
@@ -151,12 +160,11 @@ const submit = (): void => {
 .editor {
   padding: var(--padding-lg);
   padding-bottom: calc(var(--safe-area-bottom, 0px) + var(--padding-lg));
-  height: var(--mini-editor-height, 68vh);
 
   &.fullsize {
     flex: 1;
-    height: unset;
     min-height: 0;
+    padding-top: calc(var(--safe-area-top, 0px) + var(--padding-lg));
   }
 }
 
@@ -166,9 +174,16 @@ const submit = (): void => {
 }
 
 .body {
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: var(--mini-editor-body-height, 80px);
+  max-height: var(--mini-editor-body-height, 80px);
   overflow: hidden;
+
+  .fullsize & {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
 }
 
 .body-editor {

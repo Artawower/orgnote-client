@@ -6,7 +6,14 @@
     @submit="emit('submit', $event)"
   >
     <template v-if="props.mode === 'edit' && props.filePath" #footer-actions>
-      <action-button icon="sym_o_open_in_full" size="sm" @click="toggleFullSize" />
+      <action-button
+        :as="'div'"
+        tabindex="-1"
+        :aria-label="t(i18nKeys.orgAgendaToggleFullscreenEditor)"
+        icon="sym_o_open_in_full"
+        size="sm"
+        @pointerdown.prevent.stop="toggleFullSize"
+      />
       <action-button icon="sym_o_article" size="sm" @click="openFullEditor" />
     </template>
   </mini-editor>
