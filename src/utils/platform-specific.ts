@@ -5,6 +5,11 @@ type Condition = () => boolean;
 
 export const hasWindow = (): boolean => typeof window !== 'undefined';
 
+// iOS WebKit (Safari browser + standalone PWA), excluding Capacitor native
+// which manages the keyboard via @capacitor/keyboard. Use for WebKit-only quirks.
+export const isIosWebkit = (): boolean =>
+  !!process.env.CLIENT && Platform.is.ios && !Platform.is.capacitor;
+
 const isAsyncFn = (fn?: unknown): boolean => {
   if (!fn || typeof fn !== 'function') return false;
   return fn.constructor.name === 'AsyncFunction';

@@ -1,9 +1,19 @@
 import { api } from 'src/boot/api';
 import AgendaMiniEditor from '../components/AgendaMiniEditor.vue';
-import { useMiniEditorStore, buildEmptySession } from 'src/containers/MiniEditor/mini-editor-store';
+import {
+  useMiniEditorStore,
+  buildEmptySession,
+  setIosCarrier,
+} from 'src/containers/MiniEditor/mini-editor-store';
 import type { AgendaTaskView } from './use-agenda-tasks';
 import type { AgendaTaskDraft } from '../types';
 import type { CreateTaskInput } from 'orgnote-api/utils';
+import { iosPwaOnly } from 'src/utils/platform-specific';
+import { focusKeyboardCarrier } from 'src/utils/ios-keyboard-carrier';
+
+const focusCarrier = iosPwaOnly((): void => {
+  setIosCarrier(focusKeyboardCarrier());
+});
 
 export const useAgendaMiniEditor = () => {
   const modal = api.ui.useModal();
@@ -14,6 +24,7 @@ export const useAgendaMiniEditor = () => {
     defaults?: Partial<AgendaTaskDraft>,
   ): Promise<CreateTaskInput | null> => {
     if (!tabletBelow.value) return null;
+    focusCarrier();
     store.$patch({ ...buildEmptySession(), ...defaults, tags: defaults?.tags ?? [] });
     const result = await modal.open<CreateTaskInput | null | undefined>(AgendaMiniEditor, {
       mini: true,
@@ -30,6 +41,7 @@ export const useAgendaMiniEditor = () => {
 
   const openEdit = (task: AgendaTaskView, filePath: string): void => {
     if (!tabletBelow.value) return;
+    focusCarrier();
     store.$patch({
       ...buildEmptySession(),
       title: task.text ?? '',

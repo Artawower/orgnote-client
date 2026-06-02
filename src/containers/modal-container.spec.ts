@@ -47,6 +47,7 @@ beforeEach(() => {
   mockModal.close.mockClear();
   wrapper = mount(ModalContainer, {
     global: {
+      stubs: { teleport: true },
       plugins: [
         createTestingPinia({
           createSpy: vi.fn,
@@ -62,7 +63,7 @@ afterEach(() => {
 });
 
 test('renders no dialogs when modals is empty', async () => {
-  const dialogs = wrapper.findAll('dialog');
+  const dialogs = wrapper.findAll('.modal-panel');
   expect(dialogs.length).toBe(0);
 });
 
@@ -76,7 +77,7 @@ test('modal-wide class applied when config.wide enabled', async () => {
   ];
   await wrapper.vm.$nextTick();
 
-  const dialog = wrapper.find('dialog');
+  const dialog = wrapper.find('.modal-panel');
   expect(dialog.classes()).toContain('modal-wide');
 });
 
@@ -90,7 +91,7 @@ test('modal-wide class absent when config.wide disabled', async () => {
   ];
   await wrapper.vm.$nextTick();
 
-  const dialog = wrapper.find('dialog');
+  const dialog = wrapper.find('.modal-panel');
   expect(dialog.classes()).not.toContain('modal-wide');
 });
 
@@ -101,7 +102,7 @@ test('renders a single dialog when modals has 1 item', async () => {
     config: { title: 'Modal One', closable: true },
   });
   await wrapper.vm.$nextTick();
-  const dialogs = wrapper.findAll('dialog');
+  const dialogs = wrapper.findAll('.modal-panel');
   expect(dialogs.length).toBe(1);
 });
 
@@ -111,7 +112,7 @@ test('renders only top dialog when multiple modals in stack', async () => {
     { id: ++nextId, component: markRaw({ template: '<div>ModalTwo</div>' }), config: {} },
   );
   await wrapper.vm.$nextTick();
-  const dialogs = wrapper.findAll('dialog');
+  const dialogs = wrapper.findAll('.modal-panel');
   expect(dialogs.length).toBe(1);
 });
 
@@ -130,7 +131,7 @@ test('ModalContainer unmounts first modal when second is pushed onto stack', asy
   expect(wrapper.find('.b').exists()).toBe(true);
 });
 
-test('newly added modal calls showModal()', async () => {
+test('newly added modal renders a panel', async () => {
   mockModal.modals.value = [
     ...mockModal.modals.value,
     {
@@ -140,13 +141,10 @@ test('newly added modal calls showModal()', async () => {
     },
   ];
 
-  const showModalSpy = vi.spyOn(HTMLDialogElement.prototype, 'showModal');
   await wrapper.vm.$nextTick();
   await wrapper.vm.$nextTick();
 
-  expect(showModalSpy).toHaveBeenCalled();
-
-  showModalSpy.mockRestore();
+  expect(wrapper.find('.modal-panel').exists()).toBe(true);
 });
 
 test('renders component in topmost modal', async () => {
@@ -293,20 +291,15 @@ test('removing top modal keeps previous one visible', async () => {
     { id: ++nextId, component: markRaw({ template: '<div>Second Modal</div>' }), config: {} },
   ];
   await wrapper.vm.$nextTick();
-  let dialogs = wrapper.findAll('dialog');
+  let dialogs = wrapper.findAll('.modal-panel');
   expect(dialogs.length).toBe(1);
   mockModal.modals.value.pop();
   await wrapper.vm.$nextTick();
-  dialogs = wrapper.findAll('dialog');
+  dialogs = wrapper.findAll('.modal-panel');
   expect(dialogs.length).toBe(1);
 });
 
-test('ModalContainer removing modal calls native dialog close before unmount', async () => {
-  const showModalSpy = vi
-    .spyOn(HTMLDialogElement.prototype, 'showModal')
-    .mockImplementation(vi.fn());
-  const closeSpy = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(vi.fn());
-
+test('ModalContainer unmounts panel when modal removed', async () => {
   mockModal.modals.value = [
     {
       id: ++nextId,
@@ -318,81 +311,15 @@ test('ModalContainer removing modal calls native dialog close before unmount', a
   await nextTick();
   await nextTick();
 
-  expect(showModalSpy).toHaveBeenCalled();
-
-  const dialogElement = wrapper.find('dialog').element as HTMLDialogElement;
-  Object.defineProperty(dialogElement, 'open', {
-    value: true,
-    writable: true,
-    configurable: true,
-  });
+  expect(wrapper.find('.modal-panel').exists()).toBe(true);
 
   mockModal.modals.value = [];
   await nextTick();
 
-  expect(closeSpy).toHaveBeenCalled();
-});
-
-test('ModalContainer swap replacing modal calls showModal on new dialog', async () => {
-  const showModalSpy = vi
-    .spyOn(HTMLDialogElement.prototype, 'showModal')
-    .mockImplementation(vi.fn());
-  vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(vi.fn());
-
-  const componentA = markRaw({ template: '<div>ComponentA</div>' });
-  const componentB = markRaw({ template: '<div>ComponentB</div>' });
-
-  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
-  await nextTick();
-  await nextTick();
-
-  expect(showModalSpy).toHaveBeenCalledTimes(1);
-
-  mockModal.modals.value = [{ id: ++nextId, component: componentB, config: {} }];
-  await nextTick();
-  await nextTick();
-
-  expect(showModalSpy).toHaveBeenCalledTimes(2);
-});
-
-test('ModalContainer swap closes old dialog before opening new one', async () => {
-  const callOrder: string[] = [];
-
-  vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(function () {
-    callOrder.push('showModal');
-  });
-  vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(function () {
-    callOrder.push('close');
-  });
-
-  const componentA = markRaw({ template: '<div>ComponentA</div>' });
-  const componentB = markRaw({ template: '<div>ComponentB</div>' });
-
-  mockModal.modals.value = [{ id: ++nextId, component: componentA, config: {} }];
-  await nextTick();
-  await nextTick();
-
-  const dialogElement = wrapper.find('dialog').element as HTMLDialogElement;
-  Object.defineProperty(dialogElement, 'open', {
-    value: true,
-    writable: true,
-    configurable: true,
-  });
-
-  callOrder.length = 0;
-
-  mockModal.modals.value = [{ id: ++nextId, component: componentB, config: {} }];
-  await nextTick();
-  await nextTick();
-
-  expect(callOrder[0]).toBe('close');
-  expect(callOrder[1]).toBe('showModal');
+  expect(wrapper.find('.modal-panel').exists()).toBe(false);
 });
 
 test('ModalContainer swap renders new component after modal replacement', async () => {
-  vi.spyOn(HTMLDialogElement.prototype, 'showModal').mockImplementation(vi.fn());
-  vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(vi.fn());
-
   const componentA = markRaw({ template: '<div class="comp-a">ComponentA</div>' });
   const componentB = markRaw({ template: '<div class="comp-b">ComponentB</div>' });
 
