@@ -25,11 +25,16 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     return files.filter((f): f is FileMeta => f !== undefined && !f.deletedAt);
   };
 
+  const matchesPath = (f: FileMeta, filePath: string[]): boolean =>
+    join(...(f.filePath || [])) === join(...filePath);
+
   const getByPath = async (filePath: string[]): Promise<FileMeta | undefined> => {
-    const file = await store
-      .filter((f) => !f.deletedAt && join(...(f.filePath || [])) === join(...filePath))
-      .first();
+    const file = await store.filter((f) => !f.deletedAt && matchesPath(f, filePath)).first();
     return file;
+  };
+
+  const findByPathIncludingDeleted = async (filePath: string[]): Promise<FileMeta | undefined> => {
+    return store.filter((f) => matchesPath(f, filePath)).first();
   };
 
   const isNotDeleted = (f: FileMeta): boolean => !f.deletedAt;
@@ -65,6 +70,7 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     id: existing.id,
     createdAt: existing.createdAt,
     backlinks: existing.backlinks,
+    deletedAt: undefined,
     touchedAt: meta.touchedAt ?? existing.touchedAt ?? new Date().toISOString(),
   });
 
@@ -75,7 +81,7 @@ export const createFileRepository = (db: Dexie): FileRepository => {
   });
 
   const save = async (meta: FileMeta): Promise<void> => {
-    const existing = await getByPath(meta.filePath);
+    const existing = await findByPathIncludingDeleted(meta.filePath);
     const prepared = existing ? mergeWithExisting(meta, existing) : prepareForInsert(meta);
     await store.put(prepared);
   };

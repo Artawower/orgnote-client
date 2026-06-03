@@ -10,6 +10,16 @@ const open = vi.fn<() => Promise<void>>();
 const activeContext = ref<{ filePath?: string } | null>(null);
 const config = ref({ ui: { graph: {} } });
 
+type FsChange = { type: string; path: string; previousPath?: string };
+let triggerWatch: ((change: FsChange) => void) | undefined;
+const watch = vi.fn((_path: string, listener: (change: FsChange) => void) => {
+  triggerWatch = listener;
+  return () => {
+    triggerWatch = undefined;
+  };
+});
+const orgChange: FsChange = { type: 'delete', path: '/notes/alpha.org' };
+
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
@@ -17,6 +27,7 @@ vi.mock('src/boot/api', () => ({
       useFileMeta: () => ({ getAll }),
       useEditor: () => ({ activeContext: activeContext.value }),
       useBufferViewer: () => ({ open }),
+      useFileWatcher: () => ({ watch }),
     },
   },
 }));
@@ -25,6 +36,7 @@ import GraphContainer from './GraphContainer.vue';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  triggerWatch = undefined;
   activeContext.value = null;
   getAll.mockResolvedValue([
     {
@@ -142,4 +154,92 @@ test('GraphContainer keeps selected-node highlight when hover is cleared', async
     'beta',
     'alpha',
   ]);
+});
+
+test('GraphContainer reactively refreshes when watched files change (#72)', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(GraphContainer, {
+    global: {
+      stubs: {
+        AppGraph: {
+          name: 'AppGraph',
+          props: ['graph', 'selectedNodeId', 'highlightedNodeIds', 'loading', 'error'],
+          template: '<div class="graph-stub" />',
+        },
+      },
+    },
+  });
+
+  await flushPromises();
+
+  getAll.mockResolvedValue([{ id: 'beta', filePath: ['notes', 'beta.org'], title: 'Beta' }]);
+  triggerWatch?.(orgChange);
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  const graph = wrapper.getComponent({ name: 'AppGraph' }).props('graph') as {
+    nodes: Array<{ id: string }>;
+  };
+
+  expect(graph.nodes.map((node) => node.id)).toEqual(['beta']);
+  vi.useRealTimers();
+});
+
+test('GraphContainer does not refresh on unrelated non-org file changes', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(GraphContainer, {
+    global: {
+      stubs: {
+        AppGraph: {
+          name: 'AppGraph',
+          props: ['graph', 'selectedNodeId', 'highlightedNodeIds', 'loading', 'error'],
+          template: '<div class="graph-stub" />',
+        },
+      },
+    },
+  });
+
+  await flushPromises();
+  getAll.mockClear();
+
+  triggerWatch?.({ type: 'modify', path: '/assets/img.png' });
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  expect(getAll).not.toHaveBeenCalled();
+  expect(
+    wrapper
+      .getComponent({ name: 'AppGraph' })
+      .props('graph')
+      .nodes.map((n: { id: string }) => n.id),
+  ).toEqual(expect.arrayContaining(['alpha', 'beta']));
+  vi.useRealTimers();
+});
+
+test('GraphContainer clears a previous error after a successful silent refresh', async () => {
+  vi.useFakeTimers();
+  getAll.mockRejectedValueOnce(new Error('boom'));
+
+  const wrapper = mount(GraphContainer, {
+    global: {
+      stubs: {
+        AppGraph: {
+          name: 'AppGraph',
+          props: ['graph', 'selectedNodeId', 'highlightedNodeIds', 'loading', 'error'],
+          template: '<div class="graph-stub" />',
+        },
+      },
+    },
+  });
+
+  await flushPromises();
+  expect(wrapper.findComponent({ name: 'AppGraph' }).exists()).toBe(false);
+
+  getAll.mockResolvedValue([{ id: 'beta', filePath: ['notes', 'beta.org'], title: 'Beta' }]);
+  triggerWatch?.(orgChange);
+  await vi.advanceTimersByTimeAsync(300);
+  await flushPromises();
+
+  expect(wrapper.findComponent({ name: 'AppGraph' }).exists()).toBe(true);
+  vi.useRealTimers();
 });

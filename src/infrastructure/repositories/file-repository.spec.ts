@@ -22,9 +22,7 @@ let dropAll: () => Promise<void>;
 let repository: ReturnType<typeof createFileRepository>;
 
 beforeEach(() => {
-  const databaseSettings = createDatabase([
-    { storeName: 'files', migrations: FILE_MIGRATIONS },
-  ]);
+  const databaseSettings = createDatabase([{ storeName: 'files', migrations: FILE_MIGRATIONS }]);
   db = databaseSettings.db;
   dropAll = databaseSettings.dropAll;
   repository = createFileRepository(db);
@@ -158,6 +156,19 @@ test('should return undefined for deleted file by path', async () => {
 
   const result = await repository.getByPath(file.filePath);
   expect(result).toBeUndefined();
+});
+
+test('save revives a soft-deleted file when written again (recreate/restore)', async () => {
+  const file = createMockFile();
+  await repository.save(file);
+  await repository.delete(file.id);
+
+  await repository.save(file);
+
+  const all = await repository.getAll();
+  expect(all).toHaveLength(1);
+  expect((await repository.getById(file.id))?.deletedAt).toBeUndefined();
+  expect(await repository.getByPath(file.filePath)).toBeDefined();
 });
 
 test('should filter out deleted files in getByIds', async () => {

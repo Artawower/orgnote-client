@@ -8,16 +8,11 @@ import { useFileWatcherStore } from 'src/stores/file-watcher';
 import { useFileSearchStore } from 'src/stores/file-search';
 import { useFileSystemStore } from 'src/stores/file-system';
 import { repositories } from 'src/boot/repositories';
+import { affectsOrgIndex } from 'src/utils/org-fs-change';
 
 const pendingChanges: FileSystemChange[] = [];
 
 const parseFilePath = (path: string): string[] => path.split('/').filter(Boolean);
-
-const isRelevantChange = (change: FileSystemChange): boolean => {
-  const hasOrgPath = isOrgFile(change.path);
-  const hasRenameWithPreviousPath = change.type === 'rename' && !!change.previousPath;
-  return hasOrgPath || hasRenameWithPreviousPath;
-};
 
 export default defineBoot(async ({ store }) => {
   setupIndexingWatcher();
@@ -91,22 +86,36 @@ const listOrgFilesRecursively = async (path: string): Promise<string[]> => {
   return nested.flat();
 };
 
+const removeFilesUnderPrefix = async (dirPath: string): Promise<void> => {
+  const fileSearch = useFileSearchStore();
+  const prefix = normalizePathPrefix(dirPath);
+  const allFiles = await repositories.fileRepository.getAll();
+  const staleFiles = allFiles.filter((file) =>
+    isPathWithinPrefix(toAbsoluteFilePath(file.filePath), prefix),
+  );
+  await Promise.all(staleFiles.map((file) => fileSearch.removeFile({ id: file.id })));
+};
+
 const handleDirectoryRename = async (change: FileSystemChange): Promise<void> => {
   if (!change.previousPath) {
     return;
   }
 
+  await removeFilesUnderPrefix(change.previousPath);
+
   const fileSearch = useFileSearchStore();
-  const oldPrefix = normalizePathPrefix(change.previousPath);
-  const allFiles = await repositories.fileRepository.getAll();
-  const staleFiles = allFiles.filter((file) =>
-    isPathWithinPrefix(toAbsoluteFilePath(file.filePath), oldPrefix),
-  );
-
-  await Promise.all(staleFiles.map((file) => fileSearch.removeFile({ id: file.id })));
-
   const orgFilesInNewPath = await listOrgFilesRecursively(change.path);
   await Promise.all(orgFilesInNewPath.map((filePath) => fileSearch.processFile(filePath)));
+};
+
+const handleDelete = async (change: FileSystemChange): Promise<void> => {
+  if (isOrgFile(change.path)) {
+    const fileSearch = useFileSearchStore();
+    await fileSearch.removeFile({ path: parseFilePath(change.path) });
+    return;
+  }
+
+  await removeFilesUnderPrefix(change.path);
 };
 
 const setupOrgFileWatcher = (fileWatcher: ReturnType<typeof useFileWatcherStore>): void => {
@@ -114,7 +123,7 @@ const setupOrgFileWatcher = (fileWatcher: ReturnType<typeof useFileWatcherStore>
 };
 
 const handleFileChange = async (change: FileSystemChange): Promise<void> => {
-  if (!isRelevantChange(change)) {
+  if (!affectsOrgIndex(change)) {
     return;
   }
 
@@ -159,7 +168,7 @@ const processChange = async (change: FileSystemChange): Promise<void> => {
   }
 
   if (change.type === 'delete') {
-    await fileSearch.removeFile({ path: parseFilePath(change.path) });
+    await handleDelete(change);
     return;
   }
 

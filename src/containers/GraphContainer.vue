@@ -37,7 +37,7 @@
 <script lang="ts" setup>
 import { buildBufferUri, DefaultCommands } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { I18N as i18n } from 'orgnote-api';
 import { api } from 'src/boot/api';
@@ -51,6 +51,11 @@ import type { GraphBuildResult, GraphNodeViewModel } from 'src/models/graph';
 import { storeToRefs } from 'pinia';
 import type { GraphUiConfig } from 'orgnote-api';
 import { DEFAULT_GRAPH_CONFIG } from 'src/constants/graph-defaults';
+import { debounce } from 'src/utils/debounce';
+import { affectsOrgIndex } from 'src/utils/org-fs-change';
+import type { FileSystemChange } from 'orgnote-api';
+
+const GRAPH_REFRESH_DEBOUNCE_MS = 300;
 
 const EMPTY_GRAPH: GraphBuildResult = {
   graph: {
@@ -73,20 +78,30 @@ const error = ref<string>();
 const hoveredNodeId = ref<string>();
 const manualSelectedNodeId = ref<string>();
 
-const loadGraph = async (): Promise<void> => {
-  loading.value = true;
-  error.value = undefined;
+const loadGraph = async (silent = false): Promise<void> => {
+  if (!silent) {
+    loading.value = true;
+    error.value = undefined;
+  }
 
   const result = await to(api.core.useFileMeta().getAll)();
 
-  loading.value = false;
+  if (!silent) loading.value = false;
 
   if (result.isErr()) {
-    error.value = result.error.message;
+    if (!silent) error.value = result.error.message;
     return;
   }
 
+  error.value = undefined;
   graph.value = buildGraphFromFileMetas(result.value.filter((f) => !f.deletedAt));
+};
+
+const refreshGraph = debounce(() => void loadGraph(true), GRAPH_REFRESH_DEBOUNCE_MS);
+
+const handleFsChange = (change: FileSystemChange): void => {
+  if (!affectsOrgIndex(change)) return;
+  refreshGraph();
 };
 
 const activeNodeId = computed(() => {
@@ -136,14 +151,22 @@ const graphSettingsData = computed(() => ({
   nodesCount: graph.value.graph.nodes.length,
   edgesCount: graph.value.graph.edges.length,
   config: graphUserConfig.value,
-  refresh: loadGraph,
+  refresh: () => loadGraph(),
   configChange: (cfg: GraphUiConfig) => {
     config.value.ui.graph = cfg;
   },
 }));
 
+let stopWatch: (() => void) | undefined;
+
 onMounted(() => {
   void loadGraph();
+  stopWatch = api.core.useFileWatcher().watch('/', handleFsChange, { recursive: true });
+});
+
+onUnmounted(() => {
+  stopWatch?.();
+  refreshGraph.cancel();
 });
 </script>
 
