@@ -238,10 +238,50 @@ test('file-index watcher removes stale index paths and reindexes on directory re
     previousPath: '/markdown/python',
   });
 
-  expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/markdown/python/with, context-manager.org' });
+  expect(searchState.removeFile).toHaveBeenCalledWith({
+    id: '/markdown/python/with, context-manager.org',
+  });
   expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/markdown/python/asyncio.org' });
   expect(searchState.removeFile).not.toHaveBeenCalledWith({ id: '/other/keep.org' });
 
   expect(searchState.processFile).toHaveBeenCalledWith('/python/with, context-manager.org');
   expect(searchState.processFile).toHaveBeenCalledWith('/python/sub/asyncio.org');
+});
+
+test('file-index watcher removes a single note by path on file delete', async () => {
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
+
+  await watchedCallback?.({ type: 'delete', path: '/notes/a.org' });
+
+  expect(searchState.removeFile).toHaveBeenCalledTimes(1);
+  expect(searchState.removeFile).toHaveBeenCalledWith({ path: ['notes', 'a.org'] });
+});
+
+test('file-index watcher ignores non-org file deletions without scanning the repo', async () => {
+  mockIndexedFiles.push({ id: '/notes/a.org', filePath: ['notes', 'a.org'], title: 'a' });
+
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
+
+  await watchedCallback?.({ type: 'delete', path: '/assets/image.png' });
+
+  expect(searchState.removeFile).not.toHaveBeenCalled();
+});
+
+test('file-index watcher removes all notes under a deleted folder', async () => {
+  mockIndexedFiles.push(
+    { id: '/folder/a.org', filePath: ['folder', 'a.org'], title: 'a' },
+    { id: '/folder/sub/b.org', filePath: ['folder', 'sub', 'b.org'], title: 'b' },
+    { id: '/other/keep.org', filePath: ['other', 'keep.org'], title: 'keep' },
+  );
+
+  await fileIndexBoot({ store: {} } as never);
+  await Promise.resolve();
+
+  await watchedCallback?.({ type: 'delete', path: '/folder' });
+
+  expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/folder/a.org' });
+  expect(searchState.removeFile).toHaveBeenCalledWith({ id: '/folder/sub/b.org' });
+  expect(searchState.removeFile).not.toHaveBeenCalledWith({ id: '/other/keep.org' });
 });

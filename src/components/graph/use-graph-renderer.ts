@@ -1,7 +1,7 @@
 import ForceGraph, { type LinkObject, type NodeObject } from 'force-graph';
 import type { GraphUiConfig } from 'orgnote-api';
 import { isNullable } from 'orgnote-api/utils';
-import type { GraphNodeViewModel, GraphViewModel } from 'src/models/graph';
+import type { GraphEdgeViewModel, GraphNodeViewModel, GraphViewModel } from 'src/models/graph';
 import { getCssVar } from 'src/utils/css-utils';
 import { graphConfig } from './graph-config';
 import type { GraphColorsComposable } from './use-graph-colors';
@@ -49,6 +49,62 @@ export const resolveNodeId = (
   return String(value.id);
 };
 
+const reuseOrCreateNode = (
+  node: GraphNodeViewModel,
+  existingById: Map<string, TypedNode>,
+  added: TypedNode[],
+): TypedNode => {
+  const prev = existingById.get(node.id);
+  if (prev) return Object.assign(prev, node);
+  const created = { ...node } as TypedNode;
+  added.push(created);
+  return created;
+};
+
+export const reconcileGraphNodes = (
+  current: TypedNode[],
+  next: GraphNodeViewModel[],
+): { nodes: TypedNode[]; added: TypedNode[] } => {
+  const existingById = new Map(current.map((n) => [resolveNodeId(n) ?? '', n] as const));
+  const added: TypedNode[] = [];
+  const nodes = next.map((n) => reuseOrCreateNode(n, existingById, added));
+  return { nodes, added };
+};
+
+const findExistingNeighbor = (
+  nodeId: string,
+  byId: Map<string, TypedNode>,
+  edges: GraphEdgeViewModel[],
+  addedIds: Set<string>,
+): TypedNode | undefined => {
+  const edge = edges.find(
+    (e) =>
+      (e.source === nodeId && !addedIds.has(e.target)) ||
+      (e.target === nodeId && !addedIds.has(e.source)),
+  );
+  if (!edge) return undefined;
+  const neighborId = edge.source === nodeId ? edge.target : edge.source;
+  return byId.get(neighborId);
+};
+
+const jitter = (): number => (Math.random() - 0.5) * graphConfig.newNodeJitter;
+
+const seedAddedPositions = (
+  added: TypedNode[],
+  nodes: TypedNode[],
+  edges: GraphEdgeViewModel[],
+): void => {
+  if (!added.length) return;
+  const byId = new Map(nodes.map((n) => [n.id, n] as const));
+  const addedIds = new Set(added.map((n) => n.id));
+  added.forEach((node) => {
+    const anchor = findExistingNeighbor(node.id, byId, edges, addedIds);
+    if (!anchor) return;
+    node.x = (anchor.x ?? 0) + jitter();
+    node.y = (anchor.y ?? 0) + jitter();
+  });
+};
+
 const ZOOM_FIT_FLOOR = 0.15;
 const ZOOM_FIT_SCALE = 4;
 
@@ -85,6 +141,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   } = opts;
 
   let renderer: ForceGraphRenderer | undefined;
+  let currentNodes: TypedNode[] = [];
   let resizeFrameId = 0;
   let hoveredNodeId: string | undefined;
   let zoomToFitTimerId = 0;
@@ -196,12 +253,15 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   const syncData = (graph: GraphViewModel, fitToView = false): void => {
     if (!renderer) return;
     window.clearTimeout(zoomToFitTimerId);
+    const { nodes, added } = reconcileGraphNodes(currentNodes, graph.nodes);
+    seedAddedPositions(added, nodes, graph.edges);
+    currentNodes = nodes;
     renderer.graphData({
-      nodes: graph.nodes.map((n) => ({ ...n })),
+      nodes,
       links: graph.edges.map((e) => ({ ...e })),
     } as ForceGraphData);
     applyForces(renderer);
-    renderer.d3ReheatSimulation();
+    if (added.length) renderer.d3ReheatSimulation();
     if (!fitToView) return;
 
     shouldFitOnEngineStop = true;
@@ -250,6 +310,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   const destroy = (graphEl?: HTMLElement): void => {
     window.cancelAnimationFrame(resizeFrameId);
     resizeFrameId = 0;
+    currentNodes = [];
     hoveredNodeId = undefined;
     window.clearTimeout(zoomToFitTimerId);
     zoomToFitTimerId = 0;

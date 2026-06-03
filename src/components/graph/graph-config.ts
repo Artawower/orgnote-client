@@ -11,4 +11,5 @@ export const graphConfig = {
   zoomToFitDuration: 400,
   zoomToFitDelay: 800,
   zoomToFitPadding: 40,
+  newNodeJitter: 12,
 } as const;
