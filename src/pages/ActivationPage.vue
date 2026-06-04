@@ -36,8 +36,11 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { RouteNames, I18N } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
 import { useI18n } from 'vue-i18n';
+import { isAxiosError } from 'axios';
 import { api } from 'src/boot/api';
+import { sdk } from 'src/boot/axios';
 import { storeToRefs } from 'pinia';
 import AppButton from 'src/components/AppButton.vue';
 import AppInput from 'src/components/AppInput.vue';
@@ -67,6 +70,36 @@ const emailPlaceholder = computed(() =>
 
 const redirectUrl = computed(() => window.location.pathname + window.location.search);
 
+type ActivationErrorResponse = {
+  error?: string;
+};
+
+const backendActivationError = (error: unknown): string => {
+  if (!isAxiosError<ActivationErrorResponse>(error)) {
+    return '';
+  }
+  return error.response?.data?.error ?? '';
+};
+
+const activationErrorMessage = (error: unknown): string => {
+  if (!isAxiosError(error)) {
+    return t(I18N.ACTIVATION_FAILED);
+  }
+
+  const status = error.response?.status;
+  if (status === 404) {
+    return t(I18N.ACTIVATION_KEY_NOT_FOUND);
+  }
+  if (status === 409) {
+    return t(I18N.ACTIVATION_KEY_ALREADY_USED);
+  }
+  if (!status || status >= 500) {
+    return t(I18N.ACTIVATION_SERVICE_UNAVAILABLE);
+  }
+
+  return backendActivationError(error) || t(I18N.ACTIVATION_FAILED);
+};
+
 const goHome = () => {
   router.push({ name: RouteNames.Home });
 };
@@ -85,13 +118,15 @@ const activate = async () => {
   }
   errorMessage.value = '';
   activating.value = true;
-  const success = await authStore.subscribe(key.value, effectiveEmail.value);
+  const result = await to(sdk.auth.authSubscribePost)({ token: key.value, email: effectiveEmail.value });
   activating.value = false;
-  if (success) {
-    router.push({ name: RouteNames.Home });
+  if (result.isErr()) {
+    errorMessage.value = activationErrorMessage(result.error);
     return;
   }
-  errorMessage.value = t(I18N.ACTIVATION_FAILED);
+
+  await authStore.verifyUser();
+  router.push({ name: RouteNames.Home });
 };
 
 onMounted(async () => {

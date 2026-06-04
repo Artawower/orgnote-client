@@ -53,6 +53,9 @@ const eng: Record<string, string> = {
   [I18N.ACTIVATE]: 'Activate',
   [I18N.CANCEL]: 'Cancel',
   [I18N.ACTIVATION_FAILED]: 'Activation failed. Please check your key and try again.',
+  [I18N.ACTIVATION_KEY_NOT_FOUND]: 'Activation key was not found. Check the key and try again.',
+  [I18N.ACTIVATION_KEY_ALREADY_USED]: 'This activation key is already linked to another account.',
+  [I18N.ACTIVATION_SERVICE_UNAVAILABLE]: 'Activation service is temporarily unavailable. Try again later.',
   [I18N.TABS_COUNT]: 'no tabs | {count} tab | {count} tabs',
 
   [I18N.TOC_NO_ACTIVE_DOCUMENT]: 'No active document',
