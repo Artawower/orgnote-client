@@ -84,9 +84,34 @@ export const useAndroidFs = (): FileSystem => {
     ) as never;
   };
 
+  const appendParentPath = (
+    parentPaths: string[][],
+    segment: string,
+  ): string[][] => {
+    const previousParentPath = parentPaths.at(-1) ?? [];
+    return [...parentPaths, [...previousParentPath, segment]];
+  };
+
+  const toParentPaths = (path: string): string[][] =>
+    splitPath(path).slice(0, -1).reduce(appendParentPath, [] as string[][]);
+
+  const ensureDirectory = async (segments: string[]): Promise<void> => {
+    const path = `/${segments.join('/')}`;
+    if (await isDirExist(path)) return;
+    const safInstance = await ensureSaf();
+    await safInstance.mkdir({ uri: rootUri, path: segments });
+  };
+
+  const ensureParentDirectories = async (path: string): Promise<void> => {
+    for (const parentPath of toParentPaths(path)) {
+      await ensureDirectory(parentPath);
+    }
+  };
+
   const writeFile: FileSystem['writeFile'] = async (path, content) => {
     const safInstance = await ensureSaf();
     const data = typeof content === 'string' ? content : new TextDecoder().decode(content);
+    await ensureParentDirectories(path);
     await safInstance.writeFile({ uri: rootUri, path: splitPath(path), data });
   };
 
