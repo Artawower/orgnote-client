@@ -21,6 +21,7 @@
       :graph-config="graphUserConfig"
       :selected-node-id="selectedNodeId"
       :highlighted-node-ids="highlightedNodeIds"
+      :max-zoom="graphMaxZoom"
       @node-click="handleNodeClick"
       @node-hover="handleNodeHover"
       @background-click="clearSelection"
@@ -56,6 +57,7 @@ import { affectsOrgIndex } from 'src/utils/org-fs-change';
 import type { FileSystemChange } from 'orgnote-api';
 
 const GRAPH_REFRESH_DEBOUNCE_MS = 300;
+const SINGLE_NODE_GRAPH_MAX_ZOOM = 1.2;
 
 const EMPTY_GRAPH: GraphBuildResult = {
   graph: {
@@ -122,6 +124,11 @@ const highlightedNodeIds = computed(() => {
   }
 
   return [focusId, ...(graph.value.adjacency[focusId] ?? [])];
+});
+
+const graphMaxZoom = computed(() => {
+  if (graph.value.graph.nodes.length !== 1) return undefined;
+  return SINGLE_NODE_GRAPH_MAX_ZOOM;
 });
 
 const selectedNode = computed(() => {

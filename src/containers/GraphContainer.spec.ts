@@ -77,6 +77,32 @@ test('GraphContainer loads graph metadata on mount', async () => {
   expect(graph.edges).toEqual([{ id: 'alpha::beta', source: 'alpha', target: 'beta' }]);
 });
 
+test('GraphContainer limits zoom for a single-node graph', async () => {
+  getAll.mockResolvedValue([
+    {
+      id: 'alpha',
+      filePath: ['notes', 'alpha.org'],
+      title: 'Alpha',
+    },
+  ]);
+
+  const wrapper = mount(GraphContainer, {
+    global: {
+      stubs: {
+        AppGraph: {
+          name: 'AppGraph',
+          props: ['graph', 'selectedNodeId', 'highlightedNodeIds', 'maxZoom'],
+          template: '<div class="graph-stub" />',
+        },
+      },
+    },
+  });
+
+  await flushPromises();
+
+  expect(wrapper.getComponent({ name: 'AppGraph' }).props('maxZoom')).toBe(1.2);
+});
+
 test('GraphContainer highlights active editor note when available', async () => {
   activeContext.value = { filePath: '/notes/beta.org' };
 
