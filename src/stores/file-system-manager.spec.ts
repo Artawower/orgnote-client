@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia';
-import { useFileSystemManagerStore } from './file-system-manager';
+import { useFileSystemManagerStore, useFileSystemRootConfigurator } from './file-system-manager';
 import { expect, test, vi, beforeEach } from 'vitest';
 import type { FileSystem, FileSystemInfo } from 'orgnote-api';
 import { useSettingsStore } from './settings';
@@ -204,7 +204,7 @@ const createMinimalFs = (initPromise: Promise<{ root: string }>): FileSystem => 
   mount: vi.fn(async () => true),
 });
 
-test('useFs sets currentFsName only after init resolves', async () => {
+test('useFs updates desired fs before runtime mount resolves', async () => {
   const initGate = createDeferred<{ root: string }>();
   const created: FileSystem[] = [];
 
@@ -227,12 +227,14 @@ test('useFs sets currentFsName only after init resolves', async () => {
   const pending = store.useFs('gated-fs');
 
   await Promise.resolve();
-  expect(store.currentFsName).toBe('');
+  expect(store.currentFsName).toBe('gated-fs');
+  expect(store.fsMounted).toBe(false);
 
   initGate.resolve({ root: '/picked' });
   await pending;
 
   expect(store.currentFsName).toBe('gated-fs');
+  expect(store.fsMounted).toBe(true);
 });
 
 test('currentFs uses the same initialized FS instance', async () => {
@@ -295,7 +297,7 @@ test('useFs does not reinitialize when selecting the same filesystem', async () 
   expect(initSpy).toHaveBeenCalledTimes(1);
 });
 
-test('useFs skips initialization when filesystem is already active', async () => {
+test('useFs remounts active filesystem when desired vault changed', async () => {
   const initSpy = vi.fn(async () => ({ root: '/vault' }));
 
   const fsInfo: FileSystemInfo = {
@@ -330,12 +332,12 @@ test('useFs skips initialization when filesystem is already active', async () =>
   expect(settingsStore.settings.vault).toBe('/vault');
   expect(initSpy).toHaveBeenCalledTimes(1);
 
-  settingsStore.settings.vault = '/should-not-change';
+  settingsStore.settings.vault = '/should-remount';
 
   await store.useFs('already-active-fs');
 
-  expect(initSpy).toHaveBeenCalledTimes(1);
-  expect(settingsStore.settings.vault).toBe('/should-not-change');
+  expect(initSpy).toHaveBeenCalledTimes(2);
+  expect(settingsStore.settings.vault).toBe('/vault');
 });
 
 test('useFs allows switching between different filesystems', async () => {
@@ -400,6 +402,231 @@ test('useFs allows switching between different filesystems', async () => {
   expect(store.currentFsName).toBe('fs-a');
   expect(initSpyA).toHaveBeenCalledTimes(2);
   expect(initSpyB).toHaveBeenCalledTimes(1);
+});
+
+test('reconfigureCurrentFs stores picked root and remounts current filesystem', async () => {
+  const mountSpy = vi.fn(async () => true);
+  const pickFolderSpy = vi.fn(async () => '/picked-root');
+
+  const fsInfo: FileSystemInfo = {
+    name: 'pickable-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async (params) => params),
+      mount: mountSpy,
+      pickFolder: pickFolderSpy,
+    }),
+    type: 'desktop',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfo);
+  await store.useFs('pickable-fs');
+
+  await useFileSystemRootConfigurator().reconfigureCurrentFs();
+
+  const settingsStore = useSettingsStore();
+  expect(pickFolderSpy).toHaveBeenCalledTimes(1);
+  expect(settingsStore.settings.vault).toBe('/picked-root');
+  expect(mountSpy).toHaveBeenLastCalledWith({ root: '/picked-root' });
+});
+
+test('useFs ignores stale init result after filesystem switch', async () => {
+  const initGateA = createDeferred<{ root: string }>();
+  const mountSpyA = vi.fn(async () => true);
+  const mountSpyB = vi.fn(async () => true);
+
+  const fsInfoA: FileSystemInfo = {
+    name: 'stale-fs-a',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async () => initGateA.promise),
+      mount: mountSpyA,
+    }),
+    type: 'web',
+  };
+
+  const fsInfoB: FileSystemInfo = {
+    name: 'stale-fs-b',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async () => ({ root: '/b' })),
+      mount: mountSpyB,
+    }),
+    type: 'desktop',
+  };
+
+  const store = useFileSystemManagerStore();
+  const settingsStore = useSettingsStore();
+  store.register(fsInfoA);
+  store.register(fsInfoB);
+
+  const pendingA = store.useFs('stale-fs-a');
+  await Promise.resolve();
+  const pendingB = store.useFs('stale-fs-b');
+
+  initGateA.resolve({ root: '/a' });
+  await Promise.all([pendingA, pendingB]);
+
+  expect(settingsStore.settings.vault).toBe('/b');
+  expect(mountSpyA).not.toHaveBeenCalled();
+  expect(mountSpyB).toHaveBeenCalledWith({ root: '/b' });
+});
+
+test('reconfigureCurrentFs ignores stale mount result after root change', async () => {
+  const firstMount = createDeferred<boolean>();
+  const secondMount = createDeferred<boolean>();
+  const mountSpy = vi
+    .fn<() => Promise<boolean>>()
+    .mockImplementationOnce(async () => firstMount.promise)
+    .mockImplementationOnce(async () => secondMount.promise);
+
+  const fsInfo: FileSystemInfo = {
+    name: 'slow-mount-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async (params) => params),
+      mount: mountSpy,
+      pickFolder: vi.fn(async () => '/second-root'),
+    }),
+    type: 'desktop',
+  };
+
+  const store = useFileSystemManagerStore();
+  store.register(fsInfo);
+
+  const pendingMount = store.useFs('slow-mount-fs');
+  await Promise.resolve();
+  const pendingReconfigure = useFileSystemRootConfigurator().reconfigureCurrentFs();
+
+  firstMount.resolve(true);
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(store.fsMounted).toBe(false);
+
+  secondMount.resolve(true);
+  await Promise.all([pendingMount, pendingReconfigure]);
+
+  expect(store.fsMounted).toBe(true);
+  expect(mountSpy).toHaveBeenLastCalledWith({ root: '/second-root' });
+});
+
+test('reconfigureCurrentFs accepts empty root returned by picker', async () => {
+  const pickFolderSpy = vi.fn(async () => '');
+  const mountSpy = vi.fn(async () => true);
+
+  const fsInfo: FileSystemInfo = {
+    name: 'empty-picker-root-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async (params) => params),
+      mount: mountSpy,
+      pickFolder: pickFolderSpy,
+    }),
+    type: 'web',
+  };
+
+  const store = useFileSystemManagerStore();
+  const settingsStore = useSettingsStore();
+  store.register(fsInfo);
+
+  await store.useFs('empty-picker-root-fs');
+  settingsStore.settings.vault = '/previous-root';
+
+  await useFileSystemRootConfigurator().reconfigureCurrentFs();
+
+  expect(settingsStore.settings.vault).toBe('');
+  expect(pickFolderSpy).toHaveBeenCalledTimes(1);
+  expect(mountSpy).toHaveBeenLastCalledWith({ root: '' });
+});
+
+test('reconfigureCurrentFs applies empty root returned by init', async () => {
+  let initRoot = '/initial-root';
+  const mountSpy = vi.fn(async () => true);
+
+  const fsInfo: FileSystemInfo = {
+    name: 'empty-root-fs',
+    fs: () => ({
+      readFile: createReadFile(),
+      writeFile: vi.fn(async () => undefined),
+      readDir: vi.fn(async () => []),
+      fileInfo: vi.fn(async () => undefined),
+      rename: vi.fn(async () => undefined),
+      deleteFile: vi.fn(async () => undefined),
+      rmdir: vi.fn(async () => undefined),
+      mkdir: vi.fn(async () => undefined),
+      isDirExist: vi.fn(async () => true),
+      isFileExist: vi.fn(async () => true),
+      utimeSync: vi.fn(async () => undefined),
+      init: vi.fn(async () => ({ root: initRoot })),
+      mount: mountSpy,
+      pickFolder: vi.fn(async () => '/picked-root'),
+    }),
+    type: 'desktop',
+  };
+
+  const store = useFileSystemManagerStore();
+  const settingsStore = useSettingsStore();
+  store.register(fsInfo);
+
+  await store.useFs('empty-root-fs');
+  expect(settingsStore.settings.vault).toBe('/initial-root');
+
+  initRoot = '';
+  await useFileSystemRootConfigurator().reconfigureCurrentFs();
+
+  expect(settingsStore.settings.vault).toBe('');
+  expect(mountSpy).toHaveBeenLastCalledWith({ root: '' });
 });
 
 test('useFs maintains currentFsName when called with same name repeatedly', async () => {

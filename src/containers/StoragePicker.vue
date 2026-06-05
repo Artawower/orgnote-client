@@ -30,7 +30,7 @@
       <menu-item>
         <overflow-line> {{ t(I18N.VAULT) }}: {{ fileSystem.prettyVault }} </overflow-line>
       </menu-item>
-      <menu-item @click="fsManager.currentFs.pickFolder" type="info">{{
+      <menu-item @click="rootConfigurator.reconfigureCurrentFs" type="info">{{
         I18N.PICK_FOLDER
       }}</menu-item>
     </app-description>
@@ -49,6 +49,10 @@ import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
 import { I18N } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
+import {
+  useFileSystemManagerStore,
+  useFileSystemRootConfigurator,
+} from 'src/stores/file-system-manager';
 
 withDefaults(defineProps<{ hideWarning?: boolean }>(), { hideWarning: false });
 
@@ -57,7 +61,8 @@ const { t } = useI18n({
   inheritLocale: true,
 });
 
-const fsManager = api.core.useFileSystemManager();
+const fsManager = useFileSystemManagerStore();
+const rootConfigurator = useFileSystemRootConfigurator();
 const fileSystem = api.core.useFileSystem();
 const { fileSystems, currentFsName } = storeToRefs(fsManager);
 </script>

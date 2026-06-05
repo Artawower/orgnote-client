@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, shallowRef } from 'vue';
+import { ref, shallowRef, watch as watchSource } from 'vue';
 import {
   to,
   type DiskFile,
@@ -13,6 +13,7 @@ import {
 } from 'orgnote-api';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { useFileSystemStore } from './file-system';
+import { useSettingsStore } from './settings';
 import { reporter } from 'src/boot/report';
 
 type PathFilter = (path: string) => boolean;
@@ -25,7 +26,6 @@ interface PathSubscription {
   recursive: boolean;
 }
 
-// TODO: feat/sockets move to config
 const DEFAULT_INTERVAL = 3000;
 const BACKOFF_MULTIPLIER = 2;
 const MAX_BACKOFF_MULTIPLIER = 8;
@@ -138,6 +138,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
   () => {
     const fsManager = useFileSystemManagerStore();
     const fs = useFileSystemStore();
+    const settings = useSettingsStore();
 
     const isWatching = ref(false);
     const snapshot = shallowRef<Snapshot>(new Map());
@@ -151,6 +152,15 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     let currentInterval = DEFAULT_INTERVAL;
     let baseInterval = DEFAULT_INTERVAL;
     let maxInterval = DEFAULT_INTERVAL * MAX_BACKOFF_MULTIPLIER;
+    let runtimeGeneration = 0;
+    let runtimeActive = false;
+
+    const nextRuntimeGeneration = (): number => {
+      runtimeGeneration += 1;
+      return runtimeGeneration;
+    };
+
+    const isCurrentGeneration = (generation: number): boolean => generation === runtimeGeneration;
 
     const notifySubscribers = async (change: FileSystemChange): Promise<void> => {
       const matching = findMatchingSubscriptions(change, subscriptions.value);
@@ -167,8 +177,8 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       return currentOptions.fileFilter(path);
     };
 
-    const handleNativeChange = (change: FileSystemChange): void => {
-      if (!matchesFilter(change.path)) {
+    const handleNativeChange = (change: FileSystemChange, generation: number): void => {
+      if (!isCurrentGeneration(generation) || !matchesFilter(change.path)) {
         return;
       }
       notifySubscribers(change).catch((error) => {
@@ -178,11 +188,16 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       });
     };
 
-    const performScan = async (): Promise<{ changes: number; files: number }> => {
+    const performScan = async (
+      generation: number,
+    ): Promise<{ changes: number; files: number } | null> => {
       const previousSnapshot = snapshot.value;
       const currentSnapshot = await buildSnapshot(fs, currentOptions.fileFilter);
-      const detected = computeChanges(currentSnapshot, previousSnapshot);
+      if (!isCurrentGeneration(generation)) {
+        return null;
+      }
 
+      const detected = computeChanges(currentSnapshot, previousSnapshot);
       snapshot.value = currentSnapshot;
       for (const change of detected) {
         await notifySubscribers(change);
@@ -212,8 +227,10 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       recordSnapshot(change);
     };
 
-    const buildScanResult = async (): Promise<{ changes: number; files: number } | null> => {
-      const result = await to(performScan)();
+    const buildScanResult = async (
+      generation: number,
+    ): Promise<{ changes: number; files: number } | null> => {
+      const result = await to(() => performScan(generation))();
       if (result.isOk()) {
         return result.value;
       }
@@ -221,25 +238,38 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       return null;
     };
 
-    const scan = async (): Promise<number | null> => {
+    const scan = async (generation: number): Promise<number | null> => {
       if (isScanning) {
         return null;
       }
       isScanning = true;
-      const result = await buildScanResult();
-      isScanning = false;
-      if (!result) {
+      const result = await buildScanResult(generation);
+      if (isCurrentGeneration(generation)) {
+        isScanning = false;
+      }
+      if (!result || !isCurrentGeneration(generation)) {
         return null;
       }
       return result.changes;
     };
 
-    const startNativeWatch = async (): Promise<boolean> => {
+    const startNativeWatch = async (generation: number): Promise<boolean> => {
       if (!hasNativeWatch(fsManager)) {
         return false;
       }
 
-      const handle = await fsManager.currentFs!.watch!(handleNativeChange);
+      const handle = await fsManager.currentFs!.watch!(
+        (change) => handleNativeChange(change, generation),
+        {
+          root: settings.settings.vault,
+        },
+      );
+
+      if (!isCurrentGeneration(generation) || !runtimeActive) {
+        await handle.stop();
+        return true;
+      }
+
       nativeWatcherHandle = handle;
       return true;
     };
@@ -254,40 +284,71 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       currentInterval = Math.min(baseInterval * BACKOFF_MULTIPLIER ** idleScans, maxInterval);
     };
 
-    const scheduleNext = (delay: number): void => {
+    const scheduleNext = (delay: number, generation: number): void => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
       timeoutId = setTimeout(async () => {
-        const changes = await scan();
+        const changes = await scan(generation);
+        if (!isCurrentGeneration(generation) || !runtimeActive) {
+          return;
+        }
         updateInterval(changes);
-        scheduleNext(currentInterval);
+        scheduleNext(currentInterval, generation);
       }, delay);
     };
 
-    const startPolling = (): void => {
+    const startPolling = (generation: number): void => {
       baseInterval = currentOptions.interval ?? DEFAULT_INTERVAL;
       maxInterval = baseInterval * MAX_BACKOFF_MULTIPLIER;
       currentInterval = baseInterval;
       idleScans = 0;
 
-      scheduleNext(0);
+      scheduleNext(0, generation);
+    };
+
+    const canStartRuntime = (): boolean => fsManager.fsMounted !== false;
+
+    const startRuntimeForGeneration = async (generation: number): Promise<void> => {
+      const nativeStarted = await startNativeWatch(generation);
+      if (nativeStarted) {
+        return;
+      }
+
+      startPolling(generation);
+    };
+
+    const resetFailedRuntimeStart = (generation: number): void => {
+      if (!isCurrentGeneration(generation)) {
+        return;
+      }
+      runtimeActive = false;
+    };
+
+    const startRuntime = async (): Promise<void> => {
+      if (runtimeActive || !canStartRuntime()) {
+        return;
+      }
+
+      const generation = runtimeGeneration;
+      runtimeActive = true;
+      const result = await to(() => startRuntimeForGeneration(generation))();
+      if (result.isOk()) {
+        return;
+      }
+
+      resetFailedRuntimeStart(generation);
+      throw result.error;
     };
 
     const start = async (options: FileWatcherStartOptions = {}): Promise<void> => {
-      if (isWatching.value) {
+      if (isWatching.value && runtimeActive) {
         return;
       }
 
       currentOptions = normalizeStartOptions(options);
       isWatching.value = true;
-
-      const nativeStarted = await startNativeWatch();
-      if (nativeStarted) {
-        return;
-      }
-
-      startPolling();
+      await startRuntime();
     };
 
     const stopNativeWatch = async (): Promise<void> => {
@@ -306,11 +367,28 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       timeoutId = null;
     };
 
-    const stop = async (): Promise<void> => {
+    const stopRuntime = async (): Promise<void> => {
+      nextRuntimeGeneration();
       await stopNativeWatch();
       stopPolling();
-      isWatching.value = false;
+      runtimeActive = false;
+      isScanning = false;
       snapshot.value = new Map();
+    };
+
+    const restart = async (options: FileWatcherStartOptions = currentOptions): Promise<void> => {
+      const shouldStart = isWatching.value;
+      await stopRuntime();
+      if (!shouldStart) {
+        return;
+      }
+      currentOptions = options;
+      await startRuntime();
+    };
+
+    const stop = async (): Promise<void> => {
+      await stopRuntime();
+      isWatching.value = false;
       subscriptions.value = [];
     };
 
@@ -332,9 +410,22 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       };
     };
 
+    watchSource(
+      () => [fsManager.currentFsInfo?.name, settings.settings.vault, fsManager.fsMounted] as const,
+      () => {
+        if (!isWatching.value) {
+          return;
+        }
+        void restart().catch((error) => {
+          reporter.reportError(error instanceof Error ? error : new Error('file watcher restart failed'));
+        });
+      },
+    );
+
     const store: FileWatcherStore = {
       isWatching,
       start,
+      restart,
       stop,
       watch,
       emitChange,
@@ -343,6 +434,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     return store;
   },
 );
+
 const normalizeInterval = (interval?: number): number => {
   if (isValidInterval(interval)) {
     return interval;
