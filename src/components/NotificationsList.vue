@@ -91,7 +91,7 @@ const groupByKey = (notifications: NotiwindNotification[]): NotiwindNotification
 <style lang="scss" scoped>
 .notifications-container {
   position: fixed;
-  top: calc(var(--safe-area-top) + var(--notification-container-top));
+  top: calc(var(--app-top-inset) + var(--notification-container-top));
   right: var(--notification-container-right);
   bottom: var(--notification-container-bottom);
   left: var(--notification-container-left);

@@ -13,7 +13,7 @@
       @resize-start="resize.handleResizeStart"
     />
 
-    <safe-area v-if="mini" :disable="!platform.is.electron">
+    <safe-area v-if="mini" class="mini-inset" :disable="!platform.is.electron">
       <app-flex class="mini-section" column between align-center>
         <div class="mini-top">
           <slot name="mini-top" />
@@ -123,6 +123,10 @@ const sidebarStyle = computed(() => {
       right: auto;
     }
   }
+}
+
+.mini-inset {
+  --safe-area-top: var(--app-top-inset);
 }
 
 .mini-section {

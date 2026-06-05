@@ -1,6 +1,6 @@
 <template>
   <page-wrapper padding constrained centered>
-    <safe-area fit>
+    <safe-area class="error-root" fit>
       <container-layout gap="lg" :body-scroll="false">
         <template #header>
           <info-card
@@ -47,3 +47,9 @@ const reload = (): void => {
   window.location.assign('/');
 };
 </script>
+
+<style lang="scss" scoped>
+.error-root {
+  --safe-area-top: var(--app-top-inset);
+}
+</style>

@@ -164,7 +164,7 @@ const submit = (): void => {
   &.fullsize {
     flex: 1;
     min-height: 0;
-    padding-top: calc(var(--safe-area-top, 0px) + var(--padding-lg));
+    padding-top: calc(var(--app-top-inset, 0px) + var(--padding-lg));
   }
 }
 

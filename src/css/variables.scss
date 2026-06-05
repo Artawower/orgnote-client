@@ -3,10 +3,16 @@
 
 body {
   // Safe Area
-  --safe-area-top: max(env(safe-area-inset-top, 0px), var(--title-bar-height, 0px));
-  --safe-area-bottom: var(--device-padding-bottom, env(safe-area-inset-bottom, 0px));
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
+  --device-safe-area-top: env(safe-area-inset-top, 0px);
+  --device-safe-area-bottom: var(--device-padding-bottom, env(safe-area-inset-bottom, 0px));
+  --device-safe-area-left: env(safe-area-inset-left, 0px);
+  --device-safe-area-right: env(safe-area-inset-right, 0px);
+  --window-title-bar-height: 0px;
+  --safe-area-top: var(--device-safe-area-top);
+  --safe-area-bottom: var(--device-safe-area-bottom);
+  --safe-area-left: var(--device-safe-area-left);
+  --safe-area-right: var(--device-safe-area-right);
+  --app-top-inset: max(var(--device-safe-area-top), var(--window-title-bar-height));
 
   // Content offset (for floating headers)
   --content-top-offset: 0px;
@@ -175,7 +181,6 @@ body {
 
   // Platform specific value
   --device-padding-bottom: 0px;
-  --title-bar-height: 0px;
   --full-height: var(--screen-height, 100vh);
 
   // Backdrop
@@ -554,8 +559,8 @@ body.keyboard-opened {
 }
 
 body.electron.platform-mac {
-  --title-bar-height: 32px;
-  --full-height: calc(var(--screen-height, 100vh) - var(--title-bar-height));
+  --window-title-bar-height: 32px;
+  --full-height: calc(var(--screen-height, 100vh) - var(--window-title-bar-height));
   --sidebar-mini-width: 66px;
 }
 

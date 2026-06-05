@@ -103,7 +103,7 @@ defineEmits<{
   @include interactive-no-select;
 
   --device-padding-bottom: 0px;
-  --title-bar-height: 0px;
+  --window-title-bar-height: 0px;
 
   :deep(*) {
     pointer-events: none !important;

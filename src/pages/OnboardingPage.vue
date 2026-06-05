@@ -189,6 +189,7 @@ const skipSetup = async (): Promise<void> => {
 <style lang="scss" scoped>
 .onboarding-root {
   --page-max-width: min(100%, 38rem);
+  --safe-area-top: var(--app-top-inset);
 }
 
 .footer {
