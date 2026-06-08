@@ -89,6 +89,7 @@ const eng: Record<string, string> = {
   [I18N.GRAPH_ERROR_TITLE]: 'Graph unavailable',
   [I18N.GRAPH_SELECTED_LABEL]: 'Selected',
   [I18N.GRAPH_REFRESH]: 'Refresh',
+  'graph.reset.defaults': 'Reset to defaults',
   [I18N.GRAPH_SETTINGS_TITLE]: 'Graph settings',
   [I18N.GRAPH_SETTINGS_GROUP]: 'Graph',
   [I18N.GRAPH_NODES_LABEL]: 'nodes',

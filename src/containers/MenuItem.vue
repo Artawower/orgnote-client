@@ -173,8 +173,13 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 }
 
 .prefer-right {
+  .left {
+    flex: 1;
+    min-width: 0;
+  }
+
   .right {
-    width: 100%;
+    width: auto;
   }
 }
 

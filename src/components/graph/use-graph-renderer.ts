@@ -12,7 +12,12 @@ type TypedNode = GraphNodeViewModel & NodeObject;
 type D3ForceAccessor = (
   name: string,
   force?: unknown,
-) => { strength?: (v: number) => unknown } | undefined;
+) =>
+  | {
+      strength?: (v: number) => unknown;
+      distanceMax?: (v: number) => unknown;
+    }
+  | undefined;
 
 export interface ResizeContext {
   width: number;
@@ -116,6 +121,22 @@ const getRendererSize = (rootEl?: HTMLElement, graphEl?: HTMLElement) => ({
   height: graphEl?.clientHeight ?? rootEl?.clientHeight ?? graphConfig.defaultHeight,
 });
 
+const getSafeScale = (globalScale: number): number =>
+  Math.max(globalScale, graphConfig.minCanvasScale);
+
+const shouldDrawLabel = (isFocused: boolean, globalScale: number): boolean =>
+  isFocused || globalScale >= graphConfig.minLabelVisibleZoom;
+
+const getLabelScreenFontSize = (cfg: GraphUiConfig): number => {
+  const baseFontSize = cfg.labelFontSize * graphConfig.labelScreenScale;
+  return Math.max(graphConfig.minLabelFontSize, baseFontSize);
+};
+
+const getLabelCanvasFontSize = (
+  cfg: GraphUiConfig,
+  globalScale: number,
+): number => getLabelScreenFontSize(cfg) / getSafeScale(globalScale);
+
 const clampZoomToMax = (
   renderer: ForceGraphRenderer,
   maxZoom: number | undefined,
@@ -144,9 +165,41 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   let currentNodes: TypedNode[] = [];
   let resizeFrameId = 0;
   let hoveredNodeId: string | undefined;
+  let hoverLeaveTimerId = 0;
   let zoomToFitTimerId = 0;
   let shouldFitOnEngineStop = false;
   let hasCompletedInitialFit = false;
+
+  const clearHoverLeaveTimer = (): void => {
+    window.clearTimeout(hoverLeaveTimerId);
+    hoverLeaveTimerId = 0;
+  };
+
+  const updateHoveredNode = (nodeId: string | undefined): void => {
+    if (hoveredNodeId === nodeId) return;
+    hoveredNodeId = nodeId;
+    onNodeHover(nodeId);
+  };
+
+  const scheduleHoverClear = (): void => {
+    if (hoveredNodeId === undefined) return;
+    clearHoverLeaveTimer();
+    hoverLeaveTimerId = window.setTimeout(() => {
+      hoverLeaveTimerId = 0;
+      updateHoveredNode(undefined);
+    }, graphConfig.hoverLeaveDelay);
+  };
+
+  const handleNodeHover = (node: NodeObject | string | number | null | undefined): void => {
+    const nodeId = resolveNodeId(node);
+    if (nodeId === undefined) {
+      scheduleHoverClear();
+      return;
+    }
+
+    clearHoverLeaveTimer();
+    updateHoveredNode(nodeId);
+  };
 
   const paintPointerArea = (
     node: NodeObject,
@@ -165,7 +218,9 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     const linkForce = r.d3Force('link') as { distance?: (fn: () => number) => void } | undefined;
     linkForce?.distance?.(() => cfg.linkDistance);
     const d3Force = r.d3Force as unknown as D3ForceAccessor;
-    d3Force('charge')?.strength?.(cfg.chargeStrength);
+    const chargeForce = d3Force('charge');
+    chargeForce?.strength?.(cfg.chargeStrength);
+    chargeForce?.distanceMax?.(graphConfig.chargeDistanceMax);
     d3Force('center')?.strength?.(graphConfig.centerForceStrength);
   };
 
@@ -197,17 +252,10 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     const isFocused = nodeId === hoveredNodeId || graphNode.id === getSelectedNodeId();
 
     const cfg = getConfig();
-    const scaledFontSize = cfg.labelFontSize * globalScale * 0.8;
-    if (!isFocused && scaledFontSize < graphConfig.minLabelFontSize) return;
+    if (!shouldDrawLabel(isFocused, globalScale)) return;
 
-    const fontSize = Math.min(
-      cfg.labelFontSize,
-      Math.max(
-        graphConfig.minLabelFontSize,
-        isFocused ? scaledFontSize : Math.min(scaledFontSize, cfg.labelFontSize),
-      ),
-    );
-    ctx.font = `${fontSize}px ${getCssVar('--graph-label-font') ?? 'sans-serif'}`;
+    const fontSize = getLabelCanvasFontSize(cfg, globalScale);
+    ctx.font = `${graphConfig.labelFontWeight} ${fontSize}px ${getCssVar('--graph-label-font') ?? 'sans-serif'}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = getCssVar('--graph-label-color') ?? '';
     ctx.fillText(
@@ -285,10 +333,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
       .linkWidth(cfg.linkWidth)
       .nodeId('id')
       .onNodeClick((node) => onNodeClick(node as GraphNodeViewModel))
-      .onNodeHover((node) => {
-        hoveredNodeId = resolveNodeId(node);
-        onNodeHover(hoveredNodeId);
-      })
+      .onNodeHover(handleNodeHover)
       .onBackgroundClick(onBackgroundClick)
       .onEngineStop(() => {
         if (!shouldFitOnEngineStop) return;
@@ -312,6 +357,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     resizeFrameId = 0;
     currentNodes = [];
     hoveredNodeId = undefined;
+    clearHoverLeaveTimer();
     window.clearTimeout(zoomToFitTimerId);
     zoomToFitTimerId = 0;
     shouldFitOnEngineStop = false;

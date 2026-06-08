@@ -1,13 +1,16 @@
 <template>
   <app-flex column gap="md" class="graph-info-modal">
-    <div class="stats">
+    <app-flex row center align-center gap="sm" class="stats">
       <app-badge :label="`${nodesCount} ${t(i18n.GRAPH_NODES_LABEL)}`" variant="accent" rounded />
       <app-badge :label="`${edgesCount} ${t(i18n.GRAPH_EDGES_LABEL)}`" variant="plain" rounded />
-    </div>
+    </app-flex>
 
     <card-wrapper>
       <menu-item icon="sym_o_refresh" flat @click="props.refresh">
         {{ t(i18n.GRAPH_REFRESH) }}
+      </menu-item>
+      <menu-item icon="sym_o_restart_alt" class="reset-defaults" flat @click="resetConfig">
+        {{ t(GRAPH_RESET_DEFAULTS_I18N_KEY) }}
       </menu-item>
     </card-wrapper>
 
@@ -29,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch } from 'vue';
+import { nextTick, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { I18N as i18n } from 'orgnote-api';
 import type { GraphUiConfig } from 'orgnote-api';
@@ -39,6 +42,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import InputField from 'src/components/InputField.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
+import { DEFAULT_GRAPH_CONFIG } from 'src/constants/graph-defaults';
 
 const props = defineProps<{
   nodesCount: number;
@@ -48,9 +52,12 @@ const props = defineProps<{
   configChange: (config: GraphUiConfig) => void;
 }>();
 
+const GRAPH_RESET_DEFAULTS_I18N_KEY = 'graph.reset.defaults';
+
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const localConfig = reactive<GraphUiConfig>({ ...props.config });
+let isResettingConfig = false;
 
 const configFields: Array<{ key: keyof GraphUiConfig }> = [
   { key: 'nodeRelSize' },
@@ -63,7 +70,17 @@ const configFields: Array<{ key: keyof GraphUiConfig }> = [
   { key: 'linkWidth' },
 ];
 
+const resetConfig = (): void => {
+  isResettingConfig = true;
+  Object.assign(localConfig, DEFAULT_GRAPH_CONFIG);
+  props.configChange({ ...DEFAULT_GRAPH_CONFIG });
+  void nextTick(() => {
+    isResettingConfig = false;
+  });
+};
+
 watch(localConfig, (val) => {
+  if (isResettingConfig) return;
   props.configChange({ ...val });
 });
 </script>

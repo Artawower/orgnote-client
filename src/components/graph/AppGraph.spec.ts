@@ -60,6 +60,7 @@ interface RendererMock {
 const renderer = {} as RendererMock;
 const returnRenderer = () => renderer;
 const distance = vi.fn();
+const distanceMax = vi.fn();
 const strength = vi.fn();
 const resizeObserverObserve = vi.fn();
 const resizeObserverDisconnect = vi.fn();
@@ -103,7 +104,7 @@ Object.assign(renderer, {
 	warmupTicks: vi.fn(returnRenderer),
 	graphData:
 		vi.fn<(graphData: RendererGraphPayload) => typeof renderer>(returnRenderer),
-	d3Force: vi.fn(() => ({ distance, strength })),
+	d3Force: vi.fn(() => ({ distance, distanceMax, strength })),
 	width: vi.fn(returnRenderer),
 	height: vi.fn(returnRenderer),
 	d3ReheatSimulation: vi.fn(returnRenderer),
@@ -137,6 +138,7 @@ Object.defineProperty(globalThis, "MutationObserver", {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	renderer.zoom.mockImplementation(returnRenderer);
 	callbacks.nodeClick = undefined;
 	callbacks.nodeHover = undefined;
 	callbacks.backgroundClick = undefined;
@@ -196,7 +198,113 @@ test("AppGraph passes graph data to force renderer", async () => {
 	expect(graphPayload.nodes).not.toBe(graph.nodes);
 	expect(graphPayload.links).not.toBe(graph.edges);
 	expect(renderer.d3Force).toHaveBeenCalledWith("link");
+	expect(renderer.d3Force).toHaveBeenCalledWith("charge");
 	expect(distance).toHaveBeenCalledTimes(1);
+	expect(distanceMax).toHaveBeenCalledWith(240);
+});
+
+type LabelDrawHandler = (
+	node: unknown,
+	ctx: CanvasRenderingContext2D,
+	globalScale: number,
+) => void;
+
+type CanvasContextStub = CanvasRenderingContext2D & {
+	font: string;
+	fillText: ReturnType<typeof vi.fn>;
+};
+
+const createCanvasContextStub = (): CanvasContextStub =>
+	({
+		font: "",
+		textAlign: "",
+		fillStyle: "",
+		fillText: vi.fn(),
+	} as unknown as CanvasContextStub);
+
+const getLabelDrawHandler = (): LabelDrawHandler => {
+	const handler = renderer.nodeCanvasObject.mock.calls.at(0)?.[0];
+	if (!handler) throw new Error("Expected label draw handler");
+	return handler as LabelDrawHandler;
+};
+
+test("AppGraph keeps label screen size stable while zooming", async () => {
+	mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	const ctx = createCanvasContextStub();
+	getLabelDrawHandler()(graph.nodes[0], ctx, 4);
+
+	expect(ctx.font).toContain("400 2.46px");
+	expect(ctx.fillText).toHaveBeenCalledWith("Alpha", 0, 12);
+});
+
+test("AppGraph draws unfocused labels at readable overview zoom", async () => {
+	mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	const ctx = createCanvasContextStub();
+	getLabelDrawHandler()(graph.nodes[0], ctx, 0.7);
+
+	expect(ctx.fillText).toHaveBeenCalledWith("Alpha", 0, 12);
+});
+
+test("AppGraph hides unfocused labels below readable overview zoom", async () => {
+	mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	const ctx = createCanvasContextStub();
+	getLabelDrawHandler()(graph.nodes[0], ctx, 0.6);
+
+	expect(ctx.fillText).not.toHaveBeenCalled();
+});
+
+test("AppGraph keeps visible label size unchanged on hover", async () => {
+	mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	const drawLabel = getLabelDrawHandler();
+	const unfocusedCtx = createCanvasContextStub();
+	drawLabel(graph.nodes[0], unfocusedCtx, 0.7);
+
+	callbacks.nodeHover?.("alpha");
+	const focusedCtx = createCanvasContextStub();
+	drawLabel(graph.nodes[0], focusedCtx, 0.7);
+
+	expect(focusedCtx.font).toBe(unfocusedCtx.font);
+	expect(focusedCtx.fillText).toHaveBeenCalledWith("Alpha", 0, 12);
+});
+
+test("AppGraph shows hidden label on hover without size boost", async () => {
+	mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	const drawLabel = getLabelDrawHandler();
+	const unfocusedCtx = createCanvasContextStub();
+	drawLabel(graph.nodes[0], unfocusedCtx, 0.6);
+
+	callbacks.nodeHover?.("alpha");
+	const focusedCtx = createCanvasContextStub();
+	drawLabel(graph.nodes[0], focusedCtx, 0.6);
+
+	expect(unfocusedCtx.fillText).not.toHaveBeenCalled();
+	expect(focusedCtx.font).toMatch(/^400 16\.4\d*px /);
+	expect(focusedCtx.fillText).toHaveBeenCalledWith("Alpha", 0, 12);
 });
 
 test("AppGraph emits nodeClick when node is clicked", async () => {
@@ -235,16 +343,50 @@ test("AppGraph emits nodeHover when renderer hover changes", async () => {
 	expect(wrapper.emitted("nodeHover")?.[0]).toEqual(["alpha"]);
 });
 
-test("AppGraph emits undefined nodeHover when renderer hover is cleared", async () => {
+test("AppGraph does not emit nodeHover for the same node twice", async () => {
 	const wrapper = mount(AppGraph, {
 		props: createProps(),
 	});
 
 	await flushGraphRender();
 
-	callbacks.nodeHover?.(undefined);
+	callbacks.nodeHover?.("alpha");
+	callbacks.nodeHover?.("alpha");
 
-	expect(wrapper.emitted("nodeHover")?.[0]).toEqual([undefined]);
+	expect(wrapper.emitted("nodeHover")).toHaveLength(1);
+});
+
+test("AppGraph emits undefined nodeHover after hover leaves", async () => {
+	vi.useFakeTimers();
+	const wrapper = mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	callbacks.nodeHover?.("alpha");
+	callbacks.nodeHover?.(undefined);
+	vi.advanceTimersByTime(60);
+
+	expect(wrapper.emitted("nodeHover")?.at(-1)).toEqual([undefined]);
+	vi.useRealTimers();
+});
+
+test("AppGraph keeps hover stable during transient pointer misses", async () => {
+	vi.useFakeTimers();
+	const wrapper = mount(AppGraph, {
+		props: createProps(),
+	});
+
+	await flushGraphRender();
+
+	callbacks.nodeHover?.("alpha");
+	callbacks.nodeHover?.(undefined);
+	callbacks.nodeHover?.("alpha");
+	vi.advanceTimersByTime(60);
+
+	expect(wrapper.emitted("nodeHover")).toHaveLength(1);
+	vi.useRealTimers();
 });
 
 test("AppGraph renders empty state when graph has no nodes", () => {
@@ -356,14 +498,17 @@ test("AppGraph fits graph after graph changes when enabled", async () => {
 	await flushGraphRender();
 	vi.clearAllMocks();
 
-	await wrapper.setProps({
-		graph: {
-			nodes: [
-				{ id: "single", label: "Single", weight: 1, path: "/notes/single.org" },
-			],
-			edges: [],
-		},
-	});
+	const singleNodeGraph: GraphViewModel = {
+		nodes: [
+			{ id: "single", label: "Single", weight: 1, path: "/notes/single.org" },
+		],
+		edges: [],
+	};
+
+	const setGraphProps = wrapper.setProps.bind(wrapper) as (
+		props: Partial<AppGraphProps>,
+	) => Promise<void>;
+	await setGraphProps({ graph: singleNodeGraph });
 	await flushGraphRender();
 	vi.advanceTimersByTime(2000);
 

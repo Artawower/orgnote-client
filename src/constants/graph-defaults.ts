@@ -1,12 +1,12 @@
 import type { GraphUiConfig } from 'orgnote-api';
 
 export const DEFAULT_GRAPH_CONFIG: GraphUiConfig = {
-  nodeRelSize: 16,
-  linkDistance: 120,
-  chargeStrength: -100,
-  warmupTicks: 150,
-  velocityDecay: 0.3,
+  nodeRelSize: 18,
+  linkDistance: 76,
+  chargeStrength: -56,
+  warmupTicks: 180,
+  velocityDecay: 0.32,
   initialZoom: 1.5,
   labelFontSize: 12,
-  linkWidth: 0.5,
+  linkWidth: 0.7,
 };
