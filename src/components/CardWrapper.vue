@@ -25,6 +25,7 @@ withDefaults(
 .card-wrapper {
   border-radius: var(--card-radius);
   overflow: hidden;
+  flex-shrink: 0;
   width: 100%;
 
   > :first-child {
