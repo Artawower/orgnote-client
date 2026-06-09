@@ -6,6 +6,7 @@
     :placeholder="placeholder"
     icon="keyboard_arrow_right"
     :clearable="false"
+    :autofocus="autofocus"
     @keypress.enter="handleCompletionInput"
   >
     <template #actions>
@@ -32,6 +33,7 @@ import { ref, computed } from 'vue';
 defineProps<{
   placeholder?: string;
   fullScreen?: boolean;
+  autofocus?: boolean;
 }>();
 
 const completion = api.core.useCompletion();

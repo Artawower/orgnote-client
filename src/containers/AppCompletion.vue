@@ -13,7 +13,7 @@
   >
     <template #header>
       <app-flex class="header" row align-center>
-        <completion-input ref="completionInputRef" :placeholder="placeholder" />
+        <completion-input ref="completionInputRef" :placeholder="placeholder" :autofocus="true" />
       </app-flex>
     </template>
     <template v-if="!isInputOnly" #body>

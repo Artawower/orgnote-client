@@ -7,6 +7,7 @@
     :name="name"
     :placeholder="placeholder"
     :autocomplete="autocomplete"
+    :autofocus="autofocus"
     :disabled="disable"
   />
 </template>
@@ -21,6 +22,7 @@ defineProps<{
   type?: string;
   autocomplete?: string;
   disable?: boolean;
+  autofocus?: boolean;
 }>();
 
 const model = defineModel<string | number>();

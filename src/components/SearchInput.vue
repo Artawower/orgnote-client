@@ -11,6 +11,7 @@
     <app-input
       ref="appInputRef"
       v-model="model"
+      :autofocus="autofocus"
       :name="name"
       :type="type"
       :placeholder="placeholder && t(placeholder)"
@@ -45,6 +46,7 @@ withDefaults(
     size?: StyleSize;
     icon?: string;
     appearance?: InputAppearance;
+    autofocus?: boolean;
   }>(),
   {
     type: 'text',
