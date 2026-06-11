@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.documentfile.provider.DocumentFile;
 import com.getcapacitor.JSArray;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Handles file operations for the Storage Access Framework. Responsible for reading, writing,
@@ -13,6 +14,7 @@ import java.io.*;
  */
 public class SafFileManager {
   private static final String TAG = "SAF_FILE_MANAGER";
+  private static final String WRITE_TRUNCATE_MODE = "wt";
   private final SafUriResolver uriResolver = new SafUriResolver();
 
   /** Writes data to a file within the specified directory. Creates the file if it doesn't exist. */
@@ -23,8 +25,9 @@ public class SafFileManager {
       file = dir.createFile("application/octet-stream", fileName);
     }
 
-    try (OutputStream os = context.getContentResolver().openOutputStream(file.getUri())) {
-      os.write(data.getBytes());
+    try (OutputStream os =
+        context.getContentResolver().openOutputStream(file.getUri(), WRITE_TRUNCATE_MODE)) {
+      os.write(data.getBytes(StandardCharsets.UTF_8));
     }
   }
 
@@ -39,7 +42,7 @@ public class SafFileManager {
         buffer.write(data, 0, nRead);
       }
       buffer.flush();
-      return buffer.toString("UTF-8");
+      return buffer.toString(StandardCharsets.UTF_8.name());
     }
   }
 

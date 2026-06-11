@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.50.28",
+  "version": "0.50.29",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -17,6 +17,7 @@
     "dev:pwa:preview": "env-cmd -f ./.env quasar build -m pwa && node node_modules/@quasar/cli/bin/quasar.js serve dist/pwa --https --cert .certs/cert.pem --key .certs/key.pem --port 3001 --hostname localhost --history",
     "dev:ssr": "quasar dev -m ssr",
     "dev:android:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T android -- -d",
+    "dev:android:remote-proxy": "env-cmd -f ./.env.prod.localdev quasar dev -m capacitor -T android -- -d",
     "dev:ios": "env-cmd -f ./.env.ios quasar dev -m capacitor -T ios",
     "dev:ios:local": "env-cmd -f ./.env quasar dev -m capacitor -T ios",
     "dev:ios:remote": "env-cmd -f ./.env.prod quasar dev -m capacitor -T ios -- --target=\"iPhone-15-Pro\"",
@@ -90,7 +91,7 @@
     "neverthrow": "8.2.0",
     "notiwind": "2.1.0",
     "org-mode-ast": "0.13.5",
-    "orgnote-api": "file:.yalc/orgnote-api",
+    "orgnote-api": "0.51.12",
     "partysocket": "1.1.6",
     "pinia": "3.0.2",
     "pinia-plugin-persistedstate": "4.2.0",
@@ -174,13 +175,8 @@
   },
   "jscpd": {
     "threshold": 1.65,
-    "reporters": [
-      "html",
-      "console"
-    ],
-    "format": [
-      "typescript"
-    ],
+    "reporters": ["html", "console"],
+    "format": ["typescript"],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -191,10 +187,7 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": [
-      "import.*from\\s*'.*'",
-      "export.*from\\s*'.*'"
-    ],
+    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,
@@ -206,8 +199,6 @@
     "yarn": ">= 1.21.1"
   },
   "eslintConfig": {
-    "extends": [
-      "plugin:storybook/recommended"
-    ]
+    "extends": ["plugin:storybook/recommended"]
   }
 }
