@@ -1,4 +1,5 @@
 import type { SyncExecutor, LocalFile, RemoteFile, FileSystem, UploadResult } from 'orgnote-api';
+import { hashContent } from 'orgnote-api';
 import type { VersionConflictResponse } from 'orgnote-api/remote-api';
 import { sdk } from 'src/boot/axios';
 import axios, { type AxiosError } from 'axios';
@@ -16,11 +17,12 @@ const uploadFile =
   (fs: FileSystem) =>
   async (file: LocalFile, expectedVersion?: number): Promise<UploadResult> => {
     const content = await fs.readFile(file.path, 'binary');
+    const contentHash = await hashContent(content);
     const blob = new File([content], file.path.split('/').pop() ?? fallbackFilename);
     const result = await to(sdk.sync.syncFilesPut)(
       file.path,
       blob,
-      file.contentHash,
+      contentHash,
       expectedVersion,
     );
 
