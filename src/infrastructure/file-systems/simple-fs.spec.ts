@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { test, expect, afterEach } from 'vitest';
+import { test, expect, afterEach, vi } from 'vitest';
 import { useSimpleFs } from './simple-fs';
 import type { FileSystem, FileSystemChange } from 'orgnote-api';
 import Dexie from 'dexie';
@@ -19,6 +19,7 @@ const safeWatch = async (fs: FileSystem, handler: (change: FileSystemChange) => 
 };
 
 afterEach(async () => {
+  vi.restoreAllMocks();
   await Dexie.delete('simple-fs');
 });
 
@@ -147,19 +148,29 @@ test('simple-fs watch emits create and delete changes', async () => {
   expect(changes.map((change) => change.type)).toEqual(['create', 'delete']);
 });
 
-test('simple-fs watch emits modify when file is updated', async () => {
+test('simple-fs watch emits modify with updated mtime when file is updated', async () => {
+  let currentTime = 1000;
+  vi.spyOn(Date, 'now').mockImplementation(() => currentTime);
+
   const fs = createFileSystem();
   await ensureInitialized(fs);
   await fs.writeFile('/note.org', 'value');
 
+  currentTime = 2000;
   const changes: FileSystemChange[] = [];
   const handle = await safeWatch(fs, (change) => changes.push(change));
 
   await fs.writeFile('/note.org', 'new value');
+  const file = await fs.fileInfo('/note.org');
 
   await handle.stop();
 
-  expect(changes[0]?.type).toBe('modify');
+  expect(file?.mtime).toBe(2000);
+  expect(changes[0]).toEqual({
+    path: '/note.org',
+    type: 'modify',
+    mtime: 2000,
+  });
 });
 
 test('simple-fs watch emits create for directory', async () => {

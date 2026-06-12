@@ -47,7 +47,7 @@
         "neverthrow": "8.2.0",
         "notiwind": "2.1.0",
         "org-mode-ast": "0.13.5",
-        "orgnote-api": "0.51.12",
+        "orgnote-api": "0.60.0",
         "partysocket": "1.1.6",
         "pinia": "3.0.2",
         "pinia-plugin-persistedstate": "4.2.0",
@@ -2258,7 +2258,7 @@
 
     "org-mode-ast": ["org-mode-ast@0.13.5", "", {}, "sha512-6mo3Q+LT5FpPMQX4o4jaG256mBV82Asl7mHdl2KKssPiaLBhWkYdzOOhSQ7qRETYXyZDgmadQcg8znDdraLpGQ=="],
 
-    "orgnote-api": ["orgnote-api@0.51.12", "", { "dependencies": { "axios": "1.8.4", "diff-match-patch": "^1.0.5", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.13.5", "partysocket": "1.1.6", "picomatch": "4.0.4", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-aTfMhiFc8IRcFMC0XiBRcQ8UZAnOp88x4RE0V5aSyizYhVmgc/Xaci9S+LjJB8q44LaNjaqsRr6BjJSWOKJsLw=="],
+    "orgnote-api": ["orgnote-api@0.60.0", "", { "dependencies": { "axios": "1.8.4", "diff-match-patch": "^1.0.5", "neverthrow": "^8.2.0", "openpgp": "6.3.0", "org-mode-ast": "0.13.5", "partysocket": "1.1.6", "picomatch": "4.0.4", "smol-toml": "1.5.2" }, "peerDependencies": { "@capacitor/filesystem": ">=6.0.0", "@codemirror/state": "6.5.3", "@codemirror/view": "6.39.5", "@faker-js/faker": ">=9.0.0", "pinia": ">=2.0.0", "quasar": ">=2.0.0", "valibot": ">=1.0.0", "vue": ">=3.0.0", "vue-router": ">=4.0.0" } }, "sha512-q/vkCc3etvSMq9Ju3imi8YbPum7nZN7IRhs06DAbiRwwQ5GZCnfTpgwFrW0AuAL0TAb6eLoiCLd/VxeurkYpnw=="],
 
     "own-keys": ["own-keys@1.0.1", "", { "dependencies": { "get-intrinsic": "^1.2.6", "object-keys": "^1.1.1", "safe-push-apply": "^1.0.0" } }, "sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg=="],
 

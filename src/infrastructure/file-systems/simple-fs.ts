@@ -95,9 +95,7 @@ export const useSimpleFs = (): FileSystem => {
     return raw;
   };
 
-  const emitCreateOrModify = (path: string, previous?: DiskFile): void => {
-    const type: FileSystemChangeType = previous ? 'modify' : 'create';
-    const mtime = previous?.mtime ?? Date.now();
+  const emitCreateOrModify = (path: string, type: FileSystemChangeType, mtime: number): void => {
     notifyListeners(listeners, buildChange(path, type, mtime));
   };
 
@@ -115,10 +113,13 @@ export const useSimpleFs = (): FileSystem => {
     const existingFile = await fileInfo(path);
     await recursiveMkdir(path);
 
+    const now = Date.now();
+    const type: FileSystemChangeType = existingFile ? 'modify' : 'create';
+
     await fs.put({
-      mtime: Date.now(),
-      ctime: existingFile?.ctime ?? Date.now(),
-      atime: Date.now(),
+      mtime: now,
+      ctime: existingFile?.ctime ?? now,
+      atime: now,
       size: new Blob([content]).size,
       name: getFileName(path),
       type: 'file',
@@ -126,7 +127,7 @@ export const useSimpleFs = (): FileSystem => {
       path,
     });
 
-    emitCreateOrModify(path, existingFile);
+    emitCreateOrModify(path, type, now);
   };
 
   const recursiveMkdir = async (path: string) => {
@@ -241,12 +242,13 @@ export const useSimpleFs = (): FileSystem => {
     }
     // TODO: master update atime/mtime for all parent directories
 
+    const now = Date.now();
     const addResult = await to(() =>
       fs.add({
         size: 0,
-        mtime: Date.now(),
-        ctime: Date.now(),
-        atime: Date.now(),
+        mtime: now,
+        ctime: now,
+        atime: now,
         name: getFileName(path),
         type: 'directory',
         path,
@@ -254,7 +256,7 @@ export const useSimpleFs = (): FileSystem => {
     )();
 
     if (!addResult.isErr()) {
-      emitCreateOrModify(path);
+      emitCreateOrModify(path, 'create', now);
       return;
     }
 
