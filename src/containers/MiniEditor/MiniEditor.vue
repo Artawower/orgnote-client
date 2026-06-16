@@ -52,28 +52,33 @@
       </app-flex>
 
       <action-button
-        :icon="store.scheduledDate ? undefined : 'sym_o_calendar_today'"
+        :icon="store.scheduled ? undefined : 'sym_o_calendar_today'"
         size="sm"
-        :auto-width="!!store.scheduledDate"
-        :active="!!store.scheduledDate"
+        :auto-width="!!store.scheduled"
+        :active="!!store.scheduled"
         @click="toggleDatePicker"
       >
-        <template v-if="store.scheduledDate" #text>
-          <span>{{ formatOrgDateLabel(store.scheduledDate, t) }}</span>
+        <template v-if="store.scheduled" #text>
+          <span>{{ formatOrgDateLabel(store.scheduled.date, t) }}</span>
         </template>
       </action-button>
     </app-flex>
 
     <date-picker-sheet
       v-if="showDatePicker"
-      v-model="store.scheduledDate"
-      @update:model-value="showDatePicker = false"
-    />
+      v-model="scheduledDate"
+      confirm-mode
+      @confirm="showDatePicker = false"
+    >
+      <template #sections>
+        <slot name="schedule-sections" />
+      </template>
+    </date-picker-sheet>
   </app-flex>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isNullable } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -104,10 +109,16 @@ const store = useMiniEditorStore();
 const showDatePicker = ref(false);
 
 onMounted(() => {
-  // ModalDialog focuses the [autofocus] editor; here we just release the iOS
-  // keyboard carrier in a rAF, after focus has moved to the editor.
   const carrier = consumeIosCarrier();
   requestAnimationFrame(() => carrier?.remove());
+});
+
+const scheduledDate = computed({
+  get: () => store.scheduled?.date,
+  set: (date: string | undefined) => {
+    store.scheduled = date ? { ...store.scheduled, date } : undefined;
+    if (!date) store.isHabit = false;
+  },
 });
 
 const toPayload = () => ({
@@ -115,7 +126,8 @@ const toPayload = () => ({
   body: store.body,
   tags: store.tags,
   priority: store.priority,
-  scheduledDate: store.scheduledDate,
+  scheduled: store.scheduled,
+  isHabit: store.isHabit,
 });
 
 const openPriorityCompletion = async (): Promise<void> => {

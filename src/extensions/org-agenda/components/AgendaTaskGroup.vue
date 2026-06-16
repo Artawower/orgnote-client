@@ -16,7 +16,7 @@
           @edit-title="(title) => $emit('task-edit-title', task, group.filePath, title)"
           @edit-priority="(priority) => $emit('task-edit-priority', task, group.filePath, priority)"
           @edit-tags="(tags) => $emit('task-edit-tags', task, group.filePath, tags)"
-          @edit-scheduled="(date) => $emit('task-edit-scheduled', task, group.filePath, date)"
+          @edit-scheduled="(schedule) => $emit('task-edit-scheduled', task, group.filePath, schedule)"
           @open-task="onTaskOpen(task)"
           @edit-expand="onEditExpand(task)"
         />
@@ -47,7 +47,7 @@ import AgendaTaskRow from './AgendaTaskRow.vue';
 import AgendaTaskForm from './AgendaTaskForm.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import type { AgendaTaskGroup } from '../composables/use-agenda-tasks';
-import type { AgendaTaskDraft } from '../types';
+import type { AgendaScheduleDraft, AgendaTaskDraft } from '../types';
 import { buildTaskEditorTitle } from 'src/utils/org-editor/build-task-title';
 import { api } from 'src/boot/api';
 import { uint8ArrayToText, to } from 'orgnote-api/utils';
@@ -61,7 +61,11 @@ const emit = defineEmits<{
   'task-edit-title': [task: AgendaTaskView, filePath: string, title: string];
   'task-edit-priority': [task: AgendaTaskView, filePath: string, priority: string | undefined];
   'task-edit-tags': [task: AgendaTaskView, filePath: string, tags: string[]];
-  'task-edit-scheduled': [task: AgendaTaskView, filePath: string, date: string | undefined];
+  'task-edit-scheduled': [
+    task: AgendaTaskView,
+    filePath: string,
+    schedule: AgendaScheduleDraft | undefined,
+  ];
   'task-edit-save': [task: AgendaTaskView, filePath: string, draft: AgendaTaskDraft];
 }>();
 
@@ -80,7 +84,8 @@ const editDraft = reactive<AgendaTaskDraft>({
   body: '',
   tags: [],
   priority: undefined,
-  scheduledDate: undefined,
+  scheduled: undefined,
+  isHabit: false,
 });
 
 const onTaskToggle = (task: AgendaTaskView): void => {
@@ -102,7 +107,15 @@ const onEditExpand = async (task: AgendaTaskView): Promise<void> => {
   expandedTaskId.value = targetId;
   editDraft.title = buildTaskEditorTitle(task.text, task.priority);
   editDraft.body = '';
-  editDraft.scheduledDate = task.scheduled?.date;
+  editDraft.scheduled = task.scheduled
+    ? {
+        date: task.scheduled.date,
+        to: task.scheduled.to,
+        repeater: task.scheduled.repeater,
+        warning: task.scheduled.warning,
+      }
+    : undefined;
+  editDraft.isHabit = task.isHabit ?? false;
 
   if (task.start === undefined) return;
   const result = await to(api.core.useFileContent().read)(props.group.filePath);

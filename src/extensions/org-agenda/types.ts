@@ -1,11 +1,20 @@
 import type { FileTask } from 'orgnote-api';
+import type { OrgRepeater } from 'org-mode-ast';
+
+export interface AgendaScheduleDraft {
+  date: string;
+  to?: string;
+  repeater?: OrgRepeater;
+  warning?: OrgRepeater;
+}
 
 export interface AgendaTaskDraft {
   title: string;
   body: string;
   tags: string[];
   priority?: string;
-  scheduledDate?: string;
+  scheduled?: AgendaScheduleDraft;
+  isHabit?: boolean;
 }
 
 export interface WeekDayCompletion {
@@ -23,4 +32,3 @@ export interface AgendaHabitView extends FileTask {
   currentStreak: number;
   completedToday: boolean;
 }
-

@@ -48,8 +48,8 @@ export const useAgendaTaskEdit = () => {
     const draftTags = draft.tags ?? [];
     if (JSON.stringify(draftTags) !== JSON.stringify(task.tags ?? []))
       mutations.push((c) => changeTaskTags(c, task.start!, draftTags));
-    if (draft.scheduledDate !== task.scheduled?.date)
-      mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduledDate));
+    if (JSON.stringify(draft.scheduled) !== JSON.stringify(task.scheduled))
+      mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduled));
     mutations.push((c) => changeTaskBody(c, task.start!, draft.body));
 
     if (!mutations.length) return;

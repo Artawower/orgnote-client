@@ -22,7 +22,7 @@
       </template>
 
       <template #title-actions>
-        <agenda-date-button v-model="draft.scheduledDate" @update:model-value="onDateChange" />
+        <agenda-schedule-button v-model="draft.scheduled" v-model:habit="draft.isHabit" />
       </template>
 
       <template #toolbar-start>
@@ -58,7 +58,7 @@ import { parseQuickAddInput } from '../utils/parse-quick-add-input';
 import type { CreateTaskInput } from 'orgnote-api/utils';
 import type { AgendaTaskDraft } from '../types';
 import AgendaTaskForm from './AgendaTaskForm.vue';
-import AgendaDateButton from './AgendaDateButton.vue';
+import AgendaScheduleButton from './AgendaScheduleButton.vue';
 import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
@@ -87,14 +87,15 @@ const formRef = ref<InstanceType<typeof AgendaTaskForm> | null>(null);
 
 const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');
 
-const lastUserSelectedDate = ref<string | null>(null);
+const lastUserSelectedSchedule = ref<AgendaTaskDraft['scheduled']>({ date: todayIsoDate() });
 
 const draft = reactive<AgendaTaskDraft>({
   title: '',
   body: '',
   tags: [],
   priority: undefined,
-  scheduledDate: todayIsoDate(),
+  scheduled: { date: todayIsoDate() },
+  isHabit: false,
 });
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
@@ -110,7 +111,8 @@ const expand = async (): Promise<void> => {
   if (tabletBelow.value) {
     const result = await openCreate({
       title: draft.title,
-      scheduledDate: draft.scheduledDate,
+      scheduled: draft.scheduled,
+      isHabit: draft.isHabit,
     });
     if (result) {
       emit('submit', { ...result, targetFile: targetFile.value });
@@ -175,20 +177,19 @@ const buildPayload = (): CreateTaskInput & { targetFile?: string } => {
   return {
     title: parsed.title,
     ...(body ? { body } : {}),
-    ...(draft.scheduledDate ? { scheduledDate: draft.scheduledDate } : {}),
+    ...(draft.scheduled ? { scheduled: draft.scheduled } : {}),
+    ...(draft.isHabit ? { isHabit: true } : {}),
     ...(resolvedTarget ? { targetFile: resolvedTarget } : {}),
     ...(priority ? { priority } : {}),
   };
 };
 
-const onDateChange = (date: string | undefined): void => {
-  lastUserSelectedDate.value = date ?? null;
-};
-
 const resetState = (): void => {
+  lastUserSelectedSchedule.value = draft.scheduled;
   draft.title = '';
   draft.body = '';
-  draft.scheduledDate = lastUserSelectedDate.value ?? todayIsoDate();
+  draft.scheduled = lastUserSelectedSchedule.value ?? { date: todayIsoDate() };
+  draft.isHabit = false;
   isExpanded.value = false;
 };
 

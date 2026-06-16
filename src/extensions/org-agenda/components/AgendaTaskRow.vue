@@ -24,7 +24,11 @@
 
       <template #right>
         <app-flex row align-center gap="xs" class="task-meta" @click.stop>
-          <agenda-date-button v-model="localDate" class="date-picker" />
+          <agenda-schedule-button
+            v-model="localSchedule"
+            :show-habit-toggle="false"
+            class="date-picker"
+          />
           <action-button
             icon="sym_o_expand_more"
             size="sm"
@@ -48,7 +52,7 @@ import ContextMenu from 'src/components/ContextMenu.vue';
 import { AGENDA_TASK_CONTEXT_MENU_GROUP } from '../constants';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCheckbox from 'src/components/AppCheckbox.vue';
-import AgendaDateButton from './AgendaDateButton.vue';
+import AgendaScheduleButton from './AgendaScheduleButton.vue';
 import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
@@ -60,6 +64,7 @@ import { buildTaskEditorTitle } from 'src/utils/org-editor/build-task-title';
 import { api } from 'src/boot/api';
 
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
+import type { AgendaScheduleDraft } from '../types';
 import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filters';
 
 const props = defineProps<{ task: AgendaTaskView; expanded?: boolean }>();
@@ -69,7 +74,7 @@ const emit = defineEmits<{
   'edit-title': [newTitle: string];
   'edit-priority': [priority: string | undefined];
   'edit-tags': [tags: string[]];
-  'edit-scheduled': [date: string | undefined];
+  'edit-scheduled': [schedule: AgendaScheduleDraft | undefined];
   'edit-expand': [];
   'open-task': [];
 }>();
@@ -78,16 +83,33 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { tabletBelow } = api.ui.useScreenDetection();
 
 const localTitle = ref(buildTaskEditorTitle(props.task.text, props.task.priority));
-const localDate = ref<string | undefined>(getActiveDate(props.task) ?? undefined);
+const taskSchedule = (): AgendaScheduleDraft | undefined => {
+  const date = getActiveDate(props.task);
+  if (!date) return undefined;
+  return {
+    date,
+    repeater: props.task.scheduled?.repeater,
+    warning: props.task.scheduled?.warning,
+  };
+};
+
+const localSchedule = ref<AgendaScheduleDraft | undefined>(taskSchedule());
 
 watch(
   () => props.task.scheduled,
   () => {
-    localDate.value = getActiveDate(props.task) ?? undefined;
+    localSchedule.value = taskSchedule();
   },
 );
 
-watch(localDate, (date) => emit('edit-scheduled', date ?? undefined));
+watch(
+  localSchedule,
+  (schedule) => {
+    if (JSON.stringify(schedule) === JSON.stringify(taskSchedule())) return;
+    emit('edit-scheduled', schedule);
+  },
+  { deep: true },
+);
 
 watch(
   () => [props.task.text, props.task.priority] as const,

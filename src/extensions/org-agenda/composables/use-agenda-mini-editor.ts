@@ -47,7 +47,15 @@ export const useAgendaMiniEditor = () => {
       title: task.text ?? '',
       priority: task.priority,
       tags: [...(task.tags ?? [])],
-      scheduledDate: task.scheduled?.date,
+      scheduled: task.scheduled
+        ? {
+            date: task.scheduled.date,
+            to: task.scheduled.to,
+            repeater: task.scheduled.repeater,
+            warning: task.scheduled.warning,
+          }
+        : undefined,
+      isHabit: task.isHabit ?? false,
     });
     void modal.open(AgendaMiniEditor, {
       mini: true,

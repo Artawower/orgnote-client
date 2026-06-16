@@ -1,127 +1,67 @@
-import { NodeType, parse, withMetaInfo, walkTree } from 'org-mode-ast';
-import type { OrgNode } from 'org-mode-ast';
 import { format, parseISO } from 'date-fns';
+import type { OrgRepeater } from 'org-mode-ast';
+import { editOrgDocument } from 'orgnote-api/utils';
 
-const SCHEDULED_KEYWORD = 'SCHEDULED:';
+export interface TaskScheduleInput {
+  date: string;
+  repeater?: OrgRepeater;
+  warning?: OrgRepeater;
+}
 
-const buildScheduledLine = (date: string): string =>
-  `SCHEDULED: <${date} ${format(parseISO(date), 'EEE')}>\n`;
+const buildRepeaterMark = (repeater: OrgRepeater | undefined): string =>
+  repeater ? ` ${repeater.type}${repeater.value}${repeater.unit}` : '';
 
-const buildScheduledFragment = (date: string): string =>
-  `SCHEDULED: <${date} ${format(parseISO(date), 'EEE')}>`;
+const buildScheduledLine = (scheduled: TaskScheduleInput): string =>
+  `SCHEDULED: <${scheduled.date} ${format(parseISO(scheduled.date), 'EEE')}${buildRepeaterMark(scheduled.repeater)}${buildRepeaterMark(scheduled.warning)}>\n`;
 
-type ScheduledInfo = {
-  planningStart: number;
-  keywordStart: number;
-  dateEnd: number;
-  hasOtherKeywords: boolean;
-} | null;
-
-const isScheduledKeyword = (node: OrgNode): boolean =>
-  node.is(NodeType.PlanningKeyword) && node.value === SCHEDULED_KEYWORD;
-
-const extractScheduledFromPlanning = (
-  planningNode: OrgNode,
-): { keywordStart: number; dateEnd: number; hasOtherKeywords: boolean } | null => {
-  const children = planningNode.childrenList ?? [];
-  const scheduledIdx = children.findIndex(isScheduledKeyword);
-  if (scheduledIdx === -1) return null;
-
-  const scheduledNode = children[scheduledIdx];
-  if (!scheduledNode) return null;
-
-  const dateAfter = children.slice(scheduledIdx + 1).find((c) => c.is(NodeType.Date));
-  if (!dateAfter) return null;
-
-  const hasOtherKeywords = children.some(
-    (c, i) => i !== scheduledIdx && c.is(NodeType.PlanningKeyword),
-  );
-
-  return {
-    keywordStart: scheduledNode.start,
-    dateEnd: dateAfter.end,
-    hasOtherKeywords,
-  };
+const lineEndAfter = (content: string, start: number): number => {
+  const lineEnd = content.indexOf('\n', start);
+  return lineEnd === -1 ? content.length : lineEnd + 1;
 };
 
-const findScheduledInfo = (content: string, headlineStart: number): ScheduledInfo => {
-  const ast = withMetaInfo(parse(content));
-  let result: ScheduledInfo = null;
-  let inTarget = false;
+const isHeadlineLine = (line: string): boolean => /^\*+\s/.test(line);
 
-  walkTree(ast, (node: OrgNode): boolean => {
-    if (node.is(NodeType.Headline)) {
-      if (node.start === headlineStart) {
-        inTarget = true;
-        return false;
-      }
-      if (inTarget) return true;
-      return false;
-    }
-    if (!(inTarget && node.is(NodeType.Planning))) return false;
-
-    const found = extractScheduledFromPlanning(node);
-    if (found) result = { planningStart: node.start, ...found };
-    return false;
-  });
-
-  return result;
-};
-
-const sectionStart = (content: string, headlineStart: number): number => {
-  const newline = content.indexOf('\n', headlineStart);
-  return newline === -1 ? content.length : newline + 1;
-};
-
-const replaceFullLine = (content: string, lineStart: number, replacement: string): string => {
-  const lineEnd = content.indexOf('\n', lineStart);
-  const afterLine = lineEnd === -1 ? content.length : lineEnd + 1;
-  return content.slice(0, lineStart) + replacement + content.slice(afterLine);
-};
-
-const removeFromMixedPlanning = (
+const shouldInsertPlanningBeforeMutation = (
   content: string,
-  keywordStart: number,
-  dateEnd: number,
-): string => {
-  if (content[keywordStart - 1] === ' ') {
-    return content.slice(0, keywordStart - 1) + content.slice(dateEnd);
-  }
-  if (content[dateEnd] === ' ') {
-    return content.slice(0, keywordStart) + content.slice(dateEnd + 1);
-  }
-  return content.slice(0, keywordStart) + content.slice(dateEnd);
+  headlineStart: number,
+  scheduled: TaskScheduleInput | undefined,
+): boolean => {
+  if (!scheduled) return false;
+  const insertAt = lineEndAfter(content, headlineStart);
+  const nextLineEnd = content.indexOf('\n', insertAt);
+  const nextLine = content.slice(insertAt, nextLineEnd === -1 ? undefined : nextLineEnd);
+  return insertAt === content.length || isHeadlineLine(nextLine);
 };
 
-const replaceInMixedPlanning = (
+const insertScheduledLine = (
   content: string,
-  keywordStart: number,
-  dateEnd: number,
-  date: string | undefined,
+  headlineStart: number,
+  scheduled: TaskScheduleInput,
 ): string => {
-  if (!date) return removeFromMixedPlanning(content, keywordStart, dateEnd);
-  return content.slice(0, keywordStart) + buildScheduledFragment(date) + content.slice(dateEnd);
-};
-
-const insertScheduled = (content: string, headlineStart: number, date: string): string => {
-  const pos = sectionStart(content, headlineStart);
-  return content.slice(0, pos) + buildScheduledLine(date) + content.slice(pos);
+  const insertAt = lineEndAfter(content, headlineStart);
+  const prefix = insertAt === content.length ? '\n' : '';
+  return `${content.slice(0, insertAt)}${prefix}${buildScheduledLine(scheduled)}${content.slice(insertAt)}`;
 };
 
 export const changeTaskScheduled = (
   content: string,
   headlineStart: number,
-  date: string | undefined,
+  scheduled: TaskScheduleInput | undefined,
 ): string => {
-  const info = findScheduledInfo(content, headlineStart);
-
-  if (!info && !date) return content;
-  if (!info && date) return insertScheduled(content, headlineStart, date);
-  if (!info) return content;
-
-  if (info.hasOtherKeywords) {
-    return replaceInMixedPlanning(content, info.keywordStart, info.dateEnd, date);
+  if (scheduled && shouldInsertPlanningBeforeMutation(content, headlineStart, scheduled)) {
+    return insertScheduledLine(content, headlineStart, scheduled);
   }
 
-  return replaceFullLine(content, info.planningStart, date ? buildScheduledLine(date) : '');
+  return editOrgDocument(content, (doc) => {
+    const headline = doc.headlineAt(headlineStart);
+    if (!headline) return;
+    if (!scheduled) {
+      headline.scheduled.clear();
+      return;
+    }
+    headline.scheduled.set(parseISO(scheduled.date), {
+      repeater: scheduled.repeater ?? null,
+      warning: scheduled.warning ?? null,
+    });
+  });
 };

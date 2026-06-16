@@ -5,6 +5,27 @@
     :body-placeholder="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
     @submit="emit('submit', $event)"
   >
+    <template #schedule-sections>
+      <agenda-repeat-picker
+        :model-value="store.scheduled?.repeater"
+        @update:model-value="setRepeater"
+      />
+      <app-flex
+        v-if="props.mode === 'create' && store.scheduled?.repeater"
+        row
+        between
+        align-center
+        gap="sm"
+        class="habit-row"
+      >
+        <app-flex row align-center gap="xs">
+          <app-icon name="sym_o_repeat_on" size="sm" />
+          <span>{{ t(i18nKeys.orgAgendaScheduleHabit) }}</span>
+        </app-flex>
+        <app-checkbox v-model="store.isHabit" />
+      </app-flex>
+    </template>
+
     <template v-if="props.mode === 'edit' && props.filePath" #footer-actions>
       <action-button
         :as="'div'"
@@ -21,11 +42,16 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted } from 'vue';
+import { format } from 'date-fns';
+import type { OrgRepeater } from 'org-mode-ast';
 import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { debounce } from 'src/utils/debounce';
 import ActionButton from 'src/components/ActionButton.vue';
+import AppFlex from 'src/components/AppFlex.vue';
+import AppIcon from 'src/components/AppIcon.vue';
+import AppCheckbox from 'src/components/AppCheckbox.vue';
 import MiniEditor from 'src/containers/MiniEditor/MiniEditor.vue';
 import { useMiniEditorStore } from 'src/containers/MiniEditor/mini-editor-store';
 import { openNoteAtPosition } from 'src/utils/editor-navigation';
@@ -34,6 +60,7 @@ import type { AgendaTaskView } from '../composables/use-agenda-tasks';
 import type { CreateTaskInput } from 'orgnote-api/utils';
 import { uint8ArrayToText, to, editOrgDocument } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import AgendaRepeatPicker from './AgendaRepeatPicker.vue';
 
 const props = defineProps<{
   mode: 'create' | 'edit';
@@ -74,7 +101,7 @@ const autoSave = debounce(async () => {
     body: store.body,
     tags: store.tags,
     priority: store.priority,
-    scheduledDate: store.scheduledDate,
+    scheduled: store.scheduled,
   });
 }, AUTOSAVE_DELAY);
 
@@ -90,6 +117,14 @@ onMounted(async () => {
     store.bodyLoaded = true;
   }
 });
+
+const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');
+
+const setRepeater = (repeater: OrgRepeater | undefined): void => {
+  if (!store.scheduled && !repeater) return;
+  store.scheduled = { date: store.scheduled?.date ?? todayIsoDate(), ...store.scheduled, repeater };
+  if (!repeater) store.isHabit = false;
+};
 
 const toggleFullSize = (): void => {
   store.fullSize = !store.fullSize;
@@ -107,3 +142,11 @@ const openFullEditor = (): void => {
   void api.core.useBufferViewer().open(props.filePath);
 };
 </script>
+
+<style lang="scss" scoped>
+.habit-row {
+  padding-top: var(--padding-sm);
+  border-top: var(--border-default);
+  @include fontify(var(--font-size-sm), normal, var(--fg));
+}
+</style>

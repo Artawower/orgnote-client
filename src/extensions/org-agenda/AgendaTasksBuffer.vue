@@ -69,7 +69,7 @@ import { changeTaskPriority } from './mutations/task-priority';
 import { changeTaskTags } from './mutations/task-tags';
 import { changeTaskScheduled } from './mutations/task-scheduled';
 import { changeTaskBody } from './mutations/task-body';
-import type { AgendaTaskDraft } from './types';
+import type { AgendaScheduleDraft, AgendaTaskDraft } from './types';
 import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
@@ -190,9 +190,9 @@ const editTaskTags = (task: AgendaTaskView, filePath: string, tags: string[]): P
 const editTaskScheduled = (
   task: AgendaTaskView,
   filePath: string,
-  date: string | undefined,
+  schedule: AgendaScheduleDraft | undefined,
 ): Promise<void> =>
-  applyTaskMutation(task, filePath, (c) => changeTaskScheduled(c, task.start!, date));
+  applyTaskMutation(task, filePath, (c) => changeTaskScheduled(c, task.start!, schedule));
 
 const editTaskSave = async (
   task: AgendaTaskView,
@@ -207,8 +207,8 @@ const editTaskSave = async (
     mutations.push((c) => changeTaskTitle(c, task.start!, cleanTitle));
   if (priority !== task.priority)
     mutations.push((c) => changeTaskPriority(c, task.start!, priority));
-  if (draft.scheduledDate !== task.scheduled?.date)
-    mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduledDate));
+  if (JSON.stringify(draft.scheduled) !== JSON.stringify(task.scheduled))
+    mutations.push((c) => changeTaskScheduled(c, task.start!, draft.scheduled));
   if (draft.body.trim()) mutations.push((c) => changeTaskBody(c, task.start!, draft.body));
 
   if (!mutations.length) return;
