@@ -9,7 +9,8 @@
       <app-flex row align-center gap="sm" class="task-content" @click.stop>
         <app-checkbox :model-value="isChecked" :class="priorityClass" @change="onCheckboxChange" />
         <org-inline-editor
-          v-if="!tabletBelow"
+          v-if="isTitleEditorVisible"
+          ref="titleInputRef"
           v-model="localTitle"
           :single-line="true"
           :readonly="false"
@@ -17,7 +18,7 @@
           @submit="onTitleSubmit"
           @blur="onTitleSubmit"
         />
-        <div v-else class="task-title-mobile" @click.stop="$emit('open-task')">
+        <div v-else class="task-title" :class="{ done: isChecked }" @click.stop="onTitleClick">
           {{ task.text }}
         </div>
       </app-flex>
@@ -44,7 +45,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import MenuItem from 'src/containers/MenuItem.vue';
@@ -83,6 +84,8 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { tabletBelow } = api.ui.useScreenDetection();
 
 const localTitle = ref(buildTaskEditorTitle(props.task.text, props.task.priority));
+const isEditingTitle = ref(false);
+const titleInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
 const taskSchedule = (): AgendaScheduleDraft | undefined => {
   const date = getActiveDate(props.task);
   if (!date) return undefined;
@@ -134,7 +137,19 @@ const isChecked = computed(
     (hasRepeater(props.task) && isCompletedOn(props.task, props.task.viewDate)),
 );
 
+const isTitleEditorVisible = computed(() => !tabletBelow.value && isEditingTitle.value);
+
 const onCheckboxChange = (): void => emit('toggle');
+
+const onTitleClick = async (): Promise<void> => {
+  if (tabletBelow.value) {
+    emit('open-task');
+    return;
+  }
+  isEditingTitle.value = true;
+  await nextTick();
+  titleInputRef.value?.focus();
+};
 
 const onTitleSubmit = (): void => {
   const trimmed = localTitle.value.trim();
@@ -143,6 +158,7 @@ const onTitleSubmit = (): void => {
 
   if (cleanTitle && cleanTitle !== props.task.text) emit('edit-title', cleanTitle);
   if (extractedPriority !== props.task.priority) emit('edit-priority', extractedPriority);
+  isEditingTitle.value = false;
 };
 </script>
 
@@ -186,13 +202,18 @@ const onTitleSubmit = (): void => {
   }
 }
 
-.task-title-mobile {
+.task-title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  cursor: pointer;
+  cursor: text;
+
+  &.done {
+    color: var(--fg-muted);
+    text-decoration: line-through;
+  }
 }
 
 .expand-btn {

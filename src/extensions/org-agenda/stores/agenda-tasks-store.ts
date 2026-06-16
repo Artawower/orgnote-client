@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { computed, shallowRef, ref, watch } from 'vue';
 import { ErrorFileNotFound, join, type FileMeta, type FileTask } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -54,7 +54,7 @@ const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<Agenda
   files.reduce((acc, file) => countFileTasks(acc, file, now), emptyTotals());
 
 export const useAgendaTasksStore = defineStore('agendaTasks', () => {
-  const allFiles = ref<FileMeta[]>([]);
+  const allFiles = shallowRef<FileMeta[]>([]);
   const loading = ref(false);
   let watchersAttached = false;
 

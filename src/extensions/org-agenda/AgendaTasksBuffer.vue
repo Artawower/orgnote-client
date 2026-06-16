@@ -1,6 +1,6 @@
 <template>
   <app-buffer-content no-padding-bottom>
-    <container-layout class="agenda-buffer" :body-scroll="true" gap="sm">
+    <container-layout class="agenda-buffer" :body-scroll="false" gap="sm">
       <template #header>
         <agenda-quick-add
           :agenda-files-path="agendaConfig.agendaFilesPath ?? '/'"
@@ -19,18 +19,28 @@
             :title="t(extensionI18nKeys.orgAgendaNoTasksTitle)"
             :description="t(extensionI18nKeys.orgAgendaNoTasksDescription)"
           />
-          <agenda-task-group v-else
-            v-for="group in groups"
-            :key="group.filePath"
-            :group="group"
-            @task-click="openNote"
-            @task-toggle="toggleTask"
-            @task-edit-title="editTaskTitle"
-            @task-edit-priority="editTaskPriority"
-            @task-edit-tags="editTaskTags"
-            @task-edit-scheduled="editTaskScheduled"
-            @task-edit-save="editTaskSave"
-          />
+          <q-virtual-scroll
+            v-else
+            :items="groups"
+            :virtual-scroll-item-size="AGENDA_GROUP_ITEM_SIZE"
+            :virtual-scroll-slice-size="AGENDA_GROUP_SLICE_SIZE"
+            class="groups-scroll"
+            v-slot="{ item: group }"
+          >
+            <div class="group-item">
+              <agenda-task-group
+                :key="group.filePath"
+                :group="group"
+                @task-click="openNote"
+                @task-toggle="toggleTask"
+                @task-edit-title="editTaskTitle"
+                @task-edit-priority="editTaskPriority"
+                @task-edit-tags="editTaskTags"
+                @task-edit-scheduled="editTaskScheduled"
+                @task-edit-save="editTaskSave"
+              />
+            </div>
+          </q-virtual-scroll>
         </app-flex>
       </template>
     </container-layout>
@@ -82,6 +92,8 @@ const fileContent = api.core.useFileContent();
 const tasksStore = useAgendaTasksStore();
 const agendaConfig = tasksStore.agendaConfig;
 const quickAddLoading = ref(false);
+const AGENDA_GROUP_ITEM_SIZE = 128;
+const AGENDA_GROUP_SLICE_SIZE = 12;
 
 const knownOrgFiles = computed(() => tasksStore.agendaFiles.map((f) => join('/', ...f.filePath)));
 
@@ -233,8 +245,20 @@ const openNote = async (task: FileTask, filePath: string): Promise<void> => {
 }
 
 .body-content {
+  height: 100%;
+  min-height: 0;
+
   @include tablet-below {
     padding-bottom: var(--floating-padding-bottom);
   }
+}
+
+.groups-scroll {
+  height: 100%;
+  min-height: 0;
+}
+
+.group-item {
+  padding-bottom: var(--gap-sm);
 }
 </style>
