@@ -2,11 +2,21 @@
   <app-buffer-content>
     <container-layout class="agenda-buffer" :body-scroll="true" gap="sm">
       <template #header>
-        <agenda-habit-week-strip
-          :week-days="weekDays"
-          :selected-date="selectedDate"
-          @select="selectDay"
-        />
+        <app-flex column start align-stretch gap="sm">
+          <agenda-habit-week-strip
+            :week-days="weekDays"
+            :selected-date="selectedDate"
+            @select="selectDay"
+          />
+          <agenda-quick-add
+            habit-mode
+            :agenda-files-path="agendaConfig.agendaFilesPath ?? '/'"
+            :inbox-file-path="resolvedInboxPath"
+            :known-files="knownOrgFiles"
+            :loading="quickAddLoading"
+            @submit="submitQuickAdd"
+          />
+        </app-flex>
       </template>
       <template #body>
         <loading-dots v-if="loading" />
@@ -47,6 +57,7 @@ import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import AgendaHabitWeekStrip from './components/AgendaHabitWeekStrip.vue';
 import AgendaHabitRow from './components/AgendaHabitRow.vue';
+import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { clockMatchesDate, useHabits } from './composables/use-habits';
 import { completeHabit } from './mutations/habit-complete';
 import { addHabitClock } from './mutations/add-habit-clock';
@@ -54,9 +65,12 @@ import { removeHabitClock } from './mutations/remove-habit-clock';
 import { parseISO } from 'date-fns';
 import type { AgendaHabitView } from './types';
 import { todayIsoDate } from 'src/utils/org-date';
+import { useAgendaQuickAddSubmit } from './composables/use-agenda-quick-add-submit';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, habits, weekDays, selectedDate, selectDay } = useHabits();
+const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
+  useAgendaQuickAddSubmit({ toastKey: i18nKeys.orgAgendaQuickAddHabitToastAdded });
 const fileContent = api.core.useFileContent();
 const fileLocks = new Map<string, Promise<void>>();
 

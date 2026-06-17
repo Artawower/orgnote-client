@@ -7,7 +7,7 @@
           :inbox-file-path="resolvedInboxPath"
           :known-files="knownOrgFiles"
           :loading="quickAddLoading"
-          @submit="onQuickAddSubmit"
+          @submit="submitQuickAdd"
         />
       </template>
       <template #body>
@@ -48,8 +48,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import { join } from 'orgnote-api';
+import type { FileTask } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -67,12 +66,9 @@ import { reopenTask } from './mutations/reopen-task';
 import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
-import type { FileTask } from 'orgnote-api';
 import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
-import { useAgendaTasksStore } from './stores/agenda-tasks-store';
-import { AGENDA_DEFAULT_INBOX_FILENAME } from './constants';
-import type { CreateTaskInput } from 'orgnote-api/utils';
+import { useAgendaQuickAddSubmit } from './composables/use-agenda-quick-add-submit';
 import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { changeTaskTitle } from './mutations/task-title';
 import { changeTaskPriority } from './mutations/task-priority';
@@ -84,39 +80,14 @@ import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
 } from 'src/utils/org-editor/org-title-parser';
-import { fileBaseName } from 'src/utils/file-path';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, groups } = useAgendaTasks();
 const fileContent = api.core.useFileContent();
-const tasksStore = useAgendaTasksStore();
-const agendaConfig = tasksStore.agendaConfig;
-const quickAddLoading = ref(false);
+const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
+  useAgendaQuickAddSubmit();
 const AGENDA_GROUP_ITEM_SIZE = 128;
 const AGENDA_GROUP_SLICE_SIZE = 12;
-
-const knownOrgFiles = computed(() => tasksStore.agendaFiles.map((f) => join('/', ...f.filePath)));
-
-const resolvedInboxPath = computed(() => {
-  if (agendaConfig.inboxFilePath) return agendaConfig.inboxFilePath;
-  const base = agendaConfig.agendaFilesPath ?? '/';
-  return join(base, AGENDA_DEFAULT_INBOX_FILENAME);
-});
-
-const onQuickAddSubmit = async (
-  payload: CreateTaskInput & { targetFile?: string },
-): Promise<void> => {
-  quickAddLoading.value = true;
-  const ok = await tasksStore.createTaskInFile(payload);
-  quickAddLoading.value = false;
-  if (!ok) return;
-  const effectiveTarget = payload.targetFile ?? resolvedInboxPath.value;
-  const label = fileBaseName(effectiveTarget);
-  api.core.useNotifications().notify({
-    message: t(extensionI18nKeys.orgAgendaQuickAddToastAdded, { target: label }),
-    level: 'info',
-  });
-};
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() &&

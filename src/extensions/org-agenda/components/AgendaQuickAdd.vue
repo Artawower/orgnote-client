@@ -4,7 +4,7 @@
       v-model:title="draft.title"
       v-model:body="draft.body"
       :show-body="isExpanded"
-      :title-placeholder="t(i18nKeys.orgAgendaQuickAddPlaceholder, { target: inboxLabel })"
+      :title-placeholder="quickAddTitlePlaceholder"
       :loading="loading"
       @submit="submitTask"
       @cancel="onFormCancel"
@@ -35,7 +35,7 @@
       </template>
 
       <template #toolbar-end>
-        <span class="hint">{{ t(i18nKeys.orgAgendaQuickAddShortcutHint) }}</span>
+        <span class="hint">{{ quickAddShortcutHint }}</span>
       </template>
     </agenda-task-form>
   </card-wrapper>
@@ -70,9 +70,14 @@ interface Props {
   inboxFilePath: string;
   knownFiles?: string[];
   loading?: boolean;
+  habitMode?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), { loading: false, knownFiles: () => [] });
+const props = withDefaults(defineProps<Props>(), {
+  loading: false,
+  knownFiles: () => [],
+  habitMode: false,
+});
 
 const emit = defineEmits<{
   submit: [payload: CreateTaskInput & { targetFile?: string }];
@@ -95,10 +100,27 @@ const draft = reactive<AgendaTaskDraft>({
   tags: [],
   priority: undefined,
   scheduled: { date: todayIsoDate() },
-  isHabit: false,
+  isHabit: props.habitMode,
 });
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
+
+const quickAddTitlePlaceholder = computed(() =>
+  t(
+    props.habitMode
+      ? i18nKeys.orgAgendaQuickAddHabitPlaceholder
+      : i18nKeys.orgAgendaQuickAddPlaceholder,
+    { target: inboxLabel.value },
+  ),
+);
+
+const quickAddShortcutHint = computed(() =>
+  t(
+    props.habitMode
+      ? i18nKeys.orgAgendaQuickAddHabitShortcutHint
+      : i18nKeys.orgAgendaQuickAddShortcutHint,
+  ),
+);
 
 const targetLabel = computed(() =>
   targetFile.value ? fileBaseName(targetFile.value) : inboxLabel.value,
@@ -107,15 +129,22 @@ const targetLabel = computed(() =>
 const { openCreate } = useAgendaMiniEditor();
 const { tabletBelow } = api.ui.useScreenDetection();
 
+const resolveDraftIsHabit = (): boolean => props.habitMode || draft.isHabit === true;
+
+const withHabitMode = (
+  payload: CreateTaskInput & { targetFile?: string },
+): CreateTaskInput & { targetFile?: string } =>
+  props.habitMode ? { ...payload, isHabit: true } : payload;
+
 const expand = async (): Promise<void> => {
   if (tabletBelow.value) {
     const result = await openCreate({
       title: draft.title,
       scheduled: draft.scheduled,
-      isHabit: draft.isHabit,
+      isHabit: resolveDraftIsHabit(),
     });
     if (result) {
-      emit('submit', { ...result, targetFile: targetFile.value });
+      emit('submit', withHabitMode({ ...result, targetFile: targetFile.value }));
       resetState();
     }
     return;
@@ -178,7 +207,7 @@ const buildPayload = (): CreateTaskInput & { targetFile?: string } => {
     title: parsed.title,
     ...(body ? { body } : {}),
     ...(draft.scheduled ? { scheduled: draft.scheduled } : {}),
-    ...(draft.isHabit ? { isHabit: true } : {}),
+    ...(resolveDraftIsHabit() ? { isHabit: true } : {}),
     ...(resolvedTarget ? { targetFile: resolvedTarget } : {}),
     ...(priority ? { priority } : {}),
   };
@@ -189,7 +218,7 @@ const resetState = (): void => {
   draft.title = '';
   draft.body = '';
   draft.scheduled = lastUserSelectedSchedule.value ?? { date: todayIsoDate() };
-  draft.isHabit = false;
+  draft.isHabit = props.habitMode;
   isExpanded.value = false;
 };
 
