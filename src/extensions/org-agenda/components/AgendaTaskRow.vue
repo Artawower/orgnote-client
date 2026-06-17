@@ -147,14 +147,33 @@ const onTitleSubmit = (): void => {
 .title-editor {
   flex: 1;
   min-width: 0;
+  line-height: inherit;
 
-  :deep(.cm-line) {
-    @include overflow-ellipsis;
+  :deep(.cm-editor) {
+    height: 1lh;
+    min-height: 0;
+    line-height: inherit;
+    outline: none;
+  }
+
+  :deep(.cm-scroller) {
+    overflow: hidden;
+    line-height: inherit;
   }
 
   :deep(.cm-content) {
+    min-height: 0;
+    padding: 0;
+    line-height: inherit;
     text-decoration: v-bind("isChecked ? 'line-through' : 'none'");
     color: v-bind("isChecked ? 'var(--fg-muted)' : 'inherit'");
+  }
+
+  :deep(.cm-line) {
+    @include overflow-ellipsis;
+
+    padding: 0;
+    line-height: inherit;
   }
 }
 

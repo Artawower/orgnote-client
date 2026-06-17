@@ -32,6 +32,8 @@
               :habit="habit"
               :selected-date="selectedDate"
               @toggle="onToggle(habit)"
+              @edit-title="(title) => editHabitTitle(habit, title)"
+              @edit-priority="(priority) => editHabitPriority(habit, priority)"
             />
           </card-wrapper>
         </app-flex>
@@ -60,6 +62,8 @@ import { clockMatchesDate, useHabits } from './composables/use-habits';
 import { completeHabit } from './mutations/habit-complete';
 import { addHabitClock } from './mutations/add-habit-clock';
 import { removeHabitClock } from './mutations/remove-habit-clock';
+import { changeTaskTitle } from './mutations/task-title';
+import { changeTaskPriority } from './mutations/task-priority';
 import { parseISO } from 'date-fns';
 import type { AgendaHabitView } from './types';
 import { todayIsoDate } from 'src/utils/org-date';
@@ -114,6 +118,16 @@ const applyHabitMutation = async (
   await next;
 };
 
+const editHabitTitle = (habit: AgendaHabitView, title: string): Promise<void> => {
+  if (habit.start === undefined) return Promise.resolve();
+  return applyHabitMutation(habit, (c) => changeTaskTitle(c, habit.start!, title));
+};
+
+const editHabitPriority = (habit: AgendaHabitView, priority: string | undefined): Promise<void> => {
+  if (habit.start === undefined) return Promise.resolve();
+  return applyHabitMutation(habit, (c) => changeTaskPriority(c, habit.start!, priority));
+};
+
 const onToggle = (habit: AgendaHabitView): Promise<void> => {
   const headlineStart = habit.start;
   if (headlineStart === undefined) return Promise.resolve();
@@ -127,7 +141,6 @@ const onToggle = (habit: AgendaHabitView): Promise<void> => {
   const dateObj = parseISO(date);
   return applyHabitMutation(habit, (c) => addHabitClock(c, headlineStart, dateObj));
 };
-
 </script>
 
 <style lang="scss" scoped>
