@@ -1,61 +1,53 @@
 <template>
-  <context-menu :group="AGENDA_TASK_CONTEXT_MENU_GROUP" :data="task">
-    <menu-item
-      :capitalize="false"
-      :lines="1"
-      class="task-row"
-      :style="priorityBarStyle"
-    >
-      <app-flex row align-center gap="sm" class="task-content" @click.stop>
-        <app-checkbox :model-value="isChecked" :class="priorityClass" @change="onCheckboxChange" />
-        <org-inline-editor
-          v-if="isTitleEditorVisible"
-          ref="titleInputRef"
-          v-model="localTitle"
-          :single-line="true"
-          :readonly="false"
-          class="title-editor"
-          @submit="onTitleSubmit"
-          @blur="onTitleSubmit"
-        />
-        <div v-else class="task-title" :class="{ done: isChecked }" @click.stop="onTitleClick">
-          {{ task.text }}
-        </div>
-      </app-flex>
+  <agenda-entry-row
+    :data="task"
+    :checked="isChecked"
+    :priority="task.priority"
+    @toggle="onCheckboxChange"
+  >
+    <org-inline-editor
+      v-if="isTitleEditorVisible"
+      ref="titleInputRef"
+      v-model="localTitle"
+      :single-line="true"
+      :readonly="false"
+      class="title-editor"
+      @submit="onTitleSubmit"
+      @blur="onTitleSubmit"
+    />
+    <div v-else class="task-title" :class="{ done: isChecked }" @click.stop="onTitleClick">
+      {{ task.text }}
+    </div>
 
-      <template #right>
-        <app-flex row align-center gap="xs" class="task-meta" @click.stop>
-          <agenda-schedule-button
-            v-model="localSchedule"
-            :show-habit-toggle="false"
-            class="date-picker"
-          />
-          <action-button
-            icon="sym_o_expand_more"
-            size="sm"
-            class="expand-btn"
-            :class="{ 'expand-btn--open': props.expanded }"
-            :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
-            @click="$emit('edit-expand')"
-          />
-        </app-flex>
-      </template>
-    </menu-item>
-  </context-menu>
+    <template #right>
+      <app-flex row align-center gap="xs" class="task-meta" @click.stop>
+        <agenda-schedule-button
+          v-model="localSchedule"
+          :show-habit-toggle="false"
+          class="date-picker"
+        />
+        <action-button
+          icon="sym_o_expand_more"
+          size="sm"
+          class="expand-btn"
+          :class="{ 'expand-btn--open': props.expanded }"
+          :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
+          @click="$emit('edit-expand')"
+        />
+      </app-flex>
+    </template>
+  </agenda-entry-row>
 </template>
 
 <script lang="ts" setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import MenuItem from 'src/containers/MenuItem.vue';
-import ContextMenu from 'src/components/ContextMenu.vue';
-import { AGENDA_TASK_CONTEXT_MENU_GROUP } from '../constants';
 import AppFlex from 'src/components/AppFlex.vue';
-import AppCheckbox from 'src/components/AppCheckbox.vue';
 import AgendaScheduleButton from './AgendaScheduleButton.vue';
 import OrgInlineEditor from 'src/components/OrgInlineEditor.vue';
 import ActionButton from 'src/components/ActionButton.vue';
+import AgendaEntryRow from './AgendaEntryRow.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import {
   extractPriorityFromTitle,
@@ -71,7 +63,6 @@ import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filte
 const props = defineProps<{ task: AgendaTaskView; expanded?: boolean }>();
 const emit = defineEmits<{
   toggle: [];
-  'open-note': [];
   'edit-title': [newTitle: string];
   'edit-priority': [priority: string | undefined];
   'edit-tags': [tags: string[]];
@@ -121,16 +112,6 @@ watch(
   },
 );
 
-const priorityClass = computed(() =>
-  props.task.priority ? `priority-${props.task.priority.toLowerCase()}` : '',
-);
-
-const priorityBarStyle = computed(() => ({
-  '--priority-bar-color': props.task.priority
-    ? `var(--priority-${props.task.priority.toLowerCase()})`
-    : 'transparent',
-}));
-
 const isChecked = computed(
   () =>
     props.task.state === 'done' ||
@@ -163,37 +144,12 @@ const onTitleSubmit = (): void => {
 </script>
 
 <style lang="scss" scoped>
-@include org-priority-colors(--checkbox-color);
-
-.task-row {
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    border-radius: 2px;
-    background: var(--priority-bar-color, transparent);
-    pointer-events: none;
-  }
-}
-
-.task-content {
-  flex: 1;
-  min-width: 0;
-}
-
 .title-editor {
   flex: 1;
   min-width: 0;
 
   :deep(.cm-line) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    @include overflow-ellipsis;
   }
 
   :deep(.cm-content) {
@@ -203,11 +159,10 @@ const onTitleSubmit = (): void => {
 }
 
 .task-title {
+  @include overflow-ellipsis;
+
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   cursor: text;
 
   &.done {

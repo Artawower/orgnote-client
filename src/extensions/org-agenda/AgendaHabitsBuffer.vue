@@ -32,7 +32,6 @@
               :habit="habit"
               :selected-date="selectedDate"
               @toggle="onToggle(habit)"
-              @open-note="onOpenNote(habit)"
             />
           </card-wrapper>
         </app-flex>
@@ -53,7 +52,6 @@ import LoadingDots from 'src/components/LoadingDots.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import AgendaHabitWeekStrip from './components/AgendaHabitWeekStrip.vue';
 import AgendaHabitRow from './components/AgendaHabitRow.vue';
@@ -130,10 +128,6 @@ const onToggle = (habit: AgendaHabitView): Promise<void> => {
   return applyHabitMutation(habit, (c) => addHabitClock(c, headlineStart, dateObj));
 };
 
-const onOpenNote = async (habit: AgendaHabitView): Promise<void> => {
-  const result = await to(() => openNoteAtPosition(api, habit.filePath, habit.start))();
-  if (result.isErr()) reporter.reportError(result.error);
-};
 </script>
 
 <style lang="scss" scoped>

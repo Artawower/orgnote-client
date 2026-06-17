@@ -12,7 +12,6 @@
           :task="task"
           :expanded="expandedTaskId === task.id"
           @toggle="onTaskToggle(task)"
-          @open-note="$emit('task-click', task, group.filePath)"
           @edit-title="(title) => $emit('task-edit-title', task, group.filePath, title)"
           @edit-priority="(priority) => $emit('task-edit-priority', task, group.filePath, priority)"
           @edit-tags="(tags) => $emit('task-edit-tags', task, group.filePath, tags)"
@@ -56,7 +55,6 @@ import { editOrgDocument } from 'orgnote-api/utils';
 
 const props = defineProps<{ group: AgendaTaskGroup }>();
 const emit = defineEmits<{
-  'task-click': [task: AgendaTaskView, filePath: string];
   'task-toggle': [task: AgendaTaskView, filePath: string];
   'task-edit-title': [task: AgendaTaskView, filePath: string, title: string];
   'task-edit-priority': [task: AgendaTaskView, filePath: string, priority: string | undefined];

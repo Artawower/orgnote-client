@@ -1,5 +1,11 @@
 <template>
-  <app-flex row align-center gap="md" class="habit-row">
+  <agenda-entry-row
+    :data="habit"
+    :checked="completedOnDay"
+    :priority="habit.priority"
+    :toggle-label="toggleLabel"
+    @toggle="emit('toggle')"
+  >
     <app-flex column start align-start class="habit-body" gap="xs">
       <overflow-line class="habit-title">{{ habit.text }}</overflow-line>
       <app-flex row align-center gap="sm" class="habit-stats">
@@ -12,22 +18,7 @@
       </app-flex>
     </app-flex>
 
-    <app-flex row align-center gap="md" class="habit-actions" @click.stop>
-      <command-action-button :command="AGENDA_POMODORO_START_COMMAND" :data="habit" size="md" />
-      <action-button
-        icon="sym_o_open_in_new"
-        size="md"
-        :aria-label="t(i18nKeys.orgAgendaOpenNote)"
-        @click="emit('open-note')"
-      />
-      <app-radio-button
-        size="lg"
-        :model-value="completedOnDay"
-        :aria-label="toggleLabel"
-        @change="emit('toggle')"
-      />
-    </app-flex>
-  </app-flex>
+  </agenda-entry-row>
 </template>
 
 <script lang="ts" setup>
@@ -35,17 +26,14 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { todayIsoDate } from 'src/utils/org-date';
 import AppFlex from 'src/components/AppFlex.vue';
-import ActionButton from 'src/components/ActionButton.vue';
-import CommandActionButton from 'src/containers/CommandActionButton.vue';
-import { AGENDA_POMODORO_START_COMMAND } from '../constants';
-import AppRadioButton from 'src/components/AppRadioButton.vue';
+import AgendaEntryRow from './AgendaEntryRow.vue';
 import OverflowLine from 'src/components/OverflowLine.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { clockMatchesDate } from '../composables/use-habits';
 import type { AgendaHabitView } from '../types';
 
 const props = defineProps<{ habit: AgendaHabitView; selectedDate: string }>();
-const emit = defineEmits<{ toggle: []; 'open-note': [] }>();
+const emit = defineEmits<{ toggle: [] }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
@@ -64,11 +52,6 @@ const toggleLabel = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.habit-row {
-  padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
-  min-height: var(--menu-item-height-sm);
-}
-
 .habit-body {
   flex: 1;
   min-width: 0;

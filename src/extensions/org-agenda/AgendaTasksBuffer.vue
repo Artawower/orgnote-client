@@ -31,7 +31,6 @@
               <agenda-task-group
                 :key="group.filePath"
                 :group="group"
-                @task-click="openNote"
                 @task-toggle="toggleTask"
                 @task-edit-title="editTaskTitle"
                 @task-edit-priority="editTaskPriority"
@@ -48,7 +47,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { FileTask } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -69,7 +67,6 @@ import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaQuickAddSubmit } from './composables/use-agenda-quick-add-submit';
-import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { changeTaskTitle } from './mutations/task-title';
 import { changeTaskPriority } from './mutations/task-priority';
 import { changeTaskTags } from './mutations/task-tags';
@@ -196,12 +193,6 @@ const editTaskSave = async (
 
   if (!mutations.length) return;
   await applyTaskMutation(task, filePath, (c) => mutations.reduce((acc, fn) => fn(acc), c));
-};
-
-const openNote = async (task: FileTask, filePath: string): Promise<void> => {
-  const result = await to(() => openNoteAtPosition(api, filePath, task.start))();
-  if (result.isErr())
-    reporter.reportError(new Error('Failed to open note', { cause: result.error }));
 };
 </script>
 
