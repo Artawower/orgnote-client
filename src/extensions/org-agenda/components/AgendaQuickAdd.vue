@@ -151,7 +151,6 @@ const expand = async (): Promise<void> => {
   }
   isExpanded.value = true;
   await nextTick();
-  await nextTick();
   formRef.value?.focusBody();
 };
 
