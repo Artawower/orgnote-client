@@ -82,13 +82,5 @@ const handleAction = async (item: MenuAction) => {
 .context-menu-list {
   min-width: 160px;
   width: 100%;
-
-  > :first-child {
-    --menu-item-padding-top: 0;
-  }
-
-  > :last-child {
-    --menu-item-padding-bottom: 0;
-  }
 }
 </style>
