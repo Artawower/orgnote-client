@@ -116,7 +116,93 @@
 
       let errorScreenMounted = false;
 
-      function showMinimalErrorScreen() {
+      function buildRecoveryUrl() {
+        var url = new URL('/', window.location.origin);
+        url.searchParams.set('orgnote-recover', String(Date.now()));
+        return url.toString();
+      }
+
+      function isSameOriginUrl(url) {
+        if (!url) return false;
+        try {
+          return new URL(url, window.location.href).origin === window.location.origin;
+        } catch {
+          return false;
+        }
+      }
+
+      function clearRecoveryUrlMarker() {
+        var url = new URL(window.location.href);
+        var recoveryTimestamp = url.searchParams.get('orgnote-recover');
+        if (!recoveryTimestamp) return;
+        url.searchParams.delete('orgnote-recover');
+        window.history.replaceState(window.history.state, document.title, url.pathname + url.search + url.hash);
+        console.info('[FALLBACK] Startup recovery marker cleared:', recoveryTimestamp);
+      }
+
+      clearRecoveryUrlMarker();
+
+      function deleteOriginCachesForStartupRecovery() {
+        if (!window.caches) return Promise.resolve();
+        return caches.keys().then(function (keys) {
+          return Promise.all(
+            keys.map(function (key) {
+              return caches.delete(key);
+            }),
+          );
+        });
+      }
+
+      function unregisterStartupServiceWorkers() {
+        if (!navigator.serviceWorker) return Promise.resolve();
+        return navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          return Promise.all(
+            registrations.map(function (registration) {
+              return registration.unregister();
+            }),
+          );
+        });
+      }
+
+      function reloadAfterStartupRecovery() {
+        window.location.replace(buildRecoveryUrl());
+      }
+
+      window.__recoverFromStartupFailure = function () {
+        Promise.all([deleteOriginCachesForStartupRecovery(), unregisterStartupServiceWorkers()]).then(
+          reloadAfterStartupRecovery,
+          function (error) {
+            console.error('[FALLBACK] Startup recovery failed:', error);
+            reloadAfterStartupRecovery();
+          },
+        );
+      };
+
+      function isRecoverableStartupError(details) {
+        if (!details || details.type !== 'resource_error') return false;
+        if (!details.meta || details.meta.tagName !== 'SCRIPT') return false;
+        return isSameOriginUrl(details.meta.src);
+      }
+
+      function buildUpdateAppButton(details) {
+        if (!isRecoverableStartupError(details)) return '';
+        return '\
+                <button onclick="window.__recoverFromStartupFailure()" style="\
+                  padding: var(--button-padding, 12px 16px);\
+                  background: var(--bg-alt, #f5f5f5);\
+                  color: var(--fg, #000000);\
+                  border: 1px solid var(--border-default, #e5e5e5);\
+                  border-radius: var(--button-border-radius, var(--border-radius-md, 8px));\
+                  cursor: pointer;\
+                  font-size: var(--font-size-base, 16px);\
+                  font-weight: var(--font-weight-bold, 500);\
+                  min-width: var(--button-min-width, 120px);\
+                ">\
+                  Update App\
+                </button>';
+      }
+
+      function showMinimalErrorScreen(details) {
         if (errorScreenMounted) return;
         errorScreenMounted = true;
 
@@ -144,7 +230,7 @@
                 The application encountered an unexpected error during startup and cannot continue.\
               </p>\
               <div style="display: flex; gap: var(--gap-sm, 12px); justify-content: center; flex-wrap: wrap; margin-bottom: var(--margin-lg, 24px);">\
-                <button onclick="location.assign(\'/\')" style="\
+                <button onclick="window.location.reload()" style="\
                   padding: var(--button-padding, 12px 16px);\
                   background: var(--default-red, #f65866);\
                   color: var(--btn-text, white);\
@@ -156,7 +242,9 @@
                   min-width: var(--button-min-width, 120px);\
                 ">\
                   Reload\
-                </button>\
+                </button>' +
+          buildUpdateAppButton(details) +
+          '\
                 <button onclick="\
                   var text = window.__errorBuffer.exportAsText();\
                   navigator.clipboard.writeText(text).then(function() {\
@@ -223,15 +311,6 @@
         var line = meta.line ? ':' + meta.line : '';
         var col = meta.col ? ':' + meta.col : '';
         return ' (' + meta.url + line + col + ')';
-      }
-
-      function isSameOriginUrl(url) {
-        if (!url) return false;
-        try {
-          return new URL(url, window.location.href).origin === window.location.origin;
-        } catch {
-          return false;
-        }
       }
 
       function isSameOriginStack(stack) {
@@ -347,7 +426,7 @@
           var details = extractErrorDetails(event);
           window.__errorBuffer.capture(details.value, details.type, details.meta);
           console.error('[FALLBACK] Uncaught error:', details.message);
-          if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
+          if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen(details);
         },
         true,
       );
@@ -358,7 +437,7 @@
         var details = extractRejectionDetails(event);
         window.__errorBuffer.capture(details.value, details.type, details.meta);
         console.error('[FALLBACK] Unhandled rejection:', details.message);
-        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen();
+        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen(details);
       });
     </script>
     <!-- quasar:entry-point -->
