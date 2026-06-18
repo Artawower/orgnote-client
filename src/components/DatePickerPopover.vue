@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, useSlots } from 'vue';
+import { defineComponent, h, ref, useSlots, type Slots } from 'vue';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
@@ -61,18 +61,34 @@ const blurActiveElement = (): void => {
   activeElement.blur();
 };
 
+const sheetSlots = (): Pick<Slots, 'header' | 'sections' | 'footer'> => ({
+  header: slots.header,
+  sections: slots.sections,
+  footer: slots.footer,
+});
+
+const createMobileSheet = () =>
+  defineComponent({
+    name: 'DatePickerPopoverMobileSheet',
+    setup: () => () =>
+      h(
+        DatePickerSheetModal,
+        {
+          modelValue: props.modelValue,
+          confirmMode: props.confirmMode,
+          showShortcuts: props.showShortcuts,
+        },
+        sheetSlots(),
+      ),
+  });
+
 const openMobileSheet = async (): Promise<void> => {
   if (isOpening.value) return;
   isOpening.value = true;
   blurActiveElement();
   const result = await to(() =>
-    api.ui.useModal().open<DateSheetResult>(DatePickerSheetModal, {
+    api.ui.useModal().open<DateSheetResult>(createMobileSheet(), {
       mini: true,
-      modalProps: {
-        modelValue: props.modelValue,
-        confirmMode: props.confirmMode,
-        showShortcuts: props.showShortcuts,
-      },
     }),
   )();
   isOpening.value = false;
@@ -85,10 +101,8 @@ const openMobileSheet = async (): Promise<void> => {
   emit('update:modelValue', result.value.date ?? undefined);
 };
 
-const hasCustomContent = (): boolean => !!slots.sections || !!slots.footer;
-
 const handleOpen = (toggle: () => void): void => {
-  if (desktopBelow.value && !hasCustomContent()) {
+  if (desktopBelow.value) {
     void openMobileSheet();
     return;
   }

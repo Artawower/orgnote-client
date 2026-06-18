@@ -1,5 +1,38 @@
 <template>
-  <app-popover ref="popoverRef" :breakpoint="0" class="repeat-popover">
+  <app-flex v-if="desktopBelow" column align-stretch class="repeat-inline">
+    <app-flex
+      row
+      between
+      align-center
+      gap="sm"
+      class="repeat-row repeat-trigger"
+      role="button"
+      tabindex="0"
+      @click="toggleInlineMenu"
+      @keydown.enter.prevent="toggleInlineMenu"
+      @keydown.space.prevent="toggleInlineMenu"
+    >
+      <app-flex row align-center gap="sm">
+        <span class="icon-wrap">
+          <app-icon name="sym_o_repeat" size="sm" />
+        </span>
+        <span>{{ t(i18nKeys.orgAgendaScheduleRepeat) }}</span>
+      </app-flex>
+      <app-flex row align-center gap="xs">
+        <span class="repeat-label">{{ selectedLabel }}</span>
+        <app-icon name="sym_o_keyboard_arrow_down" size="sm" />
+      </app-flex>
+    </app-flex>
+    <agenda-repeat-options
+      v-if="isInlineMenuOpen"
+      :presets="repeatPresets"
+      :model-value="model"
+      inline
+      @select="selectPreset"
+    />
+  </app-flex>
+
+  <app-popover v-else ref="popoverRef" :breakpoint="0" class="repeat-popover">
     <template #default="{ toggle }">
       <app-flex
         row
@@ -27,29 +60,11 @@
     </template>
 
     <template #content>
-      <app-flex column align-stretch gap="xs" class="repeat-menu">
-        <app-flex
-          v-for="preset in repeatPresets"
-          :key="preset.key"
-          row
-          between
-          align-center
-          gap="sm"
-          class="repeat-row repeat-option"
-          :class="{ selected: isSelected(preset) }"
-          role="button"
-          tabindex="0"
-          @click="selectPreset(preset)"
-          @keydown.enter.prevent="selectPreset(preset)"
-          @keydown.space.prevent="selectPreset(preset)"
-        >
-          <app-flex row align-center gap="sm">
-            <span class="option-dot" />
-            <span>{{ t(i18nKeys[preset.labelKey]) }}</span>
-          </app-flex>
-          <app-icon v-if="isSelected(preset)" name="sym_o_check" size="sm" color="accent" />
-        </app-flex>
-      </app-flex>
+      <agenda-repeat-options
+        :presets="repeatPresets"
+        :model-value="model"
+        @select="selectPreset"
+      />
     </template>
   </app-popover>
 </template>
@@ -58,20 +73,19 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { OrgRepeater } from 'org-mode-ast';
+import { api } from 'src/boot/api';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppPopover from 'src/components/AppPopover.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
-
-interface RepeatPreset {
-  key: string;
-  labelKey: keyof typeof i18nKeys;
-  repeater?: OrgRepeater;
-}
+import AgendaRepeatOptions from './AgendaRepeatOptions.vue';
+import type { RepeatPreset } from './agenda-repeat-picker.types';
 
 const model = defineModel<OrgRepeater | undefined>();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const { desktopBelow } = api.ui.useScreenDetection();
 const popoverRef = ref<InstanceType<typeof AppPopover> | null>(null);
+const isInlineMenuOpen = ref(false);
 
 const repeatPresets: RepeatPreset[] = [
   { key: 'none', labelKey: 'orgAgendaScheduleRepeatNone' },
@@ -107,8 +121,13 @@ const matchesRepeater = (
 
 const isSelected = (preset: RepeatPreset): boolean => matchesRepeater(model.value, preset.repeater);
 
+const toggleInlineMenu = (): void => {
+  isInlineMenuOpen.value = !isInlineMenuOpen.value;
+};
+
 const selectPreset = (preset: RepeatPreset): void => {
   model.value = preset.repeater;
+  isInlineMenuOpen.value = false;
   popoverRef.value?.close();
 };
 
@@ -122,7 +141,8 @@ const selectedLabel = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.repeat-popover {
+.repeat-popover,
+.repeat-inline {
   width: 100%;
 }
 
@@ -160,25 +180,4 @@ const selectedLabel = computed(() => {
   color: var(--fg-muted);
 }
 
-.repeat-menu {
-  box-sizing: border-box;
-  width: calc(var(--date-picker-sheet-width, 320px) - var(--padding-md));
-  padding: var(--padding-xs) 0;
-  border: var(--border-default);
-  border-radius: var(--floating-border-radius);
-  background: var(--bg);
-  box-shadow: var(--floating-box-shadow);
-}
-
-.repeat-option.selected {
-  color: var(--accent);
-}
-
-.option-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.45;
-}
 </style>

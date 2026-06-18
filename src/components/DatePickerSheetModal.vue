@@ -5,7 +5,17 @@
     :show-shortcuts="showShortcuts"
     @update:model-value="onUpdate"
     @confirm="onConfirm"
-  />
+  >
+    <template #header>
+      <slot name="header" />
+    </template>
+    <template #sections>
+      <slot name="sections" />
+    </template>
+    <template #footer="slotProps">
+      <slot name="footer" v-bind="slotProps" />
+    </template>
+  </date-picker-sheet>
 </template>
 
 <script lang="ts" setup>

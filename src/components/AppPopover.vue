@@ -1,7 +1,13 @@
 <template>
   <div class="app-popover">
     <slot :toggle="toggle" />
-    <q-popup-proxy v-model="isOpen" no-parent-event :breakpoint="breakpoint">
+    <q-popup-proxy
+      v-model="isOpen"
+      no-parent-event
+      :breakpoint="breakpoint"
+      :anchor="anchor"
+      :self="self"
+    >
       <slot name="content" />
     </q-popup-proxy>
   </div>
@@ -13,9 +19,13 @@ import { ref } from 'vue';
 withDefaults(
   defineProps<{
     breakpoint?: number;
+    anchor?: string;
+    self?: string;
   }>(),
   {
     breakpoint: 600,
+    anchor: 'bottom left',
+    self: 'top left',
   },
 );
 
