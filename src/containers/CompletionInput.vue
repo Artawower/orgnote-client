@@ -10,6 +10,15 @@
     @keypress.enter="handleCompletionInput"
   >
     <template #actions>
+      <visibility-wrapper tablet-below>
+        <action-button
+          v-if="canAcceptAutocomplete"
+          @click="completion.acceptAutocomplete()"
+          icon="keyboard_tab"
+          size="md"
+          aria-label="Accept autocomplete"
+        />
+      </visibility-wrapper>
       <visibility-wrapper desktop-above>
         <action-button
           @click="toggleFullScreen"
@@ -48,6 +57,7 @@ const searchQuery = computed({
 
 const modal = api.ui.useModal();
 const { config } = storeToRefs(modal);
+const canAcceptAutocomplete = computed(() => completion.canAcceptAutocomplete());
 const toggleFullScreen = () => {
   modal.updateConfig({
     fullScreen: !config.value?.fullScreen,

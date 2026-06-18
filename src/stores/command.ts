@@ -26,6 +26,9 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     return commands.value.find((c) => c.command === name);
   };
 
+  const canExecuteCommand = (command?: Command): command is Command =>
+    Boolean(command && !command.disabled?.(api));
+
   const afterExecute = (
     commandNames: string | string[],
     callback: CommandCallback,
@@ -53,7 +56,7 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
 
   const execute = async (name: string, data?: unknown, options?: ExecuteCommandOptions) => {
     const command = get(name);
-    if (!command || command.disabled?.(api)) {
+    if (!canExecuteCommand(command)) {
       return;
     }
 

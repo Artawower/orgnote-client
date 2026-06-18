@@ -14,6 +14,7 @@ import { useCommandsStore } from './command';
 import { useConfigStore } from './config';
 import { hasWindow } from 'src/utils/platform-specific';
 import { isMac } from 'src/utils/hotkey-display';
+import { api } from 'src/boot/api';
 
 const hotkeyMatchesEvent = (hotkey: Hotkey, event: KeyboardEvent): boolean => {
   if (event.key.toLowerCase() !== hotkey.key.toLowerCase()) return false;
@@ -139,17 +140,24 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
       )?.command;
 
     if (hasWindow()) {
-      const matchesContext = (contextId: KeybindingContextId, event: KeyboardEvent) =>
-        contextId !== KEYBINDING_CONTEXTS.EDITOR &&
-        keybindings.value.find(
+      const matchesContext = (
+        contextId: KeybindingContextId,
+        event: KeyboardEvent,
+      ): ResolvedKeybinding | undefined => {
+        if (contextId === KEYBINDING_CONTEXTS.EDITOR) return;
+        return keybindings.value.find(
           (b) => b.context === contextId && b.hotkeys.some((h) => hotkeyMatchesEvent(h, event)),
         );
+      };
 
       const canDispatch = (
-        _cmd: Command,
+        cmd: Command,
         contextId: KeybindingContextId,
         target: EventTarget | null,
-      ) => !(contextId === KEYBINDING_CONTEXTS.GLOBAL && isInputTarget(target));
+      ) => {
+        if (cmd.disabled?.(api)) return false;
+        return !(contextId === KEYBINDING_CONTEXTS.GLOBAL && isInputTarget(target));
+      };
 
       const handleKeydown = (event: KeyboardEvent): void => {
         if (event.isComposing) return;
@@ -159,13 +167,13 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
           const cmd = commandsStore.get(match.command);
           if (!cmd || !canDispatch(cmd, contextId, event.target)) return false;
           event.preventDefault();
-          commandsStore.execute(match.command, undefined, { interactive: true });
+          void commandsStore.execute(match.command, undefined, { interactive: true });
           return true;
         });
       };
 
-      window.addEventListener('keydown', handleKeydown);
-      onScopeDispose(() => window.removeEventListener('keydown', handleKeydown));
+      window.addEventListener('keydown', handleKeydown, { capture: true });
+      onScopeDispose(() => window.removeEventListener('keydown', handleKeydown, { capture: true }));
     }
 
     return {

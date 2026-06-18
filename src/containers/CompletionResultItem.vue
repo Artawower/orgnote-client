@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, toValue } from 'vue';
+import { computed } from 'vue';
 import { api } from 'src/boot/api';
 import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
 import type { CompletionItemRenderer } from 'orgnote-api';
@@ -83,11 +83,8 @@ const applyCandidateToInput = (index: number) => {
     return;
   }
 
-  const candidateTitle = toValue(candidate.title);
-  if (typeof candidateTitle === 'string') {
-    activeCompletion.searchQuery = candidateTitle;
-    emit('select');
-  }
+  completion.acceptAutocomplete();
+  emit('select');
 };
 
 const focusCompletionCandidate = (e: MouseEvent, index: number) => {

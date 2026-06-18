@@ -9,7 +9,7 @@ import { type CompletionConfig, type CompletionStore } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { useModalStore } from './modal';
 import AppCompletion from 'src/containers/AppCompletion.vue';
-import { computed, shallowRef, shallowReactive, ref, markRaw } from 'vue';
+import { computed, shallowRef, shallowReactive, ref, markRaw, toValue } from 'vue';
 import { watch } from 'vue';
 import { debounce } from 'src/utils/debounce';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
@@ -142,6 +142,38 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       () => !activeCompletion.value || isNullable(activeCompletion.value.total),
     );
 
+    const getSelectedCandidate = (): CompletionCandidate | undefined => {
+      const completion = activeCompletion.value;
+      if (!completion) return;
+      const selectedIndex = completion.selectedCandidateIndex ?? 0;
+      return completion.candidates?.[selectedIndex];
+    };
+
+    const getSelectedCandidateTitle = (): string | undefined => {
+      const title = toValue(getSelectedCandidate()?.title);
+      return typeof title === 'string' ? title : undefined;
+    };
+
+    const isAutocompleteMatch = (searchQuery: string, title: string): boolean => {
+      if (!searchQuery) return true;
+      return title.toLowerCase().startsWith(searchQuery.toLowerCase());
+    };
+
+    const canAcceptAutocomplete = (): boolean => {
+      const completion = activeCompletion.value;
+      const title = getSelectedCandidateTitle();
+      if (completion?.type !== 'input-choice' || title === undefined) return false;
+      return isAutocompleteMatch(completion.searchQuery, title);
+    };
+
+    const acceptAutocomplete = (): void => {
+      const completion = activeCompletion.value;
+      if (completion?.type !== 'input-choice') return;
+      const title = getSelectedCandidateTitle();
+      if (title === undefined || !isAutocompleteMatch(completion.searchQuery, title)) return;
+      completion.searchQuery = title;
+    };
+
     const performSearch = (limit?: number, offset: number = 0) => {
       if (!activeCompletion.value) return;
       if (activeCompletion.value.type === 'input') return;
@@ -244,6 +276,8 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       activeCompletion,
       nextCandidate,
       previousCandidate,
+      canAcceptAutocomplete,
+      acceptAutocomplete,
       search,
       registerInterceptor,
       isLoading,

@@ -299,6 +299,120 @@ test('previousCandidate does nothing when no completion active', () => {
   expect(() => store.previousCandidate()).not.toThrow();
 });
 
+test('acceptAutocomplete fills search query from selected input-choice candidate', () => {
+  const store = useCompletionStore();
+  const candidates: CompletionCandidate[] = [
+    { title: '/notes/', data: {}, commandHandler: vi.fn() },
+    { title: '/notes/project.org', data: {}, commandHandler: vi.fn() },
+  ];
+
+  store.open({
+    type: 'input-choice',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+  store.activeCompletion!.candidates = candidates;
+  store.activeCompletion!.selectedCandidateIndex = 1;
+
+  store.acceptAutocomplete();
+
+  expect(store.activeCompletion?.searchQuery).toBe('/notes/project.org');
+});
+
+test('acceptAutocomplete defaults to first input-choice candidate', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'input-choice',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+  store.activeCompletion!.candidates = [
+    { title: '/default.org', data: {}, commandHandler: vi.fn() },
+  ];
+
+  store.acceptAutocomplete();
+
+  expect(store.activeCompletion?.searchQuery).toBe('/default.org');
+});
+
+test('acceptAutocomplete ignores choice completion', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'choice',
+    searchText: 'cli',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+  store.activeCompletion!.candidates = [
+    { title: 'copy CLI install command', data: {}, commandHandler: vi.fn() },
+  ];
+
+  store.acceptAutocomplete();
+
+  expect(store.activeCompletion?.searchQuery).toBe('cli');
+});
+
+test('acceptAutocomplete ignores plain input completion', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'input',
+    searchText: 'draft',
+  });
+
+  store.acceptAutocomplete();
+
+  expect(store.activeCompletion?.searchQuery).toBe('draft');
+});
+
+test('canAcceptAutocomplete is false without input-choice candidate title', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'input-choice',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+
+  expect(store.canAcceptAutocomplete()).toBe(false);
+
+  store.activeCompletion!.candidates = [{ data: {}, commandHandler: vi.fn() }];
+
+  expect(store.canAcceptAutocomplete()).toBe(false);
+});
+
+test('canAcceptAutocomplete accepts case-insensitive prefix match', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'input-choice',
+    searchText: '/Notes/Pro',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+  store.activeCompletion!.candidates = [
+    { title: '/notes/project.org', data: {}, commandHandler: vi.fn() },
+  ];
+
+  expect(store.canAcceptAutocomplete()).toBe(true);
+});
+
+test('acceptAutocomplete ignores selected candidate that no longer matches input', () => {
+  const store = useCompletionStore();
+
+  store.open({
+    type: 'input-choice',
+    searchText: '/notes/project extra',
+    itemsGetter: () => ({ result: [], total: 0 }),
+  });
+  store.activeCompletion!.candidates = [
+    { title: '/notes/project.org', data: {}, commandHandler: vi.fn() },
+  ];
+
+  expect(store.canAcceptAutocomplete()).toBe(false);
+
+  store.acceptAutocomplete();
+
+  expect(store.activeCompletion?.searchQuery).toBe('/notes/project extra');
+});
+
 test('search triggers itemsGetter on open', () => {
   const itemsGetter = vi.fn(() => ({ result: [], total: 0 }));
   const store = useCompletionStore();

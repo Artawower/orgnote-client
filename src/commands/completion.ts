@@ -50,6 +50,19 @@ export function getCompletionCommands(): Command[] {
         api.core.useCompletion().previousCandidate();
       },
     },
+    {
+      command: DefaultCommands.ACCEPT_COMPLETION_AUTOCOMPLETE,
+      icon: 'keyboard_tab',
+      group: 'completion',
+      system: true,
+      interactive: true,
+      defaultHotkeys: [{ key: 'Tab' }],
+      keybindingContext: KEYBINDING_CONTEXTS.COMPLETION,
+      disabled: (api: OrgNoteApi) => !api.core.useCompletion().canAcceptAutocomplete(),
+      handler: (api: OrgNoteApi) => {
+        api.core.useCompletion().acceptAutocomplete();
+      },
+    },
   ];
 
   return commands;
