@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { ORGNOTE_PROTOCOL } from '../src/constants/orgnote-scheme';
 import { startAuthCallbackServer } from './auth-callback-server';
 import { registerDeepLinking } from './deeplink';
+import { registerElectronFsIpc, stopElectronFsWatchers } from './electron-fs-ipc';
 import { registerHistoryFallbackProtocol } from './history-fallback-protocol';
 import { createMainWindow } from './main-window';
 import { registerOAuthLoginIpc } from './oauth-login-ipc';
@@ -64,6 +65,7 @@ registerDeepLinking({
 app.whenReady().then(async () => {
   registerHistoryFallbackProtocol({ scheme: PROTOCOL_SCHEME, baseDir: currentDir });
   registerOAuthLoginIpc({ allowedOrigins: ALLOWED_AUTH_ORIGINS });
+  registerElectronFsIpc({ getMainWindow: () => mainWindow });
 
   stopAuthCallbackServer = startAuthCallbackServer({
     port: AUTH_CALLBACK_PORT,
@@ -104,6 +106,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   stopAuthCallbackServer?.();
   stopAuthCallbackServer = undefined;
+  void stopElectronFsWatchers();
 });
 
 app.on('activate', () => {
