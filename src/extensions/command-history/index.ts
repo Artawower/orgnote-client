@@ -40,6 +40,8 @@ const trackCommandUsage = async (
   await saveHistory(api, history);
 };
 
+const hasSearchQuery = (searchQuery: string): boolean => searchQuery.trim().length > 0;
+
 const sortCandidatesByRecentThenAlphabetically = (
   candidates: CompletionCandidate<Command>[],
   history: CommandHistory,
@@ -106,7 +108,8 @@ export const commandHistoryExtension: Extension = {
       name: 'command-history-sorter',
       target: COMMANDS_COMPLETION_NAME,
       priority: 100,
-      handler: async (candidates) => {
+      handler: async (candidates, context) => {
+        if (hasSearchQuery(context.searchQuery)) return candidates;
         const history = await loadHistory(api);
         return sortCandidatesByRecentThenAlphabetically(candidates, history);
       },

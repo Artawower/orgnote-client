@@ -212,6 +212,31 @@ test('commandHistoryExtension interceptor sorts unused commands alphabetically',
   expect(third.title).toBe('Zebra');
 });
 
+test('commandHistoryExtension interceptor preserves search relevance order', async () => {
+  const api = createMockApi();
+  kvContent = JSON.stringify({
+    'clear-logs': '2024-01-02T12:00:00.000Z',
+  });
+
+  await commandHistoryExtension.onMounted?.(api);
+
+  const candidates: CompletionCandidate<Command>[] = [
+    {
+      data: { command: 'copy-cli-install-command', handler: vi.fn() },
+      title: 'copy CLI install command',
+      commandHandler: vi.fn(),
+    },
+    { data: { command: 'clear-logs', handler: vi.fn() }, title: 'clear logs', commandHandler: vi.fn() },
+  ];
+
+  const result = await registeredInterceptor?.handler(candidates, {
+    completionName: 'commands',
+    searchQuery: 'cli',
+  });
+
+  expect(result).toEqual(candidates);
+});
+
 test('commandHistoryExtension afterExecute callback tracks command usage with interactive option', async () => {
   const api = createMockApi();
 
