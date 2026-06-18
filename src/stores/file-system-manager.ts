@@ -15,6 +15,56 @@ interface ReconcileContext {
   snapshot: DesiredStorageSnapshot;
 }
 
+const resetFileManagerState = async (): Promise<void> => {
+  const { useFileManagerStore } = await import('./file-manager');
+  const fileManager = useFileManagerStore();
+  fileManager.path = '/';
+  fileManager.focusFile = undefined;
+  fileManager.searchQuery = '';
+  fileManager.mobileFileSearchActive = false;
+  fileManager.files = [];
+  fileManager.clearSelection();
+  fileManager.cancelPending();
+};
+
+const resetSearchState = async (): Promise<void> => {
+  const [{ useFileSearchStore }, { useFileMetaStore }] = await Promise.all([
+    import('./file-search'),
+    import('./file-meta'),
+  ]);
+  await useFileSearchStore().clearIndex();
+  await useFileMetaStore().clear();
+};
+
+const resetQueueState = async (): Promise<void> => {
+  const [{ useQueueStore }, { INDEX_QUEUE_ID, SYNC_QUEUE_ID }] = await Promise.all([
+    import('./queue'),
+    import('src/constants/queue-ids'),
+  ]);
+  const queue = useQueueStore();
+  await Promise.all([queue.clear(INDEX_QUEUE_ID), queue.clear(SYNC_QUEUE_ID)]);
+};
+
+const resetSyncState = async (): Promise<void> => {
+  const { useSyncStore } = await import('./sync');
+  await useSyncStore().reset();
+};
+
+const resetStorageBoundState = async (): Promise<void> => {
+  const result = await to(async () => {
+    await Promise.all([
+      resetFileManagerState(),
+      resetSearchState(),
+      resetQueueState(),
+      resetSyncState(),
+    ]);
+  })();
+
+  if (result.isErr()) {
+    reporter.reportError(result.error);
+  }
+};
+
 export const useFileSystemManagerStore = defineStore<string, FileSystemManagerStore>('file-system-manager',
   () => {
     const currentFsName = ref<string>('');
@@ -191,11 +241,20 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       if (!info) {
         return;
       }
-      if (currentFsName.value !== fsName) {
+
+      const isChangingFs = currentFsName.value !== fsName;
+
+      if (isChangingFs) {
         resetMountedState();
         settings.settings.vault = undefined;
       }
+
       currentFsName.value = fsName;
+
+      if (isChangingFs) {
+        await resetStorageBoundState();
+      }
+
       await reconcileStorageRuntime();
     };
 
@@ -234,6 +293,7 @@ export const useFileSystemRootConfigurator = () => {
     }
 
     settings.settings.vault = root;
+    await resetStorageBoundState();
     await fsManager.useFs(fsManager.currentFsName);
   };
 

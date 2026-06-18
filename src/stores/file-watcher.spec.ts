@@ -14,7 +14,14 @@ type TestWatcherHandle = {
   stop: () => Promise<void> | void;
 };
 
-type TestNativeWatch = () => Promise<TestWatcherHandle>;
+type TestNativeChange = {
+  path: string;
+  type: 'create' | 'modify' | 'delete' | 'rename';
+  mtime?: number;
+  previousPath?: string;
+};
+
+type TestNativeWatch = (listener: (change: TestNativeChange) => void) => Promise<TestWatcherHandle>;
 
 const mocks = vi.hoisted(() => ({
   readDir: vi.fn<() => Promise<TestDiskFile[]>>(),
@@ -192,7 +199,7 @@ test('stops native watch handle that resolves after restart', async () => {
   const newHandle = { stop: vi.fn(async () => undefined) };
   const oldWatch = createDeferred<TestWatcherHandle>();
   const watch = vi
-    .fn<() => Promise<TestWatcherHandle>>()
+    .fn<TestNativeWatch>()
     .mockImplementationOnce(async () => oldWatch.promise)
     .mockImplementationOnce(async () => newHandle);
   mocks.fsManager.currentFs = { watch };
@@ -214,7 +221,7 @@ test('stops native watch handle that resolves after restart', async () => {
 test('native watch start failure does not block retry', async () => {
   const handle = { stop: vi.fn(async () => undefined) };
   const watch = vi
-    .fn<() => Promise<TestWatcherHandle>>()
+    .fn<TestNativeWatch>()
     .mockRejectedValueOnce(new Error('watch failed'))
     .mockResolvedValueOnce(handle);
   mocks.fsManager.currentFs = { watch };
@@ -224,6 +231,29 @@ test('native watch start failure does not block retry', async () => {
   await store.start();
 
   expect(watch).toHaveBeenCalledTimes(2);
+
+  await store.stop();
+});
+
+test('native watch suppresses recent local duplicate', async () => {
+  const handle = { stop: vi.fn(async () => undefined) };
+  let nativeListener: ((change: TestNativeChange) => void) | undefined;
+  const watch = vi.fn<TestNativeWatch>().mockImplementation(async (listener) => {
+    nativeListener = listener;
+    return handle;
+  });
+  mocks.fsManager.currentFs = { watch };
+
+  const change = { path: '/note.org', type: 'modify' as const, mtime: 10 };
+  const listener = vi.fn();
+  const store = useFileWatcherStore();
+  store.watch('/', listener, { recursive: true });
+
+  await store.start();
+  await store.emitChange(change);
+  nativeListener?.(change);
+
+  expect(listener).toHaveBeenCalledTimes(1);
 
   await store.stop();
 });

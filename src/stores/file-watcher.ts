@@ -29,6 +29,7 @@ interface PathSubscription {
 const DEFAULT_INTERVAL = 3000;
 const BACKOFF_MULTIPLIER = 2;
 const MAX_BACKOFF_MULTIPLIER = 8;
+const RECENT_CHANGE_TTL = 500;
 
 const createChange = (
   path: string,
@@ -133,6 +134,9 @@ const findMatchingSubscriptions = (
 ): PathSubscription[] =>
   subscriptions.filter((sub) => isPathMatch(change.path, sub.path, sub.recursive));
 
+const createChangeSignature = (change: FileSystemChange): string =>
+  [change.type, change.path, change.previousPath ?? '', change.mtime ?? ''].join('\u0000');
+
 export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>(
   'file-watcher',
   () => {
@@ -154,6 +158,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     let maxInterval = DEFAULT_INTERVAL * MAX_BACKOFF_MULTIPLIER;
     let runtimeGeneration = 0;
     let runtimeActive = false;
+    const recentLocalChanges = new Map<string, number>();
 
     const nextRuntimeGeneration = (): number => {
       runtimeGeneration += 1;
@@ -161,6 +166,25 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     };
 
     const isCurrentGeneration = (generation: number): boolean => generation === runtimeGeneration;
+
+    const pruneRecentLocalChanges = (now: number): void => {
+      [...recentLocalChanges.entries()]
+        .filter(([, ts]) => now - ts > RECENT_CHANGE_TTL)
+        .forEach(([signature]) => recentLocalChanges.delete(signature));
+    };
+
+    const rememberLocalChange = (change: FileSystemChange): void => {
+      const now = Date.now();
+      pruneRecentLocalChanges(now);
+      recentLocalChanges.set(createChangeSignature(change), now);
+    };
+
+    const isRecentLocalDuplicate = (change: FileSystemChange): boolean => {
+      const now = Date.now();
+      pruneRecentLocalChanges(now);
+      const timestamp = recentLocalChanges.get(createChangeSignature(change));
+      return timestamp !== undefined && now - timestamp <= RECENT_CHANGE_TTL;
+    };
 
     const notifySubscribers = async (change: FileSystemChange): Promise<void> => {
       const matching = findMatchingSubscriptions(change, subscriptions.value);
@@ -179,6 +203,9 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
 
     const handleNativeChange = (change: FileSystemChange, generation: number): void => {
       if (!isCurrentGeneration(generation) || !matchesFilter(change.path)) {
+        return;
+      }
+      if (isRecentLocalDuplicate(change)) {
         return;
       }
       notifySubscribers(change).catch((error) => {
@@ -223,6 +250,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
     };
 
     const emitChange = async (change: FileSystemChange): Promise<void> => {
+      rememberLocalChange(change);
       await notifySubscribers(change);
       recordSnapshot(change);
     };
@@ -374,6 +402,7 @@ export const useFileWatcherStore = defineStore<'file-watcher', FileWatcherStore>
       runtimeActive = false;
       isScanning = false;
       snapshot.value = new Map();
+      recentLocalChanges.clear();
     };
 
     const restart = async (options: FileWatcherStartOptions = currentOptions): Promise<void> => {
