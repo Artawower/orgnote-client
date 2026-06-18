@@ -38,7 +38,7 @@
               </template>
             </search-input>
           </div>
-          <template v-else>
+          <div v-else class="sidebar-footer-surface">
             <animation-wrapper animation-name="fade">
               <div
                 v-if="sectionsMenuOpen"
@@ -48,8 +48,8 @@
                 <mobile-sidebar-menu />
               </div>
             </animation-wrapper>
-            <mobile-sidebar-selector />
-          </template>
+            <mobile-sidebar-selector embedded />
+          </div>
         </floating-footer>
       </visibility-wrapper>
     </app-flex>
@@ -130,24 +130,26 @@ watch(opened, (isOpen) => {
   z-index: var(--sidebar-sections-z-index);
 }
 
-.sections-menu {
-  font-size: var(--font-size-sm);
-  margin: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x) 0;
+.sidebar-footer-surface {
+  margin: 0 var(--footer-wrapper-padding-x) var(--footer-wrapper-padding-y);
   background: var(--footer-bg);
   border: var(--footer-border);
-  border-bottom: none;
-  border-radius: var(--footer-border-radius) var(--footer-border-radius) 0 0;
+  border-top: var(--glass-border-top);
+  border-radius: var(--footer-border-radius);
   -webkit-backdrop-filter: var(--footer-backdrop-filter);
   backdrop-filter: var(--footer-backdrop-filter);
   background-clip: padding-box;
+  box-shadow:
+    var(--footer-box-shadow),
+    0 -2px 8px color-mix(in srgb, var(--fg) 8%, transparent);
   overflow: hidden;
-  box-shadow: var(--glass-box-shadow-inset);
+
   @include glass-specular;
 }
 
-.sidebar-footer {
-  padding: var(--footer-wrapper-padding);
-  padding-top: 0;
+.sections-menu {
+  font-size: var(--font-size-sm);
+  border-bottom: var(--glass-border);
 }
 
 .sidebar-footer-search {

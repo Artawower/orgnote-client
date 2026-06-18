@@ -1,11 +1,11 @@
 <template>
   <div
     class="footer-wrapper"
-    :class="{ float, 'open-top': openTop, 'open-bottom': openBottom }"
+    :class="{ float, embedded, 'open-top': openTop, 'open-bottom': openBottom }"
   >
     <div
       class="footer"
-      :class="{ 'open-top': openTop, 'open-bottom': openBottom }"
+      :class="{ embedded, 'open-top': openTop, 'open-bottom': openBottom }"
       :style="{ justifyContent: justifyMap[props.justify ?? 'center'] }"
     >
       <slot />
@@ -29,6 +29,7 @@ const props = withDefaults(
     float?: boolean;
     openTop?: boolean;
     openBottom?: boolean;
+    embedded?: boolean;
   }>(),
   {
     justify: 'center',
@@ -80,6 +81,15 @@ const props = withDefaults(
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border-bottom: none;
+  }
+
+  &.embedded {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
   --btn-action-radius: calc(var(--footer-border-radius) - var(--padding-md));

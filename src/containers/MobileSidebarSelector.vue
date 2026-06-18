@@ -1,5 +1,10 @@
 <template>
-  <app-footer float justify="between" :open-top="menuOpen">
+  <app-footer
+    :embedded="embedded"
+    :float="!embedded"
+    justify="between"
+    :open-top="menuOpen && !embedded"
+  >
     <app-flex
       row
       start
@@ -35,6 +40,15 @@ import OverflowLine from 'src/components/OverflowLine.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';
+
+withDefaults(
+  defineProps<{
+    embedded?: boolean;
+  }>(),
+  {
+    embedded: false,
+  },
+);
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const pinnedCommands = api.ui.usePinnedCommands();
