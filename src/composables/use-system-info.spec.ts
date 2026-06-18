@@ -1,6 +1,19 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { useSystemInfo } from './use-system-info';
 import { createPinia, setActivePinia } from 'pinia';
+import { invalidateCountCache } from 'src/stores/file-meta';
+
+const repositoryMocks = vi.hoisted(() => ({
+  count: vi.fn(async () => 42),
+}));
+
+vi.mock('src/boot/repositories', () => ({
+  repositories: {
+    fileRepository: {
+      count: repositoryMocks.count,
+    },
+  },
+}));
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -42,6 +55,8 @@ vi.mock('src/infrastructure/websocket-client', () => ({
 const ORIGINAL_ENV = { ...process.env };
 
 beforeEach(() => {
+  invalidateCountCache();
+  repositoryMocks.count.mockResolvedValue(42);
   setActivePinia(createPinia());
   process.env.CLIENT = 'true';
   process.env.API_URL = 'https://api.example.com';
@@ -144,6 +159,15 @@ test('getTextSystemInfo includes encryption type disabled', async () => {
 
   expect(formatted).toContain('Build mode: test');
   expect(formatted).toContain('Deployment target: dev');
+});
+
+test('getTextSystemInfo includes indexed notes count when metadata is available', async () => {
+  const systemInfo = useSystemInfo();
+  const formatted = await systemInfo.getTextSystemInfo();
+
+  expect(repositoryMocks.count).toHaveBeenCalledOnce();
+  expect(formatted).toContain('Notes:');
+  expect(formatted).toContain('Indexed notes: 42');
 });
 
 test('getTextSystemInfo omits device section for non-native platforms', async () => {

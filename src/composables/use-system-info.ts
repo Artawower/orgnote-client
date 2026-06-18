@@ -14,6 +14,7 @@ import { api } from 'src/boot/api';
 import { getWebSocketUrl } from 'src/utils/server-endpoints';
 import { hasWindow } from 'src/utils/platform-specific';
 import { wsClient } from 'src/infrastructure/websocket-client';
+import { useFileMetaStore } from 'src/stores/file-meta';
 
 const isClientEnvironment = (): boolean => (process.env.CLIENT ?? '').toString() === 'true';
 const hasNavigator = (): boolean => isClientEnvironment() && typeof navigator !== 'undefined';
@@ -102,6 +103,12 @@ const getWebSocketInfo = (): WebSocketInfo => {
     isConnected,
     socketId,
   };
+};
+
+const getIndexedNotesCount = async (): Promise<number | undefined> => {
+  const result = await to(async () => useFileMetaStore().count())();
+  if (result.isErr()) return undefined;
+  return result.value;
 };
 
 const getDeviceInfo = async (): Promise<DeviceInfo | undefined> => {
@@ -217,10 +224,16 @@ const formatDevice = (device?: DeviceInfo): string[] => {
   return lines;
 };
 
+const formatNotes = (indexedNotesCount?: number): string[] => {
+  if (indexedNotesCount === undefined) return [];
+  return ['', 'Notes:', `  Indexed notes: ${indexedNotesCount}`];
+};
+
 const getTextSystemInfo = async (): Promise<string> => {
-  const info = await getSystemInfo();
+  const [info, indexedNotesCount] = await Promise.all([getSystemInfo(), getIndexedNotesCount()]);
   const sections = [
     formatHeader(info),
+    formatNotes(indexedNotesCount),
     formatScreen(info.screen),
     formatEncryption(info.encryption),
     formatWebSocket(info.websocket),
