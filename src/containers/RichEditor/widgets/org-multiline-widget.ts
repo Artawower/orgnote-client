@@ -7,6 +7,19 @@ import type { EmbeddedWidget, MultilineEmbeddedWidget } from 'orgnote-api';
 import { readonlyFacet } from '../facets';
 import { isWidgetConfigChanged } from './multiline-widgets';
 
+const MAX_RAW_EDIT_REQUESTS = 100;
+const rawEditRequests = new Map<string, number>();
+
+const rawEditKey = (orgNode: OrgNode): string => `${orgNode.type}:${orgNode.start}:${orgNode.end}`;
+
+const pruneRawEditRequests = (): void => {
+  while (rawEditRequests.size > MAX_RAW_EDIT_REQUESTS) {
+    const oldestKey = rawEditRequests.keys().next().value;
+    if (!oldestKey) return;
+    rawEditRequests.delete(oldestKey);
+  }
+};
+
 export class OrgMultilineWidget extends BaseOrgWidget {
   constructor(
     view: EditorView,
@@ -23,6 +36,19 @@ export class OrgMultilineWidget extends BaseOrgWidget {
 
   public getReadonly(): boolean {
     return this.readonlyAtMount;
+  }
+
+  public static requestRawEdit(orgNode: OrgNode): void {
+    rawEditRequests.set(rawEditKey(orgNode), Date.now());
+    pruneRawEditRequests();
+  }
+
+  public static hasRawEditRequest(orgNode: OrgNode): boolean {
+    return rawEditRequests.has(rawEditKey(orgNode));
+  }
+
+  public static clearRawEditRequest(orgNode: OrgNode): void {
+    rawEditRequests.delete(rawEditKey(orgNode));
   }
 
   public static init(
@@ -47,14 +73,25 @@ export class OrgMultilineWidget extends BaseOrgWidget {
     multilineWidget: MultilineEmbeddedWidget,
     docLength: number,
   ): Range<Decoration> {
-    const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
-    const safeEnd = Math.min(orgNode.end + endOffset, docLength);
+    const { from, to } = OrgMultilineWidget.getRange(orgNode, multilineWidget, docLength);
     return Decoration.replace({
       widget,
       side: 0,
       inclusive: true,
       block: true,
-    }).range(Math.max(0, orgNode.start + startOffset), safeEnd);
+    }).range(from, to);
+  }
+
+  public static getRange(
+    orgNode: OrgNode,
+    multilineWidget: MultilineEmbeddedWidget,
+    docLength: number,
+  ): { from: number; to: number } {
+    if (multilineWidget.rangeBuilder) return multilineWidget.rangeBuilder(orgNode, docLength);
+    const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
+    const from = Math.max(0, orgNode.start + startOffset);
+    const to = Math.min(orgNode.end + endOffset, docLength);
+    return { from, to };
   }
 
   public override eq(other: WidgetType): boolean {
@@ -98,10 +135,15 @@ export class OrgMultilineWidget extends BaseOrgWidget {
       readonly: this.view.state.facet(readonlyFacet),
       suppressEdit: this.multilineWidget.suppressEdit,
       onUpdateFn: this.updateValue.bind(this),
-      onEditMode: () =>
+      onEditMode: () => {
+        OrgMultilineWidget.requestRawEdit(this._orgNode);
+        const position =
+          this.multilineWidget.editPositionBuilder?.(this._orgNode, this.view.state.doc.length) ??
+          this._orgNode.end;
         this.view.dispatch({
-          selection: { anchor: this._orgNode.end, head: this._orgNode.end },
-        }),
+          selection: { anchor: position, head: position },
+        });
+      },
     });
 
     return wrap;
