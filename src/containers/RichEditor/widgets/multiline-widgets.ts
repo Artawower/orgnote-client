@@ -21,6 +21,8 @@ export const isWidgetConfigChanged = (
   a.suppressEdit !== b.suppressEdit ||
   a.widgetBuilder !== b.widgetBuilder ||
   a.viewUpdater !== b.viewUpdater ||
+  a.rangeBuilder !== b.rangeBuilder ||
+  a.editPositionBuilder !== b.editPositionBuilder ||
   a.ignoreEvent !== b.ignoreEvent;
 
 const removeWidgetByNode = (widgets: DecorationSet, orgNode: OrgNode): DecorationSet =>
@@ -44,9 +46,11 @@ const addOrUpdateWidget = (
   docLength: number,
   readonly: boolean,
 ): DecorationSet => {
-  const [startOffset, endOffset] = multilineWidget.showRangeOffset ?? [0, 0];
-  const start = orgNode.start + startOffset;
-  const end = orgNode.end + endOffset;
+  const { from: start, to: end } = OrgMultilineWidget.getRange(
+    orgNode,
+    multilineWidget,
+    docLength,
+  );
 
   const foundWidget: { current: OrgMultilineWidget | null } = { current: null };
 
@@ -122,8 +126,17 @@ const buildDecorations = (
 
     if (!multilineEmbeddedWidget) return false;
 
-    const caretIntoWidget = currentCaretPosition >= n.start && currentCaretPosition <= n.end + 1;
-    const shouldRemove = !readonly && !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
+    const { from, to } = OrgMultilineWidget.getRange(
+      n,
+      multilineEmbeddedWidget,
+      state.doc.length,
+    );
+    const caretIntoWidget = currentCaretPosition >= from && currentCaretPosition <= to + 1;
+    const rawEditRequested = OrgMultilineWidget.hasRawEditRequest(n);
+    const shouldAutoEdit = !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
+    const shouldRemove = !readonly && ((rawEditRequested && caretIntoWidget) || shouldAutoEdit);
+
+    if (rawEditRequested && !caretIntoWidget) OrgMultilineWidget.clearRawEditRequest(n);
 
     if (shouldRemove) {
       result = removeWidgetByNode(result, n);

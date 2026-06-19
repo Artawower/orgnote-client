@@ -2,7 +2,7 @@
   <div class="org-multiline-widget">
     <app-flex v-if="showActions" end class="org-widget-actions" gap="sm">
       <action-button
-        v-if="showEditAction"
+        v-if="shouldShowEditAction"
         icon="edit_note"
         color="fg-muted"
         size="sm"
@@ -24,6 +24,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 const props = defineProps<{
   suppressEdit?: boolean;
   readonly?: boolean;
+  showEditAction?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -31,8 +32,10 @@ const emit = defineEmits<{
 }>();
 
 const slots = useSlots();
-const showEditAction = computed(() => !props.suppressEdit && !props.readonly);
-const showActions = computed(() => showEditAction.value || Boolean(slots.actions));
+const shouldShowEditAction = computed(
+  () => Boolean(props.showEditAction || !props.suppressEdit) && !props.readonly,
+);
+const showActions = computed(() => shouldShowEditAction.value || Boolean(slots.actions));
 
 const handleEditClick = (event: MouseEvent) => {
   event.preventDefault();

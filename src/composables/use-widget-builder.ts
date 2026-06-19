@@ -57,6 +57,7 @@ export const useWidgetBuilder = () => {
         {
           readonly: params.readonly,
           suppressEdit: params.suppressEdit,
+          showEditAction: widget.showEditAction,
           onEdit: () => params.onEditMode?.(),
         },
         {

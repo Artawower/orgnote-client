@@ -1,7 +1,9 @@
 import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
 import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
+import type { OrgNode } from 'org-mode-ast';
+import { NodeType, walkTree } from 'org-mode-ast';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
-import { to } from 'orgnote-api/utils';
+import { editOrgDocument, to } from 'orgnote-api/utils';
 import { cursorLineDown, cursorLineUp, redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
 import { useOrgEditor, isEditorActive } from 'src/composables/use-org-editor';
@@ -9,6 +11,11 @@ import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import { blurEditor, suspendEditorInput, resumeEditorInput } from 'src/utils/editor-primitives';
 import { androidOnly } from 'src/utils/platform-specific';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
+import {
+  insertEmptyPropertyDrawer,
+  isRootPropertySequenceStart,
+  requestAddPropertyRow,
+} from 'src/extensions/org-property-drawer/property-source';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
 const isKeyboardClosed = (api: OrgNoteApi): boolean =>
@@ -25,6 +32,69 @@ const withEditorView = (api: OrgNoteApi, fn: (view: EditorView) => void): void =
   const view = getActiveEditorView(api);
   if (!view) return;
   fn(view);
+};
+
+const getActiveOrgRoot = (api: OrgNoteApi): OrgNode | undefined =>
+  api.core.useEditor().activeContext?.orgNode ?? undefined;
+
+const findHeadlineAtPosition = (root: OrgNode | undefined, position: number): OrgNode | undefined => {
+  let headline: OrgNode | undefined;
+  if (!root) return undefined;
+  walkTree(root, (node) => {
+    if (node.is(NodeType.Headline) && node.start <= position && position <= node.end) {
+      headline = node;
+    }
+    return false;
+  });
+  return headline;
+};
+
+const findRootPropertyNode = (root: OrgNode | undefined): OrgNode | undefined => {
+  if (!root) return undefined;
+  return root.childrenList.find(
+    (node) =>
+      node.is(NodeType.PropertyDrawer) ||
+      (node.is(NodeType.Property) && isRootPropertySequenceStart(node)),
+  );
+};
+
+const findHeadlinePropertyDrawer = (headline: OrgNode | undefined): OrgNode | undefined =>
+  headline?.section?.childrenList.find((node) => node.is(NodeType.PropertyDrawer));
+
+const hasActiveHeadline = (api: OrgNoteApi): boolean => {
+  const view = getActiveEditorView(api);
+  if (!view) return false;
+  let hasHeadline = false;
+  editOrgDocument(view.state.doc.toString(), (doc) => {
+    hasHeadline = Boolean(doc.headlineAt(view.state.selection.main.head));
+  });
+  return hasHeadline;
+};
+
+const isHeadlinePropertyUnavailable = (api: OrgNoteApi): boolean => !hasActiveHeadline(api);
+
+const requestAddRowAfterRender = (scope: 'page' | 'headline', key: string): void => {
+  window.setTimeout(() => requestAddPropertyRow({ scope, key }), 0);
+};
+
+const addPageProperty = (api: OrgNoteApi): void => {
+  const view = getActiveEditorView(api);
+  if (!view) return;
+  const propertyNode = findRootPropertyNode(getActiveOrgRoot(api));
+  const key = `page:${propertyNode?.start ?? 0}`;
+  if (!propertyNode) insertEmptyPropertyDrawer(view, 0);
+  requestAddRowAfterRender('page', key);
+};
+
+const addHeadlineProperty = (api: OrgNoteApi): void => {
+  const view = getActiveEditorView(api);
+  if (!view) return;
+  const headline = findHeadlineAtPosition(getActiveOrgRoot(api), view.state.selection.main.head);
+  const drawer = findHeadlinePropertyDrawer(headline);
+  const fallbackStart = headline?.section?.start ?? view.state.selection.main.head;
+  const key = `headline:${drawer?.start ?? fallbackStart}`;
+  if (!drawer) insertEmptyPropertyDrawer(view, fallbackStart);
+  requestAddRowAfterRender('headline', key);
 };
 
 export const getEditorCommands = (): Command[] => {
@@ -264,6 +334,20 @@ export const getEditorCommands = (): Command[] => {
       group: EDITOR_COMMAND_GROUP,
       hide: isEditorNotActive,
       handler: (api) => useOrgEditor(api).withOrgEditor((e) => e.insertDatetime()),
+    },
+    {
+      command: DefaultCommands.EDITOR_ADD_PAGE_PROPERTY,
+      icon: 'sym_o_tune',
+      group: EDITOR_COMMAND_GROUP,
+      hide: isEditorNotActive,
+      handler: addPageProperty,
+    },
+    {
+      command: DefaultCommands.EDITOR_ADD_HEADLINE_PROPERTY,
+      icon: 'sym_o_tune',
+      group: EDITOR_COMMAND_GROUP,
+      hide: isHeadlinePropertyUnavailable,
+      handler: addHeadlineProperty,
     },
     {
       command: DefaultCommands.EDITOR_CARET_UP,
