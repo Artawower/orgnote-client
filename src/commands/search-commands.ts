@@ -19,10 +19,21 @@ export const getSearchCommands = (): Command[] => [
     group: 'search',
     icon: 'sym_o_search',
     interactive: true,
-    keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+    keybindingContext: KEYBINDING_CONTEXTS.SHELL,
     defaultHotkeys: [{ key: 'f', modifiers: ['Mod', 'Shift'] }],
     handler: async (api: OrgNoteApi, params: CommandHandlerParams<{ searchText?: string }>) => {
       await useNoteSearchCompletion(api, params.data?.searchText);
+    },
+  },
+  {
+    command: DefaultCommands.OPEN_FILE_SEARCH,
+    group: 'search',
+    icon: 'sym_o_search',
+    interactive: true,
+    keybindingContext: KEYBINDING_CONTEXTS.SHELL,
+    defaultHotkeys: [{ key: 'o', modifiers: ['Mod'] }],
+    handler: async (api: OrgNoteApi) => {
+      await useNoteSearchCompletion(api);
     },
   },
 ];

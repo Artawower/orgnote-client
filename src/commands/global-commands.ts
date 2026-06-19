@@ -171,6 +171,28 @@ export function getGlobalCommands(router: Router): Command[] {
   const modalStore = api.ui.useModal();
   const commands: Command[] = [
     {
+      command: DefaultCommands.HISTORY_BACK,
+      icon: 'sym_o_arrow_back',
+      group: 'navigation',
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
+      defaultHotkeys: [{ key: '[', modifiers: ['Mod'] }],
+      handler: (api) => {
+        api.core.usePane().activeTab?.router?.back();
+      },
+    },
+    {
+      command: DefaultCommands.HISTORY_FORWARD,
+      icon: 'sym_o_arrow_forward',
+      group: 'navigation',
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
+      defaultHotkeys: [{ key: ']', modifiers: ['Mod'] }],
+      handler: (api) => {
+        api.core.usePane().activeTab?.router?.forward();
+      },
+    },
+    {
       command: DefaultCommands.OPEN_GRAPH,
       icon: 'sym_o_hub',
       group: 'navigation',
@@ -255,7 +277,7 @@ export function getGlobalCommands(router: Router): Command[] {
       command: DefaultCommands.TOGGLE_SIDEBAR,
       group: 'global',
       interactive: true,
-      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
       defaultHotkeys: [{ key: 'b', modifiers: ['Mod'] }],
       icon: () => {
         // TODO: feat/stable-beta also make as ref

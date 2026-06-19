@@ -9,15 +9,21 @@ import {
   type ResolvedKeybinding,
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
-import { computed, onScopeDispose, readonly, ref } from 'vue';
+import { computed, onScopeDispose, readonly, ref, watch } from 'vue';
 import { useCommandsStore } from './command';
 import { useConfigStore } from './config';
 import { hasWindow } from 'src/utils/platform-specific';
 import { isMac } from 'src/utils/hotkey-display';
 import { api } from 'src/boot/api';
 
+const keyMatchesEvent = (hotkey: Hotkey, event: KeyboardEvent): boolean => {
+  if (event.key.toLowerCase() === hotkey.key.toLowerCase()) return true;
+  if (/^\d$/.test(hotkey.key)) return event.code === `Digit${hotkey.key}`;
+  return false;
+};
+
 const hotkeyMatchesEvent = (hotkey: Hotkey, event: KeyboardEvent): boolean => {
-  if (event.key.toLowerCase() !== hotkey.key.toLowerCase()) return false;
+  if (!keyMatchesEvent(hotkey, event)) return false;
   const mods = hotkey.modifiers ?? [];
   const { ctrl, meta } = resolveModKey(mods);
   return (
@@ -58,13 +64,22 @@ const isInputTarget = (target: EventTarget | null): boolean => {
   return target.isContentEditable || tag === 'input' || tag === 'textarea';
 };
 
+interface MatchedKeybinding extends ResolvedKeybinding {
+  hotkey: Hotkey;
+}
+
+const getHotkeyCommandData = (hotkey: Hotkey): unknown => hotkey.data ?? { key: hotkey.key };
+
 export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
   'keybindings',
   () => {
     const commandsStore = useCommandsStore();
     const configStore = useConfigStore();
 
-    const contextStack = ref<KeybindingContextId[]>([KEYBINDING_CONTEXTS.GLOBAL]);
+    const contextStack = ref<KeybindingContextId[]>([
+      KEYBINDING_CONTEXTS.GLOBAL,
+      KEYBINDING_CONTEXTS.SHELL,
+    ]);
     const contextRefCount = new Map<KeybindingContextId, number>();
 
     const userBindings = computed<Readonly<KeybindingsConfig>>(
@@ -139,15 +154,27 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
           b.hotkeys.some((h) => hotkeysEqual(h, hotkey)),
       )?.command;
 
+    const syncElectronHotkeys = (): void => {
+      if (!hasWindow()) return;
+      const hotkeys = keybindings.value.flatMap((binding) => binding.hotkeys);
+      if (typeof window.electron?.setAppHotkeys !== 'function') return;
+      window.electron.setAppHotkeys(hotkeys);
+    };
+
     if (hasWindow()) {
       const matchesContext = (
         contextId: KeybindingContextId,
         event: KeyboardEvent,
-      ): ResolvedKeybinding | undefined => {
+      ): MatchedKeybinding | undefined => {
         if (contextId === KEYBINDING_CONTEXTS.EDITOR) return;
-        return keybindings.value.find(
-          (b) => b.context === contextId && b.hotkeys.some((h) => hotkeyMatchesEvent(h, event)),
+        const binding = keybindings.value.find(
+          (item) =>
+            item.context === contextId &&
+            item.hotkeys.some((hotkey) => hotkeyMatchesEvent(hotkey, event)),
         );
+        const hotkey = binding?.hotkeys.find((item) => hotkeyMatchesEvent(item, event));
+        if (!binding || !hotkey) return;
+        return { ...binding, hotkey };
       };
 
       const canDispatch = (
@@ -156,8 +183,11 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
         target: EventTarget | null,
       ) => {
         if (cmd.disabled?.(api)) return false;
+        if (contextId === KEYBINDING_CONTEXTS.SHELL) return true;
         return !(contextId === KEYBINDING_CONTEXTS.GLOBAL && isInputTarget(target));
       };
+
+      watch(keybindings, syncElectronHotkeys, { immediate: true });
 
       const handleKeydown = (event: KeyboardEvent): void => {
         if (event.isComposing) return;
@@ -167,7 +197,9 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
           const cmd = commandsStore.get(match.command);
           if (!cmd || !canDispatch(cmd, contextId, event.target)) return false;
           event.preventDefault();
-          void commandsStore.execute(match.command, undefined, { interactive: true });
+          void commandsStore.execute(match.command, getHotkeyCommandData(match.hotkey), {
+            interactive: true,
+          });
           return true;
         });
       };

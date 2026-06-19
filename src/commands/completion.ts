@@ -22,8 +22,8 @@ export function getCompletionCommands(): Command[] {
       description: 'toggle commands',
       group: 'completion',
       interactive: true,
-      defaultHotkeys: [{ key: 'p', modifiers: ['Mod', 'Shift'] }],
-      keybindingContext: KEYBINDING_CONTEXTS.GLOBAL,
+      defaultHotkeys: [{ key: 'k', modifiers: ['Mod'] }, { key: 'p', modifiers: ['Mod', 'Shift'] }],
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
       handler: toggleCommandsHandler,
     },
     {

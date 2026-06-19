@@ -1,7 +1,8 @@
 import type { IpcRendererEvent } from 'electron';
-import type { DiskFile, FileSystemChange } from 'orgnote-api';
+import type { DiskFile, FileSystemChange, Hotkey } from 'orgnote-api';
 import { contextBridge, ipcRenderer } from 'electron';
 import { ELECTRON_FS_CHANNELS } from './electron-fs-channels';
+import { ELECTRON_KEYBINDING_CHANNELS } from './electron-keybinding-channels';
 
 interface ElectronFsWatchEvent {
   watchId: number;
@@ -10,6 +11,9 @@ interface ElectronFsWatchEvent {
 
 contextBridge.exposeInMainWorld('electron', {
   setHeaderColor: (color: string) => ipcRenderer.invoke('setHeaderColor', color),
+  setAppHotkeys: (hotkeys: Hotkey[]): void => {
+    ipcRenderer.send(ELECTRON_KEYBINDING_CHANNELS.setAppHotkeys, hotkeys);
+  },
   auth: (url: string): Promise<{ redirectUrl: string; error?: string }> => {
     return ipcRenderer.invoke('oauth-login', url);
   },

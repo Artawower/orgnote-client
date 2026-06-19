@@ -8,13 +8,17 @@ vi.mock('../composables/tab-completion', () => ({
   useTabCompletion: vi.fn(),
 }));
 
+
 test('getTabsCommands returns expected commands', () => {
   const commands = getTabsCommands();
 
-  expect(commands).toHaveLength(3);
-  expect(commands[0]?.command).toBe(DefaultCommands.NEW_TAB);
-  expect(commands[1]?.command).toBe(DefaultCommands.TABS);
-  expect(commands[2]?.command).toBe(DefaultCommands.SHOW_TAB_SWITCHER);
+  expect(commands.map(({ command }) => command)).toEqual([
+    DefaultCommands.NEW_TAB,
+    DefaultCommands.TABS,
+    DefaultCommands.SHOW_TAB_SWITCHER,
+    DefaultCommands.CLOSE_TAB,
+    DefaultCommands.SELECT_TAB_BY_NUMBER,
+  ]);
 });
 
 test('NEW_TAB command calls addTab and selectTab', async () => {
@@ -245,4 +249,116 @@ test('NEW_TAB should fallback to activePaneId if no paneId in data', async () =>
 
   expect(mockPaneStore.addTab).toHaveBeenCalledWith('pane-1', {});
   expect(mockPaneStore.selectTab).toHaveBeenCalledWith('pane-1', 'tab-1');
+});
+
+test('CLOSE_TAB closes active tab in active pane', () => {
+  const mockPaneStore = {
+    activePaneId: 'pane-1',
+    activeTab: { id: 'tab-1' },
+    closeTab: vi.fn(),
+  };
+
+  const mockApi = {
+    core: { usePane: () => mockPaneStore },
+  } as unknown as OrgNoteApi;
+
+  const commands = getTabsCommands();
+  const closeTabCommand = commands.find((c) => c.command === DefaultCommands.CLOSE_TAB);
+
+  closeTabCommand!.handler(mockApi, {
+    data: {},
+    meta: {} as CommandMeta,
+  });
+
+  expect(mockPaneStore.closeTab).toHaveBeenCalledWith('pane-1', 'tab-1');
+});
+
+test('CLOSE_TAB does not close tab without active context', () => {
+  const mockPaneStore = {
+    activePaneId: undefined,
+    activeTab: undefined,
+    closeTab: vi.fn(),
+  };
+
+  const mockApi = {
+    core: { usePane: () => mockPaneStore },
+  } as unknown as OrgNoteApi;
+
+  const commands = getTabsCommands();
+  const closeTabCommand = commands.find((c) => c.command === DefaultCommands.CLOSE_TAB);
+
+  closeTabCommand!.handler(mockApi, {
+    data: {},
+    meta: {} as CommandMeta,
+  });
+
+  expect(mockPaneStore.closeTab).not.toHaveBeenCalled();
+});
+
+test('SELECT_TAB_BY_NUMBER command uses Mod plus tab number hotkeys', () => {
+  const commands = getTabsCommands();
+  const selectTabCommand = commands.find(
+    (command) => command.command === DefaultCommands.SELECT_TAB_BY_NUMBER,
+  );
+
+  expect(selectTabCommand?.defaultHotkeys).toEqual(
+    Array.from({ length: 9 }, (_, index) => ({
+      key: String(index + 1),
+      modifiers: ['Mod'],
+      data: { tabNumber: index + 1 },
+    })),
+  );
+});
+
+test('SELECT_TAB_BY_NUMBER switches to tab by data tab number', () => {
+  const mockPaneStore = {
+    activePaneId: 'pane-1',
+    panes: {
+      'pane-1': {
+        value: {
+          tabs: { value: { 'tab-1': {}, 'tab-2': {}, 'tab-3': {} } },
+        },
+      },
+    },
+    selectTab: vi.fn(),
+  };
+  const mockApi = { core: { usePane: () => mockPaneStore } } as unknown as OrgNoteApi;
+  const commands = getTabsCommands();
+  const selectTabCommand = commands.find((c) => c.command === DefaultCommands.SELECT_TAB_BY_NUMBER);
+
+  selectTabCommand!.handler(mockApi, { data: { tabNumber: 2 }, meta: {} as CommandMeta });
+
+  expect(mockPaneStore.selectTab).toHaveBeenCalledWith('pane-1', 'tab-2');
+});
+
+test('SELECT_TAB_BY_NUMBER switches to tab by hotkey key fallback', () => {
+  const mockPaneStore = {
+    activePaneId: 'pane-1',
+    panes: {
+      'pane-1': { value: { tabs: { value: { 'tab-1': {}, 'tab-2': {}, 'tab-3': {} } } } },
+    },
+    selectTab: vi.fn(),
+  };
+  const mockApi = { core: { usePane: () => mockPaneStore } } as unknown as OrgNoteApi;
+  const commands = getTabsCommands();
+  const selectTabCommand = commands.find((c) => c.command === DefaultCommands.SELECT_TAB_BY_NUMBER);
+
+  selectTabCommand!.handler(mockApi, { data: { key: '3' }, meta: {} as CommandMeta });
+
+  expect(mockPaneStore.selectTab).toHaveBeenCalledWith('pane-1', 'tab-3');
+});
+
+test('SELECT_TAB_BY_NUMBER does not switch when tab number is missing', () => {
+  const mockPaneStore = {
+    activePaneId: 'pane-1',
+    panes: { 'pane-1': { value: { tabs: { value: { 'tab-1': {} } } } } },
+    selectTab: vi.fn(),
+  };
+  const mockApi = { core: { usePane: () => mockPaneStore } } as unknown as OrgNoteApi;
+  const commands = getTabsCommands();
+  const selectTabCommand = commands.find((c) => c.command === DefaultCommands.SELECT_TAB_BY_NUMBER);
+
+  selectTabCommand!.handler(mockApi, { data: { tabNumber: 2 }, meta: {} as CommandMeta });
+
+  expect(mockPaneStore.selectTab).not.toHaveBeenCalled();
 });

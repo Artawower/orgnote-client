@@ -1,6 +1,7 @@
 import {
   DefaultCommands,
   I18N,
+  KEYBINDING_CONTEXTS,
   RouteNames,
   getFileName,
   join,
@@ -387,6 +388,9 @@ export function getFileManagerCommands(): Command[] {
       command: DefaultCommands.CREATE_NOTE,
       group: 'file manager',
       icon: 'o_add_box',
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
+      defaultHotkeys: [{ key: 'n', modifiers: ['Mod'] }],
       handler: async (api: OrgNoteApi) => {
         const fm = api.core.useFileManager();
         const filePath = await createFileCompletion(api);
