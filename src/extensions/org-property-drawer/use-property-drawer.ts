@@ -1,7 +1,9 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
 import type { OrgPropertyEntry } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 import {
   ADD_PROPERTY_EVENT,
   getPropertyEditorState,
@@ -51,6 +53,7 @@ interface FocusableControl {
 type FocusableRefValue = FocusableControl | FocusableControl[] | undefined;
 
 export const usePropertyDrawer = (props: Props) => {
+  const { t } = useI18n({ useScope: 'global', inheritLocale: true });
   const editing = ref<EditingState>();
   const draftKey = ref('');
   const draftValue = ref('');
@@ -92,7 +95,9 @@ export const usePropertyDrawer = (props: Props) => {
     const previewItems = getPreviewItems(items.value);
     const preview = previewItems.map(formatPreviewItem).join(' · ');
     const hiddenCount = Math.max(0, items.value.length - previewItems.length);
-    return ['Properties', preview, hiddenCount ? `+${hiddenCount}` : ''].filter(Boolean).join(' · ');
+    return [t(I18N.PROPERTIES), preview, hiddenCount ? `+${hiddenCount}` : '']
+      .filter(Boolean)
+      .join(' · ');
   });
 
   const refreshState = (): void => {
@@ -116,9 +121,10 @@ export const usePropertyDrawer = (props: Props) => {
   };
 
   const setValue = (key: string, value: string): void => {
+    if (props.readonly) return;
     const valueError = validatePropertyValue(value);
     if (valueError) {
-      error.value = valueError;
+      error.value = t(valueError);
       return;
     }
     mutateItems(upsertItem(items.value, key, value));
@@ -134,6 +140,7 @@ export const usePropertyDrawer = (props: Props) => {
   };
 
   const startAdd = (): void => {
+    if (props.readonly) return;
     editing.value = { mode: 'add' };
     draftKey.value = '';
     draftValue.value = '';
@@ -155,12 +162,14 @@ export const usePropertyDrawer = (props: Props) => {
   };
 
   const commitEdit = (): void => {
+    if (props.readonly) return;
     const current = editing.value;
     if (!current) return;
     const keyError = validatePropertyKey(draftKey.value, items.value, current.originalKey);
     const valueError = validatePropertyValue(draftValue.value);
-    error.value = keyError ?? valueError ?? '';
-    if (error.value) return;
+    const validationError = keyError ?? valueError;
+    error.value = validationError ? t(validationError) : '';
+    if (validationError) return;
     commitValidEdit(current, draftKey.value.trim(), draftValue.value);
   };
 
@@ -181,13 +190,14 @@ export const usePropertyDrawer = (props: Props) => {
     setValue(item.key, formatTags([...parseTags(item.value), trimmed]));
   };
 
-  const startTextEdit = (item: OrgPropertyEntry): void => {
+  const startTextEdit = (item: OrgPropertyEntry, focusTarget: 'key' | 'value' = 'value'): void => {
     if (props.readonly) return;
     editing.value = { mode: 'edit', originalKey: item.key };
     draftKey.value = item.key;
     draftValue.value = item.value;
     error.value = '';
-    void nextTick(() => focusControl(keyInputRef.value));
+    const ref = focusTarget === 'key' ? keyInputRef.value : valueInputRef.value;
+    void nextTick(() => focusControl(ref));
   };
 
   watch(() => props.rootNodeSrc, refreshState);
@@ -240,4 +250,3 @@ export const usePropertyDrawer = (props: Props) => {
     valueInputRef,
   };
 };
-

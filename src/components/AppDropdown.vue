@@ -13,6 +13,7 @@
       :clearable="false"
       :filterable="useInput"
       :searchable="useInput"
+      :taggable="taggable"
       :close-on-select="!multiple"
       :input-id="inputId"
       :append-to-body="appendToBody"
@@ -43,9 +44,9 @@
       </template>
     </v-select>
 
-    <div v-if="slots.append" class="append-slot">
+    <app-flex v-if="slots.append" class="append-slot" align-center>
       <slot name="append" />
-    </div>
+    </app-flex>
   </app-flex>
 </template>
 
@@ -70,6 +71,7 @@ interface Props {
   multiple?: boolean;
   clearable?: boolean;
   useInput?: boolean;
+  taggable?: boolean;
   inputId?: string;
   appendToBody?: boolean;
 }
@@ -87,7 +89,11 @@ const props = withDefaults(defineProps<Props>(), {
 
 const model = defineModel<T | T[] | null>();
 const slots = useSlots();
-const selectRef = ref<InstanceType<typeof VSelect>>();
+type VueSelectRef = InstanceType<typeof VSelect> & {
+  searchEl?: HTMLInputElement;
+};
+
+const selectRef = ref<VueSelectRef>();
 
 const hasSelection = computed(() => {
   const value = model.value;
@@ -103,12 +109,14 @@ const getOptionValue = (opt: T): unknown => {
   return (opt as Record<string, unknown>)[props.optionValue];
 };
 
+const searchInput = () => selectRef.value?.searchEl;
+
 const focus = () => {
-  selectRef.value?.focus();
+  searchInput()?.focus();
 };
 
 const blur = () => {
-  selectRef.value?.blur();
+  searchInput()?.blur();
 };
 
 const clearSelection = () => {
@@ -145,7 +153,6 @@ defineExpose({
 }
 
 .app-select {
-  padding: var(--menu-item-padding);
   --vs-border-width: 0;
   background: transparent;
   --vs-dropdown-bg: var(--bg-elevated);
@@ -160,7 +167,9 @@ defineExpose({
   --vs-dropdown-option--active-color: var(--fg-active);
 
   .vs__dropdown-menu {
-    border-radius: var(--card-radius);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--card-shadow);
     overflow: hidden;
   }
 

@@ -38,9 +38,8 @@ import ContainerLayout from 'src/components/ContainerLayout.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import MarkdownPreviewEditor from 'src/containers/SourceCodeEditor/MarkdownPreviewEditor.vue';
+import { openExternalUrl } from 'src/utils/open-external-url';
 import { useI18n } from 'vue-i18n';
-
-const ALLOWED_RELEASE_NOTE_PROTOCOLS = ['https:', 'http:'] as const;
 
 const props = defineProps<{
   update: ChangelogRecord;
@@ -48,19 +47,8 @@ const props = defineProps<{
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
-const canOpenReleaseNotes = (url: string): boolean => {
-  try {
-    return ALLOWED_RELEASE_NOTE_PROTOCOLS.includes(
-      new URL(url).protocol as (typeof ALLOWED_RELEASE_NOTE_PROTOCOLS)[number],
-    );
-  } catch {
-    return false;
-  }
-};
-
 const openReleaseNotes = (): void => {
-  if (!canOpenReleaseNotes(props.update.url)) return;
-  window.open(props.update.url, '_blank', 'noopener,noreferrer');
+  openExternalUrl(props.update.url);
 };
 </script>
 
