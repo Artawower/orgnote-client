@@ -12,6 +12,7 @@ import {
 import { api } from 'src/boot/api';
 import { GITHUB_LINK, PATREON_LINK, WIKI_LINK } from 'src/constants/external-link';
 import { ISSUE_PAGE } from 'src/constants/issue-page';
+import { openExternalUrl } from 'src/utils/open-external-url';
 import { clientOnly } from 'src/utils/platform-specific';
 import LogsContainer from 'src/containers/LogsContainer.vue';
 import SystemInfoContainer from 'src/containers/SystemInfoContainer.vue';
@@ -207,7 +208,7 @@ export function getGlobalCommands(router: Router): Command[] {
     {
       command: DefaultCommands.REPORT_BUG,
       group: 'debug',
-      handler: clientOnly(() => window.open(ISSUE_PAGE, '_blank')),
+      handler: clientOnly(() => openExternalUrl(ISSUE_PAGE)),
     },
     {
       command: DefaultCommands.OPEN_SYSTEM_INFO,
@@ -383,19 +384,19 @@ export function getGlobalCommands(router: Router): Command[] {
       icon: 'fa-brands fa-github-alt',
       description: I18N.CHECK_GITHUB_SOURCE_CODE,
       group: 'global',
-      handler: () => window.open(GITHUB_LINK, '_blank'),
+      handler: () => openExternalUrl(GITHUB_LINK),
     },
     {
       command: DefaultCommands.READ_WIKI,
       icon: 'sym_o_help',
       group: 'global',
-      handler: () => window.open(WIKI_LINK, '_blank'),
+      handler: () => openExternalUrl(WIKI_LINK),
     },
     {
       command: DefaultCommands.SPONSOR,
       icon: 'sym_o_savings',
       group: 'global',
-      handler: () => window.open(PATREON_LINK, '_blank'),
+      handler: () => openExternalUrl(PATREON_LINK),
     },
     {
       command: DefaultCommands.UPLOAD_PRIVATE_KEY,

@@ -10,7 +10,7 @@ import { isWidgetConfigChanged } from './multiline-widgets';
 const MAX_RAW_EDIT_REQUESTS = 100;
 const rawEditRequests = new Map<string, number>();
 
-const rawEditKey = (orgNode: OrgNode): string => `${orgNode.type}:${orgNode.start}:${orgNode.end}`;
+const rawEditKey = (orgNode: OrgNode): string => `${orgNode.type}:${orgNode.start}`;
 
 const pruneRawEditRequests = (): void => {
   while (rawEditRequests.size > MAX_RAW_EDIT_REQUESTS) {

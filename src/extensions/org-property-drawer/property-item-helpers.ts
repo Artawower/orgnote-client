@@ -1,14 +1,11 @@
 import type { OrgPropertyEntry } from 'orgnote-api';
-import { normalizeKey } from './property-model';
-import {
-  BooleanValue,
-  DateTimeValue,
-  LinkValue,
-  TagsValue,
-  TextValue,
-  truncateValue,
-} from './property-value-components';
-import { getPropertyType } from './property-model';
+import { normalizeKey, getPropertyType } from './property-model';
+import PropertyBooleanValue from './PropertyBooleanValue.vue';
+import PropertyDateTimeValue from './PropertyDateTimeValue.vue';
+import PropertyLinkValue from './PropertyLinkValue.vue';
+import PropertyTagsValue from './PropertyTagsValue.vue';
+import PropertyTextValue from './PropertyTextValue.vue';
+import { truncateValue } from './property-value-utils';
 
 const iconByValueType = {
   tags: 'sym_o_sell',
@@ -49,11 +46,11 @@ export const formatPreviewItem = (item: OrgPropertyEntry): string =>
 
 export const valueComponent = (item: OrgPropertyEntry) => {
   const type = getPropertyType(item.key);
-  if (type === 'tags') return TagsValue;
-  if (type === 'boolean') return BooleanValue;
-  if (type === 'datetime') return DateTimeValue;
-  if (type === 'link') return LinkValue;
-  return TextValue;
+  if (type === 'tags') return PropertyTagsValue;
+  if (type === 'boolean') return PropertyBooleanValue;
+  if (type === 'datetime') return PropertyDateTimeValue;
+  if (type === 'link') return PropertyLinkValue;
+  return PropertyTextValue;
 };
 
 export const iconByKey = (key: string): string => iconByValueType[getPropertyType(key)];

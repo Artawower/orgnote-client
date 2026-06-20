@@ -23,7 +23,7 @@
 
     <template v-else>
       <app-flex class="property-header" between align-center>
-        <strong>Properties</strong>
+        <strong>{{ t(I18N.PROPERTIES) }}</strong>
         <app-flex gap="xs">
           <action-button
             v-if="canCollapse"
@@ -45,16 +45,25 @@
         @click.stop
       >
         <app-icon :name="iconByKey(item.key)" size="sm" color="fg-muted" />
-        <property-key-input
-          v-if="isEditingKey(item.key)"
-          ref="keyInputRef"
-          v-model="draftKey"
-          class="property-key editing"
-          :options="knownPropertyKeys"
-          @confirm="focusValueInput"
-          @cancel="cancelEdit"
-        />
-        <span v-else class="property-key" @click="startTextEdit(item)">{{ item.key }}</span>
+        <span v-if="isEditingKey(item.key)" class="property-key editing" @keydown.esc="cancelEdit">
+          <app-dropdown
+            ref="keyInputRef"
+            v-model="draftKey"
+            :options="knownPropertyKeys"
+            :taggable="true"
+            :clearable="false"
+            :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
+            @update:model-value="focusValueInput"
+          >
+            <template #option="{ label }">
+              <app-flex start gap="sm">
+                <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
+                <span>{{ label }}</span>
+              </app-flex>
+            </template>
+          </app-dropdown>
+        </span>
+        <span v-else class="property-key" @click="startTextEdit(item, 'key')">{{ item.key }}</span>
 
         <app-text-area
           v-if="isEditingKey(item.key)"
@@ -108,20 +117,29 @@
         @click.stop
       >
         <app-icon name="sym_o_notes" size="sm" color="fg-muted" />
-        <property-key-input
-          ref="addKeyInputRef"
-          v-model="draftKey"
-          class="property-key editing"
-          :options="knownPropertyKeys"
-          placeholder="Property"
-          @confirm="focusValueInput"
-          @cancel="cancelEdit"
-        />
+        <span class="property-key editing" @keydown.esc="cancelEdit">
+          <app-dropdown
+            ref="addKeyInputRef"
+            v-model="draftKey"
+            :options="knownPropertyKeys"
+            :taggable="true"
+            :clearable="false"
+            :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
+            @update:model-value="focusValueInput"
+          >
+            <template #option="{ label }">
+              <app-flex start gap="sm">
+                <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
+                <span>{{ label }}</span>
+              </app-flex>
+            </template>
+          </app-dropdown>
+        </span>
         <app-text-area
           ref="valueInputRef"
           v-model="draftValue"
           class="property-value editing"
-          placeholder="Empty"
+          :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
           :rows="1"
           @keydown.enter.prevent="commitEdit"
           @keydown.esc.prevent="cancelEdit"
@@ -144,7 +162,7 @@
         @click.stop="startAdd()"
       >
         <app-icon name="sym_o_add" size="sm" color="fg-muted" />
-        <span>add property</span>
+        <span>{{ t(I18N.ADD_PROPERTY) }}</span>
       </app-flex>
     </template>
   </app-flex>
@@ -153,11 +171,13 @@
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
+import { useI18n } from 'vue-i18n';
+import { I18N } from 'orgnote-api';
 import ActionButton from 'src/components/ActionButton.vue';
+import AppDropdown from 'src/components/AppDropdown.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppTextArea from 'src/components/AppTextArea.vue';
-import PropertyKeyInput from './PropertyKeyInput.vue';
 import { usePropertyDrawer } from './use-property-drawer';
 
 const props = defineProps<{
@@ -166,6 +186,8 @@ const props = defineProps<{
   rootNodeSrc: string;
   readonly?: boolean;
 }>();
+
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const {
   addKeyInputRef,

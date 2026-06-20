@@ -1,4 +1,5 @@
 import type { OrgPropertyEntry } from 'orgnote-api';
+import { I18N } from 'orgnote-api';
 import { formatOrgDate, parseCalendarDate, parseOrgDate } from 'src/utils/org-date';
 
 export type PropertyScope = 'page' | 'headline';
@@ -53,18 +54,20 @@ export const validatePropertyKey = (
   key: string,
   existingItems: readonly OrgPropertyEntry[],
   originalKey?: string,
-): string | undefined => {
+): I18N | undefined => {
   const trimmed = key.trim();
-  if (!trimmed) return 'Property key is required';
-  if (!/^[A-Za-z0-9_-]+$/.test(trimmed)) return 'Use letters, digits, _ or -';
+  if (!trimmed) return I18N.PROPERTY_KEY_REQUIRED;
+  if (!/^[A-Za-z0-9_-]+$/.test(trimmed)) return I18N.PROPERTY_KEY_INVALID_CHARS;
   const duplicate = existingItems.some(
-    (item) => normalizeKey(item.key) === normalizeKey(trimmed) && normalizeKey(item.key) !== normalizeKey(originalKey ?? ''),
+    (item) =>
+      normalizeKey(item.key) === normalizeKey(trimmed) &&
+      normalizeKey(item.key) !== normalizeKey(originalKey ?? ''),
   );
-  return duplicate ? 'Property key already exists' : undefined;
+  return duplicate ? I18N.PROPERTY_KEY_DUPLICATE : undefined;
 };
 
-export const validatePropertyValue = (value: string): string | undefined =>
-  /\r|\n/.test(value) ? 'Property value must be single-line' : undefined;
+export const validatePropertyValue = (value: string): I18N | undefined =>
+  /\r|\n/.test(value) ? I18N.PROPERTY_VALUE_MULTILINE : undefined;
 
 export const parseTags = (value: string): string[] => {
   const colonTags = value.match(/:([^:]+)(?=:)/g);
