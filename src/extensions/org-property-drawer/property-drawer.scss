@@ -24,20 +24,28 @@
 
 .property-row {
   min-height: 2rem;
+  padding: var(--padding-xs) var(--padding-sm);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
   color: var(--fg);
   align-items: center;
+  transition: border-color 0.15s ease;
 
   .property-actions {
     opacity: 0;
   }
 
   @include hover {
+    border-color: var(--border-color);
+
     .property-actions {
       opacity: 1;
     }
   }
 
   &:focus-within {
+    border-color: var(--border-color);
+
     .property-actions {
       opacity: 1;
     }
@@ -65,22 +73,12 @@
   overflow-wrap: anywhere;
 }
 
-.editing-row,
-.editing {
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+.editing-row {
+  border-color: var(--border-color);
   background: var(--bg-elevated);
 }
 
 .editing {
-  padding: var(--padding-sm);
-}
-
-.editing-row {
-  padding: 0 var(--padding-sm);
-}
-
-.editing-row .editing {
   border: none;
   background: transparent;
   padding: 0;
@@ -104,18 +102,9 @@
   flex-basis: 10rem;
 }
 
-.add-property,
-.property-error {
-  color: var(--fg-muted);
-  padding-top: var(--padding-xs);
-}
-
-.add-property {
-  cursor: pointer;
-}
-
 .property-error {
   color: var(--red);
+  padding-top: var(--padding-xs);
 }
 
 .link-value {

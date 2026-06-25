@@ -13,10 +13,8 @@ import {
   type AddPropertyEventDetail,
 } from './property-source';
 import {
-  formatTags,
   getPreviewItems,
   KNOWN_PROPERTY_KEYS,
-  parseTags,
   validatePropertyKey,
   validatePropertyValue,
 } from './property-model';
@@ -41,20 +39,27 @@ interface Props {
   readonly readonly?: boolean;
 }
 
-interface EditingState {
-  readonly mode: 'add' | 'edit';
-  readonly originalKey?: string;
-}
-
 interface FocusableControl {
   focus: () => void;
 }
 
 type FocusableRefValue = FocusableControl | FocusableControl[] | undefined;
+type KeyInputValue = string | string[] | null | undefined;
+type TextInputValue = string | undefined;
+type TextInputEvent = Event & { target: HTMLTextAreaElement };
+
+const toSingleKey = (value: KeyInputValue): string | undefined => {
+  if (typeof value !== 'string') return undefined;
+  return value.trim();
+};
+
+const toTextValue = (value: TextInputValue): string => value ?? '';
+const isTextInputEvent = (event: Event): event is TextInputEvent =>
+  event.target instanceof HTMLTextAreaElement;
 
 export const usePropertyDrawer = (props: Props) => {
   const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-  const editing = ref<EditingState>();
+  const isAdding = ref(false);
   const draftKey = ref('');
   const draftValue = ref('');
   const error = ref('');
@@ -62,7 +67,6 @@ export const usePropertyDrawer = (props: Props) => {
   const panelStateTick = ref(0);
   const pendingReplaceTimeout = ref<number>();
   const addKeyInputRef = ref<FocusableControl>();
-  const keyInputRef = ref<FocusableControl>();
   const valueInputRef = ref<FocusableControl>();
   const stateKey = computed(() => getPropertyStateKey(props.node));
   const scope = computed(() => getPropertyScope(props.node));
@@ -80,7 +84,6 @@ export const usePropertyDrawer = (props: Props) => {
   const items = computed(() => state.value.items);
   const isEmpty = computed(() => items.value.length === 0);
   const canCollapse = computed(() => !isEmpty.value);
-  const isAdding = computed(() => editing.value?.mode === 'add');
 
   const isCollapsed = computed(() => {
     if (panelStateTick.value < 0) return false;
@@ -116,22 +119,36 @@ export const usePropertyDrawer = (props: Props) => {
 
   const mutateItems = (nextItems: readonly OrgPropertyEntry[]): void => {
     clearPendingReplace();
-    pendingReplaceTimeout.value = replacePropertyItems(props.editorView, props.node, nextItems);
-    refreshState();
+    pendingReplaceTimeout.value = replacePropertyItems(
+      props.editorView,
+      props.node,
+      nextItems,
+      refreshState,
+    );
   };
 
-  const setValue = (key: string, value: string): void => {
+  const setValue = (key: string, value: TextInputValue): void => {
     if (props.readonly) return;
-    const valueError = validatePropertyValue(value);
-    if (valueError) {
-      error.value = t(valueError);
-      return;
-    }
-    mutateItems(upsertItem(items.value, key, value));
+    const nextValue = toTextValue(value);
+    const valueError = validatePropertyValue(nextValue);
+    error.value = valueError ? t(valueError) : '';
+    if (valueError) return;
+    mutateItems(upsertItem(items.value, key, nextValue));
   };
 
-  const focusValueInput = (): void => {
-    void nextTick(() => focusControl(valueInputRef.value));
+  const setKey = (item: OrgPropertyEntry, value: KeyInputValue): void => {
+    if (props.readonly) return;
+    const key = toSingleKey(value);
+    if (key === undefined) return;
+    const keyError = validatePropertyKey(key, items.value, item.key);
+    error.value = keyError ? t(keyError) : '';
+    if (keyError || key === item.key) return;
+    mutateItems(renameItem(items.value, item.key, key));
+  };
+
+  const setValueFromEvent = (key: string, event: Event): void => {
+    if (!isTextInputEvent(event)) return;
+    setValue(key, event.target.value);
   };
 
   const focusControl = (control: FocusableRefValue): void => {
@@ -139,9 +156,13 @@ export const usePropertyDrawer = (props: Props) => {
     target?.focus?.();
   };
 
+  const focusValueInput = (): void => {
+    void nextTick(() => focusControl(valueInputRef.value));
+  };
+
   const startAdd = (): void => {
     if (props.readonly) return;
-    editing.value = { mode: 'add' };
+    isAdding.value = true;
     draftKey.value = '';
     draftValue.value = '';
     error.value = '';
@@ -151,53 +172,25 @@ export const usePropertyDrawer = (props: Props) => {
   };
 
   const cancelEdit = (): void => {
-    editing.value = undefined;
+    isAdding.value = false;
     error.value = '';
   };
 
-  const commitValidEdit = (current: EditingState, key: string, value: string): void => {
-    const renamedItems = renameItem(items.value, current.originalKey, key);
-    mutateItems(upsertItem(renamedItems, key, value));
-    cancelEdit();
-  };
-
   const commitEdit = (): void => {
-    if (props.readonly) return;
-    const current = editing.value;
-    if (!current) return;
-    const keyError = validatePropertyKey(draftKey.value, items.value, current.originalKey);
+    if (props.readonly || !isAdding.value) return;
+    const keyError = validatePropertyKey(draftKey.value, items.value);
     const valueError = validatePropertyValue(draftValue.value);
     const validationError = keyError ?? valueError;
     error.value = validationError ? t(validationError) : '';
     if (validationError) return;
-    commitValidEdit(current, draftKey.value.trim(), draftValue.value);
+    mutateItems(upsertItem(items.value, draftKey.value.trim(), draftValue.value));
+    cancelEdit();
   };
 
   const onAddPropertyEvent = (event: Event): void => {
     const detail = (event as CustomEvent<AddPropertyEventDetail>).detail;
     if (detail.scope !== scope.value || detail.key !== stateKey.value) return;
     startAdd();
-  };
-
-  const removeTag = (item: OrgPropertyEntry, tag: string): void => {
-    const tags = parseTags(item.value).filter((value) => value !== tag);
-    setValue(item.key, formatTags(tags));
-  };
-
-  const addTag = (item: OrgPropertyEntry, tag: string): void => {
-    const trimmed = tag.trim();
-    if (!trimmed) return;
-    setValue(item.key, formatTags([...parseTags(item.value), trimmed]));
-  };
-
-  const startTextEdit = (item: OrgPropertyEntry, focusTarget: 'key' | 'value' = 'value'): void => {
-    if (props.readonly) return;
-    editing.value = { mode: 'edit', originalKey: item.key };
-    draftKey.value = item.key;
-    draftValue.value = item.value;
-    error.value = '';
-    const ref = focusTarget === 'key' ? keyInputRef.value : valueInputRef.value;
-    void nextTick(() => focusControl(ref));
   };
 
   watch(() => props.rootNodeSrc, refreshState);
@@ -217,7 +210,6 @@ export const usePropertyDrawer = (props: Props) => {
 
   return {
     addKeyInputRef,
-    addTag,
     canCollapse,
     cancelEdit,
     collapseIcon,
@@ -230,18 +222,15 @@ export const usePropertyDrawer = (props: Props) => {
     iconByKey,
     isAdding,
     isCollapsed,
-    isEditingKey: (key: string) => editing.value?.originalKey === key,
     items,
-    keyInputRef,
     knownPropertyKeys: [...KNOWN_PROPERTY_KEYS],
     previewText,
     readonly: props.readonly,
     removeProperty: (key: string) => mutateItems(removeItem(items.value, key)),
-    removeTag,
     scope,
-    setValue,
+    setKey,
+    setValueFromEvent,
     startAdd,
-    startTextEdit,
     togglePanel: () => {
       togglePropertyPanel(scope.value, stateKey.value);
       refreshPanelState();

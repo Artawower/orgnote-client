@@ -38,6 +38,21 @@ test('property source replaces current drawer range', () => {
   expect(calls).toEqual([]);
 });
 
+test('property source reports applied drawer replacement', async () => {
+  const root = parse(':PROPERTIES:\n:type: old\n:END:\n');
+  const drawer = root.childrenList[0]!;
+  const { calls, view } = createFakeView(root.rawValue);
+  let applied = false;
+  replacePropertyItems(view as never, drawer, [{ key: 'type', value: 'new' }], () => {
+    applied = true;
+  });
+
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+  expect(applied).toBe(true);
+  expect(calls).toHaveLength(1);
+});
+
 test('property source inserts empty drawer at target position', () => {
   const { calls, view } = createFakeView('* H\n');
   insertEmptyPropertyDrawer(view as never, 0);
