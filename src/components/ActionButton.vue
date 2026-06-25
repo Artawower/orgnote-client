@@ -11,10 +11,11 @@
         border,
         text: slots.text,
         'hover-effect': hoverEffect,
+        'hover-background': hoverBackground,
         'auto-width': autoWidth,
         [`variant-${variant}`]: true,
       },
-      props.casses,
+      props.classes,
     ]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
@@ -57,6 +58,7 @@ export interface ActionButtonProps {
   outline?: boolean;
   hoverColor?: ThemeVariable;
   hoverEffect?: boolean;
+  hoverBackground?: boolean;
   border?: boolean;
   classes?: string;
   copyText?: string;
@@ -73,6 +75,7 @@ const props = withDefaults(defineProps<ActionButtonProps>(), {
   fireColor: 'red',
   alignment: 'center',
   hoverEffect: true,
+  hoverBackground: true,
   variant: 'default',
 });
 
@@ -186,7 +189,7 @@ button,
     transition: var(--btn-action-transition);
   }
 
-  &.hover-effect:not(.outline) {
+  &.hover-effect.hover-background:not(.outline) {
     @include hover {
       background: var(--btn-action-hover-bg);
       filter: brightness(var(--btn-action-hover-brightness));
@@ -251,7 +254,7 @@ button,
       padding-inline: 0;
     }
 
-    &.hover-effect:not(.outline) {
+    &.hover-effect.hover-background:not(.outline) {
       @include hover {
         background: transparent;
         filter: brightness(var(--btn-action-text-hover-brightness, 0.85));

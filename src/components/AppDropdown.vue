@@ -90,6 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
 const model = defineModel<T | T[] | null>();
 const slots = useSlots();
 type VueSelectRef = InstanceType<typeof VSelect> & {
+  open?: boolean;
   searchEl?: HTMLInputElement;
 };
 
@@ -115,6 +116,12 @@ const focus = () => {
   searchInput()?.focus();
 };
 
+const open = () => {
+  focus();
+  if (!selectRef.value) return;
+  selectRef.value.open = true;
+};
+
 const blur = () => {
   searchInput()?.blur();
 };
@@ -125,6 +132,7 @@ const clearSelection = () => {
 
 defineExpose({
   focus,
+  open,
   blur,
 });
 </script>

@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n';
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
 import type { OrgPropertyEntry } from 'orgnote-api';
-import { I18N } from 'orgnote-api';
 import {
   ADD_PROPERTY_EVENT,
   getPropertyEditorState,
@@ -13,8 +12,9 @@ import {
   type AddPropertyEventDetail,
 } from './property-source';
 import {
-  getPreviewItems,
+  formatTags,
   KNOWN_PROPERTY_KEYS,
+  parseTags,
   validatePropertyKey,
   validatePropertyValue,
 } from './property-model';
@@ -23,14 +23,7 @@ import {
   isPropertyPanelCollapsed,
   togglePropertyPanel,
 } from './property-panel-state';
-import {
-  formatPreviewItem,
-  iconByKey,
-  removeItem,
-  renameItem,
-  upsertItem,
-  valueComponent,
-} from './property-item-helpers';
+import { iconByKey, removeItem, renameItem, upsertItem, valueComponent } from './property-item-helpers';
 
 interface Props {
   readonly node: OrgNode;
@@ -41,12 +34,12 @@ interface Props {
 
 interface FocusableControl {
   focus: () => void;
+  open?: () => void;
 }
 
 type FocusableRefValue = FocusableControl | FocusableControl[] | undefined;
 type KeyInputValue = string | string[] | null | undefined;
 type TextInputValue = string | undefined;
-type TextInputEvent = Event & { target: HTMLTextAreaElement };
 
 const toSingleKey = (value: KeyInputValue): string | undefined => {
   if (typeof value !== 'string') return undefined;
@@ -54,8 +47,6 @@ const toSingleKey = (value: KeyInputValue): string | undefined => {
 };
 
 const toTextValue = (value: TextInputValue): string => value ?? '';
-const isTextInputEvent = (event: Event): event is TextInputEvent =>
-  event.target instanceof HTMLTextAreaElement;
 
 export const usePropertyDrawer = (props: Props) => {
   const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -93,15 +84,6 @@ export const usePropertyDrawer = (props: Props) => {
   const collapseIcon = computed(() =>
     isCollapsed.value ? 'sym_o_expand_more' : 'sym_o_expand_less',
   );
-
-  const previewText = computed(() => {
-    const previewItems = getPreviewItems(items.value);
-    const preview = previewItems.map(formatPreviewItem).join(' · ');
-    const hiddenCount = Math.max(0, items.value.length - previewItems.length);
-    return [t(I18N.PROPERTIES), preview, hiddenCount ? `+${hiddenCount}` : '']
-      .filter(Boolean)
-      .join(' · ');
-  });
 
   const refreshState = (): void => {
     refreshTick.value += 1;
@@ -146,13 +128,12 @@ export const usePropertyDrawer = (props: Props) => {
     mutateItems(renameItem(items.value, item.key, key));
   };
 
-  const setValueFromEvent = (key: string, event: Event): void => {
-    if (!isTextInputEvent(event)) return;
-    setValue(key, event.target.value);
-  };
-
-  const focusControl = (control: FocusableRefValue): void => {
+  const focusControl = (control: FocusableRefValue, shouldOpen = false): void => {
     const target = Array.isArray(control) ? control[0] : control;
+    if (shouldOpen && target?.open) {
+      target.open();
+      return;
+    }
     target?.focus?.();
   };
 
@@ -162,13 +143,15 @@ export const usePropertyDrawer = (props: Props) => {
 
   const startAdd = (): void => {
     if (props.readonly) return;
-    isAdding.value = true;
-    draftKey.value = '';
-    draftValue.value = '';
-    error.value = '';
     expandPropertyPanel(scope.value, stateKey.value);
     refreshPanelState();
-    void nextTick(() => focusControl(addKeyInputRef.value));
+    if (!isAdding.value) {
+      isAdding.value = true;
+      draftKey.value = '';
+      draftValue.value = '';
+      error.value = '';
+    }
+    void nextTick(() => focusControl(addKeyInputRef.value, true));
   };
 
   const cancelEdit = (): void => {
@@ -193,6 +176,17 @@ export const usePropertyDrawer = (props: Props) => {
     startAdd();
   };
 
+  const removeTag = (item: OrgPropertyEntry, tag: string): void => {
+    const tags = parseTags(item.value).filter((value) => value !== tag);
+    setValue(item.key, formatTags(tags));
+  };
+
+  const addTag = (item: OrgPropertyEntry, tag: string): void => {
+    const trimmed = tag.trim();
+    if (!trimmed) return;
+    setValue(item.key, formatTags([...parseTags(item.value), trimmed]));
+  };
+
   watch(() => props.rootNodeSrc, refreshState);
   onMounted(() => {
     window.addEventListener(ADD_PROPERTY_EVENT, onAddPropertyEvent);
@@ -210,6 +204,7 @@ export const usePropertyDrawer = (props: Props) => {
 
   return {
     addKeyInputRef,
+    addTag,
     canCollapse,
     cancelEdit,
     collapseIcon,
@@ -224,12 +219,12 @@ export const usePropertyDrawer = (props: Props) => {
     isCollapsed,
     items,
     knownPropertyKeys: [...KNOWN_PROPERTY_KEYS],
-    previewText,
     readonly: props.readonly,
     removeProperty: (key: string) => mutateItems(removeItem(items.value, key)),
+    removeTag,
     scope,
     setKey,
-    setValueFromEvent,
+    setValue,
     startAdd,
     togglePanel: () => {
       togglePropertyPanel(scope.value, stateKey.value);

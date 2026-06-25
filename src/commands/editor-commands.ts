@@ -1,5 +1,12 @@
 import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
-import { DefaultCommands, EDITOR_COMMAND_GROUP, i18n, getParentDir, join } from 'orgnote-api';
+import {
+  DefaultCommands,
+  EDITOR_COMMAND_GROUP,
+  KEYBINDING_CONTEXTS,
+  i18n,
+  getParentDir,
+  join,
+} from 'orgnote-api';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType, walkTree } from 'org-mode-ast';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
@@ -95,6 +102,14 @@ const addHeadlineProperty = (api: OrgNoteApi): void => {
   const key = `headline:${drawer?.start ?? fallbackStart}`;
   if (!drawer) insertEmptyPropertyDrawer(view, fallbackStart);
   requestAddRowAfterRender('headline', key);
+};
+
+const addActiveProperty = (api: OrgNoteApi): void => {
+  if (hasActiveHeadline(api)) {
+    addHeadlineProperty(api);
+    return;
+  }
+  addPageProperty(api);
 };
 
 export const getEditorCommands = (): Command[] => {
@@ -334,6 +349,16 @@ export const getEditorCommands = (): Command[] => {
       group: EDITOR_COMMAND_GROUP,
       hide: isEditorNotActive,
       handler: (api) => useOrgEditor(api).withOrgEditor((e) => e.insertDatetime()),
+    },
+    {
+      command: DefaultCommands.EDITOR_ADD_PROPERTY,
+      icon: 'sym_o_tune',
+      group: EDITOR_COMMAND_GROUP,
+      interactive: true,
+      keybindingContext: KEYBINDING_CONTEXTS.SHELL,
+      defaultHotkeys: [{ key: 'p', modifiers: ['Mod', 'Alt'] }],
+      hide: isEditorNotActive,
+      handler: addActiveProperty,
     },
     {
       command: DefaultCommands.EDITOR_ADD_PAGE_PROPERTY,

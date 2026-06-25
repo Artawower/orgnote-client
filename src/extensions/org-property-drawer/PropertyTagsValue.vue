@@ -7,6 +7,8 @@
         icon="sym_o_close"
         size="xs"
         color="fg-muted"
+        hover-color="fg"
+        :hover-background="false"
         @click="$emit('removeTag', tag)"
       />
     </app-flex>
