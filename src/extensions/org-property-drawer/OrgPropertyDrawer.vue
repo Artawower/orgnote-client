@@ -1,6 +1,5 @@
 <template>
   <app-flex
-    class="org-property-editor"
     :class="[`scope-${scope}`, { collapsed: isCollapsed }]"
     column
     align-stretch
@@ -180,6 +179,7 @@ const props = defineProps<{
   editorView: EditorView;
   rootNodeSrc: string;
   readonly?: boolean;
+  openOnInit?: boolean;
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });

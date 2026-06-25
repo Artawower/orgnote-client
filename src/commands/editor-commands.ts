@@ -8,7 +8,7 @@ import {
   join,
 } from 'orgnote-api';
 import type { OrgNode } from 'org-mode-ast';
-import { NodeType, walkTree } from 'org-mode-ast';
+import { NodeType } from 'org-mode-ast';
 import { createFileItemsGetter } from 'src/composables/note-search-completion';
 import { editOrgDocument, to } from 'orgnote-api/utils';
 import { cursorLineDown, cursorLineUp, redo, undo } from '@codemirror/commands';
@@ -18,11 +18,8 @@ import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import { blurEditor, suspendEditorInput, resumeEditorInput } from 'src/utils/editor-primitives';
 import { androidOnly } from 'src/utils/platform-specific';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
-import {
-  insertEmptyPropertyDrawer,
-  isRootPropertySequenceStart,
-  requestAddPropertyRow,
-} from 'src/extensions/org-property-drawer/property-source';
+import { isRootPropertySequenceStart } from 'src/extensions/org-property-drawer/property-source';
+import { requestPropertyAddRow } from 'src/extensions/org-property-drawer/property-panel-state';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
 const isKeyboardClosed = (api: OrgNoteApi): boolean =>
@@ -39,21 +36,6 @@ const withEditorView = (api: OrgNoteApi, fn: (view: EditorView) => void): void =
   const view = getActiveEditorView(api);
   if (!view) return;
   fn(view);
-};
-
-const getActiveOrgRoot = (api: OrgNoteApi): OrgNode | undefined =>
-  api.core.useEditor().activeContext?.orgNode ?? undefined;
-
-const findHeadlineAtPosition = (root: OrgNode | undefined, position: number): OrgNode | undefined => {
-  let headline: OrgNode | undefined;
-  if (!root) return undefined;
-  walkTree(root, (node) => {
-    if (node.is(NodeType.Headline) && node.start <= position && position <= node.end) {
-      headline = node;
-    }
-    return false;
-  });
-  return headline;
 };
 
 const findRootPropertyNode = (root: OrgNode | undefined): OrgNode | undefined => {
@@ -80,28 +62,25 @@ const hasActiveHeadline = (api: OrgNoteApi): boolean => {
 
 const isHeadlinePropertyUnavailable = (api: OrgNoteApi): boolean => !hasActiveHeadline(api);
 
-const requestAddRowAfterRender = (scope: 'page' | 'headline', key: string): void => {
-  window.setTimeout(() => requestAddPropertyRow({ scope, key }), 0);
-};
-
 const addPageProperty = (api: OrgNoteApi): void => {
-  const view = getActiveEditorView(api);
-  if (!view) return;
-  const propertyNode = findRootPropertyNode(getActiveOrgRoot(api));
-  const key = `page:${propertyNode?.start ?? 0}`;
-  if (!propertyNode) insertEmptyPropertyDrawer(view, 0);
-  requestAddRowAfterRender('page', key);
+  api.core.useEditor().editActiveDocument(({ doc }) => {
+    const propertyNode = findRootPropertyNode(doc.root);
+    const drawerStateKey = `page:${propertyNode?.start ?? 0}`;
+    doc.properties.ensure();
+    requestPropertyAddRow(drawerStateKey);
+  });
 };
 
 const addHeadlineProperty = (api: OrgNoteApi): void => {
-  const view = getActiveEditorView(api);
-  if (!view) return;
-  const headline = findHeadlineAtPosition(getActiveOrgRoot(api), view.state.selection.main.head);
-  const drawer = findHeadlinePropertyDrawer(headline);
-  const fallbackStart = headline?.section?.start ?? view.state.selection.main.head;
-  const key = `headline:${drawer?.start ?? fallbackStart}`;
-  if (!drawer) insertEmptyPropertyDrawer(view, fallbackStart);
-  requestAddRowAfterRender('headline', key);
+  api.core.useEditor().editActiveDocument(({ doc, cursorPosition }) => {
+    const headline = doc.headlineAt(cursorPosition);
+    if (!headline) return;
+    const drawer = findHeadlinePropertyDrawer(headline.node);
+    const fallbackStart = headline.node.section?.start ?? cursorPosition;
+    const drawerStateKey = `headline:${drawer?.start ?? fallbackStart}`;
+    headline.properties.ensure();
+    requestPropertyAddRow(drawerStateKey);
+  });
 };
 
 const addActiveProperty = (api: OrgNoteApi): void => {

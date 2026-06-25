@@ -6,16 +6,10 @@ import { blurEditor, suspendEditorInput } from 'src/utils/editor-primitives';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { ref } from 'vue';
 
-const {
-  mockCursorLineUp,
-  mockCursorLineDown,
-  mockInsertEmptyPropertyDrawer,
-  mockRequestAddPropertyRow,
-} = vi.hoisted(() => ({
+const { mockCursorLineUp, mockCursorLineDown, mockRequestPropertyAddRow } = vi.hoisted(() => ({
   mockCursorLineUp: vi.fn(),
   mockCursorLineDown: vi.fn(),
-  mockInsertEmptyPropertyDrawer: vi.fn(),
-  mockRequestAddPropertyRow: vi.fn(),
+  mockRequestPropertyAddRow: vi.fn(),
 }));
 
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
@@ -97,9 +91,11 @@ vi.mock('@capacitor/keyboard', () => ({
 }));
 
 vi.mock('src/extensions/org-property-drawer/property-source', () => ({
-  insertEmptyPropertyDrawer: mockInsertEmptyPropertyDrawer,
   isRootPropertySequenceStart: vi.fn(() => false),
-  requestAddPropertyRow: mockRequestAddPropertyRow,
+}));
+
+vi.mock('src/extensions/org-property-drawer/property-panel-state', () => ({
+  requestPropertyAddRow: mockRequestPropertyAddRow,
 }));
 
 vi.mock('src/utils/android-keyboard-hide', () => ({
@@ -107,7 +103,7 @@ vi.mock('src/utils/android-keyboard-hide', () => ({
   isKeyboardHideWindowActive: vi.fn(() => false),
 }));
 
-const createMockApi = (editorView: unknown = {}): OrgNoteApi =>
+const createMockApi = (editorView: unknown = {}, editDocument?: unknown): OrgNoteApi =>
   ({
     core: {
       useCompletion: () => mockCompletion,
@@ -118,6 +114,11 @@ const createMockApi = (editorView: unknown = {}): OrgNoteApi =>
           editorViewGetter: () => editorView,
           orgNode: undefined,
           filePath: '/docs/info.org',
+        },
+        editActiveDocument: (mutate: (ctx: unknown) => void) => {
+          if (!editDocument) return false;
+          mutate(editDocument);
+          return true;
         },
       }),
       usePane: () => ({
@@ -173,8 +174,7 @@ beforeEach(() => {
   mockWriteFile.mockReset();
   mockCursorLineUp.mockReset();
   mockCursorLineDown.mockReset();
-  mockInsertEmptyPropertyDrawer.mockReset();
-  mockRequestAddPropertyRow.mockReset();
+  mockRequestPropertyAddRow.mockReset();
   vi.useRealTimers();
 });
 
@@ -328,21 +328,28 @@ test('editor-commands EDITOR_ADD_PROPERTY uses Mod+Alt+P in shell context', () =
 });
 
 test('editor-commands EDITOR_ADD_PROPERTY creates page property when no headline is active', async () => {
-  vi.useFakeTimers();
+  const ensure = vi.fn();
   const editorView = {
     state: {
       doc: { toString: () => 'plain text' },
       selection: { main: { head: 0 } },
     },
   };
-  const api = createMockApi(editorView);
+  const editDocument = {
+    doc: {
+      root: { childrenList: [] },
+      properties: { ensure },
+      headlineAt: vi.fn(() => undefined),
+    },
+    cursorPosition: 0,
+  };
+  const api = createMockApi(editorView, editDocument);
   const command = findAddPropertyCommand();
 
   await command.handler(api, { data: {}, meta: {} });
-  vi.runOnlyPendingTimers();
 
-  expect(mockInsertEmptyPropertyDrawer).toHaveBeenCalledWith(editorView, 0);
-  expect(mockRequestAddPropertyRow).toHaveBeenCalledWith({ scope: 'page', key: 'page:0' });
+  expect(ensure).toHaveBeenCalledOnce();
+  expect(mockRequestPropertyAddRow).toHaveBeenCalledWith('page:0');
 });
 
 test('editor-commands EDITOR_CARET_UP moves cursor to previous line', async () => {

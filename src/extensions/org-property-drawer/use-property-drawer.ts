@@ -4,12 +4,10 @@ import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
 import type { OrgPropertyEntry } from 'orgnote-api';
 import {
-  ADD_PROPERTY_EVENT,
   getPropertyEditorState,
   getPropertyScope,
   getPropertyStateKey,
   replacePropertyItems,
-  type AddPropertyEventDetail,
 } from './property-source';
 import {
   formatTags,
@@ -19,8 +17,10 @@ import {
   validatePropertyValue,
 } from './property-model';
 import {
+  consumePropertyAddRowRequest,
   expandPropertyPanel,
   isPropertyPanelCollapsed,
+  propertyAddRowRequests,
   togglePropertyPanel,
 } from './property-panel-state';
 import { iconByKey, removeItem, renameItem, upsertItem, valueComponent } from './property-item-helpers';
@@ -30,6 +30,7 @@ interface Props {
   readonly editorView: EditorView;
   readonly rootNodeSrc: string;
   readonly readonly?: boolean;
+  readonly openOnInit?: boolean;
 }
 
 interface FocusableControl {
@@ -170,12 +171,6 @@ export const usePropertyDrawer = (props: Props) => {
     cancelEdit();
   };
 
-  const onAddPropertyEvent = (event: Event): void => {
-    const detail = (event as CustomEvent<AddPropertyEventDetail>).detail;
-    if (detail.scope !== scope.value || detail.key !== stateKey.value) return;
-    startAdd();
-  };
-
   const removeTag = (item: OrgPropertyEntry, tag: string): void => {
     const tags = parseTags(item.value).filter((value) => value !== tag);
     setValue(item.key, formatTags(tags));
@@ -187,15 +182,26 @@ export const usePropertyDrawer = (props: Props) => {
     setValue(item.key, formatTags([...parseTags(item.value), trimmed]));
   };
 
+  const startRequestedAdd = (): void => {
+    if (!consumePropertyAddRowRequest(stateKey.value)) return;
+    startAdd();
+  };
+
   watch(() => props.rootNodeSrc, refreshState);
+  watch(
+    () => propertyAddRowRequests.value[stateKey.value],
+    (requestId) => {
+      if (!requestId) return;
+      startRequestedAdd();
+    },
+  );
+
   onMounted(() => {
-    window.addEventListener(ADD_PROPERTY_EVENT, onAddPropertyEvent);
+    if (props.openOnInit) startAdd();
+    startRequestedAdd();
     if (isEmpty.value && !props.readonly) startAdd();
   });
-  onBeforeUnmount(() => {
-    clearPendingReplace();
-    window.removeEventListener(ADD_PROPERTY_EVENT, onAddPropertyEvent);
-  });
+  onBeforeUnmount(clearPendingReplace);
 
   const expandPanel = (): void => {
     expandPropertyPanel(scope.value, stateKey.value);
