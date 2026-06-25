@@ -18,12 +18,21 @@
       @click.stop="expandPanel"
     >
       <app-icon name="sym_o_tune" size="sm" color="fg-muted" />
-      <span>{{ previewText }}</span>
+      <span class="property-title">{{ t(I18N.PROPERTIES) }}</span>
     </app-flex>
 
     <template v-else>
       <app-flex class="property-header" between align-center>
-        <strong>{{ t(I18N.PROPERTIES) }}</strong>
+        <app-flex
+          class="property-title-action"
+          start
+          gap="sm"
+          @mousedown.stop.prevent
+          @click.stop="togglePanel"
+        >
+          <app-icon name="sym_o_tune" size="sm" color="fg-muted" />
+          <span class="property-title">{{ t(I18N.PROPERTIES) }}</span>
+        </app-flex>
         <app-flex gap="xs">
           <action-button
             v-if="canCollapse"
@@ -67,13 +76,12 @@
               </template>
             </app-dropdown>
           </span>
-          <app-text-area
-            :model-value="item.value"
-            class="property-value editing"
-            :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
-            :rows="1"
-            @keydown.enter.prevent="setValueFromEvent(item.key, $event)"
-            @blur="setValueFromEvent(item.key, $event)"
+          <component
+            :is="valueComponent(item)"
+            :item="item"
+            @set="setValue(item.key, $event)"
+            @remove-tag="removeTag(item, $event)"
+            @add-tag="addTag(item, $event)"
           />
         </template>
 
@@ -178,6 +186,7 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const {
   addKeyInputRef,
+  addTag,
   canCollapse,
   cancelEdit,
   collapseIcon,
@@ -192,12 +201,12 @@ const {
   isCollapsed,
   items,
   knownPropertyKeys,
-  previewText,
   readonly,
   removeProperty,
+  removeTag,
   scope,
   setKey,
-  setValueFromEvent,
+  setValue,
   startAdd,
   togglePanel,
   valueComponent,

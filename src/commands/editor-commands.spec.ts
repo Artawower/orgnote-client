@@ -1,14 +1,21 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import { getEditorCommands } from './editor-commands';
-import { DefaultCommands, RouteNames } from 'orgnote-api';
+import { DefaultCommands, KEYBINDING_CONTEXTS, RouteNames } from 'orgnote-api';
 import type { OrgNoteApi, FileMeta, CompletionConfig, CompletionSearchResult } from 'orgnote-api';
 import { blurEditor, suspendEditorInput } from 'src/utils/editor-primitives';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { ref } from 'vue';
 
-const { mockCursorLineUp, mockCursorLineDown } = vi.hoisted(() => ({
+const {
+  mockCursorLineUp,
+  mockCursorLineDown,
+  mockInsertEmptyPropertyDrawer,
+  mockRequestAddPropertyRow,
+} = vi.hoisted(() => ({
   mockCursorLineUp: vi.fn(),
   mockCursorLineDown: vi.fn(),
+  mockInsertEmptyPropertyDrawer: vi.fn(),
+  mockRequestAddPropertyRow: vi.fn(),
 }));
 
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
@@ -89,12 +96,18 @@ vi.mock('@capacitor/keyboard', () => ({
   Keyboard: { hide: vi.fn().mockResolvedValue(undefined) },
 }));
 
+vi.mock('src/extensions/org-property-drawer/property-source', () => ({
+  insertEmptyPropertyDrawer: mockInsertEmptyPropertyDrawer,
+  isRootPropertySequenceStart: vi.fn(() => false),
+  requestAddPropertyRow: mockRequestAddPropertyRow,
+}));
+
 vi.mock('src/utils/android-keyboard-hide', () => ({
   startKeyboardHideWindow: vi.fn(),
   isKeyboardHideWindowActive: vi.fn(() => false),
 }));
 
-const createMockApi = (): OrgNoteApi =>
+const createMockApi = (editorView: unknown = {}): OrgNoteApi =>
   ({
     core: {
       useCompletion: () => mockCompletion,
@@ -102,7 +115,7 @@ const createMockApi = (): OrgNoteApi =>
       useFileMeta: () => mockFileMeta,
       useEditor: () => ({
         activeContext: {
-          editorViewGetter: () => ({}),
+          editorViewGetter: () => editorView,
           orgNode: undefined,
           filePath: '/docs/info.org',
         },
@@ -160,7 +173,15 @@ beforeEach(() => {
   mockWriteFile.mockReset();
   mockCursorLineUp.mockReset();
   mockCursorLineDown.mockReset();
+  mockInsertEmptyPropertyDrawer.mockReset();
+  mockRequestAddPropertyRow.mockReset();
+  vi.useRealTimers();
 });
+
+const findAddPropertyCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === DefaultCommands.EDITOR_ADD_PROPERTY)!;
+};
 
 const findCaretUpCommand = () => {
   const commands = getEditorCommands();
@@ -296,6 +317,32 @@ test('editor-commands EDITOR_INSERT_IMAGE saves image in active route file direc
 
   expect(mockWriteFile).toHaveBeenCalledWith('image.png', expect.any(Uint8Array));
   expect(mockInsertImage).toHaveBeenCalledWith('image.png');
+});
+
+test('editor-commands EDITOR_ADD_PROPERTY uses Mod+Alt+P in shell context', () => {
+  const command = findAddPropertyCommand();
+
+  expect(command.defaultHotkeys).toEqual([{ key: 'p', modifiers: ['Mod', 'Alt'] }]);
+  expect(command.keybindingContext).toBe(KEYBINDING_CONTEXTS.SHELL);
+  expect(command.hide?.(createMockApi())).toBe(false);
+});
+
+test('editor-commands EDITOR_ADD_PROPERTY creates page property when no headline is active', async () => {
+  vi.useFakeTimers();
+  const editorView = {
+    state: {
+      doc: { toString: () => 'plain text' },
+      selection: { main: { head: 0 } },
+    },
+  };
+  const api = createMockApi(editorView);
+  const command = findAddPropertyCommand();
+
+  await command.handler(api, { data: {}, meta: {} });
+  vi.runOnlyPendingTimers();
+
+  expect(mockInsertEmptyPropertyDrawer).toHaveBeenCalledWith(editorView, 0);
+  expect(mockRequestAddPropertyRow).toHaveBeenCalledWith({ scope: 'page', key: 'page:0' });
 });
 
 test('editor-commands EDITOR_CARET_UP moves cursor to previous line', async () => {

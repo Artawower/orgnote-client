@@ -17,6 +17,7 @@ interface ActionButtonStoryArgs {
   active?: boolean;
   color?: string;
   hoverColor?: string;
+  hoverBackground?: boolean;
   outline?: boolean;
   fireIcon?: string;
   fireColor?: string;
@@ -149,5 +150,28 @@ export const TextVariant: Story = {
         </action-button>
       </app-flex>
     `,
+  }),
+};
+
+export const IconColorHover: Story = {
+  args: {
+    icon: 'sym_o_close',
+    color: 'fg-muted',
+    hoverColor: 'fg',
+    hoverBackground: false,
+  },
+  render: (args) => ({
+    components: { StoryList, ActionButton },
+    setup() {
+      const listItems = computed(() => {
+        return sizes.map((size) => ({
+          component: ActionButton,
+          props: { ...args, size },
+          description: size,
+        }));
+      });
+      return { listItems };
+    },
+    template: `<story-list :items="listItems" />`,
   }),
 };

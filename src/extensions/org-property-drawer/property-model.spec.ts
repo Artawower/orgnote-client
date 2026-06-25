@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest';
 import { I18N } from 'orgnote-api';
 import {
+  formatInactiveOrgDate,
   formatTags,
   getPropertyType,
   parseTags,
+  toCalendarDate,
   validatePropertyKey,
   validatePropertyValue,
 } from './property-model';
@@ -21,6 +23,11 @@ test('property model parses and formats org tags', () => {
   expect(parseTags(':youtube:ai:')).toEqual(['youtube', 'ai']);
   expect(parseTags('youtube ai')).toEqual(['youtube', 'ai']);
   expect(formatTags(['youtube', 'ai'])).toBe(':youtube:ai:');
+});
+
+test('property model adapts org dates to date picker values', () => {
+  expect(toCalendarDate('[2026-06-25 Thu]')).toBe('2026-06-25');
+  expect(formatInactiveOrgDate('2026-06-26')).toBe('[2026-06-26 Fri]');
 });
 
 test('property model validates keys and single-line values', () => {

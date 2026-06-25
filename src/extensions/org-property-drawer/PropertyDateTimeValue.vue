@@ -2,9 +2,14 @@
   <app-flex class="property-value" start>
     <date-picker-popover :model-value="calendarDate" @update:model-value="onDateSelected">
       <template #trigger="{ open }">
-        <app-flex start @click="openDatePicker(open)">
+        <inline-date-token
+          :editable="!readonly"
+          focus-tone="current"
+          @mousedown.stop
+          @activate="openDatePicker(open)"
+        >
           {{ displayed }}
-        </app-flex>
+        </inline-date-token>
       </template>
     </date-picker-popover>
   </app-flex>
@@ -17,6 +22,7 @@ import type { OrgPropertyEntry } from 'orgnote-api';
 import { I18N } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
 import DatePickerPopover from 'src/components/DatePickerPopover.vue';
+import InlineDateToken from 'src/components/InlineDateToken.vue';
 import { formatInactiveOrgDate, toCalendarDate } from './property-model';
 import { truncateValue } from './property-value-utils';
 

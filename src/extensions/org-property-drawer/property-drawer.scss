@@ -4,21 +4,20 @@
   max-width: 100%;
 }
 
-.property-trigger {
-  --property-trigger-opacity: var(--disabled-opacity);
+.property-title {
+  color: var(--fg-muted);
+  font-size: inherit;
+  font-weight: normal;
+}
 
+.property-trigger,
+.property-title-action {
   color: var(--fg-muted);
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  opacity: var(--property-trigger-opacity);
-
-  @include hover {
-    opacity: 1;
-  }
 }
 
 .property-header {
-  color: var(--fg);
+  color: var(--fg-muted);
   padding-bottom: var(--padding-xs);
 }
 

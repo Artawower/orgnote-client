@@ -1,6 +1,13 @@
 import type { OrgPropertyEntry } from 'orgnote-api';
 import { I18N } from 'orgnote-api';
-import { formatOrgDate, parseCalendarDate, parseOrgDate } from 'src/utils/org-date';
+import { format } from 'date-fns';
+import {
+  formatOrgDate,
+  ISO_DATE_FORMAT,
+  isoToSlashDate,
+  parseCalendarDate,
+  parseOrgDate,
+} from 'src/utils/org-date';
 
 export type PropertyScope = 'page' | 'headline';
 export type PropertyValueType = 'text' | 'link' | 'tags' | 'boolean' | 'datetime';
@@ -86,11 +93,11 @@ export const formatBooleanValue = (value: boolean): string => (value ? 'true' : 
 export const toCalendarDate = (value: string): string | undefined => {
   const parsed = parseOrgDate(value);
   if (!parsed) return undefined;
-  return `${parsed.date.getFullYear()}/${String(parsed.date.getMonth() + 1).padStart(2, '0')}/${String(parsed.date.getDate()).padStart(2, '0')}`;
+  return format(parsed.date, ISO_DATE_FORMAT);
 };
 
 export const formatInactiveOrgDate = (calendarDate: string): string | undefined => {
-  const date = parseCalendarDate(calendarDate);
+  const date = parseCalendarDate(isoToSlashDate(calendarDate));
   if (!date) return undefined;
   return formatOrgDate(date, { openingBracket: '[', closingBracket: ']' });
 };
