@@ -5,13 +5,6 @@ import type { OrgPropertyEntry } from 'orgnote-api';
 import { editOrgDocument } from 'orgnote-api/utils';
 import type { PropertyEditorState, PropertyScope } from './property-model';
 
-export const ADD_PROPERTY_EVENT = 'orgnote:add-property-row';
-
-export interface AddPropertyEventDetail {
-  readonly scope: PropertyScope;
-  readonly key: string;
-}
-
 const formatPropertyLine = ({ key, value }: OrgPropertyEntry): string =>
   value ? `:${key}: ${value}` : `:${key}:`;
 
@@ -97,10 +90,6 @@ export const getPropertyEditorState = (
   if (apiState.items.length > 0) return apiState;
   const rangeItems = node ? readRangeItems(content, getPropertyWidgetRange(node)) : [];
   return { scope, stateId, items: rangeItems };
-};
-
-export const requestAddPropertyRow = (detail: AddPropertyEventDetail): void => {
-  window.dispatchEvent(new CustomEvent<AddPropertyEventDetail>(ADD_PROPERTY_EVENT, { detail }));
 };
 
 export const insertEmptyPropertyDrawer = (view: EditorView, position: number): void => {

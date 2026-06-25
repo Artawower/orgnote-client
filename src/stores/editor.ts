@@ -13,6 +13,7 @@ import type {
   ActiveEditorContext,
 } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
+import { editOrgDocument } from 'orgnote-api/utils';
 
 interface WidgetRegistry {
   [WidgetType.Inline]: InlineEmbeddedWidgets;
@@ -108,6 +109,32 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     activeContext.value = null;
   };
 
+  const editActiveDocument: EditorStore['editActiveDocument'] = (mutate, options = {}) => {
+    const context = activeContext.value;
+    const view = context?.editorViewGetter();
+    if (!context || !view) return false;
+
+    const content = view.state.doc.toString();
+    const nextContent = editOrgDocument(content, (doc) => {
+      mutate({
+        ...context,
+        doc,
+        root: doc.root,
+        view,
+      });
+    });
+    if (nextContent === content) return true;
+
+    const changes = { from: 0, to: view.state.doc.length, insert: nextContent };
+    view.dispatch({
+      changes,
+      selection: options.preserveSelection === false ? undefined : { anchor: context.cursorPosition },
+      scrollIntoView: options.scrollIntoView,
+    });
+    return true;
+  };
+
+
   return {
     inlineWidgets,
     multilineWidgets,
@@ -118,6 +145,7 @@ export const useEditorStore = defineStore<'editor', EditorStore>('editor', () =>
     removeWidget,
     addExtensions,
     removeExtensions,
+    editActiveDocument,
     setActiveContext,
     updateActiveContext,
     clearActiveContext,
