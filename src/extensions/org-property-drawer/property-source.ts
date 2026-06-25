@@ -29,6 +29,7 @@ export const replacePropertyItems = (
   view: EditorView,
   node: OrgNode,
   items: readonly OrgPropertyEntry[],
+  onApplied?: () => void,
 ): number => {
   const range = getPropertyWidgetRange(node);
   const insert = formatPropertyDrawer(items);
@@ -42,6 +43,7 @@ export const replacePropertyItems = (
       changes,
       selection: { anchor: view.state.changes(changes).mapPos(cursorPosition) },
     });
+    onApplied?.();
   }, 0);
 };
 

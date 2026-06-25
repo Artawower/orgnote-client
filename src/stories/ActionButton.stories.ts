@@ -1,5 +1,6 @@
 import type { StoryObj } from '@storybook/vue3-vite';
 import ActionButton from 'src/components/ActionButton.vue';
+import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import StoryList from './StoryList.vue';
 import { computed } from 'vue';
@@ -11,9 +12,23 @@ export default {
   args: {},
 };
 
+interface ActionButtonStoryArgs {
+  icon?: string;
+  active?: boolean;
+  color?: string;
+  hoverColor?: string;
+  outline?: boolean;
+  fireIcon?: string;
+  fireColor?: string;
+  alignment?: string;
+  variant?: string;
+}
+
+type Story = StoryObj<ActionButtonStoryArgs>;
+
 const sizes = ['xs', 'sm', 'md', 'lg'];
 
-export const Default: StoryObj<typeof ActionButton> = {
+export const Default: Story = {
   args: {
     icon: 'folder',
     active: true,
@@ -41,7 +56,7 @@ export const Default: StoryObj<typeof ActionButton> = {
   }),
 };
 
-export const WithFireIcon: StoryObj<typeof ActionButton> = {
+export const WithFireIcon: Story = {
   args: {
     icon: 'sym_o_expand_content',
     fireIcon: 'sym_o_collapse_content',
@@ -63,7 +78,7 @@ export const WithFireIcon: StoryObj<typeof ActionButton> = {
   }),
 };
 
-export const WithText: StoryObj<typeof ActionButton> = {
+export const WithText: Story = {
   args: {
     icon: 'sym_o_expand_content',
     fireIcon: 'sym_o_collapse_content',
@@ -86,7 +101,7 @@ export const WithText: StoryObj<typeof ActionButton> = {
   }),
 };
 
-export const WithAlignment: StoryObj<typeof ActionButton> = {
+export const WithAlignment: Story = {
   args: {
     icon: 'sym_o_expand_content',
     alignment: 'space-between',
@@ -106,5 +121,33 @@ export const WithAlignment: StoryObj<typeof ActionButton> = {
       return { args, listItems };
     },
     template: `<story-list :items="listItems" />`,
+  }),
+};
+
+export const TextVariant: Story = {
+  args: {
+    icon: 'sym_o_add',
+    color: 'fg-muted',
+    variant: 'text',
+    alignment: 'left',
+  },
+  render: (args) => ({
+    components: { ActionButton, AppFlex },
+    setup() {
+      return { args };
+    },
+    template: `
+      <app-flex column align-start gap="md">
+        <action-button v-bind="args">
+          <template #text>Add property</template>
+        </action-button>
+        <action-button v-bind="args" icon="sym_o_tune" color="fg">
+          <template #text>Properties</template>
+        </action-button>
+        <action-button v-bind="args" :icon="undefined">
+          <template #text>Text-only action</template>
+        </action-button>
+      </app-flex>
+    `,
   }),
 };

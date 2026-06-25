@@ -45,66 +45,51 @@
         @click.stop
       >
         <app-icon :name="iconByKey(item.key)" size="sm" color="fg-muted" />
-        <span v-if="isEditingKey(item.key)" class="property-key editing" @keydown.esc="cancelEdit">
-          <app-dropdown
-            ref="keyInputRef"
-            v-model="draftKey"
-            :options="knownPropertyKeys"
-            :taggable="true"
-            :clearable="false"
-            :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
-            @update:model-value="focusValueInput"
-          >
-            <template #option="{ label }">
-              <app-flex start gap="sm">
-                <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
-                <span>{{ label }}</span>
-              </app-flex>
-            </template>
-          </app-dropdown>
-        </span>
-        <span v-else class="property-key" @click="startTextEdit(item, 'key')">{{ item.key }}</span>
-
-        <app-text-area
-          v-if="isEditingKey(item.key)"
-          ref="valueInputRef"
-          v-model="draftValue"
-          class="property-value editing"
-          :rows="1"
-          @keydown.enter.prevent="commitEdit"
-          @keydown.esc.prevent="cancelEdit"
-          @blur="commitEdit"
-        />
-        <component
-          v-else
-          :is="valueComponent(item)"
-          :item="item"
-          :readonly="readonly"
-          @edit="startTextEdit(item)"
-          @set="setValue(item.key, $event)"
-          @remove-tag="removeTag(item, $event)"
-          @add-tag="addTag(item, $event)"
-        />
+        <template v-if="readonly">
+          <span class="property-key">{{ item.key }}</span>
+          <component :is="valueComponent(item)" :item="item" readonly />
+        </template>
+        <template v-else>
+          <span class="property-key editing">
+            <app-dropdown
+              :model-value="item.key"
+              :options="knownPropertyKeys"
+              :taggable="true"
+              :clearable="false"
+              :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
+              @update:model-value="setKey(item, $event)"
+            >
+              <template #option="{ label }">
+                <app-flex start gap="sm">
+                  <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
+                  <span>{{ label }}</span>
+                </app-flex>
+              </template>
+            </app-dropdown>
+          </span>
+          <app-text-area
+            :model-value="item.value"
+            class="property-value editing"
+            :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
+            :rows="1"
+            @keydown.enter.prevent="setValueFromEvent(item.key, $event)"
+            @blur="setValueFromEvent(item.key, $event)"
+          />
+        </template>
 
         <app-flex v-if="!readonly" class="property-actions" gap="xs">
-          <template v-if="isEditingKey(item.key)">
-            <action-button icon="sym_o_check" size="sm" color="fg-muted" @click.stop="commitEdit" />
-            <action-button icon="sym_o_close" size="sm" color="fg-muted" @click.stop="cancelEdit" />
-          </template>
-          <template v-else>
-            <action-button
-              icon="sym_o_content_copy"
-              size="sm"
-              color="fg-muted"
-              :copy-text="item.value"
-            />
-            <action-button
-              icon="sym_o_delete"
-              size="sm"
-              color="fg-muted"
-              @click.stop="removeProperty(item.key)"
-            />
-          </template>
+          <action-button
+            icon="sym_o_content_copy"
+            size="sm"
+            color="fg-muted"
+            :copy-text="item.value"
+          />
+          <action-button
+            icon="sym_o_delete"
+            size="sm"
+            color="fg-muted"
+            @click.stop="removeProperty(item.key)"
+          />
         </app-flex>
       </app-flex>
 
@@ -153,17 +138,19 @@
 
       <app-flex v-if="error" class="property-error" start>{{ error }}</app-flex>
 
-      <app-flex
+      <action-button
         v-if="!readonly && !isAdding"
-        class="add-property"
-        start
-        gap="sm"
-        @mousedown.stop.prevent
-        @click.stop="startAdd()"
+        icon="sym_o_add"
+        size="sm"
+        color="fg-muted"
+        variant="text"
+        alignment="left"
+        @click.stop="startAdd"
       >
-        <app-icon name="sym_o_add" size="sm" color="fg-muted" />
-        <span>{{ t(I18N.ADD_PROPERTY) }}</span>
-      </app-flex>
+        <template #text>
+          <span>{{ t(I18N.ADD_PROPERTY) }}</span>
+        </template>
+      </action-button>
     </template>
   </app-flex>
 </template>
@@ -191,7 +178,6 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const {
   addKeyInputRef,
-  addTag,
   canCollapse,
   cancelEdit,
   collapseIcon,
@@ -204,18 +190,15 @@ const {
   iconByKey,
   isAdding,
   isCollapsed,
-  isEditingKey,
   items,
-  keyInputRef,
   knownPropertyKeys,
   previewText,
   readonly,
   removeProperty,
-  removeTag,
   scope,
-  setValue,
+  setKey,
+  setValueFromEvent,
   startAdd,
-  startTextEdit,
   togglePanel,
   valueComponent,
   valueInputRef,

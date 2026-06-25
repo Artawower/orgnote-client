@@ -6,8 +6,15 @@
     :class="[
       `icon-${size}`,
       active,
-      { outline, border, text: slots.text, 'hover-effect': hoverEffect, 'auto-width': autoWidth },
-      props.classes,
+      {
+        outline,
+        border,
+        text: slots.text,
+        'hover-effect': hoverEffect,
+        'auto-width': autoWidth,
+        [`variant-${variant}`]: true,
+      },
+      props.casses,
     ]"
     :style="{
       '--action-border-color': getCssVariableName(activeColor),
@@ -36,6 +43,7 @@ import { copyToClipboard } from 'src/utils/clipboard';
 import type { StyleSize, ThemeVariable } from 'orgnote-api';
 
 export type ButtonAlignment = 'center' | 'space-between' | 'left' | 'right';
+export type ActionButtonVariant = 'default' | 'text';
 
 export interface ActionButtonProps {
   as?: 'button' | 'div';
@@ -54,6 +62,7 @@ export interface ActionButtonProps {
   copyText?: string;
   alignment?: ButtonAlignment;
   autoWidth?: boolean;
+  variant?: ActionButtonVariant;
 }
 
 const props = withDefaults(defineProps<ActionButtonProps>(), {
@@ -64,6 +73,7 @@ const props = withDefaults(defineProps<ActionButtonProps>(), {
   fireColor: 'red',
   alignment: 'center',
   hoverEffect: true,
+  variant: 'default',
 });
 
 const fired = ref<boolean>(false);
@@ -220,6 +230,44 @@ button,
           --btn-action-hover-color,
           color-mix(in srgb, var(--action-border-color, var(--border-default)), 20% black)
         ) !important;
+      }
+    }
+  }
+
+  &.variant-text {
+    align-self: flex-start;
+    width: fit-content;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    transform: none;
+
+    &.text.auto-width {
+      padding-inline: 0;
+    }
+
+    &.hover-effect:not(.outline) {
+      @include hover {
+        background: transparent;
+        filter: brightness(var(--btn-action-text-hover-brightness, 0.85));
+        transform: none;
+      }
+
+      &:active {
+        background: transparent;
+        filter: brightness(var(--btn-action-text-hover-brightness, 0.85));
+        transform: none;
+      }
+    }
+
+    &.hover-effect {
+      @include hover {
+        border-color: transparent;
       }
     }
   }
