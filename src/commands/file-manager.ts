@@ -402,6 +402,7 @@ export function getFileManagerCommands(): Command[] {
 
         const commands = api.core.useCommands();
         await commands.execute(DefaultCommands.OPEN_NOTE, { path: filePath });
+        return filePath;
       },
     },
     {

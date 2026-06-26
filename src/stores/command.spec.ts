@@ -164,3 +164,66 @@ test('correctly finds commands after multiple operations', () => {
   expect(store.get('command2')).toBeUndefined(); // Removed command does not exist
   expect(store.get('command3')).toEqual(commands[2]); // Third command exists
 });
+
+test('execute returns command handler result', async () => {
+  const store = useCommandsStore();
+  store.add({ command: 'command1', handler: () => 'result1' });
+
+  const result = await store.execute<undefined, string>('command1');
+
+  expect(result).toBe('result1');
+});
+
+test('wrap composes command handlers by priority', async () => {
+  const store = useCommandsStore();
+  const calls: string[] = [];
+  store.add({
+    command: 'command1',
+    handler: () => {
+      calls.push('handler');
+      return 'handler-result';
+    },
+  });
+  store.wrap('command1', {
+    id: 'low',
+    priority: 1,
+    handler: async ({ next }) => {
+      calls.push('low-before');
+      const result = await next();
+      calls.push('low-after');
+      return `${result}:low`;
+    },
+  });
+  store.wrap('command1', {
+    id: 'high',
+    priority: 2,
+    handler: async ({ next }) => {
+      calls.push('high-before');
+      const result = await next();
+      calls.push('high-after');
+      return `${result}:high`;
+    },
+  });
+
+  const result = await store.execute<undefined, string>('command1');
+
+  expect(result).toBe('handler-result:low:high');
+  expect(calls).toEqual(['high-before', 'low-before', 'handler', 'low-after', 'high-after']);
+});
+
+test('wrap replacement keeps one wrapper per id', async () => {
+  const store = useCommandsStore();
+  store.add({ command: 'command1', handler: () => 'handler-result' });
+  store.wrap('command1', {
+    id: 'same',
+    handler: async ({ next }) => `${await next()}:old`,
+  });
+  store.wrap('command1', {
+    id: 'same',
+    handler: async ({ next }) => `${await next()}:new`,
+  });
+
+  const result = await store.execute<undefined, string>('command1');
+
+  expect(result).toBe('handler-result:new');
+});

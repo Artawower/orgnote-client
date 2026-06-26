@@ -12,6 +12,11 @@ export interface ValibotMetadata {
     command?: CommandName;
     directoryPicker?: boolean;
     filePicker?: boolean;
+    rootPath?: string;
+    allowedExtensions?: string[];
+    ensureRootPath?: boolean;
+    createIfMissing?: boolean;
+    recursive?: boolean;
     defaultValue?: string;
   };
   type: string;

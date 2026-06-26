@@ -64,7 +64,7 @@ const toggleFullScreen = () => {
   });
 };
 
-const handleCompletionInput = () => {
+const handleCompletionInput = async () => {
   const activeCompletion = completion.activeCompletion;
   if (!activeCompletion) return;
 
@@ -77,7 +77,7 @@ const handleCompletionInput = () => {
   }
 
   if (activeCompletion.type === 'input-choice' || activeCompletion.type === 'input') {
-    completion.close(activeCompletion.searchQuery);
+    await completion.close(activeCompletion.searchQuery);
     return;
   }
 };
@@ -95,6 +95,8 @@ defineExpose({
 
 <style lang="scss" scoped>
 .completion-input {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
 }
 </style>
