@@ -1,4 +1,4 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
@@ -57,7 +57,6 @@ export const usePropertyDrawer = (props: Props) => {
   const error = ref('');
   const refreshTick = ref(0);
   const panelStateTick = ref(0);
-  const pendingReplaceTimeout = ref<number>();
   const addKeyInputRef = ref<FocusableControl>();
   const valueInputRef = ref<FocusableControl>();
   const stateKey = computed(() => getPropertyStateKey(props.node));
@@ -94,20 +93,8 @@ export const usePropertyDrawer = (props: Props) => {
     panelStateTick.value += 1;
   };
 
-  const clearPendingReplace = (): void => {
-    if (pendingReplaceTimeout.value === undefined) return;
-    window.clearTimeout(pendingReplaceTimeout.value);
-    pendingReplaceTimeout.value = undefined;
-  };
-
   const mutateItems = (nextItems: readonly OrgPropertyEntry[]): void => {
-    clearPendingReplace();
-    pendingReplaceTimeout.value = replacePropertyItems(
-      props.editorView,
-      props.node,
-      nextItems,
-      refreshState,
-    );
+    replacePropertyItems(props.editorView, props.node, nextItems, refreshState);
   };
 
   const setValue = (key: string, value: TextInputValue): void => {
@@ -201,7 +188,7 @@ export const usePropertyDrawer = (props: Props) => {
     startRequestedAdd();
     if (isEmpty.value && !props.readonly) startAdd();
   });
-  onBeforeUnmount(clearPendingReplace);
+
 
   const expandPanel = (): void => {
     expandPropertyPanel(scope.value, stateKey.value);

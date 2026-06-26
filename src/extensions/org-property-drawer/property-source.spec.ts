@@ -33,21 +33,24 @@ test('property source replaces current drawer range', () => {
   const root = parse(':PROPERTIES:\n:type: old\n:END:\n');
   const drawer = root.childrenList[0]!;
   const { calls, view } = createFakeView(root.rawValue);
-  const timeoutId = replacePropertyItems(view as never, drawer, [{ key: 'type', value: 'new' }]);
-  window.clearTimeout(timeoutId);
-  expect(calls).toEqual([]);
+
+  replacePropertyItems(view as never, drawer, [{ key: 'type', value: 'new' }]);
+
+  expect(calls).toHaveLength(1);
+  expect(calls[0]).toMatchObject({
+    changes: { ...getPropertyWidgetRange(drawer), insert: ':PROPERTIES:\n:type: new\n:END:' },
+  });
 });
 
-test('property source reports applied drawer replacement', async () => {
+test('property source reports applied drawer replacement', () => {
   const root = parse(':PROPERTIES:\n:type: old\n:END:\n');
   const drawer = root.childrenList[0]!;
   const { calls, view } = createFakeView(root.rawValue);
   let applied = false;
+
   replacePropertyItems(view as never, drawer, [{ key: 'type', value: 'new' }], () => {
     applied = true;
   });
-
-  await new Promise((resolve) => window.setTimeout(resolve, 0));
 
   expect(applied).toBe(true);
   expect(calls).toHaveLength(1);
