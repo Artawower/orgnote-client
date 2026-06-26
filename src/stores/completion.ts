@@ -82,8 +82,30 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       lastModalConfig = undefined;
     };
 
-    const close = <TReturn = unknown>(data?: TReturn) => {
-      modal.close(data);
+    const shouldValidateClose = (data: unknown): boolean => {
+      const completion = activeCompletion.value;
+      if (!completion?.validateInput) return false;
+      if (completion.type !== 'input' && completion.type !== 'input-choice') return false;
+      return data !== undefined;
+    };
+
+    const close = <TReturn = unknown>(data?: TReturn): Promise<boolean> => {
+      if (!shouldValidateClose(data)) {
+        modal.close(data);
+        return Promise.resolve(true);
+      }
+
+      const completion = activeCompletion.value!;
+      return Promise.resolve(completion.validateInput!(String(data))).then((validation) => {
+        if (!validation.valid) {
+          completion.validationError = validation.message;
+          return false;
+        }
+
+        completion.validationError = undefined;
+        modal.close(data);
+        return true;
+      });
     };
 
     const closeAll = () => {
@@ -256,7 +278,12 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
 
     watch(
       () => activeCompletion.value?.searchQuery,
-      () => search(),
+      () => {
+        if (activeCompletion.value) {
+          activeCompletion.value.validationError = undefined;
+        }
+        search();
+      },
     );
 
     const registerInterceptor = <T = unknown>(

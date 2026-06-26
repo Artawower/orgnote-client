@@ -821,3 +821,33 @@ test('multiple interceptors are applied in priority order', async () => {
   unregisterLow();
   unregisterHigh();
 });
+
+test('close keeps input completion open when validation fails', async () => {
+  const store = useCompletionStore();
+  store.open({
+    type: 'input',
+    placeholder: 'Enter value',
+    validateInput: () => ({ valid: false, message: 'Invalid value' }),
+  });
+
+  const closed = await store.close('bad');
+
+  expect(closed).toBe(false);
+  expect(mockModalClose).not.toHaveBeenCalled();
+  expect(store.activeCompletion?.validationError).toBe('Invalid value');
+});
+
+test('close resolves input completion when validation passes', async () => {
+  const store = useCompletionStore();
+  store.open({
+    type: 'input',
+    placeholder: 'Enter value',
+    validateInput: () => ({ valid: true }),
+  });
+
+  const closed = await store.close('good');
+
+  expect(closed).toBe(true);
+  expect(mockModalClose).toHaveBeenCalledWith('good');
+  expect(store.activeCompletion?.validationError).toBeUndefined();
+});

@@ -46,6 +46,13 @@
           <overflow-line class="file-picker-value text-medium">{{
             fieldModel ?? metadata.defaultValue ?? ''
           }}</overflow-line>
+          <action-button
+            v-if="isOptional && fieldModel != null"
+            icon="sym_o_backspace"
+            size="sm"
+            outline
+            @click.stop="clearValue"
+          />
           <action-button icon="sym_o_description" size="sm" outline @click.stop="pickFile" />
         </app-flex>
       </template>
@@ -128,6 +135,7 @@ import AppDescription from 'src/components/AppDescription.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { isPresent, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
 const props = defineProps<{
   path: string;
@@ -189,13 +197,66 @@ const removeFromArray = (index: number): void => {
   fieldSet(props.name, arr);
 };
 
+const matchesAllowedExtension = (path: string): boolean => {
+  const allowedExtensions = metadata?.allowedExtensions;
+  if (!allowedExtensions?.length) return true;
+  return allowedExtensions.some((extension) => path.endsWith(extension));
+};
+
+const ensureRootPath = async (): Promise<boolean> => {
+  if (!metadata?.ensureRootPath || !metadata.rootPath) return true;
+
+  const fs = api.core.useFileSystem();
+  const existing = await to(fs.fileInfo.bind(fs))(metadata.rootPath);
+  if (existing.isOk() && existing.value?.type === 'directory') return true;
+  if (existing.isOk() && existing.value) return false;
+
+  const created = await to(fs.mkdir.bind(fs))(metadata.rootPath);
+  if (created.isOk()) return true;
+
+  reporter.reportError(created.error);
+  return false;
+};
+
+const validatePickerInput = async (
+  mode: 'file' | 'directory',
+  value: string,
+): Promise<{ valid: true } | { valid: false; message: string }> => {
+  if (!value) return { valid: false, message: 'Path is required' };
+  if (metadata?.rootPath && !isPathInsideRoot(value, metadata.rootPath)) {
+    return { valid: false, message: `Path must be inside ${metadata.rootPath}` };
+  }
+  if (mode === 'file' && value.endsWith('/')) {
+    return { valid: false, message: 'File path is required' };
+  }
+  if (mode === 'file' && !matchesAllowedExtension(value)) {
+    return { valid: false, message: 'File extension is not allowed' };
+  }
+  if (mode === 'file' && metadata?.createIfMissing === false) {
+    const existing = await to(api.core.useFileSystem().fileInfo)(value);
+    if (existing.isErr() || existing.value?.type !== 'file') {
+      return { valid: false, message: 'File does not exist' };
+    }
+  }
+  return { valid: true };
+};
+
 const pickPath = async (mode: 'file' | 'directory'): Promise<void> => {
+  const isReady = await ensureRootPath();
+  if (!isReady) return;
+
   const { createDirItemsGetter } = await import('src/utils/dir-items-getter');
   const result = await api.core.useCompletion().open<DiskFile, string>({
     type: 'input-choice',
-    searchText: (fieldGet(props.name) as string) ?? '/',
+    searchText: (fieldGet(props.name) as string) ?? metadata?.rootPath ?? '/',
     placeholder: camelCaseToWords(props.name),
-    itemsGetter: createDirItemsGetter(api, mode === 'file'),
+    validateInput: (value) => validatePickerInput(mode, value),
+    itemsGetter: createDirItemsGetter(api, {
+      includeFiles: mode === 'file',
+      rootPath: metadata?.rootPath,
+      allowedExtensions: metadata?.allowedExtensions,
+      recursive: metadata?.recursive,
+    }),
   });
   if (!result) return;
   if (mode === 'directory') {
@@ -204,12 +265,17 @@ const pickPath = async (mode: 'file' | 'directory'): Promise<void> => {
     fieldSet(props.name, result);
     return;
   }
-  if (result.endsWith('/')) return;
+  if (metadata?.createIfMissing === false) {
+    fieldSet(props.name, result);
+    return;
+  }
   const { ensureFileExists } = await import('src/utils/ensure-file-exists');
   const ok = await ensureFileExists(api.core.useFileContent(), result);
   if (!ok) return;
   fieldSet(props.name, result);
 };
+
+const clearValue = (): void => fieldSet(props.name, undefined);
 
 const pickFile = (): Promise<void> => pickPath('file');
 const pickDirectory = (): Promise<void> => pickPath('directory');

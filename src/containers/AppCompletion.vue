@@ -12,8 +12,13 @@
     body-scroll
   >
     <template #header>
-      <app-flex class="header" row align-center>
-        <completion-input ref="completionInputRef" :placeholder="placeholder" :autofocus="true" />
+      <app-flex class="header-stack" column gap="xs" full-width align-stretch>
+        <app-flex class="header" row align-center full-width>
+          <completion-input ref="completionInputRef" :placeholder="placeholder" :autofocus="true" />
+        </app-flex>
+        <app-description v-if="activeCompletion?.validationError" class="validation-error">
+          {{ activeCompletion.validationError }}
+        </app-description>
       </app-flex>
     </template>
     <template v-if="!isInputOnly" #body>
@@ -63,6 +68,7 @@ import CompletionResult from './CompletionResult.vue';
 import { useI18n } from 'vue-i18n';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import AppDescription from 'src/components/AppDescription.vue';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 
 defineProps<
@@ -114,9 +120,19 @@ const { t } = useI18n({
   }
 }
 
+.header-stack {
+  padding: var(--padding-xs) var(--completion-padding);
+  width: 100%;
+}
+
 .header {
-  padding: 0 var(--completion-padding);
   height: var(--completion-header-height);
+  width: 100%;
+}
+
+.validation-error {
+  color: var(--negative);
+  padding: 0 var(--padding-sm) var(--padding-xs);
 }
 
 .body {
