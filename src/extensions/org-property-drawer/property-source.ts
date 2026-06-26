@@ -2,7 +2,7 @@ import type { EditorView } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType } from 'org-mode-ast';
 import type { OrgPropertyEntry } from 'orgnote-api';
-import { editOrgDocument } from 'orgnote-api/utils';
+import { selectOrgDocument } from 'orgnote-api/utils';
 import type { PropertyEditorState, PropertyScope } from './property-model';
 
 const formatPropertyLine = ({ key, value }: OrgPropertyEntry): string =>
@@ -23,21 +23,18 @@ export const replacePropertyItems = (
   node: OrgNode,
   items: readonly OrgPropertyEntry[],
   onApplied?: () => void,
-): number => {
+): void => {
   const range = getPropertyWidgetRange(node);
   const insert = formatPropertyDrawer(items);
-  return window.setTimeout(() => {
-    if ((view as unknown as { destroyed?: boolean }).destroyed) return;
-    const docLength = view.state.doc.length;
-    if (range.from > docLength) return;
-    const cursorPosition = view.state.selection.main.head;
-    const changes = { from: range.from, to: Math.min(range.to, docLength), insert };
-    view.dispatch({
-      changes,
-      selection: { anchor: view.state.changes(changes).mapPos(cursorPosition) },
-    });
-    onApplied?.();
-  }, 0);
+  const docLength = view.state.doc.length;
+  if (range.from > docLength) return;
+  const cursorPosition = view.state.selection.main.head;
+  const changes = { from: range.from, to: Math.min(range.to, docLength), insert };
+  view.dispatch({
+    changes,
+    selection: { anchor: view.state.changes(changes).mapPos(cursorPosition) },
+  });
+  onApplied?.();
 };
 
 const readPropertiesState = (
@@ -46,10 +43,9 @@ const readPropertiesState = (
   anchor: number,
   stateId: string,
 ): PropertyEditorState => {
-  let items: readonly OrgPropertyEntry[] = [];
-  editOrgDocument(content, (doc) => {
+  const items = selectOrgDocument(content, (doc) => {
     const properties = scope === 'page' ? doc.properties : doc.headlineAt(anchor)?.properties;
-    items = properties?.items ?? [];
+    return properties?.items ?? [];
   });
   return { scope, stateId, items };
 };
@@ -111,16 +107,19 @@ const isRootPropertyStart = (node: OrgNode): boolean =>
 const firstHeadlineStart = (root: OrgNode): number =>
   root.childrenList.find((child) => child.is(NodeType.Headline))?.start ?? Number.POSITIVE_INFINITY;
 
-export const isRootPropertySequenceStart = (node: OrgNode): boolean =>
-  isRootPropertyStart(node) && node.start < firstHeadlineStart(node.parent!);
+export const isRootPropertySequenceStart = (node: OrgNode): boolean => {
+  const root = isRootPropertyStart(node) ? node.parent : undefined;
+  return Boolean(root && node.start < firstHeadlineStart(root));
+};
 
-const findRootSequenceEnd = (node: OrgNode): OrgNode | undefined =>
-  node.parent?.childrenList.find(
-    (child) =>
-      child.start > node.start &&
-      child.start < firstHeadlineStart(node.parent!) &&
-      nodeText(child) === PROPERTY_END,
+const findRootSequenceEnd = (node: OrgNode): OrgNode | undefined => {
+  const root = node.parent;
+  if (!root) return undefined;
+  const headlineStart = firstHeadlineStart(root);
+  return root.childrenList.find(
+    (child) => child.start > node.start && child.start < headlineStart && nodeText(child) === PROPERTY_END,
   );
+};
 
 export const getPropertyWidgetRange = (node: OrgNode): { from: number; to: number } => {
   if (node.is(NodeType.PropertyDrawer)) return { from: node.start, to: node.end };
