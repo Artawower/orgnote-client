@@ -16,9 +16,12 @@
         <app-flex class="header" row align-center full-width>
           <completion-input ref="completionInputRef" :placeholder="placeholder" :autofocus="true" />
         </app-flex>
-        <app-description v-if="activeCompletion?.validationError" class="validation-error">
-          {{ activeCompletion.validationError }}
-        </app-description>
+        <error-display
+          v-if="activeCompletion?.validationError"
+          :errors="activeCompletion.validationError"
+          :copyable="false"
+          full-width
+        />
       </app-flex>
     </template>
     <template v-if="!isInputOnly" #body>
@@ -68,7 +71,7 @@ import CompletionResult from './CompletionResult.vue';
 import { useI18n } from 'vue-i18n';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import AppDescription from 'src/components/AppDescription.vue';
+import ErrorDisplay from 'src/components/ErrorDisplay.vue';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 
 defineProps<
@@ -128,11 +131,6 @@ const { t } = useI18n({
 .header {
   height: var(--completion-header-height);
   width: 100%;
-}
-
-.validation-error {
-  color: var(--negative);
-  padding: 0 var(--padding-sm) var(--padding-xs);
 }
 
 .body {
