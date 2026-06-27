@@ -1,13 +1,14 @@
 <template>
   <app-flex
     class="error-display"
-    :class="{ centered }"
+    :class="{ centered, 'full-width': fullWidth }"
     direction="column"
     justify="center"
     align="center"
   >
     <div class="error-container">
       <action-button
+        v-if="copyable"
         :copy-text="errorText"
         icon="sym_o_content_copy"
         fire-icon="sym_o_local_fire_department"
@@ -52,9 +53,13 @@ const props = withDefaults(
   defineProps<{
     errors: string | string[];
     centered?: boolean;
+    fullWidth?: boolean;
+    copyable?: boolean;
   }>(),
   {
     centered: false,
+    fullWidth: false,
+    copyable: true,
   },
 );
 
@@ -73,6 +78,10 @@ const errorText = computed(() => {
 
   &.centered {
     text-align: center;
+  }
+
+  &.full-width .error-container {
+    max-width: unset;
   }
 }
 

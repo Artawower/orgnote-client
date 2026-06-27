@@ -138,6 +138,8 @@ import { reporter } from 'src/boot/report';
 import { matchesAllowedExtension } from 'src/utils/matches-allowed-extension';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
+// TODO: refactor this component to be more modular and less monolithic.
+// It currently handles a lot of different input types and behaviors, which makes it hard to maintain.
 const props = defineProps<{
   path: string;
   name: string;
