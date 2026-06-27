@@ -55,19 +55,20 @@ const resolveConfig = (rawConfig: Record<string, unknown>): OrgTemplatesConfig =
   defaultTemplatePath: rawConfig.defaultTemplatePath as string | undefined,
 });
 
-const ensureDefaultTemplateConfig = async (api: OrgNoteApi): Promise<void> => {
-  const defaultResult = await to(ensureDefaultTemplate)(api);
-  if (defaultResult.isErr() || !defaultResult.value) return;
-
+const ensureDefaultTemplateConfig = async (api: OrgNoteApi): Promise<OrgTemplatesConfig> => {
   const extensions = api.core.useExtensions();
   const rawConfig = extensions.getExtensionConfig(orgTemplatesManifest.name).value;
-  const config = resolveConfig(rawConfig);
-  if (isOrgTemplatePath(config.defaultTemplatePath)) return;
+  const defaultPath = rawConfig.defaultTemplatePath as string | undefined;
+
+  const defaultReady = await to(ensureDefaultTemplate)(api);
+  const needsDefaultPath = defaultReady.isOk() && defaultReady.value && !isOrgTemplatePath(defaultPath);
+  if (!needsDefaultPath) return resolveConfig(rawConfig);
 
   await extensions.setExtensionConfig(orgTemplatesManifest.name, {
     ...rawConfig,
     defaultTemplatePath: DEFAULT_TEMPLATE_PATH,
   });
+  return resolveConfig({ ...rawConfig, defaultTemplatePath: DEFAULT_TEMPLATE_PATH });
 };
 
 const openCreatedPath = async (api: OrgNoteApi, path: string): Promise<void> => {
@@ -181,10 +182,7 @@ const createDefaultTemplateNote = async (
   api: OrgNoteApi,
   next: () => Promise<string | undefined>,
 ): Promise<string | undefined> => {
-  await ensureDefaultTemplateConfig(api);
-
-  const rawConfig = api.core.useExtensions().getExtensionConfig(orgTemplatesManifest.name).value;
-  const config = resolveConfig(rawConfig);
+  const config = await ensureDefaultTemplateConfig(api);
   if (!isOrgTemplatePath(config.defaultTemplatePath)) return await next();
 
   const templateContent = await readTemplateContent(api, config.defaultTemplatePath);

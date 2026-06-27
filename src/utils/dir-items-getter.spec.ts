@@ -1,110 +1,66 @@
-import { test, expect, vi } from 'vitest';
-import { walkDir } from './dir-items-getter';
+import { expect, test, vi } from 'vitest';
 import type { DiskFile } from 'orgnote-api';
+import { walkDir } from './dir-items-getter';
 
-const createMockFile = (path: string, type: 'file' | 'directory' = 'file'): DiskFile => ({
-  path,
-  name: path.split('/').pop() || '',
-  type,
-  size: 0,
-  mtime: Date.now(),
-});
+const file = (path: string): DiskFile => ({ path, name: path.slice(path.lastIndexOf('/') + 1), type: 'file', size: 0, mtime: 0 });
+const dir = (path: string): DiskFile => ({ path, name: path.slice(path.lastIndexOf('/') + 1), type: 'directory', size: 0, mtime: 0 });
 
-test('walkDir returns empty array for empty directory', async () => {
-  const readDir = vi.fn().mockResolvedValue([]);
-
-  const result = await walkDir(readDir, '/', true);
-
-  expect(result).toEqual([]);
-  expect(readDir).toHaveBeenCalledWith('/');
-});
-
-test('walkDir returns files when includeFiles is true', async () => {
-  const files = [createMockFile('/file1.org'), createMockFile('/file2.org')];
-  const readDir = vi.fn().mockResolvedValue(files);
-
-  const result = await walkDir(readDir, '/', true);
-
-  expect(result).toEqual(files);
-});
-
-test('walkDir excludes files when includeFiles is false', async () => {
-  const items = [createMockFile('/file1.org'), createMockFile('/folder', 'directory')];
-  const readDir = vi.fn().mockImplementation((path: string) => {
-    if (path === '/') return Promise.resolve(items);
-    return Promise.resolve([]);
+test('walkDir keeps all directories and filters files by allowedExtensions', async () => {
+  const readDir = vi.fn(async (path: string): Promise<DiskFile[]> => {
+    if (path !== '/root') return [];
+    return [
+      dir('/root/sub'),
+      file('/root/a.org.tmpl'),
+      file('/root/b.txt'),
+    ];
   });
 
-  const result = await walkDir(readDir, '/', false);
+  const result = await walkDir(readDir, '/root', true, ['.org.tmpl'], false);
 
-  expect(result).toHaveLength(1);
-  expect(result[0]?.type).toBe('directory');
+  expect(result).toEqual([
+    dir('/root/sub'),
+    file('/root/a.org.tmpl'),
+  ]);
+  expect(readDir).toHaveBeenCalledWith('/root');
+  expect(readDir).not.toHaveBeenCalledWith('/root/sub');
 });
 
-test('walkDir recursively traverses directories', async () => {
-  const rootItems = [createMockFile('/folder', 'directory'), createMockFile('/root.org')];
-  const nestedItems = [createMockFile('/folder/nested.org')];
-
-  const readDir = vi.fn().mockImplementation((path: string) => {
-    if (path === '/') return Promise.resolve(rootItems);
-    if (path === '/folder') return Promise.resolve(nestedItems);
-    return Promise.resolve([]);
+test('walkDir with recursive false returns only the immediate level', async () => {
+  const readDir = vi.fn(async (path: string): Promise<DiskFile[]> => {
+    if (path !== '/root') return [];
+    return [dir('/root/sub'), file('/root/a.org')];
   });
 
-  const result = await walkDir(readDir, '/', true);
+  const result = await walkDir(readDir, '/root', true, [], false);
 
-  expect(result).toHaveLength(3);
-  expect(readDir).toHaveBeenCalledWith('/');
-  expect(readDir).toHaveBeenCalledWith('/folder');
+  expect(result).toEqual([dir('/root/sub'), file('/root/a.org')]);
+  expect(readDir).toHaveBeenCalledTimes(1);
+  expect(readDir).toHaveBeenCalledWith('/root');
 });
 
-test('walkDir handles deeply nested directories', async () => {
-  const readDir = vi.fn().mockImplementation((path: string) => {
-    if (path === '/') return Promise.resolve([createMockFile('/a', 'directory')]);
-    if (path === '/a') return Promise.resolve([createMockFile('/a/b', 'directory')]);
-    if (path === '/a/b') return Promise.resolve([createMockFile('/a/b/file.org')]);
-    return Promise.resolve([]);
-  });
+test('walkDir excludes files when includeFiles is false but keeps directories', async () => {
+  const readDir = vi.fn(async (): Promise<DiskFile[]> => [
+    dir('/root/sub'),
+    file('/root/a.org.tmpl'),
+  ]);
 
-  const result = await walkDir(readDir, '/', true);
+  const result = await walkDir(readDir, '/root', false, ['.org.tmpl'], false);
 
-  expect(result).toHaveLength(3);
-  expect(result.map((f) => f.path)).toEqual(['/a', '/a/b', '/a/b/file.org']);
+  expect(result).toEqual([dir('/root/sub')]);
 });
 
-test('walkDir includes both files and directories when includeFiles is true', async () => {
-  const items = [
-    createMockFile('/folder', 'directory'),
-    createMockFile('/file.org', 'file'),
-  ];
-  const readDir = vi.fn().mockImplementation((path: string) => {
-    if (path === '/') return Promise.resolve(items);
-    return Promise.resolve([]);
+test('walkDir recurses into nested directories in level-then-nested order', async () => {
+  const readDir = vi.fn(async (path: string): Promise<DiskFile[]> => {
+    if (path === '/root') return [dir('/root/a'), file('/root/top.org')];
+    if (path === '/root/a') return [file('/root/a/nested.org')];
+    return [];
   });
 
-  const result = await walkDir(readDir, '/', true);
+  const result = await walkDir(readDir, '/root', true);
 
-  expect(result).toHaveLength(2);
-  expect(result.some((f) => f.type === 'directory')).toBe(true);
-  expect(result.some((f) => f.type === 'file')).toBe(true);
-});
-
-test('walkDir collects files from multiple nested directories', async () => {
-  const readDir = vi.fn().mockImplementation((path: string) => {
-    if (path === '/') {
-      return Promise.resolve([
-        createMockFile('/dir1', 'directory'),
-        createMockFile('/dir2', 'directory'),
-      ]);
-    }
-    if (path === '/dir1') return Promise.resolve([createMockFile('/dir1/a.org')]);
-    if (path === '/dir2') return Promise.resolve([createMockFile('/dir2/b.org')]);
-    return Promise.resolve([]);
-  });
-
-  const result = await walkDir(readDir, '/', true);
-
-  expect(result).toHaveLength(4);
-  expect(result.map((f) => f.path)).toContain('/dir1/a.org');
-  expect(result.map((f) => f.path)).toContain('/dir2/b.org');
+  expect(result).toEqual([
+    dir('/root/a'),
+    file('/root/top.org'),
+    file('/root/a/nested.org'),
+  ]);
 });

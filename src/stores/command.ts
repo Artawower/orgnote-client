@@ -8,12 +8,12 @@ import { type CommandsStore, type Command } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { api } from 'src/boot/api';
 import { clientOnly } from 'src/utils/platform-specific';
-import { ref, shallowRef, triggerRef } from 'vue';
+import { shallowRef, triggerRef } from 'vue';
 
 export const useCommandsStore = defineStore<'commands', CommandsStore>('commands', () => {
   const commands = shallowRef<Command[]>([]);
-  const callbacks = ref<Map<string, CommandCallback[]>>(new Map());
-  const wrappers = ref<Map<string, CommandWrapper[]>>(new Map());
+  const callbacks = shallowRef<Map<string, CommandCallback[]>>(new Map());
+  const wrappers = shallowRef<Map<string, CommandWrapper[]>>(new Map());
 
   const register = (...newCommands: Command[]) => {
     if (!newCommands.length) {
