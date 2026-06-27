@@ -194,7 +194,7 @@ const createDefaultTemplateNote = async (
   return await createNoteFromContent(api, notePath, renderOrgTemplate(templateContent, notePath));
 };
 
-const createCommands = (): Command[] => [
+const ORG_TEMPLATE_COMMANDS: Command[] = [
   {
     command: CREATE_NOTE_FROM_TEMPLATE_COMMAND,
     title: 'Create note from template',
@@ -213,8 +213,7 @@ const createCommands = (): Command[] => [
   },
 ];
 
-let registeredCommands: Command[] = [];
-let unwrapCreateNote: (() => void) | undefined;
+const unwrapCreateNoteByApi = new WeakMap<OrgNoteApi, () => void>();
 
 export const orgTemplatesExtension: Extension = {
   settingsSchema,
@@ -223,19 +222,18 @@ export const orgTemplatesExtension: Extension = {
     await ensureDefaultTemplateConfig(api);
 
     const commands = api.core.useCommands();
-    registeredCommands = createCommands();
-    commands.add(...registeredCommands);
-    unwrapCreateNote = commands.wrap<unknown, string>(DefaultCommands.CREATE_NOTE, {
+    commands.add(...ORG_TEMPLATE_COMMANDS);
+    const unwrapCreateNote = commands.wrap<unknown, string>(DefaultCommands.CREATE_NOTE, {
       id: DEFAULT_CREATE_NOTE_WRAPPER_ID,
       priority: 100,
       handler: ({ next }) => createDefaultTemplateNote(api, next),
     });
+    unwrapCreateNoteByApi.set(api, unwrapCreateNote);
   },
   onUnmounted: async (api) => {
-    unwrapCreateNote?.();
-    unwrapCreateNote = undefined;
-    api.core.useCommands().remove(...registeredCommands);
-    registeredCommands = [];
+    unwrapCreateNoteByApi.get(api)?.();
+    unwrapCreateNoteByApi.delete(api);
+    api.core.useCommands().remove(...ORG_TEMPLATE_COMMANDS);
   },
 };
 
