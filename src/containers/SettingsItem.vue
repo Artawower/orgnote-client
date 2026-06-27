@@ -135,6 +135,7 @@ import AppDescription from 'src/components/AppDescription.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { isPresent, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import { matchesAllowedExtension } from 'src/utils/matches-allowed-extension';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
 const props = defineProps<{
@@ -197,12 +198,6 @@ const removeFromArray = (index: number): void => {
   fieldSet(props.name, arr);
 };
 
-const matchesAllowedExtension = (path: string): boolean => {
-  const allowedExtensions = metadata?.allowedExtensions;
-  if (!allowedExtensions?.length) return true;
-  return allowedExtensions.some((extension) => path.endsWith(extension));
-};
-
 const ensureRootPath = async (): Promise<boolean> => {
   if (!metadata?.ensureRootPath || !metadata.rootPath) return true;
 
@@ -229,11 +224,12 @@ const validatePickerInput = async (
   if (mode === 'file' && value.endsWith('/')) {
     return { valid: false, message: 'File path is required' };
   }
-  if (mode === 'file' && !matchesAllowedExtension(value)) {
+  if (mode === 'file' && !matchesAllowedExtension(value, metadata?.allowedExtensions)) {
     return { valid: false, message: 'File extension is not allowed' };
   }
   if (mode === 'file' && metadata?.createIfMissing === false) {
-    const existing = await to(api.core.useFileSystem().fileInfo)(value);
+    const fs = api.core.useFileSystem();
+    const existing = await to(fs.fileInfo.bind(fs))(value);
     if (existing.isErr() || existing.value?.type !== 'file') {
       return { valid: false, message: 'File does not exist' };
     }

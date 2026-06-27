@@ -6,7 +6,6 @@ export const DEFAULT_TEMPLATE_PATH = `${TEMPLATE_ROOT_PATH}/default${TEMPLATE_EX
 export const DEFAULT_TEMPLATE_CONTENT = `:PROPERTIES:
 :ID: {{uuid()}}
 :END:
-
 #+TITLE: {{title}}
 `;
 const TEMPLATE_ROOT_PREFIX = `${TEMPLATE_ROOT_PATH}/`;

@@ -30,6 +30,9 @@ export const createFileCompletion = async (api: OrgNoteApi): Promise<string> => 
   }
 
   const fs = api.core.useFileSystem();
+  const existing = await fs.fileInfo(filePath);
+  if (existing) return '';
+
   await fs.writeFile(filePath, '');
   return filePath;
 };

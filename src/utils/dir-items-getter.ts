@@ -1,5 +1,6 @@
 import Fuse from 'fuse.js';
 import type { DiskFile, OrgNoteApi, CompletionSearchResult } from 'orgnote-api';
+import { matchesAllowedExtension } from './matches-allowed-extension';
 
 export type ReadDirFn = (path: string) => Promise<DiskFile[]>;
 
@@ -9,11 +10,6 @@ export interface DirItemsGetterOptions {
   allowedExtensions?: string[];
   recursive?: boolean;
 }
-
-const matchesAllowedExtension = (path: string, allowedExtensions?: string[]): boolean => {
-  if (!allowedExtensions?.length) return true;
-  return allowedExtensions.some((extension) => path.endsWith(extension));
-};
 
 const shouldIncludeItem = (
   item: DiskFile,
