@@ -1,80 +1,43 @@
 import type { Extension, WidgetMeta } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 import { NodeType, type OrgNode } from 'org-mode-ast';
-import { keywordKeymapExtension } from './keyword-keymap';
-import { getKeywordName, isSupportedKeyword, getKeywordValue } from './utils';
-import { KEYWORD_PLACEHOLDERS, SUPPORTED_KEYWORDS } from './constants';
-import { applyCSSVariables, resetCSSVariables } from 'src/utils/css-utils';
-import styles from './styles.css?raw';
+import OrgKeywordEditor from './OrgKeywordEditor.vue';
+import { getKeywordName } from './utils';
 
-const WIDGET_PREFIX_ID = 'keyword-overlay-prefix';
-const LINE_CLASS_ID = 'keyword-overlay-line';
-const SCOPE_ID = 'org-keyword-overlay';
+const TITLE_WIDGET_ID = 'org-keyword-title-editor';
+const DESCRIPTION_WIDGET_ID = 'org-keyword-description-editor';
+
 const WIDGET_PRIORITY = 100;
 
-const isKeywordPrefix = (orgNode: OrgNode): boolean => {
-  const parent = orgNode.parent;
-  if (!parent?.is(NodeType.Keyword)) return false;
+const isKeyword = (name: string): ((orgNode: OrgNode) => boolean) =>
+  (orgNode: OrgNode): boolean => getKeywordName(orgNode) === name;
 
-  const isFirstChild = parent.children?.first === orgNode;
-  if (!isFirstChild) return false;
-
-  const keywordName = getKeywordName(parent);
-  return isSupportedKeyword(keywordName);
-};
-
-const keywordPrefixWidget: WidgetMeta = {
-  id: WIDGET_PREFIX_ID,
-  type: WidgetType.Inline,
-  nodeType: NodeType.Text,
-  decorationType: 'replace',
-  satisfied: isKeywordPrefix,
-  widgetBuilder: () => ({ destroy: () => {} }),
-  ignoreEditing: true,
-  priority: WIDGET_PRIORITY,
-};
-
-const keywordLineClass: WidgetMeta = {
-  id: LINE_CLASS_ID,
-  type: WidgetType.LineClass,
+const buildKeywordWidget = (id: string, keywordName: string): WidgetMeta => ({
+  id,
+  type: WidgetType.Multiline,
   nodeType: NodeType.Keyword,
-  class: (orgNode: OrgNode) => {
-    const keywordName = getKeywordName(orgNode);
-    if (!isSupportedKeyword(keywordName)) return '';
-
-    const value = getKeywordValue(orgNode);
-    const isEmpty = value.trim() === '';
-    return `keyword-overlay keyword-${keywordName}${isEmpty ? ' keyword-empty' : ''}`;
-  },
+  satisfied: isKeyword(keywordName),
+  component: OrgKeywordEditor,
+  componentProps: { variant: keywordName === 'title' ? 'title' : 'description' },
+  ignoreEvent: true,
+  suppressEdit: true,
+  showEditAction: true,
   priority: WIDGET_PRIORITY,
-};
+});
 
-const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-
-const PLACEHOLDER_VARIABLES: Record<string, string> = Object.fromEntries(
-  SUPPORTED_KEYWORDS.map((k) => [`keywordPlaceholder${capitalize(k)}`, `"${KEYWORD_PLACEHOLDERS[k]}"`])
-);
-
-const PLACEHOLDER_VARIABLE_NAMES = Object.keys(PLACEHOLDER_VARIABLES);
+const titleWidget = buildKeywordWidget(TITLE_WIDGET_ID, 'title');
+const descriptionWidget = buildKeywordWidget(DESCRIPTION_WIDGET_ID, 'description');
 
 export const orgKeywordOverlayExtension: Extension = {
   onMounted: async (api) => {
-    api.utils.applyScopedStyles(SCOPE_ID, styles);
-    applyCSSVariables(PLACEHOLDER_VARIABLES);
-
-    const { addWidgets, addExtensions } = api.core.useEditor();
-    addWidgets(keywordPrefixWidget, keywordLineClass);
-    addExtensions(keywordKeymapExtension);
+    const { addWidgets } = api.core.useEditor();
+    addWidgets(titleWidget, descriptionWidget);
   },
 
   onUnmounted: async (api) => {
-    api.utils.removeScopedStyles(SCOPE_ID);
-    resetCSSVariables(PLACEHOLDER_VARIABLE_NAMES);
-
-    const { removeWidget, removeExtensions } = api.core.useEditor();
-    removeWidget(WIDGET_PREFIX_ID);
-    removeWidget(LINE_CLASS_ID);
-    removeExtensions(keywordKeymapExtension);
+    const { removeWidget } = api.core.useEditor();
+    removeWidget(TITLE_WIDGET_ID);
+    removeWidget(DESCRIPTION_WIDGET_ID);
   },
 };
 

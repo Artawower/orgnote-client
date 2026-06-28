@@ -1,8 +1,4 @@
 import type { OrgNode } from 'org-mode-ast';
-import { isPresent } from 'orgnote-api/utils';
-import { SUPPORTED_KEYWORDS, type SupportedKeyword } from './constants';
-
-export const KEYWORD_PATTERNS = SUPPORTED_KEYWORDS.map((k) => `#+${k}`);
 
 export const getKeywordName = (orgNode: OrgNode): string | null => {
   const prefix = orgNode.children?.first;
@@ -17,9 +13,6 @@ export const getKeywordName = (orgNode: OrgNode): string | null => {
   return value.slice(2, colonIndex);
 };
 
-export const isSupportedKeyword = (keywordName: string | null): keywordName is SupportedKeyword =>
-  isPresent(keywordName) && SUPPORTED_KEYWORDS.includes(keywordName as SupportedKeyword);
-
 export const getKeywordValue = (orgNode: OrgNode): string => {
   const firstChild = orgNode.children?.first;
   if (!firstChild?.value) return '';
@@ -28,7 +21,7 @@ export const getKeywordValue = (orgNode: OrgNode): string => {
   if (colonIndex === -1) return '';
 
   const afterColon = firstChild.value.slice(colonIndex + 1).trim();
-  
+
   if (afterColon) {
     return afterColon;
   }
@@ -42,5 +35,3 @@ export const getKeywordValue = (orgNode: OrgNode): string => {
     .join('')
     .trim();
 };
-
-export const isKeywordEmpty = (orgNode: OrgNode): boolean => getKeywordValue(orgNode) === '';

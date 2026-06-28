@@ -18,30 +18,25 @@
 .property-row {
   min-height: 2rem;
   padding: var(--padding-xs) var(--padding-sm);
-  border: 1px solid transparent;
-  border-radius: var(--border-radius-md);
   color: var(--fg);
   align-items: center;
-  transition: border-color 0.15s ease;
+
+  @include hoverable-area;
 
   .property-actions {
-    opacity: 0;
+    @include hoverable-actions;
   }
 
   @include hover {
-    border-color: var(--border-color);
-
     .property-actions {
       opacity: 1;
+      pointer-events: auto;
     }
   }
 
-  &:focus-within {
-    border-color: var(--border-color);
-
-    .property-actions {
-      opacity: 1;
-    }
+  &:focus-within .property-actions {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 

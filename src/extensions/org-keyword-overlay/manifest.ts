@@ -5,7 +5,7 @@ export const orgKeywordOverlayManifest: ExtensionManifest = {
   version: '1.0.0',
   category: 'extension',
   source: { type: 'builtin' },
-  description: 'Shows placeholders for empty keywords like #+TITLE:, #+AUTHOR:, etc.',
+  description: 'Inline editors for #+TITLE: and #+DESCRIPTION: keywords.',
   author: 'OrgNote',
   keywords: ['keyword', 'placeholder', 'overlay', 'title'],
 };
