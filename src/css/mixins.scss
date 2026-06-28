@@ -286,3 +286,30 @@ $org-priority-letters: a, b, c, d, e;
     opacity: 1;
   }
 }
+
+@mixin hoverable-area {
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--border-color);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+}
+
+@mixin hoverable-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+
+  @include tablet {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
