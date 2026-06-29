@@ -17,7 +17,7 @@
       v-model="draft"
       class="tag-input"
       placeholder="tag"
-      @keydown.enter.prevent="commit"
+      @keydown.enter.stop.prevent="commit"
     />
   </app-flex>
 </template>

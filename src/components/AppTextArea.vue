@@ -8,29 +8,55 @@
     :autofocus="autofocus"
     :disabled="disable"
     :rows="rows"
+    @input="adjustHeight"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
   placeholder?: string;
   name?: string;
   autocomplete?: string;
   autofocus?: boolean;
   disable?: boolean;
   rows?: number;
+  autoGrow?: boolean;
 }>();
 
 const model = defineModel<string>();
 const textAreaRef = ref<HTMLTextAreaElement | undefined>();
 
-const focus = () => {
+const resizeTextArea = (): void => {
+  if (!props.autoGrow) return;
+  const textArea = textAreaRef.value;
+  if (!textArea) return;
+  textArea.style.height = 'auto';
+  textArea.style.height = `${textArea.scrollHeight}px`;
+};
+
+const adjustHeight = (): void => {
+  void nextTick(resizeTextArea);
+};
+
+const focus = (): void => {
   textAreaRef.value?.focus();
 };
 
-defineExpose({ focus });
+const focusEnd = (): void => {
+  const textArea = textAreaRef.value;
+  if (!textArea) return;
+
+  textArea.focus();
+  const caret = textArea.value.length;
+  textArea.setSelectionRange(caret, caret);
+};
+
+watch(() => model.value, adjustHeight);
+onMounted(adjustHeight);
+
+defineExpose({ focus, focusEnd });
 </script>
 
 <style lang="scss" scoped>

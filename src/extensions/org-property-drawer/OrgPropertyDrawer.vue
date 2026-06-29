@@ -1,10 +1,15 @@
 <template>
   <app-flex
     :class="[`scope-${scope}`, { collapsed: isCollapsed }]"
+    :data-property-drawer="scope"
+    :data-property-start="propertyRange.from"
+    :data-property-end="propertyRange.to"
+    tabindex="-1"
     column
     align-stretch
     gap="xs"
     contenteditable="false"
+    @keydown.capture="handlePropertyKeydown"
     @mousedown.stop
     @click.stop
   >
@@ -47,6 +52,8 @@
         v-for="item in items"
         :key="item.key"
         class="property-row"
+        data-property-row
+        tabindex="0"
         align-center
         gap="md"
         @mousedown.stop
@@ -79,6 +86,7 @@
             :is="valueComponent(item)"
             :item="item"
             @set="setValue(item.key, $event)"
+            @enter="exitPropertyDrawerDown"
             @remove-tag="removeTag(item, $event)"
             @add-tag="addTag(item, $event)"
           />
@@ -103,6 +111,8 @@
       <app-flex
         v-if="isAdding"
         class="property-row editing-row"
+        data-property-row
+        tabindex="0"
         align-center
         gap="md"
         @mousedown.stop
@@ -133,7 +143,7 @@
           class="property-value editing"
           :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
           :rows="1"
-          @keydown.enter.prevent="commitEdit"
+          @keydown.enter.stop.prevent="commitEditAndExit"
           @keydown.esc.prevent="cancelEdit"
           @blur="commitEdit"
         />
@@ -165,6 +175,7 @@
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import ActionButton from 'src/components/ActionButton.vue';
@@ -172,6 +183,11 @@ import AppDropdown from 'src/components/AppDropdown.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppTextArea from 'src/components/AppTextArea.vue';
+import {
+  focusOutsidePropertyDrawer,
+  handlePropertyDrawerArrowKey,
+} from './property-navigation';
+import { getPropertyWidgetRange } from './property-source';
 import { usePropertyDrawer } from './use-property-drawer';
 
 const props = defineProps<{
@@ -183,6 +199,15 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const propertyRange = computed(() => getPropertyWidgetRange(props.node));
+
+const exitPropertyDrawerDown = (): void => {
+  focusOutsidePropertyDrawer(props.editorView, propertyRange.value, 1);
+};
+
+const handlePropertyKeydown = (event: KeyboardEvent): void => {
+  handlePropertyDrawerArrowKey(event, props.editorView, propertyRange.value);
+};
 
 const {
   addKeyInputRef,
@@ -212,6 +237,11 @@ const {
   valueComponent,
   valueInputRef,
 } = usePropertyDrawer(props);
+
+const commitEditAndExit = (): void => {
+  commitEdit();
+  exitPropertyDrawerDown();
+};
 </script>
 
 <style scoped lang="scss">

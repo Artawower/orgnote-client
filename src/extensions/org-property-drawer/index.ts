@@ -3,6 +3,7 @@ import { WidgetType } from 'orgnote-api';
 import { NodeType } from 'org-mode-ast';
 import { watch, type WatchStopHandle } from 'vue';
 import OrgPropertyDrawer from './OrgPropertyDrawer.vue';
+import { propertyNavigationExtension } from './property-navigation';
 import {
   getPropertyEditPosition,
   getPropertyWidgetRange,
@@ -22,6 +23,7 @@ export const orgPropertyDrawerExtension: Extension = {
 
     const addPropertyWidgets = (): void => {
       if (isRegistered) return;
+      editor.addExtensions(propertyNavigationExtension);
       editor.addWidgets({
         id: DRAWER_WIDGET_ID,
         type: WidgetType.Multiline,
@@ -51,6 +53,7 @@ export const orgPropertyDrawerExtension: Extension = {
     };
 
     const removePropertyWidgets = (): void => {
+      editor.removeExtensions(propertyNavigationExtension);
       editor.removeWidget(DRAWER_WIDGET_ID);
       editor.removeWidget(ROOT_SEQUENCE_WIDGET_ID);
       isRegistered = false;
@@ -69,7 +72,8 @@ export const orgPropertyDrawerExtension: Extension = {
   onUnmounted: async (api) => {
     stopConfigWatch?.();
     stopConfigWatch = undefined;
-    const { removeWidget } = api.core.useEditor();
+    const { removeExtensions, removeWidget } = api.core.useEditor();
+    removeExtensions(propertyNavigationExtension);
     removeWidget(DRAWER_WIDGET_ID);
     removeWidget(ROOT_SEQUENCE_WIDGET_ID);
     isRegistered = false;

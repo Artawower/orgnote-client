@@ -5,7 +5,7 @@ export const orgKeywordOverlayManifest: ExtensionManifest = {
   version: '1.0.0',
   category: 'extension',
   source: { type: 'builtin' },
-  description: 'Inline editors for #+TITLE: and #+DESCRIPTION: keywords.',
+  description: 'Block title editor and lightweight keyword line styling.',
   author: 'OrgNote',
   keywords: ['keyword', 'placeholder', 'overlay', 'title'],
 };

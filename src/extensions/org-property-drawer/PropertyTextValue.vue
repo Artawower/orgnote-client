@@ -8,7 +8,7 @@
     class="property-value editing"
     :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
     :rows="1"
-    @keydown.enter.prevent="commit"
+    @keydown.enter.stop.prevent="commitAndExit"
     @blur="commit"
   />
 </template>
@@ -26,7 +26,10 @@ const props = defineProps<{
   readonly?: boolean;
 }>();
 
-const emit = defineEmits<{ set: [value: string] }>();
+const emit = defineEmits<{
+  set: [value: string];
+  enter: [];
+}>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const displayed = computed(() => truncateValue(props.item.value || t(I18N.EMPTY_VALUE_PLACEHOLDER)));
@@ -34,5 +37,10 @@ const displayed = computed(() => truncateValue(props.item.value || t(I18N.EMPTY_
 const commit = (event: Event): void => {
   if (!(event.target instanceof HTMLTextAreaElement)) return;
   emit('set', event.target.value);
+};
+
+const commitAndExit = (event: Event): void => {
+  commit(event);
+  emit('enter');
 };
 </script>
