@@ -8,7 +8,7 @@
       autocomplete="off"
       @focus="openOptions"
       @keydown.stop
-      @keydown.enter.prevent="confirm"
+      @keydown.enter.stop.prevent="confirm"
       @keydown.esc.prevent="cancel"
     />
 

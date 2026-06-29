@@ -2,14 +2,9 @@
   <component
     :is="tag"
     class="hoverable-area"
-    :class="{ 'has-border': bordered, 'actions-visible': persistentActions }"
+    :class="{ 'has-border': bordered }"
   >
-    <div v-if="$slots.actions" class="actions">
-      <slot name="actions" />
-    </div>
-    <div class="content">
-      <slot />
-    </div>
+    <slot />
   </component>
 </template>
 
@@ -18,12 +13,10 @@ withDefaults(
   defineProps<{
     tag?: string;
     bordered?: boolean;
-    persistentActions?: boolean;
   }>(),
   {
     tag: 'div',
     bordered: true,
-    persistentActions: false,
   },
 );
 </script>
@@ -36,15 +29,5 @@ withDefaults(
     @include hoverable-area;
   }
 
-  .actions {
-    @include hoverable-actions;
-  }
-
-  &:hover .actions,
-  &:focus-within .actions,
-  &.actions-visible .actions {
-    opacity: 1;
-    pointer-events: auto;
-  }
 }
 </style>

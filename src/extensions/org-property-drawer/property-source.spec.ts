@@ -56,6 +56,35 @@ test('property source reports applied drawer replacement', () => {
   expect(calls).toHaveLength(1);
 });
 
+test('property source keeps Enter inside property value on one source line', () => {
+  const root = parse(':PROPERTIES:\n:ID: old\n:END:\n');
+  const drawer = root.childrenList[0]!;
+  const { calls, view } = createFakeView(root.rawValue);
+
+  replacePropertyItems(view as never, drawer, [{ key: 'ID', value: 'qwe\nND' }]);
+
+  expect(calls[0]).toMatchObject({
+    changes: { ...getPropertyWidgetRange(drawer), insert: ':PROPERTIES:\n:ID: qwe ND\n:END:' },
+  });
+});
+
+test('property source replaces current drawer when widget node range is stale', () => {
+  const staleRoot = parse(':PROPERTIES:\n:ID: SOME_ID\n:END:\n');
+  const staleDrawer = staleRoot.childrenList[0]!;
+  const currentContent = ':PROPERTIES:\n:ID: SOME_ID123\n:END:\n';
+  const { calls, view } = createFakeView(currentContent);
+
+  replacePropertyItems(view as never, staleDrawer, [{ key: 'ID', value: 'SOME_ID1234' }]);
+
+  expect(calls[0]).toMatchObject({
+    changes: {
+      from: 0,
+      to: currentContent.trimEnd().length,
+      insert: ':PROPERTIES:\n:ID: SOME_ID1234\n:END:',
+    },
+  });
+});
+
 test('property source inserts empty drawer at target position', () => {
   const { calls, view } = createFakeView('* H\n');
   insertEmptyPropertyDrawer(view as never, 0);

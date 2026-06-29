@@ -7,7 +7,7 @@
       class="property-value editing"
       :placeholder="t(I18N.EMPTY_VALUE_PLACEHOLDER)"
       :rows="1"
-      @keydown.enter.prevent="commit"
+      @keydown.enter.stop.prevent="commit"
       @blur="commit"
     />
     <action-button

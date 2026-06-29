@@ -5,8 +5,15 @@ import type { OrgPropertyEntry } from 'orgnote-api';
 import { selectOrgDocument } from 'orgnote-api/utils';
 import type { PropertyEditorState, PropertyScope } from './property-model';
 
-const formatPropertyLine = ({ key, value }: OrgPropertyEntry): string =>
-  value ? `:${key}: ${value}` : `:${key}:`;
+const PROPERTY_VALUE_LINE_BREAK_PATTERN = /\s*\r?\n\s*/g;
+
+const normalizePropertyValue = (value: string): string =>
+  value.replace(PROPERTY_VALUE_LINE_BREAK_PATTERN, ' ').trim();
+
+const formatPropertyLine = ({ key, value }: OrgPropertyEntry): string => {
+  const normalizedValue = normalizePropertyValue(value);
+  return normalizedValue ? `:${key}: ${normalizedValue}` : `:${key}:`;
+};
 
 const formatPropertyDrawer = (items: readonly OrgPropertyEntry[]): string =>
   [PROPERTY_HEAD, ...items.map(formatPropertyLine), PROPERTY_END].join('\n');
@@ -18,13 +25,35 @@ const PROPERTY_LINE_PATTERN = /^:([^:\s]+):\s*(.*)$/;
 
 const documentText = (view: EditorView): string => view.state.doc.toString();
 
+const lineEndAt = (content: string, position: number): number => {
+  const nextLineBreak = content.indexOf('\n', position);
+  return nextLineBreak === -1 ? content.length : nextLineBreak;
+};
+
+const findCurrentDrawerEnd = (content: string, from: number): number | undefined => {
+  for (let position = from; position < content.length; position = lineEndAt(content, position) + 1) {
+    const lineEnd = lineEndAt(content, position);
+    if (content.slice(position, lineEnd).trim() === PROPERTY_END) return lineEnd;
+  }
+
+  return undefined;
+};
+
+const resolveCurrentPropertyRange = (content: string, node: OrgNode): { from: number; to: number } => {
+  const staleRange = getPropertyWidgetRange(node);
+  const currentEnd = findCurrentDrawerEnd(content, staleRange.from);
+  if (currentEnd === undefined) return staleRange;
+  return { from: staleRange.from, to: currentEnd };
+};
+
 export const replacePropertyItems = (
   view: EditorView,
   node: OrgNode,
   items: readonly OrgPropertyEntry[],
   onApplied?: () => void,
 ): void => {
-  const range = getPropertyWidgetRange(node);
+  const content = documentText(view);
+  const range = resolveCurrentPropertyRange(content, node);
   const insert = formatPropertyDrawer(items);
   const docLength = view.state.doc.length;
   if (range.from > docLength) return;
