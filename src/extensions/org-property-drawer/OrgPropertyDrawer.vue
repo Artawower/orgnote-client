@@ -1,15 +1,11 @@
 <template>
   <app-flex
     :class="[`scope-${scope}`, { collapsed: isCollapsed }]"
-    :data-property-drawer="scope"
-    :data-property-start="propertyRange.from"
-    :data-property-end="propertyRange.to"
     tabindex="-1"
     column
     align-stretch
     gap="xs"
     contenteditable="false"
-    @keydown.capture="handlePropertyKeydown"
     @mousedown.stop
     @click.stop
   >
@@ -49,13 +45,15 @@
       </app-flex>
 
       <app-flex
-        v-for="item in items"
+        v-for="(item, index) in items"
         :key="item.key"
         class="property-row"
-        data-property-row
+        :class="{ active: activePropertyRowIndex === index }"
         tabindex="0"
         align-center
         gap="md"
+        @focusin="activatePropertyRow(index)"
+        @keydown.capture="handlePropertyRowKeydown(index, $event)"
         @mousedown.stop
         @click.stop
       >
@@ -67,6 +65,7 @@
         <template v-else>
           <span class="property-key editing">
             <app-dropdown
+              :ref="(control) => setPropertyRowFocusControl(index, control)"
               :model-value="item.key"
               :options="knownPropertyKeys"
               :taggable="true"
@@ -111,10 +110,12 @@
       <app-flex
         v-if="isAdding"
         class="property-row editing-row"
-        data-property-row
+        :class="{ active: activePropertyRowIndex === draftPropertyRowIndex }"
         tabindex="0"
         align-center
         gap="md"
+        @focusin="activatePropertyRow(draftPropertyRowIndex)"
+        @keydown.capture="handlePropertyRowKeydown(draftPropertyRowIndex, $event)"
         @mousedown.stop
         @click.stop
       >
@@ -175,19 +176,22 @@
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { I18N } from 'orgnote-api';
+import { I18N, isPresent } from 'orgnote-api';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';
 import AppTextArea from 'src/components/AppTextArea.vue';
 import {
-  focusOutsidePropertyDrawer,
-  handlePropertyDrawerArrowKey,
-} from './property-navigation';
-import { getPropertyWidgetRange } from './property-source';
+  EMBEDDED_WIDGET_COMMAND,
+  EMBEDDED_WIDGET_DIRECTION,
+  getEmbeddedWidgetBridge,
+  type EmbeddedWidgetDirection,
+  type EmbeddedWidgetFocusPosition,
+} from 'src/utils/org-editor/embedded-widget-runtime';
+import { resolveCurrentPropertyRange } from './property-source';
 import { usePropertyDrawer } from './use-property-drawer';
 
 const props = defineProps<{
@@ -198,15 +202,40 @@ const props = defineProps<{
   openOnInit?: boolean;
 }>();
 
-const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-const propertyRange = computed(() => getPropertyWidgetRange(props.node));
+interface FocusableControl {
+  focus: () => void;
+}
 
-const exitPropertyDrawerDown = (): void => {
-  focusOutsidePropertyDrawer(props.editorView, propertyRange.value, 1);
+const PROPERTY_ROW_DIRECTION_BY_KEY: Readonly<Record<string, EmbeddedWidgetDirection | undefined>> = {
+  ArrowDown: EMBEDDED_WIDGET_DIRECTION.Next,
+  ArrowUp: EMBEDDED_WIDGET_DIRECTION.Previous,
 };
 
-const handlePropertyKeydown = (event: KeyboardEvent): void => {
-  handlePropertyDrawerArrowKey(event, props.editorView, propertyRange.value);
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const activePropertyRowIndex = ref<number | null>(null);
+const propertyRowFocusControls = ref<Array<FocusableControl | undefined>>([]);
+let unregisterWidget: (() => void) | undefined;
+
+const widgetId = `property-drawer:${props.node.start}`;
+
+const currentPropertyRange = () =>
+  resolveCurrentPropertyRange(props.editorView.state.doc.toString(), props.node);
+
+const isRecord = (value: unknown): value is Record<PropertyKey, unknown> =>
+  typeof value === 'object' && isPresent(value);
+
+const isFocusableControl = (control: unknown): control is FocusableControl =>
+  isRecord(control)
+  && typeof control.focus === 'function';
+
+const activatePropertyRow = (rowIndex: number): void => {
+  activePropertyRowIndex.value = rowIndex;
+};
+
+const setPropertyRowFocusControl = (rowIndex: number, control: unknown): void => {
+  propertyRowFocusControls.value[rowIndex] = isFocusableControl(control)
+    ? control
+    : undefined;
 };
 
 const {
@@ -238,6 +267,91 @@ const {
   valueInputRef,
 } = usePropertyDrawer(props);
 
+const propertyRowCount = computed(() => items.value.length + (isAdding.value ? 1 : 0));
+const draftPropertyRowIndex = computed(() => items.value.length);
+
+const isVisiblePropertyRowIndex = (rowIndex: number): boolean =>
+  rowIndex >= 0 && rowIndex < propertyRowCount.value;
+
+const propertyRowIndexByPosition = (
+  position: EmbeddedWidgetFocusPosition,
+): number | undefined => {
+  if (propertyRowCount.value === 0) return undefined;
+  if (position === 'start') return 0;
+  return propertyRowCount.value - 1;
+};
+
+const focusControl = (control: FocusableControl): void => {
+  control.focus();
+};
+
+const focusableControlByRowIndex = (rowIndex: number): FocusableControl | undefined => {
+  if (isAdding.value && rowIndex === draftPropertyRowIndex.value) return addKeyInputRef.value;
+  return propertyRowFocusControls.value[rowIndex];
+};
+
+const focusPropertyRow = (rowIndex: number | undefined): boolean => {
+  if (rowIndex === undefined || !isVisiblePropertyRowIndex(rowIndex)) return false;
+
+  const control = focusableControlByRowIndex(rowIndex);
+  activatePropertyRow(rowIndex);
+  if (!control) return false;
+  focusControl(control);
+  return true;
+};
+
+const focusPropertyDrawerRow = (position: EmbeddedWidgetFocusPosition): boolean =>
+  focusPropertyRow(propertyRowIndexByPosition(position));
+
+const adjacentPropertyRowIndex = (
+  rowIndex: number,
+  direction: EmbeddedWidgetDirection,
+): number | undefined => {
+  const targetIndex = rowIndex + direction;
+  if (!isVisiblePropertyRowIndex(targetIndex)) return undefined;
+  return targetIndex;
+};
+
+const exitPropertyDrawer = (direction: EmbeddedWidgetDirection): void => {
+  getEmbeddedWidgetBridge(props.editorView).dispatch({
+    type: EMBEDDED_WIDGET_COMMAND.Exit,
+    payload: {
+      sourceId: widgetId,
+      range: currentPropertyRange(),
+      direction,
+    },
+  });
+};
+
+const exitPropertyDrawerDown = (): void => {
+  exitPropertyDrawer(EMBEDDED_WIDGET_DIRECTION.Next);
+};
+
+const handlePropertyRowKeydown = (rowIndex: number, event: KeyboardEvent): void => {
+  const direction = PROPERTY_ROW_DIRECTION_BY_KEY[event.key];
+  if (!direction) return;
+
+  const targetRowIndex = adjacentPropertyRowIndex(rowIndex, direction);
+
+  event.preventDefault();
+  activatePropertyRow(rowIndex);
+
+  if (focusPropertyRow(targetRowIndex)) return;
+  exitPropertyDrawer(direction);
+};
+
+onMounted(() => {
+  unregisterWidget = getEmbeddedWidgetBridge(props.editorView).register({
+    id: widgetId,
+    getRange: currentPropertyRange,
+    focus: ({ position }) => focusPropertyDrawerRow(position),
+  });
+});
+
+onBeforeUnmount(() => {
+  unregisterWidget?.();
+});
+
 const commitEditAndExit = (): void => {
   commitEdit();
   exitPropertyDrawerDown();
@@ -245,5 +359,161 @@ const commitEditAndExit = (): void => {
 </script>
 
 <style scoped lang="scss">
-@import './property-drawer.scss';
+.property-title {
+  color: var(--fg-muted);
+  font-size: inherit;
+  font-weight: normal;
+}
+
+.property-trigger,
+.property-title-action {
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.property-header {
+  color: var(--fg-muted);
+  padding-bottom: var(--padding-xs);
+}
+
+.property-row {
+  min-height: 2rem;
+  padding: var(--padding-xs) var(--padding-sm);
+  color: var(--fg);
+  align-items: center;
+
+  @include hoverable-area;
+
+  .property-actions {
+    @include hoverable-actions;
+  }
+
+  @include hover {
+    .property-actions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  &:focus-within .property-actions,
+  &.active .property-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.editing-row .property-actions {
+  opacity: 1;
+}
+
+.property-key {
+  flex: 0 0 10rem;
+  width: 10rem;
+  min-width: 6rem;
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.property-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--fg);
+  overflow-wrap: anywhere;
+}
+
+.editing-row {
+  border-color: var(--border-color);
+  background: var(--bg-elevated);
+}
+
+.editing {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.property-key.editing {
+  display: flex;
+  flex: 0 0 10rem;
+  align-items: center;
+  width: 10rem;
+  max-width: 10rem;
+  height: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: visible;
+}
+
+.editing-row .property-key.editing {
+  flex-basis: 10rem;
+}
+
+.property-error {
+  color: var(--red);
+  padding-top: var(--padding-xs);
+}
+
+.link-value {
+  color: var(--accent);
+}
+
+.tags-value {
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  padding: 0 var(--padding-sm);
+  border-radius: var(--border-radius-md);
+  background: var(--bg-elevated);
+  color: var(--accent);
+}
+
+.tag-input {
+  max-width: 8rem;
+}
+
+.scope-headline:not(.collapsed) {
+  border-left: 2px solid var(--border-color);
+  padding-left: var(--padding-md);
+}
+
+.property-key.editing .app-dropdown {
+  max-height: none;
+  border-radius: 0;
+  background: transparent;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.property-key.editing .app-select {
+  padding: 0;
+  --vs-font-size: var(--font-size-sm);
+}
+
+.property-key.editing .vs__search {
+  padding: 0;
+  line-height: 1;
+}
+
+:deep(.vs__selected-options) {
+  padding: 0 !important;
+}
+
+:deep(.vs__selected) {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+}
+
+.property-key.editing :deep(.vs__selected) {
+  border: 0 !important;
+}
 </style>

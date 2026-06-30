@@ -21,7 +21,7 @@ const formatPropertyDrawer = (items: readonly OrgPropertyEntry[]): string =>
 const PROPERTY_HEAD = ':PROPERTIES:';
 const PROPERTY_END = ':END:';
 
-const PROPERTY_LINE_PATTERN = /^:([^:\s]+):\s*(.*)$/;
+const RAW_DRAWER_PROPERTY_LINE_FALLBACK_PATTERN = /^:([^:\s]+):\s*(.*)$/;
 
 const documentText = (view: EditorView): string => view.state.doc.toString();
 
@@ -39,7 +39,7 @@ const findCurrentDrawerEnd = (content: string, from: number): number | undefined
   return undefined;
 };
 
-const resolveCurrentPropertyRange = (content: string, node: OrgNode): { from: number; to: number } => {
+export const resolveCurrentPropertyRange = (content: string, node: OrgNode): { from: number; to: number } => {
   const staleRange = getPropertyWidgetRange(node);
   const currentEnd = findCurrentDrawerEnd(content, staleRange.from);
   if (currentEnd === undefined) return staleRange;
@@ -89,13 +89,16 @@ const normalizeEntries = (items: readonly OrgPropertyEntry[]): OrgPropertyEntry[
   return [...byKey.values()];
 };
 
-const readRangeItems = (content: string, range: { from: number; to: number }): OrgPropertyEntry[] =>
+const readPropertyItemsFromRawDrawerFallback = (
+  content: string,
+  range: { from: number; to: number },
+): OrgPropertyEntry[] =>
   normalizeEntries(
     content
       .slice(range.from, range.to)
       .split(/\r?\n/)
       .flatMap((line) => {
-        const match = line.match(PROPERTY_LINE_PATTERN);
+        const match = line.match(RAW_DRAWER_PROPERTY_LINE_FALLBACK_PATTERN);
         if (!match) return [];
         const [, key, value] = match;
         if (!key || key === 'PROPERTIES' || key === 'END') return [];
@@ -113,7 +116,9 @@ export const getPropertyEditorState = (
   const content = documentText(view);
   const apiState = readPropertiesState(content, scope, anchor, stateId);
   if (apiState.items.length > 0) return apiState;
-  const rangeItems = node ? readRangeItems(content, getPropertyWidgetRange(node)) : [];
+  const rangeItems = node
+    ? readPropertyItemsFromRawDrawerFallback(content, getPropertyWidgetRange(node))
+    : [];
   return { scope, stateId, items: rangeItems };
 };
 

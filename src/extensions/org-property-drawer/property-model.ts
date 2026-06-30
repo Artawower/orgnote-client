@@ -35,7 +35,7 @@ export const KNOWN_PROPERTY_KEYS = [
 ] as const;
 
 const LINK_KEYS = new Set(['source', 'url', 'share_link', 'roam_refs']);
-const TAG_KEYS = new Set(['filetags', 'roam_tags']);
+const TAG_KEYS = new Set(['tags', 'filetags', 'roam_tags']);
 const DATETIME_KEYS = new Set(['created', 'modified', 'updated', 'share_updated_at']);
 const BOOLEAN_PREFIXES = ['tq_show_', 'visibility'];
 

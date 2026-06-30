@@ -44,19 +44,23 @@ const focus = (): void => {
   textAreaRef.value?.focus();
 };
 
-const focusEnd = (): void => {
+const focusAt = (position: 'start' | 'end'): void => {
   const textArea = textAreaRef.value;
   if (!textArea) return;
 
   textArea.focus();
-  const caret = textArea.value.length;
+  const caret = position === 'start' ? 0 : textArea.value.length;
   textArea.setSelectionRange(caret, caret);
+};
+
+const focusEnd = (): void => {
+  focusAt('end');
 };
 
 watch(() => model.value, adjustHeight);
 onMounted(adjustHeight);
 
-defineExpose({ focus, focusEnd });
+defineExpose({ focus, focusAt, focusEnd });
 </script>
 
 <style lang="scss" scoped>
