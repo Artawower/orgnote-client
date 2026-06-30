@@ -54,6 +54,11 @@
         line-height: inherit;
       }
 
+      &.org-description-line {
+        color: var(--fg-muted);
+        font-size: var(--font-size-md);
+      }
+
       > .org-quote-block:not(.org-keyword):first-child {
         padding-left: var(--padding-lg);
         position: relative;

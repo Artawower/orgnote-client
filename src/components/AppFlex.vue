@@ -1,7 +1,6 @@
 <template>
   <component
     :is="tag"
-    ref="rootRef"
     class="flex-container"
     :class="classes"
     :style="styles"
@@ -12,14 +11,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, type CSSProperties } from 'vue';
+import { computed, type CSSProperties } from 'vue';
 import { type StyleSize, STYLE_SIZES } from 'orgnote-api';
 
 defineOptions({
   inheritAttrs: false,
 });
-
-const rootRef = ref<HTMLElement | null>(null);
 
 const props = withDefaults(
   defineProps<{
@@ -128,9 +125,6 @@ const styles = computed<CSSProperties | undefined>(() => {
 });
 
 defineExpose({
-  get $el() {
-    return rootRef.value;
-  },
   computedDirection,
   computedJustify,
   computedAlign,

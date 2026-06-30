@@ -1,10 +1,5 @@
 <template>
-  <hoverable-area
-    class="keyword-editor title-editor"
-    :data-keyword-editor="KEYWORD_NAME"
-    :data-keyword-start="node.start"
-    :data-keyword-end="node.end"
-  >
+  <hoverable-area class="keyword-editor title-editor">
     <app-text-area
       v-if="!readonly"
       ref="textAreaRef"
@@ -23,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
 import { useI18n } from 'vue-i18n';
@@ -31,18 +26,18 @@ import { I18N } from 'orgnote-api';
 import AppTextArea from 'src/components/AppTextArea.vue';
 import HoverableArea from 'src/components/HoverableArea.vue';
 import {
-  focusAdjacentPropertyDrawer,
-  hasAdjacentPropertyDrawer,
-} from 'src/extensions/org-property-drawer/property-navigation';
-import { debugEmbeddedNavigation } from './keyword-navigation';
+  EMBEDDED_WIDGET_COMMAND,
+  EMBEDDED_WIDGET_DIRECTION,
+  getEmbeddedWidgetBridge,
+} from 'src/utils/org-editor/embedded-widget-runtime';
 import { getKeywordValue } from './utils';
 
-const KEYWORD_NAME = 'title';
 const DEFAULT_LINE_HEIGHT_MULTIPLIER = 1.2;
 const SINGLE_LINE_HEIGHT_THRESHOLD = 1.35;
 const skippedAutoFocusPositions = new Set<number>();
 
 interface TextAreaHandle {
+  focusAt: (position: 'start' | 'end') => void;
   focusEnd: () => void;
 }
 
@@ -58,6 +53,7 @@ const props = withDefaults(
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const textAreaRef = ref<TextAreaHandle | null>(null);
+let unregisterWidget: (() => void) | undefined;
 const shouldSkipBlurCommit = ref(false);
 const value = computed(() => getKeywordValue(props.node));
 const placeholder = computed(() => t(I18N.UNTITLED));
@@ -89,14 +85,6 @@ const dispatchKeywordUpdate = (next: string, anchor?: number, anchorAssoc = 1): 
     : undefined;
   const mappedAnchor = anchor !== undefined && changes ? changes.mapPos(anchor, anchorAssoc) : anchor;
 
-  debugEmbeddedNavigation('title dispatch update', {
-    start: props.node.start,
-    end: props.node.end,
-    shouldUpdate,
-    anchor,
-    anchorAssoc,
-  });
-
   if (!shouldUpdate && mappedAnchor === undefined) return;
 
   props.editorView.dispatch({
@@ -117,42 +105,21 @@ const commitValue = (textArea: HTMLTextAreaElement): void => {
   dispatchKeywordUpdate(textArea.value);
 };
 
-const focusPropertyBelow = async (textArea: HTMLTextAreaElement): Promise<boolean> => {
-  if (!hasAdjacentPropertyDrawer(props.editorView, props.node.start, 1)) return false;
+const titleWidgetId = computed(() => `title:${props.node.start}`);
+const titleRange = computed(() => ({ from: props.node.start, to: props.node.end }));
 
+const moveDown = async (textArea: HTMLTextAreaElement): Promise<void> => {
   suppressNextAutoFocus();
   dispatchKeywordUpdate(textArea.value);
   await waitForWidgetDomUpdate();
-  return focusAdjacentPropertyDrawer(props.editorView, props.node.start, 1, 'start');
-};
-
-const focusEditorAfterKeyword = (textArea: HTMLTextAreaElement): void => {
-  suppressNextAutoFocus();
-  const state = props.editorView.state;
-  const line = state.doc.lineAt(props.node.start);
-  const insert = buildLine(textArea.value);
-  const shouldUpdate = insert !== state.doc.sliceString(props.node.start, props.node.end);
-  const shouldAppendLine = line.to === state.doc.length;
-  const specs = [
-    ...(shouldUpdate ? [{ from: props.node.start, to: props.node.end, insert }] : []),
-    ...(shouldAppendLine ? [{ from: line.to, to: line.to, insert: '\n' }] : []),
-  ];
-  const changes = specs.length ? state.changes(specs) : undefined;
-  const anchor = shouldAppendLine
-    ? (changes?.mapPos(line.to, 1) ?? line.to)
-    : (line.to < state.doc.length ? line.to + 1 : line.to);
-
-  props.editorView.dispatch({
-    ...(changes ? { changes } : {}),
-    selection: { anchor },
-    scrollIntoView: true,
+  getEmbeddedWidgetBridge(props.editorView).dispatch({
+    type: EMBEDDED_WIDGET_COMMAND.Exit,
+    payload: {
+      sourceId: titleWidgetId.value,
+      range: titleRange.value,
+      direction: EMBEDDED_WIDGET_DIRECTION.Next,
+    },
   });
-  props.editorView.focus();
-};
-
-const moveDown = async (textArea: HTMLTextAreaElement): Promise<void> => {
-  if (await focusPropertyBelow(textArea)) return;
-  focusEditorAfterKeyword(textArea);
 };
 
 const deleteKeyword = (): void => {
@@ -215,15 +182,6 @@ const navigateAfterNativeArrow = (
 
     const selectionChanged =
       textArea.selectionStart !== selectionStart || textArea.selectionEnd !== selectionEnd;
-    debugEmbeddedNavigation('title native arrow result', {
-      key,
-      start: props.node.start,
-      selectionStart,
-      selectionEnd,
-      nextSelectionStart: textArea.selectionStart,
-      nextSelectionEnd: textArea.selectionEnd,
-      selectionChanged,
-    });
     if (selectionChanged) return;
     if (key === 'ArrowUp') return;
 
@@ -252,13 +210,6 @@ const handleKeydown = async (event: KeyboardEvent): Promise<void> => {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
 
   const singleLine = isSingleVisualLine(event.target);
-  debugEmbeddedNavigation('title arrow keydown', {
-    key: event.key,
-    start: props.node.start,
-    selectionStart: event.target.selectionStart,
-    selectionEnd: event.target.selectionEnd,
-    singleLine,
-  });
 
   if (singleLine) {
     event.preventDefault();
@@ -279,17 +230,24 @@ const commit = (event: Event): void => {
 };
 
 onMounted(() => {
+  unregisterWidget = getEmbeddedWidgetBridge(props.editorView).register({
+    id: titleWidgetId.value,
+    getRange: () => titleRange.value,
+    focus: ({ position }) => {
+      textAreaRef.value?.focusAt(position);
+      return true;
+    },
+  });
+
   const skipped = skippedAutoFocusPositions.delete(props.node.start);
   const selectionInside = isEditorSelectionInsideKeyword();
-  debugEmbeddedNavigation('title mounted', {
-    start: props.node.start,
-    end: props.node.end,
-    skipped,
-    selectionInside,
-  });
   if (skipped) return;
   if (!selectionInside) return;
   requestAnimationFrame(() => textAreaRef.value?.focusEnd());
+});
+
+onBeforeUnmount(() => {
+  unregisterWidget?.();
 });
 </script>
 

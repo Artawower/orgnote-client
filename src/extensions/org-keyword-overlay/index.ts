@@ -1,12 +1,12 @@
 import type { Extension, WidgetMeta } from 'orgnote-api';
 import { WidgetType } from 'orgnote-api';
 import { NodeType, type OrgNode } from 'org-mode-ast';
-import OrgKeywordEditor from './OrgKeywordEditor.vue';
-import { descriptionLineDecorationExtension } from './description-line-decoration';
+import OrgTitleEditor from './OrgTitleEditor.vue';
 import { keywordNavigationExtension } from './keyword-navigation';
 import { getKeywordName } from './utils';
 
 const TITLE_WIDGET_ID = 'org-keyword-title-editor';
+const DESCRIPTION_LINE_CLASS_WIDGET_ID = 'org-keyword-description-line-class';
 const WIDGET_PRIORITY = 100;
 
 const isKeyword = (name: string): ((orgNode: OrgNode) => boolean) =>
@@ -17,7 +17,7 @@ const buildKeywordWidget = (id: string, keywordName: string): WidgetMeta => ({
   type: WidgetType.Multiline,
   nodeType: NodeType.Keyword,
   satisfied: isKeyword(keywordName),
-  component: OrgKeywordEditor,
+  component: OrgTitleEditor,
   ignoreEvent: true,
   suppressEdit: true,
   priority: WIDGET_PRIORITY,
@@ -25,17 +25,25 @@ const buildKeywordWidget = (id: string, keywordName: string): WidgetMeta => ({
 
 const titleWidget = buildKeywordWidget(TITLE_WIDGET_ID, 'title');
 
+const descriptionLineClassWidget: WidgetMeta = {
+  id: DESCRIPTION_LINE_CLASS_WIDGET_ID,
+  type: WidgetType.LineClass,
+  nodeType: NodeType.Keyword,
+  class: (orgNode) => (isKeyword('description')(orgNode) ? 'org-description-line' : ''),
+};
+
 export const orgKeywordOverlayExtension: Extension = {
   onMounted: async (api) => {
     const { addExtensions, addWidgets } = api.core.useEditor();
-    addWidgets(titleWidget);
-    addExtensions(keywordNavigationExtension, descriptionLineDecorationExtension);
+    addWidgets(titleWidget, descriptionLineClassWidget);
+    addExtensions(keywordNavigationExtension);
   },
 
   onUnmounted: async (api) => {
     const { removeExtensions, removeWidget } = api.core.useEditor();
     removeWidget(TITLE_WIDGET_ID);
-    removeExtensions(keywordNavigationExtension, descriptionLineDecorationExtension);
+    removeWidget(DESCRIPTION_LINE_CLASS_WIDGET_ID);
+    removeExtensions(keywordNavigationExtension);
   },
 };
 
