@@ -5,10 +5,14 @@ import type { OrgPropertyEntry } from 'orgnote-api';
 import { selectOrgDocument } from 'orgnote-api/utils';
 import type { PropertyEditorState, PropertyScope } from './property-model';
 
-const PROPERTY_VALUE_LINE_BREAK_PATTERN = /\s*\r?\n\s*/g;
-
 const normalizePropertyValue = (value: string): string =>
-  value.replace(PROPERTY_VALUE_LINE_BREAK_PATTERN, ' ').trim();
+  value
+    .replaceAll('\r\n', '\n')
+    .replaceAll('\r', '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(' ');
 
 const formatPropertyLine = ({ key, value }: OrgPropertyEntry): string => {
   const normalizedValue = normalizePropertyValue(value);
@@ -21,30 +25,7 @@ const formatPropertyDrawer = (items: readonly OrgPropertyEntry[]): string =>
 const PROPERTY_HEAD = ':PROPERTIES:';
 const PROPERTY_END = ':END:';
 
-const RAW_DRAWER_PROPERTY_LINE_FALLBACK_PATTERN = /^:([^:\s]+):\s*(.*)$/;
-
 const documentText = (view: EditorView): string => view.state.doc.toString();
-
-const lineEndAt = (content: string, position: number): number => {
-  const nextLineBreak = content.indexOf('\n', position);
-  return nextLineBreak === -1 ? content.length : nextLineBreak;
-};
-
-const findCurrentDrawerEnd = (content: string, from: number): number | undefined => {
-  for (let position = from; position < content.length; position = lineEndAt(content, position) + 1) {
-    const lineEnd = lineEndAt(content, position);
-    if (content.slice(position, lineEnd).trim() === PROPERTY_END) return lineEnd;
-  }
-
-  return undefined;
-};
-
-export const resolveCurrentPropertyRange = (content: string, node: OrgNode): { from: number; to: number } => {
-  const staleRange = getPropertyWidgetRange(node);
-  const currentEnd = findCurrentDrawerEnd(content, staleRange.from);
-  if (currentEnd === undefined) return staleRange;
-  return { from: staleRange.from, to: currentEnd };
-};
 
 export const replacePropertyItems = (
   view: EditorView,
@@ -52,8 +33,7 @@ export const replacePropertyItems = (
   items: readonly OrgPropertyEntry[],
   onApplied?: () => void,
 ): void => {
-  const content = documentText(view);
-  const range = resolveCurrentPropertyRange(content, node);
+  const range = getPropertyWidgetRange(node);
   const insert = formatPropertyDrawer(items);
   const docLength = view.state.doc.length;
   if (range.from > docLength) return;
@@ -79,48 +59,12 @@ const readPropertiesState = (
   return { scope, stateId, items };
 };
 
-const normalizeEntries = (items: readonly OrgPropertyEntry[]): OrgPropertyEntry[] => {
-  const byKey = new Map<string, OrgPropertyEntry>();
-  items.forEach((item) => {
-    const key = item.key.toLowerCase();
-    byKey.delete(key);
-    byKey.set(key, item);
-  });
-  return [...byKey.values()];
-};
-
-const readPropertyItemsFromRawDrawerFallback = (
-  content: string,
-  range: { from: number; to: number },
-): OrgPropertyEntry[] =>
-  normalizeEntries(
-    content
-      .slice(range.from, range.to)
-      .split(/\r?\n/)
-      .flatMap((line) => {
-        const match = line.match(RAW_DRAWER_PROPERTY_LINE_FALLBACK_PATTERN);
-        if (!match) return [];
-        const [, key, value] = match;
-        if (!key || key === 'PROPERTIES' || key === 'END') return [];
-        return [{ key, value: value?.trim() ?? '' }];
-      }),
-  );
-
 export const getPropertyEditorState = (
   view: EditorView,
   scope: PropertyScope,
   anchor: number,
   stateId: string,
-  node?: OrgNode,
-): PropertyEditorState => {
-  const content = documentText(view);
-  const apiState = readPropertiesState(content, scope, anchor, stateId);
-  if (apiState.items.length > 0) return apiState;
-  const rangeItems = node
-    ? readPropertyItemsFromRawDrawerFallback(content, getPropertyWidgetRange(node))
-    : [];
-  return { scope, stateId, items: rangeItems };
-};
+): PropertyEditorState => readPropertiesState(documentText(view), scope, anchor, stateId);
 
 export const insertEmptyPropertyDrawer = (view: EditorView, position: number): void => {
   const insert = `${formatPropertyDrawer([])}\n`;

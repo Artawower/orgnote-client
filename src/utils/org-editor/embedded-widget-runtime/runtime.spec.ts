@@ -236,7 +236,7 @@ test('EmbeddedWidgetBridge exits to blank line between widgets', () => {
   });
 });
 
-test('EmbeddedWidgetBridge exits to CodeMirror when no adjacent widget exists', () => {
+test('EmbeddedWidgetBridge appends a line when exiting past the document end', () => {
   const view = createView('title');
   const bridge = getEmbeddedWidgetBridge(view as never);
 
@@ -255,7 +255,11 @@ test('EmbeddedWidgetBridge exits to CodeMirror when no adjacent widget exists', 
   });
 
   expect(exited).toBe(true);
-  expect(view.dispatch).toHaveBeenCalled();
+  expect(view.dispatch).toHaveBeenCalledWith({
+    changes: expect.anything(),
+    selection: { anchor: 'title\n'.length },
+    scrollIntoView: true,
+  });
   expect(view.focus).toHaveBeenCalled();
 });
 

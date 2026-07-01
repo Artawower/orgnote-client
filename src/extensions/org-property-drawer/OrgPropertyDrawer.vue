@@ -191,7 +191,7 @@ import {
   type EmbeddedWidgetDirection,
   type EmbeddedWidgetFocusPosition,
 } from 'src/utils/org-editor/embedded-widget-runtime';
-import { resolveCurrentPropertyRange } from './property-source';
+import { getPropertyWidgetRange } from './property-source';
 import { usePropertyDrawer } from './use-property-drawer';
 
 const props = defineProps<{
@@ -218,8 +218,7 @@ let unregisterWidget: (() => void) | undefined;
 
 const widgetId = `property-drawer:${props.node.start}`;
 
-const currentPropertyRange = () =>
-  resolveCurrentPropertyRange(props.editorView.state.doc.toString(), props.node);
+const currentPropertyRange = () => getPropertyWidgetRange(props.node);
 
 const isRecord = (value: unknown): value is Record<PropertyKey, unknown> =>
   typeof value === 'object' && isPresent(value);
@@ -313,11 +312,12 @@ const adjacentPropertyRowIndex = (
 };
 
 const exitPropertyDrawer = (direction: EmbeddedWidgetDirection): void => {
+  const range = currentPropertyRange();
   getEmbeddedWidgetBridge(props.editorView).dispatch({
     type: EMBEDDED_WIDGET_COMMAND.Exit,
     payload: {
       sourceId: widgetId,
-      range: currentPropertyRange(),
+      range,
       direction,
     },
   });

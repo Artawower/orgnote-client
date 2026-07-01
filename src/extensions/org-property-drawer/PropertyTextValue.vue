@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { OrgPropertyEntry } from 'orgnote-api';
 import { I18N } from 'orgnote-api';
@@ -33,14 +33,30 @@ const emit = defineEmits<{
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const displayed = computed(() => truncateValue(props.item.value || t(I18N.EMPTY_VALUE_PLACEHOLDER)));
+const shouldSkipBlurCommit = ref(false);
+
+const textAreaValue = (event: Event): string | undefined => {
+  if (!(event.target instanceof HTMLTextAreaElement)) return undefined;
+  return event.target.value;
+};
+
+const commitValue = (value: string | undefined): void => {
+  if (value === undefined) return;
+  emit('set', value);
+};
 
 const commit = (event: Event): void => {
-  if (!(event.target instanceof HTMLTextAreaElement)) return;
-  emit('set', event.target.value);
+  if (shouldSkipBlurCommit.value) {
+    shouldSkipBlurCommit.value = false;
+    return;
+  }
+
+  commitValue(textAreaValue(event));
 };
 
 const commitAndExit = (event: Event): void => {
-  commit(event);
+  shouldSkipBlurCommit.value = true;
+  commitValue(textAreaValue(event));
   emit('enter');
 };
 </script>
