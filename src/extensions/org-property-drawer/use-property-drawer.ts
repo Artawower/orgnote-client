@@ -23,7 +23,14 @@ import {
   propertyAddRowRequests,
   togglePropertyPanel,
 } from './property-panel-state';
-import { iconByKey, removeItem, renameItem, upsertItem, valueComponent } from './property-item-helpers';
+import {
+  iconByKey,
+  keyEquals,
+  removeItem,
+  renameItem,
+  upsertItem,
+  valueComponent,
+} from './property-item-helpers';
 
 interface Props {
   readonly node: OrgNode;
@@ -69,7 +76,6 @@ export const usePropertyDrawer = (props: Props) => {
       scope.value,
       anchor.value,
       `${stateKey.value}:${refreshTick.value}`,
-      props.node,
     ),
   );
   const items = computed(() => state.value.items);
@@ -103,6 +109,10 @@ export const usePropertyDrawer = (props: Props) => {
     const valueError = validatePropertyValue(nextValue);
     error.value = valueError ? t(valueError) : '';
     if (valueError) return;
+
+    const currentItem = items.value.find((item) => keyEquals(item.key, key));
+    if (currentItem?.value === nextValue) return;
+
     mutateItems(upsertItem(items.value, key, nextValue));
   };
 

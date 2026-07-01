@@ -13,6 +13,16 @@ export const getKeywordName = (orgNode: OrgNode): string | null => {
   return value.slice(2, colonIndex);
 };
 
+export const getKeywordMarker = (orgNode: OrgNode): string => {
+  const prefix = orgNode.children?.first;
+  if (!prefix?.value) return '';
+
+  const colonIndex = prefix.value.indexOf(':');
+  if (colonIndex === -1) return '';
+
+  return prefix.value.slice(0, colonIndex + 1);
+};
+
 export const getKeywordValue = (orgNode: OrgNode): string => {
   const firstChild = orgNode.children?.first;
   if (!firstChild?.value) return '';
@@ -21,17 +31,13 @@ export const getKeywordValue = (orgNode: OrgNode): string => {
   if (colonIndex === -1) return '';
 
   const afterColon = firstChild.value.slice(colonIndex + 1).trim();
-
-  if (afterColon) {
-    return afterColon;
-  }
-
   const children = orgNode.children;
-  if (!children || children.length < 2) return '';
+  const tailValue = typeof children?.slice === 'function'
+    ? children
+      .slice(1)
+      .map((child) => child.value ?? '')
+      .join('')
+    : '';
 
-  return children
-    .slice(1)
-    .map((child) => child.value ?? '')
-    .join('')
-    .trim();
+  return `${afterColon} ${tailValue}`.trim();
 };

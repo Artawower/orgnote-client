@@ -30,10 +30,9 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
-import { getKeywordValue } from './utils';
+import { getKeywordMarker, getKeywordValue } from './utils';
 
-const DEFAULT_LINE_HEIGHT_MULTIPLIER = 1.2;
-const SINGLE_LINE_HEIGHT_THRESHOLD = 1.35;
+const NEWLINE = '\n';
 const skippedAutoFocusPositions = new Set<number>();
 
 interface TextAreaHandle {
@@ -57,19 +56,19 @@ let unregisterWidget: (() => void) | undefined;
 const shouldSkipBlurCommit = ref(false);
 const value = computed(() => getKeywordValue(props.node));
 const placeholder = computed(() => t(I18N.UNTITLED));
-const prefix = computed(() => props.node.children?.first?.value ?? '');
+const marker = computed(() => getKeywordMarker(props.node));
 
 const normalizeKeywordValue = (next: string): string => next.trim().replace(/\s+/g, ' ');
 
 const buildLine = (next: string): string => {
   const normalized = normalizeKeywordValue(next);
-  if (!normalized) return prefix.value;
-  return prefix.value.endsWith(' ') ? `${prefix.value}${normalized}` : `${prefix.value} ${normalized}`;
+  if (!normalized) return marker.value;
+  return `${marker.value} ${normalized}`;
 };
 
 const isEditorSelectionInsideKeyword = (): boolean => {
   const head = props.editorView.state.selection.main.head;
-  return props.editorView.hasFocus && head >= props.node.start && head <= props.node.end + 1;
+  return props.editorView.hasFocus && head >= props.node.start && head <= props.node.end;
 };
 
 const waitForWidgetDomUpdate = (): Promise<void> =>
@@ -79,17 +78,21 @@ const waitForWidgetDomUpdate = (): Promise<void> =>
 
 const dispatchKeywordUpdate = (next: string, anchor?: number, anchorAssoc = 1): void => {
   const insert = buildLine(next);
-  const shouldUpdate = insert !== props.editorView.state.doc.sliceString(props.node.start, props.node.end);
+  const shouldUpdate =
+    insert !== props.editorView.state.doc.sliceString(props.node.start, props.node.end);
   const changes = shouldUpdate
     ? props.editorView.state.changes({ from: props.node.start, to: props.node.end, insert })
     : undefined;
-  const mappedAnchor = anchor !== undefined && changes ? changes.mapPos(anchor, anchorAssoc) : anchor;
+  const mappedAnchor =
+    anchor !== undefined && changes ? changes.mapPos(anchor, anchorAssoc) : anchor;
 
   if (!shouldUpdate && mappedAnchor === undefined) return;
 
   props.editorView.dispatch({
     ...(changes ? { changes } : {}),
-    ...(mappedAnchor !== undefined ? { selection: { anchor: mappedAnchor }, scrollIntoView: true } : {}),
+    ...(mappedAnchor !== undefined
+      ? { selection: { anchor: mappedAnchor }, scrollIntoView: true }
+      : {}),
   });
 };
 
@@ -108,18 +111,71 @@ const commitValue = (textArea: HTMLTextAreaElement): void => {
 const titleWidgetId = computed(() => `title:${props.node.start}`);
 const titleRange = computed(() => ({ from: props.node.start, to: props.node.end }));
 
-const moveDown = async (textArea: HTMLTextAreaElement): Promise<void> => {
+const currentTitleLineRange = (): { from: number; to: number } => {
+  const line = props.editorView.state.doc.lineAt(props.node.start);
+  return { from: line.from, to: line.to };
+};
+
+const moveToAdjacentEditorTarget = async (
+  textArea: HTMLTextAreaElement,
+  direction: typeof EMBEDDED_WIDGET_DIRECTION.Previous | typeof EMBEDDED_WIDGET_DIRECTION.Next,
+): Promise<void> => {
   suppressNextAutoFocus();
   dispatchKeywordUpdate(textArea.value);
+  const range = currentTitleLineRange();
   await waitForWidgetDomUpdate();
   getEmbeddedWidgetBridge(props.editorView).dispatch({
     type: EMBEDDED_WIDGET_COMMAND.Exit,
     payload: {
       sourceId: titleWidgetId.value,
-      range: titleRange.value,
-      direction: EMBEDDED_WIDGET_DIRECTION.Next,
+      range,
+      direction,
     },
   });
+};
+
+const moveDown = async (textArea: HTMLTextAreaElement): Promise<void> => {
+  await moveToAdjacentEditorTarget(textArea, EMBEDDED_WIDGET_DIRECTION.Next);
+};
+
+const moveUp = async (textArea: HTMLTextAreaElement): Promise<void> => {
+  await moveToAdjacentEditorTarget(textArea, EMBEDDED_WIDGET_DIRECTION.Previous);
+};
+
+const focusEditorLine = (anchor: number): void => {
+  props.editorView.dispatch({ selection: { anchor }, scrollIntoView: true });
+  props.editorView.focus();
+};
+
+const insertEditorLineAfter = (position: number): void => {
+  const changes = props.editorView.state.changes({ from: position, to: position, insert: NEWLINE });
+  const anchor = changes.mapPos(position, 1);
+  props.editorView.dispatch({ changes, selection: { anchor }, scrollIntoView: true });
+  props.editorView.focus();
+};
+
+const focusEditorLineAfterTitle = (): void => {
+  const line = props.editorView.state.doc.lineAt(props.node.start);
+  const nextLineNumber = line.number + 1;
+
+  if (nextLineNumber > props.editorView.state.doc.lines) {
+    insertEditorLineAfter(line.to);
+    return;
+  }
+
+  const nextLine = props.editorView.state.doc.line(nextLineNumber);
+  if (nextLine.text.trim()) {
+    insertEditorLineAfter(line.to);
+    return;
+  }
+
+  focusEditorLine(nextLine.from);
+};
+
+const commitAndFocusEditorLineAfterTitle = (textArea: HTMLTextAreaElement): void => {
+  suppressNextAutoFocus();
+  dispatchKeywordUpdate(textArea.value);
+  focusEditorLineAfterTitle();
 };
 
 const deleteKeyword = (): void => {
@@ -135,39 +191,19 @@ const deleteKeyword = (): void => {
   props.editorView.focus();
 };
 
-const parsePixelValue = (value: string): number => {
-  const parsed = Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+const hasHardLineBreak = (value: string): boolean => value.includes(NEWLINE);
 
-const getLineHeight = (textArea: HTMLTextAreaElement): number => {
-  const style = getComputedStyle(textArea);
-  const lineHeight = Number.parseFloat(style.lineHeight);
-  if (Number.isFinite(lineHeight)) return lineHeight;
-
-  const fontSize = Number.parseFloat(style.fontSize);
-  if (Number.isFinite(fontSize)) return fontSize * DEFAULT_LINE_HEIGHT_MULTIPLIER;
-
-  return textArea.clientHeight;
-};
-
-const getVerticalPadding = (textArea: HTMLTextAreaElement): number => {
-  const style = getComputedStyle(textArea);
-  return parsePixelValue(style.paddingTop) + parsePixelValue(style.paddingBottom);
-};
-
-const isSingleVisualLine = (textArea: HTMLTextAreaElement): boolean => {
-  const contentHeight = Math.max(0, textArea.scrollHeight - getVerticalPadding(textArea));
-  return contentHeight <= getLineHeight(textArea) * SINGLE_LINE_HEIGHT_THRESHOLD;
-};
-
-const navigateFromSingleLineTextArea = async (
+const navigateFromSingleSourceLine = async (
   textArea: HTMLTextAreaElement,
   key: 'ArrowUp' | 'ArrowDown',
 ): Promise<void> => {
-  if (key === 'ArrowUp') return;
-
   skipBlurCommit();
+
+  if (key === 'ArrowUp') {
+    await moveUp(textArea);
+    return;
+  }
+
   await moveDown(textArea);
 };
 
@@ -203,21 +239,24 @@ const handleKeydown = async (event: KeyboardEvent): Promise<void> => {
   if (event.key === 'Enter') {
     event.preventDefault();
     skipBlurCommit();
-    await moveDown(event.target);
+    commitAndFocusEditorLineAfterTitle(event.target);
     return;
   }
 
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
 
-  const singleLine = isSingleVisualLine(event.target);
-
-  if (singleLine) {
+  if (!hasHardLineBreak(event.target.value)) {
     event.preventDefault();
-    await navigateFromSingleLineTextArea(event.target, event.key);
+    await navigateFromSingleSourceLine(event.target, event.key);
     return;
   }
 
-  navigateAfterNativeArrow(event.target, event.key, event.target.selectionStart, event.target.selectionEnd);
+  navigateAfterNativeArrow(
+    event.target,
+    event.key,
+    event.target.selectionStart,
+    event.target.selectionEnd,
+  );
 };
 
 const commit = (event: Event): void => {
@@ -254,6 +293,7 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .keyword-editor {
   @include flexify(center);
+
   padding: var(--padding-xs) var(--padding-sm);
   width: 100%;
 

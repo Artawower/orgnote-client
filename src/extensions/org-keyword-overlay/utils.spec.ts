@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 import { parse } from 'org-mode-ast';
-import { getKeywordName, getKeywordValue } from './utils';
+import { getKeywordMarker, getKeywordName, getKeywordValue } from './utils';
 
 test('getKeywordName extracts keyword name from title keyword', () => {
   const ast = parse('#+TITLE: My Title');
@@ -48,6 +48,24 @@ test('getKeywordValue returns empty string for keyword with empty value', () => 
   const ast = parse('#+TITLE:');
   const keyword = ast.children?.first;
   expect(getKeywordValue(keyword!)).toBe('');
+});
+
+test('getKeywordMarker extracts marker without separator space', () => {
+  const ast = parse('#+TITLE: My Title');
+  const keyword = ast.children?.first;
+  expect(getKeywordMarker(keyword!)).toBe('#+TITLE:');
+});
+
+test('getKeywordMarker excludes value from compact keyword syntax', () => {
+  const ast = parse('#+TITLE:My Title');
+  const keyword = ast.children?.first;
+  expect(getKeywordMarker(keyword!)).toBe('#+TITLE:');
+});
+
+test('getKeywordValue keeps compact keyword value words', () => {
+  const ast = parse('#+TITLE:My Title');
+  const keyword = ast.children?.first;
+  expect(getKeywordValue(keyword!)).toBe('My Title');
 });
 
 test('getKeywordValue returns empty string for keyword with only whitespace', () => {

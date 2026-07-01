@@ -68,18 +68,17 @@ test('property source keeps Enter inside property value on one source line', () 
   });
 });
 
-test('property source replaces current drawer when widget node range is stale', () => {
-  const staleRoot = parse(':PROPERTIES:\n:ID: SOME_ID\n:END:\n');
-  const staleDrawer = staleRoot.childrenList[0]!;
+test('property source uses AST range as the only replacement boundary', () => {
+  const root = parse(':PROPERTIES:\n:ID: SOME_ID\n:END:\n');
+  const drawer = root.childrenList[0]!;
   const currentContent = ':PROPERTIES:\n:ID: SOME_ID123\n:END:\n';
   const { calls, view } = createFakeView(currentContent);
 
-  replacePropertyItems(view as never, staleDrawer, [{ key: 'ID', value: 'SOME_ID1234' }]);
+  replacePropertyItems(view as never, drawer, [{ key: 'ID', value: 'SOME_ID1234' }]);
 
   expect(calls[0]).toMatchObject({
     changes: {
-      from: 0,
-      to: currentContent.trimEnd().length,
+      ...getPropertyWidgetRange(drawer),
       insert: ':PROPERTIES:\n:ID: SOME_ID1234\n:END:',
     },
   });

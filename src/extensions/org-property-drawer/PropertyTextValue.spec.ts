@@ -27,6 +27,29 @@ test('PropertyTextValue keeps Enter inside property editor', async () => {
 
   expect(event.defaultPrevented).toBe(true);
   expect(bubbled).not.toHaveBeenCalled();
-  expect(wrapper.findComponent(PropertyTextValue).emitted('set')).toEqual([['some-id']]);
-  expect(wrapper.findComponent(PropertyTextValue).emitted('enter')).toEqual([[]]);
+  const component = wrapper.findComponent(PropertyTextValue);
+  expect(component.emitted('set')).toEqual([['some-id']]);
+  expect(component.emitted('enter')).toEqual([[]]);
+});
+
+test('PropertyTextValue skips blur commit after Enter navigation', async () => {
+  const wrapper = mount(PropertyTextValue, {
+    props: {
+      item: { key: 'ID', value: 'some-id' },
+    },
+  });
+
+  const textarea = wrapper.find('textarea').element;
+  textarea.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  textarea.dispatchEvent(new FocusEvent('blur'));
+  await wrapper.vm.$nextTick();
+
+  expect(wrapper.emitted('set')).toEqual([['some-id']]);
+  expect(wrapper.emitted('enter')).toEqual([[]]);
 });
