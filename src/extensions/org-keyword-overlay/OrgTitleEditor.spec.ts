@@ -58,6 +58,22 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+test('OrgTitleEditor autofocuses on mount when editor selection is inside title', async () => {
+  const focus = vi.spyOn(HTMLTextAreaElement.prototype, 'focus');
+  const editorView = markRaw(createEditorView('#+TITLE: '.length, true));
+
+  mount(OrgTitleEditor, {
+    props: {
+      node: createTitleNode(),
+      editorView: editorView as never,
+    },
+  });
+  await nextTick();
+  await waitForAnimationFrame();
+
+  expect(focus).toHaveBeenCalledOnce();
+});
+
 test('OrgTitleEditor does not autofocus when selection is on the line after title', async () => {
   const focus = vi.spyOn(HTMLTextAreaElement.prototype, 'focus');
   const editorView = markRaw(createEditorView(`${titleText}\n`.length, true));

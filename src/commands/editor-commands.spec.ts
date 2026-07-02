@@ -3,6 +3,7 @@ import { getEditorCommands } from './editor-commands';
 import { DefaultCommands, KEYBINDING_CONTEXTS, RouteNames } from 'orgnote-api';
 import type { OrgNoteApi, FileMeta, CompletionConfig, CompletionSearchResult } from 'orgnote-api';
 import { blurEditor, suspendEditorInput } from 'src/utils/editor-primitives';
+import { ADD_TITLE_COMMAND } from './title-command';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { ref } from 'vue';
 
@@ -178,6 +179,11 @@ beforeEach(() => {
   vi.useRealTimers();
 });
 
+const findAddTitleCommand = () => {
+  const commands = getEditorCommands();
+  return commands.find((c) => c.command === ADD_TITLE_COMMAND)!;
+};
+
 const findAddPropertyCommand = () => {
   const commands = getEditorCommands();
   return commands.find((c) => c.command === DefaultCommands.EDITOR_ADD_PROPERTY)!;
@@ -317,6 +323,13 @@ test('editor-commands EDITOR_INSERT_IMAGE saves image in active route file direc
 
   expect(mockWriteFile).toHaveBeenCalledWith('image.png', expect.any(Uint8Array));
   expect(mockInsertImage).toHaveBeenCalledWith('image.png');
+});
+
+test('editor-commands registers add title command', () => {
+  const command = findAddTitleCommand();
+
+  expect(command.command).toBe(ADD_TITLE_COMMAND);
+  expect(command.group).toBe('editor');
 });
 
 test('editor-commands EDITOR_ADD_PROPERTY uses Mod+Alt+P in shell context', () => {

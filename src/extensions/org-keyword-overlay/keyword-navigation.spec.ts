@@ -53,7 +53,7 @@ test('focusEmbeddedWidgetFromEditor does not fallback to regular text lines', ()
   expect(view.dispatch).not.toHaveBeenCalled();
 });
 
-const registerTitleFocusHandle = (view: ReturnType<typeof createMutableEditorView>) => {
+const registerTitleBridgeFocusHandle = (view: ReturnType<typeof createMutableEditorView>) => {
   const focus = vi.fn(() => true);
   getEmbeddedWidgetBridge(view as never).register({
     id: 'title:0',
@@ -68,7 +68,7 @@ test('deleteTitleSeparatorFromEditor removes blank line after title and focuses 
   const documentText = `${titleLine}\n\n:PROPERTIES:\n:ID: test\n:END:\n`;
   const blankLinePosition = `${titleLine}\n`.length;
   const view = createMutableEditorView(documentText, blankLinePosition);
-  const focus = registerTitleFocusHandle(view);
+  const focus = registerTitleBridgeFocusHandle(view);
 
   const handled = deleteTitleSeparatorFromEditor(view as never);
 
@@ -83,7 +83,7 @@ test('deleteTitleSeparatorFromEditor keeps properties separated from title', () 
   const documentText = `${titleLine}\n:PROPERTIES:\n:ID: test\n:END:\n`;
   const propertyLinePosition = `${titleLine}\n`.length;
   const view = createMutableEditorView(documentText, propertyLinePosition);
-  const focus = registerTitleFocusHandle(view);
+  const focus = registerTitleBridgeFocusHandle(view);
 
   const handled = deleteTitleSeparatorFromEditor(view as never);
 

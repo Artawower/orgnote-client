@@ -30,6 +30,7 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
+import { titleWidgetId as buildTitleWidgetId } from './title-widget-id';
 import { getKeywordMarker, getKeywordValue } from './utils';
 
 const NEWLINE = '\n';
@@ -108,7 +109,7 @@ const commitValue = (textArea: HTMLTextAreaElement): void => {
   dispatchKeywordUpdate(textArea.value);
 };
 
-const titleWidgetId = computed(() => `title:${props.node.start}`);
+const titleWidgetId = computed(() => buildTitleWidgetId(props.node.start));
 const titleRange = computed(() => ({ from: props.node.start, to: props.node.end }));
 
 const currentTitleLineRange = (): { from: number; to: number } => {
@@ -268,14 +269,16 @@ const commit = (event: Event): void => {
   commitValue(event.target);
 };
 
+const focusTitleTextArea = (position: 'start' | 'end'): boolean => {
+  textAreaRef.value?.focusAt(position);
+  return true;
+};
+
 onMounted(() => {
   unregisterWidget = getEmbeddedWidgetBridge(props.editorView).register({
     id: titleWidgetId.value,
     getRange: () => titleRange.value,
-    focus: ({ position }) => {
-      textAreaRef.value?.focusAt(position);
-      return true;
-    },
+    focus: ({ position }) => focusTitleTextArea(position),
   });
 
   const skipped = skippedAutoFocusPositions.delete(props.node.start);

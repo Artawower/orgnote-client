@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { NodeType, parse } from 'org-mode-ast';
 import { WidgetType, type OrgLineClass, type WidgetMeta } from 'orgnote-api';
 import { orgKeywordOverlayExtension } from './index';
@@ -18,6 +18,10 @@ const api = {
     }),
   },
 } as never;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 const firstNode = (content: string) => parse(content).children?.first;
 
@@ -47,3 +51,4 @@ test('orgKeywordOverlayExtension registers description line class from AST keywo
   expect(resolveClass(firstNode('#+DESCRIPTION: Summary'))).toBe('org-description-line');
   expect(resolveClass(firstNode('#+TITLE: Summary'))).toBe('');
 });
+

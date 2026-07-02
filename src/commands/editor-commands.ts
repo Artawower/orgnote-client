@@ -20,6 +20,7 @@ import { androidOnly } from 'src/utils/platform-specific';
 import { startKeyboardHideWindow } from 'src/utils/android-keyboard-hide';
 import { isRootPropertySequenceStart } from 'src/extensions/org-property-drawer/property-source';
 import { requestPropertyAddRow } from 'src/extensions/org-property-drawer/property-panel-state';
+import { createAddTitleCommand } from './title-command';
 
 const isEditorNotActive = (api: OrgNoteApi): boolean => !isEditorActive(api);
 const isKeyboardClosed = (api: OrgNoteApi): boolean =>
@@ -107,6 +108,7 @@ export const getEditorCommands = (): Command[] => {
       hide: isEditorNotActive,
       handler: (api) => withEditorView(api, redo),
     },
+    createAddTitleCommand(),
     {
       command: DefaultCommands.EDITOR_INSERT_HEADLINE,
       icon: 'sym_o_title',

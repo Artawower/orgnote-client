@@ -1,6 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 
 export const EMBEDDED_WIDGET_COMMAND = {
+  Focus: 'focus',
   FocusAdjacent: 'focus-adjacent',
   FocusFromEditor: 'focus-from-editor',
   Exit: 'exit',
@@ -49,7 +50,16 @@ export interface EmbeddedWidgetEditorPayload {
   readonly position?: EmbeddedWidgetFocusPosition;
 }
 
+export interface EmbeddedWidgetFocusPayload {
+  readonly id: string;
+  readonly position?: EmbeddedWidgetFocusPosition;
+}
+
 export type EmbeddedWidgetCommand =
+  | {
+      readonly type: typeof EMBEDDED_WIDGET_COMMAND.Focus;
+      readonly payload: EmbeddedWidgetFocusPayload;
+    }
   | {
       readonly type: typeof EMBEDDED_WIDGET_COMMAND.FocusAdjacent;
       readonly payload: EmbeddedWidgetNavigationPayload;

@@ -34,6 +34,46 @@ test('EmbeddedWidgetBridge orders widgets by live document range', () => {
   expect(bridge.snapshot().map((widget) => widget.id)).toEqual(['title:0', 'property:6']);
 });
 
+test('EmbeddedWidgetBridge focuses a registered widget by id', () => {
+  const view = createView('title');
+  const bridge = getEmbeddedWidgetBridge(view as never);
+  const focusTitle = vi.fn(() => true);
+
+  bridge.register({
+    id: 'title:0',
+    getRange: () => ({ from: 0, to: 5 }),
+    focus: focusTitle,
+  });
+
+  const focused = bridge.dispatch({
+    type: EMBEDDED_WIDGET_COMMAND.Focus,
+    payload: { id: 'title:0', position: 'end' },
+  });
+
+  expect(focused).toBe(true);
+  expect(focusTitle).toHaveBeenCalledWith({ position: 'end' });
+});
+
+test('EmbeddedWidgetBridge ignores missing focus targets', () => {
+  const view = createView('title');
+  const bridge = getEmbeddedWidgetBridge(view as never);
+  const focusTitle = vi.fn(() => true);
+
+  const focused = bridge.dispatch({
+    type: EMBEDDED_WIDGET_COMMAND.Focus,
+    payload: { id: 'title:0' },
+  });
+
+  bridge.register({
+    id: 'title:0',
+    getRange: () => ({ from: 0, to: 5 }),
+    focus: focusTitle,
+  });
+
+  expect(focused).toBe(false);
+  expect(focusTitle).not.toHaveBeenCalled();
+});
+
 test('EmbeddedWidgetBridge focuses the next widget by document order', () => {
   const view = createView('title\nproperty');
   const bridge = getEmbeddedWidgetBridge(view as never);

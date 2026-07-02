@@ -5,6 +5,7 @@ import {
   type EmbeddedWidgetCommand,
   type EmbeddedWidgetDirection,
   type EmbeddedWidgetEditorPayload,
+  type EmbeddedWidgetFocusPayload,
   type EmbeddedWidgetFocusPosition,
   type EmbeddedWidgetHandle,
   type EmbeddedWidgetNavigationPayload,
@@ -245,17 +246,21 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
   const exitWidget = (command: ResolvedNavigationPayload): boolean =>
     focusExitTarget(command);
 
-  const dispatch = (command: EmbeddedWidgetCommand): boolean => {
-    const commandHandlers = {
-      [EMBEDDED_WIDGET_COMMAND.FocusAdjacent]: () =>
-        focusAdjacent(resolveNavigationPayload(command.payload)),
-      [EMBEDDED_WIDGET_COMMAND.FocusFromEditor]: () =>
-        focusFromEditor(resolveEditorPayload(command.payload)),
-      [EMBEDDED_WIDGET_COMMAND.Exit]: () =>
-        exitWidget(resolveNavigationPayload(command.payload)),
-    } satisfies Record<EmbeddedWidgetCommand['type'], () => boolean>;
+  const focusById = (command: EmbeddedWidgetFocusPayload): boolean => {
+    const handle = handles.get(command.id);
+    if (!handle) return false;
+    return handle.focus({ position: command.position ?? 'end' });
+  };
 
-    return commandHandlers[command.type]();
+  const dispatch = (command: EmbeddedWidgetCommand): boolean => {
+    if (command.type === EMBEDDED_WIDGET_COMMAND.Focus) return focusById(command.payload);
+    if (command.type === EMBEDDED_WIDGET_COMMAND.FocusAdjacent) {
+      return focusAdjacent(resolveNavigationPayload(command.payload));
+    }
+    if (command.type === EMBEDDED_WIDGET_COMMAND.FocusFromEditor) {
+      return focusFromEditor(resolveEditorPayload(command.payload));
+    }
+    return exitWidget(resolveNavigationPayload(command.payload));
   };
 
   const register = (handle: EmbeddedWidgetHandle): (() => void) => {
