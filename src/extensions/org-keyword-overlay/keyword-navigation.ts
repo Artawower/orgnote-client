@@ -6,129 +6,85 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
-import { debugEmbeddedWidgetNavigation } from 'src/utils/org-editor/embedded-widget-runtime/debug';
 
-const TITLE_KEYWORD_LINE_PATTERN = /^#\+TITLE:/i;
-
-const EDITOR_TITLE_DELETE_SOURCE_ID = 'editor-title-delete';
+const EDITOR_WIDGET_DELETE_SOURCE_ID = 'editor-widget-delete';
 
 const isCollapsedSelection = (view: EditorView): boolean => view.state.selection.main.empty;
 
-const debugEditorNavigation = (
+const lineOverlapsWidget = (
   view: EditorView,
-  event: string,
-  context: Record<string, unknown> = {},
-): void => {
-  const head = view.state.selection.main.head;
-  const line = view.state.doc.lineAt(head);
-  debugEmbeddedWidgetNavigation(event, {
-    head,
-    lineNumber: line.number,
-    lineFrom: line.from,
-    lineTo: line.to,
-    docLines: view.state.doc.lines,
-    ...context,
-  });
-};
-
-const editorTargetLineNumber = (view: EditorView, direction: -1 | 1): number | undefined => {
-  const head = view.state.selection.main.head;
-  const line = view.state.doc.lineAt(head);
-  const lineNumber = direction > 0 && head < line.to ? line.number : line.number + direction;
-  if (lineNumber < 1 || lineNumber > view.state.doc.lines) return undefined;
-  return lineNumber;
-};
-
-const focusTitleLineFallback = (view: EditorView, direction: -1 | 1): boolean => {
-  const lineNumber = editorTargetLineNumber(view, direction);
-  if (lineNumber === undefined) {
-    debugEditorNavigation(view, 'title-fallback:no-target-line', { direction });
-    return false;
-  }
-
-  const line = view.state.doc.line(lineNumber);
-  const isTitleLine = TITLE_KEYWORD_LINE_PATTERN.test(line.text);
-  if (!isTitleLine) {
-    debugEditorNavigation(view, 'title-fallback:not-title-line', { direction, lineNumber });
-    return false;
-  }
-
-  const anchor = direction > 0 ? line.from : line.to;
-  view.dispatch({ selection: { anchor }, scrollIntoView: true });
-  view.focus();
-  debugEditorNavigation(view, 'title-fallback:focused-editor-line', {
-    direction,
-    lineNumber,
-    anchor,
-  });
-  return true;
-};
-
-export const focusEmbeddedWidgetFromEditor = (
-  view: EditorView,
-  direction: -1 | 1,
+  lineNumber: number,
+  widgets: readonly { readonly range: { readonly from: number; readonly to: number } }[],
 ): boolean => {
-  if (!isCollapsedSelection(view)) {
-    debugEditorNavigation(view, 'editor-arrow:selection-not-collapsed', { direction });
-    return false;
-  }
+  const lineFrom = view.state.doc.line(lineNumber).from;
+  return widgets.some((widget) => widget.range.from <= lineFrom && lineFrom <= widget.range.to);
+};
 
-  const bridge = getEmbeddedWidgetBridge(view);
-  const focused = bridge.dispatch({
+export const focusEmbeddedWidgetFromEditor = (view: EditorView, direction: -1 | 1): boolean => {
+  if (!isCollapsedSelection(view)) return false;
+
+  return getEmbeddedWidgetBridge(view).dispatch({
     type: EMBEDDED_WIDGET_COMMAND.FocusFromEditor,
     payload: {
       direction,
       position: direction > 0 ? 'start' : 'end',
     },
   });
-  const fallbackFocused = focused ? false : focusTitleLineFallback(view, direction);
-  debugEditorNavigation(view, 'editor-arrow:result', {
-    direction,
-    bridgeFocused: focused,
-    fallbackFocused,
-  });
-  return focused || fallbackFocused;
 };
 
-const deleteEmptyLineAfterTitle = (view: EditorView, titleLineTo: number, lineFrom: number): void => {
-  view.dispatch({
-    changes: { from: titleLineTo, to: lineFrom },
-    selection: { anchor: titleLineTo },
-    scrollIntoView: true,
-  });
+interface PreviousWidgetLine {
+  readonly number: number;
+  readonly to: number;
+}
+
+const previousWidgetLine = (view: EditorView): PreviousWidgetLine | undefined => {
+  const head = view.state.selection.main.head;
+  const line = view.state.doc.lineAt(head);
+  if (head !== line.from || line.number <= 1) return undefined;
+
+  const previousLineNumber = line.number - 1;
+  const widgets = getEmbeddedWidgetBridge(view).snapshot();
+  if (!lineOverlapsWidget(view, previousLineNumber, widgets)) return undefined;
+
+  return { number: previousLineNumber, to: view.state.doc.line(previousLineNumber).to };
 };
 
-const focusTitleBeforeLine = (view: EditorView, lineFrom: number, lineTo: number): boolean =>
+const focusWidgetBeforeLine = (view: EditorView, lineFrom: number, lineTo: number): boolean =>
   getEmbeddedWidgetBridge(view).dispatch({
     type: EMBEDDED_WIDGET_COMMAND.Exit,
     payload: {
-      sourceId: EDITOR_TITLE_DELETE_SOURCE_ID,
+      sourceId: EDITOR_WIDGET_DELETE_SOURCE_ID,
       range: { from: lineFrom, to: lineTo },
       direction: EMBEDDED_WIDGET_DIRECTION.Previous,
       position: 'end',
     },
   });
 
+const deleteEmptySeparatorLine = (
+  view: EditorView,
+  widgetLineTo: number,
+  separatorLineFrom: number,
+): void => {
+  view.dispatch({
+    changes: { from: widgetLineTo, to: separatorLineFrom },
+    selection: { anchor: widgetLineTo },
+    scrollIntoView: true,
+  });
+};
+
 export const deleteTitleSeparatorFromEditor = (view: EditorView): boolean => {
   if (!isCollapsedSelection(view)) return false;
 
+  const previousLine = previousWidgetLine(view);
+  if (!previousLine) return false;
+
   const head = view.state.selection.main.head;
   const line = view.state.doc.lineAt(head);
-  if (head !== line.from || line.number <= 1) return false;
+  const focused = focusWidgetBeforeLine(view, line.from, line.to);
 
-  const previousLine = view.state.doc.line(line.number - 1);
-  if (!TITLE_KEYWORD_LINE_PATTERN.test(previousLine.text)) return false;
-
-  const focused = focusTitleBeforeLine(view, line.from, line.to);
-  debugEditorNavigation(view, 'title-separator-backspace', {
-    focused,
-    currentLine: line.number,
-    previousLine: previousLine.number,
-    currentLineEmpty: !line.text.trim(),
-  });
   if (line.text.trim()) return focused;
 
-  deleteEmptyLineAfterTitle(view, previousLine.to, line.from);
+  deleteEmptySeparatorLine(view, previousLine.to, line.from);
   return true;
 };
 

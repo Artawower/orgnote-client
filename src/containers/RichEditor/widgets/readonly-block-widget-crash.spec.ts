@@ -140,7 +140,10 @@ test('multiline widget field preserves mapped widgets while org AST catches up t
 
   expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(1);
 
-  view.dispatch({ changes: { from: doc.length, insert: '\n' }, selection: { anchor: doc.length + 1 } });
+  view.dispatch({
+    changes: { from: doc.length, insert: '\n' },
+    selection: { anchor: doc.length + 1 },
+  });
 
   expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(1);
 
@@ -188,9 +191,7 @@ test('two identical quote blocks both get decorations when cursor moves', () => 
 
   view.dispatch({ selection: { anchor: 1 } });
 
-  expect(
-    countDecorationsInRange(view.state.field(multilineField), 0, doc.length),
-  ).toBe(2);
+  expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(2);
 
   view.destroy();
 });
@@ -221,5 +222,41 @@ test('orgInlineWidgets does not rebuild decorations on cursor movement in readon
 
   expect(decorationsAfterCursorMove).toBe(decorationsBeforeCursorMove);
 
+  view.destroy();
+});
+
+test('multiline widget field prunes a widget whose org node was deleted from the synced tree', () => {
+  const doc = '#+TITLE: \nbody';
+  let orgNode = withMetaInfo(parse(doc));
+  const editorViewRef = { current: null as EditorView | null };
+  const multilineField = createMultilineWidgetsField(editorViewRef);
+
+  const view = new EditorView({
+    state: EditorState.create({
+      doc,
+      extensions: [
+        orgNodeGetterFacet.of(() => orgNode),
+        multilineWidgetsFacet.of({ [NodeType.Keyword]: [makeTitleKeywordWidget()] }),
+        multilineField,
+      ],
+    }),
+    parent: container,
+  });
+  editorViewRef.current = view;
+
+  view.dispatch({ selection: { anchor: doc.length } });
+  expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(1);
+
+  const firstLineTo = view.state.doc.line(1).to;
+  orgNode = withMetaInfo(parse('body'));
+  view.dispatch({
+    changes: { from: 0, to: firstLineTo + 1 },
+    selection: { anchor: 0 },
+  });
+
+  expect(view.state.doc.toString()).toBe('body');
+  expect(countDecorationsInRange(view.state.field(multilineField), 0, view.state.doc.length)).toBe(
+    0,
+  );
   view.destroy();
 });

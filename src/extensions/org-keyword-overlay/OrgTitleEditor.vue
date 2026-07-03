@@ -30,7 +30,6 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
-import { debugEmbeddedWidgetNavigation } from 'src/utils/org-editor/embedded-widget-runtime/debug';
 import { titleWidgetId as buildTitleWidgetId } from './title-widget-id';
 import { getKeywordMarker, getKeywordName, getKeywordValue } from './utils';
 
@@ -82,22 +81,6 @@ const currentTitleNode = (): OrgNode => findCurrentTitleNode() ?? props.node;
 const currentTitleRange = (): { from: number; to: number } => {
   const node = currentTitleNode();
   return { from: node.start, to: node.end };
-};
-
-const debugTitleNavigation = (event: string, context: Record<string, unknown> = {}): void => {
-  const head = props.editorView.state.selection.main.head;
-  const line = props.editorView.state.doc.lineAt(head);
-  debugEmbeddedWidgetNavigation(`title:${event}`, {
-    id: titleWidgetId.value,
-    head,
-    lineNumber: line.number,
-    lineFrom: line.from,
-    lineTo: line.to,
-    range: currentTitleRange(),
-    mountedNodeRange: { from: props.node.start, to: props.node.end },
-    hasEditorFocus: props.editorView.hasFocus,
-    ...context,
-  });
 };
 
 const buildLine = (next: string, node: OrgNode): string => {
@@ -312,8 +295,6 @@ const commit = (event: Event): void => {
 const focusTitleTextArea = (position: 'start' | 'end'): boolean => {
   const hasTextArea = Boolean(textAreaRef.value);
   textAreaRef.value?.focusAt(position);
-  const activeElement = typeof document === 'undefined' ? undefined : document.activeElement?.tagName;
-  debugTitleNavigation('focus-textarea', { position, hasTextArea, activeElement });
   return hasTextArea;
 };
 
@@ -325,22 +306,13 @@ onMounted(() => {
   });
 
   const skipped = skippedAutoFocusPositions.delete(props.node.start);
-  const selectionInside = isEditorSelectionInsideKeyword();
-  debugTitleNavigation('mounted', { skipped, selectionInside });
   if (skipped) return;
-  if (!selectionInside) return;
+  if (!isEditorSelectionInsideKeyword()) return;
   requestAnimationFrame(() => {
     const skippedBeforeFrame = skippedAutoFocusPositions.delete(props.node.start);
-    const selectionInsideBeforeFrame = isEditorSelectionInsideKeyword();
-    if (skippedBeforeFrame || !selectionInsideBeforeFrame) {
-      debugTitleNavigation('autofocus-skipped-frame', {
-        skipped: skippedBeforeFrame,
-        selectionInside: selectionInsideBeforeFrame,
-      });
-      return;
-    }
+    if (skippedBeforeFrame) return;
+    if (!isEditorSelectionInsideKeyword()) return;
     textAreaRef.value?.focusEnd();
-    debugTitleNavigation('autofocus-end', { hasTextArea: Boolean(textAreaRef.value) });
   });
 });
 

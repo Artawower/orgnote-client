@@ -46,11 +46,7 @@ const addOrUpdateWidget = (
   docLength: number,
   readonly: boolean,
 ): DecorationSet => {
-  const { from: start, to: end } = OrgMultilineWidget.getRange(
-    orgNode,
-    multilineWidget,
-    docLength,
-  );
+  const { from: start, to: end } = OrgMultilineWidget.getRange(orgNode, multilineWidget, docLength);
 
   const foundWidget: { current: OrgMultilineWidget | null } = { current: null };
 
@@ -118,19 +114,17 @@ const buildDecorations = (
   if (!orgNode || !isOrgNodeSynced(state, orgNode)) return current;
 
   const currentCaretPosition = state.selection.main.head;
+  const liveWidgetNodes = new Set<OrgNode>();
   let result = current;
 
   walkTree(orgNode, (n: OrgNode): boolean => {
+    liveWidgetNodes.add(n);
     const widgetList = widgets[n.type];
     const multilineEmbeddedWidget = findHighestPriorityWidget(widgetList, n);
 
     if (!multilineEmbeddedWidget) return false;
 
-    const { from, to } = OrgMultilineWidget.getRange(
-      n,
-      multilineEmbeddedWidget,
-      state.doc.length,
-    );
+    const { from, to } = OrgMultilineWidget.getRange(n, multilineEmbeddedWidget, state.doc.length);
     const caretIntoWidget = currentCaretPosition >= from && currentCaretPosition <= to + 1;
     const rawEditRequested = OrgMultilineWidget.hasRawEditRequest(n);
     const shouldAutoEdit = !multilineEmbeddedWidget.suppressEdit && caretIntoWidget;
@@ -155,8 +149,20 @@ const buildDecorations = (
     return false;
   });
 
-  return result;
+  return pruneStaleWidgets(result, liveWidgetNodes);
 };
+
+const pruneStaleWidgets = (
+  decorations: DecorationSet,
+  liveWidgetNodes: ReadonlySet<OrgNode>,
+): DecorationSet =>
+  decorations.update({
+    filter: (_from, _to, value) => {
+      const widget = value.spec.widget as OrgMultilineWidget | undefined;
+      if (!widget) return true;
+      return liveWidgetNodes.has(widget.orgNode);
+    },
+  });
 
 const hasSignificantChanges = (tr: Transaction): boolean => {
   if (tr.docChanged) return true;

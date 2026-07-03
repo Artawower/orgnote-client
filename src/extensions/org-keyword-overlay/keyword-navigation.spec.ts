@@ -4,7 +4,10 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
-import { deleteTitleSeparatorFromEditor, focusEmbeddedWidgetFromEditor } from './keyword-navigation';
+import {
+  deleteTitleSeparatorFromEditor,
+  focusEmbeddedWidgetFromEditor,
+} from './keyword-navigation';
 
 const createMutableEditorView = (doc: string, anchor: number) => {
   let state = EditorState.create({ doc, selection: { anchor } });
@@ -19,35 +22,25 @@ const createMutableEditorView = (doc: string, anchor: number) => {
   };
 };
 
-test('focusEmbeddedWidgetFromEditor falls back to title line when title handle is not mounted', () => {
+test('focusEmbeddedWidgetFromEditor stays bridge-only when no widget is registered', () => {
   const titleLine = '#+TITLE: Some title';
   const documentText = `${titleLine}\n\n:PROPERTIES:\n:ID: test\n:END:\n`;
   const blankLinePosition = `${titleLine}\n`.length;
   const view = createMutableEditorView(documentText, blankLinePosition);
 
-  const focused = focusEmbeddedWidgetFromEditor(
-    view as never,
-    EMBEDDED_WIDGET_DIRECTION.Previous,
-  );
+  const focused = focusEmbeddedWidgetFromEditor(view as never, EMBEDDED_WIDGET_DIRECTION.Previous);
 
-  expect(focused).toBe(true);
-  expect(view.state.selection.main.head).toBe(titleLine.length);
-  expect(view.dispatch).toHaveBeenCalledWith({
-    selection: { anchor: titleLine.length },
-    scrollIntoView: true,
-  });
-  expect(view.focus).toHaveBeenCalled();
+  expect(focused).toBe(false);
+  expect(view.dispatch).not.toHaveBeenCalled();
+  expect(view.focus).not.toHaveBeenCalled();
 });
 
-test('focusEmbeddedWidgetFromEditor does not fallback to regular text lines', () => {
+test('focusEmbeddedWidgetFromEditor does not jump to regular text lines', () => {
   const documentText = 'Regular text\n\n:PROPERTIES:\n:ID: test\n:END:\n';
   const blankLinePosition = 'Regular text\n'.length;
   const view = createMutableEditorView(documentText, blankLinePosition);
 
-  const focused = focusEmbeddedWidgetFromEditor(
-    view as never,
-    EMBEDDED_WIDGET_DIRECTION.Previous,
-  );
+  const focused = focusEmbeddedWidgetFromEditor(view as never, EMBEDDED_WIDGET_DIRECTION.Previous);
 
   expect(focused).toBe(false);
   expect(view.dispatch).not.toHaveBeenCalled();
@@ -63,7 +56,7 @@ const registerTitleBridgeFocusHandle = (view: ReturnType<typeof createMutableEdi
   return focus;
 };
 
-test('deleteTitleSeparatorFromEditor removes blank line after title and focuses title', () => {
+test('deleteTitleSeparatorFromEditor removes blank line after a widget and focuses it', () => {
   const titleLine = '#+TITLE: Some title';
   const documentText = `${titleLine}\n\n:PROPERTIES:\n:ID: test\n:END:\n`;
   const blankLinePosition = `${titleLine}\n`.length;
@@ -78,7 +71,7 @@ test('deleteTitleSeparatorFromEditor removes blank line after title and focuses 
   expect(focus).toHaveBeenCalledWith({ position: 'end' });
 });
 
-test('deleteTitleSeparatorFromEditor keeps properties separated from title', () => {
+test('deleteTitleSeparatorFromEditor keeps widget separated when next line is non-empty', () => {
   const titleLine = '#+TITLE: Some title';
   const documentText = `${titleLine}\n:PROPERTIES:\n:ID: test\n:END:\n`;
   const propertyLinePosition = `${titleLine}\n`.length;
