@@ -7,8 +7,17 @@ import type {
 import { type CommandsStore, type Command } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import { api } from 'src/boot/api';
+import { debugEmbeddedWidgetNavigation } from 'src/utils/org-editor/embedded-widget-runtime/debug';
 import { clientOnly } from 'src/utils/platform-specific';
 import { shallowRef, triggerRef } from 'vue';
+
+const TRACED_COMMAND = 'editor.add-title';
+
+const isTracedCommand = (name: string | undefined): boolean => name === TRACED_COMMAND;
+
+const debugCommandStore = (event: string, context: Record<string, unknown> = {}): void => {
+  debugEmbeddedWidgetNavigation(`command-store:${event}`, context);
+};
 
 export const useCommandsStore = defineStore<'commands', CommandsStore>('commands', () => {
   const commands = shallowRef<Command[]>([]);
@@ -21,11 +30,24 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     }
     commands.value.push(...newCommands);
     triggerRef(commands);
+    const traced = newCommands.filter((command) => isTracedCommand(command.command));
+    if (!traced.length) return;
+    debugCommandStore('add', {
+      added: traced.map((command) => command.command),
+      totalCommands: commands.value.length,
+      matchingCommands: commands.value.filter((command) => isTracedCommand(command.command)).length,
+    });
   };
 
   const unregister = (...commandsToUnregister: Command[]) => {
     const unregisterCommandsNames = new Set(commandsToUnregister.map((c) => c.command));
     commands.value = commands.value.filter((c) => !unregisterCommandsNames.has(c.command));
+    const traced = commandsToUnregister.filter((command) => isTracedCommand(command.command));
+    if (!traced.length) return;
+    debugCommandStore('remove', {
+      removed: traced.map((command) => command.command),
+      totalCommands: commands.value.length,
+    });
   };
 
   const get = (name: string) => {
@@ -101,7 +123,18 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     options?: ExecuteCommandOptions,
   ): Promise<TResult | undefined> => {
     const command = get(name) as Command<TData, TResult> | undefined;
-    if (!canExecuteCommand(command)) {
+    const canExecute = canExecuteCommand(command);
+    if (isTracedCommand(name)) {
+      debugCommandStore('execute-request', {
+        name,
+        found: Boolean(command),
+        canExecute,
+        totalCommands: commands.value.length,
+        wrapperCount: getCommandWrappers(name).length,
+        options,
+      });
+    }
+    if (!canExecute) {
       return;
     }
 
@@ -111,6 +144,7 @@ export const useCommandsStore = defineStore<'commands', CommandsStore>('commands
     } as CommandHandlerParams<TData>;
     const result = await runCommandChain(command, params);
 
+    if (isTracedCommand(name)) debugCommandStore('execute-complete', { name });
     notifyListeners(name, data, command, options);
     return result;
   };

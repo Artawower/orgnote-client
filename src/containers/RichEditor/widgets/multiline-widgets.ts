@@ -179,7 +179,7 @@ export const createMultilineWidgetsField = (editorViewRef: {
     update: (decorations, tr) => {
       if (!hasSignificantChanges(tr)) return decorations;
 
-      const mapped = tr.docChanged ? Decoration.none : decorations.map(tr.changes);
+      const mapped = decorations.map(tr.changes);
       return buildDecorations(tr.state, mapped, editorViewRef);
     },
 

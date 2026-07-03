@@ -1,7 +1,14 @@
 import { type OrgNoteApi, type Command, type CompletionCandidate, I18N } from 'orgnote-api';
 import Fuse from 'fuse.js';
 import { toValue } from 'vue';
+import { debugEmbeddedWidgetNavigation } from 'src/utils/org-editor/embedded-widget-runtime/debug';
 import { getCandidateTitle } from './completion-candidate-title';
+
+const TRACED_COMMAND = 'editor.add-title';
+
+const debugSelectCommand = (event: string, context: Record<string, unknown> = {}): void => {
+  debugEmbeddedWidgetNavigation(`select-command:${event}`, context);
+};
 
 const getValueByPath = (obj: CompletionCandidate<Command>, path: string | string[]): string => {
   const key = Array.isArray(path) ? path[0] : path;
@@ -58,6 +65,16 @@ export async function selectCommand(
   const threshold = api.core.useConfig().config.completion.fuseThreshold;
 
   const visibleCommands = commands.filter((c) => isCommandVisible(c, api));
+  const tracedCommand = commands.find((command) => command.command === TRACED_COMMAND);
+  const tracedVisible = visibleCommands.some((command) => command.command === TRACED_COMMAND);
+  debugSelectCommand('open', {
+    totalCommands: commands.length,
+    visibleCommands: visibleCommands.length,
+    tracedFound: Boolean(tracedCommand),
+    tracedVisible,
+    tracedHidden: tracedCommand ? !tracedVisible : undefined,
+    placeholder,
+  });
   const candidates = visibleCommands.map((c) => commandToCandidate(c, api));
   const sortedCandidates = sortCandidatesAlphabetically(candidates);
 
@@ -71,6 +88,11 @@ export async function selectCommand(
     name: 'commands',
     itemsGetter: (query) => {
       const res = query ? fuse.search(query).map((r) => r.item) : sortedCandidates;
+      debugSelectCommand('items', {
+        query,
+        total: res.length,
+        tracedInResults: res.some((item) => item.data.command === TRACED_COMMAND),
+      });
       return {
         result: res,
         total: res.length,

@@ -33,6 +33,16 @@ const makeItalicInlineWidget = (): InlineEmbeddedWidget => ({
   },
 });
 
+const makeTitleKeywordWidget = (): MultilineEmbeddedWidget => ({
+  id: 'test-title-widget',
+  suppressEdit: true,
+  satisfied: (node) => node.rawValue.startsWith('#+TITLE:'),
+  widgetBuilder: ({ wrap }) => {
+    wrap.textContent = 'title';
+    return { destroy: () => {} };
+  },
+});
+
 let container: HTMLDivElement;
 
 beforeEach(() => {
@@ -103,6 +113,36 @@ test('multiline widget field keeps block widget visible when cursor moves inside
   expect(
     countDecorationsInRange(view.state.field(multilineField), 0, DOC_QUOTE_WITH_ITALIC.length),
   ).toBe(1);
+
+  view.destroy();
+});
+
+test('multiline widget field preserves mapped widgets while org AST catches up to doc changes', () => {
+  const doc = '#+TITLE: Some text';
+  const orgNode = withMetaInfo(parse(doc));
+  const editorViewRef = { current: null as EditorView | null };
+  const multilineField = createMultilineWidgetsField(editorViewRef);
+
+  const view = new EditorView({
+    state: EditorState.create({
+      doc,
+      extensions: [
+        orgNodeGetterFacet.of(() => orgNode),
+        multilineWidgetsFacet.of({ [NodeType.Keyword]: [makeTitleKeywordWidget()] }),
+        multilineField,
+      ],
+    }),
+    parent: container,
+  });
+
+  editorViewRef.current = view;
+  view.dispatch({ selection: { anchor: doc.length } });
+
+  expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(1);
+
+  view.dispatch({ changes: { from: doc.length, insert: '\n' }, selection: { anchor: doc.length + 1 } });
+
+  expect(countDecorationsInRange(view.state.field(multilineField), 0, doc.length)).toBe(1);
 
   view.destroy();
 });

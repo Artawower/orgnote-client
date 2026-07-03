@@ -54,6 +54,34 @@ test('EmbeddedWidgetBridge focuses a registered widget by id', () => {
   expect(focusTitle).toHaveBeenCalledWith({ position: 'end' });
 });
 
+test('EmbeddedWidgetBridge ignores stale unregister for a replaced widget handle', () => {
+  const view = createView('title');
+  const bridge = getEmbeddedWidgetBridge(view as never);
+  const oldFocus = vi.fn(() => true);
+  const nextFocus = vi.fn(() => true);
+
+  const unregisterOld = bridge.register({
+    id: 'title:0',
+    getRange: () => ({ from: 0, to: 5 }),
+    focus: oldFocus,
+  });
+  bridge.register({
+    id: 'title:0',
+    getRange: () => ({ from: 0, to: 5 }),
+    focus: nextFocus,
+  });
+  unregisterOld();
+
+  const focused = bridge.dispatch({
+    type: EMBEDDED_WIDGET_COMMAND.Focus,
+    payload: { id: 'title:0', position: 'end' },
+  });
+
+  expect(focused).toBe(true);
+  expect(oldFocus).not.toHaveBeenCalled();
+  expect(nextFocus).toHaveBeenCalledWith({ position: 'end' });
+});
+
 test('EmbeddedWidgetBridge ignores missing focus targets', () => {
   const view = createView('title');
   const bridge = getEmbeddedWidgetBridge(view as never);

@@ -1,6 +1,6 @@
 import type { EditorView } from '@codemirror/view';
 import type { OrgNode } from 'org-mode-ast';
-import { NodeType } from 'org-mode-ast';
+import { NodeType, parse, walkTree } from 'org-mode-ast';
 import type { OrgPropertyEntry } from 'orgnote-api';
 import { selectOrgDocument } from 'orgnote-api/utils';
 import type { PropertyEditorState, PropertyScope } from './property-model';
@@ -27,13 +27,47 @@ const PROPERTY_END = ':END:';
 
 const documentText = (view: EditorView): string => view.state.doc.toString();
 
+const isRootPropertyDrawer = (node: OrgNode): boolean =>
+  node.is(NodeType.PropertyDrawer) && Boolean(node.parent?.is(NodeType.Root));
+
+const isPropertyWidgetNode = (node: OrgNode): boolean =>
+  node.is(NodeType.PropertyDrawer) || isRootPropertySequenceStart(node);
+
+const isPagePropertyWidgetNode = (node: OrgNode): boolean =>
+  isRootPropertyDrawer(node) || isRootPropertySequenceStart(node);
+
+const findCurrentPropertyNodeAtStart = (root: OrgNode, sourceNode: OrgNode): OrgNode | undefined => {
+  let currentNode: OrgNode | undefined;
+  walkTree(root, (node) => {
+    if (node.start !== sourceNode.start) return false;
+    if (!isPropertyWidgetNode(node)) return false;
+    currentNode = node;
+    return true;
+  });
+  return currentNode;
+};
+
+const findCurrentPagePropertyNode = (root: OrgNode): OrgNode | undefined =>
+  root.childrenList.find(isPagePropertyWidgetNode);
+
+const findCurrentPropertyNode = (content: string, sourceNode: OrgNode): OrgNode | undefined => {
+  const root = parse(content);
+  if (getPropertyScope(sourceNode) === 'page') {
+    return findCurrentPagePropertyNode(root) ?? findCurrentPropertyNodeAtStart(root, sourceNode);
+  }
+  return findCurrentPropertyNodeAtStart(root, sourceNode);
+};
+
+const getCurrentPropertyWidgetRange = (view: EditorView, node: OrgNode): { from: number; to: number } =>
+  getPropertyWidgetRange(findCurrentPropertyNode(documentText(view), node) ?? node);
+
 export const replacePropertyItems = (
   view: EditorView,
   node: OrgNode,
   items: readonly OrgPropertyEntry[],
   onApplied?: () => void,
 ): void => {
-  const range = getPropertyWidgetRange(node);
+  const range = getCurrentPropertyWidgetRange(view, node);
   const insert = formatPropertyDrawer(items);
   const docLength = view.state.doc.length;
   if (range.from > docLength) return;

@@ -12,6 +12,7 @@ import {
   type EmbeddedWidgetRange,
   type EmbeddedWidgetSnapshot,
 } from './types';
+import { debugEmbeddedWidgetNavigation } from './debug';
 
 const DEFAULT_PRIORITY = 0;
 const NEWLINE = '\n';
@@ -28,6 +29,12 @@ interface ResolvedNavigationPayload {
 interface EmbeddedWidgetEntry {
   readonly handle: EmbeddedWidgetHandle;
   readonly snapshot: EmbeddedWidgetSnapshot;
+}
+
+interface DebugWidgetSnapshot {
+  readonly id: string;
+  readonly range?: EmbeddedWidgetRange;
+  readonly priority: number;
 }
 
 const defaultPosition = (direction: EmbeddedWidgetDirection): EmbeddedWidgetFocusPosition => {
@@ -115,6 +122,73 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
   const snapshot = (): EmbeddedWidgetSnapshot[] =>
     sortedEntries().map((entry) => entry.snapshot);
 
+  const rangeLineLabel = (range: EmbeddedWidgetRange | undefined): string => {
+    if (!range) return 'L?';
+    const docLength = view.state.doc.length;
+    const from = Math.min(range.from, docLength);
+    const to = Math.min(Math.max(range.to, from), docLength);
+    const fromLine = view.state.doc.lineAt(from).number;
+    const toLine = view.state.doc.lineAt(to).number;
+    if (fromLine === toLine) return `L${fromLine}`;
+    return `L${fromLine}-L${toLine}`;
+  };
+
+  const rangeBar = (range: EmbeddedWidgetRange | undefined): string => {
+    const width = 48;
+    if (!range) return '?'.repeat(width);
+    const docLength = Math.max(view.state.doc.length, 1);
+    const start = Math.floor((Math.max(range.from, 0) / docLength) * width);
+    const end = Math.max(start + 1, Math.ceil((Math.max(range.to, 0) / docLength) * width));
+    return Array.from({ length: width }, (_, index) => {
+      if (index < start) return '.';
+      if (index < end) return '#';
+      return '.';
+    }).join('');
+  };
+
+  const widgetRangeLabel = (range: EmbeddedWidgetRange | undefined): string => {
+    if (!range) return '[range unavailable]';
+    return `[${range.from}-${range.to}]`;
+  };
+
+  const toDebugWidget = (handle: EmbeddedWidgetHandle): DebugWidgetSnapshot => ({
+    id: handle.id,
+    priority: handle.priority ?? DEFAULT_PRIORITY,
+  });
+
+  const debugWidgets = (): DebugWidgetSnapshot[] => Array.from(handles.values()).map(toDebugWidget);
+
+  const widgetMap = (widgets: readonly DebugWidgetSnapshot[]): string => {
+    if (!widgets.length) return '(empty widget registry)';
+    return widgets
+      .map((widget, index) => {
+        const order = `${index + 1}`.padStart(2, '0');
+        const range = widgetRangeLabel(widget.range).padEnd(19, ' ');
+        const lines = rangeLineLabel(widget.range).padEnd(7, ' ');
+        const priority = `p=${widget.priority}`.padEnd(5, ' ');
+        return `${order} ${widget.id.padEnd(24, ' ')} ${lines} ${range} ${priority} ${rangeBar(widget.range)}`;
+      })
+      .join('\n');
+  };
+
+  const debug = (event: string, context: Record<string, unknown> = {}): void => {
+    const head = view.state.selection.main.head;
+    const line = view.state.doc.lineAt(head);
+    const widgets = debugWidgets();
+    debugEmbeddedWidgetNavigation(event, {
+      head,
+      lineNumber: line.number,
+      lineFrom: line.from,
+      lineTo: line.to,
+      docLength: view.state.doc.length,
+      docLines: view.state.doc.lines,
+      registeredIds: widgets.map((widget) => widget.id),
+      widgetMap: widgetMap(widgets),
+      widgets,
+      ...context,
+    });
+  };
+
   const getCommandRange = (
     command: ResolvedNavigationPayload,
   ): EmbeddedWidgetRange | undefined => {
@@ -146,14 +220,6 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
     const lineNumber = firstEditorLineNumber(direction);
     if (lineNumber < 1 || lineNumber > view.state.doc.lines) return undefined;
     return view.state.doc.line(lineNumber).from;
-  };
-
-  const findEntryFromEditor = (
-    direction: EmbeddedWidgetDirection,
-  ): EmbeddedWidgetEntry | undefined => {
-    const lineFrom = targetEditorLineFrom(direction);
-    if (lineFrom === undefined) return undefined;
-    return sortedEntries().find((entry) => containsLine(entry.snapshot.range, lineFrom));
   };
 
   const adjacentLineNumberAroundRange = (
@@ -208,17 +274,40 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
 
   const focusAdjacent = (command: ResolvedNavigationPayload): boolean => {
     const sourceRange = getCommandRange(command);
-    if (!sourceRange) return false;
+    if (!sourceRange) {
+      debug('focus-adjacent:no-source-range', { command });
+      return false;
+    }
 
     const target = findAdjacentEntry(sourceRange, command.direction, command.sourceId);
-    if (!target) return false;
-    return target.handle.focus({ position: command.position });
+    const focused = target?.handle.focus({ position: command.position }) ?? false;
+    debug('focus-adjacent', {
+      direction: command.direction,
+      position: command.position,
+      sourceId: command.sourceId,
+      sourceRange,
+      targetId: target?.snapshot.id,
+      targetRange: target?.snapshot.range,
+      focused,
+    });
+    return focused;
   };
 
   const focusFromEditor = (command: ResolvedNavigationPayload): boolean => {
-    const target = findEntryFromEditor(command.direction);
-    if (!target) return false;
-    return target.handle.focus({ position: command.position });
+    const targetLineFrom = targetEditorLineFrom(command.direction);
+    const target = targetLineFrom === undefined
+      ? undefined
+      : sortedEntries().find((entry) => containsLine(entry.snapshot.range, targetLineFrom));
+    const focused = target?.handle.focus({ position: command.position }) ?? false;
+    debug('focus-from-editor', {
+      direction: command.direction,
+      position: command.position,
+      targetLineFrom,
+      targetId: target?.snapshot.id,
+      targetRange: target?.snapshot.range,
+      focused,
+    });
+    return focused;
   };
 
   const findEntryAtLine = (
@@ -231,15 +320,35 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
 
   const focusExitTarget = (command: ResolvedNavigationPayload): boolean => {
     const sourceRange = getCommandRange(command);
-    if (!sourceRange) return false;
+    if (!sourceRange) {
+      debug('exit:no-source-range', { command });
+      return false;
+    }
 
     const lineNumber = adjacentLineNumberAroundRange(sourceRange, command.direction);
-    if (lineNumber === undefined) return focusEditorAroundRange(sourceRange, command.direction);
+    if (lineNumber === undefined) {
+      const focused = focusEditorAroundRange(sourceRange, command.direction);
+      debug('exit:editor-around-range', { direction: command.direction, sourceRange, focused });
+      return focused;
+    }
 
     const target = findEntryAtLine(lineNumber, command.sourceId);
-    if (target) return target.handle.focus({ position: command.position });
+    if (target) {
+      const focused = target.handle.focus({ position: command.position });
+      debug('exit:widget-at-line', {
+        direction: command.direction,
+        position: command.position,
+        lineNumber,
+        sourceRange,
+        targetId: target.snapshot.id,
+        targetRange: target.snapshot.range,
+        focused,
+      });
+      return focused;
+    }
 
     focusEditorAtLine(lineNumber, command.direction);
+    debug('exit:editor-line', { direction: command.direction, lineNumber, sourceRange });
     return true;
   };
 
@@ -248,8 +357,13 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
 
   const focusById = (command: EmbeddedWidgetFocusPayload): boolean => {
     const handle = handles.get(command.id);
-    if (!handle) return false;
-    return handle.focus({ position: command.position ?? 'end' });
+    const focused = handle?.focus({ position: command.position ?? 'end' }) ?? false;
+    debug('focus-by-id', {
+      id: command.id,
+      position: command.position ?? 'end',
+      focused,
+    });
+    return focused;
   };
 
   const dispatch = (command: EmbeddedWidgetCommand): boolean => {
@@ -265,9 +379,13 @@ const createEmbeddedWidgetBridge = (view: EditorView): EmbeddedWidgetBridge => {
 
   const register = (handle: EmbeddedWidgetHandle): (() => void) => {
     handles.set(handle.id, handle);
+    debug('register', { id: handle.id, priority: handle.priority });
 
     return () => {
-      handles.delete(handle.id);
+      const current = handles.get(handle.id);
+      const stale = current !== handle;
+      if (!stale) handles.delete(handle.id);
+      debug('unregister', { id: handle.id, stale });
     };
   };
 

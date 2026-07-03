@@ -74,6 +74,22 @@ test('OrgTitleEditor autofocuses on mount when editor selection is inside title'
   expect(focus).toHaveBeenCalledOnce();
 });
 
+test('OrgTitleEditor autofocuses from command palette selection handoff', async () => {
+  const focus = vi.spyOn(HTMLTextAreaElement.prototype, 'focus');
+  const editorView = markRaw(createEditorView('#+TITLE: '.length, false));
+
+  mount(OrgTitleEditor, {
+    props: {
+      node: createTitleNode(),
+      editorView: editorView as never,
+    },
+  });
+  await nextTick();
+  await waitForAnimationFrame();
+
+  expect(focus).toHaveBeenCalledOnce();
+});
+
 test('OrgTitleEditor does not autofocus when selection is on the line after title', async () => {
   const focus = vi.spyOn(HTMLTextAreaElement.prototype, 'focus');
   const editorView = markRaw(createEditorView(`${titleText}\n`.length, true));
@@ -126,6 +142,26 @@ test('OrgTitleEditor creates a CodeMirror line after title when pressing Enter a
   expect(editorView.focus).toHaveBeenCalled();
 });
 
+test('OrgTitleEditor does not let pending autofocus steal focus after Enter', async () => {
+  const focus = vi.spyOn(HTMLTextAreaElement.prototype, 'focus');
+  const marker = '#+TITLE: ';
+  const editorView = markRaw(createMutableEditorView(marker));
+  const wrapper = mount(OrgTitleEditor, {
+    props: {
+      node: createTitleNode(marker),
+      editorView: editorView as never,
+    },
+  });
+  await nextTick();
+
+  await pressEnterInTitle(wrapper, 'Some text');
+
+  expect(editorView.state.doc.toString()).toBe('#+TITLE: Some text\n');
+  expect(editorView.state.selection.main.head).toBe('#+TITLE: Some text\n'.length);
+  expect(editorView.focus).toHaveBeenCalled();
+  expect(focus).toHaveBeenCalledOnce();
+});
+
 test('OrgTitleEditor inserts a blank line before properties when pressing Enter above drawer', async () => {
   const documentText = `${titleText}\n:PROPERTIES:\n:ID: Some id!\n:END:\n`;
   const editorView = markRaw(createMutableEditorView(documentText));
@@ -160,6 +196,26 @@ test('OrgTitleEditor repairs title line before inserting blank line above proper
   const expected = '#+TITLE: Hellow!\n\n:PROPERTIES:\n:ID: Some id!\n:END:\n';
   expect(editorView.state.doc.toString()).toBe(expected);
   expect(editorView.state.selection.main.head).toBe('#+TITLE: Hellow!\n'.length);
+});
+
+test('OrgTitleEditor uses current title range when pressing Enter after long local edits', async () => {
+  const staleTitle = '#+TITLE: Some title';
+  const currentTitle = '#+TITLE: Some titleqwfqwfsn: arsearnes';
+  const documentText = `${currentTitle}\n:PROPERTIES:\n:id: qwfqwfqwf\n:END:\n`;
+  const editorView = markRaw(createMutableEditorView(documentText));
+  const wrapper = mount(OrgTitleEditor, {
+    props: {
+      node: createTitleNode(staleTitle),
+      editorView: editorView as never,
+    },
+  });
+  await nextTick();
+
+  await pressEnterInTitle(wrapper, 'Some titleqwfqwfsn: arsearnes');
+
+  const expected = `${currentTitle}\n\n:PROPERTIES:\n:id: qwfqwfqwf\n:END:\n`;
+  expect(editorView.state.doc.toString()).toBe(expected);
+  expect(editorView.state.selection.main.head).toBe(`${currentTitle}\n`.length);
 });
 
 test('OrgTitleEditor moves down from a single source line title with ArrowDown', async () => {

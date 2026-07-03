@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import type { OrgNode } from 'org-mode-ast';
+import { parse, walkTree, type OrgNode } from 'org-mode-ast';
 import type { EditorView } from '@codemirror/view';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
@@ -30,8 +30,9 @@ import {
   EMBEDDED_WIDGET_DIRECTION,
   getEmbeddedWidgetBridge,
 } from 'src/utils/org-editor/embedded-widget-runtime';
+import { debugEmbeddedWidgetNavigation } from 'src/utils/org-editor/embedded-widget-runtime/debug';
 import { titleWidgetId as buildTitleWidgetId } from './title-widget-id';
-import { getKeywordMarker, getKeywordValue } from './utils';
+import { getKeywordMarker, getKeywordName, getKeywordValue } from './utils';
 
 const NEWLINE = '\n';
 const skippedAutoFocusPositions = new Set<number>();
@@ -61,15 +62,55 @@ const marker = computed(() => getKeywordMarker(props.node));
 
 const normalizeKeywordValue = (next: string): string => next.trim().replace(/\s+/g, ' ');
 
-const buildLine = (next: string): string => {
+const isTitleNode = (node: OrgNode): boolean => getKeywordName(node) === 'title';
+
+const findCurrentTitleNode = (): OrgNode | undefined => {
+  let titleAtStart: OrgNode | undefined;
+  let firstTitle: OrgNode | undefined;
+  walkTree(parse(props.editorView.state.doc.toString()), (node) => {
+    if (!isTitleNode(node)) return false;
+    firstTitle ??= node;
+    if (node.start !== props.node.start) return false;
+    titleAtStart = node;
+    return true;
+  });
+  return titleAtStart ?? firstTitle;
+};
+
+const currentTitleNode = (): OrgNode => findCurrentTitleNode() ?? props.node;
+
+const currentTitleRange = (): { from: number; to: number } => {
+  const node = currentTitleNode();
+  return { from: node.start, to: node.end };
+};
+
+const debugTitleNavigation = (event: string, context: Record<string, unknown> = {}): void => {
+  const head = props.editorView.state.selection.main.head;
+  const line = props.editorView.state.doc.lineAt(head);
+  debugEmbeddedWidgetNavigation(`title:${event}`, {
+    id: titleWidgetId.value,
+    head,
+    lineNumber: line.number,
+    lineFrom: line.from,
+    lineTo: line.to,
+    range: currentTitleRange(),
+    mountedNodeRange: { from: props.node.start, to: props.node.end },
+    hasEditorFocus: props.editorView.hasFocus,
+    ...context,
+  });
+};
+
+const buildLine = (next: string, node: OrgNode): string => {
   const normalized = normalizeKeywordValue(next);
-  if (!normalized) return marker.value;
-  return `${marker.value} ${normalized}`;
+  const currentMarker = getKeywordMarker(node) || marker.value;
+  if (!normalized) return currentMarker;
+  return `${currentMarker} ${normalized}`;
 };
 
 const isEditorSelectionInsideKeyword = (): boolean => {
   const head = props.editorView.state.selection.main.head;
-  return props.editorView.hasFocus && head >= props.node.start && head <= props.node.end;
+  const range = currentTitleRange();
+  return head >= range.from && head <= range.to;
 };
 
 const waitForWidgetDomUpdate = (): Promise<void> =>
@@ -78,11 +119,12 @@ const waitForWidgetDomUpdate = (): Promise<void> =>
   });
 
 const dispatchKeywordUpdate = (next: string, anchor?: number, anchorAssoc = 1): void => {
-  const insert = buildLine(next);
-  const shouldUpdate =
-    insert !== props.editorView.state.doc.sliceString(props.node.start, props.node.end);
+  const node = currentTitleNode();
+  const range = { from: node.start, to: node.end };
+  const insert = buildLine(next, node);
+  const shouldUpdate = insert !== props.editorView.state.doc.sliceString(range.from, range.to);
   const changes = shouldUpdate
-    ? props.editorView.state.changes({ from: props.node.start, to: props.node.end, insert })
+    ? props.editorView.state.changes({ from: range.from, to: range.to, insert })
     : undefined;
   const mappedAnchor =
     anchor !== undefined && changes ? changes.mapPos(anchor, anchorAssoc) : anchor;
@@ -110,10 +152,8 @@ const commitValue = (textArea: HTMLTextAreaElement): void => {
 };
 
 const titleWidgetId = computed(() => buildTitleWidgetId(props.node.start));
-const titleRange = computed(() => ({ from: props.node.start, to: props.node.end }));
-
 const currentTitleLineRange = (): { from: number; to: number } => {
-  const line = props.editorView.state.doc.lineAt(props.node.start);
+  const line = props.editorView.state.doc.lineAt(currentTitleRange().from);
   return { from: line.from, to: line.to };
 };
 
@@ -156,7 +196,7 @@ const insertEditorLineAfter = (position: number): void => {
 };
 
 const focusEditorLineAfterTitle = (): void => {
-  const line = props.editorView.state.doc.lineAt(props.node.start);
+  const line = props.editorView.state.doc.lineAt(currentTitleRange().from);
   const nextLineNumber = line.number + 1;
 
   if (nextLineNumber > props.editorView.state.doc.lines) {
@@ -180,7 +220,7 @@ const commitAndFocusEditorLineAfterTitle = (textArea: HTMLTextAreaElement): void
 };
 
 const deleteKeyword = (): void => {
-  const line = props.editorView.state.doc.lineAt(props.node.start);
+  const line = props.editorView.state.doc.lineAt(currentTitleRange().from);
   const to = line.to < props.editorView.state.doc.length ? line.to + 1 : line.to;
 
   suppressNextAutoFocus();
@@ -270,22 +310,38 @@ const commit = (event: Event): void => {
 };
 
 const focusTitleTextArea = (position: 'start' | 'end'): boolean => {
+  const hasTextArea = Boolean(textAreaRef.value);
   textAreaRef.value?.focusAt(position);
-  return true;
+  const activeElement = typeof document === 'undefined' ? undefined : document.activeElement?.tagName;
+  debugTitleNavigation('focus-textarea', { position, hasTextArea, activeElement });
+  return hasTextArea;
 };
 
 onMounted(() => {
   unregisterWidget = getEmbeddedWidgetBridge(props.editorView).register({
     id: titleWidgetId.value,
-    getRange: () => titleRange.value,
+    getRange: currentTitleRange,
     focus: ({ position }) => focusTitleTextArea(position),
   });
 
   const skipped = skippedAutoFocusPositions.delete(props.node.start);
   const selectionInside = isEditorSelectionInsideKeyword();
+  debugTitleNavigation('mounted', { skipped, selectionInside });
   if (skipped) return;
   if (!selectionInside) return;
-  requestAnimationFrame(() => textAreaRef.value?.focusEnd());
+  requestAnimationFrame(() => {
+    const skippedBeforeFrame = skippedAutoFocusPositions.delete(props.node.start);
+    const selectionInsideBeforeFrame = isEditorSelectionInsideKeyword();
+    if (skippedBeforeFrame || !selectionInsideBeforeFrame) {
+      debugTitleNavigation('autofocus-skipped-frame', {
+        skipped: skippedBeforeFrame,
+        selectionInside: selectionInsideBeforeFrame,
+      });
+      return;
+    }
+    textAreaRef.value?.focusEnd();
+    debugTitleNavigation('autofocus-end', { hasTextArea: Boolean(textAreaRef.value) });
+  });
 });
 
 onBeforeUnmount(() => {
