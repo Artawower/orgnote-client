@@ -73,6 +73,9 @@
               :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
               @update:model-value="setKey(item, $event)"
             >
+              <template #selected="{ label }">
+                <span class="property-key-label">{{ label }}</span>
+              </template>
               <template #option="{ label }">
                 <app-flex start gap="sm">
                   <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
@@ -130,6 +133,9 @@
             :placeholder="t(I18N.PROPERTY_PLACEHOLDER)"
             @update:model-value="focusValueInput"
           >
+            <template #selected="{ label }">
+              <span class="property-key-label">{{ label }}</span>
+            </template>
             <template #option="{ label }">
               <app-flex start gap="sm">
                 <app-icon :name="iconByKey(label)" size="sm" color="fg-muted" />
@@ -377,10 +383,19 @@ const commitEditAndExit = (): void => {
 }
 
 .property-row {
+  --property-key-width: 10rem;
+  --property-key-min-width: 6rem;
+
+  min-width: 0;
   min-height: 2rem;
   padding: var(--padding-xs) var(--padding-sm);
   color: var(--fg);
   align-items: center;
+
+  @include tablet-below {
+    --property-key-width: 30%;
+    --property-key-min-width: 0;
+  }
 
   @include hoverable-area;
 
@@ -407,13 +422,13 @@ const commitEditAndExit = (): void => {
 }
 
 .property-key {
-  flex: 0 0 10rem;
-  width: 10rem;
-  min-width: 6rem;
+  flex: 0 1 var(--property-key-width);
+  width: var(--property-key-width);
+  min-width: var(--property-key-min-width);
+  max-width: var(--property-key-width);
   color: var(--fg-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+
+  @include overflow-ellipsis;
 }
 
 .property-value {
@@ -436,20 +451,17 @@ const commitEditAndExit = (): void => {
 
 .property-key.editing {
   display: flex;
-  flex: 0 0 10rem;
+  flex: 0 0 var(--property-key-width);
   align-items: center;
-  width: 10rem;
-  max-width: 10rem;
+  width: var(--property-key-width);
+  min-width: var(--property-key-min-width);
+  max-width: var(--property-key-width);
   height: 2rem;
   min-height: 2rem;
   padding: 0;
   border: none;
   background: transparent;
   overflow: visible;
-}
-
-.editing-row .property-key.editing {
-  flex-basis: 10rem;
 }
 
 .property-error {
@@ -482,6 +494,9 @@ const commitEditAndExit = (): void => {
 }
 
 .property-key.editing .app-dropdown {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   max-height: none;
   border-radius: 0;
   background: transparent;
@@ -494,13 +509,47 @@ const commitEditAndExit = (): void => {
 }
 
 .property-key.editing .app-select {
+  min-width: 0;
   padding: 0;
   --vs-font-size: var(--font-size-sm);
 }
 
-.property-key.editing .vs__search {
+.property-key.editing :deep(.vs__dropdown-toggle),
+.property-key.editing :deep(.vs__selected-options) {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.property-key.editing :deep(.vs__selected-options) {
+  flex-wrap: nowrap;
+}
+
+.property-key-label {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 2rem;
+  line-height: 2rem;
+
+  @include overflow-ellipsis;
+}
+
+.property-key.editing :deep(.vs__selected),
+.property-key.editing :deep(.vs__search) {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.property-key.editing :deep(.vs__search) {
   padding: 0;
-  line-height: 1;
+  line-height: 2rem;
+
+  @include overflow-ellipsis;
 }
 
 :deep(.vs__selected-options) {

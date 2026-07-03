@@ -175,7 +175,7 @@ defineExpose({
   --vs-dropdown-option--active-color: var(--fg-active);
 
   .vs__dropdown-menu {
-    border: 1px solid var(--border-color);
+    border: var(--glass-border);
     border-radius: var(--border-radius-md);
     box-shadow: var(--card-shadow);
     overflow: hidden;
