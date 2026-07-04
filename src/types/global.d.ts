@@ -1,6 +1,7 @@
 /// <reference types="node" />
 
-import type { DiskFile, FileSystemChange, Hotkey, OrgNoteApi } from 'orgnote-api';
+import type { DiskFile, FileSystemChange, OrgNoteApi } from 'orgnote-api';
+import type { ResolvedElectronHotkey } from '../src-electron/electron-keybinding-channels';
 
 export interface ElectronFsWatchEvent {
   watchId: number;
@@ -35,7 +36,7 @@ export interface ElectronFsAPI {
 
 export interface ElectronAPI {
   setHeaderColor: (color: string) => Promise<void>;
-  setAppHotkeys: (hotkeys: Hotkey[]) => void;
+  setAppHotkeys: (hotkeys: ResolvedElectronHotkey[]) => void;
   auth: (url: string) => Promise<{ redirectUrl: string; error?: string }>;
   onNavigate: (callback: (route: string) => void) => () => void;
   fs?: ElectronFsAPI;

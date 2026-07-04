@@ -4,6 +4,7 @@ import { nextTick } from 'vue';
 import { KEYBINDING_CONTEXTS, type Command } from 'orgnote-api';
 import { useCommandsStore } from './command';
 import { useKeybindingsStore } from './keybindings';
+import { isMac } from 'src/utils/hotkey-display';
 
 vi.mock('./config', () => ({
   useConfigStore: vi.fn(() => ({
@@ -89,7 +90,10 @@ test('keybindings sync resolved hotkeys to Electron preload', async () => {
   commands.add(command);
   await nextTick();
 
-  expect(setAppHotkeys).toHaveBeenLastCalledWith([{ key: '1', modifiers: ['Mod'] }]);
+  const mac = isMac();
+  expect(setAppHotkeys).toHaveBeenLastCalledWith([
+    { key: '1', control: !mac, meta: mac, alt: false, shift: false },
+  ]);
 });
 
 test('keybindings match numeric row shortcuts by physical code fallback', () => {

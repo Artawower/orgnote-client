@@ -1,20 +1,11 @@
 import type { BrowserWindow, IpcMainEvent } from 'electron';
-import type { Hotkey } from 'orgnote-api';
-import { KEYBINDING_MODIFIERS } from 'orgnote-api';
 import { BrowserWindow as ElectronBrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { ELECTRON_KEYBINDING_CHANNELS } from './electron-keybinding-channels';
+import { ELECTRON_KEYBINDING_CHANNELS, type ResolvedElectronHotkey } from './electron-keybinding-channels';
 
 const TRAFFIC_LIGHT_POSITION = { x: 10, y: 10 };
 
 type ElectronInput = Electron.Input;
-
-interface ResolvedModifiers {
-  control: boolean;
-  meta: boolean;
-  alt: boolean;
-  shift: boolean;
-}
 
 interface CreateMainWindowOptions {
   currentDir: string;
@@ -42,50 +33,34 @@ const configureDevTools = (window: BrowserWindow): void => {
   });
 };
 
-const isHotkey = (payload: unknown): payload is Hotkey => {
+const isBoolean = (value: unknown): value is boolean => typeof value === 'boolean';
+
+const isResolvedHotkey = (payload: unknown): payload is ResolvedElectronHotkey => {
   if (!payload || typeof payload !== 'object') return false;
   const hotkey = payload as Record<string, unknown>;
-  const modifiers = hotkey.modifiers;
   return (
     typeof hotkey.key === 'string' &&
-    (modifiers === undefined ||
-      (Array.isArray(modifiers) && modifiers.every((modifier) => typeof modifier === 'string')))
+    isBoolean(hotkey.control) &&
+    isBoolean(hotkey.meta) &&
+    isBoolean(hotkey.alt) &&
+    isBoolean(hotkey.shift)
   );
 };
 
-const readHotkeys = (payload: unknown): Hotkey[] => {
+const readHotkeys = (payload: unknown): ResolvedElectronHotkey[] => {
   if (!Array.isArray(payload)) return [];
-  return payload.filter(isHotkey);
+  return payload.filter(isResolvedHotkey);
 };
 
-const resolveHotkeyModifiers = (hotkey: Hotkey): ResolvedModifiers => {
-  const modifiers = hotkey.modifiers ?? [];
-  const isDarwin = process.platform === 'darwin';
-  return {
-    control:
-      modifiers.includes(KEYBINDING_MODIFIERS.CTRL) ||
-      (!isDarwin && modifiers.includes(KEYBINDING_MODIFIERS.MOD)),
-    meta:
-      modifiers.includes(KEYBINDING_MODIFIERS.META) ||
-      (isDarwin && modifiers.includes(KEYBINDING_MODIFIERS.MOD)),
-    alt: modifiers.includes(KEYBINDING_MODIFIERS.ALT),
-    shift: modifiers.includes(KEYBINDING_MODIFIERS.SHIFT),
-  };
-};
-
-const hotkeyMatchesInput = (hotkey: Hotkey, input: ElectronInput): boolean => {
-  const modifiers = resolveHotkeyModifiers(hotkey);
-  return (
-    input.key.toLowerCase() === hotkey.key.toLowerCase() &&
-    input.control === modifiers.control &&
-    input.meta === modifiers.meta &&
-    input.alt === modifiers.alt &&
-    input.shift === modifiers.shift
-  );
-};
+const hotkeyMatchesInput = (hotkey: ResolvedElectronHotkey, input: ElectronInput): boolean =>
+  input.key.toLowerCase() === hotkey.key.toLowerCase() &&
+  input.control === hotkey.control &&
+  input.meta === hotkey.meta &&
+  input.alt === hotkey.alt &&
+  input.shift === hotkey.shift;
 
 const configureMenuShortcutPassthrough = (window: BrowserWindow): void => {
-  let appHotkeys: Hotkey[] = [];
+  let appHotkeys: ResolvedElectronHotkey[] = [];
 
   const updateAppHotkeys = (event: IpcMainEvent, payload: unknown): void => {
     if (event.sender !== window.webContents) return;

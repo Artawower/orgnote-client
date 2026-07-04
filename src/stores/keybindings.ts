@@ -15,6 +15,7 @@ import { useConfigStore } from './config';
 import { hasWindow } from 'src/utils/platform-specific';
 import { isMac } from 'src/utils/hotkey-display';
 import { api } from 'src/boot/api';
+import type { ResolvedElectronHotkey } from '../../src-electron/electron-keybinding-channels';
 
 const keyMatchesEvent = (hotkey: Hotkey, event: KeyboardEvent): boolean => {
   if (event.key.toLowerCase() === hotkey.key.toLowerCase()) return true;
@@ -154,10 +155,24 @@ export const useKeybindingsStore = defineStore<'keybindings', KeybindingsStore>(
           b.hotkeys.some((h) => hotkeysEqual(h, hotkey)),
       )?.command;
 
+    const resolveHotkeyForElectron = (hotkey: Hotkey): ResolvedElectronHotkey => {
+      const mods = hotkey.modifiers ?? [];
+      const { ctrl, meta } = resolveModKey(mods);
+      return {
+        key: hotkey.key,
+        control: ctrl,
+        meta,
+        alt: mods.includes('Alt'),
+        shift: mods.includes('Shift'),
+      };
+    };
+
     const syncElectronHotkeys = (): void => {
       if (!hasWindow()) return;
-      const hotkeys = keybindings.value.flatMap((binding) => binding.hotkeys);
       if (typeof window.electron?.setAppHotkeys !== 'function') return;
+      const hotkeys = keybindings.value.flatMap((binding) =>
+        binding.hotkeys.map(resolveHotkeyForElectron),
+      );
       window.electron.setAppHotkeys(hotkeys);
     };
 
