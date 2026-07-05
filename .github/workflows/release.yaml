@@ -37,9 +37,18 @@ jobs:
       version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
       prerelease: false
 
+  build-electron-linux:
+    name: Build Electron Linux
+    needs: [get-version]
+    uses: ./.github/workflows/build-electron-linux.yaml
+    with:
+      environment: deploy
+      version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
+      prerelease: false
+
   upload-release-asset:
     name: Upload Release Asset
-    needs: [build-android, build-electron, get-version]
+    needs: [build-android, build-electron, build-electron-linux, get-version]
     runs-on: ubuntu-latest
     environment: deploy
     steps:
@@ -49,28 +58,44 @@ jobs:
           name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
           path: ./dist/release
 
-      - name: Download Electron artifact
+      - name: Download Electron macOS artifact
         uses: actions/download-artifact@v4
         with:
           name: orgnote-macos-arm64-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.dmg
           path: ./dist/release
 
-      - name: Upload APK Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download Electron Linux artifacts
+        uses: actions/download-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/release/orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
-          asset_name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
-          asset_content_type: application/octet-stream
+          name: orgnote-linux-${{ github.event.release.tag_name || needs.get-version.outputs.version }}
+          path: ./dist/release/linux
 
-      - name: Upload Electron Release Asset
-        uses: actions/upload-release-asset@v1
+      - name: Upload APK Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/release/orgnote-macos-arm64-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.dmg
-          asset_name: orgnote-macos-arm64-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.dmg
-          asset_content_type: application/x-apple-diskimage
+        run: |
+          VERSION="${{ github.event.release.tag_name || needs.get-version.outputs.version }}"
+          gh release upload "$VERSION" \
+            ./dist/release/orgnote-${VERSION}.apk --clobber
+        shell: bash
+
+      - name: Upload Electron macOS Release Asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.release.tag_name || needs.get-version.outputs.version }}"
+          gh release upload "$VERSION" \
+            ./dist/release/orgnote-macos-arm64-${VERSION}.dmg --clobber
+        shell: bash
+
+      - name: Upload Electron Linux Release Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.release.tag_name || needs.get-version.outputs.version }}"
+          for FILE in ./dist/release/linux/*; do
+            [ -f "$FILE" ] || continue
+            echo "Uploading $(basename "$FILE")"
+            gh release upload "$VERSION" "$FILE" --clobber
+          done
+        shell: bash

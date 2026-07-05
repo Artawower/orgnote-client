@@ -1,0 +1,77 @@
+name: Build Electron Linux
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      version:
+        required: true
+        type: string
+        description: 'Version string for the artifact name'
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease build'
+
+jobs:
+  build-electron-linux:
+    name: Build Electron Linux
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+
+      # Defensive: project has no production native modules today,
+      # but QEMU enables arm64 cross-rebuild if one is added later.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add -g @quasar/cli
+
+      - name: Init environment
+        run: |
+          cat <<EOT > .env.build
+          DEBUG=${{ inputs.prerelease && 'true' || 'false' }}
+          VITE_API_URL=${{ secrets.API_URL }}
+          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
+          VITE_WS_URL=${{ secrets.WS_URL }}
+          VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
+          EOT
+
+      - name: Build Electron
+        run: bunx env-cmd -f ./.env.build quasar build -m electron
+
+      - name: Collect Linux artifacts
+        run: |
+          mkdir -p ./dist/build
+          find ./dist/electron -name '*.rpm' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.AppImage' -exec cp {} ./dist/build/ \;
+          echo "Collected artifacts:"
+          ls -la ./dist/build
+          if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then
+            echo "ERROR: no .rpm or .AppImage artifacts found" && exit 1
+          fi
+
+      - name: Upload Electron Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: orgnote-linux-${{ inputs.version }}
+          path: ./dist/build/*
+          retention-days: ${{ inputs.prerelease && 7 || 30 }}

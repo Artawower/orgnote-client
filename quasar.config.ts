@@ -303,6 +303,18 @@ export default defineConfig((ctx) => {
           hardenedRuntime: false,
           gatekeeperAssess: false,
         },
+        linux: {
+          target: [
+            { target: 'rpm', arch: ['x64', 'arm64'] },
+            { target: 'AppImage', arch: ['x64', 'arm64'] },
+          ],
+          category: 'Office',
+          maintainer: 'app.orgnote@gmail.com',
+          vendor: 'OrgNote',
+          synopsis: 'OrgRoam note-taking for Zettelkasten',
+          description: 'OrgRoam implementation for web and mobile devices.',
+          icon: 'src-electron/icons/icon.png',
+        },
         extraResources: [
           {
             from: 'src-electron/resources',
