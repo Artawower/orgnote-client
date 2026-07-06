@@ -8,6 +8,7 @@ import { startStopwatchCommand } from './commands/start-stopwatch-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
 import { setTaskPriorityCommand } from './commands/set-task-priority-command';
 import { openTaskCommand } from './commands/open-task-command';
+import { agendaFilterCommands } from './commands/open-agenda-filter-commands';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_CREATE_TASK,
@@ -178,6 +179,7 @@ const registerViews = (api: OrgNoteApi): void => {
   commands.add(deleteTaskCommand);
   commands.add(setTaskPriorityCommand);
   commands.add(openTaskCommand);
+  agendaFilterCommands.forEach((cmd) => commands.add(cmd));
   commands.add({
     command: AGENDA_POMODORO_PAUSE_COMMAND,
     group: 'agenda',
@@ -252,6 +254,10 @@ const unregisterViews = (api: OrgNoteApi): void => {
   });
   const existing = commands.get(AGENDA_CREATE_TASK);
   if (existing) commands.remove(existing);
+  agendaFilterCommands.forEach((cmd) => {
+    const registered = commands.get(cmd.command!);
+    if (registered) commands.remove(registered);
+  });
 };
 
 const settingsSchema = object({

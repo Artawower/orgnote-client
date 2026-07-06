@@ -15,6 +15,12 @@ export const AGENDA_HABITS_COMMAND = 'open agenda habits';
 export const AGENDA_POMODORO_COMMAND = 'open agenda pomodoro';
 export const AGENDA_POMODORO_STATS_COMMAND = 'open agenda pomodoro stats';
 
+export const AGENDA_TASKS_TODAY_COMMAND = 'agenda tasks: today';
+export const AGENDA_TASKS_TOMORROW_COMMAND = 'agenda tasks: tomorrow';
+export const AGENDA_TASKS_NEXT7DAYS_COMMAND = 'agenda tasks: next 7 days';
+export const AGENDA_TASKS_OVERDUE_COMMAND = 'agenda tasks: overdue';
+export const AGENDA_TASKS_ALL_COMMAND = 'agenda tasks: all';
+
 export const AGENDA_TASKS_VIEWER_ID = 'org-agenda:tasks';
 export const AGENDA_HABITS_VIEWER_ID = 'org-agenda:habits';
 export const AGENDA_POMODORO_VIEWER_ID = 'org-agenda:pomodoro';
