@@ -25,6 +25,7 @@ export const TASK_TODO_KEYWORD = 'TODO';
 
 export const AGENDA_CREATE_TASK = 'create task';
 export const AGENDA_POMODORO_START_COMMAND = 'start pomodoro';
+export const AGENDA_POMODORO_START_STOPWATCH_COMMAND = 'start stopwatch';
 export const AGENDA_POMODORO_PAUSE_COMMAND = 'pause pomodoro';
 export const AGENDA_POMODORO_RESUME_COMMAND = 'resume pomodoro';
 export const AGENDA_POMODORO_STOP_COMMAND = 'stop pomodoro';

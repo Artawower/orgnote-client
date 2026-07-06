@@ -4,6 +4,7 @@ import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
+import { startStopwatchCommand } from './commands/start-stopwatch-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
 import { setTaskPriorityCommand } from './commands/set-task-priority-command';
 import { openTaskCommand } from './commands/open-task-command';
@@ -12,6 +13,7 @@ import {
   AGENDA_CREATE_TASK,
   AGENDA_TASK_CONTEXT_MENU_GROUP,
   AGENDA_POMODORO_START_COMMAND,
+  AGENDA_POMODORO_START_STOPWATCH_COMMAND,
   AGENDA_TASK_DELETE_COMMAND,
   AGENDA_TASK_SET_PRIORITY_COMMAND,
   AGENDA_TASK_OPEN_COMMAND,
@@ -141,6 +143,9 @@ const registerTaskContextMenu = (api: OrgNoteApi): void => {
     command: AGENDA_POMODORO_START_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    command: AGENDA_POMODORO_START_STOPWATCH_COMMAND,
+  });
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
     command: AGENDA_TASK_OPEN_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
@@ -169,6 +174,7 @@ const registerViews = (api: OrgNoteApi): void => {
   });
   commands.add(createTaskCommand);
   commands.add(startPomodoroCommand);
+  commands.add(startStopwatchCommand);
   commands.add(deleteTaskCommand);
   commands.add(setTaskPriorityCommand);
   commands.add(openTaskCommand);
