@@ -1,5 +1,5 @@
 <template>
-  <button :class="[size, { outline, [type]: type }]" class="text-medium" :disabled="disabled">
+  <button :class="[`button-${size}`, { outline, [type]: type }]" class="text-medium" :disabled="disabled">
     <slot />
   </button>
 </template>
@@ -50,22 +50,22 @@ button {
   border-radius: var(--button-radius);
   box-sizing: border-box;
 
-  &.xs {
+  &.button-xs {
     padding: var(--button-xs-padding);
     min-width: var(--button-xs-min-width);
   }
 
-  &.sm {
+  &.button-sm {
     padding: var(--button-sm-padding);
     min-width: var(--button-sm-min-width);
   }
 
-  &.md {
+  &.button-md {
     padding: var(--button-md-padding);
     min-width: var(--button-md-min-width);
   }
 
-  &.lg {
+  &.button-lg {
     padding: var(--button-lg-padding);
     min-width: var(--button-lg-min-width);
   }
