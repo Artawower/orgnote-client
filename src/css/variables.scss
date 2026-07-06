@@ -115,6 +115,13 @@ body {
   --header-item-padding: 0;
   --header-item-backdrop-filter: var(--glass-backdrop-filter);
   --header-item-box-shadow: var(--glass-box-shadow);
+  --header-item-center-bg: var(--header-item-bg);
+  --header-item-center-border: var(--header-item-border);
+  --header-item-center-border-top: var(--header-item-border-top, var(--glass-border-top));
+  --header-item-center-backdrop-filter: var(--header-item-backdrop-filter);
+  --header-item-center-box-shadow: var(--header-item-box-shadow);
+  --header-item-center-overflow: hidden;
+  --header-fade-blur: 1px;
   --main-header-title-max-width: 72vw;
   --main-header-actions-gap-mobile: var(--padding-md);
 

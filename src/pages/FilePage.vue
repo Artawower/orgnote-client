@@ -87,11 +87,37 @@ const { tabletBelow } = api.ui.useScreenDetection();
 
 .file-page-header {
   position: absolute;
-  top: 0;
   top: var(--header-top);
   left: 0;
   right: 0;
-  z-index: 1;
+  z-index: 20;
+
+  height: calc(var(--header-height) + 24px);
+
+  background: transparent !important;
+  isolation: isolate;
+}
+
+.file-page-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  pointer-events: none;
+
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 28%, transparent) 55%,
+    transparent 100%
+  );
+
+  backdrop-filter: blur(var(--header-fade-blur));
+  -webkit-backdrop-filter: blur(var(--header-fade-blur));
+
+  mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
 }
 
 .file-page-content {

@@ -82,8 +82,14 @@ defineProps<{
   grid-column: 2;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: var(--header-item-center-overflow);
   justify-self: center;
+  background: var(--header-item-center-bg);
+  border: var(--header-item-center-border);
+  border-top: var(--header-item-center-border-top);
+  -webkit-backdrop-filter: var(--header-item-center-backdrop-filter);
+  backdrop-filter: var(--header-item-center-backdrop-filter);
+  box-shadow: var(--header-item-center-box-shadow);
 }
 
 .header-right {

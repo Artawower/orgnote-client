@@ -113,17 +113,29 @@ const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--fg);
   @include interactive-no-select;
   cursor: pointer;
+
+  @include mobile {
+    max-width: 100%;
+  }
 }
 
-@include mobile {
-  .main-header {
-    --header-column-gap: var(--main-header-actions-gap-mobile);
+.main-header {
+  --header-item-center-bg: transparent;
+  --header-item-center-border: none;
+  --header-item-center-border-top: none;
+  --header-item-center-backdrop-filter: none;
+  --header-item-center-box-shadow: none;
+  --header-item-center-overflow: visible;
+
+  :deep(.header-center::after) {
+    display: none;
   }
 
-  .header-title {
-    max-width: 100%;
+  @include mobile {
+    --header-column-gap: var(--main-header-actions-gap-mobile);
   }
 }
 </style>
