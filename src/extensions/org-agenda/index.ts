@@ -5,6 +5,7 @@ import { object, optional, string, pipe, metadata, number, boolean } from 'valib
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
 import { startStopwatchCommand } from './commands/start-stopwatch-command';
+import { stopPomodoroCommand } from './commands/stop-pomodoro-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
 import { setTaskPriorityCommand } from './commands/set-task-priority-command';
 import { openTaskCommand } from './commands/open-task-command';
@@ -22,7 +23,6 @@ import {
   AGENDA_POMODORO_VIEWER_ID,
   AGENDA_POMODORO_PAUSE_COMMAND,
   AGENDA_POMODORO_RESUME_COMMAND,
-  AGENDA_POMODORO_STOP_COMMAND,
   AGENDA_POMODORO_STATS_URI,
   AGENDA_POMODORO_STATS_PATTERN,
   AGENDA_POMODORO_STATS_VIEWER_ID,
@@ -176,6 +176,7 @@ const registerViews = (api: OrgNoteApi): void => {
   commands.add(createTaskCommand);
   commands.add(startPomodoroCommand);
   commands.add(startStopwatchCommand);
+  commands.add(stopPomodoroCommand);
   commands.add(deleteTaskCommand);
   commands.add(setTaskPriorityCommand);
   commands.add(openTaskCommand);
@@ -196,15 +197,6 @@ const registerViews = (api: OrgNoteApi): void => {
     handler: async () => {
       const { usePomodoroStore } = await import('./stores/pomodoro-store');
       await usePomodoroStore().resumeSession();
-    },
-  });
-  commands.add({
-    command: AGENDA_POMODORO_STOP_COMMAND,
-    group: 'agenda',
-    icon: 'sym_o_stop',
-    handler: async () => {
-      const { usePomodoroStore } = await import('./stores/pomodoro-store');
-      await usePomodoroStore().stopSession();
     },
   });
   const isPomodoroRunning = (): boolean =>
