@@ -58,11 +58,11 @@ jobs:
           name: orgnote-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.apk
           path: ./dist/release
 
-      - name: Download Electron macOS artifact
+      - name: Download Electron macOS artifacts
         uses: actions/download-artifact@v4
         with:
-          name: orgnote-macos-arm64-${{ github.event.release.tag_name || needs.get-version.outputs.version }}.dmg
-          path: ./dist/release
+          name: orgnote-macos-${{ github.event.release.tag_name || needs.get-version.outputs.version }}
+          path: ./dist/release/macos
 
       - name: Download Electron Linux artifacts
         uses: actions/download-artifact@v4
@@ -79,13 +79,16 @@ jobs:
             ./dist/release/orgnote-${VERSION}.apk --clobber
         shell: bash
 
-      - name: Upload Electron macOS Release Asset
+      - name: Upload Electron macOS Release Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name || needs.get-version.outputs.version }}"
-          gh release upload "$VERSION" \
-            ./dist/release/orgnote-macos-arm64-${VERSION}.dmg --clobber
+          for FILE in ./dist/release/macos/*; do
+            [ -f "$FILE" ] || continue
+            echo "Uploading $(basename "$FILE")"
+            gh release upload "$VERSION" "$FILE" --clobber
+          done
         shell: bash
 
       - name: Upload Electron Linux Release Assets

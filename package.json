@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.61.9",
+  "version": "0.61.10",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -83,6 +83,7 @@
     "dexie": "4.0.11",
     "diff-match-patch": "1.0.5",
     "dompurify": "3.3.1",
+    "electron-updater": "^6.8.9",
     "fast-deep-equal": "3.1.3",
     "flexsearch": "0.8.212",
     "force-graph": "1.43.5",

@@ -6,6 +6,7 @@ import { ORGNOTE_PROTOCOL } from '../src/constants/orgnote-scheme';
 import { startAuthCallbackServer } from './auth-callback-server';
 import { registerDeepLinking } from './deeplink';
 import { registerElectronFsIpc, stopElectronFsWatchers } from './electron-fs-ipc';
+import { registerElectronUpdaterIpc } from './electron-updater-ipc';
 import { registerHistoryFallbackProtocol } from './history-fallback-protocol';
 import { createMainWindow } from './main-window';
 import { registerOAuthLoginIpc } from './oauth-login-ipc';
@@ -66,6 +67,7 @@ app.whenReady().then(async () => {
   registerHistoryFallbackProtocol({ scheme: PROTOCOL_SCHEME, baseDir: currentDir });
   registerOAuthLoginIpc({ allowedOrigins: ALLOWED_AUTH_ORIGINS });
   registerElectronFsIpc({ getMainWindow: () => mainWindow });
+  registerElectronUpdaterIpc({ getMainWindow: () => mainWindow });
 
   stopAuthCallbackServer = startAuthCallbackServer({
     port: AUTH_CALLBACK_PORT,

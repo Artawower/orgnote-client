@@ -105,11 +105,11 @@ jobs:
           name: orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
           path: ./release-assets
 
-      - name: Download Electron artifact
+      - name: Download Electron macOS artifacts
         uses: actions/download-artifact@v4
         with:
-          name: orgnote-macos-arm64-${{ needs.check-version-changed.outputs.version }}-dev.dmg
-          path: ./release-assets
+          name: orgnote-macos-${{ needs.check-version-changed.outputs.version }}-dev
+          path: ./release-assets/macos
 
       - name: Download Electron Linux artifacts
         uses: actions/download-artifact@v4
@@ -190,7 +190,7 @@ jobs:
           prerelease: true
           files: |
             ./release-assets/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
-            ./release-assets/orgnote-macos-arm64-${{ needs.check-version-changed.outputs.version }}-dev.dmg
+            ./release-assets/macos/*
             ./release-assets/linux/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

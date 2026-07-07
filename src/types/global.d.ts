@@ -2,6 +2,7 @@
 
 import type { DiskFile, FileSystemChange, OrgNoteApi } from 'orgnote-api';
 import type { ResolvedElectronHotkey } from '../src-electron/electron-keybinding-channels';
+import type { ElectronUpdateCheckOptions, ElectronUpdateCheckResult, ElectronUpdateStatus } from '../src-electron/electron-updater-channels';
 
 export interface ElectronFsWatchEvent {
   watchId: number;
@@ -34,11 +35,18 @@ export interface ElectronFsAPI {
   onWatchEvent: (callback: (event: ElectronFsWatchEvent) => void) => () => void;
 }
 
+export interface ElectronUpdatesAPI {
+  checkForUpdates: (options?: ElectronUpdateCheckOptions) => Promise<ElectronUpdateCheckResult>;
+  installDownloadedUpdate: () => Promise<boolean>;
+  onStatus: (callback: (status: ElectronUpdateStatus) => void) => () => void;
+}
+
 export interface ElectronAPI {
   setHeaderColor: (color: string) => Promise<void>;
   setAppHotkeys: (hotkeys: ResolvedElectronHotkey[]) => void;
   auth: (url: string) => Promise<{ redirectUrl: string; error?: string }>;
   onNavigate: (callback: (route: string) => void) => () => void;
+  updates?: ElectronUpdatesAPI;
   fs?: ElectronFsAPI;
 }
 

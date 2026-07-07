@@ -46,6 +46,7 @@ export default defineConfig((ctx) => {
       { path: 'files-watchers', server: false },
       { path: 'auth', server: false },
       { path: 'app-update', server: false },
+      { path: 'electron-updater', server: false },
       { path: 'fs-sync-bridge', server: false },
       { path: 'electron-deeplink', server: false },
       { path: 'katex', server: false },
@@ -296,9 +297,19 @@ export default defineConfig((ctx) => {
         // https://www.electron.build/configuration/configuration
 
         appId: 'com.orgnote.client',
-        publish: null,
+        publish: [
+          {
+            provider: 'github',
+            owner: 'Artawower',
+            repo: 'orgnote-client',
+          },
+        ],
         mac: {
-          target: [{ target: 'dir', arch: ['arm64'] }],
+          target: [
+            { target: 'dmg', arch: ['arm64'] },
+            { target: 'zip', arch: ['arm64'] },
+          ],
+          artifactName: 'orgnote-macos-${arch}-${version}.${ext}',
           identity: '-',
           hardenedRuntime: false,
           gatekeeperAssess: false,
@@ -308,6 +319,7 @@ export default defineConfig((ctx) => {
             { target: 'rpm', arch: ['x64', 'arm64'] },
             { target: 'AppImage', arch: ['x64', 'arm64'] },
           ],
+          artifactName: 'orgnote-linux-${arch}-${version}.${ext}',
           category: 'Office',
           maintainer: 'app.orgnote@gmail.com',
           vendor: 'OrgNote',

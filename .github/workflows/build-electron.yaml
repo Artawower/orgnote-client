@@ -52,35 +52,22 @@ jobs:
       - name: Build Electron
         run: bunx env-cmd -f ./.env.build quasar build -m electron
 
-      - name: Sign and create DMG
+      - name: Collect Electron artifacts
         run: |
-          APP=$(find ./dist/electron -name "*.app" -maxdepth 4 | head -1)
-          if [ -z "$APP" ]; then echo "ERROR: .app bundle not found" && exit 1; fi
-
-          codesign --force --deep --sign - "$APP"
-          codesign --verify --deep --strict "$APP"
-          echo "Signed: $APP"
-
-          STAGING=$(mktemp -d)
-          ditto "$APP" "$STAGING/orgnote.app"
-          xattr -rc "$STAGING"
-          ln -s /Applications "$STAGING/Applications"
-
           mkdir -p ./dist/build
-          hdiutil create \
-            -volname "OrgNote" \
-            -srcfolder "$STAGING" \
-            -nospotlight \
-            -ov \
-            -format UDZO \
-            "./dist/build/orgnote-macos-arm64-${{ inputs.version }}.dmg"
+          find ./dist/electron -name '*.dmg' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.zip' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.blockmap' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name 'latest-mac.yml' -exec cp {} ./dist/build/ \;
+          echo "Collected artifacts:"
+          ls -la ./dist/build
+          if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then
+            echo "ERROR: no macOS Electron artifacts found" && exit 1
+          fi
 
-          rm -rf "$STAGING"
-          echo "DMG created: orgnote-macos-arm64-${{ inputs.version }}.dmg"
-
-      - name: Upload Electron artifact
+      - name: Upload Electron artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: orgnote-macos-arm64-${{ inputs.version }}.dmg
-          path: ./dist/build/orgnote-macos-arm64-${{ inputs.version }}.dmg
+          name: orgnote-macos-${{ inputs.version }}
+          path: ./dist/build/*
           retention-days: ${{ inputs.prerelease && 7 || 30 }}

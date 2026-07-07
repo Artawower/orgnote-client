@@ -1,8 +1,10 @@
 import type { IpcRendererEvent } from 'electron';
 import type { DiskFile, FileSystemChange } from 'orgnote-api';
+import type { ElectronUpdateCheckOptions, ElectronUpdateStatus } from './electron-updater-channels';
 import { contextBridge, ipcRenderer } from 'electron';
 import { ELECTRON_FS_CHANNELS } from './electron-fs-channels';
 import { ELECTRON_KEYBINDING_CHANNELS, type ResolvedElectronHotkey } from './electron-keybinding-channels';
+import { ELECTRON_UPDATE_CHANNELS } from './electron-updater-channels';
 
 interface ElectronFsWatchEvent {
   watchId: number;
@@ -21,6 +23,16 @@ contextBridge.exposeInMainWorld('electron', {
     const handler = (_event: IpcRendererEvent, route: string) => callback(route);
     ipcRenderer.on('navigate', handler);
     return () => ipcRenderer.removeListener('navigate', handler);
+  },
+  updates: {
+    checkForUpdates: (options?: ElectronUpdateCheckOptions) =>
+      ipcRenderer.invoke(ELECTRON_UPDATE_CHANNELS.checkForUpdates, options),
+    installDownloadedUpdate: () => ipcRenderer.invoke(ELECTRON_UPDATE_CHANNELS.installDownloadedUpdate),
+    onStatus: (callback: (status: ElectronUpdateStatus) => void): (() => void) => {
+      const handler = (_event: IpcRendererEvent, status: ElectronUpdateStatus) => callback(status);
+      ipcRenderer.on(ELECTRON_UPDATE_CHANNELS.status, handler);
+      return () => ipcRenderer.removeListener(ELECTRON_UPDATE_CHANNELS.status, handler);
+    },
   },
   fs: {
     selectDirectory: (): Promise<string | undefined> => ipcRenderer.invoke(ELECTRON_FS_CHANNELS.selectDirectory),

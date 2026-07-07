@@ -63,6 +63,8 @@ jobs:
           mkdir -p ./dist/build
           find ./dist/electron -name '*.rpm' -exec cp {} ./dist/build/ \;
           find ./dist/electron -name '*.AppImage' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.blockmap' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name 'latest-linux.yml' -exec cp {} ./dist/build/ \;
           echo "Collected artifacts:"
           ls -la ./dist/build
           if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then
