@@ -13,6 +13,7 @@
 <script lang="ts" setup>
 import { computed, type CSSProperties } from 'vue';
 import { type StyleSize, STYLE_SIZES } from 'orgnote-api';
+import type { AppFlexJustify } from './app-flex.types';
 
 defineOptions({
   inheritAttrs: false,
@@ -21,7 +22,7 @@ defineOptions({
 const props = withDefaults(
   defineProps<{
     direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-    justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
+    justify?: AppFlexJustify;
     align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
     gap?: StyleSize | ({} & string);
     inline?: boolean;

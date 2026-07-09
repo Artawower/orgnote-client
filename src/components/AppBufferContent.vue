@@ -1,17 +1,32 @@
 <template>
-  <div class="buffer-content" :class="{ 'no-padding-bottom': noPaddingBottom }">
-    <slot />
-  </div>
+  <app-flex
+    row
+    center
+    align-center
+    class="buffer-content"
+    :class="{ 'no-padding-bottom': noPaddingBottom }"
+  >
+    <content-frame :constrained="constrained" full-height>
+      <slot />
+    </content-frame>
+  </app-flex>
 </template>
 
 <script lang="ts" setup>
-defineProps<{ noPaddingBottom?: boolean }>();
+import ContentFrame from 'src/components/ContentFrame.vue';
+import AppFlex from 'src/components/AppFlex.vue';
+
+defineProps<{
+  noPaddingBottom?: boolean;
+  constrained?: boolean;
+}>();
 </script>
 
 <style lang="scss" scoped>
 .buffer-content {
   height: 100%;
   box-sizing: border-box;
+  --content-frame-max-width: var(--buffer-content-max-width);
 
   @include tablet-below {
     padding-top: var(--main-header-total-height);

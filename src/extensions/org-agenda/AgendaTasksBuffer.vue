@@ -1,5 +1,5 @@
 <template>
-  <app-buffer-content no-padding-bottom>
+  <app-buffer-content constrained no-padding-bottom>
     <container-layout class="agenda-buffer" :body-scroll="false" gap="sm">
       <template #header>
         <agenda-quick-add
@@ -199,6 +199,7 @@ const editTaskSave = async (
 <style lang="scss" scoped>
 .agenda-buffer {
   @include fit;
+  box-sizing: border-box;
   padding: var(--editor-padding);
 
   @include tablet-below {

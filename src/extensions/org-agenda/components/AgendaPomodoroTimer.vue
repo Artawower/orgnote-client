@@ -1,5 +1,5 @@
 <template>
-  <app-flex column align-center center full-height gap="lg" class="pomodoro-timer">
+  <app-flex column align-center center full-width full-height gap="lg" class="pomodoro-timer">
     <app-segmented-control
       v-model="sessionType"
       :options="modeOptions"

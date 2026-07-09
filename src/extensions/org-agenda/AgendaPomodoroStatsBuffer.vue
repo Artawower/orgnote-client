@@ -1,5 +1,5 @@
 <template>
-  <app-buffer-content>
+  <app-buffer-content constrained>
     <container-layout :body-scroll="true" gap="sm">
       <template #body>
         <app-flex column start align-stretch gap="sm" class="stats-body">

@@ -1,28 +1,20 @@
 <template>
-  <app-flex
-    class="page"
-    :class="{ padding, constrained }"
-    column
-    :center="centered"
-    :align="centered ? 'center' : 'stretch'"
-  >
-    <slot />
+  <app-flex row center align-center full-height class="page">
+    <content-frame :padding="padding" :constrained="constrained" justify="between" full-height>
+      <slot />
+    </content-frame>
   </app-flex>
 </template>
 
 <script lang="ts" setup>
 import AppFlex from 'src/components/AppFlex.vue';
+import ContentFrame from 'src/components/ContentFrame.vue';
 
-withDefaults(
-  defineProps<{
-    padding?: boolean;
-    constrained?: boolean;
-    centered?: boolean;
-  }>(),
-  {
-    centered: false,
-  },
-);
+defineProps<{
+  padding?: boolean;
+  constrained?: boolean;
+  centered?: boolean;
+}>();
 </script>
 
 <style lang="scss" scoped>
@@ -30,19 +22,11 @@ withDefaults(
   @include fit();
 
   & {
+    --content-frame-padding: var(--page-padding);
+    --content-frame-max-width: var(--page-max-width);
+
     background: var(--bg);
     position: relative;
-  }
-
-  &.padding {
-    padding: var(--page-padding);
-  }
-
-  &.constrained {
-    max-width: var(--page-max-width);
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
   }
 }
 </style>

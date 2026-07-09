@@ -1,5 +1,5 @@
 <template>
-  <app-buffer-content>
+  <app-buffer-content constrained>
     <container-layout class="agenda-buffer" :body-scroll="true" gap="sm">
       <template #header>
         <app-flex column start align-stretch gap="sm">
@@ -146,6 +146,7 @@ const onToggle = (habit: AgendaHabitView): Promise<void> => {
 <style lang="scss" scoped>
 .agenda-buffer {
   @include fit;
+  box-sizing: border-box;
   padding: var(--editor-padding);
 }
 </style>

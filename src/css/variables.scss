@@ -289,6 +289,10 @@ body {
   // Inputs
   --placeholder-fg: var(--fg-muted);
 
+  // Content frames
+  --content-max-width: 768px;
+  --buffer-content-max-width: var(--content-max-width);
+
   // Pages
   --page-padding: var(--padding-lg);
   --page-max-width: 960px;
@@ -379,7 +383,7 @@ body {
 
   // Editor
   --editor-toolbar-height: var(--bar-height);
-  --editor-max-width: 768px;
+  --editor-max-width: var(--content-max-width);
   --editor-padding: var(--padding-xl) var(--padding-lg) var(--padding-lg) var(--padding-lg);
   --editor-cursor-color: var(--accent);
   --editor-cursor-width: 2px;

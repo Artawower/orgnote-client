@@ -1,5 +1,5 @@
 <template>
-  <app-buffer-content>
+  <app-buffer-content constrained>
     <container-layout>
       <template #header>
         <app-flex row end align-center class="pomo-header">
