@@ -90,7 +90,7 @@ const { tabletBelow } = api.ui.useScreenDetection();
   top: var(--header-top);
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: var(--floating-z-index);
 
   height: calc(var(--header-height) + 24px);
 

@@ -350,6 +350,9 @@ body {
   // Modal overlay (below notifications so toasts render above the modal)
   --modal-z-index: 9000;
 
+  // Floating page elements
+  --floating-z-index: 4;
+
   // Notifications
   --notification-z-index: 9999;
   --notification-max-width: 480px;
