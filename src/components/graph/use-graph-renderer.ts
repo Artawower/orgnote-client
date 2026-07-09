@@ -9,6 +9,7 @@ import type { GraphColorsComposable } from './use-graph-colors';
 type ForceGraphRenderer = ReturnType<ReturnType<typeof ForceGraph>>;
 type ForceGraphData = { nodes: GraphNodeViewModel[]; links: LinkObject[] };
 type TypedNode = GraphNodeViewModel & NodeObject;
+
 type D3ForceAccessor = (
   name: string,
   force?: unknown,
@@ -18,6 +19,23 @@ type D3ForceAccessor = (
       distanceMax?: (v: number) => unknown;
     }
   | undefined;
+
+type LabelFadeRange = {
+  from: number;
+  to: number;
+};
+
+type LabelStyle = {
+  alpha: number;
+  canvasFontSize: number;
+};
+
+type LabelRect = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 export interface ResizeContext {
   width: number;
@@ -40,6 +58,20 @@ export interface UseGraphRendererOptions {
   onNodeHover: (nodeId?: string) => void;
   onBackgroundClick: () => void;
 }
+
+const LABEL_MIN_ALPHA = 0.02;
+const LABEL_FADE_SPAN = 0.48;
+const LABEL_PRIORITY_FADE_SPAN = 0.32;
+const LABEL_NORMAL_MIN_ZOOM = 1.15;
+const LABEL_PRIORITY_MIN_ZOOM = 0.55;
+const LABEL_ZOOM_GROWTH_BASE = 1.35;
+const LABEL_ZOOM_GROWTH_POWER = 0.28;
+const LABEL_MAX_ZOOM_GROWTH = 4;
+const LABEL_SCREEN_GROWTH_MIN = 0.92;
+const LABEL_SCREEN_GROWTH_RANGE = 0.26;
+const LABEL_MAX_SCREEN_SCALE = 1.55;
+const LABEL_COLLISION_PADDING_X = 6;
+const LABEL_COLLISION_PADDING_Y = 3;
 
 const truncateLabel = (value: string): string =>
   value.length <= graphConfig.labelMaxLength
@@ -116,26 +148,119 @@ const ZOOM_FIT_SCALE = 4;
 const estimateInitialZoom = (nodeCount: number): number =>
   nodeCount > 0 ? Math.max(ZOOM_FIT_FLOOR, ZOOM_FIT_SCALE / Math.sqrt(nodeCount)) : ZOOM_FIT_FLOOR;
 
+const getInitialZoom = (cfg: GraphUiConfig, nodeCount: number): number =>
+  Math.min(cfg.initialZoom, estimateInitialZoom(nodeCount));
+
 const getRendererSize = (rootEl?: HTMLElement, graphEl?: HTMLElement) => ({
   width: graphEl?.clientWidth ?? rootEl?.clientWidth ?? graphConfig.defaultWidth,
   height: graphEl?.clientHeight ?? rootEl?.clientHeight ?? graphConfig.defaultHeight,
 });
 
+const clamp = (value: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, value));
+
 const getSafeScale = (globalScale: number): number =>
   Math.max(globalScale, graphConfig.minCanvasScale);
 
-const shouldDrawLabel = (isFocused: boolean, globalScale: number): boolean =>
-  isFocused || globalScale >= graphConfig.minLabelVisibleZoom;
+const getProgress = (value: number, from: number, to: number): number =>
+  clamp((value - from) / (to - from), 0, 1);
 
-const getLabelScreenFontSize = (cfg: GraphUiConfig): number => {
+const easeOut = (value: number): number => 1 - Math.pow(1 - value, 3);
+
+const getLabelFadeRange = (isPriorityLabel: boolean): LabelFadeRange => {
+  const baseVisibleZoom = graphConfig.minLabelVisibleZoom;
+
+  if (isPriorityLabel) {
+    const from = Math.max(LABEL_PRIORITY_MIN_ZOOM, baseVisibleZoom * 0.6);
+
+    return {
+      from,
+      to: from + LABEL_PRIORITY_FADE_SPAN,
+    };
+  }
+
+  const from = Math.max(LABEL_NORMAL_MIN_ZOOM, baseVisibleZoom * 1.25);
+
+  return {
+    from,
+    to: from + LABEL_FADE_SPAN,
+  };
+};
+
+const getLabelFadeProgress = (globalScale: number, isPriorityLabel: boolean): number => {
+  const range = getLabelFadeRange(isPriorityLabel);
+
+  return easeOut(getProgress(globalScale, range.from, range.to));
+};
+
+const getBaseLabelScreenFontSize = (cfg: GraphUiConfig): number => {
   const baseFontSize = cfg.labelFontSize * graphConfig.labelScreenScale;
+
   return Math.max(graphConfig.minLabelFontSize, baseFontSize);
 };
 
-const getLabelCanvasFontSize = (
+const getLabelScreenFontSize = (
   cfg: GraphUiConfig,
   globalScale: number,
-): number => getLabelScreenFontSize(cfg) / getSafeScale(globalScale);
+  fadeProgress: number,
+): number => {
+  const baseFontSize = getBaseLabelScreenFontSize(cfg);
+  const zoom = clamp(globalScale, 1, LABEL_MAX_ZOOM_GROWTH);
+  const zoomGrowth = Math.pow(zoom / LABEL_ZOOM_GROWTH_BASE, LABEL_ZOOM_GROWTH_POWER);
+  const fadeGrowth = LABEL_SCREEN_GROWTH_MIN + fadeProgress * LABEL_SCREEN_GROWTH_RANGE;
+
+  return clamp(
+    baseFontSize * zoomGrowth * fadeGrowth,
+    baseFontSize * LABEL_SCREEN_GROWTH_MIN,
+    baseFontSize * LABEL_MAX_SCREEN_SCALE,
+  );
+};
+
+const getLabelStyle = (
+  cfg: GraphUiConfig,
+  globalScale: number,
+  isPriorityLabel: boolean,
+): LabelStyle | undefined => {
+  const fadeProgress = getLabelFadeProgress(globalScale, isPriorityLabel);
+
+  if (fadeProgress <= LABEL_MIN_ALPHA) return undefined;
+
+  const screenFontSize = getLabelScreenFontSize(cfg, globalScale, fadeProgress);
+
+  return {
+    alpha: fadeProgress,
+    canvasFontSize: screenFontSize / getSafeScale(globalScale),
+  };
+};
+
+const createLabelRect = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  fontSize: number,
+  globalScale: number,
+): LabelRect => {
+  const paddingX = LABEL_COLLISION_PADDING_X / getSafeScale(globalScale);
+  const paddingY = LABEL_COLLISION_PADDING_Y / getSafeScale(globalScale);
+  const textWidth = ctx.measureText(text).width;
+
+  return {
+    left: x - textWidth / 2 - paddingX,
+    right: x + textWidth / 2 + paddingX,
+    top: y - paddingY,
+    bottom: y + fontSize + paddingY,
+  };
+};
+
+const intersects = (first: LabelRect, second: LabelRect): boolean =>
+  first.left <= second.right &&
+  first.right >= second.left &&
+  first.top <= second.bottom &&
+  first.bottom >= second.top;
+
+const hasCollision = (rect: LabelRect, rects: readonly LabelRect[]): boolean =>
+  rects.some((existingRect) => intersects(rect, existingRect));
 
 const clampZoomToMax = (
   renderer: ForceGraphRenderer,
@@ -163,12 +288,17 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
 
   let renderer: ForceGraphRenderer | undefined;
   let currentNodes: TypedNode[] = [];
+  let labelRects: LabelRect[] = [];
   let resizeFrameId = 0;
   let hoveredNodeId: string | undefined;
   let hoverLeaveTimerId = 0;
   let zoomToFitTimerId = 0;
   let shouldFitOnEngineStop = false;
   let hasCompletedInitialFit = false;
+
+  const resetLabelRects = (): void => {
+    labelRects = [];
+  };
 
   const clearHoverLeaveTimer = (): void => {
     window.clearTimeout(hoverLeaveTimerId);
@@ -242,6 +372,13 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     return colors.edgeColorFor(isHighlighted, hasDim);
   };
 
+  const isPriorityLabel = (nodeId: string | undefined): boolean =>
+    nodeId !== undefined &&
+    (nodeId === hoveredNodeId || nodeId === getSelectedNodeId() || getHighlightedSet().has(nodeId));
+
+  const shouldSkipLabelByCollision = (rect: LabelRect, isPriority: boolean): boolean =>
+    !isPriority && hasCollision(rect, labelRects);
+
   const drawNodeLabel = (
     node: NodeObject,
     ctx: CanvasRenderingContext2D,
@@ -249,20 +386,34 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
   ): void => {
     const graphNode = node as TypedNode;
     const nodeId = resolveNodeId(graphNode);
-    const isFocused = nodeId === hoveredNodeId || graphNode.id === getSelectedNodeId();
-
+    const isPriority = isPriorityLabel(nodeId);
     const cfg = getConfig();
-    if (!shouldDrawLabel(isFocused, globalScale)) return;
+    const style = getLabelStyle(cfg, globalScale, isPriority);
 
-    const fontSize = getLabelCanvasFontSize(cfg, globalScale);
-    ctx.font = `${graphConfig.labelFontWeight} ${fontSize}px ${getCssVar('--graph-label-font') ?? 'sans-serif'}`;
+    if (!style) return;
+
+    const label = truncateLabel(graphNode.label);
+    const x = graphNode.x ?? 0;
+    const y = (graphNode.y ?? 0) + cfg.nodeRelSize + graphConfig.labelOffset;
+    const fontFamily = getCssVar('--graph-label-font') ?? 'sans-serif';
+
+    ctx.save();
+    ctx.font = `${graphConfig.labelFontWeight} ${style.canvasFontSize}px ${fontFamily}`;
     ctx.textAlign = 'center';
-    ctx.fillStyle = getCssVar('--graph-label-color') ?? '';
-    ctx.fillText(
-      truncateLabel(graphNode.label),
-      graphNode.x ?? 0,
-      (graphNode.y ?? 0) + cfg.nodeRelSize + graphConfig.labelOffset,
-    );
+    ctx.textBaseline = 'top';
+
+    const rect = createLabelRect(ctx, x, y, label, style.canvasFontSize, globalScale);
+
+    if (shouldSkipLabelByCollision(rect, isPriority)) {
+      ctx.restore();
+      return;
+    }
+
+    labelRects.push(rect);
+    ctx.globalAlpha = style.alpha;
+    ctx.fillStyle = getCssVar('--graph-label-color') ?? '#d0d0d0';
+    ctx.fillText(label, x, y);
+    ctx.restore();
   };
 
   const setSize = (
@@ -278,6 +429,39 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
 
   const syncColors = (): void => {
     renderer?.nodeColor(getNodeColor).linkColor(getEdgeColor);
+  };
+
+  const applyRendererConfig = (r: ForceGraphRenderer): void => {
+    const cfg = getConfig();
+    r.nodeRelSize(cfg.nodeRelSize)
+      .linkWidth(cfg.linkWidth)
+      .d3VelocityDecay(cfg.velocityDecay)
+      .warmupTicks(cfg.warmupTicks)
+      .maxZoom(getMaxZoom() ?? Infinity);
+    applyForces(r);
+  };
+
+  const scheduleFitToView = (): void => {
+    shouldFitOnEngineStop = true;
+    zoomToFitTimerId = window.setTimeout(() => {
+      zoomToFitTimerId = 0;
+      if (!shouldFitOnEngineStop) return;
+      shouldFitOnEngineStop = false;
+      runFitToView();
+    }, graphConfig.zoomToFitDelay);
+  };
+
+  const syncConfig = (): void => {
+    if (!renderer) return;
+    window.clearTimeout(zoomToFitTimerId);
+    applyRendererConfig(renderer);
+    renderer.d3ReheatSimulation();
+  };
+
+  const syncConfigAndFit = (): void => {
+    if (!renderer) return;
+    syncConfig();
+    scheduleFitToView();
   };
 
   const applyZoomToFit = (duration: number): void => {
@@ -312,13 +496,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     if (added.length) renderer.d3ReheatSimulation();
     if (!fitToView) return;
 
-    shouldFitOnEngineStop = true;
-    zoomToFitTimerId = window.setTimeout(() => {
-      zoomToFitTimerId = 0;
-      if (!shouldFitOnEngineStop) return;
-      shouldFitOnEngineStop = false;
-      runFitToView();
-    }, graphConfig.zoomToFitDelay);
+    scheduleFitToView();
   };
 
   const create = (el: HTMLElement, nodeCount: number): void => {
@@ -326,7 +504,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     const cfg = getConfig();
     renderer = ForceGraph()(el)
       .nodeRelSize(cfg.nodeRelSize)
-      .zoom(estimateInitialZoom(nodeCount))
+      .zoom(getInitialZoom(cfg, nodeCount))
       .maxZoom(getMaxZoom() ?? Infinity)
       .nodeLabel('')
       .linkColor(getEdgeColor)
@@ -342,6 +520,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
         zoomToFitTimerId = 0;
         runFitToView();
       })
+      .onRenderFramePre(resetLabelRects)
       .nodeCanvasObjectMode(() => 'before')
       .nodePointerAreaPaint(paintPointerArea)
       .linkDirectionalParticleWidth(graphConfig.particleWidth)
@@ -356,6 +535,7 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     window.cancelAnimationFrame(resizeFrameId);
     resizeFrameId = 0;
     currentNodes = [];
+    labelRects = [];
     hoveredNodeId = undefined;
     clearHoverLeaveTimer();
     window.clearTimeout(zoomToFitTimerId);
@@ -387,12 +567,14 @@ export const useGraphRenderer = (opts: UseGraphRendererOptions) => {
     });
   };
 
-  const isActive = (): boolean => !!renderer;
+  const isActive = (): boolean => Boolean(renderer);
 
   return {
     create,
     destroy,
     syncColors,
+    syncConfig,
+    syncConfigAndFit,
     syncData,
     setSize,
     queueResize,

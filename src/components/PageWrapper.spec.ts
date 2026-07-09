@@ -1,6 +1,9 @@
-import { mount } from '@vue/test-utils';
+import { mount, type VueWrapper } from '@vue/test-utils';
 import PageWrapper from './PageWrapper.vue';
 import { test, expect } from 'vitest';
+
+const getContentFrameClasses = (wrapper: VueWrapper): string[] =>
+  wrapper.get('.content-frame').classes();
 
 test('PageWrapper should render slot content', () => {
   const wrapper = mount(PageWrapper, {
@@ -23,7 +26,7 @@ test('PageWrapper should apply padding class when padding prop is true', () => {
     },
   });
 
-  expect(wrapper.find('.page').classes()).toContain('padding');
+  expect(getContentFrameClasses(wrapper)).toContain('padding');
 });
 
 test('PageWrapper should not apply padding class when padding prop is false', () => {
@@ -36,7 +39,7 @@ test('PageWrapper should not apply padding class when padding prop is false', ()
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('padding');
+  expect(getContentFrameClasses(wrapper)).not.toContain('padding');
 });
 
 test('PageWrapper should not apply padding class by default', () => {
@@ -46,7 +49,7 @@ test('PageWrapper should not apply padding class by default', () => {
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('padding');
+  expect(getContentFrameClasses(wrapper)).not.toContain('padding');
 });
 
 test('PageWrapper should apply constrained class when constrained prop is true', () => {
@@ -59,7 +62,7 @@ test('PageWrapper should apply constrained class when constrained prop is true',
     },
   });
 
-  expect(wrapper.find('.page').classes()).toContain('constrained');
+  expect(getContentFrameClasses(wrapper)).toContain('constrained');
 });
 
 test('PageWrapper should not apply constrained class when constrained prop is false', () => {
@@ -72,7 +75,7 @@ test('PageWrapper should not apply constrained class when constrained prop is fa
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('constrained');
+  expect(getContentFrameClasses(wrapper)).not.toContain('constrained');
 });
 
 test('PageWrapper should not apply constrained class by default', () => {
@@ -82,7 +85,7 @@ test('PageWrapper should not apply constrained class by default', () => {
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('constrained');
+  expect(getContentFrameClasses(wrapper)).not.toContain('constrained');
 });
 
 test('PageWrapper should apply both padding and constrained classes when both props are true', () => {
@@ -96,9 +99,9 @@ test('PageWrapper should apply both padding and constrained classes when both pr
     },
   });
 
-  const pageClasses = wrapper.find('.page').classes();
-  expect(pageClasses).toContain('padding');
-  expect(pageClasses).toContain('constrained');
+  const contentFrameClasses = getContentFrameClasses(wrapper);
+  expect(contentFrameClasses).toContain('padding');
+  expect(contentFrameClasses).toContain('constrained');
 });
 
 test('PageWrapper should apply only padding when constrained is false', () => {
@@ -112,9 +115,9 @@ test('PageWrapper should apply only padding when constrained is false', () => {
     },
   });
 
-  const pageClasses = wrapper.find('.page').classes();
-  expect(pageClasses).toContain('padding');
-  expect(pageClasses).not.toContain('constrained');
+  const contentFrameClasses = getContentFrameClasses(wrapper);
+  expect(contentFrameClasses).toContain('padding');
+  expect(contentFrameClasses).not.toContain('constrained');
 });
 
 test('PageWrapper should apply only constrained when padding is false', () => {
@@ -128,9 +131,9 @@ test('PageWrapper should apply only constrained when padding is false', () => {
     },
   });
 
-  const pageClasses = wrapper.find('.page').classes();
-  expect(pageClasses).not.toContain('padding');
-  expect(pageClasses).toContain('constrained');
+  const contentFrameClasses = getContentFrameClasses(wrapper);
+  expect(contentFrameClasses).not.toContain('padding');
+  expect(contentFrameClasses).toContain('constrained');
 });
 
 test('PageWrapper should render with no classes when no props provided', () => {
@@ -198,18 +201,22 @@ test('PageWrapper should update classes when props change', async () => {
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('padding');
-  expect(wrapper.find('.page').classes()).not.toContain('constrained');
+  expect(getContentFrameClasses(wrapper)).not.toContain('padding');
+  expect(getContentFrameClasses(wrapper)).not.toContain('constrained');
 
-  await wrapper.setProps({ padding: true });
-  expect(wrapper.find('.page').classes()).toContain('padding');
+  const setPageWrapperProps = wrapper.setProps.bind(wrapper) as (props: {
+    padding?: boolean;
+    constrained?: boolean;
+  }) => Promise<void>;
+  await setPageWrapperProps({ padding: true });
+  expect(getContentFrameClasses(wrapper)).toContain('padding');
 
-  await wrapper.setProps({ constrained: true });
-  expect(wrapper.find('.page').classes()).toContain('constrained');
+  await setPageWrapperProps({ constrained: true });
+  expect(getContentFrameClasses(wrapper)).toContain('constrained');
 
-  await wrapper.setProps({ padding: false, constrained: false });
-  expect(wrapper.find('.page').classes()).not.toContain('padding');
-  expect(wrapper.find('.page').classes()).not.toContain('constrained');
+  await setPageWrapperProps({ padding: false, constrained: false });
+  expect(getContentFrameClasses(wrapper)).not.toContain('padding');
+  expect(getContentFrameClasses(wrapper)).not.toContain('constrained');
 });
 
 test('PageWrapper should handle boolean prop edge cases', async () => {
@@ -223,6 +230,6 @@ test('PageWrapper should handle boolean prop edge cases', async () => {
     },
   });
 
-  expect(wrapper.find('.page').classes()).not.toContain('padding');
-  expect(wrapper.find('.page').classes()).not.toContain('constrained');
+  expect(getContentFrameClasses(wrapper)).not.toContain('padding');
+  expect(getContentFrameClasses(wrapper)).not.toContain('constrained');
 });
