@@ -35,6 +35,8 @@ interface ActiveSession extends PomodoroTask {
 const TIMER_INTERVAL_MS = 1000;
 const t = i18n.global.t;
 
+const serializeSession = (s: ActiveSession): string => JSON.stringify(s);
+
 const formatTwoDigits = (n: number): string => String(Math.floor(n)).padStart(2, '0');
 
 const toDisplay = (totalSeconds: number): string => {
@@ -112,11 +114,20 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   });
 
   const persistSession = async (s: ActiveSession): Promise<void> => {
-    await to(kvRepo.value.set)(POMODORO_ACTIVE_SESSION_KEY, JSON.stringify(s));
+    await to(kvRepo.value.set)(POMODORO_ACTIVE_SESSION_KEY, serializeSession(s));
   };
 
   const clearPersistedSession = async (): Promise<void> => {
     await to(kvRepo.value.delete)(POMODORO_ACTIVE_SESSION_KEY);
+  };
+
+  const clearStoppedSession = async (stoppedSession: ActiveSession): Promise<void> => {
+    if (isPresent(session.value)) return;
+    const raw = await to(kvRepo.value.get)(POMODORO_ACTIVE_SESSION_KEY);
+    const sessionChangedDuringRead = isPresent(session.value);
+    const storedMatchesStopped = raw.isOk() && raw.value === serializeSession(stoppedSession);
+    if (sessionChangedDuringRead || !storedMatchesStopped) return;
+    await clearPersistedSession();
   };
 
   const persistLastTask = async (task: PomodoroTask): Promise<void> => {
@@ -215,10 +226,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const stopSession = async (): Promise<void> => {
     const s = session.value;
     if (!s) return;
+    const shouldWriteClock = !isPaused.value;
     stopTick();
-    if (!isPaused.value) await writeSegmentClock(s, new Date());
-    await clearPersistedSession();
     resetState();
+    if (shouldWriteClock) await writeSegmentClock(s, new Date());
+    await clearStoppedSession(s);
   };
 
   const restoreSession = async (): Promise<void> => {

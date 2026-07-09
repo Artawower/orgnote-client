@@ -57,6 +57,7 @@ vi.stubGlobal(
 );
 
 const { usePomodoroStore } = await import('./pomodoro-store');
+const { POMODORO_ACTIVE_SESSION_KEY } = await import('../constants');
 
 const TASK = {
   id: 't1',
@@ -88,6 +89,14 @@ afterEach(() => {
 
 const tickSec = (seconds: number): void => {
   vi.advanceTimersByTime(seconds * 1000);
+};
+
+const getActiveSessionPayload = (): string => {
+  const activeCall = mockKvSet.mock.calls.find(
+    ([key]) => key === POMODORO_ACTIVE_SESSION_KEY,
+  ) as [string, string] | undefined;
+  if (!activeCall) throw new Error('active session payload missing');
+  return activeCall[1];
 };
 
 test('pauseSession_setsIsPaused_true', async () => {
@@ -172,6 +181,51 @@ test('restoreSession_running_noDuplicateInterval_afterPause', async () => {
   tickSec(5);
 
   expect(store.elapsed).toBe(frozen);
+});
+
+test('stopSession_resetsSessionBeforeClockWriteFinishes', async () => {
+  let resolveRead: ((value: Uint8Array) => void) | undefined;
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+  mockKvGet.mockResolvedValue(getActiveSessionPayload());
+  mockFileRead.mockReturnValueOnce(
+    new Promise<Uint8Array>((resolve) => {
+      resolveRead = resolve;
+    }),
+  );
+
+  const stopPromise = store.stopSession();
+
+  expect(store.hasSession).toBe(false);
+  expect(store.elapsed).toBe(0);
+  if (!resolveRead) throw new Error('read resolver missing');
+  resolveRead(mockUint8);
+  await stopPromise;
+});
+
+test('stopSession_clearsPersistedSession_whenStoredSessionMatches', async () => {
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+  mockKvGet.mockResolvedValue(getActiveSessionPayload());
+
+  await store.stopSession();
+
+  expect(mockKvDelete).toHaveBeenCalledWith(POMODORO_ACTIVE_SESSION_KEY);
+});
+
+test('stopSession_keepsNewSessionStartedDuringClockWrite', async () => {
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+  mockKvGet.mockResolvedValue(getActiveSessionPayload());
+  mockFileRead.mockImplementationOnce(async () => {
+    await store.startSession({ ...TASK, id: 't2', text: 'Next task' }, 'pomo');
+    return mockUint8;
+  });
+
+  await store.stopSession();
+
+  expect(mockKvDelete).not.toHaveBeenCalledWith(POMODORO_ACTIVE_SESSION_KEY);
+  expect(store.session?.taskId).toBe('t2');
 });
 
 test('stopSession_whenPaused_doesNotWriteExtraClock', async () => {
