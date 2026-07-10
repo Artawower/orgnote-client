@@ -82,6 +82,8 @@ const eng: Record<string, string> = {
   [I18N.NO_LATEST_CHANGES]: 'No recent changes available',
   [I18N.UPDATED_TO_VERSION]: 'Updated to {version}',
   [I18N.UPDATED_FROM_VERSION]: 'From {version}',
+  [I18N.SYNC_INVALID_API_RESPONSE]:
+    'Synchronization is paused because the API URL returned an invalid response. Update the API URL in settings to retry.',
   [I18N.OPEN_RELEASE_NOTES]: 'Open release notes',
   [electronUpdateI18n.ready]: 'Application update is ready',
   [electronUpdateI18n.restartToInstall]: 'Click to restart and install the update',

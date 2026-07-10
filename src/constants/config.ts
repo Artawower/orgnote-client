@@ -7,6 +7,7 @@ export const DEFAULT_MIN_NOTIFICATION_LEVEL: LogLevel = process.env.DEV ? 'info'
 
 export const DEFAULT_PANE_PERSISTENCE_SAVE_DELAY = 500;
 export const DEFAULT_TOOLTIP_DELAY = 300;
+export const DEFAULT_NOTIFICATION_THROTTLE_MS = 5 * 60 * 1000;
 
 export const DEFAULT_FUST_THRESHOLD = 0.4;
 
@@ -51,6 +52,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     lightThemeName: null,
     enableAnimations: true,
     notificationTimeout: 5000,
+    notificationThrottleMs: DEFAULT_NOTIFICATION_THROTTLE_MS,
     tooltipDelay: DEFAULT_TOOLTIP_DELAY,
     minNotificationLevel: DEFAULT_MIN_NOTIFICATION_LEVEL,
     persistantPanes: true,

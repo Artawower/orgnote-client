@@ -4,6 +4,7 @@
     :get-notification-icon="getNotificationIcon"
     :get-notification-title="getNotificationTitle"
     :get-notification-text="getNotificationText"
+    :get-notification-count="getNotificationCount"
     :get-notification-icon-color="getNotificationIconColor"
   />
 </template>
@@ -41,13 +42,15 @@ interface NotiwindNotification {
   [key: string]: unknown;
 }
 
-const getStoreConfig = (groupKey: string | undefined): NotificationConfig | undefined => {
+const getStoreNotification = (groupKey: string | undefined): Notification | undefined => {
   if (!groupKey) return undefined;
-  const notification = notificationsStore.notifications.find(
-    (n: Notification) => n.config.id === groupKey,
+  return notificationsStore.notifications.find(
+    (notification) => notification.config.id === groupKey,
   );
-  return notification?.config;
 };
+
+const getStoreConfig = (groupKey: string | undefined): NotificationConfig | undefined =>
+  getStoreNotification(groupKey)?.config;
 
 const getNotificationIcon = (notification: NotiwindNotification): string | undefined => {
   const storeConfig = getStoreConfig(notification.groupKey);
@@ -74,4 +77,7 @@ const getNotificationText = (notification: NotiwindNotification): string | undef
   const storeConfig = getStoreConfig(notification.groupKey);
   return storeConfig?.description ?? notification.text;
 };
+
+const getNotificationCount = (notification: NotiwindNotification): number | undefined =>
+  getStoreNotification(notification.groupKey)?.count ?? notification.count;
 </script>

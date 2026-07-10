@@ -20,7 +20,7 @@
             :icon-color="getNotificationIconColor(notification)"
             :html-message="getNotificationTitle(notification)"
             :caption="getNotificationText(notification)"
-            :count="notification.count"
+            :count="getNotificationCount(notification)"
             :closable="notification.closable !== false"
             :clickable="!!notification.onClick"
             @click="notification.onClick?.()"
@@ -63,6 +63,7 @@ withDefaults(
     getNotificationIcon: (notification: NotiwindNotification) => string | undefined;
     getNotificationTitle: (notification: NotiwindNotification) => string;
     getNotificationText: (notification: NotiwindNotification) => string | undefined;
+    getNotificationCount: (notification: NotiwindNotification) => number | undefined;
     getNotificationIconColor: (notification: NotiwindNotification) => ThemeVariable | undefined;
   }>(),
   {

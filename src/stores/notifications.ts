@@ -4,12 +4,13 @@ import { ref } from 'vue';
 import { notify as notiwindNotify } from 'notiwind';
 import { useConfigStore } from './config';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
+import { DEFAULT_NOTIFICATION_THROTTLE_MS } from 'src/constants/config';
 
 export const useNotificationsStore = defineStore<'notifications', NotificationsStore>(
   'notifications',
   (): NotificationsStore => {
     const notifications = ref<Notification[]>([]);
-    const groupCounts = ref<Map<string, number>>(new Map());
+    const lastToastAtByGroup = new Map<string, number>();
 
     const { config } = storeToRefs(useConfigStore());
 
@@ -18,21 +19,34 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       return crypto.randomUUID();
     };
 
-    const notify = (notificationConfig: NotificationConfig): string => {
-      const id = resolveNotificationId(notificationConfig.id);
-      const configuredTimeout = config.value.ui.notificationTimeout;
-      const timeout = notificationConfig.timeout ?? configuredTimeout ?? 5000;
-      const shouldGroup = notificationConfig.group !== false;
-      const groupKey = id;
+    const resolveThrottleMs = (notificationConfig: NotificationConfig): number =>
+      notificationConfig.throttleMs ??
+      config.value.ui.notificationThrottleMs ??
+      DEFAULT_NOTIFICATION_THROTTLE_MS;
 
-      if (shouldGroup) {
-        const currentCount = groupCounts.value.get(groupKey) ?? 0;
-        groupCounts.value.set(groupKey, currentCount + 1);
-      }
+    const hasStableNotificationId = (id?: string): boolean => Boolean(id?.trim());
 
-      const count = shouldGroup ? groupCounts.value.get(groupKey) : undefined;
+    const shouldShowToast = (
+      groupKey: string,
+      shouldGroup: boolean,
+      throttleMs: number,
+    ): boolean => {
+      if (!shouldGroup || throttleMs <= 0) return true;
 
-      const dismiss = notiwindNotify(
+      const now = Date.now();
+      const lastShownAt = lastToastAtByGroup.get(groupKey);
+      if (lastShownAt && now - lastShownAt < throttleMs) return false;
+
+      lastToastAtByGroup.set(groupKey, now);
+      return true;
+    };
+
+    const createToast = (
+      notificationConfig: NotificationConfig,
+      groupKey: string,
+      count?: number,
+    ): Notification['dismiss'] =>
+      notiwindNotify(
         {
           group: NOTIFICATION_GROUP,
           title: notificationConfig.message,
@@ -45,36 +59,74 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
           iconEnabled: notificationConfig.iconEnabled ?? true,
           onClick: notificationConfig.onClick,
         },
-        timeout,
+        notificationConfig.timeout ?? config.value.ui.notificationTimeout ?? 5000,
       );
 
+    const moveNotificationToFront = (notificationIndex: number): Notification | undefined => {
+      const [notification] = notifications.value.splice(notificationIndex, 1);
+      if (!notification) return undefined;
+      notifications.value.unshift(notification);
+      return notification;
+    };
+
+    const getNextStoredCount = (
+      notificationConfig: NotificationConfig,
+      id: string,
+    ): number | undefined => {
+      if (!notificationConfig.stored) return undefined;
+      const existingNotification = notifications.value.find((n) => n.config.id === id);
+      if (!existingNotification) return undefined;
+      return (existingNotification.count ?? 1) + 1;
+    };
+
+    const updateStoredNotification = (
+      notificationConfig: NotificationConfig,
+      id: string,
+      dismiss: Notification['dismiss'],
+    ): void => {
+      const existingIndex = notifications.value.findIndex((n) => n.config.id === id);
       const configWithId = { ...notificationConfig, id };
 
-      if (notificationConfig.stored) {
-        const existingNotification = notifications.value.find((n) => n.config.id === id);
-        if (existingNotification) {
+      if (existingIndex >= 0) {
+        const existingNotification = moveNotificationToFront(existingIndex);
+        if (!existingNotification) return;
+        if (dismiss) {
           existingNotification.dismiss?.();
           existingNotification.dismiss = dismiss;
-          existingNotification.config = configWithId;
-          existingNotification.icon = notificationConfig.icon;
-          existingNotification.iconEnabled = notificationConfig.iconEnabled ?? true;
-          existingNotification.createdAt = new Date().toISOString();
-          existingNotification.readAt = undefined;
-          existingNotification.count = (existingNotification.count ?? 1) + 1;
-          return id;
         }
+        existingNotification.config = configWithId;
+        existingNotification.icon = notificationConfig.icon;
+        existingNotification.iconEnabled = notificationConfig.iconEnabled ?? true;
+        existingNotification.createdAt = new Date().toISOString();
+        existingNotification.readAt = undefined;
+        existingNotification.count = (existingNotification.count ?? 1) + 1;
+        return;
+      }
 
-        const nextNotification: Notification = {
-          createdAt: new Date().toISOString(),
-          readAt: undefined,
-          count: 1,
-          dismiss,
-          config: configWithId,
-          icon: notificationConfig.icon,
-          iconEnabled: notificationConfig.iconEnabled ?? true,
-        };
+      notifications.value.unshift({
+        createdAt: new Date().toISOString(),
+        readAt: undefined,
+        count: 1,
+        dismiss,
+        config: configWithId,
+        icon: notificationConfig.icon,
+        iconEnabled: notificationConfig.iconEnabled ?? true,
+      });
+    };
 
-        notifications.value.push(nextNotification);
+    const notify = (notificationConfig: NotificationConfig): string => {
+      const id = resolveNotificationId(notificationConfig.id);
+      const shouldGroup =
+        hasStableNotificationId(notificationConfig.id) && notificationConfig.group !== false;
+      const groupKey = id;
+      const throttleMs = resolveThrottleMs(notificationConfig);
+      const count = shouldGroup ? getNextStoredCount(notificationConfig, id) : undefined;
+      const dismiss = shouldShowToast(groupKey, shouldGroup, throttleMs)
+        ? createToast(notificationConfig, groupKey, count)
+        : undefined;
+
+      if (notificationConfig.stored) {
+        updateStoredNotification(notificationConfig, id, dismiss);
       }
 
       return id;
@@ -83,23 +135,15 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
     const clear = (): void => {
       notifications.value.forEach((n) => n.dismiss?.());
       notifications.value = [];
-      groupCounts.value.clear();
-    };
-
-    const decrementGroupCount = (notificationId: string): void => {
-      const currentCount = groupCounts.value.get(notificationId);
-      if (!currentCount) return;
-      if (currentCount <= 1) {
-        groupCounts.value.delete(notificationId);
-        return;
-      }
-      groupCounts.value.set(notificationId, currentCount - 1);
+      lastToastAtByGroup.clear();
     };
 
     const deleteNotification = (notificationId: string): void => {
       if (!notificationId) return;
 
-      const notificationIndex = notifications.value.findIndex((n) => n.config.id === notificationId);
+      const notificationIndex = notifications.value.findIndex(
+        (n) => n.config.id === notificationId,
+      );
       if (notificationIndex < 0) return;
 
       const notification = notifications.value[notificationIndex];
@@ -108,13 +152,12 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       const currentCount = notification.count ?? 1;
       if (currentCount > 1) {
         notification.count = currentCount - 1;
-        decrementGroupCount(notificationId);
         return;
       }
 
       notification.dismiss?.();
       notifications.value.splice(notificationIndex, 1);
-      decrementGroupCount(notificationId);
+      lastToastAtByGroup.delete(notificationId);
     };
 
     const markAsRead = (notificationId: string, readAt?: string): void => {

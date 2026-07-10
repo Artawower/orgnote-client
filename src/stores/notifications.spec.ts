@@ -1,7 +1,7 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { useNotificationsStore } from './notifications';
 import { notify as notiwindNotify } from 'notiwind';
-import { test, expect, vi, beforeEach } from 'vitest';
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
 
 const DEFAULT_TIMEOUT = 3000;
@@ -14,7 +14,7 @@ vi.mock('./config', async () => {
   const { ref } = await import('vue');
   return {
     useConfigStore: vi.fn(() => ({
-      config: ref({ ui: { notificationTimeout: DEFAULT_TIMEOUT } }),
+      config: ref({ ui: { notificationTimeout: DEFAULT_TIMEOUT, notificationThrottleMs: 300000 } }),
     })),
   };
 });
@@ -22,6 +22,10 @@ vi.mock('./config', async () => {
 beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 test('NotificationsStore notify calls notiwind with correct params', () => {
@@ -89,6 +93,60 @@ test('NotificationsStore notify uses provided id', () => {
   store.notify({ message: 'Test', id: 'custom-id', stored: true });
 
   expect(store.notifications[0]?.config.id).toBe('custom-id');
+});
+
+test('NotificationsStore notify throttles grouped toasts by id', () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First', id: 'same-id', stored: true });
+  store.notify({ message: 'Second', id: 'same-id', stored: true });
+
+  expect(notiwindNotify).toHaveBeenCalledTimes(1);
+  expect(store.notifications[0]?.count).toBe(2);
+  expect(store.notifications[0]?.config.message).toBe('Second');
+
+  vi.setSystemTime(new Date('2024-01-01T00:05:01Z'));
+  store.notify({ message: 'Third', id: 'same-id', stored: true });
+
+  expect(notiwindNotify).toHaveBeenCalledTimes(2);
+  expect(notiwindNotify).toHaveBeenLastCalledWith(
+    expect.objectContaining({ count: 3 }),
+    DEFAULT_TIMEOUT,
+  );
+  expect(store.notifications[0]?.count).toBe(3);
+  expect(store.notifications[0]?.config.message).toBe('Third');
+});
+
+test('NotificationsStore notify moves updated stored notification to front', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First', id: 'id-1', stored: true });
+  store.notify({ message: 'Second', id: 'id-2', stored: true });
+  store.notify({ message: 'First updated', id: 'id-1', stored: true });
+
+  expect(store.notifications.map((n) => n.config.id)).toEqual(['id-1', 'id-2']);
+  expect(store.notifications[0]?.config.message).toBe('First updated');
+  expect(store.notifications[0]?.count).toBe(2);
+});
+
+test('NotificationsStore notify does not throttle ungrouped notifications', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First', id: 'same-id', group: false });
+  store.notify({ message: 'Second', id: 'same-id', group: false });
+
+  expect(notiwindNotify).toHaveBeenCalledTimes(2);
+});
+
+test('NotificationsStore notify does not group generated ids', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First' });
+  store.notify({ message: 'Second' });
+
+  expect(notiwindNotify).toHaveBeenCalledTimes(2);
 });
 
 test('NotificationsStore clear removes all notifications', () => {
@@ -246,7 +304,7 @@ test('NotificationsStore delete calls dismiss for correct notification when mult
   expect(mockDismiss2).toHaveBeenCalled();
   expect(mockDismiss3).not.toHaveBeenCalled();
   expect(store.notifications).toHaveLength(2);
-  expect(store.notifications.map((n) => n.config.id)).toEqual(['id-1', 'id-3']);
+  expect(store.notifications.map((n) => n.config.id)).toEqual(['id-3', 'id-1']);
 });
 
 test('NotificationsStore hideAll calls dismiss and clears dismiss function', () => {
@@ -432,7 +490,7 @@ test('NotificationsStore update updates correct notification when multiple exist
 
   store.update('id-2', { description: 'Updated 2' });
 
-  expect(store.notifications[0]?.config.description).toBe('Original 1');
+  expect(store.notifications[0]?.config.description).toBe('Original 3');
   expect(store.notifications[1]?.config.description).toBe('Updated 2');
-  expect(store.notifications[2]?.config.description).toBe('Original 3');
+  expect(store.notifications[2]?.config.description).toBe('Original 1');
 });

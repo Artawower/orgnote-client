@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { SyncStore, SyncPlan, SyncStateData, FileSystem } from 'orgnote-api';
-import { createSyncPlan, recoverState } from 'orgnote-api';
+import { createSyncPlan, I18N, InvalidSyncChangesResponseError, recoverState } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { sdk } from 'src/boot/axios';
 import { createSyncState } from 'src/utils/sync-state';
@@ -11,10 +11,12 @@ import { useFileSystemManagerStore } from './file-system-manager';
 import { api } from 'src/boot/api';
 import { withCoalescing } from 'src/utils/with-coalescing';
 import axios from 'axios';
+import { i18n } from 'src/boot/i18n';
 
 const httpUpgradeRequired = 426;
 const rootPath = '/';
 const contentHashCheckEnabled = true;
+const invalidSyncResponseNotificationId = 'sync-invalid-api-response';
 
 export const useSyncStore = defineStore<'sync', SyncStore>(
   'sync',
@@ -40,10 +42,23 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       return axios.isAxiosError(error) && error.response?.status === httpUpgradeRequired;
     };
 
+    const reportInvalidSyncResponse = (error: InvalidSyncChangesResponseError): null => {
+      reporter.reportError(error, {
+        id: invalidSyncResponseNotificationId,
+        message: i18n.global.t(I18N.SYNC_INVALID_API_RESPONSE),
+        stored: true,
+      });
+      return null;
+    };
+
     const handleSyncError = (error: Error): null => {
       if (isVersionError(error)) {
         isVersionIncompatible.value = true;
         return null;
+      }
+
+      if (error instanceof InvalidSyncChangesResponseError) {
+        return reportInvalidSyncResponse(error);
       }
 
       reporter.reportError(error);

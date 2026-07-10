@@ -49,6 +49,7 @@ const defaultProps = {
   },
   getNotificationTitle: (n: { title?: string }) => n.title ?? '',
   getNotificationText: (n: { text?: string }) => n.text,
+  getNotificationCount: (n: { count?: number }) => n.count,
   getNotificationIconColor: () => undefined,
 };
 
@@ -59,10 +60,10 @@ const mountComponent = (props = {}) => {
       directives: {
         'html-safe': {
           mounted(el: HTMLElement, binding: { value: string }) {
-            el.innerHTML = binding.value ?? '';
+            el.textContent = binding.value ?? '';
           },
           updated(el: HTMLElement, binding: { value: string }) {
-            el.innerHTML = binding.value ?? '';
+            el.textContent = binding.value ?? '';
           },
         },
       },
@@ -190,6 +191,16 @@ test('NotificationsList does not render badge when count is 1', () => {
   const badge = wrapper.find('.notification-badge');
 
   expect(badge.exists()).toBe(false);
+});
+
+test('NotificationsList uses provided count resolver', () => {
+  const wrapper = mountComponent({
+    getNotificationCount: () => 4,
+  });
+  const badge = wrapper.find('.notification-badge');
+
+  expect(badge.exists()).toBe(true);
+  expect(badge.text()).toBe('4');
 });
 
 test('NotificationsList hides close button when closable is false', () => {

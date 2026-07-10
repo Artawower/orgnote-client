@@ -10,6 +10,7 @@ const mockReportError = vi.fn();
 
 let mockUserActive: string | undefined = 'pro';
 let mockSyncType: string = 'api';
+let mockApiUrl = '/v1';
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -21,7 +22,10 @@ vi.mock('src/boot/api', () => ({
       })),
       useConfig: vi.fn(() => ({
         get config() {
-          return { synchronization: { type: mockSyncType } };
+          return {
+            network: { apiUrl: mockApiUrl },
+            synchronization: { type: mockSyncType },
+          };
         },
       })),
     },
@@ -37,8 +41,25 @@ vi.mock('orgnote-api', async () => {
   return {
     recoverState: mockRecoverState,
     createSyncPlan: mockCreateSyncPlan,
+    I18N: { SYNC_INVALID_API_RESPONSE: 'sync invalid API response' },
+    InvalidSyncChangesResponseError: class InvalidSyncChangesResponseError extends Error {
+      details: unknown;
+
+      constructor(details: unknown) {
+        super('invalid sync changes response');
+        this.details = details;
+      }
+    },
   };
 });
+
+vi.mock('src/boot/i18n', () => ({
+  i18n: {
+    global: {
+      t: (key: string) => `translated:${key}`,
+    },
+  },
+}));
 
 vi.mock('src/boot/report', () => ({
   reporter: { reportError: mockReportError },
@@ -72,6 +93,7 @@ beforeEach(() => {
   setActivePinia(createPinia());
   mockUserActive = 'pro';
   mockSyncType = 'api';
+  mockApiUrl = '/v1';
 });
 
 test('sync does not create plan when user is not active', async () => {
@@ -179,6 +201,36 @@ test('sync reports error and returns null plan when createSyncPlan fails', async
   await store.sync();
 
   expect(mockReportError).toHaveBeenCalledWith(error);
+  expect(mockEnqueuePlanOperations).not.toHaveBeenCalled();
+});
+
+test('sync reports invalid API response without pausing retries', async () => {
+  const { InvalidSyncChangesResponseError } = await import('orgnote-api');
+  const error = new InvalidSyncChangesResponseError({
+    operation: 'syncChangesGet',
+    reason: 'missing_data',
+    responseKind: 'html',
+    topLevelKeys: [],
+    dataKeys: [],
+  });
+  mockRecoverState.mockResolvedValue(undefined);
+  mockCreateSyncPlan.mockRejectedValue(error);
+
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+  await store.sync();
+
+  expect(mockCreateSyncPlan).toHaveBeenCalledTimes(2);
+  expect(mockReportError).toHaveBeenCalledWith(
+    error,
+    expect.objectContaining({
+      id: 'sync-invalid-api-response',
+      message: 'translated:sync invalid API response',
+      stored: true,
+    }),
+  );
   expect(mockEnqueuePlanOperations).not.toHaveBeenCalled();
 });
 
