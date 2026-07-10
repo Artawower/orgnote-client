@@ -1,15 +1,23 @@
 import { mount } from '@vue/test-utils';
 import { test, expect, vi } from 'vitest';
+import type * as VueI18n from 'vue-i18n';
 import SearchInput from './SearchInput.vue';
 
-const mockTranslate = vi.fn((key: string) => key);
-
-vi.mock('vue-i18n', () => ({
-  useI18n: () => ({
-    t: mockTranslate,
-    te: vi.fn(() => true),
-  }),
+const { mockTranslate } = vi.hoisted(() => ({
+  mockTranslate: vi.fn((key: string) => key),
 }));
+
+vi.mock('vue-i18n', async () => {
+  const actual = (await vi.importActual('vue-i18n')) as typeof VueI18n;
+
+  return {
+    ...actual,
+    useI18n: () => ({
+      t: mockTranslate,
+      te: vi.fn(() => true),
+    }),
+  };
+});
 
 test('SearchInput renders input element', () => {
   const wrapper = mount(SearchInput);
@@ -50,9 +58,6 @@ test('SearchInput shows clear button when clearable and model has value', async 
     props: {
       clearable: true,
       modelValue: 'test',
-      'onUpdate:modelValue': (v: string | undefined): void => {
-        wrapper.setProps({ modelValue: v });
-      },
     },
   });
 
