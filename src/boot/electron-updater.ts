@@ -2,8 +2,8 @@ import type { ElectronUpdateInfo, ElectronUpdateStatus } from '../../src-electro
 import type { ElectronUpdatesAPI } from 'src/types/global';
 import { defineBoot } from '@quasar/app-vite/wrappers';
 import { Platform } from 'quasar';
-import { I18N } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
+import { electronUpdateI18n } from 'src/constants/electron-update-i18n';
 import { api } from './api';
 import { i18n } from './i18n';
 import { logger } from './logger';
@@ -14,21 +14,21 @@ const ELECTRON_UPDATE_NOTIFICATION_ID = 'electron-update-downloaded';
 const translate = (key: string, values?: Record<string, unknown>): string => i18n.global.t(key, values ?? {});
 
 const createUpdateDescription = (update: ElectronUpdateInfo): string => {
-  if (!update.version) return translate(I18N.ELECTRON_UPDATE_RESTART_TO_INSTALL);
-  return translate(I18N.ELECTRON_UPDATE_VERSION_READY, { version: update.version });
+  if (!update.version) return translate(electronUpdateI18n.restartToInstall);
+  return translate(electronUpdateI18n.versionReady, { version: update.version });
 };
 
 const installDownloadedUpdate = async (updates: ElectronUpdatesAPI): Promise<void> => {
   const result = await to(updates.installDownloadedUpdate)();
   if (result.isErr()) {
-    reporter.reportWarning(new Error(translate(I18N.ELECTRON_UPDATE_INSTALL_FAILED), { cause: result.error }));
+    reporter.reportWarning(new Error(translate(electronUpdateI18n.installFailed), { cause: result.error }));
   }
 };
 
 const notifyDownloadedUpdate = (updates: ElectronUpdatesAPI, update: ElectronUpdateInfo): void => {
   api.core.useNotifications().notify({
     id: ELECTRON_UPDATE_NOTIFICATION_ID,
-    message: translate(I18N.ELECTRON_UPDATE_READY),
+    message: translate(electronUpdateI18n.ready),
     description: createUpdateDescription(update),
     level: 'info',
     timeout: 0,
@@ -46,7 +46,7 @@ const reportUpdateError = (status: Extract<ElectronUpdateStatus, { type: 'error'
     return;
   }
 
-  reporter.reportWarning(new Error(translate(I18N.ELECTRON_UPDATE_FAILED, { message: status.message })));
+  reporter.reportWarning(new Error(translate(electronUpdateI18n.failed, { message: status.message })));
 };
 
 const handleUpdateStatus = (updates: ElectronUpdatesAPI, status: ElectronUpdateStatus): void => {
