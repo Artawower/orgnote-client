@@ -56,7 +56,7 @@ jobs:
           EOT
 
       - name: Build Electron
-        run: bunx env-cmd -f ./.env.build quasar build -m electron
+        run: bunx env-cmd -f ./.env.build quasar build -m electron -P never
 
       - name: Collect Linux artifacts
         run: |
