@@ -7,8 +7,10 @@ import type {
   ElectronUpdateStatus,
 } from './electron-updater-channels';
 import { app, ipcMain } from 'electron';
-import { autoUpdater } from 'electron-updater';
+import electronUpdater from 'electron-updater';
 import { ELECTRON_UPDATE_CHANNELS } from './electron-updater-channels';
+
+const { autoUpdater } = electronUpdater;
 
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 

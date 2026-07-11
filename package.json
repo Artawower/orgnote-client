@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.61.13",
+  "version": "0.61.15",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -146,7 +146,7 @@
     "autoprefixer": "10.4.21",
     "baseline-browser-mapping": "^2.9.14",
     "electron": "35.2.0",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.3",
     "env-cmd": "10.1.0",
     "eslint": "10.4.0",
     "eslint-plugin-sonarjs": "4.0.3",
