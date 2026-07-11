@@ -1,40 +1,26 @@
 <template>
-  <app-flex
-    class="content-frame"
-    :class="{ constrained, padding }"
-    column
-    :justify="justify"
-    :center="centered"
-    :align="centered ? 'center' : 'stretch'"
-    :full-height="fullHeight"
-    full-width
-  >
+  <div class="content-frame" :class="{ constrained, padding, 'full-height': fullHeight }">
     <slot />
-  </app-flex>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import AppFlex from 'src/components/AppFlex.vue';
-import type { AppFlexJustify } from './app-flex.types';
-
-withDefaults(
-  defineProps<{
-    constrained?: boolean;
-    padding?: boolean;
-    centered?: boolean;
-    fullHeight?: boolean;
-    justify?: AppFlexJustify;
-  }>(),
-  {
-    justify: 'start',
-  },
-);
+defineProps<{
+  constrained?: boolean;
+  padding?: boolean;
+  fullHeight?: boolean;
+}>();
 </script>
 
 <style lang="scss" scoped>
 .content-frame {
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
+
+  &.full-height {
+    height: 100%;
+  }
 
   &.padding {
     padding: var(--content-frame-padding, var(--page-padding));

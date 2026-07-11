@@ -1,11 +1,5 @@
 <template>
-  <component
-    :is="tag"
-    class="flex-container"
-    :class="classes"
-    :style="styles"
-    v-bind="$attrs"
-  >
+  <component :is="tag" class="flex-container" :class="classes" :style="styles" v-bind="$attrs">
     <slot />
   </component>
 </template>
@@ -13,7 +7,13 @@
 <script lang="ts" setup>
 import { computed, type CSSProperties } from 'vue';
 import { type StyleSize, STYLE_SIZES } from 'orgnote-api';
-import type { AppFlexJustify } from './app-flex.types';
+import type {
+  AppFlexAlign,
+  AppFlexDirection,
+  AppFlexGap,
+  AppFlexJustify,
+  AppFlexTag,
+} from './app-flex.types';
 
 defineOptions({
   inheritAttrs: false,
@@ -21,12 +21,12 @@ defineOptions({
 
 const props = withDefaults(
   defineProps<{
-    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
+    direction?: AppFlexDirection;
     justify?: AppFlexJustify;
-    align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline';
-    gap?: StyleSize | ({} & string);
+    align?: AppFlexAlign;
+    gap?: AppFlexGap;
     inline?: boolean;
-    tag?: string | object;
+    tag?: AppFlexTag;
 
     row?: boolean;
     column?: boolean;

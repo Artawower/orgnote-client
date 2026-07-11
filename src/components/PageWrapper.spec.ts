@@ -5,6 +5,9 @@ import { test, expect } from 'vitest';
 const getContentFrameClasses = (wrapper: VueWrapper): string[] =>
   wrapper.get('.content-frame').classes();
 
+const getContentFrameLayoutClasses = (wrapper: VueWrapper): string[] =>
+  wrapper.get('.content-frame .flex-container').classes();
+
 test('PageWrapper should render slot content', () => {
   const wrapper = mount(PageWrapper, {
     slots: {
@@ -136,7 +139,7 @@ test('PageWrapper should apply only constrained when padding is false', () => {
   expect(contentFrameClasses).toContain('constrained');
 });
 
-test('PageWrapper should render with no classes when no props provided', () => {
+test('PageWrapper should keep page wrapper separate from content frame layout', () => {
   const wrapper = mount(PageWrapper, {
     slots: {
       default: '<div>Content</div>',
@@ -144,10 +147,35 @@ test('PageWrapper should render with no classes when no props provided', () => {
   });
 
   const pageClasses = wrapper.find('.page').classes();
+  const contentFrameClasses = getContentFrameClasses(wrapper);
+  const layoutClasses = getContentFrameLayoutClasses(wrapper);
+
   expect(pageClasses).toContain('page');
-  expect(pageClasses).toContain('flex-container');
+  expect(pageClasses).toContain('page-container');
+  expect(pageClasses).not.toContain('flex-container');
   expect(pageClasses).not.toContain('padding');
   expect(pageClasses).not.toContain('constrained');
+  expect(contentFrameClasses).not.toContain('flex-container');
+  expect(layoutClasses).toContain('flex-container');
+  expect(layoutClasses).toContain('d-column');
+  expect(layoutClasses).toContain('j-between');
+  expect(layoutClasses).toContain('a-stretch');
+});
+
+test('PageWrapper should center content through content frame layout', () => {
+  const wrapper = mount(PageWrapper, {
+    props: {
+      centered: true,
+    },
+    slots: {
+      default: '<div>Content</div>',
+    },
+  });
+
+  const layoutClasses = getContentFrameLayoutClasses(wrapper);
+
+  expect(layoutClasses).toContain('j-center');
+  expect(layoutClasses).toContain('a-center');
 });
 
 test('PageWrapper should handle empty slot content', () => {
