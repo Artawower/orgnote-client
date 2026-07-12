@@ -6,8 +6,15 @@ import { fileURLToPath } from 'node:url';
 import fs from 'fs';
 
 const DEFAULT_DEV_PORT = 3001;
+const DEFAULT_UPDATE_CHANNEL = 'latest';
+const UPDATE_CHANNEL_ENV_NAME = 'ORGNOTE_UPDATE_CHANNEL';
+
+const getUpdateChannel = (): string =>
+  process.env[UPDATE_CHANNEL_ENV_NAME]?.trim() || DEFAULT_UPDATE_CHANNEL;
 
 export default defineConfig((ctx) => {
+  const updateChannel = getUpdateChannel();
+
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
@@ -268,7 +275,12 @@ export default defineConfig((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
     electron: {
-      // extendElectronMainConf (esbuildConf) {},
+      extendElectronMainConf(esbuildConf) {
+        esbuildConf.define = {
+          ...esbuildConf.define,
+          'process.env.ORGNOTE_UPDATE_CHANNEL': JSON.stringify(updateChannel),
+        };
+      },
       // extendElectronPreloadConf (esbuildConf) {},
 
       // extendPackageJson (json) {},
@@ -302,6 +314,7 @@ export default defineConfig((ctx) => {
             provider: 'github',
             owner: 'Artawower',
             repo: 'orgnote-client',
+            channel: updateChannel,
           },
         ],
         mac: {

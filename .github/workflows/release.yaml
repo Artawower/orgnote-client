@@ -36,6 +36,7 @@ jobs:
       environment: deploy
       version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
       prerelease: false
+      update_channel: latest
 
   build-electron-linux:
     name: Build Electron Linux
@@ -45,6 +46,7 @@ jobs:
       environment: deploy
       version: ${{ github.event.release.tag_name || needs.get-version.outputs.version }}
       prerelease: false
+      update_channel: latest
 
   upload-release-asset:
     name: Upload Release Asset

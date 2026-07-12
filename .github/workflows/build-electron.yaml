@@ -16,6 +16,11 @@ on:
         type: boolean
         default: false
         description: 'Whether this is a prerelease build'
+      update_channel:
+        required: false
+        type: string
+        default: latest
+        description: 'Electron updater channel name'
 
 jobs:
   build-electron-macos:
@@ -47,6 +52,7 @@ jobs:
           VITE_AUTH_URL=${{ secrets.AUTH_URL }}
           VITE_WS_URL=${{ secrets.WS_URL }}
           VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
+          ORGNOTE_UPDATE_CHANNEL=${{ inputs.update_channel }}
           EOT
 
       - name: Build Electron
@@ -58,7 +64,7 @@ jobs:
           find ./dist/electron -name '*.dmg' -exec cp {} ./dist/build/ \;
           find ./dist/electron -name '*.zip' -exec cp {} ./dist/build/ \;
           find ./dist/electron -name '*.blockmap' -exec cp {} ./dist/build/ \;
-          find ./dist/electron -name 'latest-mac.yml' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*-mac.yml' -exec cp {} ./dist/build/ \;
           echo "Collected artifacts:"
           ls -la ./dist/build
           if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then

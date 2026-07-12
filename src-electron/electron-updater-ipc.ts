@@ -12,6 +12,8 @@ import { ELECTRON_UPDATE_CHANNELS } from './electron-updater-channels';
 
 const { autoUpdater } = electronUpdater;
 
+const DEFAULT_UPDATE_CHANNEL = 'latest';
+const ELECTRON_UPDATE_CHANNEL = process.env.ORGNOTE_UPDATE_CHANNEL || DEFAULT_UPDATE_CHANNEL;
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 interface RegisterElectronUpdaterIpcParams {
@@ -122,9 +124,17 @@ const sendErrorStatus = (
   currentUpdateFlow = undefined;
 };
 
+const isPrereleaseUpdateChannel = (): boolean => ELECTRON_UPDATE_CHANNEL !== DEFAULT_UPDATE_CHANNEL;
+
+const configureUpdateChannel = (): void => {
+  autoUpdater.channel = ELECTRON_UPDATE_CHANNEL;
+  autoUpdater.allowPrerelease = isPrereleaseUpdateChannel();
+};
+
 const configureUpdater = (getMainWindow: () => BrowserWindow | undefined): void => {
   if (isConfigured) return;
 
+  configureUpdateChannel();
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = false;
 
