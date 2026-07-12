@@ -16,6 +16,10 @@ import {
 import { useAgendaTasksStore } from './agenda-tasks-store';
 import { orgAgendaManifest } from '../manifest';
 import { resolveAgendaConfig } from '../index';
+import {
+  completePomodoroTaskAfterConfirmation,
+  type PomodoroTaskCompletionResult,
+} from '../services/pomodoro-task-completion';
 
 export interface PomodoroTask {
   taskId: string;
@@ -84,6 +88,20 @@ const writeSegmentClock = async (s: ActiveSession, endedAt: Date): Promise<void>
     appendClock(content, s.taskStart, new Date(s.segmentStartedAt), endedAt),
   );
 
+const toSelectedTask = (task: PomodoroTask): FileTask & { filePath: string } => ({
+  id: task.taskId,
+  kind: 'headline-todo',
+  state: 'todo',
+  text: task.taskText,
+  filePath: task.filePath,
+  start: task.taskStart,
+});
+
+const resolveElapsedPomodoroEnd = (s: ActiveSession): Date => {
+  const remaining = s.duration * SECONDS_PER_MINUTE - s.accumulatedSeconds;
+  return new Date(new Date(s.segmentStartedAt).getTime() + remaining * 1000);
+};
+
 export const usePomodoroStore = defineStore('pomodoro', () => {
   const agendaConfig = computed(() =>
     resolveAgendaConfig(api.core.useExtensions().getExtensionConfig(orgAgendaManifest.name).value),
@@ -94,7 +112,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const isPaused = ref(false);
   const durationMin = ref(agendaConfig.value.pomoDuration);
   const sessionType = ref<'pomo' | 'stopwatch'>('pomo');
-  const pendingTask = ref<(FileTask & { filePath: string }) | null>(null);
+  const selectedTask = ref<(FileTask & { filePath: string }) | null>(null);
   let intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   const kvRepo = computed(() => api.infrastructure.keyValueRepository);
@@ -149,6 +167,21 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     if (agendaConfig.value.soundEnabled) playBeep();
   };
 
+  const applyTaskCompletionResult = (result: PomodoroTaskCompletionResult): void => {
+    if (result !== 'completed') return;
+    selectedTask.value = null;
+  };
+
+  const finishElapsedPomodoroSession = async (s: ActiveSession): Promise<void> => {
+    const completedAt = resolveElapsedPomodoroEnd(s);
+    resetState();
+    notifyComplete();
+    await writeSegmentClock(s, completedAt);
+    await clearPersistedSession();
+    const result = await completePomodoroTaskAfterConfirmation(api, s, completedAt);
+    applyTaskCompletionResult(result);
+  };
+
   const stopTick = (): void => {
     if (!intervalHandle) return;
     clearInterval(intervalHandle);
@@ -162,12 +195,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       elapsed.value = s.accumulatedSeconds + segmentElapsedSec(s);
       if (s.type !== 'pomo' || elapsed.value < durationSeconds.value) return;
       stopTick();
-      const remaining = durationSeconds.value - s.accumulatedSeconds;
-      const segEnd = new Date(new Date(s.segmentStartedAt).getTime() + remaining * 1000);
-      await writeSegmentClock(s, segEnd);
-      await clearPersistedSession();
-      resetState();
-      notifyComplete();
+      await finishElapsedPomodoroSession(s);
     }, TIMER_INTERVAL_MS);
   };
 
@@ -190,6 +218,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       type,
       paused: false,
     };
+    selectedTask.value = task;
     session.value = s;
     sessionType.value = type;
     elapsed.value = 0;
@@ -242,6 +271,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       return;
     }
     const s = parseResult.value as ActiveSession;
+    selectedTask.value = toSelectedTask(s);
 
     if (s.paused) {
       session.value = s;
@@ -255,11 +285,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     const totalElapsed = s.accumulatedSeconds + segmentElapsedSec(s);
 
     if (s.type === 'pomo' && totalElapsed >= s.duration * SECONDS_PER_MINUTE) {
-      const remaining = s.duration * SECONDS_PER_MINUTE - s.accumulatedSeconds;
-      const segEnd = new Date(new Date(s.segmentStartedAt).getTime() + remaining * 1000);
-      await writeSegmentClock(s, segEnd);
-      await clearPersistedSession();
-      notifyComplete();
+      await finishElapsedPomodoroSession(s);
       return;
     }
 
@@ -326,6 +352,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     restoreSession,
     loadLastTask,
     openTaskCompletion,
-    pendingTask,
+    applyTaskCompletionResult,
+    selectedTask,
   };
 });

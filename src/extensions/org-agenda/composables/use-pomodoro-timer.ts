@@ -21,7 +21,7 @@ export const usePomodoroTimer = () => {
     session,
     durationMin,
     sessionType,
-    pendingTask,
+    selectedTask,
   } = storeToRefs(store);
 
   const localDuration = ref<number>(durationMin.value);
@@ -32,7 +32,7 @@ export const usePomodoroTimer = () => {
   const taskLabel = computed(
     () =>
       session.value?.taskText ??
-      pendingTask.value?.text ??
+      selectedTask.value?.text ??
       t(i18nKeys.orgAgendaPomodoroNoTaskSelected),
   );
 
@@ -68,7 +68,7 @@ export const usePomodoroTimer = () => {
   const onSelectTask = async (): Promise<void> => {
     if (hasSession.value) return;
     const task = await store.openTaskCompletion();
-    if (task) pendingTask.value = task;
+    if (task) selectedTask.value = task;
   };
 
   const onRingClick = (): void => {

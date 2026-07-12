@@ -13,11 +13,7 @@ type SessionType = 'pomo' | 'stopwatch';
 export const resolveTask = async (data: unknown): Promise<PomodoroTaskData | null> => {
   if (isPomodoroTaskData(data)) return data;
   const store = usePomodoroStore();
-  if (isPomodoroTaskData(store.pendingTask)) {
-    const task = store.pendingTask;
-    store.pendingTask = null;
-    return task;
-  }
+  if (isPomodoroTaskData(store.selectedTask)) return store.selectedTask;
   return store.openTaskCompletion();
 };
 

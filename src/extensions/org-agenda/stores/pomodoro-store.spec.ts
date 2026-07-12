@@ -6,6 +6,12 @@ const mockKvSet = vi.fn();
 const mockKvDelete = vi.fn();
 const mockFileRead = vi.fn();
 const mockFileWrite = vi.fn();
+const mockConfirm = vi.fn();
+const mockLoadFiles = vi.fn();
+const mockAgendaTasksStore = {
+  allFiles: [] as Array<{ filePath: string[]; tasks?: unknown[] }>,
+  loadFiles: mockLoadFiles,
+};
 const mockGetExtensionConfig = vi.fn(() => ({ value: {} as Record<string, unknown> }));
 
 vi.mock('src/boot/api', () => ({
@@ -18,7 +24,14 @@ vi.mock('src/boot/api', () => ({
     infrastructure: {
       keyValueRepository: { get: mockKvGet, set: mockKvSet, delete: mockKvDelete },
     },
+    ui: {
+      useConfirmationModal: () => ({ confirm: mockConfirm }),
+    },
   },
+}));
+
+vi.mock('src/extensions/org-agenda/stores/agenda-tasks-store', () => ({
+  useAgendaTasksStore: () => mockAgendaTasksStore,
 }));
 
 vi.mock('src/boot/report', () => ({
@@ -70,6 +83,11 @@ const TASK = {
 };
 
 const mockUint8 = new Uint8Array([104, 101, 108, 108, 111]);
+const orgTaskContent = new TextEncoder().encode('* TODO Test task\n');
+
+const setAgendaTask = (): void => {
+  mockAgendaTasksStore.allFiles = [{ filePath: ['test.org'], tasks: [TASK] }];
+};
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -80,6 +98,9 @@ beforeEach(() => {
   mockKvDelete.mockResolvedValue(undefined);
   mockFileRead.mockResolvedValue(mockUint8);
   mockFileWrite.mockResolvedValue(undefined);
+  mockConfirm.mockResolvedValue(false);
+  mockLoadFiles.mockResolvedValue(undefined);
+  mockAgendaTasksStore.allFiles = [];
   mockGetExtensionConfig.mockReturnValue({ value: {} });
 });
 
@@ -183,7 +204,7 @@ test('restoreSession_running_noDuplicateInterval_afterPause', async () => {
   expect(store.elapsed).toBe(frozen);
 });
 
-test('stopSession_resetsSessionBeforeClockWriteFinishes', async () => {
+test('stopSession_resetsSessionAndKeepsTaskSelectedBeforeClockWriteFinishes', async () => {
   let resolveRead: ((value: Uint8Array) => void) | undefined;
   const store = usePomodoroStore();
   await store.startSession(TASK, 'pomo');
@@ -198,6 +219,7 @@ test('stopSession_resetsSessionBeforeClockWriteFinishes', async () => {
 
   expect(store.hasSession).toBe(false);
   expect(store.elapsed).toBe(0);
+  expect(store.selectedTask?.id).toBe(TASK.id);
   if (!resolveRead) throw new Error('read resolver missing');
   resolveRead(mockUint8);
   await stopPromise;
@@ -286,4 +308,32 @@ test('durationMin_initializesFromAgendaConfig_pomoDuration', () => {
   const store = usePomodoroStore();
 
   expect(store.durationMin).toBe(42);
+});
+
+test('elapsedPomodoro_keepsSelectedTask_whenCompletionDeclined', async () => {
+  setAgendaTask();
+  mockFileRead.mockResolvedValue(orgTaskContent);
+  mockConfirm.mockResolvedValue(false);
+  const store = usePomodoroStore();
+  store.durationMin = 1;
+
+  await store.startSession(TASK, 'pomo');
+  await vi.advanceTimersByTimeAsync(60_000);
+
+  expect(store.hasSession).toBe(false);
+  expect(store.selectedTask?.id).toBe(TASK.id);
+});
+
+test('elapsedPomodoro_clearsSelectedTask_whenCompletionConfirmed', async () => {
+  setAgendaTask();
+  mockFileRead.mockResolvedValue(orgTaskContent);
+  mockConfirm.mockResolvedValue(true);
+  const store = usePomodoroStore();
+  store.durationMin = 1;
+
+  await store.startSession(TASK, 'pomo');
+  await vi.advanceTimersByTimeAsync(60_000);
+
+  expect(store.selectedTask).toBeNull();
+  expect(mockFileWrite).toHaveBeenCalledOnce();
 });
