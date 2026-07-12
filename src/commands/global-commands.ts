@@ -169,6 +169,7 @@ const safeRewriteAndReopen = async (oldPath: string, newPath: string): Promise<v
 
 export function getGlobalCommands(router: Router): Command[] {
   const sidebarStore = api.ui.useSidebar();
+  const rightSidebarStore = api.ui.useRightSidebar();
   const modalStore = api.ui.useModal();
   const commands: Command[] = [
     {
@@ -296,7 +297,7 @@ export function getGlobalCommands(router: Router): Command[] {
       group: 'global',
       icon: NotificationsCommandIcon,
       handler: () => {
-        modalStore.open(NotificationsInboxContainer, { title: I18N.NOTIFICATIONS });
+        rightSidebarStore.openComponent(NotificationsInboxContainer);
       },
     },
     {

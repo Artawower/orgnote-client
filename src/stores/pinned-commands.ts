@@ -26,7 +26,11 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.TOGGLE_SIDEBAR,
   ],
   'right-header': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR],
-  'right-sidebar': [DefaultCommands.TOGGLE_RIGHT_SIDEBAR, DefaultCommands.TOGGLE_AST_DEBUGGER],
+  'right-sidebar': [
+    DefaultCommands.TOGGLE_RIGHT_SIDEBAR,
+    DefaultCommands.OPEN_NOTIFICATIONS,
+    DefaultCommands.TOGGLE_AST_DEBUGGER,
+  ],
   'edit-toolbar': [
     DefaultCommands.TOGGLE_SIDEBAR,
     DefaultCommands.CREATE_NOTE,

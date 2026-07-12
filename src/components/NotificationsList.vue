@@ -15,9 +15,9 @@
           <app-notification
             v-for="notification in groupByKey(notiwindNotifications)"
             :key="notification.id"
-            :type="notification.type"
+            :type="getNotificationType(notification)"
             :icon="getNotificationIcon(notification)"
-            :icon-color="getNotificationIconColor(notification)"
+            :icon-enabled="getNotificationIconEnabled(notification)"
             :html-message="getNotificationTitle(notification)"
             :caption="getNotificationText(notification)"
             :count="getNotificationCount(notification)"
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ThemeVariable } from 'orgnote-api';
+import type { CommandIcon } from 'orgnote-api';
 import { NotificationGroup, Notification } from 'notiwind';
 
 import AppFlex from './AppFlex.vue';
@@ -51,7 +51,7 @@ interface NotiwindNotification {
   count?: number;
   groupKey?: string;
   closable?: boolean;
-  icon?: string;
+  icon?: CommandIcon;
   iconEnabled?: boolean;
   onClick?: () => void;
   [key: string]: unknown;
@@ -60,11 +60,12 @@ interface NotiwindNotification {
 withDefaults(
   defineProps<{
     maxNotifications?: number;
-    getNotificationIcon: (notification: NotiwindNotification) => string | undefined;
+    getNotificationType: (notification: NotiwindNotification) => string | undefined;
+    getNotificationIcon: (notification: NotiwindNotification) => CommandIcon | undefined;
+    getNotificationIconEnabled: (notification: NotiwindNotification) => boolean | undefined;
     getNotificationTitle: (notification: NotiwindNotification) => string;
     getNotificationText: (notification: NotiwindNotification) => string | undefined;
     getNotificationCount: (notification: NotiwindNotification) => number | undefined;
-    getNotificationIconColor: (notification: NotiwindNotification) => ThemeVariable | undefined;
   }>(),
   {
     maxNotifications: 5,

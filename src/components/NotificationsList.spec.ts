@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { test, expect, vi, beforeEach } from 'vitest';
+import type { CommandIcon } from 'orgnote-api';
 import NotificationsList from './NotificationsList.vue';
 import { NOTIFICATION_GROUP } from 'src/constants/notifications';
 
@@ -41,16 +42,22 @@ beforeEach(() => {
   resetMockNotifications();
 });
 
+interface MockNotification {
+  type?: string;
+  icon?: CommandIcon;
+  iconEnabled?: boolean;
+  title?: string;
+  text?: string;
+  count?: number;
+}
+
 const defaultProps = {
-  getNotificationIcon: (n: { icon?: string; iconEnabled?: boolean; type?: string }) => {
-    if (n.icon) return n.icon;
-    if (n.iconEnabled === false) return undefined;
-    return n.type === 'danger' ? 'error' : 'info';
-  },
-  getNotificationTitle: (n: { title?: string }) => n.title ?? '',
-  getNotificationText: (n: { text?: string }) => n.text,
-  getNotificationCount: (n: { count?: number }) => n.count,
-  getNotificationIconColor: () => undefined,
+  getNotificationType: (n: MockNotification) => n.type,
+  getNotificationIcon: (n: MockNotification) => n.icon,
+  getNotificationIconEnabled: (n: MockNotification) => n.iconEnabled,
+  getNotificationTitle: (n: MockNotification) => n.title ?? '',
+  getNotificationText: (n: MockNotification) => n.text,
+  getNotificationCount: (n: MockNotification) => n.count,
 };
 
 const mountComponent = (props = {}) => {

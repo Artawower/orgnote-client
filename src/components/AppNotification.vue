@@ -4,17 +4,13 @@
     align-center
     class="notification-item"
     :class="[
-      `notification-${type}`,
+      `notification-${notificationType}`,
       { clickable, unread, flat },
     ]"
     @click="emit('click')"
   >
-    <app-icon
-      v-if="icon"
-      :name="icon"
-      :color="iconColor"
-      size="sm"
-    />
+    <component v-if="iconComponent" :is="iconComponent" size="sm" />
+    <app-icon v-else-if="iconString" :name="iconString" :color="resolvedIconColor" size="sm" />
 
     <app-flex column start align-start gap="xs" class="notification-content">
       <span class="notification-message" :class="{ truncated: truncateMessage }">
@@ -45,16 +41,21 @@
 </template>
 
 <script setup lang="ts">
-import type { StyleVariant, ThemeVariable } from 'orgnote-api';
+import type { CommandIcon, StyleVariant, ThemeVariable } from 'orgnote-api';
+import { computed } from 'vue';
 import AppBadge from './AppBadge.vue';
 import AppFlex from './AppFlex.vue';
 import AppIcon from './AppIcon.vue';
 import ActionButton from './ActionButton.vue';
+import { useResolvedIcon } from 'src/composables/use-resolved-icon';
+import { CARD_TYPE_TO_BACKGROUND } from 'src/constants/card-type-to-background';
+import { STYLE_VARIANT_ICONS } from 'src/constants/style-variant-icons';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: StyleVariant | string;
-    icon?: string;
+    icon?: CommandIcon;
+    iconEnabled?: boolean;
     iconColor?: ThemeVariable;
     message?: string;
     htmlMessage?: string;
@@ -70,6 +71,7 @@ withDefaults(
     type: 'info',
     closable: true,
     clickable: false,
+    iconEnabled: true,
     unread: false,
     truncateMessage: false,
     flat: false,
@@ -80,6 +82,18 @@ const emit = defineEmits<{
   (e: 'click'): void;
   (e: 'close'): void;
 }>();
+
+const notificationType = computed(() => props.type as StyleVariant);
+
+const fallbackIcon = computed(() => {
+  if (props.iconEnabled === false) return undefined;
+  return STYLE_VARIANT_ICONS[notificationType.value];
+});
+
+const resolvedIcon = computed(() => props.icon ?? fallbackIcon.value);
+const resolvedIconColor = computed(() => props.iconColor ?? CARD_TYPE_TO_BACKGROUND[notificationType.value]);
+
+const { iconString, iconComponent } = useResolvedIcon(resolvedIcon);
 </script>
 
 <style lang="scss" scoped>

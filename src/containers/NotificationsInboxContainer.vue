@@ -1,18 +1,19 @@
 <template>
-  <safe-area fit>
-    <container-layout gap="lg">
-      <app-flex column v-if="notifications.length > 0" gap="md">
+  <safe-area fit class="notifications-inbox">
+    <container-layout gap="md">
+      <app-flex column v-if="notifications.length > 0" gap="sm" class="notifications-list">
         <app-notification
           v-for="(notification, index) in notifications"
           :key="`${notification.config.id}-${notification.createdAt}-${index}`"
-          :icon="notification.icon"
-          :type="notification.config.level ?? 'plain'"
+          :icon="notification.config.icon ?? notification.icon"
+          :icon-enabled="notification.config.iconEnabled ?? notification.iconEnabled"
+          :type="notification.config.level ?? 'info'"
           :message="notification.config.message"
           :caption="notification.config.description"
           :count="notification.count"
           :unread="!notification.readAt"
-          flat
-          clickable
+          :closable="notification.config.closable !== false"
+          :clickable="hasNotificationAction(notification)"
           @click="handleNotificationClick(notification.config.id)"
           @close="handleDelete(notification.config.id)"
         />
@@ -34,7 +35,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { I18N } from 'orgnote-api';
+import { I18N, type Notification } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
@@ -58,16 +59,26 @@ const markAsRead = (id?: string): void => {
   notificationsStore.markAsRead(id);
 };
 
-const executeNotificationAction = (id: string): void => {
-  const notification = notifications.value.find((item) => item.config.id === id);
-  const command = notification?.config.actionCommand;
+const hasNotificationAction = (notification: Notification): boolean =>
+  Boolean(notification.config.onClick || notification.config.actionCommand);
+
+const executeNotificationAction = (notification: Notification): void => {
+  const onClick = notification.config.onClick;
+  if (onClick) {
+    onClick();
+    return;
+  }
+
+  const command = notification.config.actionCommand;
   if (!command) return;
-  void api.core.useCommands().execute(command, notification?.config.actionPayload);
+  void api.core.useCommands().execute(command, notification.config.actionPayload);
 };
 
 const handleNotificationClick = (id?: string): void => {
   if (!id) return;
-  executeNotificationAction(id);
+  const notification = notifications.value.find((item) => item.config.id === id);
+  if (!notification) return;
+  if (hasNotificationAction(notification)) executeNotificationAction(notification);
   markAsRead(id);
 };
 
@@ -85,3 +96,15 @@ onMounted(markAllAsRead);
 
 const { t } = useI18n();
 </script>
+
+<style lang="scss" scoped>
+.notifications-inbox {
+  height: 100%;
+  padding: var(--padding-md);
+  box-sizing: border-box;
+}
+
+.notifications-list {
+  width: 100%;
+}
+</style>
