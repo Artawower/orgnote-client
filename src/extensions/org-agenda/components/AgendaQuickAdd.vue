@@ -1,6 +1,7 @@
 <template>
   <card-wrapper border class="quick-add" :class="{ expanded: isExpanded }">
     <agenda-task-form
+      ref="formRef"
       v-model:title="draft.title"
       v-model:body="draft.body"
       :show-body="isExpanded"
@@ -22,7 +23,11 @@
       </template>
 
       <template #title-actions>
-        <agenda-schedule-button v-model="draft.scheduled" v-model:habit="draft.isHabit" />
+        <agenda-schedule-button
+          v-model="draft.scheduled"
+          v-model:habit="draft.isHabit"
+          @closed="focusTitleInput"
+        />
       </template>
 
       <template #toolbar-start>
@@ -131,6 +136,12 @@ const { tabletBelow } = api.ui.useScreenDetection();
 
 const resolveDraftIsHabit = (): boolean => props.habitMode || draft.isHabit === true;
 
+const focusTitleInput = (): void => {
+  void nextTick(() => {
+    requestAnimationFrame(() => formRef.value?.focusTitle());
+  });
+};
+
 const withHabitMode = (
   payload: CreateTaskInput & { targetFile?: string },
 ): CreateTaskInput & { targetFile?: string } =>
@@ -161,9 +172,12 @@ const openFileCompletion = async (): Promise<void> => {
     placeholder: t(i18nKeys.orgAgendaQuickAddTargetPlaceholder),
     itemsGetter: getter,
   });
-  if (!result) return;
+  if (!result) {
+    focusTitleInput();
+    return;
+  }
   targetFile.value = result;
-  formRef.value?.focusTitle();
+  focusTitleInput();
 };
 
 const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
@@ -178,12 +192,12 @@ const openFileCompletionFromTilde = async (tildeIdx: number): Promise<void> => {
   });
   if (!result) {
     draft.title = originalTitle;
-    formRef.value?.focusTitle();
+    focusTitleInput();
     return;
   }
   draft.title = draft.title.slice(0, tildeIdx).trimEnd();
   targetFile.value = result;
-  formRef.value?.focusTitle();
+  focusTitleInput();
 };
 
 const onTitleInput = (): void => {
@@ -226,7 +240,7 @@ const submitTask = (): void => {
   if (!payload.title.trim()) return;
   emit('submit', payload);
   resetState();
-  formRef.value?.focusTitle();
+  focusTitleInput();
 };
 
 const onFormCancel = (): void => {

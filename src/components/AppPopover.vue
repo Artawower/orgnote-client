@@ -7,6 +7,7 @@
       :breakpoint="breakpoint"
       :anchor="anchor"
       :self="self"
+      @hide="emit('closed')"
     >
       <slot name="content" />
     </q-popup-proxy>
@@ -28,6 +29,8 @@ withDefaults(
     self: 'top left',
   },
 );
+
+const emit = defineEmits<{ closed: [] }>();
 
 const isOpen = ref(false);
 

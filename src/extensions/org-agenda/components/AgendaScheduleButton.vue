@@ -4,6 +4,8 @@
     confirm-mode
     :show-shortcuts="false"
     @update:model-value="setDate"
+    @confirm="emitClosed"
+    @closed="emitClosed"
   >
     <template #trigger="{ open }">
       <action-button
@@ -68,6 +70,8 @@ import type { AgendaScheduleDraft } from '../types';
 
 withDefaults(defineProps<{ showHabitToggle?: boolean }>(), { showHabitToggle: true });
 
+const emit = defineEmits<{ closed: [] }>();
+
 const model = defineModel<AgendaScheduleDraft | undefined>();
 const isHabit = defineModel<boolean>('habit', { default: false });
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -112,6 +116,10 @@ const setDate = (date: string | undefined): void => {
     return;
   }
   model.value = { ...model.value, date };
+};
+
+const emitClosed = (): void => {
+  emit('closed');
 };
 
 const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');

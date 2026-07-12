@@ -1,5 +1,5 @@
 <template>
-  <app-popover ref="popoverRef" :breakpoint="0">
+  <app-popover ref="popoverRef" :breakpoint="0" @closed="onPopoverClosed">
     <template #default="{ toggle }">
       <slot name="trigger" :open="handleOpen.bind(null, toggle)" />
     </template>
@@ -48,11 +48,16 @@ const props = withDefaults(
   },
 );
 
-const emit = defineEmits<{ 'update:modelValue': [value: string | undefined] }>();
+const emit = defineEmits<{
+  'update:modelValue': [value: string | undefined];
+  confirm: [value: string | undefined];
+  closed: [];
+}>();
 
 const slots = useSlots();
 const popoverRef = ref<InstanceType<typeof AppPopover> | null>(null);
 const isOpening = ref(false);
+const isClosingWithConfirm = ref(false);
 const { desktopBelow } = api.ui.useScreenDetection();
 
 const blurActiveElement = (): void => {
@@ -95,10 +100,16 @@ const openMobileSheet = async (): Promise<void> => {
 
   if (result.isErr()) {
     reporter.reportError(result.error);
+    emit('closed');
     return;
   }
-  if (!result.value) return;
-  emit('update:modelValue', result.value.date ?? undefined);
+  if (!result.value) {
+    emit('closed');
+    return;
+  }
+  const value = result.value.date ?? undefined;
+  emit('update:modelValue', value);
+  emit('confirm', value);
 };
 
 const handleOpen = (toggle: () => void): void => {
@@ -115,7 +126,17 @@ const onUpdate = (value: string | undefined): void => {
   if (!props.confirmMode) popoverRef.value?.close();
 };
 
-const onConfirm = (): void => {
+const onConfirm = (value: string | undefined): void => {
+  isClosingWithConfirm.value = true;
   popoverRef.value?.close();
+  emit('confirm', value);
+};
+
+const onPopoverClosed = (): void => {
+  if (isClosingWithConfirm.value) {
+    isClosingWithConfirm.value = false;
+    return;
+  }
+  emit('closed');
 };
 </script>
