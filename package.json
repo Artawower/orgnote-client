@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.61.20",
+  "version": "0.61.21",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -44,7 +44,7 @@
     "lint": "NODE_OPTIONS='--max-old-space-size=8192' eslint -c ./eslint.config.js \"./src/**/*.{ts,js,cjs,mjs,vue}\"",
     "test": "vitest",
     "test:ci": "vitest run",
-    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 70,70 -m capacitor -i images/modern-unicorn-round.png --png-color 9356E8 --splashscreen-color 9356E8",
+    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 70,70 -m capacitor -i images/modern-unicorn-round.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --skip-trim -m electron -i images/modern-unicorn-macos.png --png-color 9356E8 --splashscreen-color 9356E8",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
@@ -126,6 +126,7 @@
     "@intlify/unplugin-vue-i18n": "6.0.8",
     "@pinia/testing": "1.0.1",
     "@quasar/app-vite": "2.2.0",
+    "@quasar/icongenie": "6.1.0",
     "@storybook/addon-docs": "10.1.2",
     "@storybook/addon-onboarding": "^10.1.2",
     "@storybook/vue3-vite": "^10.1.2",
