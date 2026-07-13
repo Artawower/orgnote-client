@@ -21,6 +21,11 @@ on:
         type: string
         default: latest
         description: 'Electron updater channel name'
+      enable_devtools:
+        required: false
+        type: boolean
+        default: false
+        description: 'Allow Electron DevTools in packaged builds'
 
 jobs:
   build-electron-linux:
@@ -59,6 +64,7 @@ jobs:
           VITE_WS_URL=${{ secrets.WS_URL }}
           VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
           ORGNOTE_UPDATE_CHANNEL=${{ inputs.update_channel }}
+          ORGNOTE_ENABLE_DEVTOOLS=${{ inputs.enable_devtools && 'true' || 'false' }}
           EOT
 
       - name: Build Electron

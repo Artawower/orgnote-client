@@ -24,4 +24,5 @@ export type ElectronUpdateStatus =
   | ({ type: 'not-available'; isBackground?: boolean } & ElectronUpdateInfo)
   | ({ type: 'download-progress'; percent: number; isBackground?: boolean })
   | ({ type: 'downloaded'; isBackground?: boolean } & ElectronUpdateInfo)
+  | { type: 'installing'; isBackground?: boolean }
   | { type: 'error'; message: string; isBackground?: boolean };

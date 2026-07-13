@@ -67,11 +67,22 @@ const checkForUpdates = async (
   return { isAvailable: Boolean(result?.updateInfo) };
 };
 
-const installDownloadedUpdate = (): boolean => {
+const sendInstallingStatus = (getMainWindow: () => BrowserWindow | undefined): void => {
+  sendStatus(getMainWindow, { type: 'installing', ...getCurrentFlowOptions() });
+};
+
+const installDownloadedUpdate = (getMainWindow: () => BrowserWindow | undefined): boolean => {
   if (!isAutoUpdateAvailable()) return false;
 
-  autoUpdater.quitAndInstall(false, true);
-  return true;
+  sendInstallingStatus(getMainWindow);
+
+  try {
+    autoUpdater.quitAndInstall(false, true);
+    return true;
+  } catch (error) {
+    sendErrorStatus(getMainWindow, error);
+    return false;
+  }
 };
 
 const requestScheduledUpdateCheck = (getMainWindow: () => BrowserWindow | undefined): void => {
@@ -160,6 +171,6 @@ export const registerElectronUpdaterIpc = ({ getMainWindow }: RegisterElectronUp
   ipcMain.handle(ELECTRON_UPDATE_CHANNELS.checkForUpdates, (_event, options?: ElectronUpdateCheckOptions) =>
     checkForUpdates(getMainWindow, options),
   );
-  ipcMain.handle(ELECTRON_UPDATE_CHANNELS.installDownloadedUpdate, installDownloadedUpdate);
+  ipcMain.handle(ELECTRON_UPDATE_CHANNELS.installDownloadedUpdate, () => installDownloadedUpdate(getMainWindow));
   startScheduledUpdateChecks(getMainWindow);
 };

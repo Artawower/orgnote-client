@@ -23,11 +23,19 @@ const loadInitialUrl = async (window: BrowserWindow, protocolScheme: string): Pr
   await window.loadURL(buildProductionUrl(protocolScheme));
 };
 
+const isTruthyEnv = (value: unknown): boolean => value === true || value === 'true';
+
+const isDevtoolsAllowed = (): boolean =>
+  isTruthyEnv(process.env.DEBUGGING) || isTruthyEnv(process.env.ORGNOTE_ENABLE_DEVTOOLS);
+
 const configureDevTools = (window: BrowserWindow): void => {
-  if (process.env.DEBUGGING) {
-    window.webContents.openDevTools();
+  if (isTruthyEnv(process.env.DEBUGGING)) {
+    window.webContents.openDevTools({ mode: 'detach' });
     return;
   }
+
+  if (isDevtoolsAllowed()) return;
+
   window.webContents.on('devtools-opened', () => {
     window.webContents.closeDevTools();
   });

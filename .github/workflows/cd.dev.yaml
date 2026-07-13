@@ -67,6 +67,7 @@ jobs:
       version: ${{ needs.check-version-changed.outputs.version }}-dev
       prerelease: true
       update_channel: dev
+      enable_devtools: true
     secrets: inherit
 
   build-electron-linux:
@@ -79,6 +80,7 @@ jobs:
       version: ${{ needs.check-version-changed.outputs.version }}-dev
       prerelease: true
       update_channel: dev
+      enable_devtools: true
     secrets: inherit
 
   docker-deploy:

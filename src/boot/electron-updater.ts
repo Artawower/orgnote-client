@@ -18,11 +18,27 @@ const createUpdateDescription = (update: ElectronUpdateInfo): string => {
   return translate(electronUpdateI18n.versionReady, { version: update.version });
 };
 
+const reportInstallFailure = (cause?: unknown): void => {
+  reporter.reportWarning(new Error(translate(electronUpdateI18n.installFailed), { cause }));
+};
+
 const installDownloadedUpdate = async (updates: ElectronUpdatesAPI): Promise<void> => {
+  logger.info('Electron update install notification clicked');
+
   const result = await to(updates.installDownloadedUpdate)();
   if (result.isErr()) {
-    reporter.reportWarning(new Error(translate(electronUpdateI18n.installFailed), { cause: result.error }));
+    logger.warn('Electron update install IPC failed', { error: result.error });
+    reportInstallFailure(result.error);
+    return;
   }
+
+  if (result.value) {
+    logger.info('Electron update install requested');
+    return;
+  }
+
+  logger.warn('Electron update install request was rejected');
+  reportInstallFailure();
 };
 
 const notifyDownloadedUpdate = (updates: ElectronUpdatesAPI, update: ElectronUpdateInfo): void => {
@@ -52,6 +68,11 @@ const reportUpdateError = (status: Extract<ElectronUpdateStatus, { type: 'error'
 const handleUpdateStatus = (updates: ElectronUpdatesAPI, status: ElectronUpdateStatus): void => {
   if (status.type === 'downloaded') {
     notifyDownloadedUpdate(updates, status);
+    return;
+  }
+
+  if (status.type === 'installing') {
+    logger.info('Electron update installer is starting');
     return;
   }
 

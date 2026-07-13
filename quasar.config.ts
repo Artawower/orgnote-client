@@ -8,12 +8,16 @@ import fs from 'fs';
 const DEFAULT_DEV_PORT = 3001;
 const DEFAULT_UPDATE_CHANNEL = 'latest';
 const UPDATE_CHANNEL_ENV_NAME = 'ORGNOTE_UPDATE_CHANNEL';
+const ENABLE_DEVTOOLS_ENV_NAME = 'ORGNOTE_ENABLE_DEVTOOLS';
 
 const getUpdateChannel = (): string =>
   process.env[UPDATE_CHANNEL_ENV_NAME]?.trim() || DEFAULT_UPDATE_CHANNEL;
 
+const getEnableDevtools = (): boolean => process.env[ENABLE_DEVTOOLS_ENV_NAME] === 'true';
+
 export default defineConfig((ctx) => {
   const updateChannel = getUpdateChannel();
+  const enableDevtools = getEnableDevtools();
 
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
@@ -279,6 +283,7 @@ export default defineConfig((ctx) => {
         esbuildConf.define = {
           ...esbuildConf.define,
           'process.env.ORGNOTE_UPDATE_CHANNEL': JSON.stringify(updateChannel),
+          'process.env.ORGNOTE_ENABLE_DEVTOOLS': JSON.stringify(enableDevtools),
         };
       },
       // extendElectronPreloadConf (esbuildConf) {},
