@@ -61,8 +61,73 @@ jobs:
           ORGNOTE_ENABLE_DEVTOOLS=${{ inputs.enable_devtools && 'true' || 'false' }}
           EOT
 
+      - name: Import macOS signing certificate
+        timeout-minutes: 5
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          if [ -z "$MACOS_CERTIFICATE_P12" ] || [ -z "$MACOS_CERTIFICATE_PASSWORD" ] || [ -z "$MACOS_SIGNING_IDENTITY" ]; then
+            echo "macOS signing certificate secrets are not configured; using ad-hoc signing fallback."
+            exit 0
+          fi
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/orgnote-macos-signing.p12"
+          CERTIFICATE_PEM_PATH="$RUNNER_TEMP/orgnote-macos-signing.crt"
+          KEYCHAIN_PATH="$RUNNER_TEMP/orgnote-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          echo "Decoding macOS signing certificate."
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$CERTIFICATE_PATH"
+          openssl pkcs12 \
+            -legacy \
+            -in "$CERTIFICATE_PATH" \
+            -clcerts \
+            -nokeys \
+            -out "$CERTIFICATE_PEM_PATH" \
+            -passin "pass:$MACOS_CERTIFICATE_PASSWORD"
+
+          echo "Creating temporary signing keychain."
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          echo "Importing macOS signing identity."
+          security import "$CERTIFICATE_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+
+          echo "Trusting macOS signing identity for code signing."
+          security add-trusted-cert \
+            -p codeSign \
+            -r trustRoot \
+            -k "$KEYCHAIN_PATH" \
+            "$CERTIFICATE_PEM_PATH"
+
+          echo "Configuring codesign key access."
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" >/dev/null
+          echo "macOS signing identity imported."
+
       - name: Build Electron
+        env:
+          ORGNOTE_MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
         run: bunx env-cmd -f ./.env.build quasar build -m electron -P never
+
+      - name: Cleanup macOS signing certificate
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/orgnote-signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/orgnote-macos-signing.p12"
+          rm -f "$RUNNER_TEMP/orgnote-macos-signing.crt"
 
       - name: Collect Electron artifacts
         run: |

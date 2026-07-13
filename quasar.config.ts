@@ -9,11 +9,15 @@ const DEFAULT_DEV_PORT = 3001;
 const DEFAULT_UPDATE_CHANNEL = 'latest';
 const UPDATE_CHANNEL_ENV_NAME = 'ORGNOTE_UPDATE_CHANNEL';
 const ENABLE_DEVTOOLS_ENV_NAME = 'ORGNOTE_ENABLE_DEVTOOLS';
+const MACOS_SIGNING_IDENTITY_ENV_NAME = 'ORGNOTE_MACOS_SIGNING_IDENTITY';
 
 const getUpdateChannel = (): string =>
   process.env[UPDATE_CHANNEL_ENV_NAME]?.trim() || DEFAULT_UPDATE_CHANNEL;
 
 const getEnableDevtools = (): boolean => process.env[ENABLE_DEVTOOLS_ENV_NAME] === 'true';
+
+const getMacSigningIdentity = (): string | undefined =>
+  process.env[MACOS_SIGNING_IDENTITY_ENV_NAME]?.trim() || undefined;
 
 export default defineConfig((ctx) => {
   const updateChannel = getUpdateChannel();
@@ -328,7 +332,7 @@ export default defineConfig((ctx) => {
             { target: 'zip', arch: ['arm64'] },
           ],
           artifactName: 'orgnote-macos-${arch}-${version}.${ext}',
-          identity: '-',
+          identity: getMacSigningIdentity() ?? '-',
           hardenedRuntime: false,
           gatekeeperAssess: false,
         },
