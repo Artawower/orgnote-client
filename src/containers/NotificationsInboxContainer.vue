@@ -1,6 +1,6 @@
 <template>
-  <safe-area fit class="notifications-inbox">
-    <container-layout gap="md">
+  <safe-area fit>
+    <container-layout gap="md" class="notifications-inbox">
       <app-flex column v-if="notifications.length > 0" gap="sm" class="notifications-list">
         <app-notification
           v-for="(notification, index) in notifications"
@@ -14,6 +14,7 @@
           :unread="!notification.readAt"
           :closable="notification.config.closable !== false"
           :clickable="hasNotificationAction(notification)"
+          flat
           @click="handleNotificationClick(notification.config.id)"
           @close="handleDelete(notification.config.id)"
         />
@@ -99,6 +100,8 @@ const { t } = useI18n();
 
 <style lang="scss" scoped>
 .notifications-inbox {
+  --notification-min-width: 0;
+
   height: 100%;
   padding: var(--padding-md);
   box-sizing: border-box;

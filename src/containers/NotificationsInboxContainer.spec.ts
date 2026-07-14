@@ -30,6 +30,9 @@ vi.mock('vue-i18n', () => ({
 
 const AppNotificationStub = defineComponent({
   name: 'AppNotification',
+  props: {
+    flat: Boolean,
+  },
   emits: ['click', 'close'],
   setup(_, { emit }) {
     return () =>
@@ -71,6 +74,13 @@ const createNotification = (config: Notification['config']): Notification => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mockNotifications.value = [];
+});
+
+test('sidebar notifications use flat appearance', () => {
+  mockNotifications.value = [createNotification({ id: 'n1', message: 'Update available' })];
+  const wrapper = mountContainer();
+
+  expect(wrapper.findComponent(AppNotificationStub).props('flat')).toBe(true);
 });
 
 test('notification click invokes stored onClick action', async () => {
