@@ -306,17 +306,21 @@ body {
 
   // Tab
   --nav-tabs-bg: var(--bg-secondary);
+  --nav-tabs-padding: var(--padding-md) var(--padding-md) var(--tab-connection-depth);
+  --tab-connection-depth: var(--padding-sm);
   --tab-padding: var(--padding-md);
   --tab-height: 28px;
-  --tab-bg: var(--bg-main);
+  --tab-bg: transparent;
   --tab-border: 0;
   --tab-border-radius: var(--border-radius-sm);
   --tab-fg: var(--fg-muted);
   --tab-width: 160px;
   --tab-active-border: 0;
+  --tab-active-radius: var(--border-radius-md);
+  --tab-active-border-radius: var(--tab-active-radius) var(--tab-active-radius) 0 0;
   --tab-active-hover-bg: var(--bg-hover);
   --tab-active-fg: var(--fg);
-  --tab-active-bg: var(--bg-hover);
+  --tab-active-bg: var(--bg);
 
   // Tab overview
   --tab-preview-active-border: 3px solid var(--accent);

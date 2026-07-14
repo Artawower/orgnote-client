@@ -18,7 +18,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 <style lang="scss" scoped>
 .nav-tabs {
   & {
-    padding: var(--padding-md);
+    padding: var(--nav-tabs-padding);
     width: 100%;
     background: var(--nav-tabs-bg);
     max-width: 100%;
@@ -33,6 +33,10 @@ import AppFlex from 'src/components/AppFlex.vue';
     & {
       overflow-x: auto;
       min-width: 0;
+      padding-inline: var(--tab-active-radius);
+      padding-bottom: var(--tab-connection-depth);
+      margin-inline: calc(0px - var(--tab-active-radius));
+      margin-bottom: calc(0px - var(--tab-connection-depth));
       scrollbar-width: none;
 
       &::-webkit-scrollbar {
@@ -42,7 +46,7 @@ import AppFlex from 'src/components/AppFlex.vue';
   }
 }
 
-::v-deep(.tab:not(:last-child)) {
+::v-deep(.tab:not(.active):not(:last-child)) {
   &::after {
     content: '';
     position: absolute;

@@ -10,6 +10,7 @@
     align-center
     gap="sm"
   >
+    <span class="tab-surface" aria-hidden="true" />
     <app-flex class="label" row start align-center gap="sm">
       <app-icon v-if="icon" :name="icon" size="xs" color="fg-muted" />
       <span class="label-text">
@@ -79,16 +80,22 @@ const handleDragEnd = () => {
 </script>
 
 <style lang="scss" scoped>
+.label,
+.close-tab {
+  position: relative;
+  z-index: 1;
+}
+
 .close-tab {
   opacity: 0;
 }
+
 .tab {
   & {
+    @include interactive-no-select;
+
     padding: var(--tab-padding);
-    background: var(--tab-bg);
-    border-radius: var(--tab-border-radius);
     color: var(--tab-fg);
-    border: var(--tab-border);
     width: var(--tab-width);
     min-width: var(--tab-min-width, 120px);
     flex-shrink: 0;
@@ -96,12 +103,14 @@ const handleDragEnd = () => {
     height: var(--tab-height);
     box-sizing: border-box;
     position: relative;
-    @include interactive-no-select;
+    z-index: 0;
   }
 
   &:not(.active) {
     @include hover {
-      background: var(--tab-active-hover-bg);
+      .tab-surface {
+        background: var(--tab-active-hover-bg);
+      }
     }
   }
 
@@ -122,10 +131,53 @@ const handleDragEnd = () => {
   }
 }
 
+.tab-surface {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--tab-bg);
+  border: var(--tab-border);
+  border-radius: var(--tab-border-radius);
+}
+
 .tab.active {
-  border: var(--tab-active-border);
   color: var(--tab-active-fg);
-  background: var(--tab-active-bg);
+  z-index: 1;
+
+  .tab-surface {
+    inset: 0 0 calc(0px - var(--tab-connection-depth));
+    background: var(--tab-active-bg);
+    border: var(--tab-active-border);
+    border-radius: var(--tab-active-border-radius);
+  }
+
+  .tab-surface::before,
+  .tab-surface::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: var(--tab-active-radius);
+    height: var(--tab-active-radius);
+  }
+
+  .tab-surface::before {
+    left: calc(0px - var(--tab-active-radius));
+    background: radial-gradient(
+      circle at 0 0,
+      transparent var(--tab-active-radius),
+      var(--tab-active-bg) calc(var(--tab-active-radius) + 1px)
+    );
+  }
+
+  .tab-surface::after {
+    right: calc(0px - var(--tab-active-radius));
+    background: radial-gradient(
+      circle at 100% 0,
+      transparent var(--tab-active-radius),
+      var(--tab-active-bg) calc(var(--tab-active-radius) + 1px)
+    );
+  }
 
   .label-text {
     color: var(--tab-active-fg);
