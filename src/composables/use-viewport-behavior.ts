@@ -16,6 +16,8 @@ const KEYBOARD_OPEN_RATIO_THRESHOLD = 0.6;
 const VIEWPORT_STABLE_DELTA = 1;
 const REQUIRED_STABLE_FRAMES = 2;
 
+const shouldUseDynamicViewportHeight = (): boolean => platform.is.desktop || platform.is.electron;
+
 const globalKeyboardOpened = ref(false);
 const globalKeyboardHeight = ref(0);
 const globalViewportHeight = ref(0);
@@ -171,6 +173,13 @@ const createViewportMeasurer = (viewportHeight: Ref<number>, cb?: ViewportCallba
     viewportHeight.value = screenHeight;
     globalViewportHeight.value = screenHeight;
 
+    if (shouldUseDynamicViewportHeight()) {
+      setKeyboardState(false, 0);
+      updateCssVariables(screenHeight, viewportOffsetTop);
+      cb?.({ viewportHeight: screenHeight, keyboardOpened: false });
+      return;
+    }
+
     if (!platform.is.capacitor || platform.is.android) {
       const baseHeight = initialViewportHeight || window.innerHeight;
       const height = Math.max(0, baseHeight - screenHeight);
@@ -252,6 +261,30 @@ const createScheduler = (measureFn: () => void) => {
   return { schedule, cancel };
 };
 
+const addViewportListeners = (schedule: () => void): void => {
+  if (shouldUseDynamicViewportHeight()) {
+    window.addEventListener('resize', schedule);
+    return;
+  }
+
+  window.visualViewport?.addEventListener('resize', schedule);
+  iosPwaOnly(() => {
+    window.visualViewport?.addEventListener('scroll', schedule);
+  })();
+};
+
+const removeViewportListeners = (schedule: () => void): void => {
+  if (shouldUseDynamicViewportHeight()) {
+    window.removeEventListener('resize', schedule);
+    return;
+  }
+
+  window.visualViewport?.removeEventListener('resize', schedule);
+  iosPwaOnly(() => {
+    window.visualViewport?.removeEventListener('scroll', schedule);
+  })();
+};
+
 const setupCapacitorKeyboardListeners = async () => {
   return platformMatch({
     android: () => ({ cleanup: () => {} }),
@@ -309,10 +342,7 @@ export function useViewportBehavior(cb?: ViewportCallback) {
   onMounted(() => {
     captureInitialViewportHeight();
     measure();
-    window.visualViewport?.addEventListener('resize', schedule);
-    iosPwaOnly(() => {
-      window.visualViewport?.addEventListener('scroll', schedule);
-    })();
+    addViewportListeners(schedule);
     window.addEventListener('orientationchange', handleOrientationChange);
 
     platformMatch({
@@ -329,10 +359,7 @@ export function useViewportBehavior(cb?: ViewportCallback) {
   });
 
   onUnmounted(() => {
-    window.visualViewport?.removeEventListener('resize', schedule);
-    iosPwaOnly(() => {
-      window.visualViewport?.removeEventListener('scroll', schedule);
-    })();
+    removeViewportListeners(schedule);
     window.removeEventListener('orientationchange', handleOrientationChange);
     safariCleanup?.();
     capacitorCleanup?.();

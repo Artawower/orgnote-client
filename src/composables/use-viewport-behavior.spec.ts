@@ -3,14 +3,35 @@ import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { useViewportBehavior, useKeyboardState, _resetForTesting } from './use-viewport-behavior';
 
+const originalVisualViewport = window.visualViewport;
+
+let platformIs = {
+  ios: true,
+  safari: true,
+  capacitor: false,
+  android: false,
+  desktop: false,
+  electron: false,
+  mobile: true,
+};
+
 vi.mock('src/utils/platform-detection', () => ({
-  platform: { is: { ios: true, safari: true, capacitor: false } },
+  platform: {
+    get is() {
+      return platformIs;
+    },
+  },
   platformMatch: async (handlers: { default: () => unknown }) => handlers.default(),
 }));
 
 vi.mock('src/utils/platform-specific', () => ({
-  iosPwaOnly: (fn?: (...args: unknown[]) => unknown) =>
-    fn ? (...args: unknown[]) => (window.navigator.standalone ? fn(...args) : undefined) : () => {},
+  iosPwaOnly: (fn?: (...args: unknown[]) => unknown) => {
+    if (!fn) return () => {};
+    return (...args: unknown[]) => {
+      if (!window.navigator.standalone) return undefined;
+      return fn(...args);
+    };
+  },
 }));
 
 vi.mock('src/utils/android-keyboard-hide', () => ({
@@ -61,7 +82,22 @@ const createTestComponent = () =>
     },
   });
 
+const waitForAnimationFrame = async (): Promise<void> => {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
+};
+
 beforeEach(() => {
+  platformIs = {
+    ios: true,
+    safari: true,
+    capacitor: false,
+    android: false,
+    desktop: false,
+    electron: false,
+    mobile: true,
+  };
   _resetForTesting();
   document.documentElement.style.cssText = '';
   document.body.style.cssText = '';
@@ -85,7 +121,48 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  Object.defineProperty(window, 'visualViewport', {
+    value: originalVisualViewport,
+    configurable: true,
+  });
   vi.restoreAllMocks();
+});
+
+test('useViewportBehavior refreshes desktop screen height on window resize', async () => {
+  platformIs = {
+    ios: false,
+    safari: false,
+    capacitor: false,
+    android: false,
+    desktop: true,
+    electron: true,
+    mobile: false,
+  };
+  const viewport = {
+    height: 300,
+    offsetTop: 0,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  };
+  Object.defineProperty(window, 'visualViewport', {
+    value: viewport,
+    configurable: true,
+  });
+  Object.defineProperty(window, 'innerHeight', { value: 300, configurable: true, writable: true });
+
+  const wrapper = mount(createTestComponent());
+
+  expect(viewport.addEventListener).not.toHaveBeenCalledWith('resize', expect.any(Function));
+  expect(document.documentElement.style.getPropertyValue('--screen-height')).toBe('300px');
+
+  viewport.height = 900;
+  window.dispatchEvent(new Event('resize'));
+  await waitForAnimationFrame();
+
+  expect(document.documentElement.style.getPropertyValue('--screen-height')).toBe('900px');
+  expect(useKeyboardState().keyboardOpened.value).toBe(false);
+
+  wrapper.unmount();
 });
 
 test('useViewportBehavior should not prevent default for horizontal-only scroll target', () => {
