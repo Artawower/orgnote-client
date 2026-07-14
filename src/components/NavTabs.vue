@@ -20,6 +20,7 @@ import AppFlex from 'src/components/AppFlex.vue';
   & {
     padding: var(--padding-md);
     width: 100%;
+    background: var(--nav-tabs-bg);
     max-width: 100%;
     overflow-x: hidden;
   }

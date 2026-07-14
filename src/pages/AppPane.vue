@@ -62,7 +62,9 @@
     </template>
 
     <template #body>
-      <ScopedRouterView v-if="resolvedRouter" :router="resolvedRouter" :key="activeTabId || ''" />
+      <div class="pane-body">
+        <ScopedRouterView v-if="resolvedRouter" :router="resolvedRouter" :key="activeTabId || ''" />
+      </div>
     </template>
 
     <drop-zone-overlay
@@ -256,9 +258,20 @@ const handleDrop = async (zone: DropZone): Promise<void> => {
 const { opened } = storeToRefs(api.ui.useRightSidebar());
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .pane-container {
   position: relative;
+  background: var(--nav-tabs-bg);
+}
+
+.pane-body {
+  @include fit;
+
+  @include tablet-above {
+    overflow: hidden;
+    background: var(--bg);
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  }
 }
 
 </style>
