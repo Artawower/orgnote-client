@@ -149,12 +149,6 @@ export const useNotificationsStore = defineStore<'notifications', NotificationsS
       const notification = notifications.value[notificationIndex];
       if (!notification) return;
 
-      const currentCount = notification.count ?? 1;
-      if (currentCount > 1) {
-        notification.count = currentCount - 1;
-        return;
-      }
-
       notification.dismiss?.();
       notifications.value.splice(notificationIndex, 1);
       lastToastAtByGroup.delete(notificationId);

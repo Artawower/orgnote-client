@@ -176,6 +176,24 @@ test('NotificationsStore delete removes specific notification by id', () => {
   expect(store.notifications[0]?.config.id).toBe('id-2');
 });
 
+test('NotificationsStore delete removes all grouped occurrences', () => {
+  const store = useNotificationsStore();
+
+  store.notify({ message: 'First', id: 'grouped-id', stored: true });
+  store.notify({ message: 'Second', id: 'grouped-id', stored: true });
+
+  expect(store.notifications[0]?.count).toBe(2);
+
+  store.delete('grouped-id');
+
+  expect(store.notifications).toHaveLength(0);
+
+  store.notify({ message: 'Third', id: 'grouped-id', stored: true });
+
+  expect(notiwindNotify).toHaveBeenCalledTimes(2);
+  expect(store.notifications[0]?.count).toBe(1);
+});
+
 test('NotificationsStore delete does nothing when id not found', () => {
   const store = useNotificationsStore();
 
