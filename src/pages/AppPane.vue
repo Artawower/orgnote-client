@@ -267,9 +267,12 @@ const { opened } = storeToRefs(api.ui.useRightSidebar());
 .pane-body {
   @include fit;
 
+  & {
+    background: var(--bg);
+  }
+
   @include tablet-above {
     overflow: hidden;
-    background: var(--bg);
     border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
   }
 }
