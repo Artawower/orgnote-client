@@ -40,8 +40,8 @@
 }
 
 @include dark-mode {
-  --default-bg: #22272e;
-  --default-bg-secondary: var(--q-dark);
+  --default-bg: var(--q-dark);
+  --default-bg-secondary: #22272e;
   --default-bg-elevated: var(--q-dark);
   --default-bg-muted: color-mix(in srgb, #22272e, var(--q-dark) 35%);
   --default-bg-hover: rgba(99, 110, 123, 0.4);
@@ -74,8 +74,8 @@
 }
 
 @include light-mode {
-  --default-bg: #ffffff;
-  --default-bg-secondary: #ffffff;
+  --default-bg: #fff;
+  --default-bg-secondary: #f6f6f6;
   --default-bg-muted: #fafbfc;
   --default-bg-hover: #eff1f3;
   --default-bg-elevated: #fafbfc;
@@ -90,7 +90,8 @@
   --glass-border-color: rgba(255, 255, 255, 0.3);
   --glass-border-top-color: rgba(255, 255, 255, 0.6);
   --glass-box-shadow-outer: 0 2px 3px rgba(0, 0, 0, 0.09), 0 0 5px rgba(0, 0, 0, 0.04);
-  --glass-box-shadow-inset: inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-box-shadow-inset:
+    inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.4);
   --glass-box-shadow: var(--glass-box-shadow-outer), var(--glass-box-shadow-inset);
 
   // Tab overview for light theme
