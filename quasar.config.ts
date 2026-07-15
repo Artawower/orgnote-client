@@ -327,6 +327,7 @@ export default defineConfig((ctx) => {
           },
         ],
         mac: {
+          icon: 'src-electron/icons/icon.icon',
           target: [
             { target: 'dmg', arch: ['arm64'] },
             { target: 'zip', arch: ['arm64'] },
@@ -335,6 +336,9 @@ export default defineConfig((ctx) => {
           identity: getMacSigningIdentity() ?? '-',
           hardenedRuntime: false,
           gatekeeperAssess: false,
+        },
+        dmg: {
+          icon: 'src-electron/icons/icon.icns',
         },
         linux: {
           target: [

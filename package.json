@@ -45,7 +45,7 @@
     "lint": "NODE_OPTIONS='--max-old-space-size=8192' eslint -c ./eslint.config.js \"./src/**/*.{ts,js,cjs,mjs,vue}\"",
     "test": "vitest",
     "test:ci": "vitest run",
-    "generate:icons": "icongenie generate --skip-trim -i images/modern-unicorn.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --padding 70,70 -m capacitor -i images/modern-unicorn-round.png --png-color 9356E8 --splashscreen-color 9356E8 && icongenie generate --skip-trim -m electron -i images/modern-unicorn-macos.png --png-color 9356E8 --splashscreen-color 9356E8",
+    "generate:icons": "bash scripts/generate-icons.sh",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
