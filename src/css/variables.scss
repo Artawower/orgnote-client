@@ -239,6 +239,24 @@ body {
     color-mix(in srgb, var(--accent) 35%, transparent);
   --search-input-field-transition: 0.15s ease;
 
+  // Dropdown
+  --dropdown-height: var(--control-height-md);
+  --dropdown-label-min-width: 180px;
+  --dropdown-radius: var(--border-radius-md);
+  --dropdown-hover-bg: var(--bg-hover);
+  --dropdown-padding-x: var(--padding-sm);
+  --dropdown-content-gap: var(--gap-sm);
+  --dropdown-menu-padding-x: var(--gap-xs);
+  --dropdown-menu-padding-y: var(--gap-xs);
+  --dropdown-menu-radius: var(--border-radius-md);
+  --dropdown-option-padding-x: var(--padding-sm);
+  --dropdown-option-padding-y: var(--padding-xs);
+  --dropdown-option-radius: var(--border-radius-sm);
+  --dropdown-tag-padding-x: var(--padding-xs);
+
+  // Context menu
+  --context-menu-padding: var(--gap-xs);
+
   // Menu group
   --menu-group-bg: transparent;
   --menu-group-border: var(--border-default);

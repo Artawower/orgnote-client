@@ -82,5 +82,7 @@ const handleAction = async (item: MenuAction) => {
 .context-menu-list {
   min-width: 160px;
   width: 100%;
+  padding: var(--context-menu-padding);
+  box-sizing: border-box;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <app-flex row gap="md" class="app-dropdown" v-bind="$attrs">
+  <app-flex row class="app-dropdown" v-bind="$attrs">
     <span v-if="label" class="dropdown-label">{{ label }}</span>
     <v-select
       ref="selectRef"
@@ -140,32 +140,35 @@ defineExpose({
 <style lang="scss">
 .app-dropdown {
   width: 100%;
-  border-radius: var(--menu-item-radius);
-  max-height: var(--menu-item-height);
+  min-height: var(--dropdown-height);
+  gap: var(--dropdown-content-gap);
+  border-radius: var(--dropdown-radius);
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      background-color: var(--menu-item-hover-bg);
+      background-color: var(--dropdown-hover-bg);
     }
   }
 
   .dropdown-label {
-    min-width: 180px;
-    padding: var(--menu-item-padding);
+    min-width: var(--dropdown-label-min-width);
+    padding: var(--dropdown-option-padding-y) var(--dropdown-padding-x);
     white-space: nowrap;
   }
 
   .app-select {
     flex: 1;
+    min-width: 0;
   }
 }
 
 .app-select {
   --vs-border-width: 0;
-  background: transparent;
+  --vs-border-radius: var(--dropdown-radius);
   --vs-dropdown-bg: var(--bg-elevated);
   --vs-search-input-bg: transparent;
-  --vs-dropdown-option-padding: var(--menu-item-padding);
+  --vs-dropdown-option-padding: var(--dropdown-option-padding-y)
+    var(--dropdown-option-padding-x);
   --vs-dropdown-option-color: var(--fg);
   --vs-search-input-color: var(--fg);
   --vs-selected-color: var(--fg);
@@ -174,15 +177,61 @@ defineExpose({
   --vs-dropdown-option--active-bg: var(--bg-active);
   --vs-dropdown-option--active-color: var(--fg-active);
 
+  background: transparent;
+
+  .vs__dropdown-toggle {
+    min-height: var(--dropdown-height);
+    padding: 0 var(--dropdown-padding-x);
+    column-gap: var(--dropdown-content-gap);
+    box-sizing: border-box;
+  }
+
+  .vs__selected-options {
+    min-width: 0;
+    padding: 0;
+    gap: var(--dropdown-content-gap);
+    align-items: center;
+  }
+
+  .vs__selected {
+    margin: 0;
+    padding: 0;
+  }
+
+  &.vs--multiple .vs__selected {
+    padding-inline: var(--dropdown-tag-padding-x);
+  }
+
+  .vs__search,
+  .vs__search:focus {
+    margin: 0;
+    padding: 0;
+  }
+
+  .vs__actions {
+    flex-shrink: 0;
+  }
+
   .vs__dropdown-menu {
+    padding: var(--dropdown-menu-padding-y) var(--dropdown-menu-padding-x);
     border: var(--glass-border);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--dropdown-menu-radius);
     box-shadow: var(--card-shadow);
     overflow: hidden;
   }
 
   .vs__dropdown-option {
+    display: flex;
+    align-items: center;
+    min-height: var(--dropdown-height);
+    padding: var(--vs-dropdown-option-padding);
+    border-radius: var(--dropdown-option-radius);
+    box-sizing: border-box;
     color: var(--vs-dropdown-option-color) !important;
+  }
+
+  .vs__no-options {
+    padding: var(--dropdown-option-padding-y) var(--dropdown-option-padding-x);
   }
 
   .vs__dropdown-option--highlight,
@@ -190,12 +239,6 @@ defineExpose({
     color: var(--vs-dropdown-option--active-color) !important;
     background: var(--vs-dropdown-option--active-bg) !important;
   }
-}
-
-.vs__search,
-.vs__search:focus,
-.vs__dropdown-toggle {
-  padding: 0;
 }
 
 .select-action {
