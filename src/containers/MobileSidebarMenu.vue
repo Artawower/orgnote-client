@@ -1,5 +1,5 @@
 <template>
-  <app-flex column align-stretch gap="none" class="menu">
+  <app-flex column align-stretch class="menu">
     <command-menu-item
       v-for="cmd of sidebarCommands"
       :key="cmd"
@@ -26,5 +26,6 @@ const onSelect = (): void => {
 <style lang="scss" scoped>
 .menu {
   width: 100%;
+  gap: var(--mobile-sidebar-menu-items-gap);
 }
 </style>
