@@ -1,5 +1,5 @@
 <template>
-  <app-spoiler default-expanded variant="card-static">
+  <app-spoiler default-expanded variant="flat">
     <template #title>
       <app-flex row between align-center gap="sm">
         <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
@@ -7,29 +7,31 @@
       </app-flex>
     </template>
     <template #body>
-      <template v-for="task in group.tasks" :key="task.id">
-        <agenda-task-row
-          :task="task"
-          :expanded="expandedTaskId === task.id"
-          @toggle="onTaskToggle(task)"
-          @edit-title="(title) => $emit('task-edit-title', task, group.filePath, title)"
-          @edit-priority="(priority) => $emit('task-edit-priority', task, group.filePath, priority)"
-          @edit-tags="(tags) => $emit('task-edit-tags', task, group.filePath, tags)"
-          @edit-scheduled="(schedule) => $emit('task-edit-scheduled', task, group.filePath, schedule)"
-          @open-task="onTaskOpen(task)"
-          @edit-expand="onEditExpand(task)"
-        />
-        <card-wrapper v-if="expandedTaskId === task.id" class="edit-form" border padding>
-          <agenda-task-form
-            v-model:title="editDraft.title"
-            v-model:body="editDraft.body"
-            :show-title-row="false"
-            :hide-submit="true"
-            @cancel="expandedTaskId = null"
-            @body-blur="onBodyBlur(task)"
+      <menu-group>
+        <template v-for="task in group.tasks" :key="task.id">
+          <agenda-task-row
+            :task="task"
+            :expanded="expandedTaskId === task.id"
+            @toggle="onTaskToggle(task)"
+            @edit-title="(title) => $emit('task-edit-title', task, group.filePath, title)"
+            @edit-priority="(priority) => $emit('task-edit-priority', task, group.filePath, priority)"
+            @edit-tags="(tags) => $emit('task-edit-tags', task, group.filePath, tags)"
+            @edit-scheduled="(schedule) => $emit('task-edit-scheduled', task, group.filePath, schedule)"
+            @open-task="onTaskOpen(task)"
+            @edit-expand="onEditExpand(task)"
           />
-        </card-wrapper>
-      </template>
+          <card-wrapper v-if="expandedTaskId === task.id" class="edit-form" border padding>
+            <agenda-task-form
+              v-model:title="editDraft.title"
+              v-model:body="editDraft.body"
+              :show-title-row="false"
+              :hide-submit="true"
+              @cancel="expandedTaskId = null"
+              @body-blur="onBodyBlur(task)"
+            />
+          </card-wrapper>
+        </template>
+      </menu-group>
     </template>
   </app-spoiler>
 </template>
@@ -42,6 +44,7 @@ import AppTitle from 'src/components/AppTitle.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import AgendaTaskRow from './AgendaTaskRow.vue';
 import AgendaTaskForm from './AgendaTaskForm.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
@@ -135,10 +138,6 @@ const onBodyBlur = (task: AgendaTaskView): void => {
 </script>
 
 <style lang="scss" scoped>
-:deep(.spoiler-body) {
-  padding: 0;
-}
-
 .edit-form {
   border-top: var(--border-default);
   border-radius: 0;
