@@ -1,6 +1,11 @@
 <template>
   <div class="keybinding-settings">
-    <app-input-group v-model="search" :placeholder="t(I18N.SEARCH)" />
+    <search-input
+      appearance="field"
+      icon="search"
+      v-model="search"
+      :placeholder="I18N.SEARCH"
+    />
 
     <template v-for="[context, bindings] in groupedBindings" :key="context">
       <app-description padded>
@@ -52,7 +57,7 @@ import MenuItem from './MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 import ActionButton from 'src/components/ActionButton.vue';
-import AppInputGroup from 'src/components/AppInputGroup.vue';
+import SearchInput from 'src/components/SearchInput.vue';
 import HotkeyTag from 'src/components/HotkeyTag.vue';
 import HotkeyInput from 'src/components/HotkeyInput.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';

@@ -39,12 +39,12 @@ test('SearchInput applies glass appearance class when appearance is glass', () =
   expect(wrapper.find('.search-input').classes()).toContain('glass');
 });
 
-test('SearchInput applies menu appearance class when appearance is menu', () => {
+test('SearchInput applies field appearance class when appearance is field', () => {
   const wrapper = mount(SearchInput, {
-    props: { appearance: 'menu' },
+    props: { appearance: 'field' },
   });
 
-  expect(wrapper.find('.search-input').classes()).toContain('menu');
+  expect(wrapper.find('.search-input').classes()).toContain('field');
 });
 
 test('SearchInput renders icon when icon prop is provided', () => {
@@ -52,13 +52,13 @@ test('SearchInput renders icon when icon prop is provided', () => {
     props: { icon: 'search' },
   });
 
-  expect(wrapper.findComponent({ name: 'AppIcon' }).exists()).toBe(true);
+  expect(wrapper.find('.search-icon').exists()).toBe(true);
 });
 
 test('SearchInput does not render icon when icon prop is not provided', () => {
   const wrapper = mount(SearchInput);
 
-  expect(wrapper.findComponent({ name: 'AppIcon' }).exists()).toBe(false);
+  expect(wrapper.find('.search-icon').exists()).toBe(false);
 });
 
 test('SearchInput shows clear button when clearable and model has value', async () => {
@@ -68,19 +68,26 @@ test('SearchInput shows clear button when clearable and model has value', async 
       modelValue: 'test',
     },
   });
+  const clearButton = wrapper.findComponent({ name: 'ActionButton' });
 
-  expect(wrapper.findComponent({ name: 'ActionButton' }).exists()).toBe(true);
+  expect(clearButton.exists()).toBe(true);
+  expect(clearButton.classes()).not.toContain('clear-action-hidden');
+  expect(clearButton.attributes('tabindex')).toBe('0');
 });
 
-test('SearchInput hides clear button when model is empty', () => {
+test('SearchInput reserves clear button space when model is empty', () => {
   const wrapper = mount(SearchInput, {
     props: {
       clearable: true,
       modelValue: '',
     },
   });
+  const clearButton = wrapper.findComponent({ name: 'ActionButton' });
 
-  expect(wrapper.findComponent({ name: 'ActionButton' }).exists()).toBe(false);
+  expect(clearButton.exists()).toBe(true);
+  expect(clearButton.classes()).toContain('clear-action-hidden');
+  expect(clearButton.attributes('aria-hidden')).toBe('true');
+  expect(clearButton.attributes('tabindex')).toBe('-1');
 });
 
 test('SearchInput hides clear button when clearable is false', () => {

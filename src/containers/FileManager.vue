@@ -46,7 +46,7 @@
     <div class="file-manager-wrapper">
       <div v-if="showHeaderSearch" class="file-manager-header">
         <search-input
-          appearance="menu"
+          appearance="field"
           icon="search"
           :size="compact ? 'xs' : 'sm'"
           v-model="searchQuery"

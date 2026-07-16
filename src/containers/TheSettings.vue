@@ -89,6 +89,7 @@ navigate(resolvedInitialRoute).then((result) => {
     height: 100%;
     min-height: 0;
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 }
 

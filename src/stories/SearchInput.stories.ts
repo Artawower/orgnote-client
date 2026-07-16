@@ -1,17 +1,30 @@
-import type { StoryObj } from '@storybook/vue3-vite';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { StyleSize } from 'orgnote-api';
 import StoryList from './StoryList.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { computed } from 'vue';
 
-export default {
+interface SearchInputStoryArgs {
+  placeholder?: string;
+  icon?: string;
+  clearable?: boolean;
+  size?: StyleSize;
+  appearance?: 'flat' | 'field' | 'glass';
+}
+
+const meta = {
   component: SearchInput,
   title: 'Search input',
   tags: ['autodocs'],
   args: {},
-};
+} satisfies Meta<SearchInputStoryArgs>;
 
-export const Default: StoryObj<typeof SearchInput> = {
+export default meta;
+
+type Story = StoryObj<SearchInputStoryArgs>;
+
+export const Default: Story = {
   args: {
     placeholder: 'Search...',
     clearable: true,
@@ -26,7 +39,7 @@ export const Default: StoryObj<typeof SearchInput> = {
   }),
 };
 
-export const WithIcon: StoryObj<typeof SearchInput> = {
+export const WithIcon: Story = {
   args: {
     placeholder: 'Search...',
     icon: 'search',
@@ -42,7 +55,27 @@ export const WithIcon: StoryObj<typeof SearchInput> = {
   }),
 };
 
-export const GlassAppearance: StoryObj<typeof SearchInput> = {
+export const FieldAppearance: Story = {
+  args: {
+    placeholder: 'Search...',
+    icon: 'search',
+    appearance: 'field',
+    clearable: true,
+  },
+  render: (args) => ({
+    components: { SearchInput },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div style="padding: 24px; background: var(--bg-secondary);">
+        <search-input v-bind="args" />
+      </div>
+    `,
+  }),
+};
+
+export const GlassAppearance: Story = {
   args: {
     placeholder: 'Search...',
     icon: 'search',
@@ -62,11 +95,11 @@ export const GlassAppearance: StoryObj<typeof SearchInput> = {
   }),
 };
 
-export const Appearances: StoryObj<typeof SearchInput> = {
+export const Appearances: Story = {
   render: () => ({
     components: { StoryList, SearchInput },
     setup() {
-      const appearances = ['flat', 'glass'] as const;
+      const appearances = ['flat', 'field', 'glass'] as const;
       const listItems = computed(() =>
         appearances.map((appearance) => ({
           component: SearchInput,
@@ -84,7 +117,7 @@ export const Appearances: StoryObj<typeof SearchInput> = {
   }),
 };
 
-export const WithActions: StoryObj<typeof SearchInput> = {
+export const WithActions: Story = {
   args: {
     placeholder: 'Type command...',
     icon: 'keyboard_arrow_right',

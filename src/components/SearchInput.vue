@@ -7,9 +7,10 @@
     align-center
     gap="sm"
   >
-    <app-icon v-if="icon" :name="icon" size="md" color="fg" />
+    <app-icon v-if="icon" class="search-icon" :name="icon" size="md" color="fg" />
     <app-input
       ref="appInputRef"
+      class="input"
       v-model="model"
       :autofocus="autofocus"
       :name="name"
@@ -18,9 +19,13 @@
     />
     <slot name="actions" />
     <action-button
-      v-if="clearable && model"
+      v-if="clearable"
+      class="clear-action"
+      :class="{ 'clear-action-hidden': !model }"
+      :aria-hidden="!model"
+      :tabindex="model ? 0 : -1"
       @click="model = ''"
-      icon="sym_o_backspace"
+      icon="close"
       :size="size"
     />
   </app-flex>
@@ -35,7 +40,7 @@ import AppIcon from './AppIcon.vue';
 import AppInput from './AppInput.vue';
 import type { StyleSize } from 'orgnote-api';
 
-type InputAppearance = 'glass' | 'flat' | 'menu';
+type InputAppearance = 'glass' | 'flat' | 'field';
 
 withDefaults(
   defineProps<{
@@ -77,6 +82,7 @@ defineExpose({
 <style lang="scss" scoped>
 .search-input {
   width: 100%;
+  min-width: 0;
   @include glass-btn;
 
   &.glass {
@@ -90,26 +96,40 @@ defineExpose({
     }
   }
 
-  &.menu {
-    height: var(--search-input-menu-height);
-    padding: var(--search-input-menu-padding);
-    background: var(--search-input-menu-bg);
-    border: var(--search-input-menu-border);
-    border-radius: var(--search-input-menu-radius);
-    box-shadow: var(--search-input-menu-shadow);
+  &.field {
+    height: var(--search-input-field-height);
+    padding: var(--search-input-field-padding);
+    background: var(--search-input-field-bg);
+    border: var(--search-input-field-border);
+    border-radius: var(--search-input-field-radius);
+    box-shadow: var(--search-input-field-shadow);
     box-sizing: border-box;
     transition:
-      background var(--search-input-menu-transition),
-      box-shadow var(--search-input-menu-transition);
+      background var(--search-input-field-transition),
+      box-shadow var(--search-input-field-transition);
 
     @include hover {
-      background: var(--search-input-menu-hover-bg);
+      background: var(--search-input-field-hover-bg);
     }
 
     &:focus-within {
-      background: var(--search-input-menu-focus-bg);
-      box-shadow: var(--search-input-menu-focus-shadow);
+      background: var(--search-input-field-focus-bg);
+      box-shadow: var(--search-input-field-focus-shadow);
     }
   }
+}
+
+.input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.clear-action {
+  flex-shrink: 0;
+}
+
+.clear-action-hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 </style>

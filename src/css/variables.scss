@@ -213,16 +213,16 @@ body {
   --control-height: 36px;
 
   // Search input
-  --search-input-menu-bg: var(--bg);
-  --search-input-menu-hover-bg: var(--bg-hover);
-  --search-input-menu-focus-bg: var(--bg);
-  --search-input-menu-border: var(--border-default);
-  --search-input-menu-radius: var(--border-radius-md);
-  --search-input-menu-padding: 0 var(--padding-md);
-  --search-input-menu-height: var(--control-height);
-  --search-input-menu-shadow: none;
-  --search-input-menu-focus-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
-  --search-input-menu-transition: 0.15s ease;
+  --search-input-field-bg: var(--bg-elevated);
+  --search-input-field-hover-bg: var(--bg-hover);
+  --search-input-field-focus-bg: var(--bg-elevated);
+  --search-input-field-border: var(--border-default);
+  --search-input-field-radius: var(--border-radius-md);
+  --search-input-field-padding: 0 var(--padding-md);
+  --search-input-field-height: var(--control-height);
+  --search-input-field-shadow: none;
+  --search-input-field-focus-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  --search-input-field-transition: 0.15s ease;
 
   // Menu group
   --menu-group-bg: transparent;
