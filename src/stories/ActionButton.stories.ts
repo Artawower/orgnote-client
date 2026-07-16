@@ -27,7 +27,7 @@ interface ActionButtonStoryArgs {
 
 type Story = StoryObj<ActionButtonStoryArgs>;
 
-const sizes = ['xs', 'sm', 'md', 'lg'];
+const sizes = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 export const Default: Story = {
   args: {

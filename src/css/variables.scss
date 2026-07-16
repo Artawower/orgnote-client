@@ -70,6 +70,7 @@ body {
   --shadow-lg: 0px 10px 15px rgba(0, 0, 0, 0.1);
 
   // Spacing (Gaps)
+  --gap-xxs: 2px;
   --gap-xs: 4px;
   --gap-sm: 8px;
   --gap-md: 16px;
@@ -89,10 +90,10 @@ body {
   --floating-border-radius: var(--border-radius-md);
 
   // Shared glass bar height
-  --bar-height: 49px;
+  --bar-height: var(--control-height-bar);
 
   // Header
-  --header-height: 44px;
+  --header-height: var(--bar-height);
   --header-bg: transparent;
   --header-border: none;
   --header-border-radius: 0;
@@ -165,26 +166,32 @@ body {
   --btn-action-hover-scale: 1;
   --btn-action-active-scale: 0.95;
   --btn-action-transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), filter 0.15s ease;
-  --btn-action-xs-size: 22px;
-  --btn-action-sm-size: 28px;
-  --btn-action-md-size: 34px;
-  --btn-action-lg-size: 50px;
+  --btn-action-xs-size: var(--control-height-xs);
+  --btn-action-sm-size: var(--control-height-sm);
+  --btn-action-md-size: var(--control-height-md);
+  --btn-action-lg-size: var(--control-height-lg);
+  --btn-action-xl-size: var(--control-height-xl);
   --btn-action-border: none;
   --btn-action-active-fg: var(--accent);
   --btn-action-text-width: 180px;
+  --btn-action-text-padding-x: var(--padding-sm);
 
   --button-radius: var(--border-radius-md);
 
-  --button-xs-padding: var(--padding-xs) var(--padding-sm);
+  --button-xs-height: var(--control-height-xs);
+  --button-xs-padding: 0 var(--padding-sm);
   --button-xs-min-width: 48px;
 
-  --button-sm-padding: var(--padding-sm) var(--padding-md);
+  --button-sm-height: var(--control-height-sm);
+  --button-sm-padding: 0 var(--padding-md);
   --button-sm-min-width: 72px;
 
-  --button-md-padding: 12px var(--padding-lg);
+  --button-md-height: var(--control-height-md);
+  --button-md-padding: 0 var(--padding-lg);
   --button-md-min-width: 120px;
 
-  --button-lg-padding: var(--padding-md) var(--padding-xl);
+  --button-lg-height: var(--control-height-lg);
+  --button-lg-padding: 0 var(--padding-xl);
   --button-lg-min-width: 160px;
 
   // Platform specific value
@@ -210,7 +217,14 @@ body {
   --card-border: var(--border-default);
   --card-radius: var(--border-radius-md);
 
-  --control-height: 36px;
+  // Interactive control heights
+  --control-height-xs: 24px;
+  --control-height-sm: 28px;
+  --control-height-md: 32px;
+  --control-height-lg: 36px;
+  --control-height-xl: 40px;
+  --control-height-touch: 44px;
+  --control-height-bar: 48px;
 
   // Search input
   --search-input-field-bg: var(--bg-elevated);
@@ -219,9 +233,10 @@ body {
   --search-input-field-border: var(--border-default);
   --search-input-field-radius: var(--border-radius-md);
   --search-input-field-padding: 0 var(--padding-md);
-  --search-input-field-height: var(--control-height);
+  --search-input-field-height: var(--control-height-md);
   --search-input-field-shadow: none;
-  --search-input-field-focus-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  --search-input-field-focus-shadow: inset 0 0 0 2px
+    color-mix(in srgb, var(--accent) 35%, transparent);
   --search-input-field-transition: 0.15s ease;
 
   // Menu group
@@ -231,7 +246,7 @@ body {
   --menu-group-shadow: none;
   --menu-group-padding: 0;
   --menu-group-gap: var(--gap-sm);
-  --menu-group-items-gap: var(--gap-xs);
+  --menu-group-items-gap: var(--gap-xxs);
   --menu-group-title-fg: var(--fg-muted);
   --menu-group-title-font-size: var(--font-size-sm);
   --menu-group-title-font-weight: var(--font-weight-medium);
@@ -239,16 +254,18 @@ body {
 
   // Menu item
   --menu-item-padding-x: 10px;
-  --menu-item-padding-y: 8px;
+  --menu-item-padding-y: 6px;
   --menu-item-padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
-  --menu-item-height: 42px;
-  --menu-item-max-height: 200px;
+  --menu-item-content-gap: var(--gap-xs);
+  --menu-item-height: var(--nav-item-height);
   --menu-item-hover-bg: var(--bg-hover);
-  --menu-item-radius: var(--border-radius-md);
+  --menu-item-radius: var(--nav-item-radius);
 
-  --menu-item-height-sm: 36px;
-  --menu-item-height-md: 42px;
-  --menu-item-height-lg: 50px;
+  --menu-item-height-xs: var(--control-height-sm);
+  --menu-item-height-sm: var(--control-height-sm);
+  --menu-item-height-md: var(--control-height-md);
+  --menu-item-height-lg: var(--control-height-lg);
+  --menu-item-height-xl: var(--control-height-xl);
   --menu-item-active-fg: var(--fg);
   --menu-item-active-bg: var(--bg-hover);
   --menu-item-active-radius: var(--menu-item-radius);
@@ -259,6 +276,11 @@ body {
   --file-item-active-fg: var(--accent);
 
   // Icons
+  --icon-size-xs: 16px;
+  --icon-size-sm: 20px;
+  --icon-size-md: 24px;
+  --icon-size-lg: 28px;
+  --icon-size-xl: 32px;
   --icon-rounded-radius: var(--border-radius-sm);
   --icon-border: var(--border-default);
   --icon-border-padding: var(--padding-md);
@@ -297,7 +319,7 @@ body {
   --completion-item-hover-bg: var(--bg-elevated);
   --completion-item-radius: var(--border-radius-md);
   --completion-item-padding: var(--padding-md);
-  --completion-item-height: 42px;
+  --completion-item-height: var(--control-height-md);
 
   // Completion header (mobile floating glass input)
   --completion-header-bg: var(--glass-bg);
@@ -329,19 +351,23 @@ body {
   --splitter-hover-scale: 4;
   --splitter-transition-duration: 0.15s;
 
+  // Navigation
+  --nav-item-height: var(--control-height-md);
+  --nav-item-radius: var(--border-radius-md);
+
   // Tab
   --nav-tabs-bg: var(--bg-secondary);
   --nav-tabs-padding: var(--padding-md) var(--padding-md) var(--tab-connection-depth);
   --tab-connection-depth: var(--padding-sm);
-  --tab-padding: var(--padding-md);
-  --tab-height: 28px;
+  --tab-padding: 0 var(--padding-md);
+  --tab-height: var(--nav-item-height);
   --tab-bg: transparent;
   --tab-border: 0;
-  --tab-border-radius: var(--border-radius-sm);
+  --tab-border-radius: var(--nav-item-radius);
   --tab-fg: var(--fg-muted);
   --tab-width: 160px;
   --tab-active-border: 0;
-  --tab-active-radius: var(--border-radius-md);
+  --tab-active-radius: var(--nav-item-radius);
   --tab-active-border-radius: var(--tab-active-radius) var(--tab-active-radius) 0 0;
   --tab-active-hover-bg: var(--bg-hover);
   --tab-active-fg: var(--fg);
@@ -568,10 +594,21 @@ body {
         var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
     );
 
-    --btn-action-sm-size: 34px;
-    --btn-action-md-size: 44px;
-
-    --header-height: 44px;
+    --nav-item-height: var(--control-height-touch);
+    --search-input-field-height: var(--control-height-touch);
+    --btn-action-sm-size: var(--control-height-md);
+    --btn-action-md-size: var(--control-height-touch);
+    --btn-action-lg-size: var(--control-height-touch);
+    --btn-action-xl-size: var(--control-height-bar);
+    --button-xs-height: var(--control-height-md);
+    --button-sm-height: var(--control-height-touch);
+    --button-md-height: var(--control-height-touch);
+    --button-lg-height: var(--control-height-bar);
+    --menu-item-height-xs: var(--control-height-md);
+    --menu-item-height-sm: var(--control-height-touch);
+    --menu-item-height-md: var(--control-height-touch);
+    --menu-item-height-lg: var(--control-height-touch);
+    --menu-item-height-xl: var(--control-height-bar);
   }
 }
 

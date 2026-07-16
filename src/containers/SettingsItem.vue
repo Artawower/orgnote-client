@@ -74,7 +74,7 @@
     </menu-item>
   </template>
   <template v-else-if="metadata?.textarea">
-    <menu-item @click="onItemClick" :lines="4" :placeholder="camelCaseToWords(name)">
+    <menu-item @click="onItemClick" :placeholder="camelCaseToWords(name)">
       <app-description padded>{{ camelCaseToWords(name) }}</app-description>
       <app-text-area ref="editInputRef" v-model="fieldModel as string"></app-text-area>
     </menu-item>

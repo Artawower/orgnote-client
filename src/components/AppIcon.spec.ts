@@ -78,7 +78,7 @@ test('AppIcon should apply both color and background styles when both props are 
 });
 
 test('AppIcon should apply size class for predefined size variants', () => {
-  const sizes = ['xs', 'sm', 'md', 'lg'] as const;
+  const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 
   sizes.forEach((size) => {
     const wrapper = mount(AppIcon, {

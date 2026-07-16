@@ -32,6 +32,26 @@ export const Default: Story = {
   }),
 };
 
+export const WithSupportingContent: Story = {
+  args: {
+    title: 'Storage',
+  },
+  render: (args) => ({
+    components: { MenuGroup, MenuItem },
+    setup: () => ({ args }),
+    template: `
+      <menu-group v-bind="args" style="width: 520px">
+        <menu-item icon="sym_o_web" active selected>
+          Simple-fs
+          <template #content>
+            A simple file system based on IndexedDB. It stores all data in the browser.
+          </template>
+        </menu-item>
+      </menu-group>
+    `,
+  }),
+};
+
 export const WithoutTitle: Story = {
   render: () => ({
     components: { MenuGroup, MenuItem },

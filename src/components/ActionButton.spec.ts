@@ -64,6 +64,17 @@ test('ActionButton should change to fire icon when clicked and fireIcon provided
   vi.useRealTimers();
 });
 
+test.each(['xs', 'sm', 'md', 'lg', 'xl'] as const)(
+  'ActionButton should expose %s size class',
+  (size) => {
+    const wrapper = mount(ActionButton, {
+      props: { icon: 'sym_o_home', size },
+    });
+
+    expect(wrapper.find('button').classes()).toContain(`icon-${size}`);
+  },
+);
+
 test('ActionButton should have custom classes on button element when passed', () => {
   const wrapper = mount(ActionButton, {
     props: {

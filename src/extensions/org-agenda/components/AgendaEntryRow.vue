@@ -1,6 +1,6 @@
 <template>
   <context-menu :group="AGENDA_TASK_CONTEXT_MENU_GROUP" :data="data">
-    <menu-item :capitalize="false" :lines="lines" class="entry-row" :style="priorityBarStyle">
+    <menu-item :capitalize="false" class="entry-row" :style="priorityBarStyle">
       <app-flex row align-center gap="sm" class="entry-content" @click.stop>
         <app-checkbox
           :model-value="checked"
@@ -30,11 +30,10 @@ const props = withDefaults(
   defineProps<{
     data: unknown;
     checked: boolean;
-    lines?: number;
     priority?: string;
     toggleLabel?: string;
   }>(),
-  { lines: 1, priority: '', toggleLabel: '' },
+  { priority: '', toggleLabel: '' },
 );
 
 const emit = defineEmits<{ toggle: [] }>();

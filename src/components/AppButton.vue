@@ -51,21 +51,25 @@ button {
   box-sizing: border-box;
 
   &.button-xs {
+    min-height: var(--button-xs-height);
     padding: var(--button-xs-padding);
     min-width: var(--button-xs-min-width);
   }
 
   &.button-sm {
+    min-height: var(--button-sm-height);
     padding: var(--button-sm-padding);
     min-width: var(--button-sm-min-width);
   }
 
   &.button-md {
+    min-height: var(--button-md-height);
     padding: var(--button-md-padding);
     min-width: var(--button-md-min-width);
   }
 
   &.button-lg {
+    min-height: var(--button-lg-height);
     padding: var(--button-lg-padding);
     min-width: var(--button-lg-min-width);
   }
@@ -98,6 +102,7 @@ button {
     border-radius: 0;
     padding: 0;
     min-width: unset;
+    min-height: unset;
     color: var(--accent);
     cursor: pointer;
     font: inherit;

@@ -42,9 +42,10 @@ const iconSizeMap: { [key in StyleSize]?: string } = {
   sm: '1.125em',
   md: '1.375em',
   lg: '1.75em',
+  xl: '2em',
 };
 
-const predefinedSizes = ['xs', 'sm', 'md', 'lg'];
+const predefinedSizes = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 const sizeClass = computed(() => {
   if (predefinedSizes.includes(props.size)) {
@@ -65,7 +66,7 @@ const iconStyle = computed(() => {
   if (bgColor.value) style.backgroundColor = bgColor.value;
   if (color.value) style.color = color.value;
 
-  if (!predefinedSizes.includes(props.size) && props.size !== 'xl') {
+  if (!predefinedSizes.includes(props.size)) {
     style.width = props.size;
     style.height = props.size;
     style.minWidth = props.size;
@@ -78,14 +79,15 @@ const iconStyle = computed(() => {
 
 <style lang="scss">
 .icon {
-  $btn-sizes: (
-    xs: var(--btn-action-xs-size),
-    sm: var(--btn-action-sm-size),
-    md: var(--btn-action-md-size),
-    lg: var(--btn-action-lg-size),
+  $icon-sizes: (
+    xs: var(--icon-size-xs),
+    sm: var(--icon-size-sm),
+    md: var(--icon-size-md),
+    lg: var(--icon-size-lg),
+    xl: var(--icon-size-xl),
   );
 
-  @each $size, $value in $btn-sizes {
+  @each $size, $value in $icon-sizes {
     &.icon-#{$size} {
       width: $value;
       height: $value;
@@ -98,7 +100,7 @@ const iconStyle = computed(() => {
 .icon.rounded {
   border-radius: var(--icon-rounded-radius);
   padding: 2px;
-  box-sizing: content-box;
+  box-sizing: border-box;
 }
 
 .bordered {

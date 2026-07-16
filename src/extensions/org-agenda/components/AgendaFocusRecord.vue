@@ -16,7 +16,6 @@
         <menu-item
           v-for="(entry, idx) in group.entries"
           :key="idx"
-          :lines="2"
           :capitalize="false"
           flat
           @click="onEntryClick(entry)"

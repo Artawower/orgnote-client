@@ -10,7 +10,7 @@ export default {
   args: {},
 };
 
-const sizes = ['xs', 'sm', 'md', 'lg'];
+const sizes = ['xs', 'sm', 'md', 'lg', 'xl'];
 
 export const Default: StoryObj<typeof AppIcon> = {
   args: {

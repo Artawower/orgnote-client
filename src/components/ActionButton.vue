@@ -140,7 +140,8 @@ button,
   &.icon-xs,
   &.icon-sm,
   &.icon-md,
-  &.icon-lg {
+  &.icon-lg,
+  &.icon-xl {
     padding: 0;
   }
 
@@ -176,12 +177,20 @@ button,
     border-radius: var(--btn-action-radius, var(--border-radius-lg));
   }
 
+  &.icon-xl {
+    width: var(--btn-action-xl-size);
+    height: var(--btn-action-xl-size);
+    min-width: var(--btn-action-xl-size);
+    min-height: var(--btn-action-xl-size);
+    border-radius: var(--btn-action-radius, var(--border-radius-xl));
+  }
+
   &.text {
     width: var(--btn-action-text-width);
+    padding-inline: var(--btn-action-text-padding-x);
 
     &.auto-width {
       width: auto;
-      padding-inline: var(--btn-action-padding);
     }
   }
 

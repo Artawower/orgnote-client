@@ -4,11 +4,10 @@
     role="button"
     :aria-disabled="disabled"
     :class="[{ disabled }, type, `prefer-${prefer}`, `size-${size}`, { active }]"
-    :style="{ '--menu-item-lines': lines, '--current-menu-item-height': itemHeight }"
+    :style="{ '--current-menu-item-height': itemHeight, gap: 'var(--menu-item-content-gap)' }"
     column
     start
     align-center
-    gap="md"
   >
     <app-flex class="header" row between align-center gap="md">
       <app-flex class="left" :class="{ flat }" row start align-center gap="sm">
@@ -66,7 +65,6 @@ const props = withDefaults(
     type?: StyleVariant;
     size?: StyleSize;
     selected?: boolean;
-    lines?: number;
     inverseIconColors?: boolean;
     prefer?: 'left' | 'right';
     flat?: boolean;
@@ -74,7 +72,6 @@ const props = withDefaults(
   }>(),
   {
     type: 'plain',
-    lines: 1,
     prefer: 'left',
     size: 'auto',
     flat: true,
@@ -98,8 +95,8 @@ const itemHeightMap: Record<StyleSize, string> = {
   sm: 'var(--menu-item-height-sm)',
   md: 'var(--menu-item-height-md)',
   lg: 'var(--menu-item-height-lg)',
-  xl: 'var(--menu-item-height-lg)',
-  auto: 'auto',
+  xl: 'var(--menu-item-height-xl)',
+  auto: 'var(--menu-item-height)',
 };
 const itemHeight = computed(() => itemHeightMap[props.size]);
 </script>
@@ -109,24 +106,11 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
   & {
     @include interactive-no-select;
     cursor: pointer;
-    min-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
+    min-height: var(--menu-item-min-height, var(--current-menu-item-height));
     height: auto;
     width: 100%;
     position: relative;
     border-radius: var(--menu-item-radius);
-    padding:
-      var(--menu-item-padding-top, var(--padding-sm))
-      calc(var(--padding-sm) * 2)
-      var(--menu-item-padding-bottom, var(--padding-sm))
-      calc(var(--padding-sm) * 2);
-  }
-
-  &:not(.size-auto) {
-    max-height: calc(var(--current-menu-item-height) * var(--menu-item-lines, 1));
-  }
-
-  &.size-auto {
-    min-height: calc(var(--menu-item-height) * var(--menu-item-lines, 1));
     padding:
       var(--menu-item-padding-top, var(--menu-item-padding-y))
       var(--menu-item-padding-x)
