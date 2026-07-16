@@ -212,6 +212,31 @@ body {
 
   --control-height: 36px;
 
+  // Search input
+  --search-input-menu-bg: var(--bg);
+  --search-input-menu-hover-bg: var(--bg-hover);
+  --search-input-menu-focus-bg: var(--bg);
+  --search-input-menu-border: var(--border-default);
+  --search-input-menu-radius: var(--border-radius-md);
+  --search-input-menu-padding: 0 var(--padding-md);
+  --search-input-menu-height: var(--control-height);
+  --search-input-menu-shadow: none;
+  --search-input-menu-focus-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+  --search-input-menu-transition: 0.15s ease;
+
+  // Menu group
+  --menu-group-bg: transparent;
+  --menu-group-border: var(--border-default);
+  --menu-group-radius: 0;
+  --menu-group-shadow: none;
+  --menu-group-padding: 0;
+  --menu-group-gap: var(--gap-sm);
+  --menu-group-items-gap: var(--gap-xs);
+  --menu-group-title-fg: var(--fg-muted);
+  --menu-group-title-font-size: var(--font-size-sm);
+  --menu-group-title-font-weight: var(--font-weight-medium);
+  --menu-group-title-padding: 0 var(--menu-item-padding-x);
+
   // Menu item
   --menu-item-padding-x: 10px;
   --menu-item-padding-y: 8px;
@@ -226,7 +251,7 @@ body {
   --menu-item-height-lg: 50px;
   --menu-item-active-fg: var(--fg);
   --menu-item-active-bg: var(--bg-hover);
-  --menu-item-active-radius: 0;
+  --menu-item-active-radius: var(--menu-item-radius);
   --sidebar-sections-z-index: 10;
 
   // File Manager

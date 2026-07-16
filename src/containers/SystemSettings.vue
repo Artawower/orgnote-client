@@ -1,25 +1,25 @@
 <template>
   <app-flex column start align-start gap="sm" full-width>
-    <card-wrapper>
+    <menu-group>
       <menu-item @click="execute(DefaultCommands.DELETE_ALL_DATA)" type="danger">
         <div class="capitalize text-medium">{{ t(I18N.CLEAR_ALL_LOCAL_DATA) }}</div>
       </menu-item>
       <menu-item @click="execute(DefaultCommands.DELETE_ALL_NOTES)" type="danger">
         <div class="capitalize text-medium">{{ t(I18N.DELETE_ALL_NOTES) }}</div>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
     <app-description :text="I18N.PURGE_DATA_WARNING" padded />
-    <card-wrapper>
+    <menu-group>
       <menu-item @click="execute(DefaultCommands.DELETE_ACCOUNT)" type="danger">
         <div class="capitalize text-medium">{{ t(I18N.REMOVE_ACCOUNT) }}</div>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
     <app-description :text="I18N.REMOVE_ACCOUNT_WARNING" padded />
   </app-flex>
 </template>
 
 <script lang="ts" setup>
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from './MenuItem.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 import AppFlex from 'src/components/AppFlex.vue';

@@ -1,5 +1,5 @@
 <template>
-  <card-wrapper class="context-menu-list" type="clear">
+  <menu-group class="context-menu-list">
     <menu-item
       v-for="(item, index) of actions"
       :key="index"
@@ -10,13 +10,13 @@
     >
       {{ getLabel(item) }}
     </menu-item>
-  </card-wrapper>
+  </menu-group>
 </template>
 
 <script lang="ts" setup>
 import { toValue } from 'vue';
 import type { MenuAction, CommandMenuAction, Command } from 'orgnote-api';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { useCommandsStore } from 'src/stores/command';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';

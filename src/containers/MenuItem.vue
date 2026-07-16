@@ -20,7 +20,7 @@
           :color="flat ? color : inverseIconColors ? color : background"
           :rounded="true"
         ></app-icon>
-        <div :class="['content', { capitalize }]" :style="{ color: getCssVariableName(color) }">
+        <div :class="['label', { capitalize }]" :style="{ color: getCssVariableName(color) }">
           <slot />
         </div>
       </app-flex>
@@ -113,6 +113,7 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
     height: auto;
     width: 100%;
     position: relative;
+    border-radius: var(--menu-item-radius);
     padding:
       var(--menu-item-padding-top, var(--padding-sm))
       calc(var(--padding-sm) * 2)
@@ -183,8 +184,10 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
   }
 }
 
+.label,
 .content {
   width: 100%;
+  min-width: 0;
 }
 
 .right {
@@ -192,8 +195,7 @@ const itemHeight = computed(() => itemHeightMap[props.size]);
 }
 
 .left,
-.right,
-.content {
+.right {
   height: 100%;
 }
 

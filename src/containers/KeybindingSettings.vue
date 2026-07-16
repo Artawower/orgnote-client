@@ -7,7 +7,7 @@
         {{ context.toUpperCase() }}
       </app-description>
 
-      <card-wrapper>
+      <menu-group>
         <menu-item v-for="binding in bindings" :key="binding.command" prefer="left">
           {{ binding.title }}
 
@@ -33,7 +33,7 @@
             </app-flex>
           </template>
         </menu-item>
-      </card-wrapper>
+      </menu-group>
     </template>
 
     <app-flex v-if="groupedBindings.size === 0" class="empty" center align-center>
@@ -55,7 +55,7 @@ import ActionButton from 'src/components/ActionButton.vue';
 import AppInputGroup from 'src/components/AppInputGroup.vue';
 import HotkeyTag from 'src/components/HotkeyTag.vue';
 import HotkeyInput from 'src/components/HotkeyInput.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { hotkeysEqual } from 'src/stores/keybindings';
 
 interface BindingRow {

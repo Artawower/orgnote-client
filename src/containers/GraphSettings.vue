@@ -1,7 +1,7 @@
 <template>
   <div class="graph-settings">
     <app-description padded>{{ t(I18N.GRAPH_SETTINGS_TITLE).toUpperCase() }}</app-description>
-    <card-wrapper>
+    <menu-group>
       <menu-item
         v-for="field in fields"
         :key="field.key"
@@ -17,7 +17,7 @@
           />
         </template>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
   </div>
 </template>
 
@@ -28,7 +28,7 @@ import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import type { GraphUiConfig } from 'orgnote-api';
 import AppDescription from 'src/components/AppDescription.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import InputField from 'src/components/InputField.vue';
 import MenuItem from './MenuItem.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';

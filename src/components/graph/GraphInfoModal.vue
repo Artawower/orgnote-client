@@ -5,16 +5,16 @@
       <app-badge :label="`${edgesCount} ${t(i18n.GRAPH_EDGES_LABEL)}`" variant="plain" rounded />
     </app-flex>
 
-    <card-wrapper>
+    <menu-group>
       <menu-item icon="sym_o_refresh" flat @click="props.refresh">
         {{ t(i18n.GRAPH_REFRESH) }}
       </menu-item>
       <menu-item icon="sym_o_restart_alt" class="reset-defaults" flat @click="resetConfig">
         {{ t(GRAPH_RESET_DEFAULTS_I18N_KEY) }}
       </menu-item>
-    </card-wrapper>
+    </menu-group>
 
-    <card-wrapper>
+    <menu-group>
       <menu-item v-for="field in configFields" :key="field.key" flat prefer="right">
         <span class="field-label">{{ camelCaseToWords(field.key) }}</span>
         <template #right>
@@ -27,7 +27,7 @@
           />
         </template>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
   </app-flex>
 </template>
 
@@ -38,7 +38,7 @@ import { I18N as i18n } from 'orgnote-api';
 import type { GraphUiConfig } from 'orgnote-api';
 import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import InputField from 'src/components/InputField.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { camelCaseToWords } from 'src/utils/camel-case-to-words';

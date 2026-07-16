@@ -1,19 +1,19 @@
 <template>
-  <card-wrapper>
+  <menu-group>
     <menu-item v-for="view in views" :key="view.uri" :active="activeBufferUri === view.uri" @click="onViewClick(view.uri)">
       <app-flex row start align-center gap="sm">
         <app-icon :name="view.icon" size="sm" />
         <span>{{ view.label }}</span>
       </app-flex>
     </menu-item>
-  </card-wrapper>
+  </menu-group>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';

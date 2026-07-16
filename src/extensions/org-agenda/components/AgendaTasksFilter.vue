@@ -1,5 +1,5 @@
 <template>
-  <card-wrapper>
+  <menu-group>
     <menu-item
       v-for="filter in filters"
       :key="filter.id"
@@ -19,14 +19,14 @@
         />
       </template>
     </menu-item>
-  </card-wrapper>
+  </menu-group>
 </template>
 
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppIcon from 'src/components/AppIcon.vue';

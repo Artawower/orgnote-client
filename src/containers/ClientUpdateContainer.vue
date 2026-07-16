@@ -18,11 +18,11 @@
       </app-flex>
 
       <template v-if="props.update.url" #footer>
-        <card-wrapper>
+        <menu-group>
           <menu-item type="info" icon="open_in_new" @click="openReleaseNotes">
             {{ t(I18N.OPEN_RELEASE_NOTES) }}
           </menu-item>
-        </card-wrapper>
+        </menu-group>
       </template>
     </container-layout>
   </safe-area>
@@ -34,6 +34,7 @@ import { I18N } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppTitle from 'src/components/AppTitle.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import MenuItem from 'src/containers/MenuItem.vue';

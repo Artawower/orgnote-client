@@ -8,7 +8,7 @@
         {{ t(I18N.ONBOARDING_SERVER_SUBSCRIPTION_NOTE) }}
       </app-description>
 
-      <card-wrapper>
+      <menu-group>
         <menu-item @click="inputRef?.focus()">
           <app-input
             v-model="activationKey"
@@ -19,7 +19,7 @@
         <menu-item @click="activate" :disabled="!activationKey || activating" type="info">
           <div class="capitalize text-medium">{{ activating ? '...' : t(I18N.ACTIVATE) }}</div>
         </menu-item>
-      </card-wrapper>
+      </menu-group>
 
       <app-card v-if="errorMessage" type="danger">
         {{ errorMessage }}
@@ -58,7 +58,7 @@ import AppInput from 'src/components/AppInput.vue';
 import AppCard from 'src/components/AppCard.vue';
 import AppLink from 'src/components/AppLink.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';

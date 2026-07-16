@@ -8,20 +8,20 @@
         {{ t(I18N.CLI_INSTALL_DESCRIPTION) }}
       </app-description>
       <app-code :code="cliInstallInstructions" />
-      <card-wrapper>
+      <menu-group>
         <command-menu-item :command="DefaultCommands.COPY_CLI_INSTALL_COMMAND" />
-      </card-wrapper>
+      </menu-group>
     </template>
 
     <template v-if="canCopySyncProfile">
       <app-description :center="centerDescriptions">
         {{ t(I18N.SYNC_PROFILE_CONFIG_DESCRIPTION) }}
       </app-description>
-      <card-wrapper>
+      <menu-group>
         <command-menu-item :command="DefaultCommands.EXPORT_LOCAL_SYNC_CONFIG" />
         <command-menu-item :command="DefaultCommands.DOWNLOAD_LOCAL_SYNC_CONFIG" />
         <command-menu-item :command="DefaultCommands.COPY_EMACS_USE_PACKAGE_CONFIG" />
-      </card-wrapper>
+      </menu-group>
     </template>
 
     <app-description v-else-if="showUnavailable" :center="centerDescriptions" padded>
@@ -37,7 +37,7 @@ import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppCode from 'src/components/AppCode.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import ApiSettings from 'src/containers/ApiSettings.vue';
 import CommandMenuItem from 'src/containers/CommandMenuItem.vue';
 import SettingsScheme from 'src/containers/SettingsScheme.vue';

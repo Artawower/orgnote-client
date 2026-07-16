@@ -5,11 +5,11 @@
     :before-type-change="confirmEncryptionChange"
   />
   <template v-if="config.encryption?.type === 'gpgKeys'">
-    <card-wrapper>
+    <menu-group>
       <menu-item type="danger" @click="handleGenerateKeys">
         {{ t(I18N.GENERATE_GPG_KEYS) }}
       </menu-item>
-    </card-wrapper>
+    </menu-group>
     <app-description>
       {{ t(I18N.ENCRYPTION_KEYS_GEN_WARNING) }}
     </app-description>
@@ -21,7 +21,7 @@ import { ORG_NOTE_CONFIG_SCHEMA, DefaultCommands, I18N } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';
 import SettingsScheme from './SettingsScheme.vue';

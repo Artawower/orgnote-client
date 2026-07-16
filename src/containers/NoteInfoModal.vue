@@ -34,9 +34,9 @@
       </app-flex>
 
       <template #footer>
-        <card-wrapper>
+        <menu-group>
           <menu-item type="info" @click="copyInfo">{{ t(I18N.COPY) }}</menu-item>
-        </card-wrapper>
+        </menu-group>
       </template>
     </container-layout>
   </safe-area>
@@ -50,6 +50,7 @@ import { usePrettyDate } from 'src/composables/use-pretty-date';
 import type { NoteInfoModalData } from 'src/utils/current-note-info';
 import AppFlex from 'src/components/AppFlex.vue';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import OrgTags from 'src/components/org-nodes/OrgTags.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import SafeArea from 'src/components/SafeArea.vue';

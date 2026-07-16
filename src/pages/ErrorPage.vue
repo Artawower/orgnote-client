@@ -14,14 +14,14 @@
         <app-logs />
 
         <template #footer>
-          <card-wrapper>
+          <menu-group>
             <menu-item type="info" @click="safeCopyToClipboard(errorLogText)">
               {{ $t(I18N.COPY_LOG) }}
             </menu-item>
             <menu-item type="danger" @click="reload">
               {{ $t(I18N.RELOAD) }}
             </menu-item>
-          </card-wrapper>
+          </menu-group>
         </template>
       </container-layout>
     </safe-area>
@@ -36,7 +36,7 @@ import AppLogs from 'src/containers/AppLogs.vue';
 import { I18N } from 'orgnote-api';
 import { useAppLogs } from 'src/composables/useAppLogs';
 import MenuItem from 'src/containers/MenuItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
 

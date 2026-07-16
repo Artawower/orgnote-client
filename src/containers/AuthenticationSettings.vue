@@ -6,24 +6,24 @@
 
     <user-info v-if="user" :user="user" />
 
-    <card-wrapper>
+    <menu-group>
       <command-menu-item v-if="!user" :command="DefaultCommands.LOGIN" type="info">
         {{ t(I18N.AUTH_LOGIN) }}
       </command-menu-item>
       <command-menu-item v-else :command="DefaultCommands.LOGOUT">
         {{ t(I18N.AUTH_LOGOUT) }}
       </command-menu-item>
-    </card-wrapper>
+    </menu-group>
 
     <template v-if="user">
       <app-description>
         {{ t(I18N.AUTH_REMOVE_ACCOUNT_DESCRIPTION) }}
       </app-description>
-      <card-wrapper>
+      <menu-group>
         <command-menu-item :command="DefaultCommands.REMOVE_ACCOUNT" type="danger">
           {{ t(I18N.REMOVE_ACCOUNT) }}
         </command-menu-item>
-      </card-wrapper>
+      </menu-group>
       <app-card type="danger">
         {{ t(I18N.REMOVE_ACCOUNT_WARNING) }}
       </app-card>
@@ -35,7 +35,7 @@
 import { DefaultCommands, I18N } from 'orgnote-api';
 import AppDescription from 'src/components/AppDescription.vue';
 import { useI18n } from 'vue-i18n';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import CommandMenuItem from './CommandMenuItem.vue';
 import { api } from 'src/boot/api';

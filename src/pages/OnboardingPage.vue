@@ -19,7 +19,7 @@
 
         <template #footer>
           <app-flex center class="footer">
-            <card-wrapper class="footer-card">
+            <menu-group class="footer-card">
               <menu-item v-if="currentStep > 0" @click="goBack">
                 {{ t(I18N.ONBOARDING_BACK) }}
               </menu-item>
@@ -30,7 +30,7 @@
               >
                 {{ isLastStep ? t(I18N.ONBOARDING_COMPLETED) : t(I18N.ONBOARDING_NEXT) }}
               </menu-item>
-            </card-wrapper>
+            </menu-group>
           </app-flex>
         </template>
       </container-layout>
@@ -43,7 +43,7 @@
 import SafeArea from 'src/components/SafeArea.vue';
 import PageWrapper from 'src/components/PageWrapper.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import ModalContainer from 'src/containers/ModalContainer.vue';
 import ProgressDots from 'src/components/onboarding/ProgressDots.vue';

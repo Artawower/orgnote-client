@@ -6,14 +6,14 @@
         <div class="capitalize">{{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}</div>
       </app-description>
 
-      <card-wrapper v-if="user && !user.active">
+      <menu-group v-if="user && !user.active">
         <menu-item type="warning" icon="warning">
           {{ t(I18N.AVAILABLE_FOR_SUBSCRIPTION) }}
         </menu-item>
         <command-menu-item :command="DefaultCommands.SUBSCRIPTION_SETTINGS" />
-      </card-wrapper>
+      </menu-group>
 
-      <card-wrapper>
+      <menu-group>
         <command-menu-item
           :command="DefaultCommands.SYNC_FILES"
           type="danger"
@@ -21,7 +21,7 @@
         >
           <div class="capitalize text-medium">{{ t(I18N.FORCE_SYNC) }}</div>
         </command-menu-item>
-      </card-wrapper>
+      </menu-group>
       <app-description>{{ t(I18N.FORCE_SYNC_DESCRIPTION) }}</app-description>
     </template>
   </app-flex>
@@ -32,7 +32,7 @@ import { DefaultCommands, I18N } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import AppDescription from 'src/components/AppDescription.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CommandMenuItem from './CommandMenuItem.vue';

@@ -1,19 +1,19 @@
 <template>
-  <card-wrapper>
+  <menu-group>
     <menu-item v-for="stat in statList" :key="stat.label" flat :capitalize="false">
       {{ stat.label }}
       <template #right>
         <span class="stat-value">{{ stat.value }}</span>
       </template>
     </menu-item>
-  </card-wrapper>
+  </menu-group>
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { isToday } from 'date-fns';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';

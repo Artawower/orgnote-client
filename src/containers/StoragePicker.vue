@@ -1,7 +1,7 @@
 <template>
   <app-flex class="storage-picker" column start align-start full-width gap="md">
     <slot name="header" />
-    <card-wrapper>
+    <menu-group>
       <menu-item
         @click="fsManager.useFs(fs.name)"
         icon="sym_o_web"
@@ -15,7 +15,7 @@
           <app-description>{{ t(fs.description) }}</app-description>
         </template>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
 
     <app-card v-if="currentFsName && !hideWarning" type="danger">
       <template #cardTitle>
@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from './MenuItem.vue';
 import AppCard from 'src/components/AppCard.vue';
 import AppDescription from 'src/components/AppDescription.vue';

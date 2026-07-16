@@ -35,7 +35,7 @@ import AppIcon from './AppIcon.vue';
 import AppInput from './AppInput.vue';
 import type { StyleSize } from 'orgnote-api';
 
-type InputAppearance = 'glass' | 'flat';
+type InputAppearance = 'glass' | 'flat' | 'menu';
 
 withDefaults(
   defineProps<{
@@ -87,6 +87,28 @@ defineExpose({
 
     &.no-icon {
       padding-left: var(--padding-lg);
+    }
+  }
+
+  &.menu {
+    height: var(--search-input-menu-height);
+    padding: var(--search-input-menu-padding);
+    background: var(--search-input-menu-bg);
+    border: var(--search-input-menu-border);
+    border-radius: var(--search-input-menu-radius);
+    box-shadow: var(--search-input-menu-shadow);
+    box-sizing: border-box;
+    transition:
+      background var(--search-input-menu-transition),
+      box-shadow var(--search-input-menu-transition);
+
+    @include hover {
+      background: var(--search-input-menu-hover-bg);
+    }
+
+    &:focus-within {
+      background: var(--search-input-menu-focus-bg);
+      box-shadow: var(--search-input-menu-focus-shadow);
     }
   }
 }

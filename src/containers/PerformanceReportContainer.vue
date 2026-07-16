@@ -24,14 +24,14 @@
       </easy-data-table>
 
       <template #footer>
-        <card-wrapper>
+        <menu-group>
           <menu-item type="info" @click="handleCopyJson">
             {{ t(I18N.COPY) }}
           </menu-item>
           <menu-item type="warning" @click="handleClear">
             {{ t(I18N.CLEAR_MEASUREMENTS) }}
           </menu-item>
-        </card-wrapper>
+        </menu-group>
       </template>
     </container-layout>
   </safe-area>
@@ -45,7 +45,7 @@ import type { Header, Item } from 'vue3-easy-data-table';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import EasyDataTable from 'vue3-easy-data-table';
 import MenuItem from 'src/containers/MenuItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
 import AppDescription from 'src/components/AppDescription.vue';

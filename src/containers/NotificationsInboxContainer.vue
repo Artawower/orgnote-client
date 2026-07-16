@@ -23,11 +23,11 @@
       <empty-state v-else :title="t(I18N.NO_NOTIFICATIONS)" icon="sym_o_notifications" />
 
       <template v-if="notifications.length" #footer>
-        <card-wrapper>
+        <menu-group>
           <menu-item type="warning" @click="clearAll">
             {{ t(I18N.CLEAR_ALL_NOTIFICATIONS) }}
           </menu-item>
-        </card-wrapper>
+        </menu-group>
       </template>
     </container-layout>
   </safe-area>
@@ -39,7 +39,7 @@ import { storeToRefs } from 'pinia';
 import { I18N, type Notification } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import SafeArea from 'src/components/SafeArea.vue';
 import EmptyState from 'src/components/EmptyState.vue';

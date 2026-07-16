@@ -7,14 +7,14 @@
     </card-wrapper>
 
     <app-flex class="actions" :column="tabletBelow" end align-center :gap="actionsGap">
-      <card-wrapper>
+      <menu-group>
         <menu-item type="danger" @click="resolver(true)">
           {{ t(confirmText ?? I18N.CONFIRM) }}
         </menu-item>
         <menu-item @click="resolver(false)">
           {{ t(cancelText ?? I18N.CANCEL) }}
         </menu-item>
-      </card-wrapper>
+      </menu-group>
     </app-flex>
   </app-flex>
 </template>
@@ -24,6 +24,7 @@ import type { ConfirmationModalParams } from 'orgnote-api';
 import { I18N } from 'orgnote-api';
 import { useI18n } from 'vue-i18n';
 import CardWrapper from './CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { useScreenDetection } from 'src/composables/use-screen-detection';

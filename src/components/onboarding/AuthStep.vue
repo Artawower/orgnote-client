@@ -7,11 +7,11 @@
       <app-description center>
         {{ t(I18N.ONBOARDING_AUTH_DESCRIPTION) }}
       </app-description>
-      <card-wrapper>
+      <menu-group>
         <menu-item type="info" @click="signIn">
           {{ t(I18N.ONBOARDING_AUTH_GITHUB) }}
         </menu-item>
-      </card-wrapper>
+      </menu-group>
     </app-flex>
   </page-wrapper>
 </template>
@@ -22,7 +22,7 @@ import AppFlex from 'src/components/AppFlex.vue';
 import AppTitle from 'src/components/AppTitle.vue';
 import AppDescription from 'src/components/AppDescription.vue';
 import MenuItem from 'src/containers/MenuItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
 import { api } from 'src/boot/api';

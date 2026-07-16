@@ -45,14 +45,14 @@
       </template>
 
       <template #footer>
-        <card-wrapper>
+        <menu-group>
           <menu-item type="info" @click="handleImportExtension" icon="sym_o_upload">
             {{ t(i18n.IMPORT_EXTENSION) }}
           </menu-item>
           <menu-item type="info" @click="openInstallFromUrl" icon="sym_o_link">
             {{ t(i18n.INSTALL_FROM_URL) }}
           </menu-item>
-        </card-wrapper>
+        </menu-group>
       </template>
     </container-layout>
   </file-uploader>
@@ -64,7 +64,7 @@ import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
 import type { ExtensionMeta, ExtensionManifest, GitSource } from 'orgnote-api';
 import { DefaultCommands, i18n } from 'orgnote-api';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
 import ExtensionItem from 'src/components/ExtensionItem.vue';

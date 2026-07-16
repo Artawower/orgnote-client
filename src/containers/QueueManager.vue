@@ -72,11 +72,11 @@
     </template>
 
     <template #footer>
-      <card-wrapper>
+      <menu-group>
         <menu-item type="info" @click="safeCopyToClipboard(tasksReport)">{{
           $t(I18N.COPY)
         }}</menu-item>
-      </card-wrapper>
+      </menu-group>
     </template>
   </container-layout>
 </template>
@@ -87,6 +87,7 @@ import { api } from 'src/boot/api';
 import type { QueueTask, QueueStats } from 'orgnote-api';
 import { I18N, i18n } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
 import QueueTaskComponent from 'src/components/QueueTask.vue';

@@ -44,24 +44,17 @@
       </action-buttons>
     </div>
     <div class="file-manager-wrapper">
-      <div class="file-manager-header">
-        <card-wrapper>
-          <menu-item v-if="showHeaderSearch" :size="menuItemSize">
-            <search-input
-              :size="compact ? 'xs' : 'sm'"
-              v-model="searchQuery"
-              :placeholder="I18N.SEARCH"
-            />
-          </menu-item>
-          <menu-item :size="menuItemSize">
-            <app-flex class="file-path" row start align-center>
-              {{ targetPath ?? '/' }}
-            </app-flex>
-          </menu-item>
-        </card-wrapper>
+      <div v-if="showHeaderSearch" class="file-manager-header">
+        <search-input
+          appearance="menu"
+          icon="search"
+          :size="compact ? 'xs' : 'sm'"
+          v-model="searchQuery"
+          :placeholder="I18N.SEARCH"
+        />
       </div>
       <div class="file-list">
-        <card-wrapper>
+        <menu-group :title="targetPath ?? '/'">
           <div v-if="isLoading" class="loading-wrapper" :class="{ compact }">
             <loading-dots />
           </div>
@@ -85,7 +78,7 @@
               @toggle-selection="fm.toggleSelection(f.path)"
             />
           </template>
-        </card-wrapper>
+        </menu-group>
       </div>
     </div>
   </app-flex>
@@ -97,7 +90,6 @@ import { DefaultCommands, getParentDir, I18N, join, parseBufferUri, withRoot } f
 import type { DiskFile } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import FileManagerItem from './FileManagerItem.vue';
-import MenuItem from './MenuItem.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButtons from 'src/components/ActionButtons.vue';
 import { computed, ref, watch } from 'vue';
@@ -107,7 +99,7 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import AppFlex from 'src/components/AppFlex.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
 
 const props = defineProps<{
@@ -259,18 +251,6 @@ const { t } = useI18n({
 
 .file-list {
   overflow: auto;
-
-  :deep(.card-wrapper) {
-    overflow: hidden;
-  }
-}
-
-.file-path {
-  & {
-    height: 100%;
-    color: var(--fg-muted);
-    flex: 1;
-  }
 }
 
 .loading-wrapper {

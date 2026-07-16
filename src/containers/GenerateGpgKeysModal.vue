@@ -1,6 +1,6 @@
 <template>
   <app-flex column start align-stretch gap="md">
-    <card-wrapper>
+    <menu-group>
       <menu-item @click="emailInputRef?.focus()">
         <input-field
           v-model="email"
@@ -26,7 +26,7 @@
       <menu-item @click="modal.close()">
         {{ t(I18N.CANCEL) }}
       </menu-item>
-    </card-wrapper>
+    </menu-group>
   </app-flex>
 </template>
 
@@ -37,7 +37,7 @@ import { useI18n } from 'vue-i18n';
 import { api } from 'src/boot/api';
 import InputField from 'src/components/InputField.vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { validateEmail } from 'src/utils/validate-email';
 import MenuItem from './MenuItem.vue';
 

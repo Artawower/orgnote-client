@@ -13,7 +13,7 @@
       align-center
       gap="lg"
     >
-      <card-wrapper>
+      <menu-group>
         <menu-item
           v-for="(o, i) of scheme.options"
           :key="i"
@@ -23,10 +23,10 @@
         >
           {{ camelCaseToWords(o.entries?.[conditionalKey!]?.literal) }}
         </menu-item>
-      </card-wrapper>
+      </menu-group>
       <settings-scheme :scheme="conditionalOption!" :path="path" />
     </app-flex>
-    <card-wrapper v-else>
+    <menu-group v-else>
       <settings-item
         v-for="(scheme, name) of props.scheme.entries as Record<string, any>"
         :key="name"
@@ -34,12 +34,12 @@
         :path="path"
         :scheme="scheme"
       />
-    </card-wrapper>
+    </menu-group>
   </div>
 </template>
 
 <script lang="ts" setup>
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import SettingsItem from './SettingsItem.vue';
 import MenuItem from './MenuItem.vue';
 import type { ValibotScheme } from 'src/models/valibot-scheme';

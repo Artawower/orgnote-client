@@ -1,13 +1,13 @@
 <template>
   <app-flex class="settings-menu" column start align-center gap="lg">
-    <card-wrapper v-for="(menuItems, key) of settingsMenu" :key="key">
+    <menu-group v-for="(menuItems, key) of settingsMenu" :key="key">
       <command-menu-item v-for="(menuItem, i) of menuItems" :key="i" :command="menuItem" />
-    </card-wrapper>
+    </menu-group>
   </app-flex>
 </template>
 
 <script lang="ts" setup>
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
 import CommandMenuItem from './CommandMenuItem.vue';
@@ -17,7 +17,7 @@ const { settingsMenu } = storeToRefs(api.ui.useSettingsUi());
 </script>
 
 <style lang="scss" scoped>
-.card-wrapper {
+.menu-group {
   width: 100%;
 }
 

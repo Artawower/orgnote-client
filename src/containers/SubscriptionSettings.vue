@@ -7,7 +7,7 @@
     gap="lg"
   >
     <template v-if="!user?.active">
-      <card-wrapper>
+      <menu-group>
         <menu-item @click="inputRef?.focus()">
           <app-input
             v-model="activationKey"
@@ -18,7 +18,7 @@
         <menu-item @click="activate" :disabled="!activationKey" type="info">
           <div class="capitalize text-medium">{{ t(I18N.ACTIVATE) }}</div>
         </menu-item>
-      </card-wrapper>
+      </menu-group>
 
       <app-card type="info">
         <template #cardTitle>
@@ -71,7 +71,7 @@ import AppInput from 'src/components/AppInput.vue';
 import MenuItem from './MenuItem.vue';
 import { useI18n } from 'vue-i18n';
 import { I18N } from 'orgnote-api';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { ref, computed } from 'vue';
 import { PATREON_LINK } from 'src/constants/external-link';
 import AppCard from 'src/components/AppCard.vue';

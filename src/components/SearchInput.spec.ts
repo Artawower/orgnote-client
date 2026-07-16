@@ -39,6 +39,14 @@ test('SearchInput applies glass appearance class when appearance is glass', () =
   expect(wrapper.find('.search-input').classes()).toContain('glass');
 });
 
+test('SearchInput applies menu appearance class when appearance is menu', () => {
+  const wrapper = mount(SearchInput, {
+    props: { appearance: 'menu' },
+  });
+
+  expect(wrapper.find('.search-input').classes()).toContain('menu');
+});
+
 test('SearchInput renders icon when icon prop is provided', () => {
   const wrapper = mount(SearchInput, {
     props: { icon: 'search' },

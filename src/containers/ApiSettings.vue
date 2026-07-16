@@ -1,6 +1,6 @@
 <template>
   <app-flex class="api-settings" column start align-start gap="md">
-    <card-wrapper v-if="canManageTokens && tokens.length">
+    <menu-group v-if="canManageTokens && tokens.length">
       <menu-item v-for="token of tokens" :key="token.id" type="plain" :capitalize="false">
         <span class="token-text">{{ token.token }}</span>
         <template #right>
@@ -26,13 +26,13 @@
           </app-flex>
         </template>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
 
-    <card-wrapper>
+    <menu-group>
       <menu-item @click="createToken" type="info" :disabled="!canManageTokens">
         <div class="capitalize">{{ t(I18N.CREATE_NEW_TOKEN) }}</div>
       </menu-item>
-    </card-wrapper>
+    </menu-group>
   </app-flex>
 </template>
 
@@ -41,7 +41,7 @@ import type { ModelsAPIToken } from 'orgnote-api/remote-api';
 import { I18N } from 'orgnote-api';
 import { useI18n } from 'vue-i18n';
 import MenuItem from './MenuItem.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
+import MenuGroup from 'src/components/MenuGroup.vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
