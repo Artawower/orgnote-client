@@ -54,7 +54,7 @@ export function getNoteCommands(): Command[] {
         if (router.currentRoute.value.name !== RouteNames.Panes) {
           await router.push({ name: RouteNames.Panes });
         }
-        await layoutStore.initLayout();
+        await layoutStore.ensureLayout();
         const bufferViewer = api.core.useBufferViewer();
         const uri = api.core.useEmbeddedBuffer().create(text);
         await bufferViewer.open(uri);

@@ -202,7 +202,7 @@ export function getGlobalCommands(router: Router): Command[] {
         if (router.currentRoute.value.name !== RouteNames.Panes) {
           await router.push({ name: RouteNames.Panes });
         }
-        await api.core.useLayout().initLayout();
+        await api.core.useLayout().ensureLayout();
         await api.core.useBufferViewer().open(GRAPH_BUFFER_URI);
       },
     },

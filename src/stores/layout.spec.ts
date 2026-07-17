@@ -55,6 +55,29 @@ test('should initialize layout with single pane', async () => {
   expect(paneStore.activePaneId).toBeTruthy();
 });
 
+test('ensureLayout initializes a missing layout', async () => {
+  const layoutStore = useLayoutStore();
+
+  await layoutStore.ensureLayout();
+
+  expect(layoutStore.layout?.type).toBe('pane');
+});
+
+test('ensureLayout preserves an existing split layout', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+
+  await layoutStore.initLayout();
+  await layoutStore.splitPaneInLayout(paneStore.activePaneId!, 'right');
+  const splitLayout = layoutStore.layout;
+
+  await layoutStore.ensureLayout();
+
+  expect(layoutStore.layout).toBe(splitLayout);
+  expect(layoutStore.layout?.type).toBe('split');
+  expect(Object.keys(paneStore.panes)).toHaveLength(2);
+});
+
 test('should initialize layout with existing activePaneId', async () => {
   const layoutStore = useLayoutStore();
   const paneStore = usePaneStore();

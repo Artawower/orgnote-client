@@ -39,6 +39,11 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
     layout.value = paneNode;
   };
 
+  const ensureLayout = async (): Promise<void> => {
+    if (layout.value && activePaneId.value) return;
+    await initLayout();
+  };
+
   const initPane = async () => {
     const pane = await paneStore.createPane();
     await paneStore.addTab(pane.id);
@@ -401,6 +406,7 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
   const store: LayoutStore = {
     layout,
     initLayout,
+    ensureLayout,
     splitPaneInLayout,
     removePaneFromLayout,
     updateNodeSizes,
