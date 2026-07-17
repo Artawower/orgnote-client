@@ -1,5 +1,5 @@
 <template>
-  <card-wrapper border class="quick-add" :class="{ expanded: isExpanded }">
+  <card-wrapper class="quick-add" :class="{ expanded: isExpanded }">
     <agenda-task-form
       ref="formRef"
       v-model:title="draft.title"
@@ -253,12 +253,23 @@ const onFormCancel = (): void => {
 </script>
 
 <style lang="scss" scoped>
-.quick-add {
+.quick-add.card-wrapper {
   padding: var(--padding-sm) var(--padding-md);
-  transition: border-color 0.15s ease;
+  background: var(--input-bg);
+  border: var(--input-border);
+  border-radius: var(--input-radius);
+  box-shadow: var(--input-shadow);
+  transition:
+    background var(--input-transition),
+    box-shadow var(--input-transition);
+
+  @include hover {
+    background: var(--input-hover-bg);
+  }
 
   &:focus-within {
-    border-color: var(--accent);
+    background: var(--input-focus-bg);
+    box-shadow: var(--input-focus-shadow);
   }
 }
 

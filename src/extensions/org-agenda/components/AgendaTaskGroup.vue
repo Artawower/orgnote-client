@@ -147,7 +147,7 @@ const onBodyBlur = (task: AgendaTaskView): void => {
 }
 
 .task-item.expanded {
-  background: var(--agenda-task-expanded-bg, var(--bg-elevated));
+  background: var(--agenda-task-expanded-bg, var(--bg-muted));
   border-radius: var(--agenda-task-expanded-radius, var(--menu-item-active-radius));
 }
 

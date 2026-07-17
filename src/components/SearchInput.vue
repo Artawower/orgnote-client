@@ -99,22 +99,22 @@ defineExpose({
   &.field {
     height: var(--search-input-field-height);
     padding: var(--search-input-field-padding);
-    background: var(--search-input-field-bg);
-    border: var(--search-input-field-border);
-    border-radius: var(--search-input-field-radius);
-    box-shadow: var(--search-input-field-shadow);
+    background: var(--input-bg);
+    border: var(--input-border);
+    border-radius: var(--input-radius);
+    box-shadow: var(--input-shadow);
     box-sizing: border-box;
     transition:
-      background var(--search-input-field-transition),
-      box-shadow var(--search-input-field-transition);
+      background var(--input-transition),
+      box-shadow var(--input-transition);
 
     @include hover {
-      background: var(--search-input-field-hover-bg);
+      background: var(--input-hover-bg);
     }
 
     &:focus-within {
-      background: var(--search-input-field-focus-bg);
-      box-shadow: var(--search-input-field-focus-shadow);
+      background: var(--input-focus-bg);
+      box-shadow: var(--input-focus-shadow);
     }
   }
 }

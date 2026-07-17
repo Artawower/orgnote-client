@@ -227,18 +227,20 @@ body {
   --control-height-touch: 44px;
   --control-height-bar: 48px;
 
+  // Input surface
+  --input-bg: var(--bg-secondary);
+  --input-hover-bg: var(--bg-hover);
+  --input-focus-bg: var(--bg-secondary);
+  --input-border: var(--border-default);
+  --input-radius: var(--border-radius-md);
+  --input-shadow: none;
+  --input-focus-shadow: inset 0 0 0 2px
+    color-mix(in srgb, var(--accent) 35%, transparent);
+  --input-transition: 0.15s ease;
+
   // Search input
-  --search-input-field-bg: var(--bg-elevated);
-  --search-input-field-hover-bg: var(--bg-hover);
-  --search-input-field-focus-bg: var(--bg-elevated);
-  --search-input-field-border: var(--border-default);
-  --search-input-field-radius: var(--border-radius-md);
   --search-input-field-padding: 0 var(--padding-md);
   --search-input-field-height: var(--control-height-md);
-  --search-input-field-shadow: none;
-  --search-input-field-focus-shadow: inset 0 0 0 2px
-    color-mix(in srgb, var(--accent) 35%, transparent);
-  --search-input-field-transition: 0.15s ease;
 
   // Dropdown
   --dropdown-height: var(--control-height-md);
