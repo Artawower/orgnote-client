@@ -1,7 +1,7 @@
 <template>
   <app-flex class="agenda-sidebar" column start align-stretch gap="md">
     <agenda-tasks-filter
-      v-model="filterStore.activeFilter"
+      :model-value="filterStore.activePreset"
       :totals="tasksStore.totalByFilter"
       @select="onFilterSelect"
     />

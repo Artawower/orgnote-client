@@ -37,17 +37,15 @@ import { AGENDA_TASKS_URI } from '../constants';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
 
 defineProps<{
-  modelValue: AgendaFilter;
+  modelValue?: AgendaFilter;
   totals: Record<AgendaFilter, number>;
 }>();
 
 const emit = defineEmits<{
-  'update:modelValue': [filter: AgendaFilter];
   select: [filter: AgendaFilter];
 }>();
 
 const onFilterClick = (filter: AgendaFilter): void => {
-  emit('update:modelValue', filter);
   emit('select', filter);
 };
 

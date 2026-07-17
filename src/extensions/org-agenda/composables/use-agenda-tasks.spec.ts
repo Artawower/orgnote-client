@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import type { FileMeta } from 'orgnote-api';
-import { isAgendaEligible } from './use-agenda-tasks';
+import { buildAgendaTaskGroups, isAgendaEligible } from './use-agenda-tasks';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 
@@ -21,4 +21,83 @@ test('isAgendaEligible_acceptsHeadlineCheckbox', () => {
 
 test('isAgendaEligible_rejectsListCheckbox', () => {
   expect(isAgendaEligible(baseTask('list-checkbox'))).toBe(false);
+});
+
+test('buildAgendaTaskGroups filters tasks by an inclusive custom date range', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      title: 'Work',
+      tasks: [
+        {
+          ...baseTask('headline-todo'),
+          id: 'first',
+          scheduled: { date: '2026-05-15', active: true, hasTime: false, start: 0, end: 0 },
+        },
+        {
+          ...baseTask('headline-todo'),
+          id: 'second',
+          scheduled: { date: '2026-05-17', active: true, hasTime: false, start: 0, end: 0 },
+        },
+      ],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(
+    files,
+    { dateFilter: { kind: 'range', from: '2026-05-14', to: '2026-05-16' } },
+    new Date('2026-05-12T12:00:00'),
+  );
+
+  expect(groups[0]?.tasks.map((task) => task.id)).toEqual(['first']);
+  expect(groups[0]?.tasks[0]?.viewDate.getDate()).toBe(15);
+});
+
+test('buildAgendaTaskGroups combines task search with an exact date range', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      tasks: [
+        {
+          ...baseTask('headline-todo'),
+          id: 'matching-text',
+          scheduled: { date: '2026-05-18', active: true, hasTime: false, start: 0, end: 0 },
+        },
+      ],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(files, {
+    dateFilter: { kind: 'range', from: '2026-05-14', to: '2026-05-16' },
+    matchingTaskIds: ['/agenda/work.org\u0000matching-text'],
+  });
+
+  expect(groups).toEqual([]);
+});
+
+test('buildAgendaTaskGroups orders matching groups by task search rank', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'first-file',
+      filePath: ['agenda', 'first.org'],
+      tasks: [{ ...baseTask('headline-todo'), id: 'first' }],
+    },
+    {
+      id: 'second-file',
+      filePath: ['agenda', 'second.org'],
+      tasks: [{ ...baseTask('headline-todo'), id: 'second' }],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(files, {
+    dateFilter: { kind: 'preset', value: 'all' },
+    matchingTaskIds: ['/agenda/second.org\u0000second', '/agenda/first.org\u0000first'],
+  });
+
+  expect(groups.map((group) => group.filePath)).toEqual([
+    '/agenda/second.org',
+    '/agenda/first.org',
+  ]);
 });

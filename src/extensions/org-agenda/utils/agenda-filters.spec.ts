@@ -9,6 +9,7 @@ import {
   isCompletedOn,
   hasRepeater,
   findNextOccurrenceInRange,
+  findTaskDateInRange,
   getActiveDate,
 } from './agenda-filters';
 
@@ -444,4 +445,34 @@ test('hasRepeater_falseAndTodoState_means_isCheckedShouldBeFalse', () => {
   };
   const isChecked = task.state === 'done' || (hasRepeater(task) && isCompletedOn(task, now));
   expect(isChecked).toBe(false);
+});
+
+test('findTaskDateInRange returns a task date inside inclusive bounds', () => {
+  const task = withScheduled('2026-05-15');
+
+  const result = findTaskDateInRange(task, utcNoon('2026-05-14'), utcNoon('2026-05-16'));
+
+  expect(dateKey(result)).toBe('2026-05-15');
+});
+
+test('findTaskDateInRange skips a completed timestamp occurrence in favor of the next day', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-15', dailyRepeater),
+    doneDates: ['2026-05-15T18:30:00'],
+  };
+
+  const result = findTaskDateInRange(task, utcNoon('2026-05-15'), utcNoon('2026-05-16'));
+
+  expect(dateKey(result)).toBe('2026-05-16');
+});
+
+test('findTaskDateInRange returns a recorded completion after a repeater advances', () => {
+  const task: FileTask = {
+    ...withScheduledRepeater('2026-05-20', dailyRepeater),
+    doneDates: ['2026-05-15'],
+  };
+
+  const result = findTaskDateInRange(task, utcNoon('2026-05-14'), utcNoon('2026-05-16'));
+
+  expect(dateKey(result)).toBe('2026-05-15');
 });

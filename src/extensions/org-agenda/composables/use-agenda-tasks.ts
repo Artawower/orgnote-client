@@ -1,13 +1,27 @@
-import { addDays, startOfDay } from 'date-fns';
+import { addDays, parseISO, startOfDay } from 'date-fns';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
+import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
+import { debounce } from 'src/utils/debounce';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
-import { findNextOccurrenceInRange, isOverdue, isToday, isTomorrow } from '../utils/agenda-filters';
+import { createAgendaTaskSearchId } from '../services/agenda-task-search-index';
+import type {
+  AgendaDateFilter,
+  AgendaFilter,
+  AgendaTaskQuery,
+} from '../models/agenda-task-query';
+import {
+  findNextOccurrenceInRange,
+  findTaskDateInRange,
+  isOverdue,
+  isToday,
+  isTomorrow,
+} from '../utils/agenda-filters';
 
-export type AgendaFilter = 'overdue' | 'today' | 'tomorrow' | 'next7days' | 'all';
+export type { AgendaDateFilter, AgendaFilter, AgendaTaskQuery } from '../models/agenda-task-query';
 
 export interface AgendaTaskView extends FileTask {
   viewDate: Date;
@@ -20,11 +34,17 @@ export interface AgendaTaskGroup {
   tasks: AgendaTaskView[];
 }
 
+interface QueryContext {
+  readonly query: AgendaTaskQuery;
+  readonly now: Date;
+  readonly rankByTaskId?: ReadonlyMap<string, number>;
+}
+
 const todayForAgenda = (now: Date): Date => startOfDay(now);
 
 const filterPredicates: Record<
   Exclude<AgendaFilter, 'all' | 'next7days'>,
-  (t: FileTask) => boolean
+  (task: FileTask, now: Date) => boolean
 > = {
   overdue: isOverdue,
   today: isToday,
@@ -41,67 +61,127 @@ const resolveAbsolutePath = (file: FileMeta): string => join('/', ...file.filePa
 const isNextSevenDaysVisible = (task: FileTask, now: Date): boolean =>
   findNextOccurrenceInRange(task, now, 7) !== undefined || isOverdue(task, now);
 
-const isTaskVisible = (task: FileTask, filter: AgendaFilter, now: Date): boolean => {
+const isPresetVisible = (task: FileTask, filter: AgendaFilter, now: Date): boolean => {
   if (filter === 'all') return true;
   if (filter === 'next7days') return isNextSevenDaysVisible(task, now);
-  return filterPredicates[filter](task);
+  return filterPredicates[filter](task, now);
 };
 
-const computeViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date => {
+const computePresetViewDate = (task: FileTask, filter: AgendaFilter, now: Date): Date => {
   if (filter === 'tomorrow') return addDays(todayForAgenda(now), 1);
   if (filter !== 'next7days') return todayForAgenda(now);
-  const viewDate = findNextOccurrenceInRange(task, now, 7);
-  return viewDate ?? todayForAgenda(now);
+  return findNextOccurrenceInRange(task, now, 7) ?? todayForAgenda(now);
 };
 
-const toTaskView = (
+const resolveTaskViewDate = (
   task: FileTask,
-  filter: AgendaFilter,
+  filter: AgendaDateFilter,
   now: Date,
-  filePath = '',
-): AgendaTaskView => ({
-  ...task,
-  filePath,
-  viewDate: computeViewDate(task, filter, now),
-});
+): Date | undefined => {
+  if (filter.kind === 'range') {
+    return findTaskDateInRange(task, parseISO(filter.from), parseISO(filter.to));
+  }
+  if (!isPresetVisible(task, filter.value, now)) return undefined;
+  return computePresetViewDate(task, filter.value, now);
+};
 
 export const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
 
-const eligibleTasks = (file: FileMeta): FileTask[] => (file.tasks ?? []).filter(isAgendaEligible);
-
-const applyFilter = (
-  tasks: FileTask[],
-  filter: AgendaFilter,
-  now: Date,
-  filePath = '',
-): AgendaTaskView[] =>
-  tasks
-    .filter((task) => isTaskVisible(task, filter, now))
-    .map((task) => toTaskView(task, filter, now, filePath));
-
-const toGroup = (file: FileMeta, filter: AgendaFilter, now: Date): AgendaTaskGroup | null => {
-  const tasks = applyFilter(eligibleTasks(file), filter, now, resolveAbsolutePath(file));
-  if (!tasks.length) return null;
-  return { fileTitle: resolveFileTitle(file), filePath: resolveAbsolutePath(file), tasks };
+const buildSearchRanks = (
+  matchingTaskIds: readonly string[] | undefined,
+): ReadonlyMap<string, number> | undefined => {
+  if (!matchingTaskIds) return undefined;
+  return new Map(matchingTaskIds.map((taskId, index) => [taskId, index]));
 };
 
-const toGroups = (files: FileMeta[], filter: AgendaFilter, now = new Date()): AgendaTaskGroup[] =>
-  files.flatMap((file) => {
-    const group = toGroup(file, filter, now);
+const toTaskView = (
+  task: FileTask,
+  filePath: string,
+  context: QueryContext,
+): AgendaTaskView | undefined => {
+  const taskId = createAgendaTaskSearchId(filePath, task.id);
+  if (context.rankByTaskId && !context.rankByTaskId.has(taskId)) return undefined;
+  const viewDate = resolveTaskViewDate(task, context.query.dateFilter, context.now);
+  if (!viewDate) return undefined;
+  return { ...task, filePath, viewDate };
+};
+
+const taskRank = (task: AgendaTaskView, ranks: ReadonlyMap<string, number>): number =>
+  ranks.get(createAgendaTaskSearchId(task.filePath, task.id)) ?? Number.MAX_SAFE_INTEGER;
+
+const sortTasksByRank = (
+  tasks: AgendaTaskView[],
+  ranks: ReadonlyMap<string, number> | undefined,
+): AgendaTaskView[] => (ranks ? [...tasks].sort((a, b) => taskRank(a, ranks) - taskRank(b, ranks)) : tasks);
+
+const toGroup = (file: FileMeta, context: QueryContext): AgendaTaskGroup | undefined => {
+  const filePath = resolveAbsolutePath(file);
+  const tasks = (file.tasks ?? [])
+    .filter(isAgendaEligible)
+    .flatMap((task) => {
+      const view = toTaskView(task, filePath, context);
+      return view ? [view] : [];
+    });
+  if (!tasks.length) return undefined;
+  return { fileTitle: resolveFileTitle(file), filePath, tasks: sortTasksByRank(tasks, context.rankByTaskId) };
+};
+
+const groupRank = (group: AgendaTaskGroup, ranks: ReadonlyMap<string, number>): number =>
+  Math.min(...group.tasks.map((task) => taskRank(task, ranks)));
+
+const sortGroupsByRank = (
+  groups: AgendaTaskGroup[],
+  ranks: ReadonlyMap<string, number> | undefined,
+): AgendaTaskGroup[] =>
+  ranks ? [...groups].sort((a, b) => groupRank(a, ranks) - groupRank(b, ranks)) : groups;
+
+export const buildAgendaTaskGroups = (
+  files: FileMeta[],
+  query: AgendaTaskQuery,
+  now = new Date(),
+): AgendaTaskGroup[] => {
+  const rankByTaskId = buildSearchRanks(query.matchingTaskIds);
+  const context: QueryContext = { query, now, rankByTaskId };
+  const groups = files.flatMap((file) => {
+    const group = toGroup(file, context);
     return group ? [group] : [];
   });
+  return sortGroupsByRank(groups, rankByTaskId);
+};
 
 export const useAgendaTasks = () => {
   const tasksStore = useAgendaTasksStore();
   const filterStore = useAgendaFilterStore();
   const { agendaFiles, loading, totalByFilter } = storeToRefs(tasksStore);
+  const indexedQuery = ref(filterStore.searchQuery);
+  const updateIndexedQuery = debounce((query: string) => {
+    indexedQuery.value = query;
+  }, DEFAULT_INPUT_DEBOUNCE);
 
-  const groups = computed(() => toGroups(agendaFiles.value, filterStore.activeFilter));
+  watch(() => filterStore.searchQuery, updateIndexedQuery);
+
+  const matchingTaskIds = computed(() => {
+    if (!indexedQuery.value.trim()) return undefined;
+    return tasksStore.searchTaskIds(indexedQuery.value);
+  });
+
+  const groups = computed(() =>
+    buildAgendaTaskGroups(agendaFiles.value, {
+      dateFilter: filterStore.dateFilter,
+      matchingTaskIds: matchingTaskIds.value,
+    }),
+  );
+
+  const filteredTaskCount = computed(() =>
+    groups.value.reduce((total, group) => total + group.tasks.length, 0),
+  );
 
   onMounted(() => {
     void tasksStore.ensureLoaded();
   });
 
-  return { loading, groups, totalByFilter };
+  onUnmounted(updateIndexedQuery.cancel);
+
+  return { loading, groups, totalByFilter, filteredTaskCount };
 };

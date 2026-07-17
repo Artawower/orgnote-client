@@ -20,6 +20,8 @@ export const AGENDA_TASKS_TOMORROW_COMMAND = 'agenda tasks: tomorrow';
 export const AGENDA_TASKS_NEXT7DAYS_COMMAND = 'agenda tasks: next 7 days';
 export const AGENDA_TASKS_OVERDUE_COMMAND = 'agenda tasks: overdue';
 export const AGENDA_TASKS_ALL_COMMAND = 'agenda tasks: all';
+export const AGENDA_TASKS_DATE_FILTER_COMMAND = 'agenda tasks: choose dates';
+export const AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND = 'agenda tasks: clear dates';
 
 export const AGENDA_TASKS_VIEWER_ID = 'org-agenda:tasks';
 export const AGENDA_HABITS_VIEWER_ID = 'org-agenda:habits';

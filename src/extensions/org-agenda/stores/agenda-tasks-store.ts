@@ -11,6 +11,12 @@ import { AGENDA_DEFAULT_INBOX_FILENAME } from '../constants';
 import { orgAgendaManifest } from '../manifest';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
 import { createTask, type CreateTaskInput } from 'orgnote-api/utils';
+import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
+import {
+  createAgendaTaskSearchId,
+  createAgendaTaskSearchIndex,
+  type AgendaTaskSearchEntry,
+} from '../services/agenda-task-search-index';
 
 const isAgendaEligible = (task: FileTask): boolean =>
   task.kind === 'headline-checkbox' || task.kind === 'headline-todo';
@@ -18,6 +24,25 @@ const isAgendaEligible = (task: FileTask): boolean =>
 const eligibleTasks = (file: FileMeta): FileTask[] => (file.tasks ?? []).filter(isAgendaEligible);
 
 const resolveAbsolutePath = (file: FileMeta): string => join('/', ...file.filePath);
+
+const resolveFileTitle = (file: FileMeta): string =>
+  file.title?.trim() || extractOrgTitleFromPath(resolveAbsolutePath(file));
+
+const toSearchEntry = (file: FileMeta, task: FileTask): AgendaTaskSearchEntry => {
+  const filePath = resolveAbsolutePath(file);
+  return {
+    searchId: createAgendaTaskSearchId(filePath, task.id),
+    text: task.text,
+    tags: task.tags,
+    fileTitle: resolveFileTitle(file),
+    filePath,
+    todoKeyword: task.todoKeyword,
+    priority: task.priority,
+  };
+};
+
+const buildSearchEntries = (files: FileMeta[]): AgendaTaskSearchEntry[] =>
+  files.flatMap((file) => eligibleTasks(file).map((task) => toSearchEntry(file, task)));
 
 const isUnderAgendaPath = (file: FileMeta, agendaFilesPath: string | undefined): boolean => {
   if (!agendaFilesPath) return true;
@@ -56,6 +81,7 @@ const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<Agenda
 export const useAgendaTasksStore = defineStore('agendaTasks', () => {
   const allFiles = shallowRef<FileMeta[]>([]);
   const loading = ref(false);
+  const taskSearchIndex = createAgendaTaskSearchIndex();
   let watchersAttached = false;
 
   const agendaConfig = computed(() =>
@@ -77,7 +103,10 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
       return;
     }
     allFiles.value = result.value;
+    taskSearchIndex.replace(buildSearchEntries(result.value));
   };
+
+  const searchTaskIds = (query: string): string[] => taskSearchIndex.search(query);
 
   const attachWatchersOnce = (): void => {
     if (watchersAttached) return;
@@ -138,6 +167,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
     totalByFilter,
     loadFiles,
     ensureLoaded,
+    searchTaskIds,
     createTaskInFile,
   };
 });

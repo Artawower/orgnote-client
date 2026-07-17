@@ -71,3 +71,27 @@ test('createTaskInFile_returnsFalse_whenWriteFails', async () => {
   expect(ok).toBe(false);
   expect(mockReportError).toHaveBeenCalledOnce();
 });
+
+test('loadFiles makes agenda tasks searchable through the task index', async () => {
+  mockGetAll.mockResolvedValue([
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      title: 'Work',
+      tasks: [
+        {
+          id: 'task-1',
+          kind: 'headline-todo',
+          state: 'todo',
+          text: 'Prepare quarterly review',
+          tags: ['planning'],
+        },
+      ],
+    },
+  ]);
+  const store = useAgendaTasksStore();
+
+  await store.loadFiles();
+
+  expect(store.searchTaskIds('quarter')).toEqual(['/agenda/work.org\u0000task-1']);
+});

@@ -19,11 +19,8 @@
     />
     <slot name="actions" />
     <action-button
-      v-if="clearable"
+      v-if="clearable && model"
       class="clear-action"
-      :class="{ 'clear-action-hidden': !model }"
-      :aria-hidden="!model"
-      :tabindex="model ? 0 : -1"
       @click="model = ''"
       icon="close"
       :size="size"
@@ -126,10 +123,5 @@ defineExpose({
 
 .clear-action {
   flex-shrink: 0;
-}
-
-.clear-action-hidden {
-  visibility: hidden;
-  pointer-events: none;
 }
 </style>

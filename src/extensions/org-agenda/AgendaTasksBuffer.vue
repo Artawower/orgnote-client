@@ -2,13 +2,16 @@
   <app-buffer-content constrained no-padding-bottom>
     <container-layout class="agenda-buffer" :body-scroll="false" gap="sm">
       <template #header>
-        <agenda-quick-add
-          :agenda-files-path="agendaConfig.agendaFilesPath ?? '/'"
-          :inbox-file-path="resolvedInboxPath"
-          :known-files="knownOrgFiles"
-          :loading="quickAddLoading"
-          @submit="submitQuickAdd"
-        />
+        <app-flex column align-stretch gap="sm">
+          <agenda-quick-add
+            :agenda-files-path="agendaConfig.agendaFilesPath ?? '/'"
+            :inbox-file-path="resolvedInboxPath"
+            :known-files="knownOrgFiles"
+            :loading="quickAddLoading"
+            @submit="submitQuickAdd"
+          />
+          <agenda-task-query-bar :result-count="filteredTaskCount" />
+        </app-flex>
       </template>
       <template #body>
         <app-flex column start align-stretch gap="sm" class="body-content">
@@ -56,6 +59,7 @@ import AppBufferContent from 'src/components/AppBufferContent.vue';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
+import AgendaTaskQueryBar from './components/AgendaTaskQueryBar.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
 import type { AgendaTaskView } from './composables/use-agenda-tasks';
 import { completeTask } from './mutations/complete-task';
@@ -79,7 +83,7 @@ import {
 } from 'src/utils/org-editor/org-title-parser';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-const { loading, groups } = useAgendaTasks();
+const { loading, groups, filteredTaskCount } = useAgendaTasks();
 const fileContent = api.core.useFileContent();
 const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
   useAgendaQuickAddSubmit();

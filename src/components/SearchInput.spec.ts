@@ -71,23 +71,17 @@ test('SearchInput shows clear button when clearable and model has value', async 
   const clearButton = wrapper.findComponent({ name: 'ActionButton' });
 
   expect(clearButton.exists()).toBe(true);
-  expect(clearButton.classes()).not.toContain('clear-action-hidden');
-  expect(clearButton.attributes('tabindex')).toBe('0');
 });
 
-test('SearchInput reserves clear button space when model is empty', () => {
+test('SearchInput does not render the clear button when model is empty', () => {
   const wrapper = mount(SearchInput, {
     props: {
       clearable: true,
       modelValue: '',
     },
   });
-  const clearButton = wrapper.findComponent({ name: 'ActionButton' });
 
-  expect(clearButton.exists()).toBe(true);
-  expect(clearButton.classes()).toContain('clear-action-hidden');
-  expect(clearButton.attributes('aria-hidden')).toBe('true');
-  expect(clearButton.attributes('tabindex')).toBe('-1');
+  expect(wrapper.findComponent({ name: 'ActionButton' }).exists()).toBe(false);
 });
 
 test('SearchInput hides clear button when clearable is false', () => {

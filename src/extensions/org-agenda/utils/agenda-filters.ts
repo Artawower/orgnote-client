@@ -158,6 +158,41 @@ const getDoneDates = (task: FileTask): string[] => {
   return task.lastDoneAt ? [task.lastDoneAt] : [];
 };
 
+const normalizeDateRange = (from: Date, to: Date): [Date, Date] => {
+  const fromDay = startOfDay(from);
+  const toDay = startOfDay(to);
+  return fromDay <= toDay ? [fromDay, toDay] : [toDay, fromDay];
+};
+
+const getDoneDateKeys = (task: FileTask): Set<string> =>
+  new Set(
+    getDoneDates(task)
+      .map(parseOrgDate)
+      .filter((date) => !Number.isNaN(date.getTime()))
+      .map(toDateKey),
+  );
+
+const getCompletedDatesInRange = (task: FileTask, from: Date, to: Date): Date[] =>
+  getDoneDates(task)
+    .map(parseOrgDate)
+    .filter((date) => !Number.isNaN(date.getTime()) && date >= from && date <= to);
+
+const mergeTaskDates = (occurrences: Date[], completions: Date[]): Date[] => {
+  const datesByKey = new Map<string, Date>();
+  [...occurrences, ...completions].forEach((date) => datesByKey.set(toDateKey(date), date));
+  return [...datesByKey.values()].sort((left, right) => left.getTime() - right.getTime());
+};
+
+export const findTaskDateInRange = (task: FileTask, from: Date, to: Date): Date | undefined => {
+  const [rangeStart, rangeEnd] = normalizeDateRange(from, to);
+  const taskDate = firstTaskDate(task);
+  const occurrences = taskDate ? getDateOccurrencesInRange(taskDate, rangeStart, rangeEnd) : [];
+  const done = getDoneDateKeys(task);
+  const firstUnfinished = occurrences.find((date) => !done.has(toDateKey(date)));
+  if (firstUnfinished) return firstUnfinished;
+  return mergeTaskDates(occurrences, getCompletedDatesInRange(task, rangeStart, rangeEnd)).at(-1);
+};
+
 export const findNextOccurrenceInRange = (
   task: FileTask,
   now: Date,
@@ -165,7 +200,7 @@ export const findNextOccurrenceInRange = (
 ): Date | undefined => {
   const occurrences = getOccurrencesInRange(task, now, 0, daysAhead);
   if (!occurrences.length) return undefined;
-  const done = new Set(getDoneDates(task));
+  const done = getDoneDateKeys(task);
   const firstUnfinished = occurrences.find((date) => !done.has(toDateKey(date)));
   return firstUnfinished ?? occurrences.at(-1);
 };

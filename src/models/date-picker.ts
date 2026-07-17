@@ -15,6 +15,10 @@ export interface DateRange {
   to: string;
 }
 
+export type DateRangePickerResult =
+  | ({ readonly action: 'apply' } & Readonly<DateRange>)
+  | { readonly action: 'clear' };
+
 export interface DateNavigation {
   year: number;
   month: number;
