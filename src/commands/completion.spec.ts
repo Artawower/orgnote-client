@@ -17,13 +17,24 @@ const createApi = (canAcceptAutocomplete: boolean): OrgNoteApi =>
     },
   }) as unknown as OrgNoteApi;
 
-const getAutocompleteCommand = () => {
-  const command = getCompletionCommands().find(
-    (command) => command.command === DefaultCommands.ACCEPT_COMPLETION_AUTOCOMPLETE,
-  );
-  if (!command) throw new Error('Expected autocomplete command');
+const getCommand = (commandName: DefaultCommands) => {
+  const command = getCompletionCommands().find((command) => command.command === commandName);
+  if (!command) throw new Error(`Expected ${commandName} command`);
   return command;
 };
+
+const getAutocompleteCommand = () => getCommand(DefaultCommands.ACCEPT_COMPLETION_AUTOCOMPLETE);
+
+test('getCompletionCommands registers command palette shortcuts in shell context', () => {
+  const command = getCommand(DefaultCommands.TOGGLE_COMMANDS);
+
+  expect(command.defaultHotkeys).toEqual([
+    { key: 'p', modifiers: ['Mod'] },
+    { key: 'p', modifiers: ['Mod', 'Shift'] },
+  ]);
+  expect(command.keybindingContext).toBe(KEYBINDING_CONTEXTS.SHELL);
+  expect(command.interactive).toBe(true);
+});
 
 test('getCompletionCommands registers autocomplete command on Tab in completion context', () => {
   const command = getAutocompleteCommand();
