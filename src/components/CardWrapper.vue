@@ -49,7 +49,7 @@ withDefaults(
   }
 
   &.plain {
-    background: var(--bg-elevated);
+    background: var(--card-bg, var(--bg-elevated));
   }
 
   &.clear {
