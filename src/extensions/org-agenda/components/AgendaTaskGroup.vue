@@ -8,7 +8,12 @@
     </template>
     <template #body>
       <menu-group>
-        <template v-for="task in group.tasks" :key="task.id">
+        <div
+          v-for="task in group.tasks"
+          :key="task.id"
+          class="task-item"
+          :class="{ expanded: expandedTaskId === task.id }"
+        >
           <agenda-task-row
             :task="task"
             :expanded="expandedTaskId === task.id"
@@ -20,7 +25,7 @@
             @open-task="onTaskOpen(task)"
             @edit-expand="onEditExpand(task)"
           />
-          <card-wrapper v-if="expandedTaskId === task.id" class="edit-form" border padding>
+          <div v-if="expandedTaskId === task.id" class="edit-form">
             <agenda-task-form
               v-model:title="editDraft.title"
               v-model:body="editDraft.body"
@@ -29,8 +34,8 @@
               @cancel="expandedTaskId = null"
               @body-blur="onBodyBlur(task)"
             />
-          </card-wrapper>
-        </template>
+          </div>
+        </div>
       </menu-group>
     </template>
   </app-spoiler>
@@ -43,7 +48,6 @@ import AppSpoiler from 'src/components/AppSpoiler.vue';
 import AppTitle from 'src/components/AppTitle.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
-import CardWrapper from 'src/components/CardWrapper.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';
 import AgendaTaskRow from './AgendaTaskRow.vue';
 import AgendaTaskForm from './AgendaTaskForm.vue';
@@ -138,8 +142,17 @@ const onBodyBlur = (task: AgendaTaskView): void => {
 </script>
 
 <style lang="scss" scoped>
+.task-item {
+  min-width: 0;
+}
+
+.task-item.expanded {
+  background: var(--agenda-task-expanded-bg, var(--bg-elevated));
+  border-radius: var(--agenda-task-expanded-radius, var(--menu-item-active-radius));
+}
+
 .edit-form {
-  border-top: var(--border-default);
-  border-radius: 0;
+  box-sizing: border-box;
+  padding: var(--agenda-task-editor-padding, var(--padding-md));
 }
 </style>

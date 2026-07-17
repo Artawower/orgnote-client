@@ -33,7 +33,9 @@ const AppSpoilerStub = defineComponent({
 const AgendaTaskRowStub = defineComponent({
   name: 'AgendaTaskRow',
   props: { task: Object },
-  template: '<div class="agenda-task-row-stub">{{ task.text }}</div>',
+  emits: ['edit-expand'],
+  template:
+    '<button class="agenda-task-row-stub" @click="$emit(\'edit-expand\')">{{ task.text }}</button>',
 });
 
 const group: AgendaTaskGroupView = {
@@ -76,4 +78,15 @@ test('AgendaTaskGroup renders tasks as a flat menu group', () => {
 
   expect(wrapper.getComponent(AppSpoilerStub).props('variant')).toBe('flat');
   expect(wrapper.getComponent(MenuGroup).findAll('.agenda-task-row-stub')).toHaveLength(2);
+});
+
+test('AgendaTaskGroup combines an expanded task row and editor into one surface', async () => {
+  const wrapper = mountTaskGroup();
+
+  await wrapper.findAll('.agenda-task-row-stub')[0]?.trigger('click');
+
+  const expandedTask = wrapper.get('.task-item.expanded');
+  expect(expandedTask.get('.agenda-task-row-stub').text()).toBe('First task');
+  expect(expandedTask.find('.edit-form').exists()).toBe(true);
+  expect(expandedTask.find('.card-wrapper').exists()).toBe(false);
 });
