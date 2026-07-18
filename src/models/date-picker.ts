@@ -15,9 +15,14 @@ export interface DateRange {
   to: string;
 }
 
-export type DateRangePickerResult =
-  | ({ readonly action: 'apply' } & Readonly<DateRange>)
-  | { readonly action: 'clear' };
+export type DatePickerSelection = string | DateRange | undefined;
+export type DatePickerSelectionMode = 'single' | 'range' | 'both';
+export type DatePickerSelectionForMode<TMode extends DatePickerSelectionMode> =
+  TMode extends 'single'
+    ? string | undefined
+    : TMode extends 'range'
+      ? DateRange | undefined
+      : DatePickerSelection;
 
 export interface DateNavigation {
   year: number;

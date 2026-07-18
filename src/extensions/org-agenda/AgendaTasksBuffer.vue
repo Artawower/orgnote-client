@@ -8,6 +8,7 @@
             :inbox-file-path="resolvedInboxPath"
             :known-files="knownOrgFiles"
             :loading="quickAddLoading"
+            :default-date="quickAddDate"
             @submit="submitQuickAdd"
           />
           <agenda-task-query-bar :result-count="filteredTaskCount" />
@@ -50,6 +51,7 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -71,6 +73,8 @@ import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
 import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
 import { useAgendaQuickAddSubmit } from './composables/use-agenda-quick-add-submit';
+import { useAgendaFilterStore } from './stores/agenda-filter-store';
+import { resolveAgendaQuickAddDate } from './utils/agenda-date-selection';
 import { changeTaskTitle } from './mutations/task-title';
 import { changeTaskPriority } from './mutations/task-priority';
 import { changeTaskTags } from './mutations/task-tags';
@@ -84,6 +88,8 @@ import {
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, groups, filteredTaskCount } = useAgendaTasks();
+const filterStore = useAgendaFilterStore();
+const quickAddDate = computed(() => resolveAgendaQuickAddDate(filterStore.dateFilter));
 const fileContent = api.core.useFileContent();
 const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
   useAgendaQuickAddSubmit();

@@ -27,8 +27,10 @@ const mountModal = async () => {
       stubs: {
         DatePickerSheet: {
           props: ['modelValue'],
+          emits: ['confirm'],
           template: `
             <div class="sheet">
+              <button class="confirm-range" @click="$emit('confirm', { from: '2026-06-18', to: '2026-06-22' })" />
               <slot name="header" />
               <slot name="sections" />
               <slot name="footer" :value="modelValue" />
@@ -47,4 +49,14 @@ test('DatePickerSheetModal renders custom sheet slots', async () => {
   expect(wrapper.html()).toContain('custom-sections');
   expect(wrapper.html()).toContain('custom-footer');
   expect(wrapper.html()).toContain('2026-06-18');
+});
+
+test('DatePickerSheetModal closes with a confirmed range selection', async () => {
+  const wrapper = await mountModal();
+
+  await wrapper.find('.confirm-range').trigger('click');
+
+  expect(modalClose).toHaveBeenCalledWith({
+    selection: { from: '2026-06-18', to: '2026-06-22' },
+  });
 });

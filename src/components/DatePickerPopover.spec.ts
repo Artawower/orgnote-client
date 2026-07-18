@@ -20,13 +20,14 @@ vi.mock('src/boot/report', () => ({
   reporter: { reportError },
 }));
 
-const mountPopover = async () => {
+const mountPopover = async (props: Record<string, unknown> = {}) => {
   const { default: DatePickerPopover } = await import('./DatePickerPopover.vue');
   return mount(DatePickerPopover, {
     props: {
       modelValue: '2026-06-18',
       confirmMode: true,
       showShortcuts: false,
+      ...props,
     },
     slots: {
       trigger: '<template #trigger="{ open }"><button class="trigger" @click="open">open</button></template>',
@@ -77,6 +78,27 @@ test('DatePickerPopover opens mobile sheet even when custom sections are provide
   });
 
   expect(sheetWrapper.find('.custom-section').exists()).toBe(true);
+});
+
+test('DatePickerPopover returns a mobile range selection', async () => {
+  desktopBelow.value = true;
+  modalOpen.mockResolvedValue({
+    selection: { from: '2026-06-18', to: '2026-06-22' },
+  });
+  const wrapper = await mountPopover({
+    modelValue: { from: '2026-06-18', to: '2026-06-20' },
+    selectionMode: 'both',
+  });
+
+  await wrapper.find('.trigger').trigger('click');
+  await flushPromises();
+
+  expect(wrapper.emitted('update:modelValue')).toEqual([
+    [{ from: '2026-06-18', to: '2026-06-22' }],
+  ]);
+  expect(wrapper.emitted('confirm')).toEqual([
+    [{ from: '2026-06-18', to: '2026-06-22' }],
+  ]);
 });
 
 test('DatePickerPopover keeps desktop custom content in popover', async () => {

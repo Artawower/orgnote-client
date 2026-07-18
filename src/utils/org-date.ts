@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns';
+import type { DateRange } from 'src/models/date-picker';
 
 export const ISO_DATE_FORMAT = 'yyyy-MM-dd';
 export const todayIsoDate = (): string => format(new Date(), ISO_DATE_FORMAT);
@@ -87,6 +88,16 @@ export const slashToIsoDate = (slash: string): string => {
   if (!date) return slash;
   return format(date, ISO_DATE_FORMAT);
 };
+
+export const isoRangeToSlashDateRange = (range: Readonly<DateRange>): DateRange => ({
+  from: isoToSlashDate(range.from),
+  to: isoToSlashDate(range.to),
+});
+
+export const slashRangeToIsoDateRange = (range: Readonly<DateRange>): DateRange => ({
+  from: slashToIsoDate(range.from),
+  to: slashToIsoDate(range.to),
+});
 
 const resolveComparisonDate = (date: Date, suffix: string): Date => {
   const timeMatches = suffix.match(/^\s+(\d{1,2}):(\d{2})(?:-\d{1,2}:\d{2})?/);

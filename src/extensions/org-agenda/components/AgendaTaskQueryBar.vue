@@ -8,11 +8,21 @@
       :placeholder="i18nKeys.orgAgendaSearchPlaceholder"
     >
       <template #actions>
-        <command-action-button
-          :command="AGENDA_TASKS_DATE_FILTER_COMMAND"
-          :aria-label="t(i18nKeys.orgTasksSidebarCalendarTitle)"
-          size="sm"
-        />
+        <date-picker-popover
+          :model-value="pickerSelection"
+          selection-mode="both"
+          confirm-mode
+          @confirm="applyDateSelection"
+        >
+          <template #trigger="{ open }">
+            <action-button
+              icon="sym_o_calendar_month"
+              size="sm"
+              :aria-label="t(i18nKeys.orgTasksSidebarCalendarTitle)"
+              @click="open"
+            />
+          </template>
+        </date-picker-popover>
       </template>
     </search-input>
 
@@ -34,25 +44,34 @@
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { useI18n } from 'vue-i18n';
+import ActionButton from 'src/components/ActionButton.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import DatePickerPopover from 'src/components/DatePickerPopover.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
-import {
-  AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND,
-  AGENDA_TASKS_DATE_FILTER_COMMAND,
-} from '../constants';
+import type { DatePickerSelection } from 'src/models/date-picker';
+import { AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND } from '../constants';
+import { resolveAgendaDateSelection } from '../utils/agenda-date-selection';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 
 const props = defineProps<{ resultCount: number }>();
 const filterStore = useAgendaFilterStore();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
+const pickerSelection = computed<DatePickerSelection>(() =>
+  resolveAgendaDateSelection(filterStore.dateFilter),
+);
+const applyDateSelection = (selection: DatePickerSelection): void => {
+  filterStore.setDateSelection(selection);
+};
+
 const formatDate = (date: string): string => format(parseISO(date), 'MMM d, yyyy');
 const dateLabel = computed(() => {
   const filter = filterStore.dateFilter;
-  if (filter.kind !== 'range') return undefined;
+  if (filter.kind === 'preset') return undefined;
+  if (filter.kind === 'day') return formatDate(filter.value);
   if (filter.from === filter.to) return formatDate(filter.from);
   return `${formatDate(filter.from)} – ${formatDate(filter.to)}`;
 });

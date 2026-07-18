@@ -16,3 +16,34 @@ test('AgendaFilterStore selects an inclusive date range independently from searc
   expect(store.dateFilter).toEqual({ kind: 'range', from: '2026-05-14', to: '2026-05-16' });
   expect(store.activePreset).toBeUndefined();
 });
+
+test('AgendaFilterStore preserves a selected non-Today day', () => {
+  const store = useAgendaFilterStore();
+
+  store.setDateSelection('2026-05-20', '2026-05-18');
+
+  expect(store.dateFilter).toEqual({ kind: 'day', value: '2026-05-20' });
+});
+
+test('AgendaFilterStore maps a selected single Today to the Today preset', () => {
+  const store = useAgendaFilterStore();
+
+  store.setDateSelection('2026-05-18', '2026-05-18');
+
+  expect(store.dateFilter).toEqual({ kind: 'preset', value: 'today' });
+});
+
+test('AgendaFilterStore keeps a Today-only range exact', () => {
+  const store = useAgendaFilterStore();
+
+  store.setDateSelection(
+    { from: '2026-05-18', to: '2026-05-18' },
+    '2026-05-18',
+  );
+
+  expect(store.dateFilter).toEqual({
+    kind: 'range',
+    from: '2026-05-18',
+    to: '2026-05-18',
+  });
+});

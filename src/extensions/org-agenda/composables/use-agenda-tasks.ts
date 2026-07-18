@@ -78,6 +78,10 @@ const resolveTaskViewDate = (
   filter: AgendaDateFilter,
   now: Date,
 ): Date | undefined => {
+  if (filter.kind === 'day') {
+    const date = parseISO(filter.value);
+    return findTaskDateInRange(task, date, date);
+  }
   if (filter.kind === 'range') {
     return findTaskDateInRange(task, parseISO(filter.from), parseISO(filter.to));
   }

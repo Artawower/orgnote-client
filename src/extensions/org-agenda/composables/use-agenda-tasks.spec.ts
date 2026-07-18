@@ -54,6 +54,37 @@ test('buildAgendaTaskGroups filters tasks by an inclusive custom date range', ()
   expect(groups[0]?.tasks[0]?.viewDate.getDate()).toBe(15);
 });
 
+test('buildAgendaTaskGroups filters tasks by an exact day', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      title: 'Work',
+      tasks: [
+        {
+          ...baseTask('headline-todo'),
+          id: 'selected',
+          scheduled: { date: '2026-05-15', active: true, hasTime: false, start: 0, end: 0 },
+        },
+        {
+          ...baseTask('headline-todo'),
+          id: 'other',
+          scheduled: { date: '2026-05-16', active: true, hasTime: false, start: 0, end: 0 },
+        },
+      ],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(
+    files,
+    { dateFilter: { kind: 'day', value: '2026-05-15' } },
+    new Date('2026-05-12T12:00:00'),
+  );
+
+  expect(groups[0]?.tasks.map((task) => task.id)).toEqual(['selected']);
+  expect(groups[0]?.tasks[0]?.viewDate.getDate()).toBe(15);
+});
+
 test('buildAgendaTaskGroups combines task search with an exact date range', () => {
   const files: FileMeta[] = [
     {

@@ -1,6 +1,7 @@
 <template>
   <date-picker-sheet
     :model-value="modelValue"
+    :selection-mode="selectionMode"
     :confirm-mode="confirmMode"
     :show-shortcuts="showShortcuts"
     @update:model-value="onUpdate"
@@ -21,14 +22,20 @@
 <script lang="ts" setup>
 import { api } from 'src/boot/api';
 import DatePickerSheet from './DatePickerSheet.vue';
+import type {
+  DatePickerSelection,
+  DatePickerSelectionMode,
+} from 'src/models/date-picker';
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: string;
+    modelValue?: DatePickerSelection;
+    selectionMode?: DatePickerSelectionMode;
     confirmMode?: boolean;
     showShortcuts?: boolean;
   }>(),
   {
+    selectionMode: 'single',
     confirmMode: false,
     showShortcuts: true,
   },
@@ -36,16 +43,16 @@ const props = withDefaults(
 
 const modal = api.ui.useModal();
 
-const closeWithDate = (date: string | undefined): void => {
-  modal.close({ date: date ?? null });
+const closeWithSelection = (selection: DatePickerSelection): void => {
+  modal.close({ selection: selection ?? null });
 };
 
-const onUpdate = (date: string | undefined): void => {
+const onUpdate = (selection: DatePickerSelection): void => {
   if (props.confirmMode) return;
-  closeWithDate(date);
+  closeWithSelection(selection);
 };
 
-const onConfirm = (date: string | undefined): void => {
-  closeWithDate(date);
+const onConfirm = (selection: DatePickerSelection): void => {
+  closeWithSelection(selection);
 };
 </script>

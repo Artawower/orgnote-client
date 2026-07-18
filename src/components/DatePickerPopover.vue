@@ -6,6 +6,7 @@
     <template #content>
       <date-picker-sheet
         :model-value="modelValue"
+        :selection-mode="selectionMode"
         :confirm-mode="confirmMode"
         :show-shortcuts="showShortcuts"
         @update:model-value="onUpdate"
@@ -25,7 +26,7 @@
   </app-popover>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup generic="TMode extends DatePickerSelectionMode = 'single'">
 import { defineComponent, h, ref, useSlots, type Slots } from 'vue';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -33,12 +34,19 @@ import { reporter } from 'src/boot/report';
 import AppPopover from 'src/components/AppPopover.vue';
 import DatePickerSheet from 'src/components/DatePickerSheet.vue';
 import DatePickerSheetModal from 'src/components/DatePickerSheetModal.vue';
+import type {
+  DatePickerSelection,
+  DatePickerSelectionForMode,
+  DatePickerSelectionMode,
+} from 'src/models/date-picker';
 
-type DateSheetResult = { date: string | null } | undefined;
+type DateSheetResult = { selection: DatePickerSelection | null } | undefined;
+type SelectionValue = DatePickerSelectionForMode<TMode>;
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: string;
+    modelValue?: SelectionValue;
+    selectionMode?: TMode;
     confirmMode?: boolean;
     showShortcuts?: boolean;
   }>(),
@@ -49,8 +57,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | undefined];
-  confirm: [value: string | undefined];
+  'update:modelValue': [value: SelectionValue];
+  confirm: [value: SelectionValue];
   closed: [];
 }>();
 
@@ -80,6 +88,7 @@ const createMobileSheet = () =>
         DatePickerSheetModal,
         {
           modelValue: props.modelValue,
+          selectionMode: props.selectionMode,
           confirmMode: props.confirmMode,
           showShortcuts: props.showShortcuts,
         },
@@ -100,14 +109,12 @@ const openMobileSheet = async (): Promise<void> => {
 
   if (result.isErr()) {
     reporter.reportError(result.error);
+  }
+  if (result.isErr() || !result.value) {
     emit('closed');
     return;
   }
-  if (!result.value) {
-    emit('closed');
-    return;
-  }
-  const value = result.value.date ?? undefined;
+  const value = toSelectionValue(result.value.selection ?? undefined);
   emit('update:modelValue', value);
   emit('confirm', value);
 };
@@ -121,15 +128,17 @@ const handleOpen = (toggle: () => void): void => {
   toggle();
 };
 
-const onUpdate = (value: string | undefined): void => {
-  emit('update:modelValue', value);
+const toSelectionValue = (value: DatePickerSelection): SelectionValue => value as SelectionValue;
+
+const onUpdate = (value: DatePickerSelection): void => {
+  emit('update:modelValue', toSelectionValue(value));
   if (!props.confirmMode) popoverRef.value?.close();
 };
 
-const onConfirm = (value: string | undefined): void => {
+const onConfirm = (value: DatePickerSelection): void => {
   isClosingWithConfirm.value = true;
   popoverRef.value?.close();
-  emit('confirm', value);
+  emit('confirm', toSelectionValue(value));
 };
 
 const onPopoverClosed = (): void => {

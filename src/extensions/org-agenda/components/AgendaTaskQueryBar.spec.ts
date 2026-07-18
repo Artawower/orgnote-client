@@ -1,4 +1,4 @@
-import { beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
@@ -17,52 +17,96 @@ const SearchInputStub = defineComponent({
   setup: (_, { slots }) => () => h('div', [slots.actions?.()]),
 });
 
+const DatePickerPopoverStub = defineComponent({
+  name: 'DatePickerPopover',
+  props: ['modelValue', 'selectionMode', 'confirmMode'],
+  emits: ['confirm'],
+  setup: (_, { slots }) => () => h('div', [slots.trigger?.({ open: vi.fn() })]),
+});
+
 const CommandActionButtonStub = defineComponent({
   name: 'CommandActionButton',
   props: ['command'],
   setup: () => () => h('button'),
 });
 
-beforeEach(() => {
-  setActivePinia(createPinia());
-});
-
-test('AgendaTaskQueryBar updates the Agenda search query', async () => {
+const mountQueryBar = async () => {
   const { default: AgendaTaskQueryBar } = await import('./AgendaTaskQueryBar.vue');
-  const wrapper = mount(AgendaTaskQueryBar, {
+  return mount(AgendaTaskQueryBar, {
     props: { resultCount: 4 },
     global: {
       stubs: {
         SearchInput: SearchInputStub,
+        DatePickerPopover: DatePickerPopoverStub,
         CommandActionButton: CommandActionButtonStub,
       },
     },
   });
+};
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+test('AgendaTaskQueryBar updates the Agenda search query', async () => {
+  const wrapper = await mountQueryBar();
 
   await wrapper.findComponent(SearchInputStub).vm.$emit('update:modelValue', 'quarterly');
 
   expect(useAgendaFilterStore().searchQuery).toBe('quarterly');
 });
 
-test('AgendaTaskQueryBar shows the selected range and date commands', async () => {
-  const store = useAgendaFilterStore();
-  store.setDateRange('2026-05-14', '2026-05-18');
-  const { default: AgendaTaskQueryBar } = await import('./AgendaTaskQueryBar.vue');
-  const wrapper = mount(AgendaTaskQueryBar, {
-    props: { resultCount: 4 },
-    global: {
-      stubs: {
-        SearchInput: SearchInputStub,
-        CommandActionButton: CommandActionButtonStub,
-      },
-    },
-  });
+test('AgendaTaskQueryBar maps a selected single Today to the Today preset', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-05-18T12:00:00'));
+  const wrapper = await mountQueryBar();
 
+  await wrapper.findComponent(DatePickerPopoverStub).vm.$emit('confirm', '2026-05-18');
+
+  expect(useAgendaFilterStore().dateFilter).toEqual({ kind: 'preset', value: 'today' });
+});
+
+test('AgendaTaskQueryBar reopens a non-Today single selection in single mode', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-05-18T12:00:00'));
+  const wrapper = await mountQueryBar();
+  const picker = wrapper.findComponent(DatePickerPopoverStub);
+
+  await picker.vm.$emit('confirm', '2026-05-20');
+  await wrapper.vm.$nextTick();
+
+  expect(useAgendaFilterStore().dateFilter).toEqual({
+    kind: 'day',
+    value: '2026-05-20',
+  });
+  expect(picker.props('modelValue')).toBe('2026-05-20');
+});
+
+test('AgendaTaskQueryBar applies a range selected from the responsive picker', async () => {
+  const wrapper = await mountQueryBar();
+  const picker = wrapper.findComponent(DatePickerPopoverStub);
+
+  await picker.vm.$emit('confirm', { from: '2026-05-14', to: '2026-05-18' });
+
+  expect(picker.props('selectionMode')).toBe('both');
+  expect(useAgendaFilterStore().dateFilter).toEqual({
+    kind: 'range',
+    from: '2026-05-14',
+    to: '2026-05-18',
+  });
+});
+
+test('AgendaTaskQueryBar shows the selected range and clear command', async () => {
+  useAgendaFilterStore().setDateRange('2026-05-14', '2026-05-18');
+  const wrapper = await mountQueryBar();
   const commands = wrapper
     .findAllComponents(CommandActionButtonStub)
     .map((button) => button.props('command'));
 
   expect(wrapper.text()).toContain('May 14, 2026 – May 18, 2026');
-  expect(commands).toContain('agenda tasks: choose dates');
-  expect(commands).toContain('agenda tasks: clear dates');
+  expect(commands).toEqual(['agenda tasks: clear dates']);
 });

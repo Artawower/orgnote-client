@@ -4,6 +4,7 @@ export type AgendaFilter = 'overdue' | 'today' | 'tomorrow' | 'next7days' | 'all
 
 export type AgendaDateFilter =
   | { readonly kind: 'preset'; readonly value: AgendaFilter }
+  | { readonly kind: 'day'; readonly value: string }
   | ({ readonly kind: 'range' } & Readonly<DateRange>);
 
 export interface AgendaTaskQuery {

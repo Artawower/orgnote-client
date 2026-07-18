@@ -24,6 +24,7 @@
 
       <template #title-actions>
         <agenda-schedule-button
+          v-if="habitMode"
           v-model="draft.scheduled"
           v-model:habit="draft.isHabit"
           @closed="focusTitleInput"
@@ -47,11 +48,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { useAgendaMiniEditor } from '../composables/use-agenda-mini-editor';
 import { useI18n } from 'vue-i18n';
-import { format } from 'date-fns';
-
 import type { FileMeta } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
 import AppBadge from 'src/components/AppBadge.vue';
@@ -69,6 +68,7 @@ import {
   removePriorityFromTitle,
 } from 'src/utils/org-editor/org-title-parser';
 import { fileBaseName } from 'src/utils/file-path';
+import { todayIsoDate } from 'src/utils/org-date';
 
 interface Props {
   agendaFilesPath: string;
@@ -76,6 +76,7 @@ interface Props {
   knownFiles?: string[];
   loading?: boolean;
   habitMode?: boolean;
+  defaultDate?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -95,18 +96,28 @@ const targetFile = ref<string | undefined>();
 const isTildeCompletionOpen = ref(false);
 const formRef = ref<InstanceType<typeof AgendaTaskForm> | null>(null);
 
-const todayIsoDate = (): string => format(new Date(), 'yyyy-MM-dd');
+const resolveDefaultSchedule = (): AgendaTaskDraft['scheduled'] => ({
+  date: props.defaultDate ?? todayIsoDate(),
+});
 
-const lastUserSelectedSchedule = ref<AgendaTaskDraft['scheduled']>({ date: todayIsoDate() });
+const lastUserSelectedSchedule = ref<AgendaTaskDraft['scheduled']>(resolveDefaultSchedule());
 
 const draft = reactive<AgendaTaskDraft>({
   title: '',
   body: '',
   tags: [],
   priority: undefined,
-  scheduled: { date: todayIsoDate() },
+  scheduled: resolveDefaultSchedule(),
   isHabit: props.habitMode,
 });
+
+watch(
+  () => props.defaultDate,
+  () => {
+    if (props.habitMode) return;
+    draft.scheduled = resolveDefaultSchedule();
+  },
+);
 
 const inboxLabel = computed(() => fileBaseName(props.inboxFilePath));
 
@@ -230,7 +241,9 @@ const resetState = (): void => {
   lastUserSelectedSchedule.value = draft.scheduled;
   draft.title = '';
   draft.body = '';
-  draft.scheduled = lastUserSelectedSchedule.value ?? { date: todayIsoDate() };
+  draft.scheduled = props.habitMode
+    ? (lastUserSelectedSchedule.value ?? resolveDefaultSchedule())
+    : resolveDefaultSchedule();
   draft.isHabit = props.habitMode;
   isExpanded.value = false;
 };
@@ -276,11 +289,6 @@ const onFormCancel = (): void => {
 .target-badge {
   cursor: pointer;
   flex-shrink: 0;
-}
-
-.date-trigger {
-  display: inline-flex;
-  cursor: pointer;
 }
 
 .hint {
