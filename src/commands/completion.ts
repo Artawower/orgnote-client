@@ -1,4 +1,5 @@
 import {
+  COMMAND_PALETTE_EXECUTION_ORIGIN,
   DefaultCommands,
   I18N,
   KEYBINDING_CONTEXTS,

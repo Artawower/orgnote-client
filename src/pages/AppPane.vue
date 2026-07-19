@@ -276,5 +276,4 @@ const { opened } = storeToRefs(api.ui.useRightSidebar());
     border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
   }
 }
-
 </style>

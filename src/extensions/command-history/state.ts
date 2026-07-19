@@ -1,4 +1,5 @@
 import {
+  COMMAND_PALETTE_EXECUTION_ORIGIN,
   type Command,
   type CompletionCandidate,
   type ExecuteCommandOptions,
@@ -7,7 +8,6 @@ import {
 import { to } from 'orgnote-api/utils';
 import { record, safeParse, string, type InferOutput } from 'valibot';
 import { getCandidateTitle } from 'src/utils/completion-candidate-title';
-import { COMMAND_PALETTE_EXECUTION_ORIGIN } from 'src/constants/command-palette-origin';
 
 const HISTORY_KEY = 'command-history';
 const COMMAND_HISTORY_SCHEMA = record(string(), string());

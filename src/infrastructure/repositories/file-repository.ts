@@ -80,10 +80,28 @@ export const createFileRepository = (db: Dexie): FileRepository => {
     touchedAt: meta.touchedAt ?? new Date().toISOString(),
   });
 
+  const shouldMigrateId = (meta: FileMeta, existing: FileMeta): boolean =>
+    Boolean(existing.deletedAt && existing.id !== meta.id);
+
+  const migrateId = async (meta: FileMeta, existing: FileMeta): Promise<void> => {
+    const migrated = { ...mergeWithExisting(meta, existing), id: meta.id };
+    await db.transaction('rw', store, async () => {
+      await store.delete(existing.id);
+      await store.put(migrated);
+    });
+  };
+
   const save = async (meta: FileMeta): Promise<void> => {
     const existing = await findByPathIncludingDeleted(meta.filePath);
-    const prepared = existing ? mergeWithExisting(meta, existing) : prepareForInsert(meta);
-    await store.put(prepared);
+    if (!existing) {
+      await store.put(prepareForInsert(meta));
+      return;
+    }
+    if (shouldMigrateId(meta, existing)) {
+      await migrateId(meta, existing);
+      return;
+    }
+    await store.put(mergeWithExisting(meta, existing));
   };
 
   const saveBulk = async (metas: FileMeta[]): Promise<void> => {

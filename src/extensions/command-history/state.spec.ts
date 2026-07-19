@@ -1,12 +1,12 @@
 import { expect, test, vi } from 'vitest';
 import {
+  COMMAND_PALETTE_EXECUTION_ORIGIN,
   type Command,
   type CompletionCandidate,
   type ExecuteCommandOptions,
   type OrgNoteApi,
 } from 'orgnote-api';
 import { createCommandHistoryState } from './state';
-import { COMMAND_PALETTE_EXECUTION_ORIGIN } from 'src/constants/command-palette-origin';
 
 type AfterExecuteCallback = (
   command: Command,

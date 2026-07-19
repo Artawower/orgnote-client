@@ -85,6 +85,7 @@ vi.mock('src/stores/queue', () => ({
   })),
 }));
 
+let useActualParsedMeta = false;
 let mockParsedMeta = {
   id: 'parsed-id' as string | undefined,
   title: 'Parsed Title',
@@ -100,6 +101,7 @@ vi.mock('org-mode-ast', async (importOriginal) => {
     ...actual,
     parse: vi.fn((content: string) => actual.parse(content)),
     withMetaInfo: vi.fn((node) => {
+      if (useActualParsedMeta) return actual.withMetaInfo(node);
       node.updateMeta({ ...mockParsedMeta });
       return node;
     }),
@@ -123,6 +125,7 @@ beforeEach(() => {
   mockFileContentWrite.mockResolvedValue(undefined);
   mockFileInfo.mockImplementation(async (path: string) => mockFileInfos.get(path));
   mockReadDir.mockImplementation(async (path: string) => mockDirEntries.get(path) ?? []);
+  useActualParsedMeta = false;
   mockParsedMeta = {
     id: 'parsed-id',
     title: 'Parsed Title',
@@ -262,6 +265,29 @@ test('processFile regression: file created without org-mode ID becomes searchabl
   saveMock.mockImplementation(async (meta: FileMeta) => {
     mockFiles.set(meta.id, meta);
   });
+});
+
+test('processFile indexes title tags and content from an Org file with a root ID', async () => {
+  const store = useFileSearchStore();
+  useActualParsedMeta = true;
+  mockFileContents.set(
+    '/test.org',
+    ':PROPERTIES:\n:ID: qwfqwf\n:END:\n\n#+FILETAGS: :tag1:gad2:\n\n#+TITLE: SOme EPE\nHello world this is fine...\n',
+  );
+
+  await store.processFile('/test.org');
+
+  for (const query of ['tag1', 'SOme', 'Hello']) {
+    const results = await store.search(query);
+    expect(results).toHaveLength(1);
+    expect(results[0]).toEqual(
+      expect.objectContaining({
+        id: 'qwfqwf',
+        title: 'SOme EPE',
+        tags: ['tag1', 'gad2'],
+      }),
+    );
+  }
 });
 
 test('processFile indexes empty file with path-based title', async () => {

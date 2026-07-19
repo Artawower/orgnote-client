@@ -171,6 +171,39 @@ test('save revives a soft-deleted file when written again (recreate/restore)', a
   expect(await repository.getByPath(file.filePath)).toBeDefined();
 });
 
+test('save migrates a soft-deleted path ID to a new Org ID', async () => {
+  const original: FileMeta = {
+    id: '/test.org',
+    filePath: ['test.org'],
+    title: 'test',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    backlinks: ['linked-note'],
+  };
+  await repository.save(original);
+  await repository.delete(original.id);
+
+  const migrated: FileMeta = {
+    id: 'qwfqwf',
+    filePath: original.filePath,
+    title: 'SOme EPE',
+    tags: ['tag1', 'gad2'],
+  };
+  await repository.save(migrated);
+
+  expect(await repository.getById(original.id)).toBeUndefined();
+  expect(await repository.getById(migrated.id)).toEqual(
+    expect.objectContaining({
+      id: migrated.id,
+      title: migrated.title,
+      tags: migrated.tags,
+      createdAt: original.createdAt,
+      backlinks: original.backlinks,
+    }),
+  );
+  expect((await repository.getByPath(original.filePath))?.id).toBe(migrated.id);
+  expect(await repository.count()).toBe(1);
+});
+
 test('should filter out deleted files in getByIds', async () => {
   const files = Array.from({ length: 3 }, createMockFile);
   await repository.saveBulk(files);
