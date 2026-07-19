@@ -12,6 +12,7 @@ import { orgFoldingManifest } from './org-folding/manifest';
 import { orgKeywordOverlayManifest } from './org-keyword-overlay/manifest';
 import { orgTocManifest } from './org-toc/manifest';
 import { recentfManifest } from './recentf/manifest';
+import { randomNoteManifest } from './random-note/manifest';
 import { commandHistoryManifest } from './command-history/manifest';
 import { orgTasksSidebarManifest } from './org-tasks-sidebar/manifest';
 import { localGraphManifest } from './local-graph/manifest';
@@ -41,6 +42,7 @@ export const BUILTIN_LOADERS: Record<string, ExtensionLoader> = {
     import('./org-keyword-overlay').then((m) => m.orgKeywordOverlayExtension),
   [orgTocManifest.name]: () => import('./org-toc').then((m) => m.orgTocExtension),
   [recentfManifest.name]: () => import('./recentf').then((m) => m.recentfExtension),
+  [randomNoteManifest.name]: () => import('./random-note').then((m) => m.randomNoteExtension),
   [commandHistoryManifest.name]: () =>
     import('./command-history').then((m) => m.commandHistoryExtension),
   [orgTasksSidebarManifest.name]: () =>
@@ -65,6 +67,7 @@ export const BUILTIN_META: ExtensionMeta[] = [
   { manifest: orgKeywordOverlayManifest, active: true },
   { manifest: orgTocManifest, active: true },
   { manifest: recentfManifest, active: true },
+  { manifest: randomNoteManifest, active: true },
   { manifest: commandHistoryManifest, active: true },
   { manifest: orgTasksSidebarManifest, active: true },
   { manifest: localGraphManifest, active: true },

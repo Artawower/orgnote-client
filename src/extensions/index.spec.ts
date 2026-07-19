@@ -1,6 +1,7 @@
 import { test, expect } from 'vitest';
 import { BUILTIN_LOADERS, BUILTIN_META } from './index';
 import { orgInlineMarkupManifest } from './org-inline-markup';
+import { randomNoteManifest } from './random-note/manifest';
 
 test('BUILTIN_LOADERS: has entry for org-inline-markup extension', () => {
   expect(BUILTIN_LOADERS[orgInlineMarkupManifest.name]).toBeDefined();
@@ -52,6 +53,14 @@ test('BUILTIN_META: contains org-inline-markup extension', () => {
   );
 
   expect(inlineMarkupMeta).toBeDefined();
+});
+
+test('BUILTIN_META: contains random-note extension', () => {
+  const randomNoteMeta = BUILTIN_META.find(
+    (meta) => meta.manifest.name === randomNoteManifest.name,
+  );
+
+  expect(randomNoteMeta).toBeDefined();
 });
 
 test('BUILTIN_META: all builtin extensions are active by default', () => {
