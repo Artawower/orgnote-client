@@ -10,7 +10,10 @@ import { selectCommand } from 'src/utils/select-command';
 const toggleCommandsHandler = async (api: OrgNoteApi) => {
   const command = await selectCommand(api, I18N.EXECUTE_COMMAND);
   if (command && command.command) {
-    await api.core.useCommands().execute(command.command, undefined, { interactive: true });
+    await api.core.useCommands().execute(command.command, undefined, {
+      interactive: true,
+      origin: COMMAND_PALETTE_EXECUTION_ORIGIN,
+    });
   }
 };
 
@@ -22,6 +25,7 @@ export function getCompletionCommands(): Command[] {
       description: 'toggle commands',
       group: 'completion',
       interactive: true,
+      system: true,
       defaultHotkeys: [
         { key: 'p', modifiers: ['Mod'] },
         { key: 'p', modifiers: ['Mod', 'Shift'] },

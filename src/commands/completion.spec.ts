@@ -1,6 +1,15 @@
 import { test, expect, vi } from 'vitest';
-import { DefaultCommands, KEYBINDING_CONTEXTS, type OrgNoteApi } from 'orgnote-api';
+import {
+  COMMAND_PALETTE_EXECUTION_ORIGIN,
+  DefaultCommands,
+  KEYBINDING_CONTEXTS,
+  type OrgNoteApi,
+} from 'orgnote-api';
 import { getCompletionCommands } from './completion';
+
+const selectCommand = vi.hoisted(() => vi.fn());
+
+vi.mock('src/utils/select-command', () => ({ selectCommand }));
 
 const createApi = (canAcceptAutocomplete: boolean): OrgNoteApi =>
   ({
@@ -34,6 +43,30 @@ test('getCompletionCommands registers command palette shortcuts in shell context
   ]);
   expect(command.keybindingContext).toBe(KEYBINDING_CONTEXTS.SHELL);
   expect(command.interactive).toBe(true);
+});
+
+test('getCompletionCommands hides command palette opener from command candidates', () => {
+  const command = getCommand(DefaultCommands.TOGGLE_COMMANDS);
+
+  expect(command.system).toBe(true);
+});
+
+test('getCompletionCommands marks selected commands with command palette origin', async () => {
+  const execute = vi.fn();
+  const api = {
+    core: {
+      useCommands: () => ({ execute }),
+    },
+  } as unknown as OrgNoteApi;
+  const command = getCommand(DefaultCommands.TOGGLE_COMMANDS);
+  selectCommand.mockResolvedValueOnce({ command: 'selected-command', handler: vi.fn() });
+
+  await command.handler(api, { meta: command });
+
+  expect(execute).toHaveBeenCalledWith('selected-command', undefined, {
+    interactive: true,
+    origin: COMMAND_PALETTE_EXECUTION_ORIGIN,
+  });
 });
 
 test('getCompletionCommands registers autocomplete command on Tab in completion context', () => {

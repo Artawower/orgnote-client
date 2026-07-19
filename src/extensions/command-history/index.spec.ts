@@ -1,344 +1,176 @@
-import { test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import type {
+  Command,
+  CompletionCandidate,
+  CompletionInterceptor,
+  OrgNoteApi,
+} from 'orgnote-api';
+import { nextTick, shallowRef, triggerRef } from 'vue';
 import { commandHistoryExtension } from './index';
-import type { OrgNoteApi, Command, CompletionInterceptor, CompletionCandidate } from 'orgnote-api';
-import { ref } from 'vue';
 
-let registeredInterceptor: CompletionInterceptor<Command> | null = null;
-const registeredAfterExecuteCallbacks = new Map<
-  string,
-  (command: Command, data: unknown, options?: unknown) => void
->();
-let kvContent = '{}';
-let unregisterInterceptorCalled = false;
-let unregisterAfterExecuteCalled = 0;
+const historyState = vi.hoisted(() => ({
+  syncCommands: vi.fn(),
+  rankCandidates: vi.fn((candidates: CompletionCandidate<Command>[]) => candidates),
+  dispose: vi.fn(),
+}));
+const createCommandHistoryState = vi.hoisted(() => vi.fn(async () => historyState));
 
-const createMockApi = (): OrgNoteApi => {
-  const mockCompletion = {
-    open: vi.fn(),
-    close: vi.fn(),
+vi.mock('./state', () => ({ createCommandHistoryState }));
+
+const testState: {
+  registeredInterceptor?: CompletionInterceptor<Command>;
+  unregisterInterceptor: ReturnType<typeof vi.fn>;
+} = {
+  unregisterInterceptor: vi.fn(),
+};
+const mountedApis = new Set<OrgNoteApi>();
+
+const createApi = () => {
+  const commandsState = shallowRef<Command[]>([
+    { command: 'command-a', handler: vi.fn() },
+    { command: 'command-b', handler: vi.fn() },
+  ]);
+  testState.unregisterInterceptor = vi.fn();
+  const completion = {
     registerInterceptor: vi.fn((interceptor: CompletionInterceptor<Command>) => {
-      registeredInterceptor = interceptor;
-      return () => {
-        unregisterInterceptorCalled = true;
-      };
+      testState.registeredInterceptor = interceptor;
+      return testState.unregisterInterceptor;
     }),
   };
-
-  const mockCommands = {
-    commands: ref<Command[]>([
-      { command: 'command-a', handler: vi.fn() },
-      { command: 'command-b', handler: vi.fn() },
-    ]),
-    afterExecute: vi.fn(
-      (commandName: string, callback: (command: Command, data: unknown, options?: unknown) => void) => {
-        registeredAfterExecuteCallbacks.set(commandName, callback);
-        return () => {
-          unregisterAfterExecuteCalled += 1;
-        };
-      },
-    ),
-  };
-
-  const mockKeyValueRepository = {
-    get: vi.fn(async () => kvContent),
-    set: vi.fn(async (_key: string, value: string) => {
-      kvContent = value;
-    }),
-    delete: vi.fn(),
-    clear: vi.fn(),
-  };
-
-  return {
-    core: {
-      useCompletion: vi.fn(() => mockCompletion),
-      useCommands: vi.fn(() => mockCommands),
+  const commandsStore = {
+    get commands(): Command[] {
+      return commandsState.value;
     },
-    infrastructure: {
-      keyValueRepository: mockKeyValueRepository,
+  };
+  const api = {
+    core: {
+      useCompletion: () => completion,
+      useCommands: () => commandsStore,
     },
   } as unknown as OrgNoteApi;
+
+  return { api, commandsState, completion };
+};
+
+const mountExtension = async (api: OrgNoteApi): Promise<void> => {
+  mountedApis.add(api);
+  await commandHistoryExtension.onMounted?.(api);
 };
 
 beforeEach(() => {
-  registeredInterceptor = null;
-  registeredAfterExecuteCallbacks.clear();
-  kvContent = '{}';
-  unregisterInterceptorCalled = false;
-  unregisterAfterExecuteCalled = 0;
+  testState.registeredInterceptor = undefined;
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await Promise.all(
+    [...mountedApis].map((api) => commandHistoryExtension.onUnmounted?.(api)),
+  );
+  mountedApis.clear();
   vi.clearAllMocks();
 });
 
-test('commandHistoryExtension has onMounted function', () => {
-  expect(commandHistoryExtension.onMounted).toBeDefined();
-  expect(typeof commandHistoryExtension.onMounted).toBe('function');
+test('commandHistoryExtension mounts history state', async () => {
+  const { api } = createApi();
+
+  await mountExtension(api);
+
+  expect(createCommandHistoryState).toHaveBeenCalledWith(api);
 });
 
-test('commandHistoryExtension has onUnmounted function', () => {
-  expect(commandHistoryExtension.onUnmounted).toBeDefined();
-  expect(typeof commandHistoryExtension.onUnmounted).toBe('function');
-});
+test('commandHistoryExtension registers commands interceptor', async () => {
+  const { api, completion } = createApi();
 
-test('commandHistoryExtension onMounted registers interceptor', async () => {
-  const api = createMockApi();
+  await mountExtension(api);
 
-  await commandHistoryExtension.onMounted?.(api);
-
-  expect(api.core.useCompletion().registerInterceptor).toHaveBeenCalled();
-  expect(registeredInterceptor).not.toBeNull();
-});
-
-test('commandHistoryExtension registers interceptor with correct name', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  expect(registeredInterceptor?.name).toBe('command-history-sorter');
-});
-
-test('commandHistoryExtension registers interceptor targeting commands', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  expect(registeredInterceptor?.target).toBe('commands');
-});
-
-test('commandHistoryExtension registers interceptor with priority 100', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  expect(registeredInterceptor?.priority).toBe(100);
-});
-
-test('commandHistoryExtension onMounted registers afterExecute callback', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  expect(api.core.useCommands().afterExecute).toHaveBeenCalled();
-  expect(registeredAfterExecuteCallbacks.size).toBe(2);
-});
-
-test('commandHistoryExtension onUnmounted unregisters interceptor', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-  await commandHistoryExtension.onUnmounted?.(api);
-
-  expect(unregisterInterceptorCalled).toBe(true);
-});
-
-test('commandHistoryExtension onUnmounted unregisters afterExecute callback', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-  await commandHistoryExtension.onUnmounted?.(api);
-
-  expect(unregisterAfterExecuteCalled).toBe(2);
-});
-
-test('commandHistoryExtension interceptor sorts recently used commands first', async () => {
-  const api = createMockApi();
-  kvContent = JSON.stringify({
-    'command-b': '2024-01-02T12:00:00.000Z',
-    'command-a': '2024-01-01T12:00:00.000Z',
-  });
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'command-a', handler: vi.fn() }, title: 'Command A', commandHandler: vi.fn() },
-    { data: { command: 'command-b', handler: vi.fn() }, title: 'Command B', commandHandler: vi.fn() },
-    { data: { command: 'command-c', handler: vi.fn() }, title: 'Command C', commandHandler: vi.fn() },
-  ];
-
-  const result = await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: '',
-  });
-
-  if (!result) {
-    throw new Error('Expected interceptor result');
-  }
-
-  const first = result.at(0);
-  const second = result.at(1);
-  const third = result.at(2);
-
-  if (!first || !second || !third) {
-    throw new Error('Expected three sorted candidates');
-  }
-
-  expect(first.data.command).toBe('command-b');
-  expect(second.data.command).toBe('command-a');
-  expect(third.data.command).toBe('command-c');
-});
-
-test('commandHistoryExtension interceptor sorts unused commands alphabetically', async () => {
-  const api = createMockApi();
-  kvContent = '{}';
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'zebra', handler: vi.fn() }, title: 'Zebra', commandHandler: vi.fn() },
-    { data: { command: 'apple', handler: vi.fn() }, title: 'Apple', commandHandler: vi.fn() },
-    { data: { command: 'banana', handler: vi.fn() }, title: 'Banana', commandHandler: vi.fn() },
-  ];
-
-  const result = await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: '',
-  });
-
-  if (!result) {
-    throw new Error('Expected interceptor result');
-  }
-
-  const first = result.at(0);
-  const second = result.at(1);
-  const third = result.at(2);
-
-  if (!first || !second || !third) {
-    throw new Error('Expected three sorted candidates');
-  }
-
-  expect(first.title).toBe('Apple');
-  expect(second.title).toBe('Banana');
-  expect(third.title).toBe('Zebra');
-});
-
-test('commandHistoryExtension interceptor preserves search relevance order', async () => {
-  const api = createMockApi();
-  kvContent = JSON.stringify({
-    'clear-logs': '2024-01-02T12:00:00.000Z',
-  });
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const candidates: CompletionCandidate<Command>[] = [
-    {
-      data: { command: 'copy-cli-install-command', handler: vi.fn() },
-      title: 'copy CLI install command',
-      commandHandler: vi.fn(),
-    },
-    { data: { command: 'clear-logs', handler: vi.fn() }, title: 'clear logs', commandHandler: vi.fn() },
-  ];
-
-  const result = await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: 'cli',
-  });
-
-  expect(result).toEqual(candidates);
-});
-
-test('commandHistoryExtension afterExecute callback tracks command usage with interactive option', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const command: Command = {
-    command: 'test-command',
-    handler: vi.fn(),
-  };
-
-  const callback = registeredAfterExecuteCallbacks.get('command-a');
-  await callback?.(command, undefined, { interactive: true });
-
-  expect(api.infrastructure.keyValueRepository.set).toHaveBeenCalledWith(
-    'command-history',
-    expect.stringContaining('test-command'),
+  expect(completion.registerInterceptor).toHaveBeenCalledWith(
+    expect.objectContaining({
+      name: 'command-history-sorter',
+      target: 'commands',
+      priority: 100,
+    }),
   );
 });
 
-test('commandHistoryExtension afterExecute callback ignores non-interactive executions', async () => {
-  const api = createMockApi();
+test('commandHistoryExtension synchronizes initial commands', async () => {
+  const { api, commandsState } = createApi();
 
-  await commandHistoryExtension.onMounted?.(api);
+  await mountExtension(api);
 
-  const command: Command = {
-    command: 'test-command',
-    handler: vi.fn(),
-  };
-
-  const callback = registeredAfterExecuteCallbacks.get('command-a');
-  await callback?.(command, undefined, { interactive: false });
-
-  expect(api.infrastructure.keyValueRepository.set).not.toHaveBeenCalled();
+  expect(historyState.syncCommands).toHaveBeenCalledWith(commandsState.value);
 });
 
-test('commandHistoryExtension handles empty history gracefully', async () => {
-  const api = createMockApi();
-  kvContent = '';
+test('commandHistoryExtension synchronizes commands registered later', async () => {
+  const { api, commandsState } = createApi();
+  await mountExtension(api);
+  historyState.syncCommands.mockClear();
 
-  await commandHistoryExtension.onMounted?.(api);
+  commandsState.value.push({ command: 'late-command', handler: vi.fn() });
+  triggerRef(commandsState);
+  await nextTick();
 
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'test', handler: vi.fn() }, title: 'Test', commandHandler: vi.fn() },
-  ];
+  expect(historyState.syncCommands).toHaveBeenCalledWith(commandsState.value);
+});
 
-  const result = await registeredInterceptor?.handler(candidates, {
+test('commandHistoryExtension sorts candidates without search query', async () => {
+  const { api } = createApi();
+  const candidates: CompletionCandidate<Command>[] = [];
+  await mountExtension(api);
+
+  await testState.registeredInterceptor?.handler(candidates, {
     completionName: 'commands',
     searchQuery: '',
   });
 
-  expect(result).toHaveLength(1);
+  expect(historyState.rankCandidates).toHaveBeenCalledWith(candidates, '');
 });
 
-test('commandHistoryExtension handles undefined content gracefully', async () => {
-  const api = createMockApi();
-  (api.infrastructure.keyValueRepository.get as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+test('commandHistoryExtension forwards search query to history state', async () => {
+  const { api } = createApi();
+  const candidates: CompletionCandidate<Command>[] = [];
+  await mountExtension(api);
+
+  const result = await testState.registeredInterceptor?.handler(candidates, {
+    completionName: 'commands',
+    searchQuery: 'theme',
+  });
+
+  expect(result).toBe(candidates);
+  expect(historyState.rankCandidates).toHaveBeenCalledWith(candidates, 'theme');
+});
+
+test('commandHistoryExtension disposes state and interceptor on unmount', async () => {
+  const { api } = createApi();
+  await mountExtension(api);
+
+  await commandHistoryExtension.onUnmounted?.(api);
+  mountedApis.delete(api);
+
+  expect(testState.unregisterInterceptor).toHaveBeenCalledOnce();
+  expect(historyState.dispose).toHaveBeenCalledOnce();
+});
+
+test('commandHistoryExtension stops command synchronization on unmount', async () => {
+  const { api, commandsState } = createApi();
+  await mountExtension(api);
+  await commandHistoryExtension.onUnmounted?.(api);
+  mountedApis.delete(api);
+  historyState.syncCommands.mockClear();
+
+  commandsState.value.push({ command: 'late-command', handler: vi.fn() });
+  triggerRef(commandsState);
+  await nextTick();
+
+  expect(historyState.syncCommands).not.toHaveBeenCalled();
+});
+
+test('commandHistoryExtension cleans previous mount for same API', async () => {
+  const { api } = createApi();
+  await mountExtension(api);
+  testState.unregisterInterceptor.mockClear();
+  historyState.dispose.mockClear();
 
   await commandHistoryExtension.onMounted?.(api);
 
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'test', handler: vi.fn() }, title: 'Test', commandHandler: vi.fn() },
-  ];
-
-  const result = await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: '',
-  });
-
-  expect(result).toHaveLength(1);
-});
-
-test('commandHistoryExtension handles malformed history gracefully', async () => {
-  const api = createMockApi();
-  kvContent = 'invalid json';
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'test', handler: vi.fn() }, title: 'Test', commandHandler: vi.fn() },
-  ];
-
-  const result = await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: '',
-  });
-
-  expect(result).toHaveLength(1);
-});
-
-test('commandHistoryExtension loads history from correct key', async () => {
-  const api = createMockApi();
-
-  await commandHistoryExtension.onMounted?.(api);
-
-  const candidates: CompletionCandidate<Command>[] = [
-    { data: { command: 'test', handler: vi.fn() }, title: 'Test', commandHandler: vi.fn() },
-  ];
-
-  await registeredInterceptor?.handler(candidates, {
-    completionName: 'commands',
-    searchQuery: '',
-  });
-
-  expect(api.infrastructure.keyValueRepository.get).toHaveBeenCalledWith('command-history');
+  expect(testState.unregisterInterceptor).toHaveBeenCalledOnce();
+  expect(historyState.dispose).toHaveBeenCalledOnce();
 });
