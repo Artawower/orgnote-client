@@ -90,6 +90,26 @@ test('setFile preserves other files', async () => {
   expect(stateData.value?.files['/file2.org']).toEqual(file2);
 });
 
+test('setSyncedAt updates selected files atomically', async () => {
+  const selected = createMockFile();
+  const untouched = createMockFile();
+  stateData.value = {
+    files: { '/selected.org': selected, '/untouched.org': untouched },
+  };
+
+  const state = createSyncState(stateData);
+  await state.setSyncedAt(
+    ['/selected.org', '/missing.org'],
+    '2024-01-02T00:00:00Z'
+  );
+
+  expect(stateData.value?.files['/selected.org']?.syncedAt).toBe(
+    '2024-01-02T00:00:00Z'
+  );
+  expect(stateData.value?.files['/untouched.org']?.syncedAt).toBeUndefined();
+  expect(stateData.value?.files['/missing.org']).toBeUndefined();
+});
+
 test('removeFile does nothing when stateData is null', async () => {
   const state = createSyncState(stateData);
   await state.removeFile('/test.org');

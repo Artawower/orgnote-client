@@ -10,13 +10,14 @@ const mocks = vi.hoisted(() => ({
       },
     },
   })),
+  syncFilesGet: vi.fn(),
 }));
 
 vi.mock('src/boot/axios', () => ({
   sdk: {
     sync: {
       syncFilesPut: mocks.syncFilesPut,
-      syncFilesGet: vi.fn(),
+      syncFilesGet: mocks.syncFilesGet,
       syncFilesDelete: vi.fn(),
     },
   },
@@ -47,4 +48,23 @@ test('createSyncExecutor upload sends hash for the uploaded bytes', async () => 
     'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
     1,
   );
+});
+
+test('createSyncExecutor fetchContent returns bytes without writing the file', async () => {
+  const content = new TextEncoder().encode('remote');
+  const fs = {
+    writeFile: vi.fn(async () => undefined),
+  } as unknown as FileSystem;
+  mocks.syncFilesGet.mockResolvedValue({ data: content.buffer });
+  const executor = createSyncExecutor(fs);
+
+  const result = await executor.fetchContent?.({
+    path: '/.orgnote/config.toml',
+    version: 2,
+    deleted: false,
+    updatedAt: '2024-01-01T00:00:00Z',
+  });
+
+  expect(result).toEqual(content);
+  expect(fs.writeFile).not.toHaveBeenCalled();
 });

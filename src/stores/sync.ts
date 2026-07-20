@@ -83,7 +83,7 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
     };
 
     const executePlan = async (plan: SyncPlan): Promise<void> => {
-      enqueuePlanOperations(plan);
+      await enqueuePlanOperations(plan);
       currentPlan.value = null;
     };
 

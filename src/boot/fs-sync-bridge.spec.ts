@@ -5,6 +5,14 @@ test('shouldTriggerSyncForAction returns true for writeFile action', () => {
   expect(shouldTriggerSyncForAction('writeFile')).toBe(true);
 });
 
+test('shouldTriggerSyncForAction ignores conflict artifact writes', () => {
+  expect(
+    shouldTriggerSyncForAction('writeFile', [
+      '/.orgnote/config.sync-conflict-100-device-remote.toml',
+    ])
+  ).toBe(false);
+});
+
 test('shouldTriggerSyncForAction returns true for rename action', () => {
   expect(shouldTriggerSyncForAction('rename')).toBe(true);
 });

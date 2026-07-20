@@ -37,12 +37,15 @@ const uploadFile =
     throw result.error;
   };
 
+const fetchFileContent = async (file: RemoteFile): Promise<Uint8Array> => {
+  const response = await sdk.sync.syncFilesGet(file.path, { responseType: 'arraybuffer' });
+  return new Uint8Array(response.data as unknown as ArrayBuffer);
+};
+
 const downloadFile =
   (fs: FileSystem) =>
   async (file: RemoteFile): Promise<void> => {
-    const response = await sdk.sync.syncFilesGet(file.path, { responseType: 'arraybuffer' });
-    const content = new Uint8Array(response.data as unknown as ArrayBuffer);
-    await fs.writeFile(file.path, content);
+    await fs.writeFile(file.path, await fetchFileContent(file));
   };
 
 const deleteLocalFile =
@@ -58,6 +61,7 @@ const deleteRemoteFile = async (path: string, expectedVersion: number): Promise<
 export const createSyncExecutor = (fs: FileSystem): SyncExecutor => ({
   upload: uploadFile(fs),
   download: downloadFile(fs),
+  fetchContent: fetchFileContent,
   deleteLocal: deleteLocalFile(fs),
   deleteRemote: deleteRemoteFile,
 });

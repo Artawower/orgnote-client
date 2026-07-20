@@ -1,4 +1,5 @@
 import { defineBoot } from '#q-app/wrappers';
+import { isSyncConflictPath } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { useFileSystemStore } from 'src/stores/file-system';
@@ -17,8 +18,22 @@ export const SYNC_TRIGGER_FS_ACTIONS = new Set<string>([
   'copyFile',
 ]);
 
-export const shouldTriggerSyncForAction = (actionName: string): boolean =>
-  SYNC_TRIGGER_FS_ACTIONS.has(actionName);
+const CONFLICT_ARTIFACT_ACTIONS = new Set<string>(['writeFile', 'deleteFile']);
+
+const changesConflictArtifact = (
+  actionName: string,
+  args: unknown[]
+): boolean =>
+  CONFLICT_ARTIFACT_ACTIONS.has(actionName) &&
+  typeof args[0] === 'string' &&
+  isSyncConflictPath(args[0]);
+
+export const shouldTriggerSyncForAction = (
+  actionName: string,
+  args: unknown[] = []
+): boolean =>
+  SYNC_TRIGGER_FS_ACTIONS.has(actionName) &&
+  !changesConflictArtifact(actionName, args);
 
 export default defineBoot(({ store }) => {
   const syncStore = useSyncStore(store);
@@ -31,8 +46,8 @@ export default defineBoot(({ store }) => {
     }
   }, FS_SYNC_DEBOUNCE_MS);
 
-  fileSystemStore.$onAction(({ name, after }) => {
-    if (!shouldTriggerSyncForAction(name)) {
+  fileSystemStore.$onAction(({ name, args, after }) => {
+    if (!shouldTriggerSyncForAction(name, args)) {
       return;
     }
 
