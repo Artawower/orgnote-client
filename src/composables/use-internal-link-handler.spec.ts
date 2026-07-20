@@ -68,7 +68,7 @@ beforeEach(() => {
   mockCurrentRouteName = 'File';
   mockGetById.mockResolvedValue({ filePath: ['notes', 'existing.org'] });
   mockWriteFile.mockResolvedValue(undefined);
-  mockFileInfo.mockResolvedValue({ type: 'file' });
+  mockFileInfo.mockResolvedValue(undefined);
   mockSave.mockResolvedValue(undefined);
 });
 

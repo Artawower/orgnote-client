@@ -1,15 +1,14 @@
-import type { Command, OrgNoteApi, FileMeta, CompletionCandidate } from 'orgnote-api';
+import type { Command, OrgNoteApi } from 'orgnote-api';
 import {
   DefaultCommands,
   EDITOR_COMMAND_GROUP,
   KEYBINDING_CONTEXTS,
-  i18n,
   getParentDir,
   join,
 } from 'orgnote-api';
 import type { OrgNode } from 'org-mode-ast';
 import { NodeType } from 'org-mode-ast';
-import { createFileItemsGetter } from 'src/composables/note-search-completion';
+import { openInternalLinkCompletion } from 'src/composables/internal-link-completion';
 import { editOrgDocument, to } from 'orgnote-api/utils';
 import { cursorLineDown, cursorLineUp, redo, undo } from '@codemirror/commands';
 import type { EditorView } from '@codemirror/view';
@@ -162,24 +161,7 @@ export const getEditorCommands = (): Command[] => {
         const { orgEditor } = useOrgEditor(api);
         if (!orgEditor) return;
 
-        const completionStore = api.core.useCompletion();
-
-        const mapFile = (file: FileMeta): CompletionCandidate<FileMeta> => ({
-          title: file.title ?? file.filePath.at(-1) ?? i18n.UNTITLED,
-          description: file.filePath.join('/'),
-          icon: 'sym_o_article',
-          data: file,
-          commandHandler: () => {
-            orgEditor.insertInternalLink(file.id ?? '', file.title ?? '');
-            completionStore.close();
-          },
-        });
-
-        completionStore.open<FileMeta, void>({
-          type: 'choice',
-          placeholder: i18n.PICK_NOTE_TO_LINK,
-          itemsGetter: createFileItemsGetter(api, mapFile),
-        });
+        await openInternalLinkCompletion(api, orgEditor);
       },
     },
     {

@@ -6,10 +6,11 @@ import {
   buildContextualBufferUri,
   resolveBufferSchemeFromRouteName,
 } from 'src/utils/org-link';
-import { buildNoteContent, buildNoteFilePath } from 'src/utils/create-note-from-link';
-import { buildBufferUri, splitPath, type BufferScheme } from 'orgnote-api';
+import { buildNoteContent } from 'src/utils/create-note-from-link';
+import { buildBufferUri, type BufferScheme } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
+import { createLinkedNote, persistLinkedNote } from 'src/composables/create-linked-note';
 
 const DEFAULT_SCHEME = 'file';
 
@@ -17,44 +18,22 @@ const getCurrentFilePath = (): string | undefined => api.core.useEditor().active
 const shouldAutoCreateMissingNotes = (): boolean =>
   Boolean(api.core.useConfig().config.editor.autoCreateMissingNotes);
 
-const persistNoteFileAndMeta = (params: {
-  filePath: string;
-  noteId: string;
-  title: string;
-  content: string;
-}) =>
-  to(async () => {
-    await api.core.useFileSystem().writeFile(params.filePath, params.content);
-    await api.core.useFileMeta().save({
-      id: params.noteId,
-      filePath: splitPath(params.filePath),
-      title: params.title,
-    });
-  }, `Failed to write and save note: ${params.filePath}`)();
-
 const resolveActiveScheme = (): BufferScheme => {
   const routeName = api.core.usePane().activeRoute?.name?.toString();
   return resolveBufferSchemeFromRouteName(routeName);
 };
 
-const createMissingNote = (noteId: string, title: string, currentFilePath: string) => {
-  const filePath = buildNoteFilePath(title, currentFilePath);
-  const content = buildNoteContent(noteId, title);
-  return to(async () => {
-    const saveResult = await persistNoteFileAndMeta({ filePath, noteId, title, content });
-    if (saveResult.isErr()) {
-      throw saveResult.error;
-    }
-    return buildBufferUri(DEFAULT_SCHEME, filePath);
-  }, `Failed to create note: ${noteId}`)();
-};
+const createMissingNote = (noteId: string, title: string, currentFilePath: string) =>
+  createLinkedNote(api, { noteId, title, currentFilePath }).map((note) =>
+    buildBufferUri(DEFAULT_SCHEME, note.filePath),
+  );
 
 const createMissingNoteByPath = (filePath: string) => {
-  const noteId = crypto.randomUUID();
+  const id = crypto.randomUUID();
   const title = extractOrgTitleFromPath(filePath);
-  const content = buildNoteContent(noteId, title);
+  const content = buildNoteContent(id, title);
 
-  return persistNoteFileAndMeta({ filePath, noteId, title, content });
+  return persistLinkedNote(api, { id, title, filePath, content });
 };
 
 const openBufferUri = async (uri: string): Promise<void> => {

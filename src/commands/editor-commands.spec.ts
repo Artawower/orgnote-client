@@ -14,19 +14,29 @@ const { mockCursorLineUp, mockCursorLineDown, mockRequestPropertyAddRow } = vi.h
 }));
 
 let capturedCompletionConfig: CompletionConfig<FileMeta> | null = null;
+let mockCompletionResult: unknown;
+
+interface MockSearchResult {
+  files: FileMeta[];
+  total: number;
+  query: string;
+}
 
 const mockFiles: FileMeta[] = [];
-let mockSearchResult: { files: FileMeta[]; total: number; query: string } | null = null;
+let mockSearchResult: MockSearchResult | null = null;
+const mockLastSearchResult = ref<MockSearchResult | null>(null);
 
 const mockInsertInternalLink = vi.fn();
 const mockInsertImage = vi.fn();
 const mockCompletionClose = vi.fn();
 const mockUploadFile = vi.fn();
 const mockWriteFile = vi.fn();
+const mockFileInfo = vi.fn();
 
 const mockCompletion = {
   open: vi.fn(async (config: CompletionConfig<FileMeta>) => {
     capturedCompletionConfig = config;
+    return mockCompletionResult;
   }),
   close: mockCompletionClose,
 };
@@ -43,9 +53,10 @@ const mockFileSearch = {
       total: filtered.length,
       query,
     };
+    mockLastSearchResult.value = mockSearchResult;
     return mockSearchResult.files;
   }),
-  lastSearchResult: ref(mockSearchResult),
+  lastSearchResult: mockLastSearchResult,
 };
 
 const mockFileMeta = {
@@ -145,6 +156,7 @@ const createMockApi = (editorView: unknown = {}, editDocument?: unknown): OrgNot
       }),
       useFileSystem: () => ({
         writeFile: mockWriteFile,
+        fileInfo: mockFileInfo,
       }),
     },
     utils: {
@@ -169,10 +181,14 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockFiles.length = 0;
   mockSearchResult = null;
+  mockLastSearchResult.value = null;
   capturedCompletionConfig = null;
+  mockCompletionResult = undefined;
   mockInsertImage.mockReset();
   mockUploadFile.mockReset();
   mockWriteFile.mockReset();
+  mockFileInfo.mockReset();
+  mockFileInfo.mockResolvedValue(undefined);
   mockCursorLineUp.mockReset();
   mockCursorLineDown.mockReset();
   mockRequestPropertyAddRow.mockReset();
@@ -263,28 +279,21 @@ test('editor-commands EDITOR_INSERT_INTERNAL_LINK searches files with non-empty 
     0,
   )) as CompletionSearchResult<FileMeta>;
 
-  expect(result.result).toHaveLength(1);
-  expect(result.result[0]!.title).toBe('Meeting Notes');
+  expect(result.result).toHaveLength(2);
+  expect(result.result[0]!.title).toBe('Create note “Meeting”');
+  expect(result.result[1]!.title).toBe('Meeting Notes');
 });
 
-test('editor-commands EDITOR_INSERT_INTERNAL_LINK candidate inserts internal link on select', async () => {
-  mockFiles.push({ id: 'note-id-1', filePath: ['test.org'], title: 'Test Title' });
+test('editor-commands EDITOR_INSERT_INTERNAL_LINK inserts selected existing note', async () => {
+  const file = { id: 'note-id-1', filePath: ['test.org'], title: 'Test Title' };
+  mockCompletionResult = { kind: 'existing', file };
 
   const api = createMockApi();
   const command = findInternalLinkCommand();
 
   await command.handler(api, { data: {}, meta: {} });
 
-  const result = (await capturedCompletionConfig?.itemsGetter?.(
-    '',
-    20,
-    0,
-  )) as CompletionSearchResult<FileMeta>;
-
-  result.result[0]!.commandHandler(result.result[0]!.data);
-
   expect(mockInsertInternalLink).toHaveBeenCalledWith('note-id-1', 'Test Title');
-  expect(mockCompletionClose).toHaveBeenCalled();
 });
 
 test('editor-commands EDITOR_INSERT_INTERNAL_LINK candidate uses filename when no title', async () => {

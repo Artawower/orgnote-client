@@ -3,6 +3,7 @@ import type {
   OrgNoteApi,
   CompletionSearchResult,
   CompletionCandidate,
+  CompletionItemRenderer,
 } from 'orgnote-api';
 import { I18N, join } from 'orgnote-api';
 import { unref } from 'vue';
@@ -26,19 +27,19 @@ export const formatFileDescription = (file: FileMeta): string => {
   return parts.join('\n');
 };
 
-export const createFileItemsGetter = (
+export const createFileItemsGetter = <TCandidate = FileMeta>(
   api: OrgNoteApi,
-  mapFile: (file: FileMeta) => CompletionCandidate<FileMeta>,
+  mapFile: (file: FileMeta) => CompletionCandidate<TCandidate>,
 ): ((
   filter: string,
   limit?: number,
   offset?: number,
-) => Promise<CompletionSearchResult<FileMeta>>) => {
+) => Promise<CompletionSearchResult<TCandidate>>) => {
   const searchFiles = async (
     filter: string,
     limit?: number,
     offset?: number,
-  ): Promise<CompletionSearchResult<FileMeta>> => {
+  ): Promise<CompletionSearchResult<TCandidate>> => {
     const fileSearch = api.core.useFileSearch();
     const files = await fileSearch.search(filter, { limit, offset });
     const lastResult = unref(fileSearch.lastSearchResult);
@@ -53,7 +54,7 @@ export const createFileItemsGetter = (
   const getRecentFiles = async (
     limit?: number,
     offset?: number,
-  ): Promise<CompletionSearchResult<FileMeta>> => {
+  ): Promise<CompletionSearchResult<TCandidate>> => {
     const fileMeta = api.core.useFileMeta();
     const [files, total] = await Promise.all([
       fileMeta.getAll({ limit, offset }),
@@ -67,7 +68,7 @@ export const createFileItemsGetter = (
     filter: string,
     limit?: number,
     offset?: number,
-  ): Promise<CompletionSearchResult<FileMeta>> => {
+  ): Promise<CompletionSearchResult<TCandidate>> => {
     if (!filter.trim()) return getRecentFiles(limit, offset);
     return searchFiles(filter, limit, offset);
   };
@@ -98,7 +99,9 @@ export const useNoteSearchCompletion = async (
     searchText,
     placeholder: I18N.SEARCH,
     itemHeight: showDetails ? noteSearchItemHeight : undefined,
-    itemRenderer: showDetails ? NoteSearchCompletionItem : undefined,
+    itemRenderer: showDetails
+      ? (NoteSearchCompletionItem as unknown as CompletionItemRenderer<FileMeta>)
+      : undefined,
     itemsGetter: createFileItemsGetter(api, mapFile),
   });
 };
