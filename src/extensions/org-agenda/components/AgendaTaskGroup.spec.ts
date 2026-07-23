@@ -1,10 +1,16 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { expect, test, vi } from 'vitest';
+import { DefaultCommands } from 'orgnote-api';
 
 import MenuGroup from 'src/components/MenuGroup.vue';
 import AgendaTaskGroup from './AgendaTaskGroup.vue';
 import type { AgendaTaskGroup as AgendaTaskGroupView } from '../composables/use-agenda-tasks';
+import { AGENDA_QUICK_ADD_TO_FILE_COMMAND } from '../constants';
+
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({ t: (key: string) => key }),
+}));
 
 vi.mock('src/boot/api', () => ({
   api: {
@@ -27,7 +33,14 @@ const AppSpoilerStub = defineComponent({
     variant: String,
     defaultExpanded: Boolean,
   },
-  template: '<section><slot name="title" /><slot name="body" /></section>',
+  template:
+    '<section><slot name="title" /><slot name="actions" /><slot name="body" /></section>',
+});
+
+const CommandActionButtonStub = defineComponent({
+  name: 'CommandActionButton',
+  props: { command: String, data: Object },
+  template: '<button class="command-action-stub" />',
 });
 
 const AgendaTaskRowStub = defineComponent({
@@ -69,6 +82,7 @@ const mountTaskGroup = () =>
         AppSpoiler: AppSpoilerStub,
         AgendaTaskRow: AgendaTaskRowStub,
         AgendaTaskForm: true,
+        CommandActionButton: CommandActionButtonStub,
       },
     },
   });
@@ -78,6 +92,20 @@ test('AgendaTaskGroup renders tasks as a flat menu group', () => {
 
   expect(wrapper.getComponent(AppSpoilerStub).props('variant')).toBe('flat');
   expect(wrapper.getComponent(MenuGroup).findAll('.agenda-task-row-stub')).toHaveLength(2);
+});
+
+test('AgendaTaskGroup exposes quick-add and open-note commands for its file', () => {
+  const wrapper = mountTaskGroup();
+  const actions = wrapper.findAllComponents(CommandActionButtonStub);
+
+  expect(actions.map((action) => action.props('command'))).toEqual([
+    AGENDA_QUICK_ADD_TO_FILE_COMMAND,
+    DefaultCommands.OPEN_NOTE,
+  ]);
+  expect(actions.map((action) => action.props('data'))).toEqual([
+    { filePath: '/inbox.org' },
+    { path: '/inbox.org' },
+  ]);
 });
 
 test('AgendaTaskGroup combines an expanded task row and editor into one surface', async () => {

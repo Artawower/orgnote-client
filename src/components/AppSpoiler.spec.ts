@@ -111,6 +111,49 @@ test('AppSpoiler uses defaultExpanded when modelValue is undefined', async () =>
   expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false]);
 });
 
+test('AppSpoiler renders actions next to the expand icon without toggling', async () => {
+  const wrapper = mount(AppSpoiler, {
+    slots: {
+      title: 'Title',
+      actions: '<button class="test-action">Action</button>',
+      body: 'Body',
+    },
+  });
+
+  expect(wrapper.find('.spoiler-actions').exists()).toBe(true);
+  await wrapper.find('.test-action').trigger('click');
+
+  expect(wrapper.find('.spoiler-body').exists()).toBe(false);
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+});
+
+test('AppSpoiler keeps large body content mounted for instant toggles', async () => {
+  const wrapper = mount(AppSpoiler, {
+    props: { keepMounted: true },
+    slots: { title: 'Title', body: '<div class="large-body">Body</div>' },
+  });
+
+  expect(wrapper.find('.spoiler-body').exists()).toBe(true);
+  expect(wrapper.find('.spoiler-body').attributes()).toHaveProperty('hidden');
+
+  await wrapper.find('.spoiler-header').trigger('click');
+  expect(wrapper.find('.spoiler-body').attributes()).not.toHaveProperty('hidden');
+
+  await wrapper.find('.spoiler-header').trigger('click');
+  expect(wrapper.find('.spoiler-body').attributes()).toHaveProperty('hidden');
+});
+
+test('AppSpoiler menu variant uses AppFlex and owns its scroll contract', () => {
+  const wrapper = mount(AppSpoiler, {
+    props: { variant: 'menu', scrollable: true, defaultExpanded: true },
+    slots: { title: 'Files', body: 'Body' },
+  });
+
+  expect(wrapper.classes()).toEqual(
+    expect.arrayContaining(['flex-container', 'variant-menu', 'scrollable', 'd-column']),
+  );
+});
+
 test('AppSpoiler renders body content when expanded', () => {
   const wrapper = mount(AppSpoiler, {
     props: { defaultExpanded: true },

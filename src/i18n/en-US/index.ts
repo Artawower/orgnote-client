@@ -118,6 +118,8 @@ const eng: Record<string, string> = {
   [extensionI18nKeys.orgAgendaFilterTomorrow]: 'Tomorrow',
   [extensionI18nKeys.orgAgendaFilterNext7Days]: 'Next 7 Days',
   [extensionI18nKeys.orgAgendaFilterAll]: 'All',
+  [extensionI18nKeys.orgAgendaFilterFiles]: 'Files',
+  [extensionI18nKeys.orgAgendaFilterAllFiles]: 'All files',
   [extensionI18nKeys.orgAgendaSearchPlaceholder]: 'Search tasks',
   [extensionI18nKeys.orgAgendaSearchResultCount]: '{count} tasks',
   [extensionI18nKeys.orgAgendaDateFilterDay]: 'Day',

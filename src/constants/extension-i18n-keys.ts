@@ -15,6 +15,8 @@ export const extensionI18nKeys = {
   orgAgendaFilterTomorrow: 'extensions.orgAgenda.filter.tomorrow',
   orgAgendaFilterNext7Days: 'extensions.orgAgenda.filter.next7days',
   orgAgendaFilterAll: 'extensions.orgAgenda.filter.all',
+  orgAgendaFilterFiles: 'extensions.orgAgenda.filter.files',
+  orgAgendaFilterAllFiles: 'extensions.orgAgenda.filter.allFiles',
   orgAgendaSearchPlaceholder: 'extensions.orgAgenda.search.placeholder',
   orgAgendaSearchResultCount: 'extensions.orgAgenda.search.resultCount',
   orgAgendaDateFilterDay: 'extensions.orgAgenda.dateFilter.day',

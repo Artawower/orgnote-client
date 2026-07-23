@@ -1,6 +1,10 @@
 import { expect, test } from 'vitest';
 import type { FileMeta } from 'orgnote-api';
-import { buildAgendaTaskGroups, isAgendaEligible } from './use-agenda-tasks';
+import {
+  buildAgendaFileFilterOptions,
+  buildAgendaTaskGroups,
+  isAgendaEligible,
+} from './use-agenda-tasks';
 
 type FileTask = NonNullable<FileMeta['tasks']>[number];
 
@@ -106,6 +110,54 @@ test('buildAgendaTaskGroups combines task search with an exact date range', () =
   });
 
   expect(groups).toEqual([]);
+});
+
+test('buildAgendaTaskGroups filters by exact file path while preserving date filters', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      tasks: [{ ...baseTask('headline-todo'), id: 'work-task' }],
+    },
+    {
+      id: 'home',
+      filePath: ['agenda', 'home.org'],
+      tasks: [{ ...baseTask('headline-todo'), id: 'home-task' }],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(files, {
+    dateFilter: { kind: 'preset', value: 'all' },
+    filePath: '/agenda/home.org',
+  });
+
+  expect(groups.map((group) => group.filePath)).toEqual(['/agenda/home.org']);
+  expect(groups[0]?.tasks.map((task) => task.id)).toEqual(['home-task']);
+});
+
+test('buildAgendaFileFilterOptions includes only files with agenda tasks', () => {
+  const options = buildAgendaFileFilterOptions([
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      title: 'Work',
+      tasks: [baseTask('headline-todo'), baseTask('headline-checkbox')],
+    },
+    {
+      id: 'notes',
+      filePath: ['agenda', 'notes.org'],
+      title: 'Notes',
+      tasks: [baseTask('list-checkbox')],
+    },
+  ]);
+
+  expect(options).toEqual([
+    {
+      fileTitle: 'Work',
+      filePath: '/agenda/work.org',
+      taskCount: 2,
+    },
+  ]);
 });
 
 test('buildAgendaTaskGroups orders matching groups by task search rank', () => {

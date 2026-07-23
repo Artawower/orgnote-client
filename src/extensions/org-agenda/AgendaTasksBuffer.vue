@@ -3,14 +3,7 @@
     <container-layout class="agenda-buffer" :body-scroll="false" gap="sm">
       <template #header>
         <app-flex column align-stretch gap="sm">
-          <agenda-quick-add
-            :agenda-files-path="agendaConfig.agendaFilesPath ?? '/'"
-            :inbox-file-path="resolvedInboxPath"
-            :known-files="knownOrgFiles"
-            :loading="quickAddLoading"
-            :default-date="quickAddDate"
-            @submit="submitQuickAdd"
-          />
+          <agenda-quick-add-container />
           <agenda-task-query-bar :result-count="filteredTaskCount" />
         </app-flex>
       </template>
@@ -51,7 +44,6 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -71,10 +63,7 @@ import { undoRecurringCompletion } from './mutations/undo-recurring-completion';
 import { useI18n } from 'vue-i18n';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { hasRepeater, isCompletedOn } from './utils/agenda-filters';
-import AgendaQuickAdd from './components/AgendaQuickAdd.vue';
-import { useAgendaQuickAddSubmit } from './composables/use-agenda-quick-add-submit';
-import { useAgendaFilterStore } from './stores/agenda-filter-store';
-import { resolveAgendaQuickAddDate } from './utils/agenda-date-selection';
+import AgendaQuickAddContainer from './containers/AgendaQuickAddContainer.vue';
 import { changeTaskTitle } from './mutations/task-title';
 import { changeTaskPriority } from './mutations/task-priority';
 import { changeTaskTags } from './mutations/task-tags';
@@ -88,11 +77,7 @@ import {
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, groups, filteredTaskCount } = useAgendaTasks();
-const filterStore = useAgendaFilterStore();
-const quickAddDate = computed(() => resolveAgendaQuickAddDate(filterStore.dateFilter));
 const fileContent = api.core.useFileContent();
-const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
-  useAgendaQuickAddSubmit();
 const AGENDA_GROUP_ITEM_SIZE = 128;
 const AGENDA_GROUP_SLICE_SIZE = 12;
 

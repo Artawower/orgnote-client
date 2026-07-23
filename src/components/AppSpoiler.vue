@@ -1,24 +1,41 @@
 <template>
   <component
-    :is="variant === 'flat' ? 'div' : CardWrapper"
+    :is="rootComponent"
     class="spoiler"
-    :class="`variant-${variant}`"
-    v-bind="variant === 'flat' ? {} : { type: 'plain' }"
+    :class="[`variant-${variant}`, { scrollable }]"
+    v-bind="rootProps"
   >
     <app-flex class="spoiler-header" @click="toggle" row between align-center gap="md">
       <div class="spoiler-title">
         <slot name="title" />
       </div>
-      <app-icon
-        name="sym_o_expand_more"
-        size="sm"
-        color="fg-muted"
-        :class="{ rotated: expanded }"
-        class="spoiler-icon"
-      />
+      <app-flex class="spoiler-controls" row end align-center gap="xs">
+        <app-flex
+          v-if="$slots.actions"
+          class="spoiler-actions"
+          row
+          end
+          align-center
+          @click.stop
+        >
+          <slot name="actions" />
+        </app-flex>
+        <app-icon
+          name="sym_o_expand_more"
+          size="sm"
+          color="fg-muted"
+          :class="{ rotated: expanded }"
+          class="spoiler-icon"
+        />
+      </app-flex>
     </app-flex>
     <animation-wrapper animation-name="slide">
-      <div v-if="expanded" class="spoiler-body" :class="{ 'no-padding': noPadding }">
+      <div
+        v-if="expanded || keepMounted"
+        class="spoiler-body"
+        :class="{ 'no-padding': noPadding }"
+        :hidden="keepMounted && !expanded"
+      >
         <slot name="body" />
       </div>
     </animation-wrapper>
@@ -32,13 +49,15 @@ import AppIcon from './AppIcon.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AnimationWrapper from './AnimationWrapper.vue';
 
-type AppSpoilerVariant = 'card' | 'card-static' | 'flat';
+type AppSpoilerVariant = 'card' | 'card-static' | 'flat' | 'menu';
 
 const props = withDefaults(
   defineProps<{
     defaultExpanded?: boolean;
     variant?: AppSpoilerVariant;
     noPadding?: boolean;
+    keepMounted?: boolean;
+    scrollable?: boolean;
   }>(),
   {
     defaultExpanded: false,
@@ -50,6 +69,13 @@ const model = defineModel<boolean | undefined>({ type: null });
 const localExpanded = ref(props.defaultExpanded ?? false);
 const expanded = computed(() => model.value ?? localExpanded.value);
 const variant = computed(() => props.variant);
+const isFlexVariant = computed(() => variant.value === 'flat' || variant.value === 'menu');
+const rootComponent = computed(() => (isFlexVariant.value ? AppFlex : CardWrapper));
+const rootProps = computed(() =>
+  isFlexVariant.value
+    ? { column: true, start: true, alignStretch: true }
+    : { type: 'plain' },
+);
 
 watch(
   model,
@@ -82,6 +108,37 @@ const toggle = (): void => {
   user-select: none;
 }
 
+.spoiler.variant-menu {
+  gap: var(--menu-group-items-gap);
+}
+
+.spoiler.variant-menu .spoiler-header {
+  min-height: var(--menu-item-min-height, var(--menu-item-height));
+  border-radius: var(--menu-item-radius);
+  padding:
+    var(--menu-item-padding-top, var(--menu-item-padding-y))
+    var(--menu-item-padding-x)
+    var(--menu-item-padding-bottom, var(--menu-item-padding-y))
+    var(--menu-item-padding-x);
+
+  @include hover {
+    background-color: var(--menu-item-hover-bg);
+  }
+
+  &:active {
+    background-color: var(--menu-item-hover-bg);
+  }
+}
+
+.spoiler-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.spoiler-controls {
+  flex-shrink: 0;
+}
+
 .spoiler-icon {
   transition: transform 0.3s ease;
   flex-shrink: 0;
@@ -95,7 +152,20 @@ const toggle = (): void => {
   padding: var(--padding-md);
 }
 
+.spoiler.scrollable {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.spoiler.scrollable .spoiler-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .spoiler.variant-flat .spoiler-body,
+.spoiler.variant-menu .spoiler-body,
 .spoiler-body.no-padding {
   padding: 0;
 }

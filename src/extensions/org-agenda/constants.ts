@@ -22,6 +22,7 @@ export const AGENDA_TASKS_OVERDUE_COMMAND = 'agenda tasks: overdue';
 export const AGENDA_TASKS_ALL_COMMAND = 'agenda tasks: all';
 export const AGENDA_TASKS_DATE_FILTER_COMMAND = 'agenda tasks: choose dates';
 export const AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND = 'agenda tasks: clear dates';
+export const AGENDA_TASKS_FILE_FILTER_COMMAND = 'agenda tasks: filter by file';
 
 export const AGENDA_TASKS_VIEWER_ID = 'org-agenda:tasks';
 export const AGENDA_HABITS_VIEWER_ID = 'org-agenda:habits';
@@ -32,6 +33,7 @@ export const TASK_DONE_KEYWORD = 'DONE';
 export const TASK_TODO_KEYWORD = 'TODO';
 
 export const AGENDA_CREATE_TASK = 'create task';
+export const AGENDA_QUICK_ADD_TO_FILE_COMMAND = 'agenda quick add to file';
 export const AGENDA_POMODORO_START_COMMAND = 'start pomodoro';
 export const AGENDA_POMODORO_START_STOPWATCH_COMMAND = 'start stopwatch';
 export const AGENDA_POMODORO_PAUSE_COMMAND = 'pause pomodoro';

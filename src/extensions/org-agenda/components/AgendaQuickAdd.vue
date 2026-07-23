@@ -153,6 +153,11 @@ const focusTitleInput = (): void => {
   });
 };
 
+const setTargetFileAndFocus = (filePath: string): void => {
+  targetFile.value = filePath;
+  focusTitleInput();
+};
+
 const withHabitMode = (
   payload: CreateTaskInput & { targetFile?: string },
 ): CreateTaskInput & { targetFile?: string } =>
@@ -263,6 +268,8 @@ const onFormCancel = (): void => {
   }
   formRef.value?.blurTitle();
 };
+
+defineExpose({ setTargetFileAndFocus });
 </script>
 
 <style lang="scss" scoped>

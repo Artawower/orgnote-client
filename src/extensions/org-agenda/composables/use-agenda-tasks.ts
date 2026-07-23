@@ -34,6 +34,12 @@ export interface AgendaTaskGroup {
   tasks: AgendaTaskView[];
 }
 
+export interface AgendaFileFilterOption {
+  fileTitle: string;
+  filePath: string;
+  taskCount: number;
+}
+
 interface QueryContext {
   readonly query: AgendaTaskQuery;
   readonly now: Date;
@@ -121,6 +127,7 @@ const sortTasksByRank = (
 
 const toGroup = (file: FileMeta, context: QueryContext): AgendaTaskGroup | undefined => {
   const filePath = resolveAbsolutePath(file);
+  if (context.query.filePath && context.query.filePath !== filePath) return undefined;
   const tasks = (file.tasks ?? [])
     .filter(isAgendaEligible)
     .flatMap((task) => {
@@ -139,6 +146,16 @@ const sortGroupsByRank = (
   ranks: ReadonlyMap<string, number> | undefined,
 ): AgendaTaskGroup[] =>
   ranks ? [...groups].sort((a, b) => groupRank(a, ranks) - groupRank(b, ranks)) : groups;
+
+export const buildAgendaFileFilterOptions = (files: FileMeta[]): AgendaFileFilterOption[] =>
+  files
+    .map((file) => ({
+      fileTitle: resolveFileTitle(file),
+      filePath: resolveAbsolutePath(file),
+      taskCount: (file.tasks ?? []).filter(isAgendaEligible).length,
+    }))
+    .filter((file) => file.taskCount > 0)
+    .sort((left, right) => left.fileTitle.localeCompare(right.fileTitle));
 
 export const buildAgendaTaskGroups = (
   files: FileMeta[],
@@ -173,6 +190,7 @@ export const useAgendaTasks = () => {
   const groups = computed(() =>
     buildAgendaTaskGroups(agendaFiles.value, {
       dateFilter: filterStore.dateFilter,
+      filePath: filterStore.selectedFilePath,
       matchingTaskIds: matchingTaskIds.value,
     }),
   );

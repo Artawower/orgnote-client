@@ -6,6 +6,7 @@ import {
   clearAgendaDateFilterCommand,
   openAgendaDateFilterCommand,
 } from './open-agenda-date-filter-command';
+import { openAgendaFileFilterCommand } from './open-agenda-filter-commands';
 
 const openModal = vi.fn();
 const openBuffer = vi.fn();
@@ -82,6 +83,24 @@ test('openAgendaDateFilterCommand maps a selected single Today to the Today pres
   await openAgendaDateFilterCommand.handler(api, { meta: openAgendaDateFilterCommand });
 
   expect(useAgendaFilterStore().dateFilter).toEqual({ kind: 'preset', value: 'today' });
+});
+
+test('openAgendaFileFilterCommand preserves the date query and opens Agenda tasks', async () => {
+  const store = useAgendaFilterStore();
+  store.setDateRange('2026-05-14', '2026-05-18');
+
+  await openAgendaFileFilterCommand.handler(api, {
+    meta: openAgendaFileFilterCommand,
+    data: { filePath: '/agenda/work.org' },
+  });
+
+  expect(store.selectedFilePath).toBe('/agenda/work.org');
+  expect(store.dateFilter).toEqual({
+    kind: 'range',
+    from: '2026-05-14',
+    to: '2026-05-18',
+  });
+  expect(openBuffer).toHaveBeenCalledOnce();
 });
 
 test('clearAgendaDateFilterCommand clears dates without clearing task search', async () => {

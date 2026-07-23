@@ -1,9 +1,23 @@
 <template>
   <app-spoiler default-expanded variant="flat">
     <template #title>
-      <app-flex row between align-center gap="sm">
-        <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
+      <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
+    </template>
+    <template #actions>
+      <app-flex row end align-center gap="xs">
         <app-badge :label="String(group.tasks.length)" size="xs" />
+        <command-action-button
+          :command="AGENDA_QUICK_ADD_TO_FILE_COMMAND"
+          :data="{ filePath: group.filePath }"
+          :aria-label="t(extensionI18nKeys.orgAgendaQuickAddAddButton)"
+          size="xs"
+        />
+        <command-action-button
+          :command="DefaultCommands.OPEN_NOTE"
+          :data="{ path: group.filePath }"
+          :aria-label="t(extensionI18nKeys.orgAgendaOpenNote)"
+          size="xs"
+        />
       </app-flex>
     </template>
     <template #body>
@@ -43,12 +57,14 @@
 
 <script lang="ts" setup>
 import { reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAgendaMiniEditor } from '../composables/use-agenda-mini-editor';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
 import AppTitle from 'src/components/AppTitle.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';
+import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import AgendaTaskRow from './AgendaTaskRow.vue';
 import AgendaTaskForm from './AgendaTaskForm.vue';
 import type { AgendaTaskView } from '../composables/use-agenda-tasks';
@@ -59,8 +75,12 @@ import { api } from 'src/boot/api';
 import { uint8ArrayToText, to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { editOrgDocument } from 'orgnote-api/utils';
+import { DefaultCommands } from 'orgnote-api';
+import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
+import { AGENDA_QUICK_ADD_TO_FILE_COMMAND } from '../constants';
 
 const props = defineProps<{ group: AgendaTaskGroup }>();
+const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const emit = defineEmits<{
   'task-toggle': [task: AgendaTaskView, filePath: string];
   'task-edit-title': [task: AgendaTaskView, filePath: string, title: string];

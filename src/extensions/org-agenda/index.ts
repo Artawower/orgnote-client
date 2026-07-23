@@ -9,10 +9,12 @@ import { stopPomodoroCommand } from './commands/stop-pomodoro-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
 import { setTaskPriorityCommand } from './commands/set-task-priority-command';
 import { openTaskCommand } from './commands/open-task-command';
+import { quickAddToFileCommand } from './commands/quick-add-to-file-command';
 import { agendaFilterCommands } from './commands/open-agenda-filter-commands';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
 import {
   AGENDA_CREATE_TASK,
+  AGENDA_QUICK_ADD_TO_FILE_COMMAND,
   AGENDA_TASK_CONTEXT_MENU_GROUP,
   AGENDA_POMODORO_START_COMMAND,
   AGENDA_POMODORO_START_STOPWATCH_COMMAND,
@@ -180,6 +182,7 @@ const registerViews = (api: OrgNoteApi): void => {
   commands.add(deleteTaskCommand);
   commands.add(setTaskPriorityCommand);
   commands.add(openTaskCommand);
+  commands.add(quickAddToFileCommand);
   agendaFilterCommands.forEach((cmd) => commands.add(cmd));
   commands.add({
     command: AGENDA_POMODORO_PAUSE_COMMAND,
@@ -244,8 +247,10 @@ const unregisterViews = (api: OrgNoteApi): void => {
     }
     if (view.sidebarSection) pinned.removeCommand('sidebar-sections', view.command);
   });
-  const existing = commands.get(AGENDA_CREATE_TASK);
-  if (existing) commands.remove(existing);
+  [AGENDA_CREATE_TASK, AGENDA_QUICK_ADD_TO_FILE_COMMAND].forEach((commandName) => {
+    const existing = commands.get(commandName);
+    if (existing) commands.remove(existing);
+  });
   agendaFilterCommands.forEach((cmd) => {
     const registered = commands.get(cmd.command!);
     if (registered) commands.remove(registered);

@@ -9,6 +9,7 @@ const createPresetFilter = (value: AgendaFilter): AgendaDateFilter => ({ kind: '
 export const useAgendaFilterStore = defineStore('agendaFilter', () => {
   const searchQuery = ref('');
   const dateFilter = ref<AgendaDateFilter>(createPresetFilter('all'));
+  const selectedFilePath = ref<string>();
 
   const activePreset = computed<AgendaFilter | undefined>(() =>
     dateFilter.value.kind === 'preset' ? dateFilter.value.value : undefined,
@@ -24,6 +25,10 @@ export const useAgendaFilterStore = defineStore('agendaFilter', () => {
   };
 
   const clearDateFilter = (): void => setPresetFilter('all');
+
+  const setFileFilter = (filePath?: string): void => {
+    selectedFilePath.value = filePath;
+  };
 
   const setDateSelection = (
     selection: DatePickerSelection,
@@ -47,10 +52,12 @@ export const useAgendaFilterStore = defineStore('agendaFilter', () => {
   return {
     searchQuery,
     dateFilter,
+    selectedFilePath,
     activePreset,
     setPresetFilter,
     setDateRange,
     setDateSelection,
+    setFileFilter,
     clearDateFilter,
   };
 });

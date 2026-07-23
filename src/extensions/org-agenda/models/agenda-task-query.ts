@@ -9,6 +9,7 @@ export type AgendaDateFilter =
 
 export interface AgendaTaskQuery {
   readonly dateFilter: AgendaDateFilter;
+  readonly filePath?: string;
   readonly matchingTaskIds?: readonly string[];
 }
 

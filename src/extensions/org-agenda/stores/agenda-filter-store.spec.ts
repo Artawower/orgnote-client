@@ -47,3 +47,19 @@ test('AgendaFilterStore keeps a Today-only range exact', () => {
     to: '2026-05-18',
   });
 });
+
+test('AgendaFilterStore selects and clears a file independently from task query controls', () => {
+  const store = useAgendaFilterStore();
+  store.searchQuery = 'quarterly';
+  store.setDateRange('2026-05-14', '2026-05-18');
+
+  store.setFileFilter('/agenda/work.org');
+
+  expect(store.selectedFilePath).toBe('/agenda/work.org');
+  expect(store.searchQuery).toBe('quarterly');
+  expect(store.dateFilter.kind).toBe('range');
+
+  store.setFileFilter();
+
+  expect(store.selectedFilePath).toBeUndefined();
+});
