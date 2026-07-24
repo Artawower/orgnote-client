@@ -18,6 +18,7 @@ import { getRightSidebarCommands } from 'src/commands/right-sidebar-commands';
 import { getSearchCommands } from 'src/commands/search-commands';
 import { getGraphCommands } from 'src/commands/graph-commands';
 import { useKeybindingsStore } from 'src/stores/keybindings';
+import { getUpdateCommands } from 'src/commands/update-commands';
 
 export default defineBoot(async ({ router }) => {
   const commandsStore = useCommandsStore();
@@ -40,6 +41,7 @@ export default defineBoot(async ({ router }) => {
     ...getEditorCommands(),
     ...createAuthCommands(router),
     ...getGraphCommands(),
+    ...getUpdateCommands(),
   );
 
   useKeybindingsStore();

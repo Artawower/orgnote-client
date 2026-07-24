@@ -85,6 +85,13 @@ const eng: Record<string, string> = {
   [I18N.SYNC_INVALID_API_RESPONSE]:
     'Synchronization is paused because the API URL returned an invalid response. Update the API URL in settings to retry.',
   [I18N.OPEN_RELEASE_NOTES]: 'Open release notes',
+  [I18N.CHECK_FOR_UPDATES]: 'Check for updates',
+  [I18N.CHECKING_FOR_UPDATES]: 'Checking for updates…',
+  [I18N.UPDATE_AVAILABLE]: 'An application update is available',
+  [I18N.UPDATE_DOWNLOAD_IN_PROGRESS]: 'The update is downloading in the background',
+  [I18N.NO_UPDATES_AVAILABLE]: 'You are using the latest version',
+  [I18N.UPDATE_CHECK_FAILED]: 'Unable to check for updates',
+  [I18N.OPEN_UPDATE_PAGE]: 'Click to open the download page',
   [electronUpdateI18n.ready]: 'Application update is ready',
   [electronUpdateI18n.restartToInstall]: 'Click to restart and install the update',
   [electronUpdateI18n.versionReady]: 'Version {version} is ready. Click to restart and install it.',

@@ -121,20 +121,22 @@ export const useClientUpdateStore = defineStore<'client-update', ClientUpdateSto
     const hasCurrentVersionChangelog = (): boolean =>
       !!latestChangelog.value && latestChangelog.value.version === currentClientVersion;
 
-    const loadLatestChangelog = async (): Promise<ChangelogRecord | null> => {
-      if (hasCurrentVersionChangelog()) {
+    const loadLatestChangelog = async (
+      options: { forceRefresh?: boolean } = {},
+    ): Promise<ChangelogRecord | null> => {
+      if (!options.forceRefresh && hasCurrentVersionChangelog()) {
         return latestChangelog.value;
       }
 
       const result = await to(sdk.systemInfo.systemInfoClientUpdateLatestGet)();
       if (result.isErr()) {
         reporter.reportWarning(new Error('Failed to fetch latest changelog', { cause: result.error }));
-        return latestChangelog.value;
+        return options.forceRefresh ? null : latestChangelog.value;
       }
 
       const changelog = result.value.data;
       if (!isValidChangelog(changelog)) {
-        return latestChangelog.value;
+        return options.forceRefresh ? null : latestChangelog.value;
       }
 
       const nextChangelog = createChangelogRecord(changelog);

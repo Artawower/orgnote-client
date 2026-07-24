@@ -1,5 +1,6 @@
 import type { ElectronUpdateInfo, ElectronUpdateStatus } from '../../src-electron/electron-updater-channels';
 import type { ElectronUpdatesAPI } from 'src/types/global';
+import { I18N } from 'orgnote-api';
 import { defineBoot } from '@quasar/app-vite/wrappers';
 import { Platform } from 'quasar';
 import { to } from 'orgnote-api/utils';
@@ -8,6 +9,10 @@ import { api } from './api';
 import { i18n } from './i18n';
 import { logger } from './logger';
 import { reporter } from './report';
+import {
+  clearUpdateCheckNotification,
+  showUpdateCheckNotification,
+} from 'src/services/update-check-notifications';
 
 const ELECTRON_UPDATE_NOTIFICATION_ID = 'electron-update-downloaded';
 
@@ -42,6 +47,7 @@ const installDownloadedUpdate = async (updates: ElectronUpdatesAPI): Promise<voi
 };
 
 const notifyDownloadedUpdate = (updates: ElectronUpdatesAPI, update: ElectronUpdateInfo): void => {
+  clearUpdateCheckNotification(api);
   api.core.useNotifications().notify({
     id: ELECTRON_UPDATE_NOTIFICATION_ID,
     message: translate(electronUpdateI18n.ready),
@@ -62,10 +68,31 @@ const reportUpdateError = (status: Extract<ElectronUpdateStatus, { type: 'error'
     return;
   }
 
+  clearUpdateCheckNotification(api);
   reporter.reportWarning(new Error(translate(electronUpdateI18n.failed, { message: status.message })));
 };
 
+const handleManualUpdateStatus = (status: ElectronUpdateStatus): void => {
+  if (status.isBackground) return;
+  if (status.type === 'checking') {
+    showUpdateCheckNotification(api, { message: I18N.CHECKING_FOR_UPDATES, persistent: true });
+    return;
+  }
+  if (status.type === 'available') {
+    showUpdateCheckNotification(api, {
+      message: I18N.UPDATE_AVAILABLE,
+      description: I18N.UPDATE_DOWNLOAD_IN_PROGRESS,
+      persistent: true,
+    });
+    return;
+  }
+  if (status.type === 'not-available') {
+    showUpdateCheckNotification(api, { message: I18N.NO_UPDATES_AVAILABLE });
+  }
+};
+
 const handleUpdateStatus = (updates: ElectronUpdatesAPI, status: ElectronUpdateStatus): void => {
+  handleManualUpdateStatus(status);
   if (status.type === 'downloaded') {
     notifyDownloadedUpdate(updates, status);
     return;

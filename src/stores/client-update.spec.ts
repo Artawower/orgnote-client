@@ -10,6 +10,12 @@ const { mockSystemInfoClientUpdateVersionGet, mockSystemInfoClientUpdateLatestGe
 }));
 
 const previousClientVersion = '0.1.0';
+const cachedCurrentChangelog = {
+  version: currentClientVersion,
+  changeLog: 'cached changelog',
+  url: 'https://example.com/cached-release',
+  detectedAt: '2024-01-01T00:00:00.000Z',
+};
 
 const changelogResponse = (version = currentClientVersion) => ({
   data: {
@@ -130,17 +136,34 @@ test('loadLatestChangelog ignores invalid payload', async () => {
 
 test('loadLatestChangelog uses current version cache without network request', async () => {
   const store = useClientUpdateStore();
-  store.latestChangelog = {
-    version: currentClientVersion,
-    changeLog: 'cached changelog',
-    url: 'https://example.com/release',
-    detectedAt: '2024-01-01T00:00:00.000Z',
-  };
+  store.latestChangelog = cachedCurrentChangelog;
 
   const loaded = await store.loadLatestChangelog();
 
   expect(loaded).toMatchObject({ changeLog: 'cached changelog' });
   expect(mockSystemInfoClientUpdateLatestGet).not.toHaveBeenCalled();
+});
+
+test('loadLatestChangelog force refresh bypasses the current version cache', async () => {
+  const store = useClientUpdateStore();
+  store.latestChangelog = cachedCurrentChangelog;
+  mockSystemInfoClientUpdateLatestGet.mockResolvedValue(changelogResponse('0.42.0'));
+
+  const loaded = await store.loadLatestChangelog({ forceRefresh: true });
+
+  expect(mockSystemInfoClientUpdateLatestGet).toHaveBeenCalledOnce();
+  expect(loaded).toMatchObject({ version: '0.42.0' });
+});
+
+test('loadLatestChangelog force refresh does not report stale cache as current', async () => {
+  const store = useClientUpdateStore();
+  store.latestChangelog = cachedCurrentChangelog;
+  mockSystemInfoClientUpdateLatestGet.mockRejectedValue(new Error('network'));
+
+  const loaded = await store.loadLatestChangelog({ forceRefresh: true });
+
+  expect(loaded).toBeNull();
+  expect(store.latestChangelog).not.toBeNull();
 });
 
 test('markChangelogAsRead keeps changelog readable and clears unread state', async () => {
