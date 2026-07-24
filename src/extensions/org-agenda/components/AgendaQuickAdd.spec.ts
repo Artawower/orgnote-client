@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { defineComponent, h, nextTick, ref } from 'vue';
 import { beforeEach, expect, test, vi } from 'vitest';
 import type * as VueI18n from 'vue-i18n';
+import AgendaQuickAdd from './AgendaQuickAdd.vue';
 
 vi.mock('vue-i18n', async () => ({
   ...((await vi.importActual('vue-i18n')) as typeof VueI18n),
@@ -51,13 +52,13 @@ const AgendaScheduleButtonStub = defineComponent({
   setup: () => () => h('button'),
 });
 
-const mountQuickAdd = async (habitMode = false) => {
-  const { default: AgendaQuickAdd } = await import('./AgendaQuickAdd.vue');
-  return mount(AgendaQuickAdd, {
+const mountQuickAdd = (habitMode = false, defaultTargetFile?: string) =>
+  mount(AgendaQuickAdd, {
     props: {
       agendaFilesPath: '/agenda',
       inboxFilePath: '/agenda/inbox.org',
       defaultDate: '2026-06-10',
+      defaultTargetFile,
       habitMode,
     },
     global: {
@@ -70,7 +71,6 @@ const mountQuickAdd = async (habitMode = false) => {
       },
     },
   });
-};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -81,7 +81,7 @@ beforeEach(() => {
 });
 
 test('AgendaQuickAdd inherits the filter date without rendering a task date picker', async () => {
-  const wrapper = await mountQuickAdd();
+  const wrapper = mountQuickAdd();
   const form = wrapper.findComponent(AgendaTaskFormStub);
 
   await form.vm.$emit('update:title', 'Plan release');
@@ -96,8 +96,15 @@ test('AgendaQuickAdd inherits the filter date without rendering a task date pick
   );
 });
 
+test('AgendaQuickAdd follows the default target without moving focus', () => {
+  const wrapper = mountQuickAdd(false, '/agenda/work.org');
+
+  expect(wrapper.getComponent(AppBadgeStub).props('label')).toBe('work');
+  expect(focusTitle).not.toHaveBeenCalled();
+});
+
 test('AgendaQuickAdd selects a requested file and focuses the title input', async () => {
-  const wrapper = await mountQuickAdd();
+  const wrapper = mountQuickAdd();
 
   const quickAdd = wrapper.vm as unknown as {
     setTargetFileAndFocus: (filePath: string) => void;
@@ -109,8 +116,8 @@ test('AgendaQuickAdd selects a requested file and focuses the title input', asyn
   expect(focusTitle).toHaveBeenCalledOnce();
 });
 
-test('AgendaQuickAdd keeps schedule controls for habit creation', async () => {
-  const wrapper = await mountQuickAdd(true);
+test('AgendaQuickAdd keeps schedule controls for habit creation', () => {
+  const wrapper = mountQuickAdd(true);
 
   expect(wrapper.findComponent(AgendaScheduleButtonStub).exists()).toBe(true);
 });

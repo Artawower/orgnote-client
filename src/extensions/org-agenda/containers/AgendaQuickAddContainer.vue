@@ -6,6 +6,7 @@
     :known-files="knownOrgFiles"
     :loading="quickAddLoading"
     :default-date="quickAddDate"
+    :default-target-file="filterStore.selectedFilePath"
     @submit="submitQuickAdd"
   />
 </template>

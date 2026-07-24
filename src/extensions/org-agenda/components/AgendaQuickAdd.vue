@@ -77,6 +77,7 @@ interface Props {
   loading?: boolean;
   habitMode?: boolean;
   defaultDate?: string;
+  defaultTargetFile?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -92,7 +93,7 @@ const emit = defineEmits<{
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const isExpanded = ref(false);
-const targetFile = ref<string | undefined>();
+const targetFile = ref<string | undefined>(props.defaultTargetFile);
 const isTildeCompletionOpen = ref(false);
 const formRef = ref<InstanceType<typeof AgendaTaskForm> | null>(null);
 
@@ -116,6 +117,13 @@ watch(
   () => {
     if (props.habitMode) return;
     draft.scheduled = resolveDefaultSchedule();
+  },
+);
+
+watch(
+  () => props.defaultTargetFile,
+  (filePath) => {
+    targetFile.value = filePath;
   },
 );
 

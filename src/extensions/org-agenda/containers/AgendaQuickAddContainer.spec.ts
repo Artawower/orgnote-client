@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { defineComponent, h, nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import AgendaQuickAddContainer from './AgendaQuickAddContainer.vue';
+import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 
 const mocks = vi.hoisted(() => ({
   selectTargetFile: undefined as ((filePath: string) => void) | undefined,
@@ -41,6 +42,7 @@ vi.mock('../utils/agenda-date-selection', () => ({
 
 const AgendaQuickAddStub = defineComponent({
   name: 'AgendaQuickAdd',
+  props: { defaultTargetFile: String },
   setup: (_, { expose }) => {
     expose({ setTargetFileAndFocus: mocks.setTargetFileAndFocus });
     return () => h('div');
@@ -51,6 +53,23 @@ beforeEach(() => {
   setActivePinia(createPinia());
   mocks.selectTargetFile = undefined;
   vi.clearAllMocks();
+});
+
+test('AgendaQuickAddContainer follows the selected file filter', async () => {
+  const filterStore = useAgendaFilterStore();
+  filterStore.setFileFilter('/agenda/work.org');
+  const wrapper = mount(AgendaQuickAddContainer, {
+    global: { stubs: { AgendaQuickAdd: AgendaQuickAddStub } },
+  });
+
+  expect(wrapper.getComponent(AgendaQuickAddStub).props('defaultTargetFile')).toBe(
+    '/agenda/work.org',
+  );
+
+  filterStore.setFileFilter();
+  await nextTick();
+
+  expect(wrapper.getComponent(AgendaQuickAddStub).props('defaultTargetFile')).toBeUndefined();
 });
 
 test('AgendaQuickAddContainer applies command targets to the input', async () => {
