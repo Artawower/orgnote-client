@@ -1,11 +1,34 @@
 import { expect, test } from 'vitest';
-import { getApiBaseUrl, getApiPublicUrl, getWebSocketUrl } from './server-endpoints';
+import {
+  getApiBaseUrl,
+  getApiPublicUrl,
+  getWebSocketUrl,
+  resolveApiBaseUrl,
+} from './server-endpoints';
 
 const getExpectedWsProtocol = (): string =>
   window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 
 test('server-endpoints getApiBaseUrl returns trimmed configured url', () => {
   expect(getApiBaseUrl('  https://api.example.com/v1  ')).toBe('https://api.example.com/v1');
+});
+
+test('server-endpoints keeps relative api path for HTTP origins', () => {
+  expect(resolveApiBaseUrl('/api/v1', 'https://api.example.com/api/v1', 'https:')).toBe(
+    '/api/v1',
+  );
+});
+
+test('server-endpoints replaces relative api path for Electron app origin', () => {
+  expect(resolveApiBaseUrl('/api/v1', 'https://api.example.com/api/v1', 'app:')).toBe(
+    'https://api.example.com/api/v1',
+  );
+});
+
+test('server-endpoints replaces relative api path for Capacitor origin', () => {
+  expect(resolveApiBaseUrl('/api/v1', 'https://api.example.com/api/v1', 'capacitor:')).toBe(
+    'https://api.example.com/api/v1',
+  );
 });
 
 test('server-endpoints getApiPublicUrl resolves relative api path to window origin', () => {

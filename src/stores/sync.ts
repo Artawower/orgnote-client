@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { SyncStore, SyncPlan, SyncStateData, FileSystem } from 'orgnote-api';
-import { createSyncPlan, I18N, InvalidSyncChangesResponseError, recoverState } from 'orgnote-api';
+import {
+  createSyncPlan,
+  I18N,
+  InvalidSyncResponseError,
+  recoverState,
+} from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { sdk } from 'src/boot/axios';
 import { createSyncState } from 'src/utils/sync-state';
@@ -42,7 +47,7 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       return axios.isAxiosError(error) && error.response?.status === httpUpgradeRequired;
     };
 
-    const reportInvalidSyncResponse = (error: InvalidSyncChangesResponseError): null => {
+    const reportInvalidSyncResponse = (error: InvalidSyncResponseError): null => {
       reporter.reportError(error, {
         id: invalidSyncResponseNotificationId,
         message: i18n.global.t(I18N.SYNC_INVALID_API_RESPONSE),
@@ -57,7 +62,7 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
         return null;
       }
 
-      if (error instanceof InvalidSyncChangesResponseError) {
+      if (error instanceof InvalidSyncResponseError) {
         return reportInvalidSyncResponse(error);
       }
 
@@ -83,15 +88,17 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
     };
 
     const executePlan = async (plan: SyncPlan): Promise<void> => {
-      await enqueuePlanOperations(plan);
-      currentPlan.value = null;
+      await Promise.resolve(enqueuePlanOperations(plan)).finally(() => {
+        currentPlan.value = null;
+      });
     };
 
     const runSyncCycle = async (): Promise<void> => {
       if (isSyncProhibited()) return;
       const plan = await createPlanAction();
       if (!plan || isPlanEmpty(plan)) return;
-      await executePlan(plan);
+      const result = await to(executePlan)(plan);
+      if (result.isErr()) handleSyncError(result.error);
     };
 
     const sync = withCoalescing(runSyncCycle);

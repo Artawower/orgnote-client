@@ -1,5 +1,5 @@
 import type { SyncExecutor, LocalFile, RemoteFile, FileSystem, UploadResult } from 'orgnote-api';
-import { hashContent } from 'orgnote-api';
+import { hashContent, validateSyncFileResponse } from 'orgnote-api';
 import type { VersionConflictResponse } from 'orgnote-api/remote-api';
 import { sdk } from 'src/boot/axios';
 import axios, { type AxiosError } from 'axios';
@@ -39,13 +39,14 @@ const uploadFile =
 
 const fetchFileContent = async (file: RemoteFile): Promise<Uint8Array> => {
   const response = await sdk.sync.syncFilesGet(file.path, { responseType: 'arraybuffer' });
-  return new Uint8Array(response.data as unknown as ArrayBuffer);
+  return validateSyncFileResponse(response, file);
 };
 
 const downloadFile =
   (fs: FileSystem) =>
   async (file: RemoteFile): Promise<void> => {
-    await fs.writeFile(file.path, await fetchFileContent(file));
+    const content = await fetchFileContent(file);
+    await fs.writeFile(file.path, content);
   };
 
 const deleteLocalFile =

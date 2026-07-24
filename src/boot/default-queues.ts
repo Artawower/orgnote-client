@@ -15,8 +15,8 @@ import { useBufferStore } from 'src/stores/buffer';
 const createSyncContextProvider = (): SyncContextProvider => ({
   getContext: (serverTime: string) => {
     const fsManager = useFileSystemManagerStore();
-    const fs = fsManager.currentFs as FileSystem;
-    if (!fs) return null;
+    const lowLevelFs = fsManager.currentFs as FileSystem;
+    if (!lowLevelFs) return null;
 
     const syncStore = useSyncStore();
     const { stateData } = storeToRefs(syncStore);
@@ -24,9 +24,9 @@ const createSyncContextProvider = (): SyncContextProvider => ({
     const bufferStore = useBufferStore();
 
     return {
-      executor: createSyncExecutor(fs),
+      executor: createSyncExecutor(lowLevelFs),
       state,
-      fs,
+      fs: lowLevelFs,
       serverTime,
       baseStore: getBaseContentStore() ?? undefined,
       isDirtyFile: (path: string) => {

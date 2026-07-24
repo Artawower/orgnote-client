@@ -2,9 +2,29 @@ import { to } from 'orgnote-api/utils';
 import { hasWindow } from 'src/utils/platform-specific';
 
 const wsPathLocal = '/api/ws/events';
+const defaultApiPath = '/v1';
+const httpProtocols = new Set(['http:', 'https:']);
+
+export const resolveApiBaseUrl = (
+  configured: string | undefined,
+  fallback: string | undefined,
+  protocol?: string,
+): string => {
+  const configuredUrl = configured?.trim();
+  const fallbackUrl = fallback?.trim() || defaultApiPath;
+  if (!configuredUrl) return fallbackUrl;
+  if (!configuredUrl.startsWith('/') || !protocol || httpProtocols.has(protocol)) {
+    return configuredUrl;
+  }
+  return fallbackUrl.startsWith('http') ? fallbackUrl : configuredUrl;
+};
 
 export const getApiBaseUrl = (configured?: string): string =>
-  configured?.trim() || import.meta.env.VITE_API_URL || '/v1';
+  resolveApiBaseUrl(
+    configured,
+    import.meta.env.VITE_API_URL,
+    hasWindow() ? window.location.protocol : undefined,
+  );
 
 export const getApiPublicUrl = (configured?: string): string => {
   const baseUrl = getApiBaseUrl(configured);

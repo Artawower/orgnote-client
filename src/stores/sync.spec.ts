@@ -38,18 +38,34 @@ vi.mock('src/infrastructure/sync', () => ({
 }));
 
 vi.mock('orgnote-api', async () => {
+  class InvalidSyncResponseError extends Error {
+    details: unknown;
+
+    constructor(message: string, details: unknown) {
+      super(message);
+      this.details = details;
+    }
+  }
+
+  class InvalidSyncChangesResponseError extends InvalidSyncResponseError {
+    constructor(details: unknown) {
+      super('invalid sync changes response', details);
+    }
+  }
+
+  class InvalidSyncFileResponseError extends InvalidSyncResponseError {
+    constructor(details: unknown) {
+      super('invalid sync file response', details);
+    }
+  }
+
   return {
     recoverState: mockRecoverState,
     createSyncPlan: mockCreateSyncPlan,
     I18N: { SYNC_INVALID_API_RESPONSE: 'sync invalid API response' },
-    InvalidSyncChangesResponseError: class InvalidSyncChangesResponseError extends Error {
-      details: unknown;
-
-      constructor(details: unknown) {
-        super('invalid sync changes response');
-        this.details = details;
-      }
-    },
+    InvalidSyncResponseError,
+    InvalidSyncChangesResponseError,
+    InvalidSyncFileResponseError,
   };
 });
 
@@ -233,6 +249,34 @@ test('sync reports invalid API response without pausing retries', async () => {
     }),
   );
   expect(mockEnqueuePlanOperations).not.toHaveBeenCalled();
+});
+
+test('sync reports invalid file response and clears current plan', async () => {
+  const { InvalidSyncFileResponseError } = await import('orgnote-api');
+  const error = new InvalidSyncFileResponseError({
+    operation: 'syncFilesGet',
+    path: '/note.org',
+    reason: 'missing_content_hash',
+    responseKind: 'array-buffer',
+  });
+  const plan = createNonEmptyPlan();
+  mockRecoverState.mockResolvedValue(undefined);
+  mockCreateSyncPlan.mockResolvedValue(plan);
+  mockIsPlanEmpty.mockReturnValue(false);
+  mockEnqueuePlanOperations.mockRejectedValue(error);
+
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+  await store.sync();
+
+  expect(mockEnqueuePlanOperations).toHaveBeenCalledTimes(2);
+  expect(store.currentPlan).toBeNull();
+  expect(mockReportError).toHaveBeenCalledWith(
+    error,
+    expect.objectContaining({ id: 'sync-invalid-api-response', stored: true }),
+  );
 });
 
 test('reset clears currentPlan', async () => {

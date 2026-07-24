@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { toAbsolutePath } from 'orgnote-api';
+import { toAbsolutePath, validateSyncFileResponse } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { sdk } from 'src/boot/axios';
 import { reporter } from 'src/boot/report';
@@ -31,23 +31,6 @@ const readLocalConfigContent = async (): Promise<string | undefined> => {
   return result.value || undefined;
 };
 
-const decodeRemoteConfigContent = (data: unknown): string | undefined => {
-  if (typeof data === 'string') {
-    return data;
-  }
-
-  if (data instanceof ArrayBuffer) {
-    return new TextDecoder().decode(new Uint8Array(data));
-  }
-
-  if (ArrayBuffer.isView(data)) {
-    return new TextDecoder().decode(data);
-  }
-
-  reporter.reportError(new Error('Unexpected remote config response type'));
-  return;
-};
-
 const fetchRemoteConfigContent = async (): Promise<string | undefined> => {
   const result = await to(() =>
     sdk.sync.syncFilesGet(absoluteConfigPath, {
@@ -55,16 +38,20 @@ const fetchRemoteConfigContent = async (): Promise<string | undefined> => {
     }),
   )();
 
-  if (result.isOk()) {
-    return decodeRemoteConfigContent(result.value.data);
-  }
-
-  if (isRemoteConfigMissing(result.error)) {
+  if (result.isErr()) {
+    if (!isRemoteConfigMissing(result.error)) reporter.reportError(result.error);
     return;
   }
 
-  reporter.reportError(result.error);
-  return;
+  const validated = await to(validateSyncFileResponse)(result.value, {
+    path: absoluteConfigPath,
+  });
+  if (validated.isErr()) {
+    reporter.reportError(validated.error);
+    return;
+  }
+
+  return new TextDecoder().decode(validated.value);
 };
 
 const parseRemoteConfig = (content: string) => {

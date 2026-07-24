@@ -1,7 +1,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import clone from 'rfdc';
-import type { DiskFile, FileSystem, FileSystemInfo } from 'orgnote-api';
+import { hashContent, type DiskFile, type FileSystem, type FileSystemInfo } from 'orgnote-api';
 import { stringifyToml } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { DEFAULT_CONFIG } from 'src/constants/config';
@@ -27,6 +27,19 @@ vi.mock('src/boot/report', () => ({
     reportError: vi.fn(),
   },
 }));
+
+const createRemoteResponse = async (content: string, hasContentHash = true) => {
+  const bytes = new TextEncoder().encode(content);
+  const contentHash = await hashContent(bytes);
+  return {
+    data: bytes.buffer,
+    status: 200,
+    headers: {
+      'content-type': 'application/octet-stream',
+      ...(hasContentHash ? { 'x-content-hash': contentHash } : {}),
+    },
+  };
+};
 
 const createDiskFile = (path: string, mtime: number, size = 0): DiskFile => ({
   name: path.split('/').pop() ?? '',
@@ -114,9 +127,7 @@ test('bootstrapRemoteConfig replaces default config with remote config', async (
   const remoteConfig = clone()(DEFAULT_CONFIG);
   remoteConfig.system.language = 'ru-RU';
 
-  syncFilesGetMock.mockResolvedValue({
-    data: new TextEncoder().encode(stringifyToml(remoteConfig)).buffer,
-  });
+  syncFilesGetMock.mockResolvedValue(await createRemoteResponse(stringifyToml(remoteConfig)));
 
   setupFs(fs);
   useConfigStore();
@@ -128,6 +139,27 @@ test('bootstrapRemoteConfig replaces default config with remote config', async (
   });
   expect(useConfigStore().config.system.language).toBe('ru-RU');
   expect(files.get('/.orgnote/config.toml')?.content).toBe(stringifyToml(remoteConfig));
+});
+
+test('bootstrapRemoteConfig rejects response without content hash', async () => {
+  const localConfig = stringifyToml(clone()(DEFAULT_CONFIG));
+  const { fs, files } = createMockFs(localConfig);
+  syncFilesGetMock.mockResolvedValue(
+    await createRemoteResponse(
+      '<!doctype html><html><head><title>orgnote</title></head></html>',
+      false,
+    ),
+  );
+
+  setupFs(fs);
+  useConfigStore();
+
+  await bootstrapRemoteConfig();
+
+  expect(files.get('/.orgnote/config.toml')?.content).toBe(localConfig);
+  expect(reporter.reportError).toHaveBeenCalledWith(
+    expect.objectContaining({ name: 'InvalidSyncFileResponseError' }),
+  );
 });
 
 test('bootstrapRemoteConfig keeps local default config when remote config is missing', async () => {
