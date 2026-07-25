@@ -15,7 +15,7 @@
         <completion-result-item
           :item="item as CompletionCandidate"
           :index="index"
-          :selected="index === activeCompletion?.selectedCandidateIndex"
+          :selected="getCandidateIndex(index) === activeCompletion?.selectedCandidateIndex"
           @select="$emit('select')"
         />
       </template>
@@ -29,10 +29,10 @@ import { api } from 'src/boot/api';
 import AsyncItemContainer from './AsyncItemContainer.vue';
 import CompletionResultItem from './CompletionResultItem.vue';
 import type { CompletionCandidate } from 'orgnote-api';
-import { toValue, watch } from 'vue';
+import { computed, nextTick, ref, toValue, watch } from 'vue';
 import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
-import { computed } from 'vue';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
+import type { QVirtualScroll } from 'quasar';
 
 defineEmits<{
   select: [];
@@ -42,6 +42,7 @@ const completion = api.core.useCompletion();
 const { config } = storeToRefs(api.core.useConfig());
 const { activeCompletion } = storeToRefs(completion);
 
+const scrollTarget = ref<QVirtualScroll | null>(null);
 const pendingRanges = new Set<string>();
 
 const buildRangeKey = (from: number, size: number): string => `${from}-${size}`;
@@ -107,6 +108,33 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
     },
     [[], []],
   );
+});
+
+const getCandidateIndex = (displayIndex: number): number | undefined => {
+  if (!config.value?.completion?.showGroup) return displayIndex;
+  const candidate = groupedCandidates.value[0][displayIndex];
+  if (!candidate || 'groupTitle' in candidate) return;
+  return candidate.index ?? displayIndex;
+};
+
+const getCandidateDisplayIndex = (candidateIndex: number): number => {
+  if (!config.value?.completion?.showGroup) return candidateIndex;
+  const displayIndex = groupedCandidates.value[0].findIndex(
+    (_, index) => getCandidateIndex(index) === candidateIndex,
+  );
+  return displayIndex < 0 ? candidateIndex : displayIndex;
+};
+
+const selectedDisplayIndex = computed(() => {
+  const candidateIndex = activeCompletion.value?.selectedCandidateIndex;
+  if (typeof candidateIndex !== 'number') return;
+  return getCandidateDisplayIndex(candidateIndex);
+});
+
+watch(selectedDisplayIndex, async (displayIndex) => {
+  if (typeof displayIndex !== 'number') return;
+  await nextTick();
+  scrollTarget.value?.scrollTo(displayIndex);
 });
 
 const total = computed(() => {
