@@ -10,7 +10,7 @@
     scroll-target="scrollTarget"
     class="completion-scroll full-width flex-1"
   >
-    <async-item-container :items-list="groupedCandidates[0]" :index="index" :height="itemHeight">
+    <async-item-container :items-list="displayModel.items" :index="index" :height="itemHeight">
       <template #default="{ item, index }">
         <completion-result-item
           :item="item as CompletionCandidate"
@@ -30,13 +30,10 @@ import { logger } from 'src/boot/logger';
 import AsyncItemContainer from './AsyncItemContainer.vue';
 import CompletionResultItem from './CompletionResultItem.vue';
 import { to, type CompletionCandidate } from 'orgnote-api';
-import { computed, nextTick, ref, toValue, watch } from 'vue';
-import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
+import { computed, nextTick, ref, watch } from 'vue';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 import type { QVirtualScroll } from 'quasar';
-
-type CompletionDisplayItem = GroupedCompletionCandidate | undefined;
-type GroupedCandidates = [CompletionDisplayItem[], string[]];
+import { buildCompletionDisplayModel } from './completion-grouping';
 
 interface CandidateRange {
   readonly from: number;
@@ -81,39 +78,18 @@ const isGroupingEnabled = computed(
   () => Boolean(config.value?.completion?.showGroup && hasLoadedAllCandidates.value),
 );
 
-const groupedCandidates = computed<GroupedCandidates>(() => {
-  const candidates = activeCompletion.value?.candidates;
-  if (!candidates || !isGroupingEnabled.value) return [candidates ?? [], []];
+const displayModel = computed(() =>
+  buildCompletionDisplayModel(
+    activeCompletion.value?.candidates ?? [],
+    isGroupingEnabled.value,
+  ),
+);
 
-  return candidates.reduce<GroupedCandidates>(
-    (acc, item, index) => {
-      const groupName = toValue(item.group);
-      const groupChanged = groupName && acc[1][acc[1].length - 1] !== groupName;
-      if (groupChanged) {
-        acc[0].push({ groupTitle: groupName });
-        acc[1].push(groupName);
-      }
-      acc[0].push({ ...item, index });
-      return acc;
-    },
-    [[], []],
-  );
-});
+const getCandidateIndex = (displayIndex: number): number | undefined =>
+  displayModel.value.displayToCandidateIndex[displayIndex];
 
-const getCandidateIndex = (displayIndex: number): number | undefined => {
-  if (!isGroupingEnabled.value) return displayIndex;
-  const candidate = groupedCandidates.value[0][displayIndex];
-  if (!candidate || 'groupTitle' in candidate) return;
-  return candidate.index;
-};
-
-const getCandidateDisplayIndex = (candidateIndex: number): number => {
-  if (!isGroupingEnabled.value) return candidateIndex;
-  const displayIndex = groupedCandidates.value[0].findIndex(
-    (_, index) => getCandidateIndex(index) === candidateIndex,
-  );
-  return displayIndex < 0 ? candidateIndex : displayIndex;
-};
+const getCandidateDisplayIndex = (candidateIndex: number): number =>
+  displayModel.value.candidateToDisplayIndex[candidateIndex] ?? candidateIndex;
 
 const isRangeLoaded = (range: CandidateRange): boolean => {
   const candidates = activeCompletion.value?.candidates;
@@ -161,7 +137,7 @@ const getPagedResult = (from: number, size: number) => {
 
 const total = computed(() => {
   const serverTotal = activeCompletion.value?.total ?? 0;
-  const groupCount = groupedCandidates.value[1].length;
+  const groupCount = displayModel.value.groupTitles.length;
   return serverTotal + groupCount;
 });
 

@@ -315,6 +315,33 @@ test('CompletionResult scrolls again when grouping changes the selected display 
   wrapper.unmount();
 });
 
+test('CompletionResult keeps non-contiguous group candidates in one virtual section', async () => {
+  showGroup.value = true;
+  const candidates: CompletionCandidate[] = [
+    { title: 'A1', data: 1, group: 'A', commandHandler: vi.fn() },
+    { title: 'B1', data: 2, group: 'B', commandHandler: vi.fn() },
+    { title: 'A2', data: 3, group: 'A', commandHandler: vi.fn() },
+  ];
+  activeCompletion.value = {
+    type: 'choice',
+    candidates,
+    total: candidates.length,
+    selectedCandidateIndex: 0,
+    searchQuery: '',
+    itemsGetter: () => ({ result: candidates, total: candidates.length }),
+    result: Promise.resolve(),
+  };
+  const wrapper = await mountCompletionResult();
+
+  activeCompletion.value.selectedCandidateIndex = 2;
+  await nextTick();
+  await nextTick();
+
+  expect(itemsSize).toBe(5);
+  expect(scrollTo).toHaveBeenLastCalledWith(2);
+  wrapper.unmount();
+});
+
 test('CompletionResult accounts for group headers when scrolling to a candidate', async () => {
   showGroup.value = true;
   const candidates: CompletionCandidate[] = [
