@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { toAbsolutePath, validateSyncFileResponse } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
+import { stringifyToml, to } from 'orgnote-api/utils';
 import { sdk } from 'src/boot/axios';
 import { reporter } from 'src/boot/report';
 import { DEFAULT_CONFIG_CONTENT } from 'src/constants/config';
@@ -90,6 +90,17 @@ const updateConfigStore = (content: ReturnType<typeof parseRemoteConfig>): void 
   Object.assign(configStore.config, content);
 };
 
+type ConfigStore = ReturnType<typeof useConfigStore>;
+
+const isLocalConfigUnchanged = async (
+  configStore: ConfigStore,
+  expectedDiskContent: string,
+  expectedStoreContent: string,
+): Promise<boolean> => {
+  if (stringifyToml(configStore.config) !== expectedStoreContent) return false;
+  return (await readLocalConfigContent()) === expectedDiskContent;
+};
+
 const applyRemoteConfig = async (content: string): Promise<void> => {
   const parsedRemoteConfig = parseRemoteConfig(content);
   if (!parsedRemoteConfig) {
@@ -109,14 +120,12 @@ export const bootstrapRemoteConfig = async (): Promise<void> => {
   await configStore.sync();
 
   const localConfigContent = await readLocalConfigContent();
-  if (localConfigContent !== DEFAULT_CONFIG_CONTENT) {
-    return;
-  }
+  if (localConfigContent !== DEFAULT_CONFIG_CONTENT) return;
+  const configStoreContent = stringifyToml(configStore.config);
 
   const remoteConfigContent = await fetchRemoteConfigContent();
-  if (!remoteConfigContent) {
-    return;
-  }
+  if (!remoteConfigContent) return;
+  if (!(await isLocalConfigUnchanged(configStore, localConfigContent, configStoreContent))) return;
 
   await applyRemoteConfig(remoteConfigContent);
 };

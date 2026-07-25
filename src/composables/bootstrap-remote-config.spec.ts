@@ -181,6 +181,62 @@ test('bootstrapRemoteConfig keeps local default config when remote config is mis
   expect(reporter.reportError).not.toHaveBeenCalled();
 });
 
+test('bootstrapRemoteConfig preserves config edited while remote config loads', async () => {
+  const localConfig = stringifyToml(clone()(DEFAULT_CONFIG));
+  const { fs, files } = createMockFs(localConfig);
+  const remoteConfig = clone()(DEFAULT_CONFIG);
+  remoteConfig.system.language = 'ru-RU';
+  const remoteResponse = await createRemoteResponse(stringifyToml(remoteConfig));
+  let resolveRemote: ((response: typeof remoteResponse) => void) | undefined;
+  syncFilesGetMock.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolveRemote = resolve;
+      }),
+  );
+
+  setupFs(fs);
+  const configStore = useConfigStore();
+  const bootstrapPromise = bootstrapRemoteConfig();
+  await vi.waitFor(() => expect(syncFilesGetMock).toHaveBeenCalledTimes(1));
+
+  configStore.config.system.language = 'de-DE';
+  resolveRemote?.(remoteResponse);
+  await bootstrapPromise;
+
+  expect(configStore.config.system.language).toBe('de-DE');
+  expect(files.get('/.orgnote/config.toml')?.content).toBe(localConfig);
+});
+
+test('bootstrapRemoteConfig preserves config changed externally during remote fetch', async () => {
+  const localConfig = stringifyToml(clone()(DEFAULT_CONFIG));
+  const { fs, files } = createMockFs(localConfig);
+  const externalConfig = clone()(DEFAULT_CONFIG);
+  externalConfig.system.language = 'de-DE';
+  const remoteConfig = clone()(DEFAULT_CONFIG);
+  remoteConfig.system.language = 'ru-RU';
+  const remoteResponse = await createRemoteResponse(stringifyToml(remoteConfig));
+  let resolveRemote: ((response: typeof remoteResponse) => void) | undefined;
+  syncFilesGetMock.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        resolveRemote = resolve;
+      }),
+  );
+
+  setupFs(fs);
+  useConfigStore();
+  const bootstrapPromise = bootstrapRemoteConfig();
+  await vi.waitFor(() => expect(syncFilesGetMock).toHaveBeenCalledTimes(1));
+
+  files.get('/.orgnote/config.toml')!.content = stringifyToml(externalConfig);
+  resolveRemote?.(remoteResponse);
+  await bootstrapPromise;
+
+  expect(useConfigStore().config.system.language).toBe(DEFAULT_CONFIG.system.language);
+  expect(files.get('/.orgnote/config.toml')?.content).toBe(stringifyToml(externalConfig));
+});
+
 test('bootstrapRemoteConfig preserves user-modified local config', async () => {
   const diskConfig = clone()(DEFAULT_CONFIG);
   diskConfig.system.language = 'de-DE';
