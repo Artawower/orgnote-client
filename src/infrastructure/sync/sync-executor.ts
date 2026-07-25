@@ -1,4 +1,11 @@
-import type { SyncExecutor, LocalFile, RemoteFile, FileSystem, UploadResult } from 'orgnote-api';
+import type {
+  DeleteResult,
+  FileSystem,
+  LocalFile,
+  RemoteFile,
+  SyncExecutor,
+  UploadResult,
+} from 'orgnote-api';
 import { hashContent, validateSyncFileResponse } from 'orgnote-api';
 import type { VersionConflictResponse } from 'orgnote-api/remote-api';
 import { sdk } from 'src/boot/axios';
@@ -55,8 +62,16 @@ const deleteLocalFile =
     await fs.deleteFile(path);
   };
 
-const deleteRemoteFile = async (path: string, expectedVersion: number): Promise<void> => {
-  await sdk.sync.syncFilesDelete(path, expectedVersion);
+const deleteRemoteFile = async (
+  path: string,
+  expectedVersion: number,
+): Promise<DeleteResult> => {
+  const result = await to(sdk.sync.syncFilesDelete)(path, expectedVersion);
+  if (result.isOk()) return { status: 'ok' };
+  if (isConflictError(result.error)) {
+    return { status: 'conflict', serverVersion: extractConflictVersion(result.error) };
+  }
+  throw result.error;
 };
 
 export const createSyncExecutor = (fs: FileSystem): SyncExecutor => ({

@@ -93,12 +93,29 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       });
     };
 
+    const getInvalidatedPaths = (): Set<string> =>
+      new Set(
+        Object.entries(stateData.value?.files ?? {})
+          .filter(([, file]) => !file.syncedAt)
+          .map(([path]) => path),
+      );
+
+    const runSyncIteration = async (): Promise<boolean> => {
+      const invalidatedBefore = getInvalidatedPaths();
+      const plan = await createPlanAction();
+      if (!plan || isPlanEmpty(plan)) return false;
+
+      const result = await to(executePlan)(plan);
+      if (result.isErr()) {
+        handleSyncError(result.error);
+        return false;
+      }
+      return [...getInvalidatedPaths()].some((path) => !invalidatedBefore.has(path));
+    };
+
     const runSyncCycle = async (): Promise<void> => {
       if (isSyncProhibited()) return;
-      const plan = await createPlanAction();
-      if (!plan || isPlanEmpty(plan)) return;
-      const result = await to(executePlan)(plan);
-      if (result.isErr()) handleSyncError(result.error);
+      if (await runSyncIteration()) await runSyncIteration();
     };
 
     const sync = withCoalescing(runSyncCycle);

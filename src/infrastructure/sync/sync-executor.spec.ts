@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     },
   })),
   syncFilesGet: vi.fn(),
+  syncFilesDelete: vi.fn(async () => undefined),
 }));
 
 vi.mock('src/boot/axios', () => ({
@@ -18,7 +19,7 @@ vi.mock('src/boot/axios', () => ({
     sync: {
       syncFilesPut: mocks.syncFilesPut,
       syncFilesGet: mocks.syncFilesGet,
-      syncFilesDelete: vi.fn(),
+      syncFilesDelete: mocks.syncFilesDelete,
     },
   },
 }));
@@ -92,6 +93,28 @@ test('createSyncExecutor rejects response without content hash before writing lo
     name: 'InvalidSyncFileResponseError',
   });
   expect(fs.writeFile).not.toHaveBeenCalled();
+});
+
+test('createSyncExecutor returns successful remote deletion result', async () => {
+  const executor = createSyncExecutor({} as FileSystem);
+
+  const result = await executor.deleteRemote('/notes/deleted.org', 8);
+
+  expect(result).toEqual({ status: 'ok' });
+  expect(mocks.syncFilesDelete).toHaveBeenCalledWith('/notes/deleted.org', 8);
+});
+
+test('createSyncExecutor returns current server version after delete conflict', async () => {
+  const conflict = Object.assign(new Error('Version mismatch'), {
+    isAxiosError: true,
+    response: { status: 409, data: { serverVersion: 9 } },
+  });
+  mocks.syncFilesDelete.mockRejectedValueOnce(conflict);
+  const executor = createSyncExecutor({} as FileSystem);
+
+  const result = await executor.deleteRemote('/notes/deleted.org', 8);
+
+  expect(result).toEqual({ status: 'conflict', serverVersion: 9 });
 });
 
 test('createSyncExecutor writes validated remote content', async () => {

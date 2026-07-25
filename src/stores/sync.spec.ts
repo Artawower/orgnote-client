@@ -194,6 +194,41 @@ test('sync stores plan in currentPlan before execution', async () => {
   expect(store.currentPlan).toBeNull();
 });
 
+test('sync replans once when an operation invalidates a file watermark', async () => {
+  mockRecoverState.mockResolvedValue(undefined);
+  mockCreateSyncPlan
+    .mockResolvedValueOnce(createNonEmptyPlan())
+    .mockResolvedValueOnce(createEmptyPlan());
+  mockIsPlanEmpty.mockReturnValueOnce(false).mockReturnValueOnce(true);
+
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+  store.stateData = {
+    files: {
+      '/deleted.org': {
+        mtime: 100,
+        size: 10,
+        version: 8,
+        status: 'synced',
+        syncedAt: '2026-07-25T10:00:00Z',
+      },
+    },
+  };
+  mockEnqueuePlanOperations.mockImplementationOnce(async () => {
+    store.stateData!.files['/deleted.org'] = {
+      mtime: 100,
+      size: 10,
+      version: 8,
+      status: 'pending',
+    };
+  });
+
+  await store.sync();
+
+  expect(mockCreateSyncPlan).toHaveBeenCalledTimes(2);
+  expect(mockEnqueuePlanOperations).toHaveBeenCalledTimes(1);
+});
+
 test('sync reports error and returns null plan when recoverState fails', async () => {
   const error = new Error('state recovery failed');
   mockRecoverState.mockRejectedValueOnce(error);
