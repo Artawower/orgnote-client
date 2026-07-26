@@ -68,6 +68,14 @@
             <file-manager-item
               v-for="f of searchFiles"
               :key="f.path"
+              v-memo="[
+                f,
+                searchHighlightKeywords,
+                menuItemSize,
+                isActiveFile(f),
+                selectionMode,
+                selectedFiles.has(f.path),
+              ]"
               :highlight="searchHighlightKeywords"
               :file="f"
               :size="menuItemSize"
@@ -198,7 +206,7 @@ const isActiveFile = (file: DiskFile): boolean => {
 const ACTIVE_FILE_SELECTOR = '[data-file-manager-active]';
 const fileList = ref<HTMLElement>();
 const followActiveBuffer = computed(
-  () => !!configStore.config.ui.followActiveBufferInSidebar,
+  () => !!configStore.config.ui.followActiveBufferInSidebar && sidebar.opened,
 );
 const scrollToActiveFile = async (): Promise<void> => {
   if (!followActiveBuffer.value || !activeFilePath.value) return;
