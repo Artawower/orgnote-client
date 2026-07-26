@@ -53,7 +53,7 @@
           :placeholder="I18N.SEARCH"
         />
       </div>
-      <div class="file-list">
+      <div ref="fileList" class="file-list">
         <menu-group :title="targetPath ?? '/'">
           <div v-if="isLoading" class="loading-wrapper" :class="{ compact }">
             <loading-dots />
@@ -92,12 +92,11 @@ import { api } from 'src/boot/api';
 import FileManagerItem from './FileManagerItem.vue';
 import SearchInput from 'src/components/SearchInput.vue';
 import ActionButtons from 'src/components/ActionButtons.vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import CommandActionButton from './CommandActionButton.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import AppFlex from 'src/components/AppFlex.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
@@ -143,6 +142,7 @@ const searchFiles = computed(() =>
 const isLoading = ref(true);
 
 const bufferViewer = api.core.useBufferViewer();
+const configStore = api.core.useConfig();
 const sidebar = api.ui.useSidebar();
 const paneStore = api.core.usePane();
 
@@ -183,19 +183,34 @@ const moveUp = () => {
 const iconSize = computed<StyleSize>(() => (props.compact ? 'sm' : 'md'));
 
 const activeFilePath = computed<string | undefined>(() => {
-  const activeTab = paneStore.activeTab;
-  if (!activeTab?.router) return;
-
-  const route = activeTab.router.currentRoute.value;
-  const uri = extractPathFromRoute(route);
+  const uri = paneStore.activeBufferUri;
   if (!uri) return;
-  return parseBufferUri(uri).path;
+  const parsedUri = parseBufferUri(uri);
+  if (parsedUri.scheme !== 'file') return;
+  return parsedUri.path;
 });
 
 const isActiveFile = (file: DiskFile): boolean => {
   if (file.type !== 'file' || !activeFilePath.value) return false;
   return file.path === activeFilePath.value;
 };
+
+const ACTIVE_FILE_SELECTOR = '[data-file-manager-active]';
+const fileList = ref<HTMLElement>();
+const followActiveBuffer = computed(
+  () => !!configStore.config.ui.followActiveBufferInSidebar,
+);
+const scrollToActiveFile = async (): Promise<void> => {
+  if (!followActiveBuffer.value || !activeFilePath.value) return;
+  await nextTick();
+  const activeFile = fileList.value?.querySelector<HTMLElement>(ACTIVE_FILE_SELECTOR);
+  activeFile?.scrollIntoView({ block: 'nearest' });
+};
+
+watch([activeFilePath, searchFiles, followActiveBuffer], scrollToActiveFile, {
+  flush: 'post',
+  immediate: true,
+});
 
 watch(
   targetPath,

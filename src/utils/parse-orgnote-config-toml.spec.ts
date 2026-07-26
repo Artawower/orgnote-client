@@ -21,6 +21,16 @@ test('parseOrgNoteConfigToml parses a valid config.toml', () => {
   expect(result._unsafeUnwrap().system.language).toBe('ru-RU');
 });
 
+test('parseOrgNoteConfigToml accepts configs without sidebar buffer following', () => {
+  const legacyConfig = cloneConfig(DEFAULT_CONFIG);
+  delete legacyConfig.ui.followActiveBufferInSidebar;
+
+  const result = parseOrgNoteConfigToml(stringifyToml(legacyConfig));
+
+  expect(result.isOk()).toBe(true);
+  expect(result._unsafeUnwrap().ui.followActiveBufferInSidebar).toBeUndefined();
+});
+
 test('parseOrgNoteConfigToml returns SyntaxError for invalid TOML', () => {
   const result = parseOrgNoteConfigToml('invalid = [toml');
 

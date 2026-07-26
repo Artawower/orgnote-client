@@ -1,4 +1,9 @@
 import type {
+  ActiveBufferSnapshot,
+  BufferActivatedEvent,
+  BufferActivationCallback,
+  BufferActivationSubscriptionOptions,
+  BufferActivationUnsubscribe,
   InitialTabParams,
   Tab,
   Pane,
@@ -12,12 +17,13 @@ import { getUniqueTabTitle } from 'src/utils/unique-tab-title';
 import { v4 } from 'uuid';
 
 import type { ShallowRef } from 'vue';
-import { computed, shallowRef, ref } from 'vue';
+import { computed, shallowRef, ref, watch } from 'vue';
 import type { RouteLocationRaw, Router } from 'vue-router';
 import { createPaneRouter } from 'src/utils/pane-router';
 import { useLayoutStore } from './layout';
-import { isPresent } from 'orgnote-api/utils';
+import { isPresent, to } from 'orgnote-api/utils';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
+import { reporter } from 'src/boot/report';
 import { generateTabTitle } from 'src/utils/generate-tab-title';
 
 export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
@@ -48,6 +54,50 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     if (!route) return undefined;
     return extractPathFromRoute(route);
   });
+
+  const activeBufferSnapshot = computed<ActiveBufferSnapshot>(() => ({
+    paneId: activePaneId.value,
+    tabId: activeTab.value?.id,
+    uri: activeBufferUri.value,
+  }));
+  const bufferActivationCallbacks = new Set<BufferActivationCallback>();
+
+  const notifyBufferActivationCallback = async (
+    callback: BufferActivationCallback,
+    event: BufferActivatedEvent,
+  ): Promise<void> => {
+    const result = await to(() => Promise.resolve(callback(event)))();
+    if (result.isErr()) reporter.reportError(result.error);
+  };
+
+  const notifyBufferActivated = async (event: BufferActivatedEvent): Promise<void> => {
+    await Promise.all(
+      [...bufferActivationCallbacks].map((callback) =>
+        notifyBufferActivationCallback(callback, event),
+      ),
+    );
+  };
+
+  const afterBufferActivated = (
+    callback: BufferActivationCallback,
+    options: BufferActivationSubscriptionOptions = {},
+  ): BufferActivationUnsubscribe => {
+    bufferActivationCallbacks.add(callback);
+    if (options.immediate) {
+      void notifyBufferActivationCallback(callback, { current: activeBufferSnapshot.value });
+    }
+    return () => {
+      bufferActivationCallbacks.delete(callback);
+    };
+  };
+
+  watch(
+    activeBufferSnapshot,
+    (current, previous) => {
+      void notifyBufferActivated({ current, previous });
+    },
+    { flush: 'post' },
+  );
 
   const activeTabTitle = computed((): string => {
     const tab = activeTab.value;
@@ -615,6 +665,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     activeRoute,
     activeBufferUri,
     activeTabTitle,
+    afterBufferActivated,
     moveTab,
     createPane,
     getPane,

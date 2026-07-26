@@ -49,6 +49,18 @@ test('usePanelState.toggle should work correctly when called multiple times', ()
   expect(panel.opened.value).toBe(true);
 });
 
+test('usePanelState.setComponent should replace content without opening panel', () => {
+  const panel = usePanelState();
+  const mockComponent = createMockComponent('TestComponent');
+  const config = { componentProps: { foo: 'bar' } };
+
+  panel.setComponent(mockComponent, config);
+
+  expect(panel.component.value).toBe(mockComponent);
+  expect(panel.componentConfig.value).toEqual(config);
+  expect(panel.opened.value).toBe(false);
+});
+
 test('usePanelState.openComponent should set component and open panel', () => {
   const panel = usePanelState();
   const mockComponent = createMockComponent('TestComponent');

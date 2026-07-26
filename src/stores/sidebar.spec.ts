@@ -10,6 +10,25 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
+test('sidebar_setComponentWhenClosed_preservesClosedState', () => {
+  const sidebar = useSidebarStore();
+
+  sidebar.setComponent(ComponentA);
+
+  expect(sidebar.opened).toBe(false);
+  expect(sidebar.component).toBe(ComponentA);
+});
+
+test('sidebar_setComponentWhenOpen_preservesOpenState', () => {
+  const sidebar = useSidebarStore();
+  sidebar.openComponent(ComponentA);
+
+  sidebar.setComponent(ComponentB);
+
+  expect(sidebar.opened).toBe(true);
+  expect(sidebar.component).toBe(ComponentB);
+});
+
 test('sidebar_openWithComponentA_opensWithComponentA', () => {
   const sidebar = useSidebarStore();
   sidebar.openComponent(ComponentA);

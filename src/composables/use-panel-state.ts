@@ -18,13 +18,17 @@ export const usePanelState = () => {
     opened.value = !opened.value;
   };
 
+  const setComponent = <T extends VueComponent>(cmp: T, config?: ComponentConfig<T>) => {
+    componentConfig.value = config;
+    component.value = cmp;
+  };
+
   const openComponent = <T extends VueComponent>(cmp: T, config?: ComponentConfig<T>) => {
     if (opened.value && component.value === cmp) {
       close();
       return;
     }
-    componentConfig.value = config;
-    component.value = cmp;
+    setComponent(cmp, config);
     open();
   };
 
@@ -35,6 +39,7 @@ export const usePanelState = () => {
     open,
     close,
     toggle,
+    setComponent,
     openComponent,
   };
 };

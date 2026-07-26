@@ -1,6 +1,6 @@
 import { expect, test, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref, nextTick } from 'vue';
+import { defineComponent, h, ref, nextTick } from 'vue';
 
 const fileManagerFiles = ref<Array<{ path: string; name: string; type: 'file' | 'directory' }>>([]);
 const fileManagerSortedFiles = ref<
@@ -10,8 +10,15 @@ const fileManagerSortedFiles = ref<
 let fileManagerPath: ReturnType<typeof ref<string>>;
 let fileManagerSearchQuery: ReturnType<typeof ref<string>>;
 let fileManagerMobileFileSearchActive: ReturnType<typeof ref<boolean>>;
+let activeBufferUri: ReturnType<typeof ref<string | undefined>>;
 let tabletBelow: ReturnType<typeof ref<boolean>>;
 let desktopBelow: ReturnType<typeof ref<boolean>>;
+let scrollIntoView: ReturnType<typeof vi.fn>;
+const config = {
+  ui: {
+    followActiveBufferInSidebar: false,
+  },
+};
 
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({
@@ -39,7 +46,12 @@ vi.mock('src/boot/api', () => ({
         loadFiles: vi.fn(),
       }),
       useBufferViewer: () => ({ open: vi.fn() }),
-      usePane: () => ({ activeTab: undefined }),
+      useConfig: () => ({ config }),
+      usePane: () => ({
+        get activeBufferUri() {
+          return activeBufferUri.value;
+        },
+      }),
       useEditor: () => ({ activeContext: undefined }),
     },
     ui: {
@@ -64,10 +76,17 @@ beforeEach(() => {
   fileManagerPath = ref('/initial');
   fileManagerSearchQuery = ref('');
   fileManagerMobileFileSearchActive = ref(false);
+  activeBufferUri = ref(undefined);
   fileManagerFiles.value = [];
   fileManagerSortedFiles.value = [];
   tabletBelow = ref(false);
   desktopBelow = ref(false);
+  config.ui.followActiveBufferInSidebar = false;
+  scrollIntoView = vi.fn();
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: scrollIntoView,
+  });
 });
 
 test('FileManager shows header search on desktop regardless of compact', async () => {
@@ -127,4 +146,57 @@ test('FileManager does not show loading dots when files are already loaded befor
   await nextTick();
 
   expect(wrapper.findComponent({ name: 'LoadingDots' }).exists()).toBe(false);
+});
+
+test('FileManager scrolls the active file into view when buffer following is enabled', async () => {
+  const activeFile = { path: '/initial/demo-1.org', name: 'demo-1.org', type: 'file' as const };
+  fileManagerFiles.value = [activeFile];
+  fileManagerSortedFiles.value = [activeFile];
+  activeBufferUri.value = 'file:///initial/demo-1.org';
+  config.ui.followActiveBufferInSidebar = true;
+
+  const wrapper = mount(FileManager, { props: { path: '/initial' } });
+  await nextTick();
+  await nextTick();
+  await nextTick();
+
+  expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+  wrapper.unmount();
+});
+
+test('FileManager scrolls through a semantic marker without an active CSS class', async () => {
+  const activeFile = { path: '/initial/demo-1.org', name: 'demo-1.org', type: 'file' as const };
+  fileManagerFiles.value = [activeFile];
+  fileManagerSortedFiles.value = [activeFile];
+  activeBufferUri.value = 'file:///initial/demo-1.org';
+  config.ui.followActiveBufferInSidebar = true;
+  const FileManagerItemStub = defineComponent({
+    setup() {
+      return () => h('div', { 'data-file-manager-active': '' });
+    },
+  });
+
+  const wrapper = mount(FileManager, {
+    props: { path: '/initial' },
+    global: { stubs: { FileManagerItem: FileManagerItemStub } },
+  });
+  await nextTick();
+  await nextTick();
+
+  expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+  wrapper.unmount();
+});
+
+test('FileManager does not scroll the active file when buffer following is disabled', async () => {
+  const activeFile = { path: '/initial/demo-1.org', name: 'demo-1.org', type: 'file' as const };
+  fileManagerFiles.value = [activeFile];
+  fileManagerSortedFiles.value = [activeFile];
+  activeBufferUri.value = 'file:///initial/demo-1.org';
+
+  const wrapper = mount(FileManager, { props: { path: '/initial' } });
+  await nextTick();
+  await nextTick();
+
+  expect(scrollIntoView).not.toHaveBeenCalled();
+  wrapper.unmount();
 });

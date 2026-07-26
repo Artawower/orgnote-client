@@ -57,6 +57,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     minNotificationLevel: DEFAULT_MIN_NOTIFICATION_LEVEL,
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
+    followActiveBufferInSidebar: false,
     dropZoneEdgeRatio: 0.25,
     graph: {
       ...DEFAULT_GRAPH_CONFIG,

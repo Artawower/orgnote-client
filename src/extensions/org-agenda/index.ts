@@ -12,6 +12,7 @@ import { openTaskCommand } from './commands/open-task-command';
 import { quickAddToFileCommand } from './commands/quick-add-to-file-command';
 import { agendaFilterCommands } from './commands/open-agenda-filter-commands';
 import { AgendaSidebarRef } from './agenda-sidebar-ref';
+import { disposeAgendaBufferFollow, registerAgendaBufferFollow } from './agenda-buffer-follow';
 import {
   AGENDA_CREATE_TASK,
   AGENDA_QUICK_ADD_TO_FILE_COMMAND,
@@ -292,8 +293,14 @@ export const resolveAgendaConfig = (rawConfig: Record<string, unknown>): AgendaC
 export const orgAgendaExtension: Extension = {
   settingsSchema,
   defaultSettings,
-  onMounted: async (api) => registerViews(api),
-  onUnmounted: async (api) => unregisterViews(api),
+  onMounted: async (api) => {
+    registerViews(api);
+    registerAgendaBufferFollow(api);
+  },
+  onUnmounted: async (api) => {
+    disposeAgendaBufferFollow();
+    unregisterViews(api);
+  },
 };
 
 export { orgAgendaManifest } from './manifest';

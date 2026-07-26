@@ -50,7 +50,10 @@ import { DefaultCommands } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
 import { useCommandsStore } from 'src/stores/command';
 import { useKeyboardState } from 'src/composables/use-viewport-behavior';
+import { useFileManagerBufferFollow } from 'src/composables/use-file-manager-buffer-follow';
 import { platform } from 'src/utils/platform-detection';
+
+useFileManagerBufferFollow();
 
 const commandsStore = useCommandsStore();
 

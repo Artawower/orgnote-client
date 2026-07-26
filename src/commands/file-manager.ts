@@ -18,7 +18,10 @@ import { deleteFileCompletion } from 'src/composables/delete-file-completion';
 import { useFileRenameCompletion } from 'src/composables/file-rename-completion';
 import { getFileDirPath } from 'src/utils/get-file-dir-path';
 import { to } from 'orgnote-api/utils';
-import { FileManagerRef as FileManagerComponent } from 'src/containers/file-manager-ref';
+import {
+  FILE_MANAGER_SIDEBAR_CONFIG,
+  FileManagerRef as FileManagerComponent,
+} from 'src/containers/file-manager-ref';
 import { buildSortCandidates } from 'src/composables/sort-files-completion';
 import { getActiveFilePath } from 'src/utils/get-active-file-path';
 import {
@@ -347,13 +350,7 @@ export function getFileManagerCommands(): Command[] {
       },
       handler: (api: OrgNoteApi) => {
         const sidebar = api.ui.useSidebar();
-        sidebar.openComponent(FileManagerComponent, {
-          componentProps: {
-            closable: false,
-            tree: true,
-            compact: true,
-          },
-        });
+        sidebar.openComponent(FileManagerComponent, FILE_MANAGER_SIDEBAR_CONFIG);
       },
     },
     {
@@ -368,9 +365,7 @@ export function getFileManagerCommands(): Command[] {
       handler: (api: OrgNoteApi) => {
         const sidebar = api.ui.useSidebar();
         if (sidebar.opened && sidebar.component === FileManagerComponent) return;
-        sidebar.openComponent(FileManagerComponent, {
-          componentProps: { closable: false, tree: true, compact: true },
-        });
+        sidebar.openComponent(FileManagerComponent, FILE_MANAGER_SIDEBAR_CONFIG);
       },
     },
     {
@@ -542,16 +537,10 @@ export function getFileManagerCommands(): Command[] {
         if (!filePath) return;
         const fm = api.core.useFileManager();
         fm.path = getFileDirPath(filePath);
+        fm.searchQuery = '';
         const sidebar = api.ui.useSidebar();
-        if (!sidebar.opened) {
-          sidebar.openComponent(FileManagerComponent, {
-            componentProps: {
-              closable: false,
-              tree: true,
-              compact: true,
-            },
-          });
-        }
+        if (sidebar.opened && sidebar.component === FileManagerComponent) return;
+        sidebar.openComponent(FileManagerComponent, FILE_MANAGER_SIDEBAR_CONFIG);
       },
     },
     {

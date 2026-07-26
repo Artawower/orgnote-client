@@ -5,7 +5,7 @@
     :disabled="isSystemPath"
     @open="handleContextMenuOpen"
   >
-    <menu-item :size="size" :active="active">
+    <menu-item :data-file-manager-active="active || undefined" :size="size" :active="active">
       <app-flex class="file-info" row start align-center gap="sm">
         <app-checkbox
           v-if="selectionMode && !root"

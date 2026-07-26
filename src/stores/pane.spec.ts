@@ -1,4 +1,5 @@
 import { expect, test, vi } from 'vitest';
+import { nextTick, ref } from 'vue';
 import { usePaneStore } from './pane';
 import { createPinia, setActivePinia } from 'pinia';
 import type { PaneSnapshot } from 'orgnote-api';
@@ -8,15 +9,13 @@ import { isNullable } from 'orgnote-api/utils';
 const createMockRouter = () => ({
   push: vi.fn(),
   hasRoute: vi.fn(() => true),
-  currentRoute: {
-    value: {
-      path: '/',
-      params: {},
-      query: {},
-      hash: '',
-      name: RouteNames.InitialPage,
-    },
-  },
+  currentRoute: ref({
+    path: '/',
+    params: {},
+    query: {},
+    hash: '',
+    name: RouteNames.InitialPage,
+  }),
 });
 
 vi.mock('src/utils/pane-router', () => ({
@@ -1029,4 +1028,74 @@ test('activeTabTitle should reflect file name after navigation to file route', a
   });
 
   expect(paneStore.activeTabTitle).toBe('my-note.org');
+});
+
+test('afterBufferActivated emits when another tab with the same URI is activated', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  const firstTab = await paneStore.addTab(pane.id);
+  const secondTab = await paneStore.addTab(pane.id);
+  assertDefined(firstTab, 'firstTab is not defined');
+  assertDefined(secondTab, 'secondTab is not defined');
+  const callback = vi.fn();
+
+  paneStore.selectTab(pane.id, firstTab.id);
+  await nextTick();
+  paneStore.afterBufferActivated(callback);
+  paneStore.selectTab(pane.id, secondTab.id);
+  await nextTick();
+
+  expect(callback).toHaveBeenCalledOnce();
+  expect(callback).toHaveBeenCalledWith({
+    current: { paneId: pane.id, tabId: secondTab.id, uri: undefined },
+    previous: { paneId: pane.id, tabId: firstTab.id, uri: undefined },
+  });
+});
+
+test('afterBufferActivated emits when the active tab navigates to another buffer', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  const tab = await paneStore.addTab(pane.id);
+  assertDefined(tab, 'tab is not defined');
+  const callback = vi.fn();
+
+  paneStore.afterBufferActivated(callback);
+  Object.assign(tab.router.currentRoute.value, {
+    name: RouteNames.File,
+    params: { paneId: pane.id, path: '/notes/today.org' },
+  });
+  await nextTick();
+
+  expect(callback).toHaveBeenCalledOnce();
+  expect(callback).toHaveBeenCalledWith({
+    current: { paneId: pane.id, tabId: tab.id, uri: 'file:///notes/today.org' },
+    previous: { paneId: pane.id, tabId: tab.id, uri: undefined },
+  });
+});
+
+test('afterBufferActivated immediately emits current state and unsubscribes', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  const firstTab = await paneStore.addTab(pane.id);
+  const secondTab = await paneStore.addTab(pane.id);
+  assertDefined(firstTab, 'firstTab is not defined');
+  assertDefined(secondTab, 'secondTab is not defined');
+  const callback = vi.fn();
+
+  const unsubscribe = paneStore.afterBufferActivated(callback, { immediate: true });
+  await nextTick();
+
+  expect(callback).toHaveBeenCalledOnce();
+  expect(callback).toHaveBeenLastCalledWith({
+    current: { paneId: pane.id, tabId: secondTab.id, uri: undefined },
+  });
+
+  unsubscribe();
+  paneStore.selectTab(pane.id, firstTab.id);
+  await nextTick();
+
+  expect(callback).toHaveBeenCalledOnce();
 });

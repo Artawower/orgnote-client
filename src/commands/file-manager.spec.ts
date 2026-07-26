@@ -3,6 +3,8 @@ import { getFileManagerCommands } from './file-manager';
 import { DefaultCommands, I18N, RouteNames, type Command, type OrgNoteApi } from 'orgnote-api';
 import type { Router } from 'vue-router';
 import type { Tab } from 'orgnote-api';
+import { FileManagerRef } from 'src/containers/file-manager-ref';
+import { getFileDirPath } from 'src/utils/get-file-dir-path';
 
 vi.mock('src/composables/create-file-completion', () => ({
   createFileCompletion: vi.fn(),
@@ -33,6 +35,11 @@ type BuildMockApiOverrides = {
       filePath?: string;
     };
   };
+  sidebar?: {
+    opened?: boolean;
+    component?: unknown;
+    openComponent?: ReturnType<typeof vi.fn>;
+  };
   fileSystemManager?: {
     currentFs?: {
       isDirExist: (path: string) => Promise<boolean>;
@@ -49,6 +56,7 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
   const fileManager = {
     operationTargets: [],
     path: '/notes',
+    searchQuery: '',
     files: [],
     ...overrides.fileManager,
   };
@@ -72,6 +80,13 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
   const editor = {
     activeContext: undefined,
     ...overrides.editor,
+  };
+
+  const sidebar = {
+    opened: false,
+    component: undefined,
+    openComponent: vi.fn(),
+    ...overrides.sidebar,
   };
 
   const fileSystemManager = {
@@ -98,6 +113,9 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
       useFileSystemManager: () => fileSystemManager,
       useFileSystem: () => fileSystem,
     } as unknown as OrgNoteApi['core'],
+    ui: {
+      useSidebar: () => sidebar,
+    } as unknown as OrgNoteApi['ui'],
   };
 
   return {
@@ -106,6 +124,7 @@ const buildMockApi = (overrides: BuildMockApiOverrides = {}) => {
     completion,
     commands,
     fileSystem,
+    sidebar,
   };
 };
 
@@ -432,6 +451,39 @@ test('COPY_FILE command cancels pending operation when interactive completion fa
   expect(startCopy).toHaveBeenCalledWith(['/test/copied.org']);
   expect(executePending).not.toHaveBeenCalled();
   expect(cancelPending).toHaveBeenCalled();
+});
+
+test('REVEAL_IN_FILE_MANAGER reveals the active file from another sidebar view', async () => {
+  vi.mocked(getFileDirPath).mockReturnValue('/notes');
+  const openComponent = vi.fn();
+  const { api, fileManager } = buildMockApi({
+    fileManager: { searchQuery: 'filtered' },
+    pane: { activeBufferUri: 'file:///notes/today.org' },
+    sidebar: { opened: true, component: {}, openComponent },
+  });
+
+  const revealCommand = getCommandOrThrow(DefaultCommands.REVEAL_IN_FILE_MANAGER);
+  await revealCommand.handler(api, { data: {}, meta: {} });
+
+  expect(fileManager.path).toBe('/notes');
+  expect(fileManager.searchQuery).toBe('');
+  expect(openComponent).toHaveBeenCalledWith(FileManagerRef, {
+    componentProps: { closable: false, tree: true, compact: true },
+  });
+});
+
+test('REVEAL_IN_FILE_MANAGER keeps an open file manager visible', async () => {
+  vi.mocked(getFileDirPath).mockReturnValue('/notes');
+  const openComponent = vi.fn();
+  const { api } = buildMockApi({
+    pane: { activeBufferUri: 'file:///notes/today.org' },
+    sidebar: { opened: true, component: FileManagerRef, openComponent },
+  });
+
+  const revealCommand = getCommandOrThrow(DefaultCommands.REVEAL_IN_FILE_MANAGER);
+  await revealCommand.handler(api, { data: {}, meta: {} });
+
+  expect(openComponent).not.toHaveBeenCalled();
 });
 
 test('RENAME_FILE command reopens active note with new path', async () => {
