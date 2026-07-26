@@ -500,6 +500,21 @@ test('search handles sync itemsGetter', async () => {
   expect(store.activeCompletion?.candidates).toHaveLength(1);
 });
 
+test('search resets loading and rejects when itemsGetter throws', async () => {
+  const searchError = new Error('Search failed');
+  const itemsGetter = vi.fn((): CompletionSearchResult => ({ result: [], total: 0 }));
+  const store = useCompletionStore();
+
+  store.open({ type: 'choice', itemsGetter });
+  await vi.runAllTimersAsync();
+  itemsGetter.mockImplementationOnce(() => {
+    throw searchError;
+  });
+
+  await expect(store.search()).rejects.toBe(searchError);
+  expect(store.isLoading).toBe(false);
+});
+
 test('search with offset merges into existing candidates', async () => {
   const store = useCompletionStore();
 
@@ -531,6 +546,61 @@ test('search with offset merges into existing candidates', async () => {
   await vi.runAllTimersAsync();
 
   expect(store.activeCompletion?.candidates?.length).toBeGreaterThanOrEqual(4);
+});
+
+test('search merges concurrent ranges for the same query regardless of response order', async () => {
+  const store = useCompletionStore();
+  const pageResolvers = new Map<number, (result: CompletionSearchResult) => void>();
+  const createCandidate = (index: number): CompletionCandidate => ({
+    title: `Item ${index}`,
+    data: index,
+    commandHandler: vi.fn(),
+  });
+  const itemsGetter = vi.fn(
+    (_query: string, _limit?: number, offset: number = 0): CompletionSearchResult | Promise<CompletionSearchResult> => {
+      if (!offset) return { result: [createCandidate(0)], total: 30 };
+      return new Promise((resolve) => pageResolvers.set(offset, resolve));
+    },
+  );
+
+  store.open({ type: 'choice', itemsGetter });
+  await vi.runAllTimersAsync();
+
+  const firstSearch = store.search(5, 20);
+  const secondSearch = store.search(5, 25);
+  pageResolvers.get(25)?.({ result: [createCandidate(25)], total: 30 });
+  await secondSearch;
+  pageResolvers.get(20)?.({ result: [createCandidate(20)], total: 30 });
+  await firstSearch;
+
+  expect(store.activeCompletion?.candidates?.[20]?.title).toBe('Item 20');
+  expect(store.activeCompletion?.candidates?.[25]?.title).toBe('Item 25');
+});
+
+test('search removes phantom candidates when the final page is shorter than reported', async () => {
+  const store = useCompletionStore();
+  const createCandidate = (index: number): CompletionCandidate => ({
+    title: `Item ${index}`,
+    data: index,
+    commandHandler: vi.fn(),
+  });
+  const itemsGetter = vi.fn(
+    (_query: string, _limit?: number, offset: number = 0): CompletionSearchResult => ({
+      result: offset === 0 ? Array.from({ length: 20 }, (_, index) => createCandidate(index)) : [createCandidate(20)],
+      total: 22,
+    }),
+  );
+
+  store.open({ type: 'choice', itemsGetter });
+  await vi.runAllTimersAsync();
+  store.activeCompletion!.selectedCandidateIndex = 21;
+
+  store.search(10, 20);
+  await vi.runAllTimersAsync();
+
+  expect(itemsGetter).toHaveBeenLastCalledWith('', 10, 20);
+  expect(store.activeCompletion?.total).toBe(21);
+  expect(store.activeCompletion?.selectedCandidateIndex).toBe(0);
 });
 
 test('search sets selectedCandidateIndex to 0 on initial search', async () => {

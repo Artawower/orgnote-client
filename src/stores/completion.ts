@@ -15,7 +15,8 @@ import { debounce } from 'src/utils/debounce';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
 import { createPromise } from 'src/utils/create-promise';
 import { useConfigStore } from './config';
-import { isNullable } from 'orgnote-api/utils';
+import { isNullable, to } from 'orgnote-api/utils';
+import { logger } from 'src/boot/logger';
 
 const interceptorMatchesTarget = (
   interceptorTarget: CompletionInterceptor['target'],
@@ -30,6 +31,71 @@ const sortInterceptorsByPriority = <T>(
   interceptors: CompletionInterceptor<T>[],
 ): CompletionInterceptor<T>[] =>
   [...interceptors].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+
+const getReconciledTotal = (
+  result: CompletionSearchResult,
+  offset: number,
+  limit: number,
+): number => {
+  const pageEnd = offset + result.result.length;
+  const reportedTotal = result.total ?? pageEnd;
+  if (!offset || result.result.length >= limit) return reportedTotal;
+  return Math.min(reportedTotal, pageEnd);
+};
+
+const resetMissingSelection = (completion: Completion<unknown>): void => {
+  const selectedIndex = completion.selectedCandidateIndex;
+  if (isNullable(selectedIndex) || selectedIndex < (completion.total ?? 0)) return;
+  completion.selectedCandidateIndex = completion.total ? 0 : undefined;
+};
+
+const mergeCandidatePage = (
+  candidates: CompletionCandidate[],
+  page: CompletionCandidate[],
+  offset: number,
+): CompletionCandidate[] => {
+  const mergedCandidates = [...candidates];
+  page.forEach((candidate, index) => {
+    mergedCandidates[index + offset] = candidate;
+  });
+  return mergedCandidates;
+};
+
+interface CandidateUpdate {
+  readonly result: CompletionSearchResult;
+  readonly candidates: CompletionCandidate[];
+  readonly offset: number;
+  readonly limit: number;
+}
+
+interface SearchTarget {
+  readonly completion: Completion<unknown>;
+  readonly query: string;
+}
+
+const applyCandidateUpdate = (
+  completion: Completion<unknown>,
+  update: CandidateUpdate,
+): void => {
+  const isLengthChanged = update.candidates.length !== update.result.result.length;
+  const availableTotal = getReconciledTotal(update.result, update.offset, update.limit);
+  if (!update.offset) {
+    const total = isLengthChanged ? update.candidates.length : availableTotal;
+    completion.candidates = update.candidates;
+    completion.total = total;
+    completion.selectedCandidateIndex = total ? 0 : undefined;
+    return;
+  }
+  if (!completion.candidates) return;
+  const candidates = mergeCandidatePage(completion.candidates, update.candidates, update.offset);
+  completion.candidates = candidates;
+  completion.total = isLengthChanged ? candidates.length : availableTotal;
+  resetMissingSelection(completion);
+};
+
+const reportSearchFailure = (error: unknown): void => {
+  logger.error('Completion search failed', { error });
+};
 
 export const useCompletionStore = defineStore<'completion-store', CompletionStore>(
   'completion-store',
@@ -66,7 +132,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
 
       openedCompletions.value = [...openedCompletions.value, completion];
 
-      search();
+      debouncedSearch();
       const res = await closed;
       resolve(res);
 
@@ -118,7 +184,10 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
     );
 
     const isLoading = ref(false);
-    let searchVersion = 0;
+
+    const isSearchTargetActive = (target: SearchTarget): boolean =>
+      activeCompletion.value === target.completion &&
+      target.completion.searchQuery === target.query;
 
     const nextCandidate = () => {
       if (isNoCompletion.value) return;
@@ -196,32 +265,22 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
       completion.searchQuery = title;
     };
 
-    const performSearch = (limit?: number, offset: number = 0) => {
-      if (!activeCompletion.value) return;
-      if (activeCompletion.value.type === 'input') return;
+    const performSearch = async (limit?: number, offset: number = 0): Promise<void> => {
+      const completion = activeCompletion.value;
+      if (!completion || completion.type === 'input') return;
 
       const { config } = useConfigStore();
-      limit = config.completion.defaultCompletionLimit;
-
-      const query = activeCompletion.value.searchQuery;
-      const version = ++searchVersion;
+      const searchLimit = limit ?? config.completion.defaultCompletionLimit;
+      const target: SearchTarget = { completion, query: completion.searchQuery };
       isLoading.value = true;
 
-      const res = activeCompletion.value.itemsGetter(query, limit, offset);
-      if (typeof (res as Promise<CompletionSearchResult>)?.then === 'function') {
-        (res as Promise<CompletionSearchResult>)
-          .then((r) => {
-            if (version !== searchVersion) return;
-            return setupCandidates(r, offset, version);
-          })
-          .finally(() => {
-            if (version === searchVersion) isLoading.value = false;
-          });
-        return;
-      }
-      setupCandidates(res as CompletionSearchResult, offset, version).finally(() => {
-        if (version === searchVersion) isLoading.value = false;
-      });
+      const result = await to(async () => {
+        const searchResult = await completion.itemsGetter(target.query, searchLimit, offset);
+        if (!isSearchTargetActive(target)) return;
+        await setupCandidates(searchResult, offset, searchLimit, target);
+      })();
+      if (isSearchTargetActive(target)) isLoading.value = false;
+      if (result.isErr()) throw result.error;
     };
 
     const applyInterceptors = async (
@@ -244,37 +303,30 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
     const setupCandidates = async (
       r: CompletionSearchResult,
       offset: number,
-      version: number,
+      limit: number,
+      target: SearchTarget,
     ): Promise<void> => {
-      const completion = activeCompletion.value;
-      if (!completion) return;
+      if (!isSearchTargetActive(target)) return;
+      const completionName = target.completion.name ?? '';
+      const processedCandidates = await applyInterceptors(r.result, completionName, target.query);
 
-      const completionName = completion.name ?? '';
-      const searchQuery = completion.searchQuery;
-      const processedCandidates = await applyInterceptors(r.result, completionName, searchQuery);
-
-      if (version !== searchVersion) return;
-      if (!activeCompletion.value) return;
-
-      const isLengthChanged = processedCandidates.length !== r.result.length;
-
-      if (!offset) {
-        activeCompletion.value.candidates = processedCandidates;
-        activeCompletion.value.total = isLengthChanged ? processedCandidates.length : r.total;
-        activeCompletion.value.selectedCandidateIndex = 0;
-        return;
-      }
-      if (!activeCompletion.value.candidates) return;
-
-      const indexedCandidates = [...activeCompletion.value.candidates];
-      processedCandidates.forEach((v, i) => {
-        indexedCandidates[i + offset] = v;
+      if (!isSearchTargetActive(target)) return;
+      const completion = target.completion;
+      applyCandidateUpdate(completion, {
+        result: r,
+        candidates: processedCandidates,
+        offset,
+        limit,
       });
-      activeCompletion.value.candidates = indexedCandidates;
-      activeCompletion.value.total = isLengthChanged ? indexedCandidates.length : r.total;
     };
 
-    const search = debounce(performSearch, DEFAULT_INPUT_DEBOUNCE, { leading: true });
+    const runDebouncedSearch = async (): Promise<void> => {
+      const result = await to(performSearch)();
+      if (result.isErr()) reportSearchFailure(result.error);
+    };
+
+    const debouncedSearch = debounce(runDebouncedSearch, DEFAULT_INPUT_DEBOUNCE, { leading: true });
+    const search = performSearch;
 
     watch(
       () => activeCompletion.value?.searchQuery,
@@ -282,7 +334,7 @@ export const useCompletionStore = defineStore<'completion-store', CompletionStor
         if (activeCompletion.value) {
           activeCompletion.value.validationError = undefined;
         }
-        search();
+        debouncedSearch();
       },
     );
 

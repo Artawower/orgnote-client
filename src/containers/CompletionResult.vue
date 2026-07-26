@@ -26,13 +26,22 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
+import { logger } from 'src/boot/logger';
 import AsyncItemContainer from './AsyncItemContainer.vue';
 import CompletionResultItem from './CompletionResultItem.vue';
-import type { CompletionCandidate } from 'orgnote-api';
+import { to, type CompletionCandidate } from 'orgnote-api';
 import { computed, nextTick, ref, toValue, watch } from 'vue';
 import type { GroupedCompletionCandidate } from 'src/models/grouped-completion-candidate';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
 import type { QVirtualScroll } from 'quasar';
+
+type CompletionDisplayItem = GroupedCompletionCandidate | undefined;
+type GroupedCandidates = [CompletionDisplayItem[], string[]];
+
+interface CandidateRange {
+  readonly from: number;
+  readonly size: number;
+}
 
 defineEmits<{
   select: [];
@@ -43,9 +52,9 @@ const { config } = storeToRefs(api.core.useConfig());
 const { activeCompletion } = storeToRefs(completion);
 
 const scrollTarget = ref<QVirtualScroll | null>(null);
-const pendingRanges = new Set<string>();
+const pendingRanges = new Map<string, symbol>();
 
-const buildRangeKey = (from: number, size: number): string => `${from}-${size}`;
+const buildRangeKey = (range: CandidateRange): string => `${range.from}-${range.size}`;
 
 const resetPendingRanges = (): void => pendingRanges.clear();
 
@@ -54,48 +63,29 @@ watch(
   () => resetPendingRanges(),
 );
 
-const isRangeLoaded = (from: number, size: number): boolean => {
-  const candidates = activeCompletion.value?.candidates;
-  if (!candidates?.length) return false;
-  const range = candidates.slice(from, from + size);
-  if (range.length < size) return false;
-  return range.every(Boolean);
-};
-
-const isRangePending = (from: number, size: number): boolean =>
-  pendingRanges.has(buildRangeKey(from, size));
-
-const markRangePending = (from: number, size: number): void => {
-  pendingRanges.add(buildRangeKey(from, size));
-};
-
-const clearRangePending = (from: number, size: number): void => {
-  pendingRanges.delete(buildRangeKey(from, size));
-};
-
-const getPagedResult = (from: number, size: number) => {
-  const fakeRows = Object.freeze(new Array(size).fill(null));
-  if (isRangeLoaded(from, size)) {
-    clearRangePending(from, size);
-    return fakeRows;
-  }
-  if (isRangePending(from, size)) return fakeRows;
-  markRangePending(from, size);
-  completion.search(size, from);
-  return fakeRows;
-};
-
 const itemHeight = computed(
   () => activeCompletion.value?.itemHeight ?? DEFAULT_COMPLETION_ITEM_HEIGHT,
 );
 
-const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() => {
+const hasLoadedAllCandidates = computed(() => {
   const candidates = activeCompletion.value?.candidates;
-  if (!candidates || !config.value?.completion?.showGroup) {
-    return [candidates ?? [], []];
+  const candidateTotal = activeCompletion.value?.total ?? 0;
+  if (!candidates || candidates.length !== candidateTotal) return false;
+  for (let index = 0; index < candidateTotal; index += 1) {
+    if (!candidates[index]) return false;
   }
+  return true;
+});
 
-  return candidates.reduce<[GroupedCompletionCandidate[], string[]]>(
+const isGroupingEnabled = computed(
+  () => Boolean(config.value?.completion?.showGroup && hasLoadedAllCandidates.value),
+);
+
+const groupedCandidates = computed<GroupedCandidates>(() => {
+  const candidates = activeCompletion.value?.candidates;
+  if (!candidates || !isGroupingEnabled.value) return [candidates ?? [], []];
+
+  return candidates.reduce<GroupedCandidates>(
     (acc, item, index) => {
       const groupName = toValue(item.group) ?? '';
       const groupChanged = acc[1][acc[1].length - 1] !== groupName;
@@ -111,18 +101,62 @@ const groupedCandidates = computed<[GroupedCompletionCandidate[], string[]]>(() 
 });
 
 const getCandidateIndex = (displayIndex: number): number | undefined => {
-  if (!config.value?.completion?.showGroup) return displayIndex;
+  if (!isGroupingEnabled.value) return displayIndex;
   const candidate = groupedCandidates.value[0][displayIndex];
   if (!candidate || 'groupTitle' in candidate) return;
-  return candidate.index ?? displayIndex;
+  return candidate.index;
 };
 
 const getCandidateDisplayIndex = (candidateIndex: number): number => {
-  if (!config.value?.completion?.showGroup) return candidateIndex;
+  if (!isGroupingEnabled.value) return candidateIndex;
   const displayIndex = groupedCandidates.value[0].findIndex(
     (_, index) => getCandidateIndex(index) === candidateIndex,
   );
   return displayIndex < 0 ? candidateIndex : displayIndex;
+};
+
+const isRangeLoaded = (range: CandidateRange): boolean => {
+  const candidates = activeCompletion.value?.candidates;
+  if (!candidates?.length) return false;
+  for (let index = 0; index < range.size; index += 1) {
+    if (!candidates[range.from + index]) return false;
+  }
+  return true;
+};
+
+const isRangePending = (range: CandidateRange): boolean =>
+  pendingRanges.has(buildRangeKey(range));
+
+const markRangePending = (range: CandidateRange): symbol => {
+  const requestId = Symbol(buildRangeKey(range));
+  pendingRanges.set(buildRangeKey(range), requestId);
+  return requestId;
+};
+
+const clearRangePending = (range: CandidateRange, requestId: symbol): void => {
+  const rangeKey = buildRangeKey(range);
+  if (pendingRanges.get(rangeKey) !== requestId) return;
+  pendingRanges.delete(rangeKey);
+};
+
+const reportRangeFailure = (error: unknown, range: CandidateRange): void => {
+  logger.error('Completion range search failed', { error, ...range });
+};
+
+const loadCandidateRange = async (range: CandidateRange): Promise<void> => {
+  const requestId = markRangePending(range);
+  const result = await to(completion.search)(range.size, range.from);
+  clearRangePending(range, requestId);
+  if (result.isErr()) reportRangeFailure(result.error, range);
+};
+
+const getPagedResult = (from: number, size: number) => {
+  const fakeRows = Object.freeze(new Array(size).fill(null));
+  if (isGroupingEnabled.value) return fakeRows;
+  const candidateRange = { from, size };
+  if (isRangeLoaded(candidateRange) || isRangePending(candidateRange)) return fakeRows;
+  loadCandidateRange(candidateRange);
+  return fakeRows;
 };
 
 const selectedDisplayIndex = computed(() => {
