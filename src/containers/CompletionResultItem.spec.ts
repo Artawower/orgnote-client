@@ -23,14 +23,14 @@ const itemRenderer = defineComponent({
   template: '<span>{{ candidate.title }}</span>',
 }) as CompletionItemRenderer;
 
-const mountResultItem = async (candidate: CompletionCandidate) => {
+const mountResultItem = async (
+  candidate: CompletionCandidate,
+  index: number = 0,
+  selected: boolean = true,
+) => {
   const { default: CompletionResultItem } = await import('./CompletionResultItem.vue');
   return mount(CompletionResultItem, {
-    props: {
-      item: candidate,
-      index: 0,
-      selected: true,
-    },
+    props: { item: candidate, index, selected },
   });
 };
 
@@ -62,6 +62,37 @@ test('CompletionResultItem accepts autocomplete instead of executing input-choic
   expect(activeCompletion!.selectedCandidateIndex).toBe(0);
   expect(acceptAutocomplete).toHaveBeenCalledOnce();
   expect(commandHandler).not.toHaveBeenCalled();
+});
+
+test('CompletionResultItem changes selection on click but not hover', async () => {
+  const firstCandidate: CompletionCandidate = {
+    title: 'First',
+    data: 1,
+    commandHandler: vi.fn(),
+  };
+  const secondCandidate: CompletionCandidate = {
+    title: 'Second',
+    data: 2,
+    commandHandler: vi.fn(),
+  };
+  activeCompletion = {
+    type: 'choice',
+    searchQuery: '',
+    candidates: [firstCandidate, secondCandidate],
+    selectedCandidateIndex: 0,
+    itemRenderer,
+    itemsGetter: () => ({ result: [], total: 0 }),
+    result: Promise.resolve(),
+  };
+  const wrapper = await mountResultItem(secondCandidate, 1, false);
+  const item = wrapper.find('.completion-item');
+
+  await item.trigger('mouseover', { clientX: 10, clientY: 10 });
+  expect(activeCompletion.selectedCandidateIndex).toBe(0);
+
+  await item.trigger('click');
+  expect(activeCompletion.selectedCandidateIndex).toBe(1);
+  expect(secondCandidate.commandHandler).toHaveBeenCalledWith(secondCandidate.data);
 });
 
 test('CompletionResultItem executes choice candidate on click', async () => {

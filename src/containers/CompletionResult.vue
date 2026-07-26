@@ -147,14 +147,11 @@ const selectedDisplayIndex = computed(() => {
   return getCandidateDisplayIndex(candidateIndex);
 });
 
-watch(
-  [selectedDisplayIndex, () => activeCompletion.value?.searchQuery, total],
-  async ([displayIndex]) => {
-    if (typeof displayIndex !== 'number') return;
-    await nextTick();
-    scrollTarget.value?.scrollTo(displayIndex);
-  },
-);
+watch(selectedDisplayIndex, async (displayIndex) => {
+  if (typeof displayIndex !== 'number') return;
+  await nextTick();
+  scrollTarget.value?.scrollTo(displayIndex);
+});
 
 const candidatesAvailable = computed(() => {
   const type = activeCompletion.value?.type;

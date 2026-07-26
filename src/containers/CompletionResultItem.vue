@@ -16,7 +16,6 @@
     start
     align-center
     @click="selectCandidate"
-    @mouseover="(e: MouseEvent) => focusCompletionCandidate(e, candidateIndex)"
   >
     <component
       :is="itemRenderer"
@@ -63,7 +62,6 @@ const itemRenderer = computed<CompletionItemRenderer>(
 
 const searchQuery = computed(() => completion.activeCompletion?.searchQuery ?? '');
 
-let lastCoords = [0, 0];
 const applyCandidateToInput = (index: number) => {
   const activeCompletion = completion.activeCompletion;
   if (!activeCompletion) {
@@ -85,20 +83,6 @@ const applyCandidateToInput = (index: number) => {
 
   completion.acceptAutocomplete();
   emit('select');
-};
-
-const focusCompletionCandidate = (e: MouseEvent, index: number) => {
-  const coordsChanged = lastCoords[0] !== e.clientX || lastCoords[1] !== e.clientY;
-
-  if (!coordsChanged) {
-    return;
-  }
-  lastCoords = [e.clientX, e.clientY];
-  const activeCompletion = completion.activeCompletion;
-  if (!activeCompletion) {
-    return;
-  }
-  activeCompletion.selectedCandidateIndex = index;
 };
 
 const selectCandidate = () => applyCandidateToInput(candidateIndex.value);

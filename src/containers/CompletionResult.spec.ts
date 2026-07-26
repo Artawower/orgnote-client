@@ -105,21 +105,18 @@ test('CompletionResult scrolls to the candidate selected with keyboard navigatio
   wrapper.unmount();
 });
 
-test('CompletionResult resets scroll after search results change the list size', async () => {
+test('CompletionResult does not force selection into view when list size changes', async () => {
   const wrapper = await mountCompletionResult();
-
-  activeCompletion.value!.searchQuery = '417';
-  await nextTick();
   await nextTick();
   scrollTo.mockClear();
 
-  const candidates = createCandidates(1);
+  const candidates = createCandidates(24);
   activeCompletion.value!.candidates = candidates;
   activeCompletion.value!.total = candidates.length;
   await nextTick();
   await nextTick();
 
-  expect(scrollTo).toHaveBeenCalledWith(0);
+  expect(scrollTo).not.toHaveBeenCalled();
   wrapper.unmount();
 });
 
