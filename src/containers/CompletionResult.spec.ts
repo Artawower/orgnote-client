@@ -105,6 +105,24 @@ test('CompletionResult scrolls to the candidate selected with keyboard navigatio
   wrapper.unmount();
 });
 
+test('CompletionResult resets scroll after search results change the list size', async () => {
+  const wrapper = await mountCompletionResult();
+
+  activeCompletion.value!.searchQuery = '417';
+  await nextTick();
+  await nextTick();
+  scrollTo.mockClear();
+
+  const candidates = createCandidates(1);
+  activeCompletion.value!.candidates = candidates;
+  activeCompletion.value!.total = candidates.length;
+  await nextTick();
+  await nextTick();
+
+  expect(scrollTo).toHaveBeenCalledWith(0);
+  wrapper.unmount();
+});
+
 test('CompletionResult handles unloaded candidates while resolving the scroll index', async () => {
   const candidates = createCandidates(1);
   candidates.length = 25;
@@ -239,6 +257,25 @@ test('CompletionResult disables grouping while candidates remain unloaded', asyn
   const wrapper = await mountCompletionResult();
 
   expect(itemsSize).toBe(25);
+  wrapper.unmount();
+});
+
+test('CompletionResult does not reserve a group row for an ungrouped candidate', async () => {
+  showGroup.value = true;
+  const candidates = createCandidates(1);
+  activeCompletion.value = {
+    type: 'choice',
+    candidates,
+    total: candidates.length,
+    selectedCandidateIndex: 0,
+    searchQuery: '417',
+    itemsGetter: () => ({ result: candidates, total: candidates.length }),
+    result: Promise.resolve(),
+  };
+
+  const wrapper = await mountCompletionResult();
+
+  expect(itemsSize).toBe(1);
   wrapper.unmount();
 });
 

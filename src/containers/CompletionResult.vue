@@ -87,8 +87,8 @@ const groupedCandidates = computed<GroupedCandidates>(() => {
 
   return candidates.reduce<GroupedCandidates>(
     (acc, item, index) => {
-      const groupName = toValue(item.group) ?? '';
-      const groupChanged = acc[1][acc[1].length - 1] !== groupName;
+      const groupName = toValue(item.group);
+      const groupChanged = groupName && acc[1][acc[1].length - 1] !== groupName;
       if (groupChanged) {
         acc[0].push({ groupTitle: groupName });
         acc[1].push(groupName);
@@ -159,23 +159,26 @@ const getPagedResult = (from: number, size: number) => {
   return fakeRows;
 };
 
+const total = computed(() => {
+  const serverTotal = activeCompletion.value?.total ?? 0;
+  const groupCount = groupedCandidates.value[1].length;
+  return serverTotal + groupCount;
+});
+
 const selectedDisplayIndex = computed(() => {
   const candidateIndex = activeCompletion.value?.selectedCandidateIndex;
   if (typeof candidateIndex !== 'number') return;
   return getCandidateDisplayIndex(candidateIndex);
 });
 
-watch(selectedDisplayIndex, async (displayIndex) => {
-  if (typeof displayIndex !== 'number') return;
-  await nextTick();
-  scrollTarget.value?.scrollTo(displayIndex);
-});
-
-const total = computed(() => {
-  const serverTotal = activeCompletion.value?.total ?? 0;
-  const groupCount = groupedCandidates.value[1].length;
-  return serverTotal + groupCount;
-});
+watch(
+  [selectedDisplayIndex, () => activeCompletion.value?.searchQuery, total],
+  async ([displayIndex]) => {
+    if (typeof displayIndex !== 'number') return;
+    await nextTick();
+    scrollTarget.value?.scrollTo(displayIndex);
+  },
+);
 
 const candidatesAvailable = computed(() => {
   const type = activeCompletion.value?.type;
