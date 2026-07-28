@@ -69,6 +69,23 @@ beforeEach(() => {
   mockConfig.fileReaders.preferredReaders = {};
 });
 
+test('register reuses one async component wrapper for a viewer loader', () => {
+  const store = useBufferViewerStore();
+  const loader = vi.fn(async () => createMockComponent('AsyncViewer'));
+
+  store.register({
+    pattern: '\\.org$',
+    component: loader,
+    meta: { id: 'test:async-org', name: 'Async Org Viewer' },
+  });
+
+  const firstComponent = store.getViewer('first.org')?.component;
+  const secondComponent = store.getViewer('second.org')?.component;
+
+  expect(firstComponent).toBe(secondComponent);
+  expect(firstComponent).not.toBe(loader);
+});
+
 test('register adds a viewer correctly', () => {
   const store = useBufferViewerStore();
   const mockComponent = createMockComponent('OrgViewer');

@@ -5,7 +5,12 @@ import {
   type BufferViewerEntry,
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
-import { shallowRef } from 'vue';
+import {
+  defineAsyncComponent,
+  shallowRef,
+  type AsyncComponentLoader,
+  type Component,
+} from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import { usePaneStore } from './pane';
 import { useConfigStore } from './config';
@@ -29,6 +34,14 @@ const sortByPriority = (a: BufferViewerEntry, b: BufferViewerEntry): number =>
 
 const findById = (viewers: BufferViewerEntry[], id: string): BufferViewerEntry | undefined =>
   viewers.find((v) => v.meta.id === id);
+
+const normalizeViewerEntry = (entry: BufferViewerEntry): BufferViewerEntry => {
+  if (typeof entry.component !== 'function') return entry;
+  return {
+    ...entry,
+    component: defineAsyncComponent(entry.component as AsyncComponentLoader<Component>),
+  };
+};
 
 const getExtensionCandidates = (path: string): string[] => {
   const fileName = path.split('/').pop() ?? '';
@@ -64,7 +77,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
     };
 
     const register = (entry: BufferViewerEntry): void => {
-      viewers.value = [...viewers.value, entry];
+      viewers.value = [...viewers.value, normalizeViewerEntry(entry)];
     };
 
     const unregister = (viewerId: string): void => {
