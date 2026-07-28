@@ -20,7 +20,7 @@ const safeClone = (value: unknown): unknown => {
   return value;
 };
 
-export class QueueStore implements Store<unknown> {
+export class BetterQueuePersistenceStore implements Store<unknown> {
   private readonly repo: QueueRepository;
   private readonly queueName: string;
 

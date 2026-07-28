@@ -1,11 +1,13 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { nextTick, ref } from 'vue';
 import { ErrorFileNotFound } from 'orgnote-api';
 
 const mockRead = vi.fn();
 const mockWrite = vi.fn();
 const mockReportError = vi.fn();
 const mockGetAll = vi.fn();
+const mockIsIndexing = ref(false);
 const mockGetExtensionConfig = vi.fn(() => ({ value: {} }));
 
 vi.mock('src/boot/api', () => ({
@@ -15,7 +17,7 @@ vi.mock('src/boot/api', () => ({
       useFileMeta: () => ({ getAll: mockGetAll }),
       useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
       useFileWatcher: () => ({ watch: vi.fn() }),
-      useFileSearch: () => ({ isIndexing: { value: false } }),
+      useFileSearch: () => ({ isIndexing: mockIsIndexing }),
     },
   },
 }));
@@ -34,6 +36,7 @@ beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
   mockGetAll.mockResolvedValue([]);
+  mockIsIndexing.value = false;
   mockWrite.mockResolvedValue(undefined);
 });
 
@@ -70,6 +73,34 @@ test('createTaskInFile_returnsFalse_whenWriteFails', async () => {
 
   expect(ok).toBe(false);
   expect(mockReportError).toHaveBeenCalledOnce();
+});
+
+test('Agenda reloads metadata after content indexing completes', async () => {
+  const existingFile = {
+    id: 'existing',
+    filePath: ['agenda', 'existing.org'],
+    title: 'Existing',
+    tasks: [],
+  };
+  const indexedFile = {
+    id: 'orgnote',
+    filePath: ['agenda', 'orgnote.org'],
+    title: 'OrgNote',
+    tasks: [{ id: 'task-1', kind: 'headline-todo', state: 'todo', text: 'Indexed task' }],
+  };
+  mockGetAll
+    .mockResolvedValueOnce([existingFile])
+    .mockResolvedValue([existingFile, indexedFile]);
+  const store = useAgendaTasksStore();
+
+  await store.ensureLoaded();
+  mockIsIndexing.value = true;
+  await nextTick();
+  mockIsIndexing.value = false;
+
+  await vi.waitFor(() => {
+    expect(store.allFiles.map((file) => file.id)).toEqual(['existing', 'orgnote']);
+  });
 });
 
 test('loadFiles makes agenda tasks searchable through the task index', async () => {

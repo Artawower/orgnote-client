@@ -1,8 +1,24 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useFileSearchStore } from './file-search';
-import type { FileMeta, DiskFile } from 'orgnote-api';
+import type { FileMeta, DiskFile, QueueOperation, QueueRunOptions } from 'orgnote-api';
 import type * as OrgModeAst from 'org-mode-ast';
+import { EventEmitter } from 'node:events';
+import {
+  waitForQueueDrain,
+  type QueueDrainSource,
+} from 'src/infrastructure/queue/wait-for-queue-drain';
+
+const { mockLoggerError } = vi.hoisted(() => ({ mockLoggerError: vi.fn() }));
+
+vi.mock('src/boot/logger', () => ({
+  logger: {
+    debug: vi.fn(),
+    error: mockLoggerError,
+    info: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
 
 const mockFiles: Map<string, FileMeta> = new Map();
 const mockKeyValue: Map<string, string> = new Map();
@@ -75,13 +91,36 @@ vi.mock('src/stores/file-system', () => ({
 }));
 
 const mockQueueTasks: Array<{ queueId: string; payload: unknown }> = [];
+const mockIndexQueue = Object.assign(new EventEmitter(), { length: 0 });
+mockIndexQueue.on('drain', () => {
+  mockIndexQueue.length = 0;
+});
+let shouldAutoDrainIndexQueue = true;
 
 vi.mock('src/stores/queue', () => ({
   useQueueStore: vi.fn(() => ({
-    add: vi.fn(async (queueId: string, payload: unknown) => {
+    add: vi.fn(async (queueId: string, payload: unknown, options?: { id?: string }) => {
+      const taskId = options?.id ?? 'task-id';
       mockQueueTasks.push({ queueId, payload });
-      return 'task-id';
+      mockIndexQueue.length += 1;
+      mockIndexQueue.emit('task_queued', taskId);
+      if (shouldAutoDrainIndexQueue) queueMicrotask(() => mockIndexQueue.emit('drain'));
+      return taskId;
     }),
+    getAll: vi.fn(async () => [...mockQueueTasksDB.values()]),
+    getQueue: vi.fn(() => mockIndexQueue),
+    runAndWaitForIdle: vi.fn(
+      (_queueId: string, operation: QueueOperation, options?: QueueRunOptions) =>
+        waitForQueueDrain(
+          mockIndexQueue as unknown as QueueDrainSource,
+          operation,
+          async () =>
+            [...mockQueueTasksDB.values()].some(
+              (task) => task.status === 'pending' || task.status === 'processing',
+            ),
+          options,
+        ),
+    ),
   })),
 }));
 
@@ -117,6 +156,12 @@ beforeEach(() => {
   mockDirEntries.clear();
   mockQueueTasks.length = 0;
   mockQueueTasksDB.clear();
+  mockIndexQueue.removeAllListeners();
+  mockIndexQueue.length = 0;
+  mockIndexQueue.on('drain', () => {
+    mockIndexQueue.length = 0;
+  });
+  shouldAutoDrainIndexQueue = true;
   mockFileContentRead.mockImplementation(async (path: string) => {
     const text = mockFileContents.get(path);
     if (text === undefined) throw new Error(`File not found: ${path}`);
@@ -341,6 +386,48 @@ test('indexFiles sets isIndexing flag', async () => {
   expect(store.isIndexing).toBe(true);
 
   await promise;
+  expect(store.isIndexing).toBe(false);
+});
+
+test('indexFiles remains active until the content index queue drains', async () => {
+  shouldAutoDrainIndexQueue = false;
+  mockDirEntries.set('/', [
+    { name: 'agenda.org', type: 'file', path: '/agenda.org', size: 0, mtime: 0 },
+  ]);
+  const store = useFileSearchStore();
+
+  const indexing = store.indexFiles();
+  await vi.waitFor(() => expect(mockQueueTasks).toHaveLength(1));
+
+  expect(store.isIndexing).toBe(true);
+
+  mockIndexQueue.emit('drain');
+  await indexing;
+
+  expect(store.isIndexing).toBe(false);
+});
+
+test('indexFiles waits for active tasks restored from the persistent queue', async () => {
+  shouldAutoDrainIndexQueue = false;
+  mockQueueTasksDB.set('file:/agenda.org', {
+    id: 'file:/agenda.org',
+    queueId: 'content-index',
+    status: 'pending',
+    payload: { filePath: '/agenda.org' },
+  });
+  mockDirEntries.set('/', [
+    { name: 'agenda.org', type: 'file', path: '/agenda.org', size: 0, mtime: 0 },
+  ]);
+  const store = useFileSearchStore();
+
+  const indexing = store.indexFiles();
+  await vi.waitFor(() => expect(mockReadDir).toHaveBeenCalledWith('/'));
+
+  expect(store.isIndexing).toBe(true);
+
+  mockIndexQueue.emit('drain');
+  await indexing;
+
   expect(store.isIndexing).toBe(false);
 });
 

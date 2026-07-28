@@ -1,5 +1,5 @@
 import { test, expect, vi, type Mock } from 'vitest';
-import { QueueStore } from './queue-store';
+import { BetterQueuePersistenceStore } from './better-queue-persistence-store';
 import type { QueueRepository, QueueTask } from 'orgnote-api';
 
 const asMock = (fn: unknown): Mock => fn as Mock;
@@ -29,7 +29,7 @@ const createQueueTask = (overrides: Partial<QueueTask> = {}): QueueTask => ({
   ...overrides,
 });
 
-test('QueueStore connect returns only pending task count', async () => {
+test('BetterQueuePersistenceStore connect returns only pending task count', async () => {
   const repo = createMockRepository();
   const tasks = [
     createQueueTask({ id: 'task-1', status: 'pending' }),
@@ -39,7 +39,7 @@ test('QueueStore connect returns only pending task count', async () => {
   ];
   asMock(repo.getAll).mockResolvedValue(tasks);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.connect(cb);
 
@@ -48,7 +48,7 @@ test('QueueStore connect returns only pending task count', async () => {
   expect(cb).toHaveBeenCalledWith(null, 2);
 });
 
-test('QueueStore connect returns 0 when no pending tasks', async () => {
+test('BetterQueuePersistenceStore connect returns 0 when no pending tasks', async () => {
   const repo = createMockRepository();
   const tasks = [
     createQueueTask({ id: 'task-1', status: 'processing' }),
@@ -56,7 +56,7 @@ test('QueueStore connect returns 0 when no pending tasks', async () => {
   ];
   asMock(repo.getAll).mockResolvedValue(tasks);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.connect(cb);
 
@@ -64,12 +64,12 @@ test('QueueStore connect returns 0 when no pending tasks', async () => {
   expect(cb).toHaveBeenCalledWith(null, 0);
 });
 
-test('QueueStore connect calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore connect calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.getAll).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.connect(cb);
 
@@ -77,9 +77,9 @@ test('QueueStore connect calls callback with error on failure', async () => {
   expect(cb).toHaveBeenCalledWith(error, 0);
 });
 
-test('QueueStore getTask returns undefined when task not found', async () => {
+test('BetterQueuePersistenceStore getTask returns undefined when task not found', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.getTask('non-existent', cb);
@@ -88,12 +88,12 @@ test('QueueStore getTask returns undefined when task not found', async () => {
   expect(cb).toHaveBeenCalledWith(null, undefined);
 });
 
-test('QueueStore getTask returns full task from repository', async () => {
+test('BetterQueuePersistenceStore getTask returns full task from repository', async () => {
   const repo = createMockRepository();
   const task = createQueueTask({ id: 'task-1', payload: { data: 'test' } });
   asMock(repo.get).mockResolvedValue(task);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getTask('task-1', cb);
 
@@ -101,12 +101,12 @@ test('QueueStore getTask returns full task from repository', async () => {
   expect(cb).toHaveBeenCalledWith(null, task);
 });
 
-test('QueueStore getTask calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore getTask calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.get).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getTask('task-1', cb);
 
@@ -114,12 +114,12 @@ test('QueueStore getTask calls callback with error on failure', async () => {
   expect(cb).toHaveBeenCalledWith(error);
 });
 
-test('QueueStore getAll returns tasks from repository', async () => {
+test('BetterQueuePersistenceStore getAll returns tasks from repository', async () => {
   const repo = createMockRepository();
   const tasks = [createQueueTask({ id: 'task-1' }), createQueueTask({ id: 'task-2' })];
   asMock(repo.getAll).mockResolvedValue(tasks);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getAll(cb);
 
@@ -128,12 +128,12 @@ test('QueueStore getAll returns tasks from repository', async () => {
   expect(cb).toHaveBeenCalledWith(null, tasks);
 });
 
-test('QueueStore getAll calls callback with empty array on error', async () => {
+test('BetterQueuePersistenceStore getAll calls callback with empty array on error', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.getAll).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getAll(cb);
 
@@ -141,9 +141,9 @@ test('QueueStore getAll calls callback with empty array on error', async () => {
   expect(cb).toHaveBeenCalledWith(error, []);
 });
 
-test('QueueStore putTask adds task with correct fields', async () => {
+test('BetterQueuePersistenceStore putTask adds task with correct fields', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.putTask('task-1', { payload: { data: 'test' } }, 5, cb);
@@ -159,9 +159,9 @@ test('QueueStore putTask adds task with correct fields', async () => {
   expect(cb).toHaveBeenCalledWith(null);
 });
 
-test('QueueStore putTask extracts payload from task object', async () => {
+test('BetterQueuePersistenceStore putTask extracts payload from task object', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.putTask('task-1', { payload: { data: 'test' } }, 0, cb);
@@ -174,12 +174,12 @@ test('QueueStore putTask extracts payload from task object', async () => {
   );
 });
 
-test('QueueStore putTask calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore putTask calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.add).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.putTask('task-1', { payload: { data: 'test' } }, 0, cb);
 
@@ -187,9 +187,9 @@ test('QueueStore putTask calls callback with error on failure', async () => {
   expect(cb).toHaveBeenCalledWith(error);
 });
 
-test('QueueStore putTask returns error for task without payload property', async () => {
+test('BetterQueuePersistenceStore putTask returns error for task without payload property', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.putTask('task-1', 'a-string' as unknown as { payload: unknown }, 0, cb);
@@ -201,9 +201,9 @@ test('QueueStore putTask returns error for task without payload property', async
   expect(repo.add).not.toHaveBeenCalled();
 });
 
-test('QueueStore putTask returns error for undefined task', async () => {
+test('BetterQueuePersistenceStore putTask returns error for undefined task', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.putTask('task-1', undefined, 0, cb);
@@ -215,11 +215,11 @@ test('QueueStore putTask returns error for undefined task', async () => {
   expect(repo.add).not.toHaveBeenCalled();
 });
 
-test('QueueStore takeFirstN returns lockId from repository', async () => {
+test('BetterQueuePersistenceStore takeFirstN returns lockId from repository', async () => {
   const repo = createMockRepository();
   asMock(repo.takeFirstN).mockResolvedValue('lock-abc');
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.takeFirstN(5, cb);
 
@@ -228,11 +228,11 @@ test('QueueStore takeFirstN returns lockId from repository', async () => {
   expect(cb).toHaveBeenCalledWith(null, 'lock-abc');
 });
 
-test('QueueStore takeFirstN returns empty string when no tasks available', async () => {
+test('BetterQueuePersistenceStore takeFirstN returns empty string when no tasks available', async () => {
   const repo = createMockRepository();
   asMock(repo.takeFirstN).mockResolvedValue('');
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.takeFirstN(5, cb);
 
@@ -240,12 +240,12 @@ test('QueueStore takeFirstN returns empty string when no tasks available', async
   expect(cb).toHaveBeenCalledWith(null, '');
 });
 
-test('QueueStore takeFirstN calls callback with empty string on error', async () => {
+test('BetterQueuePersistenceStore takeFirstN calls callback with empty string on error', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.takeFirstN).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.takeFirstN(5, cb);
 
@@ -253,11 +253,11 @@ test('QueueStore takeFirstN calls callback with empty string on error', async ()
   expect(cb).toHaveBeenCalledWith(error, '');
 });
 
-test('QueueStore getLock returns empty object when no tasks locked', async () => {
+test('BetterQueuePersistenceStore getLock returns empty object when no tasks locked', async () => {
   const repo = createMockRepository();
   asMock(repo.getLock).mockResolvedValue(undefined);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getLock('lock-123', cb);
 
@@ -265,7 +265,7 @@ test('QueueStore getLock returns empty object when no tasks locked', async () =>
   expect(cb).toHaveBeenCalledWith(null, {});
 });
 
-test('QueueStore getLock returns tasks from repository', async () => {
+test('BetterQueuePersistenceStore getLock returns tasks from repository', async () => {
   const repo = createMockRepository();
   const tasks = {
     'task-1': createQueueTask({ id: 'task-1', payload: { data: 'one' } }),
@@ -273,7 +273,7 @@ test('QueueStore getLock returns tasks from repository', async () => {
   };
   asMock(repo.getLock).mockResolvedValue(tasks);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getLock('lock-123', cb);
 
@@ -281,12 +281,12 @@ test('QueueStore getLock returns tasks from repository', async () => {
   expect(cb).toHaveBeenCalledWith(null, tasks);
 });
 
-test('QueueStore getLock calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore getLock calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.getLock).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getLock('lock-123', cb);
 
@@ -294,9 +294,9 @@ test('QueueStore getLock calls callback with error on failure', async () => {
   expect(cb).toHaveBeenCalledWith(error, {});
 });
 
-test('QueueStore deleteTask calls repository delete', async () => {
+test('BetterQueuePersistenceStore deleteTask calls repository delete', async () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.deleteTask('task-1', cb);
@@ -306,12 +306,12 @@ test('QueueStore deleteTask calls repository delete', async () => {
   expect(cb).toHaveBeenCalledWith(null);
 });
 
-test('QueueStore deleteTask calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore deleteTask calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.delete).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.deleteTask('task-1', cb);
 
@@ -319,7 +319,7 @@ test('QueueStore deleteTask calls callback with error on failure', async () => {
   expect(cb).toHaveBeenCalledWith(error);
 });
 
-test('QueueStore releaseLock releases all tasks with lockId', async () => {
+test('BetterQueuePersistenceStore releaseLock releases all tasks with lockId', async () => {
   const repo = createMockRepository();
   const tasks = {
     'task-1': createQueueTask({ id: 'task-1' }),
@@ -327,7 +327,7 @@ test('QueueStore releaseLock releases all tasks with lockId', async () => {
   };
   asMock(repo.getLock).mockResolvedValue(tasks);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.releaseLock('lock-123', cb);
 
@@ -337,11 +337,11 @@ test('QueueStore releaseLock releases all tasks with lockId', async () => {
   expect(cb).toHaveBeenCalledWith(null);
 });
 
-test('QueueStore releaseLock calls callback with success when no tasks', async () => {
+test('BetterQueuePersistenceStore releaseLock calls callback with success when no tasks', async () => {
   const repo = createMockRepository();
   asMock(repo.getLock).mockResolvedValue(undefined);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.releaseLock('lock-123', cb);
 
@@ -349,12 +349,12 @@ test('QueueStore releaseLock calls callback with success when no tasks', async (
   expect(cb).toHaveBeenCalledWith(null);
 });
 
-test('QueueStore releaseLock calls callback with error on getLock failure', async () => {
+test('BetterQueuePersistenceStore releaseLock calls callback with error on getLock failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.getLock).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.releaseLock('lock-123', cb);
 
@@ -362,7 +362,7 @@ test('QueueStore releaseLock calls callback with error on getLock failure', asyn
   expect(cb).toHaveBeenCalledWith(error);
 });
 
-test('QueueStore releaseLock calls callback with error on release failure', async () => {
+test('BetterQueuePersistenceStore releaseLock calls callback with error on release failure', async () => {
   const repo = createMockRepository();
   const tasks = {
     'task-1': createQueueTask({ id: 'task-1' }),
@@ -371,7 +371,7 @@ test('QueueStore releaseLock calls callback with error on release failure', asyn
   const error = new Error('Release error');
   asMock(repo.release).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.releaseLock('lock-123', cb);
 
@@ -379,12 +379,12 @@ test('QueueStore releaseLock calls callback with error on release failure', asyn
   expect(cb).toHaveBeenCalledWith(error);
 });
 
-test('QueueStore getRunningTasks groups tasks by lockId', async () => {
+test('BetterQueuePersistenceStore getRunningTasks groups tasks by lockId', async () => {
   const repo = createMockRepository();
   const task1 = createQueueTask({ id: 'task-1', lockId: 'lock-abc', payload: { data: 'one' } });
   asMock(repo.getRunningTasks).mockResolvedValue({ 'task-1': task1 });
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getRunningTasks(cb);
 
@@ -395,14 +395,14 @@ test('QueueStore getRunningTasks groups tasks by lockId', async () => {
   });
 });
 
-test('QueueStore getRunningTasks groups multiple tasks by different lockIds', async () => {
+test('BetterQueuePersistenceStore getRunningTasks groups multiple tasks by different lockIds', async () => {
   const repo = createMockRepository();
   const task1 = createQueueTask({ id: 'task-1', lockId: 'lock-a', payload: { data: 'one' } });
   const task2 = createQueueTask({ id: 'task-2', lockId: 'lock-a', payload: { data: 'two' } });
   const task3 = createQueueTask({ id: 'task-3', lockId: 'lock-b', payload: { data: 'three' } });
   asMock(repo.getRunningTasks).mockResolvedValue({ 'task-1': task1, 'task-2': task2, 'task-3': task3 });
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getRunningTasks(cb);
 
@@ -413,13 +413,13 @@ test('QueueStore getRunningTasks groups multiple tasks by different lockIds', as
   });
 });
 
-test('QueueStore getRunningTasks skips tasks without lockId', async () => {
+test('BetterQueuePersistenceStore getRunningTasks skips tasks without lockId', async () => {
   const repo = createMockRepository();
   const task1 = createQueueTask({ id: 'task-1', lockId: 'lock-a', payload: { data: 'one' } });
   const task2 = createQueueTask({ id: 'task-2', lockId: undefined, payload: { data: 'two' } });
   asMock(repo.getRunningTasks).mockResolvedValue({ 'task-1': task1, 'task-2': task2 });
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getRunningTasks(cb);
 
@@ -429,12 +429,12 @@ test('QueueStore getRunningTasks skips tasks without lockId', async () => {
   });
 });
 
-test('QueueStore getRunningTasks calls callback with error on failure', async () => {
+test('BetterQueuePersistenceStore getRunningTasks calls callback with error on failure', async () => {
   const repo = createMockRepository();
   const error = new Error('DB error');
   asMock(repo.getRunningTasks).mockRejectedValue(error);
 
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
   const cb = vi.fn();
   store.getRunningTasks(cb);
 
@@ -442,9 +442,9 @@ test('QueueStore getRunningTasks calls callback with error on failure', async ()
   expect(cb).toHaveBeenCalledWith(error, {});
 });
 
-test('QueueStore takeLastN returns empty lockId (not implemented)', () => {
+test('BetterQueuePersistenceStore takeLastN returns empty lockId (not implemented)', () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo, 'test-queue');
+  const store = new BetterQueuePersistenceStore(repo, 'test-queue');
 
   const cb = vi.fn();
   store.takeLastN(5, cb);
@@ -452,9 +452,9 @@ test('QueueStore takeLastN returns empty lockId (not implemented)', () => {
   expect(cb).toHaveBeenCalledWith(null, '');
 });
 
-test('QueueStore uses default queue name when not provided', () => {
+test('BetterQueuePersistenceStore uses default queue name when not provided', () => {
   const repo = createMockRepository();
-  const store = new QueueStore(repo);
+  const store = new BetterQueuePersistenceStore(repo);
 
   const cb = vi.fn();
   store.getAll(cb);

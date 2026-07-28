@@ -1,326 +1,150 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import Queue from 'better-queue';
-import type { QueueOptions } from 'better-queue';
-import { repositories } from 'src/boot/repositories';
-import { QueueStore as BetterQueueStoreAdapter } from 'src/infrastructure/stores/queue-store';
 import type {
-  QueueTask,
-  QueueStore,
   QueueCreationOptions,
-  QueueTaskOptions,
+  QueueHandle,
+  QueueOperation,
+  QueueRunOptions,
   QueueStats,
-  DeduplicationStrategy,
+  QueueStore,
+  QueueTask,
+  QueueTaskOptions,
 } from 'orgnote-api';
 import { logger } from 'src/boot/logger';
+import { repositories } from 'src/boot/repositories';
+import {
+  createQueueRuntime,
+  type QueueRuntime,
+} from 'src/infrastructure/queue/better-queue-runtime';
+import { executeBatchTasks as executeQueueBatchTasks } from 'src/infrastructure/queue/execute-batch-tasks';
 
-const DEFAULT_DEDUPLICATION_STRATEGY: DeduplicationStrategy = 'replace';
-
-const createProcessFn = (options: QueueCreationOptions) => {
-  return options.process ?? ((_task: unknown, cb: (err?: unknown) => void) => cb());
-};
-
-const updateQueueStatus = (taskId: string, status: QueueTask['status']): void => {
-  void repositories.queueRepository.update(taskId, { status }).catch((error: unknown) => {
-    logger.error('Failed to update queue task status', { error, status, taskId });
-  });
-};
-
-const registerQueueEvents = (queue: Queue) => {
-  queue.on('task_finish', (taskId: string) => updateQueueStatus(taskId, 'completed'));
-  queue.on('task_failed', (taskId: string) => updateQueueStatus(taskId, 'failed'));
-};
-
-type DeduplicationHandler = (existing: QueueTask) => Promise<string>;
-
-const createDeduplicationHandlers = (
-  queueId: string,
-): Record<DeduplicationStrategy, DeduplicationHandler> => ({
-  skip: async (existing) => {
-    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, skipping`);
-    return existing.id;
-  },
-
-  replace: async (existing) => {
-    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, replacing`);
-    await repositories.queueRepository.delete(existing.id, true);
-    return '';
-  },
-
-  moveToEnd: async (existing) => {
-    logger.debug(`Task ${existing.id} already exists in queue ${queueId}, moving to end`);
-    const newPriority = Date.now();
-    await repositories.queueRepository.update(existing.id, {
-      priority: newPriority,
-      added: newPriority,
-    });
-    return existing.id;
-  },
-});
+class QueueNotRegisteredError extends Error {
+  constructor(queueId: string) {
+    super(`Queue ${queueId} is not registered`);
+    this.name = 'QueueNotRegisteredError';
+  }
+}
 
 export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
-  const queues = ref<Map<string, Queue>>(new Map());
-  const queueConfigs = ref<Map<string, QueueCreationOptions>>(new Map());
+  const runtimes = new Map<string, QueueRuntime>();
   const queueIds = ref<string[]>([]);
 
-  const addQueueId = (queueId: string) => {
+  const addQueueId = (queueId: string): void => {
     if (queueIds.value.includes(queueId)) return;
     queueIds.value = [...queueIds.value, queueId];
   };
 
-  const removeQueueId = (queueId: string) => {
+  const removeQueueId = (queueId: string): void => {
     queueIds.value = queueIds.value.filter((id) => id !== queueId);
   };
 
-  const getQueue = (queueId: string): Queue | undefined => {
-    return queues.value.get(queueId);
-  };
+  const getRuntime = <TPayload = unknown, TResult = unknown>(
+    queueId: string,
+  ): QueueRuntime<TPayload, TResult> | undefined =>
+    runtimes.get(queueId) as QueueRuntime<TPayload, TResult> | undefined;
 
-  const getQueueOptions = (queueId: string): QueueCreationOptions => {
-    return queueConfigs.value.get(queueId) ?? {};
-  };
-
-  const register = (queueId: string, options: QueueCreationOptions = {}): Queue => {
-    const existingQueue = queues.value.get(queueId);
-    if (existingQueue) {
+  const register = <TPayload = unknown, TResult = unknown>(
+    queueId: string,
+    options: QueueCreationOptions<TPayload, TResult> = {},
+  ): QueueHandle<TPayload, TResult> => {
+    const existing = getRuntime<TPayload, TResult>(queueId);
+    if (existing) {
       addQueueId(queueId);
-      return existingQueue;
+      return existing.handle;
     }
-
-    const storeAdapter = new BetterQueueStoreAdapter(repositories.queueRepository, queueId);
-    const processFn = createProcessFn(options);
-
-    const queueOptions: Partial<QueueOptions<unknown, unknown>> = {
-      ...options,
-      store: storeAdapter,
-      id: 'id' as keyof unknown,
-    };
-
-    const queue = new Queue(processFn, queueOptions);
-
-    registerQueueEvents(queue);
-    queues.value.set(queueId, queue);
-    queueConfigs.value.set(queueId, options);
+    const runtime = createQueueRuntime(queueId, options, repositories.queueRepository);
+    runtimes.set(queueId, runtime as QueueRuntime);
     addQueueId(queueId);
-
-    return queue;
+    return runtime.handle;
   };
 
-  const ensureQueue = (queueId: string): Queue => {
-    const queue = getQueue(queueId);
-    if (queue) {
-      return queue;
-    }
-    return register(queueId);
+  const ensureRuntime = <TPayload = unknown, TResult = unknown>(
+    queueId: string,
+  ): QueueRuntime<TPayload, TResult> => {
+    const runtime = getRuntime<TPayload, TResult>(queueId);
+    if (runtime) return runtime;
+    register<TPayload, TResult>(queueId);
+    return getRuntime<TPayload, TResult>(queueId) as QueueRuntime<TPayload, TResult>;
   };
 
-  const handleDeduplication = async (id: string, queueId: string): Promise<string | null> => {
-    const existing = await repositories.queueRepository.get(id);
+  const getQueue = <TPayload = unknown, TResult = unknown>(
+    queueId: string,
+  ): QueueHandle<TPayload, TResult> | undefined => getRuntime<TPayload, TResult>(queueId)?.handle;
 
-    if (!existing || existing.queueId !== queueId || existing.deletedAt) return null;
+  const add = <TPayload = unknown>(
+    queueId: string,
+    payload: TPayload,
+    options?: QueueTaskOptions,
+  ): Promise<string> => ensureRuntime<TPayload>(queueId).add(payload, options);
 
-    const config = getQueueOptions(queueId);
-    const strategy = config.deduplicationStrategy ?? DEFAULT_DEDUPLICATION_STRATEGY;
+  const get = (taskId: string): Promise<QueueTask | undefined> =>
+    repositories.queueRepository.get(taskId);
 
-    const handlers = createDeduplicationHandlers(queueId);
-    const handler = handlers[strategy];
+  const getAll = (queueId: string): Promise<QueueTask[]> =>
+    repositories.queueRepository.getAll(queueId);
 
-    return await handler(existing);
-  };
-
-  const add = (queueId: string, payload: unknown, options?: QueueTaskOptions): Promise<string> => {
-    return (async () => {
-      const queue = ensureQueue(queueId);
-      const id = options?.id ?? crypto.randomUUID();
-
-      const existingTaskId = await handleDeduplication(id, queueId);
-      if (existingTaskId) {
-        return existingTaskId;
-      }
-      queue.push({ id, payload });
-      return id;
-    })();
-  };
-
-  const get = (taskId: string): Promise<QueueTask | undefined> => {
-    return repositories.queueRepository.get(taskId);
-  };
-
-  const getAll = (queueId: string): Promise<QueueTask[]> => {
-    return repositories.queueRepository.getAll(queueId);
-  };
-
-  const cancel = (queueId: string, taskId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      ensureQueue(queueId).cancel(taskId, () => resolve());
-    });
-  };
-
-  const remove = cancel;
+  const remove = (queueId: string, taskId: string): Promise<void> =>
+    ensureRuntime(queueId).cancel(taskId);
 
   const pause = (queueId: string): void => {
-    ensureQueue(queueId).pause();
+    ensureRuntime(queueId).pause();
   };
 
   const resume = (queueId: string): void => {
-    ensureQueue(queueId).resume();
+    ensureRuntime(queueId).resume();
   };
 
   const destroy = (queueId: string): void => {
-    const queue = getQueue(queueId);
-    if (!queue) {
-      return;
-    }
-    queue.removeAllListeners();
-    queue.destroy(() => null);
-    queues.value.delete(queueId);
-    queueConfigs.value.delete(queueId);
+    const runtime = getRuntime(queueId);
+    if (!runtime) return;
+    runtime.destroy();
+    runtimes.delete(queueId);
     removeQueueId(queueId);
   };
 
-  const unregister = (queueId: string): void => {
-    destroy(queueId);
-  };
-
   const clear = async (queueId: string): Promise<void> => {
-    await pauseQueue(queueId);
-    await repositories.queueRepository.clear(queueId);
-    const queue = getQueue(queueId);
-    if (queue) {
-      queue.resume();
-    }
-  };
-
-  const pauseQueue = async (queueId: string): Promise<void> => {
-    const queue = getQueue(queueId);
-    if (!queue) {
+    const runtime = getRuntime(queueId);
+    if (runtime) {
+      await runtime.clear();
       return;
     }
-
-    logger.warn(`PAUSE QUEUE: ${queueId}`);
-
-    queue.pause();
-    const tasks = await repositories.queueRepository.getAll(queueId);
-    await Promise.all(
-      tasks
-        .filter((t) => t.status === 'pending' || t.status === 'processing')
-        .map((t) => new Promise<void>((resolve) => queue.cancel(t.id, () => resolve()))),
-    );
+    await repositories.queueRepository.clear(queueId);
   };
 
-  const getStats = (queueId: string): Promise<QueueStats> => {
-    const stats = ensureQueue(queueId).getStats();
-    return Promise.resolve({ ...stats });
-  };
+  const getStats = async (queueId: string): Promise<QueueStats> =>
+    ensureRuntime(queueId).getStats();
 
-  const executeBatchTasks = <T = unknown[], R = unknown[]>(
-    options: QueueCreationOptions,
-    data: T[],
-  ): Promise<R> => {
-    if (!Array.isArray(data) || data.length === 0) {
-      return Promise.resolve([] as R);
-    }
-
-    const originalProcess = options.process;
-    if (!originalProcess) {
-      return Promise.reject(new Error('process function is required in options'));
-    }
-
-    const queueId = `batch-${crypto.randomUUID()}`;
-    const { promise, resolve, reject } = Promise.withResolvers<R>();
-
-    const state = createBatchState<R>(data.length, resolve, reject);
-    const queue = createBatchQueue(queueId, options, originalProcess, state);
-
-    setupBatchEventHandlers(queue, queueId, state);
-    enqueueBatchItems(queue, data);
-
-    return promise;
-  };
-
-  const createBatchState = <R>(
-    totalTasks: number,
-    resolve: (value: R) => void,
-    reject: (reason?: unknown) => void,
-  ) => ({
-    results: [] as unknown[],
-    completedCount: 0,
-    hasError: false,
-    totalTasks,
-    resolve,
-    reject,
-  });
-
-  type BatchState<R> = ReturnType<typeof createBatchState<R>>;
-
-  const createBatchQueue = <R>(
+  const runAndWaitForIdle = async (
     queueId: string,
-    options: QueueCreationOptions,
-    originalProcess: NonNullable<QueueCreationOptions['process']>,
-    state: BatchState<R>,
-  ): Queue => {
-    destroy(queueId);
-
-    const wrappedProcess = (task: unknown, cb: (err?: unknown, result?: unknown) => void) => {
-      if (state.hasError) {
-        cb();
-        return;
-      }
-      originalProcess(task, cb);
-    };
-
-    return register(queueId, { ...options, process: wrappedProcess });
+    operation: QueueOperation,
+    options: QueueRunOptions = {},
+  ): Promise<void> => {
+    const runtime = getRuntime(queueId);
+    if (!runtime) throw new QueueNotRegisteredError(queueId);
+    await runtime.runAndWaitForIdle(operation, options);
   };
 
-  const setupBatchEventHandlers = <R>(
-    queue: Queue,
-    queueId: string,
-    state: BatchState<R>,
-  ): void => {
-    const cleanup = () => {
-      queue.pause();
-      queue.removeListener('task_finish', onTaskFinish);
-      queue.removeListener('task_failed', onTaskFailed);
-      queue.removeAllListeners();
-      destroy(queueId);
-      void repositories.queueRepository.clear(queueId);
-    };
-
-    const onTaskFinish = (_taskId: string, result: unknown) => {
-      if (state.hasError) {
-        return;
-      }
-      state.results.push(result);
-      state.completedCount++;
-
-      if (state.completedCount === state.totalTasks) {
-        cleanup();
-        state.resolve(state.results as R);
-      }
-    };
-
-    const onTaskFailed = (_taskId: string, err: unknown) => {
-      if (state.hasError) {
-        return;
-      }
-      state.hasError = true;
-      cleanup();
-      state.reject(err);
-    };
-
-    queue.on('task_finish', onTaskFinish);
-    queue.on('task_failed', onTaskFailed);
-  };
-
-  const enqueueBatchItems = <T>(queue: Queue, data: T[]): void => {
-    data.forEach((item) => {
-      queue.push({ id: crypto.randomUUID(), payload: item });
+  const executeBatchTasks = <TPayload = unknown, TResult = unknown>(
+    options: QueueCreationOptions<TPayload, TResult>,
+    data: TPayload[],
+  ): Promise<TResult[]> =>
+    executeQueueBatchTasks(options, data, {
+      clearStoredTasks: (queueId) => {
+        void repositories.queueRepository.clear(queueId).catch((error: unknown) => {
+          logger.error('Failed to clear batch queue tasks', { error, queueId });
+        });
+      },
+      create: (queueId, queueOptions) => {
+        destroy(queueId);
+        register(queueId, queueOptions);
+        return ensureRuntime(queueId);
+      },
+      destroy,
     });
-  };
 
-  const queueStore: QueueStore = {
+  return {
     register,
-    unregister,
+    unregister: destroy,
     getQueue,
     add,
     get,
@@ -331,9 +155,8 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     destroy,
     clear,
     getStats,
+    runAndWaitForIdle,
     queueIds,
     executeBatchTasks,
   };
-
-  return queueStore;
 });

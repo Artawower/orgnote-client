@@ -12,6 +12,23 @@ import { INDEX_QUEUE_ID, SYNC_QUEUE_ID } from 'src/constants/queue-ids';
 import { getBaseContentStore } from 'src/infrastructure/stores/base-content-store';
 import { useBufferStore } from 'src/stores/buffer';
 
+interface IndexTaskPayload {
+  filePath: string;
+}
+
+interface IndexTaskResult {
+  indexed: string;
+}
+
+const INDEX_TASK_TIMEOUT_MS = 2 * 60 * 1000;
+
+class InvalidIndexTaskError extends Error {
+  constructor() {
+    super('Invalid index task payload');
+    this.name = 'InvalidIndexTaskError';
+  }
+}
+
 const createSyncContextProvider = (): SyncContextProvider => ({
   getContext: (serverTime: string) => {
     const fsManager = useFileSystemManagerStore();
@@ -45,10 +62,10 @@ const isValidIndexTask = (task: unknown): task is { payload: { filePath: string 
   return typeof p.filePath === 'string';
 };
 
-const createIndexProcessor = (): ProcessFn => {
-  return (task: unknown, cb: (err?: unknown, result?: unknown) => void): void => {
+const createIndexProcessor = (): ProcessFn<IndexTaskPayload, IndexTaskResult> => {
+  return (task, callback): void => {
     if (!isValidIndexTask(task)) {
-      cb(new Error('Invalid index task payload'));
+      callback(new InvalidIndexTaskError());
       return;
     }
 
@@ -57,8 +74,8 @@ const createIndexProcessor = (): ProcessFn => {
 
     fileSearch
       .processFile(payload.filePath)
-      .then(() => cb(undefined, { indexed: payload.filePath }))
-      .catch(cb);
+      .then(() => callback(undefined, { indexed: payload.filePath }))
+      .catch(callback);
   };
 };
 
@@ -77,6 +94,7 @@ export default boot(() => {
 
   queueStore.register(INDEX_QUEUE_ID, {
     concurrent: 1,
+    maxTimeout: INDEX_TASK_TIMEOUT_MS,
     maxRetries: 2,
     retryDelay: 1000,
     failTaskOnProcessException: true,

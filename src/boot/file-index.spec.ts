@@ -13,6 +13,10 @@ const watcherState = {
   isWatching: ref(true),
 };
 
+const fileSystemManagerState = {
+  fsMounted: ref(true),
+};
+
 const searchState = {
   isIndexing: false,
   isIndexingRef: ref(false),
@@ -21,7 +25,7 @@ const searchState = {
 };
 
 const commandsState = {
-  execute: vi.fn(() => {}),
+  execute: vi.fn(async () => {}),
 };
 
 const mockDirEntries = new Map<string, DiskFile[]>();
@@ -100,6 +104,10 @@ vi.mock('src/stores/file-search', () => ({
   })),
 }));
 
+vi.mock('src/stores/file-system-manager', () => ({
+  useFileSystemManagerStore: vi.fn(() => fileSystemManagerState),
+}));
+
 vi.mock('src/stores/file-system', () => ({
   useFileSystemStore: vi.fn(() => ({
     readDir: vi.fn(async (path: string) => mockDirEntries.get(path) ?? []),
@@ -119,9 +127,14 @@ vi.mock('src/stores/command', () => ({
   useCommandsStore: vi.fn(() => commandsState),
 }));
 
+vi.mock('src/boot/report', () => ({
+  reporter: { reportError: vi.fn() },
+}));
+
 beforeEach(() => {
   watchedCallback = undefined;
   watcherState.isWatching.value = true;
+  fileSystemManagerState.fsMounted.value = true;
   searchState.isIndexing = false;
   searchState.isIndexingRef.value = false;
   searchState.processFile.mockClear();

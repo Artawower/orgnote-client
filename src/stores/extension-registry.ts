@@ -5,6 +5,7 @@ import type {
   GitFile,
   GitRepoHandle,
   ProcessCallback,
+  QueueProcessTask,
 } from 'orgnote-api';
 import { ref, watch } from 'vue';
 import { useConfigStore } from './config';
@@ -87,8 +88,11 @@ export const useExtensionRegistryStore = defineStore<'extension-registry', Exten
     };
 
     const createSourceProcessor = () => {
-      return async (task: unknown, cb: ProcessCallback) => {
-        const { payload: source } = task as { payload: string };
+      return async (
+        task: QueueProcessTask<string>,
+        cb: ProcessCallback<ExtensionManifest[]>,
+      ) => {
+        const source = task.payload;
         const safeFetch = to(fetchManifestsFromSource, `Failed to fetch from ${source}`);
         const result = await safeFetch(source);
 

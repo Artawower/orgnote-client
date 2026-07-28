@@ -1,6 +1,8 @@
 import { setActivePinia, createPinia } from 'pinia';
 import { test, expect, beforeEach, vi, type Mock } from 'vitest';
 import { toRaw } from 'vue';
+import type { ProcessCallback, QueueProcessTask } from 'orgnote-api';
+import { QueueIdleTimeoutError } from 'src/infrastructure/queue/wait-for-queue-drain';
 
 interface MockQueue {
   push: Mock;
@@ -16,10 +18,22 @@ interface MockQueue {
   _running: number;
 }
 
-const { createMockQueue, mockQueueConstructor, mockQueueRepository, mockLogger } = vi.hoisted(
+const { createMockQueue, createQueuedTicket, mockQueueConstructor, mockQueueRepository, mockLogger } = vi.hoisted(
   () => {
+    const createQueuedTicket = () => {
+      const listeners = new Map<string, () => void>();
+      const ticket = {
+        once: vi.fn((event: string, listener: () => void) => {
+          listeners.set(event, listener);
+          return ticket;
+        }),
+        removeListener: vi.fn((event: string) => listeners.delete(event)),
+      };
+      queueMicrotask(() => listeners.get('queued')?.());
+      return ticket;
+    };
     const createMockQueue = (): MockQueue => ({
-      push: vi.fn(),
+      push: vi.fn(() => createQueuedTicket()),
       pause: vi.fn(),
       resume: vi.fn(),
       cancel: vi.fn((_id: string, cb: () => void) => cb()),
@@ -59,7 +73,13 @@ const { createMockQueue, mockQueueConstructor, mockQueueRepository, mockLogger }
       warn: vi.fn(),
     };
 
-    return { createMockQueue, mockQueueConstructor, mockQueueRepository, mockLogger };
+    return {
+      createMockQueue,
+      createQueuedTicket,
+      mockQueueConstructor,
+      mockQueueRepository,
+      mockLogger,
+    };
   },
 );
 
@@ -75,8 +95,8 @@ vi.mock('src/boot/repositories', () => ({
   },
 }));
 
-vi.mock('src/infrastructure/stores/queue-store', () => ({
-  QueueStore: vi.fn().mockImplementation(() => ({})),
+vi.mock('src/infrastructure/queue/better-queue-persistence-store', () => ({
+  BetterQueuePersistenceStore: vi.fn().mockImplementation(() => ({})),
 }));
 
 vi.mock('src/boot/logger', () => ({
@@ -169,6 +189,36 @@ test('useQueueStore task finish handler does not leak rejected status updates', 
   });
 });
 
+test('useQueueStore idle wait includes pending task status updates', async () => {
+  const statusUpdate = Promise.withResolvers<void>();
+  let taskFinishHandler: ((taskId: string) => void) | undefined;
+  mockQueueRepository.update.mockImplementation(() => statusUpdate.promise);
+  mockQueueConstructor.mockImplementation(() => {
+    const queue = createMockQueue();
+    queue.on = vi.fn((event: string, handler: (taskId: string) => void) => {
+      if (event === 'task_finish') taskFinishHandler = handler;
+    });
+    return queue;
+  });
+  const store = useQueueStore();
+  store.register('test-queue');
+  taskFinishHandler?.('task-1');
+  let isResolved = false;
+
+  const waiting = store.runAndWaitForIdle('test-queue', async () => {});
+  void waiting.then(() => {
+    isResolved = true;
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+
+  expect(isResolved).toBe(false);
+
+  statusUpdate.resolve();
+
+  await waiting;
+});
+
 test('useQueueStore getQueue returns undefined for unregistered queue', () => {
   const store = useQueueStore();
   const queue = store.getQueue('non-existent');
@@ -193,6 +243,38 @@ test('useQueueStore add returns task id', async () => {
   expect(taskId.length).toBeGreaterThan(0);
 });
 
+test('useQueueStore add resolves only after task is queued', async () => {
+  let emitQueued: (() => void) | undefined;
+  const ticket = {
+    once: vi.fn((event: string, listener: () => void) => {
+      if (event === 'queued') emitQueued = listener;
+      return ticket;
+    }),
+    removeListener: vi.fn(),
+  };
+  const push = vi.fn(() => ticket);
+  mockQueueConstructor.mockImplementation(() => ({
+    ...createMockQueue(),
+    push,
+  }));
+  const store = useQueueStore();
+  let isResolved = false;
+
+  const taskId = store.add('test-queue', { data: 'test' });
+  void taskId.then(() => {
+    isResolved = true;
+  });
+  await vi.waitFor(() => expect(push).toHaveBeenCalledOnce());
+  await Promise.resolve();
+
+  expect(isResolved).toBe(false);
+  expect(emitQueued).toBeTypeOf('function');
+
+  emitQueued?.();
+
+  await expect(taskId).resolves.toBeTypeOf('string');
+});
+
 test('useQueueStore add creates queue if not exists', async () => {
   const store = useQueueStore();
   expect(store.queueIds).not.toContain('test-queue');
@@ -210,14 +292,57 @@ test('useQueueStore add uses specified queueId', async () => {
   expect(store.queueIds).toContain('custom-queue');
 });
 
+test('useQueueStore skip deduplication keeps the existing task', async () => {
+  mockQueueRepository.get.mockResolvedValue(createMockTask());
+  const store = useQueueStore();
+  store.register('test-queue', { deduplicationStrategy: 'skip' });
+  const queue = store.getQueue('test-queue') as MockQueue | undefined;
+
+  const taskId = await store.add('test-queue', { data: 'replacement' }, { id: 'task-1' });
+
+  expect(taskId).toBe('task-1');
+  expect(queue?.push).not.toHaveBeenCalled();
+});
+
+test('useQueueStore replace deduplication deletes and enqueues the task', async () => {
+  mockQueueRepository.get.mockResolvedValue(createMockTask());
+  const store = useQueueStore();
+  store.register('test-queue', { deduplicationStrategy: 'replace' });
+  const queue = store.getQueue('test-queue') as MockQueue | undefined;
+
+  const taskId = await store.add('test-queue', { data: 'replacement' }, { id: 'task-1' });
+
+  expect(taskId).toBe('task-1');
+  expect(mockQueueRepository.delete).toHaveBeenCalledWith('task-1', true);
+  expect(queue?.push).toHaveBeenCalledWith({ id: 'task-1', payload: { data: 'replacement' } });
+});
+
+test('useQueueStore moveToEnd deduplication reprioritizes the existing task', async () => {
+  mockQueueRepository.get.mockResolvedValue(createMockTask());
+  const store = useQueueStore();
+  store.register('test-queue', { deduplicationStrategy: 'moveToEnd' });
+  const queue = store.getQueue('test-queue') as MockQueue | undefined;
+
+  const taskId = await store.add('test-queue', { data: 'replacement' }, { id: 'task-1' });
+
+  expect(taskId).toBe('task-1');
+  expect(mockQueueRepository.update).toHaveBeenCalledWith('task-1', {
+    priority: expect.any(Number),
+    added: expect.any(Number),
+  });
+  const update = mockQueueRepository.update.mock.calls[0]?.[1];
+  expect(update?.priority).toBe(update?.added);
+  expect(queue?.push).not.toHaveBeenCalled();
+});
+
 test('useQueueStore get delegates to repository', async () => {
   const store = useQueueStore();
   const mockTask = createMockTask();
   mockQueueRepository.get.mockResolvedValue(mockTask);
 
-  const task = await store.get('test-queue', 'task-1');
+  const task = await store.get('task-1');
 
-  expect(mockQueueRepository.get).toHaveBeenCalledWith('test-queue');
+  expect(mockQueueRepository.get).toHaveBeenCalledWith('task-1');
   expect(task).toEqual(mockTask);
 });
 
@@ -225,7 +350,7 @@ test('useQueueStore get returns undefined when task not found', async () => {
   const store = useQueueStore();
   mockQueueRepository.get.mockResolvedValue(undefined);
 
-  const task = await store.get('test-queue', 'non-existent');
+  const task = await store.get('non-existent');
 
   expect(task).toBeUndefined();
 });
@@ -317,6 +442,44 @@ test('useQueueStore clear pauses and resumes queue during clearing', async () =>
   expect(queue?.resume).toHaveBeenCalled();
 });
 
+test('useQueueStore clear aborts active idle waiters', async () => {
+  const store = useQueueStore();
+  store.register('test-queue');
+  const queue = store.getQueue('test-queue');
+  if (!queue) throw new TypeError('Expected registered queue');
+  Object.assign(queue, { length: 1 });
+  mockQueueRepository.getAll.mockResolvedValue([
+    createMockTask({ queueId: 'test-queue', status: 'processing' }),
+  ]);
+
+  const waiting = store.runAndWaitForIdle('test-queue', async () => {});
+  await vi.waitFor(() => expect(mockQueueRepository.getAll).toHaveBeenCalled());
+  const clearing = store.clear('test-queue');
+
+  await expect(waiting).rejects.toMatchObject({ name: 'AbortError' });
+  await clearing;
+
+  Object.assign(queue, { length: 0 });
+  mockQueueRepository.getAll.mockResolvedValue([]);
+  await expect(store.runAndWaitForIdle('test-queue', async () => {})).resolves.toBeUndefined();
+});
+
+test('useQueueStore clears a queue after idle timeout', async () => {
+  const store = useQueueStore();
+  store.register('test-queue');
+  const queue = store.getQueue('test-queue');
+  if (!queue) throw new TypeError('Expected registered queue');
+  Object.assign(queue, { length: 1 });
+  mockQueueRepository.getAll.mockResolvedValue([
+    createMockTask({ queueId: 'test-queue', status: 'processing' }),
+  ]);
+
+  const waiting = store.runAndWaitForIdle('test-queue', async () => {}, { timeoutMs: 5 });
+
+  await expect(waiting).rejects.toBeInstanceOf(QueueIdleTimeoutError);
+  expect(mockQueueRepository.clear).toHaveBeenCalledWith('test-queue');
+});
+
 test('useQueueStore getStats returns queue statistics', async () => {
   const store = useQueueStore();
   store.register('test-queue');
@@ -354,6 +517,25 @@ test('useQueueStore multiple queues are independent', () => {
 
   expect(store.queueIds).not.toContain('queue-1');
   expect(store.queueIds).toContain('queue-2');
+});
+
+test('useQueueStore destroy aborts active idle waiters', async () => {
+  const store = useQueueStore();
+  store.register('test-queue');
+  const queue = store.getQueue('test-queue');
+  if (!queue) throw new TypeError('Expected registered queue');
+  Object.assign(queue, { length: 1 });
+  mockQueueRepository.getAll.mockResolvedValue([
+    createMockTask({ queueId: 'test-queue', status: 'processing' }),
+  ]);
+
+  const waiting = store.runAndWaitForIdle('test-queue', async () => {});
+  await vi.waitFor(() => expect(mockQueueRepository.getAll).toHaveBeenCalled());
+  store.destroy('test-queue');
+
+  await expect(waiting).rejects.toMatchObject({ name: 'AbortError' });
+  store.register('test-queue');
+  await expect(store.runAndWaitForIdle('test-queue', async () => {})).resolves.toBeUndefined();
 });
 
 test('useQueueStore destroy removes event listeners to prevent memory leak', () => {
@@ -409,21 +591,22 @@ test('useQueueStore executeBatchTasks processes all items and returns results', 
       setTimeout(() => {
         taskFinishHandler?.(task.id, `processed-${task.payload}`);
       }, 0);
+      return createQueuedTicket();
     });
     return queue;
   });
 
-  const result = await store.executeBatchTasks<string, string[]>(
+  const result = await store.executeBatchTasks<string, string>(
     {
-      process: (task: unknown, cb: (err?: unknown, result?: unknown) => void) => {
-        const { payload } = task as { payload: string };
-        cb(undefined, `processed-${payload}`);
+      process: (task: QueueProcessTask<string>, cb: ProcessCallback<string>) => {
+        cb(undefined, `processed-${task.payload}`);
       },
     },
     ['item1', 'item2', 'item3'],
   );
 
   expect(processedItems).toEqual(['item1', 'item2', 'item3']);
+  expect(mockQueueRepository.get).not.toHaveBeenCalled();
   expect(result).toHaveLength(3);
   expect(result).toContain('processed-item1');
   expect(result).toContain('processed-item2');
@@ -447,6 +630,7 @@ test('useQueueStore executeBatchTasks rejects on task failure', async () => {
       setTimeout(() => {
         taskFailedHandler?.(task.id, testError);
       }, 0);
+      return createQueuedTicket();
     });
     return queue;
   });
@@ -483,6 +667,7 @@ test('useQueueStore executeBatchTasks cleans up queue after completion', async (
       setTimeout(() => {
         taskFinishHandler?.(task.id, 'result');
       }, 0);
+      return createQueuedTicket();
     });
     return mockQueue;
   });
@@ -521,6 +706,7 @@ test('useQueueStore executeBatchTasks passes concurrent option to queue', async 
       setTimeout(() => {
         taskFinishHandler?.(task.id, 'result');
       }, 0);
+      return createQueuedTicket();
     });
     return queue;
   });
@@ -560,6 +746,7 @@ test('useQueueStore executeBatchTasks wraps items with id and payload', async ()
       setTimeout(() => {
         taskFinishHandler?.(typedTask.id, 'result');
       }, 0);
+      return createQueuedTicket();
     });
     return queue;
   });
