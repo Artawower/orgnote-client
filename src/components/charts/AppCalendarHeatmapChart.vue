@@ -78,7 +78,7 @@ const onChartClick = (event: ECElementEvent): void => {
   width: 100%;
 
   &.year {
-    height: 176px;
+    height: var(--chart-calendar-year-height);
   }
 
   &.months {

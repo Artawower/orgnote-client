@@ -1,13 +1,6 @@
 <template>
-  <empty-state v-if="!groups.length" icon="sym_o_timer_off" :title="emptyTitle" />
-
-  <app-flex v-else column start align-stretch gap="sm" class="focus-record-list">
-    <app-spoiler
-      v-for="group in groups"
-      :key="group.filePath"
-      variant="flat"
-      default-expanded
-    >
+  <app-flex v-if="groups.length" column start align-stretch gap="sm" class="focus-record-list">
+    <app-spoiler v-for="group in groups" :key="group.filePath" variant="flat" default-expanded>
       <template #title>
         <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
       </template>
@@ -42,7 +35,6 @@ import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
 import AppTitle from 'src/components/AppTitle.vue';
-import EmptyState from 'src/components/EmptyState.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';
 import OverflowLine from 'src/components/OverflowLine.vue';
 import MenuItem from 'src/containers/MenuItem.vue';

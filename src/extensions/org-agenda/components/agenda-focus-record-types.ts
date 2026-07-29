@@ -14,5 +14,4 @@ export interface AgendaFocusRecordGroup {
 
 export interface AgendaFocusRecordListProps {
   readonly groups: readonly AgendaFocusRecordGroup[];
-  readonly emptyTitle: string;
 }

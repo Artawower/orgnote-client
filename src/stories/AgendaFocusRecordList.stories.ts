@@ -46,7 +46,6 @@ const meta: Meta<AgendaFocusRecordListProps> = {
   title: 'Agenda/AgendaFocusRecordList',
   tags: ['autodocs'],
   args: {
-    emptyTitle: 'No focus records',
     groups,
   },
   render: (args) => ({
