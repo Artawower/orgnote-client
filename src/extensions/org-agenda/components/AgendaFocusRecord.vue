@@ -1,163 +1,87 @@
 <template>
-  <app-flex column start align-stretch gap="sm">
-    <span v-if="groupedRecords.length === 0" class="empty-state">
-      {{ t(i18nKeys.orgAgendaNoTasksTitle) }}
-    </span>
-
-    <app-spoiler
-      v-for="group in groupedRecords"
-      :key="group.date"
-      variant="card-static"
-      no-padding
-      default-expanded
-    >
-      <template #title>{{ group.label }}</template>
-      <template #body>
-        <menu-item
-          v-for="(entry, idx) in group.entries"
-          :key="idx"
-          :capitalize="false"
-          flat
-          @click="onEntryClick(entry)"
-        >
-          <app-flex column align-start gap="xxs" class="entry-content">
-            <span class="entry-time">{{ entry.timeRange }}</span>
-            <app-flex row start align-center gap="xs">
-              <app-icon name="sym_o_task_alt" size="xs" color="fg-muted" />
-              <overflow-line class="entry-task">{{ entry.taskText }}</overflow-line>
-            </app-flex>
-          </app-flex>
-          <template #right>
-            <span class="entry-duration">{{ entry.duration }}</span>
-          </template>
-        </menu-item>
-      </template>
-    </app-spoiler>
-  </app-flex>
+  <agenda-focus-record-list
+    :groups="groups"
+    :empty-title="t(i18nKeys.orgAgendaNoTasksTitle)"
+    @select-record="onRecordSelect"
+  />
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { format, isToday, isYesterday } from 'date-fns';
-import AppFlex from 'src/components/AppFlex.vue';
-import AppIcon from 'src/components/AppIcon.vue';
-import AppSpoiler from 'src/components/AppSpoiler.vue';
-import OverflowLine from 'src/components/OverflowLine.vue';
-import MenuItem from 'src/containers/MenuItem.vue';
-import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
-import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
-import { openNoteAtPosition } from 'src/utils/editor-navigation';
+import { join, type FileMeta, type FileTask } from 'orgnote-api';
+import type { ClockEntry } from 'org-mode-ast';
+import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import { to } from 'orgnote-api/utils';
+import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
+import { openNoteAtPosition } from 'src/utils/editor-navigation';
+import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
+import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
 import { formatDurationMin } from '../utils/format-duration';
-import type { ClockEntry } from 'org-mode-ast';
-import type { FileTask, FileMeta } from 'orgnote-api';
+import AgendaFocusRecordList from './AgendaFocusRecordList.vue';
+import type {
+  AgendaFocusRecordGroup,
+  AgendaFocusRecordItem,
+} from './agenda-focus-record-types';
+
+const MINUTE_MS = 60_000;
+const DATE_FORMAT = 'MMM d';
+const TIME_FORMAT = 'HH:mm';
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const store = useAgendaTasksStore();
 
-const DATE_FORMAT = 'MMM d';
-const TIME_FORMAT = 'HH:mm';
-
-interface FocusEntry {
-  timeRange: string;
-  duration: string;
-  taskText: string;
-  startDate: Date;
-  filePath: string;
-  taskStart: number;
-}
-
-interface FocusGroup {
-  date: string;
-  label: string;
-  entries: FocusEntry[];
-}
-
-const clockDurationMin = (c: ClockEntry): number => {
-  if (!c.to || !c.date) return 0;
-  return Math.floor((new Date(c.to).getTime() - new Date(c.date).getTime()) / 60000);
+const dateLabel = (date: Date): string => {
+  if (isToday(date)) return t(i18nKeys.orgAgendaFocusToday);
+  if (isYesterday(date)) return t(i18nKeys.orgAgendaFocusYesterday);
+  return format(date, DATE_FORMAT);
 };
 
-const dateGroupLabel = (d: Date): string => {
-  if (isToday(d)) return t(i18nKeys.orgAgendaFocusToday);
-  if (isYesterday(d)) return t(i18nKeys.orgAgendaFocusYesterday);
-  return format(d, DATE_FORMAT);
+const resolveFilePath = (file: FileMeta): string => join('/', ...file.filePath);
+
+const resolveFileTitle = (file: FileMeta, filePath: string): string =>
+  file.title?.trim() || extractOrgTitleFromPath(filePath);
+
+const toRecord = (clock: ClockEntry, task: FileTask): AgendaFocusRecordItem[] => {
+  if (!clock.date || !clock.to) return [];
+  const start = new Date(clock.date);
+  const end = new Date(clock.to);
+  const duration = Math.floor((end.getTime() - start.getTime()) / MINUTE_MS);
+  if (duration <= 0) return [];
+  const timeRange = `${format(start, TIME_FORMAT)}–${format(end, TIME_FORMAT)}`;
+  return [
+    {
+      startTime: start.getTime(),
+      taskText: task.text,
+      timeRange: `${dateLabel(start)} · ${timeRange}`,
+      duration: formatDurationMin(duration),
+      taskStart: task.start ?? 0,
+    },
+  ];
 };
 
-const resolveFilePath = (file: FileMeta): string => `/${file.filePath.join('/')}`;
-
-const toEntry = (clock: ClockEntry, task: FileTask, filePath: string): FocusEntry => {
-  const start = new Date(clock.date!);
-  const end = new Date(clock.to!);
-  return {
-    startDate: start,
-    timeRange: `${format(start, TIME_FORMAT)} – ${format(end, TIME_FORMAT)}`,
-    duration: formatDurationMin(clockDurationMin(clock)),
-    taskText: task.text,
-    filePath,
-    taskStart: task.start ?? 0,
-  };
+const toGroup = (file: FileMeta): AgendaFocusRecordGroup[] => {
+  const filePath = resolveFilePath(file);
+  const records = (file.tasks ?? [])
+    .flatMap((task) => (task.clocks ?? []).flatMap((clock) => toRecord(clock, task)))
+    .sort((left, right) => right.startTime - left.startTime);
+  if (!records.length) return [];
+  return [{ filePath, fileTitle: resolveFileTitle(file, filePath), records }];
 };
 
-const allEntries = computed<FocusEntry[]>(() =>
+const groups = computed<AgendaFocusRecordGroup[]>(() =>
   store.allFiles
-    .flatMap((file) => {
-      const filePath = resolveFilePath(file);
-      return (file.tasks ?? []).flatMap((task) =>
-        (task.clocks ?? [])
-          .filter((c) => !!c.to && clockDurationMin(c) > 0)
-          .map((c) => toEntry(c, task, filePath)),
-      );
-    })
-    .sort((a, b) => b.startDate.getTime() - a.startDate.getTime()),
+    .flatMap(toGroup)
+    .sort((left, right) => left.fileTitle.localeCompare(right.fileTitle)),
 );
 
-const groupedRecords = computed<FocusGroup[]>(() => {
-  const map = new Map<string, FocusGroup>();
-  allEntries.value.forEach((entry) => {
-    const key = format(entry.startDate, 'yyyy-MM-dd');
-    if (!map.has(key)) {
-      map.set(key, { date: key, label: dateGroupLabel(entry.startDate), entries: [] });
-    }
-    map.get(key)!.entries.push(entry);
-  });
-  return [...map.values()];
-});
-
-const onEntryClick = async (entry: FocusEntry): Promise<void> => {
-  const result = await to(() => openNoteAtPosition(api, entry.filePath, entry.taskStart))();
+const onRecordSelect = async (
+  record: AgendaFocusRecordItem,
+  filePath: string,
+): Promise<void> => {
+  const result = await to(() => openNoteAtPosition(api, filePath, record.taskStart))();
   if (result.isErr()) reporter.reportError(result.error);
 };
 </script>
-
-<style lang="scss" scoped>
-.entry-content {
-  white-space: normal;
-  min-width: 0;
-}
-
-.entry-time {
-  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
-  color: var(--fg);
-}
-
-.entry-task {
-  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
-  color: var(--fg-muted);
-}
-
-.entry-duration {
-  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
-  color: var(--fg-muted);
-  white-space: nowrap;
-}
-
-.empty-state {
-  @include fontify(var(--font-size-sm), var(--font-weight-regular), false);
-  color: var(--fg-muted);
-  padding: var(--gap-md) var(--menu-item-padding-x);
-}
-</style>
