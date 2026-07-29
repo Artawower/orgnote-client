@@ -84,6 +84,7 @@
     "dexie": "4.0.11",
     "diff-match-patch": "1.0.5",
     "dompurify": "3.3.1",
+    "echarts": "6.1.0",
     "electron-updater": "^6.8.9",
     "fast-deep-equal": "3.1.3",
     "flexsearch": "0.8.212",
