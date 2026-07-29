@@ -26,13 +26,15 @@ vi.mock('src/stores/theme', () => ({
 }));
 vi.mock('echarts/core', () => ({
   color: { lerp: (_weight: number, colors: string[]) => colors[0] },
+  format: { encodeHTML: (value: string) => value },
   init: echartsMock.init,
   use: echartsMock.use,
 }));
-vi.mock('echarts/charts', () => ({ HeatmapChart: {} }));
+vi.mock('echarts/charts', () => ({ CustomChart: {}, HeatmapChart: {} }));
 vi.mock('echarts/components', () => ({
   AriaComponent: {},
   CalendarComponent: {},
+  GridComponent: {},
   TooltipComponent: {},
   VisualMapPiecewiseComponent: {},
 }));

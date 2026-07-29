@@ -1,3 +1,5 @@
+export type CalendarHeatmapSeriesValue = readonly [string, number, number];
+
 export interface CalendarHeatmapEntry {
   readonly date: string;
   readonly value: number;

@@ -1,7 +1,8 @@
-import { HeatmapChart } from 'echarts/charts';
+import { CustomChart, HeatmapChart } from 'echarts/charts';
 import {
   AriaComponent,
   CalendarComponent,
+  GridComponent,
   TooltipComponent,
   VisualMapPiecewiseComponent,
 } from 'echarts/components';
@@ -11,6 +12,8 @@ import { SVGRenderer } from 'echarts/renderers';
 use([
   AriaComponent,
   CalendarComponent,
+  CustomChart,
+  GridComponent,
   HeatmapChart,
   SVGRenderer,
   TooltipComponent,

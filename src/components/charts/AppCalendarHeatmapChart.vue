@@ -1,5 +1,5 @@
 <template>
-  <section ref="rootRef" class="calendar-heatmap">
+  <section class="calendar-heatmap">
     <e-chart-renderer
       :class="['chart', view]"
       :accessible-label="labels.ariaLabel"
@@ -23,17 +23,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed } from 'vue';
 import AppFlex from 'src/components/AppFlex.vue';
-import { useThemeStore } from 'src/stores/theme';
 import EChartRenderer from './EChartRenderer.vue';
 import { createCalendarHeatmapPalette } from './calendar-heatmap-palette';
-import {
-  createCalendarHeatmapOption,
-  isCalendarHeatmapEventValue,
-} from './calendar-heatmap';
-import type { AppCalendarHeatmapChartProps } from './calendar-heatmap-types';
+import { createCalendarHeatmapOption } from './calendar-heatmap';
+import type {
+  AppCalendarHeatmapChartProps,
+  CalendarHeatmapSeriesValue,
+} from './calendar-heatmap-types';
 import type { ECElementEvent } from './echarts-runtime';
+import { useChartPalette } from './use-chart-palette';
 
 const props = withDefaults(defineProps<AppCalendarHeatmapChartProps>(), {
   view: 'year',
@@ -45,19 +45,7 @@ const emit = defineEmits<{
   selectDate: [date: string];
 }>();
 
-const themeStore = useThemeStore();
-const rootRef = ref<HTMLElement>();
-const palette = shallowRef(createCalendarHeatmapPalette(undefined));
-
-const refreshPalette = (): void => {
-  palette.value = createCalendarHeatmapPalette(rootRef.value);
-};
-
-watch(
-  [rootRef, () => themeStore.effectiveMode, () => themeStore.activeThemeName],
-  refreshPalette,
-  { flush: 'post', immediate: true },
-);
+const palette = useChartPalette(createCalendarHeatmapPalette);
 
 const option = computed(() =>
   createCalendarHeatmapOption({
@@ -74,8 +62,9 @@ const option = computed(() =>
 const legendColors = computed(() => [palette.value.empty, ...palette.value.levels]);
 
 const onChartClick = (event: ECElementEvent): void => {
-  if (event.seriesType !== 'heatmap' || !isCalendarHeatmapEventValue(event.value)) return;
-  emit('selectDate', event.value[0]);
+  if (event.seriesType !== 'heatmap') return;
+  const [date] = event.value as CalendarHeatmapSeriesValue;
+  emit('selectDate', date);
 };
 </script>
 

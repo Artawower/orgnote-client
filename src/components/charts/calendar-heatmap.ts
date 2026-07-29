@@ -10,10 +10,7 @@ import {
   createCalendarHeatmapSeriesData,
   createDailyHeatmapValues,
 } from './calendar-heatmap-data';
-import {
-  createCalendarHeatmapTooltip,
-  isCalendarHeatmapValue,
-} from './calendar-heatmap-tooltip';
+import { createCalendarHeatmapTooltip } from './calendar-heatmap-tooltip';
 import type {
   CalendarHeatmapEntry,
   CalendarHeatmapLabels,
@@ -165,5 +162,3 @@ export const createCalendarHeatmapOption = (
     visualMap: createVisualMap(input.palette),
   };
 };
-
-export const isCalendarHeatmapEventValue = isCalendarHeatmapValue;

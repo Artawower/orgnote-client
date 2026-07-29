@@ -1,7 +1,10 @@
 import { expect, test } from 'vitest';
 import { resolveCalendarHeatmapLevel } from './calendar-heatmap-data';
 import { createCalendarHeatmapOption } from './calendar-heatmap';
-import { formatCalendarHeatmapTooltip } from './calendar-heatmap-tooltip';
+import {
+  createCalendarHeatmapTooltip,
+  formatCalendarHeatmapTooltip,
+} from './calendar-heatmap-tooltip';
 import type {
   CalendarHeatmapLabels,
   CalendarHeatmapPalette,
@@ -101,21 +104,21 @@ test('calendar heatmap creates square monthly calendars', () => {
 });
 
 test('calendar heatmap formats a date-only tooltip for empty days', () => {
-  const tooltip = formatCalendarHeatmapTooltip(
-    [{ value: ['2025-01-01', 0, 0] }],
-    labels,
-    'en-US',
-  );
+  const tooltip = formatCalendarHeatmapTooltip(['2025-01-01', 0, 0], labels, 'en-US');
   expect(tooltip).toBe('Jan 1, 2025');
 });
 
 test('calendar heatmap appends a formatted positive value to its tooltip', () => {
-  const tooltip = formatCalendarHeatmapTooltip(
-    { value: ['2025-01-01', 25, 1] },
-    labels,
-    'en-US',
-  );
+  const tooltip = formatCalendarHeatmapTooltip(['2025-01-01', 25, 1], labels, 'en-US');
   expect(tooltip).toBe('Jan 1, 2025: 25 min');
+});
+
+test('calendar heatmap uses an HTML tooltip with encoded values', () => {
+  const htmlLabels = { ...labels, formatValue: () => '<strong>25 min</strong>' };
+  expect(createCalendarHeatmapTooltip(htmlLabels, 'en-US', palette).renderMode).toBe('html');
+  expect(
+    formatCalendarHeatmapTooltip(['2025-01-01', 25, 1], htmlLabels, 'en-US'),
+  ).toBe('Jan 1, 2025: &lt;strong&gt;25 min&lt;/strong&gt;');
 });
 
 test('calendar heatmap configures a hidden piecewise visual map', () => {

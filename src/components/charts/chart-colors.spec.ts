@@ -1,11 +1,9 @@
 import { afterEach, expect, test } from 'vitest';
-import { mixChartColors, resolveCssColor } from './chart-colors';
-
-const roots: HTMLElement[] = [];
+import { mixChartColors } from './chart-colors';
+import { createChartPalette } from './chart-palette';
 
 afterEach(() => {
-  roots.forEach((root) => root.remove());
-  roots.length = 0;
+  document.body.style.removeProperty('--floating-bg');
 });
 
 test('mixChartColors applies the requested foreground weight', () => {
@@ -14,10 +12,7 @@ test('mixChartColors applies the requested foreground weight', () => {
   );
 });
 
-test('resolveCssColor reads inherited CSS variables', () => {
-  const root = document.createElement('div');
-  root.style.setProperty('--chart-color', 'rgb(12, 34, 56)');
-  document.body.append(root);
-  roots.push(root);
-  expect(resolveCssColor(root, 'var(--chart-color)', '#000000')).toBe('rgb(12, 34, 56)');
+test('createChartPalette uses the shared floating surface color', () => {
+  document.body.style.setProperty('--floating-bg', 'rgb(250, 251, 252)');
+  expect(createChartPalette().surface).toBe('rgb(250, 251, 252)');
 });
