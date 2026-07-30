@@ -2,17 +2,35 @@
   <app-flex class="nav-tabs" between>
     <app-flex row start align-center gap="xs">
       <slot name="navigation" />
-      <app-flex class="content" row start align-center gap="xs">
+      <app-flex ref="contentRef" class="content" row start align-center gap="xs">
         <slot />
       </app-flex>
-      <slot name="actions" />
+      <app-flex v-if="$slots.actions" class="actions" row start align-center>
+        <slot name="actions" />
+      </app-flex>
     </app-flex>
     <slot name="right-actions" />
   </app-flex>
 </template>
 
 <script lang="ts" setup>
+import { nextTick, ref, watch } from 'vue';
 import AppFlex from 'src/components/AppFlex.vue';
+import { NAV_TAB_ID_ATTRIBUTE, NAV_TAB_ID_SELECTOR } from 'src/constants/orgnote-tab';
+
+const props = defineProps<{ activeTabId?: string }>();
+const contentRef = ref<InstanceType<typeof AppFlex>>();
+
+const scrollActiveTabIntoView = async (tabId?: string): Promise<void> => {
+  if (!tabId) return;
+  await nextTick();
+  const content = contentRef.value?.$el as HTMLElement | undefined;
+  const tabs = content?.querySelectorAll<HTMLElement>(NAV_TAB_ID_SELECTOR) ?? [];
+  const activeTab = [...tabs].find((tab) => tab.getAttribute(NAV_TAB_ID_ATTRIBUTE) === tabId);
+  activeTab?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+};
+
+watch(() => props.activeTabId, scrollActiveTabIntoView, { flush: 'post', immediate: true });
 </script>
 
 <style lang="scss" scoped>
@@ -43,6 +61,11 @@ import AppFlex from 'src/components/AppFlex.vue';
         display: none;
       }
     }
+  }
+
+  .actions {
+    flex-shrink: 0;
+    margin-left: var(--tab-active-radius);
   }
 }
 

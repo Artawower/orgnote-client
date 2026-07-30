@@ -3,6 +3,7 @@
     class="tab"
     :class="{ active, dragging: isDragging }"
     :draggable="canDrag"
+    v-bind="{ [NAV_TAB_ID_ATTRIBUTE]: tabId }"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
     row
@@ -32,7 +33,7 @@ import ActionButton from './ActionButton.vue';
 import AppIcon from './AppIcon.vue';
 import { computed, ref } from 'vue';
 import { Platform } from 'quasar';
-import { ORGNOTE_TAB_FORMAT } from 'src/constants/orgnote-tab';
+import { NAV_TAB_ID_ATTRIBUTE, ORGNOTE_TAB_FORMAT } from 'src/constants/orgnote-tab';
 import AppFlex from 'src/components/AppFlex.vue';
 
 const props = withDefaults(

@@ -6,7 +6,7 @@
     @click="handlePaneClick"
   >
     <template #header>
-      <nav-tabs v-if="tabletAbove">
+      <nav-tabs v-if="tabletAbove" :active-tab-id="activeTabId">
         <template #navigation>
           <action-button
             icon="keyboard_arrow_left"

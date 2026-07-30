@@ -1,32 +1,30 @@
-import type { StoryObj } from '@storybook/vue3-vite';
-import StoryList from './StoryList.vue';
-import ConfirmationModal from 'src/components/ConfirmationModal.vue';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import ActionButton from 'src/components/ActionButton.vue';
 import NavTabs from 'src/components/NavTabs.vue';
 import NavTab from 'src/components/NavTab.vue';
 
-export default {
-  component: NavTab,
+const meta = {
+  component: NavTabs,
   title: 'Nav tabs',
   tags: ['autodocs'],
-  args: {},
-};
+} satisfies Meta<typeof NavTabs>;
 
-export const Default: StoryObj<typeof NavTab> = {
-  args: {
-    closable: true,
-    icon: 'sym_o_folder',
-    active: false,
-  },
-  render: (args) => ({
-    components: { StoryList, ConfirmationModal, NavTabs, NavTab },
-    setup() {
-      return { args };
-    },
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: () => ({
+    components: { ActionButton, NavTabs, NavTab },
     template: `
-    <nav-tabs>
-      <nav-tab v-bind="args">Tab 1</nav-tab>
-      <nav-tab v-bind="args">Tab 2</nav-tab>
-      <nav-tab v-bind="args" :active="true">Tab 3</nav-tab>
-    </nav-tabs>`,
+      <nav-tabs active-tab-id="tab-3">
+        <nav-tab icon="sym_o_folder" tab-id="tab-1">Tab 1</nav-tab>
+        <nav-tab icon="sym_o_folder" tab-id="tab-2">Tab 2</nav-tab>
+        <nav-tab icon="sym_o_folder" tab-id="tab-3" :active="true">Tab 3</nav-tab>
+        <template #actions>
+          <action-button icon="add" size="sm" />
+        </template>
+      </nav-tabs>
+    `,
   }),
 };
