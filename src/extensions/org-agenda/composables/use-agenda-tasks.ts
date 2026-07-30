@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
+import { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
 import { debounce } from 'src/utils/debounce';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
@@ -120,10 +121,27 @@ const toTaskView = (
 const taskRank = (task: AgendaTaskView, ranks: ReadonlyMap<string, number>): number =>
   ranks.get(createAgendaTaskSearchId(task.filePath, task.id)) ?? Number.MAX_SAFE_INTEGER;
 
-const sortTasksByRank = (
+const TASK_PRIORITY_RANKS: ReadonlyMap<string, number> = new Map(
+  ORG_PRIORITY_LETTERS.map((priority, rank) => [priority, rank]),
+);
+const UNSET_TASK_PRIORITY_RANK = ORG_PRIORITY_LETTERS.length;
+
+const taskPriorityRank = (task: AgendaTaskView): number =>
+  TASK_PRIORITY_RANKS.get(task.priority?.trim().toUpperCase() ?? '') ?? UNSET_TASK_PRIORITY_RANK;
+
+const compareTasksByPriority = (left: AgendaTaskView, right: AgendaTaskView): number =>
+  taskPriorityRank(left) - taskPriorityRank(right);
+
+const compareTasksBySearchRank =
+  (ranks: ReadonlyMap<string, number>) =>
+  (left: AgendaTaskView, right: AgendaTaskView): number =>
+    taskRank(left, ranks) - taskRank(right, ranks);
+
+const sortTasks = (
   tasks: AgendaTaskView[],
   ranks: ReadonlyMap<string, number> | undefined,
-): AgendaTaskView[] => (ranks ? [...tasks].sort((a, b) => taskRank(a, ranks) - taskRank(b, ranks)) : tasks);
+): AgendaTaskView[] =>
+  [...tasks].sort(ranks ? compareTasksBySearchRank(ranks) : compareTasksByPriority);
 
 const toGroup = (file: FileMeta, context: QueryContext): AgendaTaskGroup | undefined => {
   const filePath = resolveAbsolutePath(file);
@@ -135,7 +153,7 @@ const toGroup = (file: FileMeta, context: QueryContext): AgendaTaskGroup | undef
       return view ? [view] : [];
     });
   if (!tasks.length) return undefined;
-  return { fileTitle: resolveFileTitle(file), filePath, tasks: sortTasksByRank(tasks, context.rankByTaskId) };
+  return { fileTitle: resolveFileTitle(file), filePath, tasks: sortTasks(tasks, context.rankByTaskId) };
 };
 
 const groupRank = (group: AgendaTaskGroup, ranks: ReadonlyMap<string, number>): number =>

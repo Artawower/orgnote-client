@@ -160,6 +160,56 @@ test('buildAgendaFileFilterOptions includes only files with agenda tasks', () =>
   ]);
 });
 
+test('buildAgendaTaskGroups orders tasks by priority by default', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      tasks: [
+        { ...baseTask('headline-todo'), id: 'none' },
+        { ...baseTask('headline-todo'), id: 'minimal', priority: 'E' },
+        { ...baseTask('headline-todo'), id: 'low', priority: 'C' },
+        { ...baseTask('headline-todo'), id: 'high-first', priority: 'A' },
+        { ...baseTask('headline-todo'), id: 'medium', priority: 'B' },
+        { ...baseTask('headline-todo'), id: 'high-second', priority: 'A' },
+      ],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(files, {
+    dateFilter: { kind: 'preset', value: 'all' },
+  });
+
+  expect(groups[0]?.tasks.map((task) => task.id)).toEqual([
+    'high-first',
+    'high-second',
+    'medium',
+    'low',
+    'minimal',
+    'none',
+  ]);
+});
+
+test('buildAgendaTaskGroups preserves task search rank over priority order', () => {
+  const files: FileMeta[] = [
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      tasks: [
+        { ...baseTask('headline-todo'), id: 'high', priority: 'A' },
+        { ...baseTask('headline-todo'), id: 'low', priority: 'C' },
+      ],
+    },
+  ];
+
+  const groups = buildAgendaTaskGroups(files, {
+    dateFilter: { kind: 'preset', value: 'all' },
+    matchingTaskIds: ['/agenda/work.org\u0000low', '/agenda/work.org\u0000high'],
+  });
+
+  expect(groups[0]?.tasks.map((task) => task.id)).toEqual(['low', 'high']);
+});
+
 test('buildAgendaTaskGroups orders matching groups by task search rank', () => {
   const files: FileMeta[] = [
     {
