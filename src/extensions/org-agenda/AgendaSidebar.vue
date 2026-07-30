@@ -85,6 +85,7 @@ const onFileFilterSelect = async (filePath?: string): Promise<void> => {
   @include fit;
   min-height: 0;
   padding: var(--padding-lg);
+  padding-bottom: var(--scroll-bottom-padding, var(--padding-lg));
   overflow: hidden;
 }
 

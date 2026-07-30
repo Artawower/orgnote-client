@@ -99,7 +99,16 @@ watch(opened, (isOpen) => {
 
 <style lang="scss" scoped>
 .app-sidebar {
-  --scroll-bottom-padding: var(--floating-padding-bottom);
+  --scroll-bottom-padding: var(--padding-lg);
+}
+
+@include tablet-below {
+  .app-sidebar {
+    --scroll-bottom-padding: calc(
+      var(--footer-height) + var(--footer-wrapper-padding-y) +
+        var(--device-padding-bottom, 0px)
+    );
+  }
 }
 
 .footer {
