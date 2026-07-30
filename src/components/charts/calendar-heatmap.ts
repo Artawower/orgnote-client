@@ -29,6 +29,7 @@ type CalendarHeatmapOption = ComposeOption<
 interface CalendarHeatmapOptionInput {
   readonly entries: readonly CalendarHeatmapEntry[];
   readonly labels: CalendarHeatmapLabels;
+  readonly month: number;
   readonly view: CalendarHeatmapView;
   readonly locale: string;
   readonly palette: CalendarHeatmapPalette;
@@ -39,8 +40,6 @@ interface CalendarHeatmapOptionInput {
 const FIRST_DAY_OF_WEEK = 1;
 const YEAR_CELL_SIZE = 13;
 const MONTH_CELL_SIZE = 15;
-const MONTH_COLUMNS = 2;
-const MONTH_ROW_HEIGHT = 150;
 
 const createLocalDate = (year: number, month: number, day: number): Date => {
   const date = new Date(0);
@@ -91,29 +90,26 @@ const createYearCalendars = (
   },
 ];
 
-const createMonthCalendars = (
+const createMonthCalendar = (
   year: number,
+  month: number,
   palette: CalendarHeatmapPalette,
   dateLabels: ReturnType<typeof createDateLabels>,
-): CalendarComponentOption[] =>
-  Array.from({ length: 12 }, (_, month) => {
-    const column = month % MONTH_COLUMNS;
-    const row = Math.floor(month / MONTH_COLUMNS);
-    const range = `${year}-${String(month + 1).padStart(2, '0')}`;
-    return {
-      ...createBaseCalendar(range, palette, dateLabels),
-      cellSize: [MONTH_CELL_SIZE, MONTH_CELL_SIZE],
-      left: column === 0 ? '8%' : '56%',
-      monthLabel: {
-        color: palette.label,
-        fontSize: 11,
-        margin: 10,
-        nameMap: dateLabels.months,
-        position: 'start',
-      },
-      top: row * MONTH_ROW_HEIGHT + 28,
-    };
-  });
+): CalendarComponentOption[] => [
+  {
+    ...createBaseCalendar(`${year}-${String(month).padStart(2, '0')}`, palette, dateLabels),
+    cellSize: [MONTH_CELL_SIZE, MONTH_CELL_SIZE],
+    left: 'center',
+    monthLabel: {
+      color: palette.label,
+      fontSize: 11,
+      margin: 10,
+      nameMap: dateLabels.months,
+      position: 'start',
+    },
+    top: 28,
+  },
+];
 
 const createVisualMap = (palette: CalendarHeatmapPalette): VisualMapComponentOption => ({
   type: 'piecewise',
@@ -125,22 +121,22 @@ const createVisualMap = (palette: CalendarHeatmapPalette): VisualMapComponentOpt
 const createSeries = (
   data: ReturnType<typeof createCalendarHeatmapSeriesData>,
   view: CalendarHeatmapView,
+  month: number,
 ): HeatmapSeriesOption[] => {
   if (view === 'year') {
     return [{ type: 'heatmap', coordinateSystem: 'calendar', data, emphasis: { disabled: true } }];
   }
-  return Array.from({ length: 12 }, (_, month) => {
-    const monthKey = String(month + 1).padStart(2, '0');
-    return {
+  const monthKey = String(month).padStart(2, '0');
+  return [
+    {
       type: 'heatmap',
-      calendarIndex: month,
       coordinateSystem: 'calendar',
       data: data.filter(
         ({ value }) => typeof value[0] === 'string' && value[0].slice(5, 7) === monthKey,
       ),
       emphasis: { disabled: true },
-    };
-  });
+    },
+  ];
 };
 
 export const createCalendarHeatmapOption = (
@@ -152,12 +148,12 @@ export const createCalendarHeatmapOption = (
   const calendar =
     input.view === 'year'
       ? createYearCalendars(input.year, input.palette, dateLabels)
-      : createMonthCalendars(input.year, input.palette, dateLabels);
+      : createMonthCalendar(input.year, input.month, input.palette, dateLabels);
   return {
     animation: false,
     aria: { description: input.labels.ariaLabel, enabled: true },
     calendar,
-    series: createSeries(data, input.view),
+    series: createSeries(data, input.view, input.month),
     tooltip: createCalendarHeatmapTooltip(input.labels, input.locale, input.palette),
     visualMap: createVisualMap(input.palette),
   };

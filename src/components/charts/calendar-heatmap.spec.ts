@@ -35,6 +35,7 @@ const createOption = (
     entries: [],
     labels,
     locale: 'en-US',
+    month: 6,
     palette,
     view: 'year',
     year: 2025,
@@ -90,17 +91,17 @@ test('calendar heatmap uses square cells for the year view', () => {
   expect(calendar?.right).toBeUndefined();
 });
 
-test('calendar heatmap creates square monthly calendars', () => {
-  const option = createOption({ view: 'months' });
-  expect(option.calendar).toHaveLength(12);
-  expect(option.series).toHaveLength(12);
-  if (!Array.isArray(option.calendar)) throw new Error('Expected monthly calendars');
-  option.calendar.forEach((calendar) => expect(calendar.cellSize).toEqual([15, 15]));
-  const totalDays = Array.from({ length: 12 }, (_, index) => getSeriesData(option, index).length).reduce(
-    (sum, count) => sum + count,
-    0,
-  );
-  expect(totalDays).toBe(365);
+test('calendar heatmap centers one requested month', () => {
+  const option = createOption({ month: 6, view: 'month' });
+  expect(option.calendar).toHaveLength(1);
+  expect(option.series).toHaveLength(1);
+  if (!Array.isArray(option.calendar)) throw new Error('Expected monthly calendar');
+  expect(option.calendar[0]).toMatchObject({
+    cellSize: [15, 15],
+    left: 'center',
+    range: '2025-06',
+  });
+  expect(getSeriesData(option)).toHaveLength(30);
 });
 
 test('calendar heatmap formats a date-only tooltip for empty days', () => {

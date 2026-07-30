@@ -10,7 +10,10 @@
     <div v-if="slots.header" class="layout-header" :class="{ border: headerBorder }">
       <slot name="header" />
     </div>
-    <div class="layout-body" :class="{ scroll: bodyScroll }">
+    <div
+      class="layout-body"
+      :class="{ scroll: bodyScroll, 'stable-scrollbar': bodyScroll && stableScrollbar }"
+    >
       <slot name="body" />
       <slot />
     </div>
@@ -29,12 +32,14 @@ withDefaults(
   defineProps<{
     gap?: StyleSize;
     bodyScroll?: boolean;
+    stableScrollbar?: boolean;
     reverse?: boolean;
     headerBorder?: boolean;
     footerBorder?: boolean;
   }>(),
   {
     bodyScroll: true,
+    stableScrollbar: false,
     reverse: false,
     headerBorder: false,
     footerBorder: false,
@@ -71,6 +76,10 @@ const slots = useSlots();
 
   &.scroll {
     overflow-y: auto;
+  }
+
+  &.stable-scrollbar {
+    scrollbar-gutter: stable;
   }
 }
 

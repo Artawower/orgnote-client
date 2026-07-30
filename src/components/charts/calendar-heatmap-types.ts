@@ -23,11 +23,12 @@ export interface CalendarHeatmapPalette {
   readonly tooltipText: string;
 }
 
-export type CalendarHeatmapView = 'year' | 'months';
+export type CalendarHeatmapView = 'year' | 'month';
 
 export interface AppCalendarHeatmapChartProps {
   entries: readonly CalendarHeatmapEntry[];
   labels: CalendarHeatmapLabels;
+  month: number;
   year: number;
   selectedDate?: string;
   view?: CalendarHeatmapView;

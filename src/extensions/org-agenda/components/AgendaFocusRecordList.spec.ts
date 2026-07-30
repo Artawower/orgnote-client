@@ -29,12 +29,6 @@ const AppBadgeStub = defineComponent({
   template: '<span class="badge-stub">{{ label }}</span>',
 });
 
-const EmptyStateStub = defineComponent({
-  name: 'EmptyState',
-  props: { title: String },
-  template: '<div class="empty-state-stub">{{ title }}</div>',
-});
-
 const groups: readonly AgendaFocusRecordGroup[] = [
   {
     filePath: '/notes/project.org',
@@ -60,13 +54,12 @@ const groups: readonly AgendaFocusRecordGroup[] = [
 
 const mountList = (focusGroups = groups) =>
   mount(AgendaFocusRecordList, {
-    props: { groups: focusGroups, emptyTitle: 'No focus records' },
+    props: { groups: focusGroups },
     global: {
       stubs: {
         AppBadge: AppBadgeStub,
         AppSpoiler: AppSpoilerStub,
         AppTitle: AppTitleStub,
-        EmptyState: EmptyStateStub,
         MenuItem: MenuItemStub,
         OverflowLine: true,
       },
@@ -87,8 +80,8 @@ test('focus record list keeps repeated intervals and emits the selected record',
   expect(wrapper.emitted('select-record')).toEqual([[groups[0]?.records[1], '/notes/project.org']]);
 });
 
-test('focus record list renders the shared empty state', () => {
+test('focus record list renders nothing when there are no records', () => {
   const wrapper = mountList([]);
-  expect(wrapper.getComponent(EmptyStateStub).text()).toBe('No focus records');
+  expect(wrapper.text()).toBe('');
   expect(wrapper.findComponent(AppSpoilerStub).exists()).toBe(false);
 });

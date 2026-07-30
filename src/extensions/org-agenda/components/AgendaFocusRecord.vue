@@ -1,19 +1,13 @@
 <template>
-  <agenda-focus-record-list
-    :groups="groups"
-    :empty-title="t(i18nKeys.orgAgendaNoTasksTitle)"
-    @select-record="onRecordSelect"
-  />
+  <agenda-focus-record-list :groups="groups" @select-record="onRecordSelect" />
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { format } from 'date-fns';
 import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
-import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { openNoteAtPosition } from 'src/utils/editor-navigation';
 import { formatDurationMin } from '../utils/format-duration';
 import type { FocusInterval } from '../utils/focus-statistics';
@@ -26,7 +20,6 @@ import type {
 const TIME_FORMAT = 'HH:mm';
 
 const props = defineProps<{ intervals: readonly FocusInterval[] }>();
-const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const toRecord = (interval: FocusInterval): AgendaFocusRecordItem => ({
   startTime: interval.startTime,

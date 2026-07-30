@@ -1,6 +1,6 @@
 <template>
   <app-buffer-content constrained>
-    <container-layout :body-scroll="true" gap="sm">
+    <container-layout :body-scroll="true" stable-scrollbar gap="sm">
       <template #body>
         <app-flex column start align-stretch gap="md" class="stats-body">
           <agenda-pomodoro-overview />
@@ -9,6 +9,7 @@
             :entries="calendarEntries"
             :labels="calendarLabels"
             :locale="locale"
+            :month="calendarMonth"
             :selected-date="selectedDate"
             :view="calendarView"
             :year="calendarYear"
@@ -74,8 +75,9 @@ const intervals = computed(() => extractFocusIntervals(tasksStore.allFiles));
 const calendarEntries = computed(() => createFocusCalendarEntries(intervals.value));
 const selectedIntervals = computed(() => selectFocusIntervals(intervals.value, selectedDate.value));
 const selectedDay = computed(() => parseISO(selectedDate.value));
+const calendarMonth = computed(() => selectedDay.value.getMonth() + 1);
 const calendarYear = computed(() => selectedDay.value.getFullYear());
-const calendarView = computed<CalendarHeatmapView>(() => (tabletBelow.value ? 'months' : 'year'));
+const calendarView = computed<CalendarHeatmapView>(() => (tabletBelow.value ? 'month' : 'year'));
 const selectedDayRange = computed<TimeRangeBarRange>(() => ({
   startTime: selectedDay.value.getTime(),
   endTime: addDays(selectedDay.value, 1).getTime(),

@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest';
 import type { FileMeta, FileTask } from 'orgnote-api';
+import type { ClockEntry } from 'org-mode-ast';
 import {
   createFocusCalendarEntries,
   extractFocusIntervals,
   selectFocusIntervals,
+  type FocusInterval,
 } from './focus-statistics';
 
 const task = {
@@ -29,6 +31,21 @@ const files: readonly FileMeta[] = [
 ];
 
 const intervals = extractFocusIntervals(files);
+
+const extractClocks = (clocks: Pick<ClockEntry, 'date' | 'to'>[]): FocusInterval[] =>
+  extractFocusIntervals([
+    {
+      id: 'project',
+      filePath: ['notes', 'project.org'],
+      title: 'Project',
+      tasks: [
+        {
+          ...task,
+          clocks: clocks.map((clock, index) => ({ ...clock, start: index, end: index + 1 })),
+        },
+      ],
+    },
+  ]);
 
 test('focus statistics preserve every completed CLOCK interval', () => {
   expect(intervals).toHaveLength(3);
@@ -57,4 +74,28 @@ test('focus statistics aggregate calendar duration by local date', () => {
 
 test('focus statistics select intervals without merging repeated tasks', () => {
   expect(selectFocusIntervals(intervals, '2026-07-29')).toHaveLength(2);
+});
+
+test('focus statistics split intervals at local midnight', () => {
+  const segments = extractClocks([
+    { date: '2026-07-30T23:00:00', to: '2026-07-31T01:00:00' },
+  ]);
+  expect(createFocusCalendarEntries(segments)).toEqual(
+    expect.arrayContaining([
+      { date: '2026-07-30', value: 60 },
+      { date: '2026-07-31', value: 60 },
+    ]),
+  );
+  expect(selectFocusIntervals(segments, '2026-07-30')[0]).toMatchObject({
+    startTime: new Date('2026-07-30T23:00:00').getTime(),
+    endTime: new Date('2026-07-31T00:00:00').getTime(),
+  });
+  expect(selectFocusIntervals(segments, '2026-07-31')[0]).toMatchObject({
+    startTime: new Date('2026-07-31T00:00:00').getTime(),
+    endTime: new Date('2026-07-31T01:00:00').getTime(),
+  });
+});
+
+test('focus statistics ignore semantically invalid clock dates', () => {
+  expect(extractClocks([{ date: 'not-a-date', to: 'also-invalid' }])).toEqual([]);
 });

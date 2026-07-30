@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { addDays, eachDayOfInterval, format, startOfDay } from 'date-fns';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import type { ClockEntry } from 'org-mode-ast';
 import type { CalendarHeatmapEntry } from 'src/components/charts/calendar-heatmap-types';
@@ -15,8 +15,39 @@ export interface FocusInterval {
   readonly taskText: string;
 }
 
+interface FocusIntervalSource {
+  readonly endTime: number;
+  readonly filePath: string;
+  readonly fileTitle: string;
+  readonly startTime: number;
+  readonly taskStart: number;
+  readonly taskText: string;
+}
+
 const DATE_FORMAT = 'yyyy-MM-dd';
+const END_EXCLUSIVE_OFFSET_MS = 1;
 const MINUTE_MS = 60_000;
+
+const createDailySegment = (source: FocusIntervalSource, day: Date): FocusInterval => {
+  const dayStart = startOfDay(day);
+  const startTime = Math.max(source.startTime, dayStart.getTime());
+  const endTime = Math.min(source.endTime, addDays(dayStart, 1).getTime());
+  return {
+    ...source,
+    date: format(dayStart, DATE_FORMAT),
+    durationMin: Math.floor((endTime - startTime) / MINUTE_MS),
+    endTime,
+    startTime,
+  };
+};
+
+const splitByLocalDay = (source: FocusIntervalSource): FocusInterval[] =>
+  eachDayOfInterval({
+    start: new Date(source.startTime),
+    end: new Date(source.endTime - END_EXCLUSIVE_OFFSET_MS),
+  })
+    .map((day) => createDailySegment(source, day))
+    .filter((segment) => segment.durationMin > 0);
 
 const toInterval = (
   clock: ClockEntry,
@@ -27,20 +58,15 @@ const toInterval = (
   if (!clock.date || !clock.to) return [];
   const startTime = new Date(clock.date).getTime();
   const endTime = new Date(clock.to).getTime();
-  const durationMin = Math.floor((endTime - startTime) / MINUTE_MS);
-  if (durationMin <= 0) return [];
-  return [
-    {
-      date: format(startTime, DATE_FORMAT),
-      durationMin,
-      endTime,
-      filePath,
-      fileTitle,
-      startTime,
-      taskStart: task.start ?? 0,
-      taskText: task.text,
-    },
-  ];
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime <= startTime) return [];
+  return splitByLocalDay({
+    endTime,
+    filePath,
+    fileTitle,
+    startTime,
+    taskStart: task.start ?? 0,
+    taskText: task.text,
+  });
 };
 
 const fileIntervals = (file: FileMeta): FocusInterval[] => {

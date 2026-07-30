@@ -52,6 +52,7 @@ const option = computed(() =>
     entries: props.entries,
     labels: props.labels,
     locale: props.locale,
+    month: props.month,
     palette: palette.value,
     selectedDate: props.selectedDate,
     view: props.view,
@@ -81,8 +82,8 @@ const onChartClick = (event: ECElementEvent): void => {
     height: var(--chart-calendar-year-height);
   }
 
-  &.months {
-    height: 900px;
+  &.month {
+    height: var(--chart-calendar-month-height);
   }
 }
 

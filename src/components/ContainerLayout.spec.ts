@@ -74,6 +74,15 @@ test('ContainerLayout should not have scroll class when bodyScroll prop is false
   expect(wrapper.find('.layout-body').classes()).not.toContain('scroll');
 });
 
+test('ContainerLayout should reserve a stable scrollbar gutter when requested', () => {
+  const wrapper = mount(ContainerLayout, {
+    props: { bodyScroll: true, stableScrollbar: true },
+    slots: { body: 'Content' },
+  });
+
+  expect(wrapper.find('.layout-body').classes()).toContain('stable-scrollbar');
+});
+
 test('ContainerLayout should apply gap style when gap prop is provided', () => {
   const wrapper = mount(ContainerLayout, {
     props: { gap: 'md' },

@@ -28,6 +28,7 @@ const option = createCalendarHeatmapOption({
   entries: [{ date: '2025-01-01', value: 25 }],
   labels,
   locale: 'en-US',
+  month: 1,
   palette,
   view: 'year',
   year: 2025,

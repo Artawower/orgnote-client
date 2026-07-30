@@ -31,6 +31,7 @@ const meta: Meta<AppCalendarHeatmapChartProps> = {
     entries: createEntries(),
     labels,
     locale: 'en-US',
+    month: 6,
     selectedDate: '2025-06-14',
     view: 'year',
     year: STORY_YEAR,
@@ -59,8 +60,8 @@ type Story = StoryObj<AppCalendarHeatmapChartProps>;
 
 export const Year: Story = {};
 
-export const Months: Story = {
-  args: { view: 'months' },
+export const Month: Story = {
+  args: { view: 'month' },
   render: (args) => ({
     components: { AppCalendarHeatmapChart },
     setup() {

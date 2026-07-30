@@ -50,11 +50,12 @@ const labels: CalendarHeatmapLabels = {
   formatValue: (value) => `${value} min`,
 };
 
-const createWrapper = (view: 'months' | 'year' = 'year') =>
+const createWrapper = (view: 'month' | 'year' = 'year') =>
   mount(AppCalendarHeatmapChart, {
     props: {
       entries: [{ date: '2025-04-15', value: 50 }],
       labels,
+      month: 4,
       selectedDate: '2025-04-15',
       view,
       year: 2025,
@@ -90,11 +91,11 @@ test('calendar heatmap ignores clicks outside the heatmap series', () => {
 });
 
 test('calendar heatmap renders the requested month view', () => {
-  createWrapper('months');
+  createWrapper('month');
   const latestOption = echartsMock.chart.setOption.mock.calls.at(-1)?.[0] as {
     calendar?: unknown;
   };
-  expect(latestOption.calendar).toHaveLength(12);
+  expect(latestOption.calendar).toHaveLength(1);
 });
 
 test('calendar heatmap updates its option after selection changes', async () => {
@@ -104,7 +105,7 @@ test('calendar heatmap updates its option after selection changes', async () => 
       components: { AppCalendarHeatmapChart },
       setup: () => ({ labels, selectedDate }),
       template:
-        '<app-calendar-heatmap-chart :entries="[]" :labels="labels" view="year" :selected-date="selectedDate" :year="2025" />',
+        '<app-calendar-heatmap-chart :entries="[]" :labels="labels" :month="4" view="year" :selected-date="selectedDate" :year="2025" />',
     }),
   );
   await nextTick();

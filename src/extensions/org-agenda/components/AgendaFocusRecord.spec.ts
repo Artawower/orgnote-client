@@ -6,9 +6,6 @@ import type { FocusInterval } from '../utils/focus-statistics';
 
 const navigation = vi.hoisted(() => ({ openNoteAtPosition: vi.fn(() => Promise.resolve()) }));
 
-vi.mock('vue-i18n', () => ({
-  useI18n: () => ({ t: (key: string) => key }),
-}));
 vi.mock('src/boot/api', () => ({ api: {} }));
 vi.mock('src/boot/report', () => ({ reporter: { reportError: vi.fn() } }));
 vi.mock('src/utils/editor-navigation', () => navigation);
@@ -17,7 +14,7 @@ import AgendaFocusRecord from './AgendaFocusRecord.vue';
 
 const AgendaFocusRecordListStub = defineComponent({
   name: 'AgendaFocusRecordList',
-  props: { groups: Array, emptyTitle: String },
+  props: { groups: Array },
   emits: ['select-record'],
   template: '<div />',
 });
