@@ -468,32 +468,30 @@ test('createPane should create a new pane', async () => {
   expect(paneStore.activePaneId).toBe(pane.id);
 });
 
-test('deletePane should remove pane', async () => {
+test('closePane preserves the only pane', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();
-
   const pane = await paneStore.createPane();
   await paneStore.addTab(pane.id);
 
-  expect(paneStore.panes[pane.id]).toBeDefined();
-
   paneStore.closePane(pane.id);
 
-  expect(paneStore.panes[pane.id]).toBeUndefined();
+  expect(paneStore.panes[pane.id]).toBeDefined();
+  expect(paneStore.activePaneId).toBe(pane.id);
 });
 
-test('closePane should remove pane', async () => {
+test('closePane removes a pane when another pane remains', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();
+  const firstPane = await paneStore.createPane();
+  await paneStore.addTab(firstPane.id);
+  const secondPane = await paneStore.createPane();
+  await paneStore.addTab(secondPane.id);
 
-  const pane = await paneStore.createPane();
-  await paneStore.addTab(pane.id);
+  paneStore.closePane(secondPane.id);
 
-  expect(paneStore.panes[pane.id]).toBeDefined();
-
-  paneStore.closePane(pane.id);
-
-  expect(paneStore.panes[pane.id]).toBeUndefined();
+  expect(paneStore.panes[secondPane.id]).toBeUndefined();
+  expect(paneStore.activePaneId).toBe(firstPane.id);
 });
 
 test('setActivePane should set active pane ID', async () => {

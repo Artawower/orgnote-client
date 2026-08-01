@@ -568,6 +568,8 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   };
 
   const closePane = (paneId: string): void => {
+    if (!panes.value[paneId] || Object.keys(panes.value).length === 1) return;
+
     const newPanes = { ...panes.value };
     delete newPanes[paneId];
     panes.value = newPanes;

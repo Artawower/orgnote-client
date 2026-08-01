@@ -202,12 +202,16 @@ const moveTabToCenter = async (tabId: string, sourcePaneId: string): Promise<voi
   await pane.moveTab(tabId, sourcePaneId, props.paneId);
 };
 
-const moveTabToNewPane = async (
+const moveTabToNewPane = (
   tabId: string,
   sourcePaneId: string,
   newPaneId: string,
-): Promise<void> => {
-  await pane.moveTab(tabId, sourcePaneId, newPaneId);
+): Promise<Tab | undefined> => pane.moveTab(tabId, sourcePaneId, newPaneId);
+
+const rollbackNewPane = (newPaneId: string, sourcePaneId: string): void => {
+  pane.closePane(newPaneId);
+  layout.removePaneFromLayout(newPaneId);
+  pane.setActivePane(sourcePaneId);
 };
 
 const createNewPaneAndMoveTab = async (
@@ -217,7 +221,9 @@ const createNewPaneAndMoveTab = async (
 ): Promise<void> => {
   const newPaneId = await layout.splitPaneInLayout(props.paneId, direction, false);
   if (!newPaneId) return;
-  await moveTabToNewPane(tabId, sourcePaneId, newPaneId);
+  const movedTab = await moveTabToNewPane(tabId, sourcePaneId, newPaneId);
+  if (movedTab) return;
+  rollbackNewPane(newPaneId, sourcePaneId);
 };
 
 const handleCenterDrop = async (tabId: string, sourcePaneId: string): Promise<void> => {

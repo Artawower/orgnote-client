@@ -341,6 +341,19 @@ test('should init layout before split if layout is missing', async () => {
   expect(layoutStore.layout).toBeDefined();
 });
 
+test('closePane preserves the final pane referenced by the layout', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+  await layoutStore.initLayout();
+  const paneId = paneStore.activePaneId!;
+
+  paneStore.closePane(paneId);
+
+  expect(paneStore.panes[paneId]).toBeDefined();
+  expect(paneStore.activePaneId).toBe(paneId);
+  expect(layoutStore.layout).toMatchObject({ type: 'pane', paneId });
+});
+
 test('should remove pane from layout tree', async () => {
   const layoutStore = useLayoutStore();
   const paneStore = usePaneStore();
