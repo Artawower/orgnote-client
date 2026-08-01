@@ -5,24 +5,34 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { to } from 'orgnote-api';
+import { onMounted, ref, watch } from 'vue';
+import { to, type BufferViewStateHandle } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
 import { api } from 'src/boot/api';
 import { useCodeEditorView } from './use-code-editor-view';
+import { useCodeMirrorViewState } from 'src/composables/use-code-mirror-view-state';
+import type { CodeMirrorViewState } from 'src/utils/editor-view-state';
 
 const props = defineProps<{
   readonly?: boolean;
   language?: string;
   documentKey?: string;
+  viewState?: BufferViewStateHandle<CodeMirrorViewState>;
 }>();
 
 const model = defineModel<string>();
 const editorRef = ref<HTMLDivElement>();
 const themeStore = api.ui.useTheme();
 
-const { initView, destroyView, syncDocument, setReadonly, setLanguage, setTheme } =
-  useCodeEditorView({
+const {
+  getEditorView,
+  initView,
+  destroyView,
+  syncDocument,
+  setReadonly,
+  setLanguage,
+  setTheme,
+} = useCodeEditorView({
     readonlyGetter: () => props.readonly ?? false,
     languageGetter: () => props.language,
     isDarkGetter: () => themeStore.isDark,
@@ -31,9 +41,19 @@ const { initView, destroyView, syncDocument, setReadonly, setLanguage, setTheme 
     },
   });
 
+const { restoreViewState } = useCodeMirrorViewState({
+  contentGetter: () => model.value,
+  documentKeyGetter: () => props.documentKey,
+  viewStateGetter: () => props.viewState,
+  getEditorView,
+  syncDocument,
+  destroyView,
+});
+
 const initEditor = () => {
   if (!editorRef.value) return;
-  initView(editorRef.value, model.value ?? '', props.documentKey);
+  const view = initView(editorRef.value, model.value ?? '', props.documentKey);
+  restoreViewState(view);
 };
 
 const safeInitEditor = () => {
@@ -44,11 +64,6 @@ const safeInitEditor = () => {
 };
 
 onMounted(safeInitEditor);
-onUnmounted(destroyView);
-
-watch([() => model.value, () => props.documentKey], ([newValue, documentKey]) =>
-  syncDocument(newValue ?? '', documentKey),
-);
 
 watch(
   () => props.readonly,

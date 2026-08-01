@@ -7,6 +7,7 @@
       :is="viewerComponent"
       :buffer="buffer"
       :readonly="buffer!.guard?.readonly"
+      v-bind="viewStateBinding"
       @update:content="onContentUpdate"
     />
     <file-not-supported v-if="showNotSupported" :path="currentFilePath" />
@@ -24,6 +25,7 @@ import LoadingDots from 'src/components/LoadingDots.vue';
 import FileNotSupported from 'src/components/FileNotSupported.vue';
 import MainHeader from 'src/containers/MainHeader.vue';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
+import { useBufferViewStateStore } from 'src/stores/buffer-view-state';
 
 const router = inject<ShallowRef<Router>>(TAB_ROUTER_KEY);
 
@@ -41,6 +43,7 @@ const currentBufferUri = computed(() => {
 
 const buffers = api.core.useBuffers();
 const bufferViewer = api.core.useBufferViewer();
+const bufferViewState = useBufferViewStateStore();
 
 const buffer = computed<OrgBuffer | undefined>(() => {
   const uri = currentBufferUri.value;
@@ -63,6 +66,22 @@ const viewerComponent = computed<Component | undefined>(() => {
     return defineAsyncComponent(loader);
   }
   return entry.component as Component;
+});
+
+const viewStateBinding = computed(() => {
+  const config = viewerEntry.value?.meta.viewState;
+  const tabId = currentRoute.value?.params.tabId;
+  const bufferUri = currentBufferUri.value;
+  const viewerId = viewerEntry.value?.meta.id;
+  if (!config || typeof tabId !== 'string' || !bufferUri || !viewerId) return {};
+  return {
+    viewState: bufferViewState.createHandle({
+      tabId,
+      bufferUri,
+      viewerId,
+      version: config.version,
+    }),
+  };
 });
 
 const showReader = computed(() => viewerComponent.value && buffer.value);

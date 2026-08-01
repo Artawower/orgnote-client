@@ -5,6 +5,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import type { PaneSnapshot } from 'orgnote-api';
 import { RouteNames } from 'orgnote-api';
 import { isNullable } from 'orgnote-api/utils';
+import { useBufferViewStateStore } from './buffer-view-state';
 
 const createMockRouter = () => ({
   push: vi.fn(),
@@ -90,6 +91,26 @@ test('should switch to another tab when active tab is closed', async () => {
   expect(paneStore.activeTab).toBeDefined();
 });
 
+test('should clear view state when a tab is closed', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  await paneStore.addTab(pane.id);
+  const closingTab = await paneStore.addTab(pane.id);
+  assertDefined(closingTab, 'closingTab is nullable');
+  const stateHandle = useBufferViewStateStore().createHandle({
+    tabId: closingTab.id,
+    bufferUri: 'file:///notes/example.org',
+    viewerId: 'builtin:org-rich-editor',
+    version: 1,
+  });
+  stateHandle.set({ cursor: 12 });
+
+  await paneStore.closeTab(pane.id, closingTab.id);
+
+  expect(stateHandle.get()).toBeUndefined();
+});
+
 test('should close inactive tab without changing active tab', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();
@@ -121,12 +142,20 @@ test('should not remove pane when closing last tab but reset route', async () =>
   const paneValue = getPaneValue(paneStore, paneId);
   const tabId = paneValue.activeTabId;
   assertDefined(tabId, 'tabId is nullable');
+  const stateHandle = useBufferViewStateStore().createHandle({
+    tabId,
+    bufferUri: 'file:///notes/example.org',
+    viewerId: 'builtin:org-rich-editor',
+    version: 1,
+  });
+  stateHandle.set({ cursor: 12 });
 
   expect(paneStore.panes[paneId]).toBeDefined();
   expect(paneStore.activePaneId).toBe(paneId);
 
-  paneStore.closeTab(paneId, tabId);
+  await paneStore.closeTab(paneId, tabId);
 
+  expect(stateHandle.get()).toBeUndefined();
   expect(paneStore.panes[paneId]).toBeDefined();
   expect(paneStore.activePaneId).toBe(paneId);
   const paneRef = paneStore.getPane(paneId);

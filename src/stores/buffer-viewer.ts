@@ -17,6 +17,7 @@ import type { RouteLocationRaw, RouteRecordNameGeneric } from 'vue-router';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import { usePaneStore } from './pane';
 import { useConfigStore } from './config';
+import { useBufferViewStateStore } from './buffer-view-state';
 
 const getRouteNameForScheme = (scheme: string): string => {
   const mapping: Record<string, string> = {
@@ -78,6 +79,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
 
     const pane = usePaneStore();
     const configStore = useConfigStore();
+    const viewStateStore = useBufferViewStateStore();
 
     const getPreferredViewerId = (path: string): string | undefined => {
       const preferredReaders = configStore.config.fileReaders?.preferredReaders;
@@ -103,6 +105,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
 
     const unregister = (viewerId: string): void => {
       viewers.value = viewers.value.filter((v) => v.meta.id !== viewerId);
+      viewStateStore.clearViewer(viewerId);
     };
 
     const getViewers = (path: string): BufferViewerEntry[] => {

@@ -66,6 +66,7 @@ vi.mock('src/boot/report', () => ({
 }));
 
 const { useBufferViewerStore } = await import('./buffer-viewer');
+const { useBufferViewStateStore } = await import('./buffer-view-state');
 
 const createMockComponent = (name: string) => defineComponent({ name, template: '<div />' });
 
@@ -228,6 +229,28 @@ test('unregister removes viewer by id', () => {
   store.unregister('test:remove');
 
   expect(store.getViewer('test.org')).toBeUndefined();
+});
+
+test('unregister clears state owned by the removed viewer', () => {
+  const viewerId = 'test:stateful';
+  const stateHandle = useBufferViewStateStore().createHandle({
+    tabId: 'tab-1',
+    bufferUri: 'file:///notes/example.org',
+    viewerId,
+    version: 1,
+  });
+  stateHandle.set({ cursor: 12 });
+
+  useBufferViewerStore().unregister(viewerId);
+  stateHandle.set({ cursor: 24 });
+  const currentHandle = useBufferViewStateStore().createHandle({
+    tabId: 'tab-1',
+    bufferUri: 'file:///notes/example.org',
+    viewerId,
+    version: 1,
+  });
+
+  expect(currentHandle.get()).toBeUndefined();
 });
 
 test('showOrOpen selects an existing buffer tab without navigating', async () => {

@@ -24,6 +24,7 @@ export default defineBoot(() => {
       name: 'Org Editor (Rich)',
       icon: 'edit_note',
       priority: 20,
+      viewState: { version: 1 },
     },
   });
 
@@ -46,6 +47,7 @@ export default defineBoot(() => {
       name: 'Code Editor',
       icon: 'code',
       priority: 10,
+      viewState: { version: 1 },
     },
   });
 
@@ -68,6 +70,7 @@ export default defineBoot(() => {
       name: 'Text Editor',
       icon: 'article',
       priority: 0,
+      viewState: { version: 1 },
     },
   });
 });

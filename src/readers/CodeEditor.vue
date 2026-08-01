@@ -4,17 +4,24 @@
     :readonly="readonly"
     :language="language"
     :document-key="buffer.uri"
+    :view-state="viewState"
   />
 </template>
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { getFileExtension, type Buffer } from 'orgnote-api';
+import {
+  getFileExtension,
+  type Buffer,
+  type BufferViewStateHandle,
+} from 'orgnote-api';
+import type { CodeMirrorViewState } from 'src/utils/editor-view-state';
 import { SourceCodeEditor } from 'src/containers/SourceCodeEditor';
 
 const props = defineProps<{
   buffer: Buffer;
   readonly?: boolean;
+  viewState?: BufferViewStateHandle<CodeMirrorViewState>;
 }>();
 
 const emit = defineEmits<{

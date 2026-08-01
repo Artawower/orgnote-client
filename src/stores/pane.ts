@@ -25,11 +25,13 @@ import { isPresent, to } from 'orgnote-api/utils';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import { reporter } from 'src/boot/report';
 import { generateTabTitle } from 'src/utils/generate-tab-title';
+import { useBufferViewStateStore } from './buffer-view-state';
 
 export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
   // TODO: feat/stable-beta replace by reactive object
   const panes = shallowRef<Record<string, ShallowRef<Pane>>>({});
   const activePaneId = ref<string | undefined>();
+  const bufferViewState = useBufferViewStateStore();
 
   const isDraggingTab = shallowRef(false);
   // TODO: feat/stable-beta separated drag&drop state
@@ -161,10 +163,11 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
 
   const closeTab = async (paneId: string, tabId: string): Promise<boolean> => {
     const pane = panes.value[paneId];
-    if (!pane?.value) return false;
+    if (!pane?.value.tabs.value[tabId]) return false;
 
     const currentActiveTab = pane.value.tabs.value[pane.value.activeTabId];
     const isEmpty = closeTabInternal(paneId, tabId, currentActiveTab?.id);
+    bufferViewState.clearTab(tabId);
 
     if (shouldRemoveEmptyPane(isEmpty)) {
       switchToFirstRemainingPane(paneId);
