@@ -93,7 +93,7 @@ import AppSpoiler from 'src/components/AppSpoiler.vue';
 import OverflowLine from 'src/components/OverflowLine.vue';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { api } from 'src/boot/api';
-import { AGENDA_TASKS_URI } from '../constants';
+import { parseAgendaTaskBufferUri } from '../utils/agenda-task-buffer-uri';
 import type {
   AgendaFileFilterOption,
   AgendaFilter,
@@ -149,7 +149,9 @@ const fileFilterItems = computed<AgendaFileListItem[]>(() => [
 ]);
 
 const { activeBufferUri } = storeToRefs(api.core.usePane());
-const isTasksBufferActive = computed(() => activeBufferUri.value === AGENDA_TASKS_URI);
+const isTasksBufferActive = computed(() =>
+  activeBufferUri.value ? Boolean(parseAgendaTaskBufferUri(activeBufferUri.value)) : false,
+);
 const isFileItemActive = (item: AgendaFileListItem): boolean =>
   isTasksBufferActive.value &&
   (item.kind === 'all'

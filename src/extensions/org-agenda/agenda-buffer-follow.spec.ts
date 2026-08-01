@@ -54,6 +54,7 @@ beforeEach(() => {
 
 test.each([
   AGENDA_TASKS_URI,
+  'builtin:///agenda-tasks/day/2026-05-14',
   AGENDA_HABITS_URI,
   AGENDA_POMODORO_URI,
   AGENDA_POMODORO_STATS_URI,

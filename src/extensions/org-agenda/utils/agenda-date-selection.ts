@@ -8,6 +8,16 @@ type AgendaDateSelection = Exclude<DatePickerSelection, undefined>;
 const addIsoDays = (date: string, days: number): string =>
   format(addDays(parseISO(date), days), ISO_DATE_FORMAT);
 
+export const createAgendaDateFilter = (selection: DatePickerSelection): AgendaDateFilter => {
+  if (!selection) return { kind: 'preset', value: 'all' };
+  if (typeof selection === 'string') return { kind: 'day', value: selection };
+  const [from, to] =
+    selection.from <= selection.to
+      ? [selection.from, selection.to]
+      : [selection.to, selection.from];
+  return { kind: 'range', from, to };
+};
+
 export const resolveAgendaDateSelection = (
   filter: AgendaDateFilter,
   today = todayIsoDate(),

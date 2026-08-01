@@ -8,19 +8,24 @@ import {
   AGENDA_TASKS_DATE_FILTER_COMMAND,
   AGENDA_TASKS_URI,
 } from '../constants';
-import { useAgendaFilterStore } from '../stores/agenda-filter-store';
-import { resolveAgendaDateSelection } from '../utils/agenda-date-selection';
+import { showAgendaTaskBuffer } from '../services/show-agenda-task-buffer';
+import {
+  createAgendaDateFilter,
+  resolveAgendaDateSelection,
+} from '../utils/agenda-date-selection';
+import { parseAgendaTaskBufferUri } from '../utils/agenda-task-buffer-uri';
 
 type DateSheetResult = { selection: DatePickerSelection | null } | undefined;
 
 const openDateFilterSheet = async (api: OrgNoteApi): Promise<DateSheetResult> => {
-  const filterStore = useAgendaFilterStore();
+  const activeUri = api.core.usePane().activeBufferUri ?? AGENDA_TASKS_URI;
+  const activeFilter = parseAgendaTaskBufferUri(activeUri) ?? createAgendaDateFilter(undefined);
   const result = await to(
     () =>
       api.ui.useModal().open<DateSheetResult>(DatePickerSheetModal, {
         mini: true,
         modalProps: {
-          modelValue: resolveAgendaDateSelection(filterStore.dateFilter),
+          modelValue: resolveAgendaDateSelection(activeFilter),
           selectionMode: 'both',
           confirmMode: true,
         },
@@ -32,30 +37,18 @@ const openDateFilterSheet = async (api: OrgNoteApi): Promise<DateSheetResult> =>
   return undefined;
 };
 
-const applyDateSelection = (selection: DatePickerSelection | null): void => {
-  useAgendaFilterStore().setDateSelection(selection ?? undefined);
-};
-
-const openAgendaTasks = async (api: OrgNoteApi): Promise<void> => {
-  const result = await to(
-    api.core.useBufferViewer().open,
-    'Failed to open Agenda tasks',
-  )(AGENDA_TASKS_URI);
-  if (result.isErr()) reporter.reportError(result.error);
-};
-
 const handleDateFilter = async (api: OrgNoteApi): Promise<void> => {
   const result = await openDateFilterSheet(api);
   if (!result) return;
-  applyDateSelection(result.selection);
-  await openAgendaTasks(api);
+  const selection = result.selection ?? undefined;
+  await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
 };
 
 export const clearAgendaDateFilterCommand: Command = {
   command: AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND,
   group: 'agenda',
   icon: 'sym_o_close',
-  handler: () => useAgendaFilterStore().clearDateFilter(),
+  handler: (api) => showAgendaTaskBuffer(api, { kind: 'preset', value: 'all' }),
 };
 
 export const openAgendaDateFilterCommand: Command = {

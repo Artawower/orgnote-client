@@ -1,8 +1,9 @@
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import type * as VueI18n from 'vue-i18n';
+import type { AgendaDateFilter } from '../models/agenda-task-query';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 
 vi.mock('vue-i18n', async () => ({
@@ -30,10 +31,12 @@ const CommandActionButtonStub = defineComponent({
   setup: () => () => h('button'),
 });
 
-const mountQueryBar = async () => {
+const mountQueryBar = async (
+  dateFilter: AgendaDateFilter = { kind: 'preset', value: 'all' },
+) => {
   const { default: AgendaTaskQueryBar } = await import('./AgendaTaskQueryBar.vue');
   return mount(AgendaTaskQueryBar, {
-    props: { resultCount: 4 },
+    props: { dateFilter, resultCount: 4 },
     global: {
       stubs: {
         SearchInput: SearchInputStub,
@@ -48,11 +51,7 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-afterEach(() => {
-  vi.useRealTimers();
-});
-
-test('AgendaTaskQueryBar updates the Agenda search query', async () => {
+test('AgendaTaskQueryBar updates the shared Agenda search query', async () => {
   const wrapper = await mountQueryBar();
 
   await wrapper.findComponent(SearchInputStub).vm.$emit('update:modelValue', 'quarterly');
@@ -60,49 +59,37 @@ test('AgendaTaskQueryBar updates the Agenda search query', async () => {
   expect(useAgendaFilterStore().searchQuery).toBe('quarterly');
 });
 
-test('AgendaTaskQueryBar maps a selected single Today to the Today preset', async () => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date('2026-05-18T12:00:00'));
+test('AgendaTaskQueryBar requests a concrete selected day buffer', async () => {
   const wrapper = await mountQueryBar();
 
   await wrapper.findComponent(DatePickerPopoverStub).vm.$emit('confirm', '2026-05-18');
 
-  expect(useAgendaFilterStore().dateFilter).toEqual({ kind: 'preset', value: 'today' });
+  expect(wrapper.emitted('select-date')).toEqual([['2026-05-18']]);
 });
 
-test('AgendaTaskQueryBar reopens a non-Today single selection in single mode', async () => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date('2026-05-18T12:00:00'));
-  const wrapper = await mountQueryBar();
-  const picker = wrapper.findComponent(DatePickerPopoverStub);
+test('AgendaTaskQueryBar restores a day from its buffer-local filter', async () => {
+  const wrapper = await mountQueryBar({ kind: 'day', value: '2026-05-20' });
 
-  await picker.vm.$emit('confirm', '2026-05-20');
-  await wrapper.vm.$nextTick();
-
-  expect(useAgendaFilterStore().dateFilter).toEqual({
-    kind: 'day',
-    value: '2026-05-20',
-  });
-  expect(picker.props('modelValue')).toBe('2026-05-20');
+  expect(wrapper.findComponent(DatePickerPopoverStub).props('modelValue')).toBe('2026-05-20');
 });
 
-test('AgendaTaskQueryBar applies a range selected from the responsive picker', async () => {
+test('AgendaTaskQueryBar requests the selected range buffer', async () => {
   const wrapper = await mountQueryBar();
   const picker = wrapper.findComponent(DatePickerPopoverStub);
+  const selection = { from: '2026-05-14', to: '2026-05-18' };
 
-  await picker.vm.$emit('confirm', { from: '2026-05-14', to: '2026-05-18' });
+  await picker.vm.$emit('confirm', selection);
 
   expect(picker.props('selectionMode')).toBe('both');
-  expect(useAgendaFilterStore().dateFilter).toEqual({
+  expect(wrapper.emitted('select-date')).toEqual([[selection]]);
+});
+
+test('AgendaTaskQueryBar shows its buffer-local range and clear command', async () => {
+  const wrapper = await mountQueryBar({
     kind: 'range',
     from: '2026-05-14',
     to: '2026-05-18',
   });
-});
-
-test('AgendaTaskQueryBar shows the selected range and clear command', async () => {
-  useAgendaFilterStore().setDateRange('2026-05-14', '2026-05-18');
-  const wrapper = await mountQueryBar();
   const commands = wrapper
     .findAllComponents(CommandActionButtonStub)
     .map((button) => button.props('command'));

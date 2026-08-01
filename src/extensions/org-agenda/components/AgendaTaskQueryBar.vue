@@ -55,21 +55,23 @@ import type { DatePickerSelection } from 'src/models/date-picker';
 import { AGENDA_TASKS_CLEAR_DATE_FILTER_COMMAND } from '../constants';
 import { resolveAgendaDateSelection } from '../utils/agenda-date-selection';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
+import type { AgendaDateFilter } from '../models/agenda-task-query';
 
-const props = defineProps<{ resultCount: number }>();
+const props = defineProps<{ dateFilter: AgendaDateFilter; resultCount: number }>();
+const emit = defineEmits<{ 'select-date': [selection: DatePickerSelection] }>();
 const filterStore = useAgendaFilterStore();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
 const pickerSelection = computed<DatePickerSelection>(() =>
-  resolveAgendaDateSelection(filterStore.dateFilter),
+  resolveAgendaDateSelection(props.dateFilter),
 );
 const applyDateSelection = (selection: DatePickerSelection): void => {
-  filterStore.setDateSelection(selection);
+  emit('select-date', selection);
 };
 
 const formatDate = (date: string): string => format(parseISO(date), 'MMM d, yyyy');
 const dateLabel = computed(() => {
-  const filter = filterStore.dateFilter;
+  const filter = props.dateFilter;
   if (filter.kind === 'preset') return undefined;
   if (filter.kind === 'day') return formatDate(filter.value);
   if (filter.from === filter.to) return formatDate(filter.from);

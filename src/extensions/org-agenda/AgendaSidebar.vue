@@ -2,7 +2,7 @@
   <app-flex class="agenda-sidebar" column start align-stretch gap="md">
     <agenda-tasks-filter
       class="agenda-filters"
-      :model-value="filterStore.activePreset"
+      :model-value="activePreset"
       :selected-file-path="filterStore.selectedFilePath"
       :totals="tasksStore.totalByFilter"
       :files="fileFilters"
@@ -15,6 +15,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
@@ -35,9 +36,14 @@ import {
   AGENDA_TASKS_ALL_COMMAND,
   AGENDA_TASKS_FILE_FILTER_COMMAND,
 } from './constants';
+import { resolveAgendaTaskBufferPreset } from './utils/agenda-task-buffer-uri';
 
 const filterStore = useAgendaFilterStore();
 const tasksStore = useAgendaTasksStore();
+const { activeBufferUri } = storeToRefs(api.core.usePane());
+const activePreset = computed(() =>
+  activeBufferUri.value ? resolveAgendaTaskBufferPreset(activeBufferUri.value) : undefined,
+);
 const fileFilters = computed(() => buildAgendaFileFilterOptions(tasksStore.agendaFiles));
 
 onMounted(() => {

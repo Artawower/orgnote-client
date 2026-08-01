@@ -1,7 +1,15 @@
 import { addDays, parseISO, startOfDay } from 'date-fns';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  toValue,
+  watch,
+  type MaybeRefOrGetter,
+} from 'vue';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { DEFAULT_INPUT_DEBOUNCE } from 'src/constants/default-input-debounce';
 import { ORG_PRIORITY_LETTERS } from 'src/constants/org-mode';
@@ -189,7 +197,7 @@ export const buildAgendaTaskGroups = (
   return sortGroupsByRank(groups, rankByTaskId);
 };
 
-export const useAgendaTasks = () => {
+export const useAgendaTasks = (dateFilter: MaybeRefOrGetter<AgendaDateFilter>) => {
   const tasksStore = useAgendaTasksStore();
   const filterStore = useAgendaFilterStore();
   const { agendaFiles, loading, totalByFilter } = storeToRefs(tasksStore);
@@ -207,7 +215,7 @@ export const useAgendaTasks = () => {
 
   const groups = computed(() =>
     buildAgendaTaskGroups(agendaFiles.value, {
-      dateFilter: filterStore.dateFilter,
+      dateFilter: toValue(dateFilter),
       filePath: filterStore.selectedFilePath,
       matchingTaskIds: matchingTaskIds.value,
     }),

@@ -19,10 +19,12 @@ import { subscribeToQuickAddToFileCommand } from '../commands/quick-add-to-file-
 import { useAgendaQuickAddSubmit } from '../composables/use-agenda-quick-add-submit';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import { resolveAgendaQuickAddDate } from '../utils/agenda-date-selection';
+import type { AgendaDateFilter } from '../models/agenda-task-query';
 
+const props = defineProps<{ dateFilter: AgendaDateFilter }>();
 const quickAddRef = ref<InstanceType<typeof AgendaQuickAdd> | null>(null);
 const filterStore = useAgendaFilterStore();
-const quickAddDate = computed(() => resolveAgendaQuickAddDate(filterStore.dateFilter));
+const quickAddDate = computed(() => resolveAgendaQuickAddDate(props.dateFilter));
 const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
   useAgendaQuickAddSubmit();
 

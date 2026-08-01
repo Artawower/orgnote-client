@@ -1,11 +1,9 @@
 import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { reporter } from 'src/boot/report';
 import {
   clearAgendaDateFilterCommand,
   openAgendaDateFilterCommand,
 } from './open-agenda-date-filter-command';
-import type { AgendaFilter } from '../composables/use-agenda-tasks';
+import type { AgendaDateFilter, AgendaFilter } from '../models/agenda-task-query';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import {
   AGENDA_TASKS_URI,
@@ -16,18 +14,18 @@ import {
   AGENDA_TASKS_ALL_COMMAND,
   AGENDA_TASKS_FILE_FILTER_COMMAND,
 } from '../constants';
-
-const openAgendaTasks = async (api: OrgNoteApi): Promise<void> => {
-  const result = await to(() => api.core.useBufferViewer().open(AGENDA_TASKS_URI))();
-  if (result.isErr()) {
-    reporter.reportError(new Error('Failed to open agenda tasks', { cause: result.error }));
-  }
-};
+import { showAgendaTaskBuffer } from '../services/show-agenda-task-buffer';
+import { parseAgendaTaskBufferUri } from '../utils/agenda-task-buffer-uri';
 
 const openAgendaWithFilter = async (filter: AgendaFilter, api: OrgNoteApi): Promise<void> => {
-  useAgendaFilterStore().setPresetFilter(filter);
-  await openAgendaTasks(api);
+  await showAgendaTaskBuffer(api, { kind: 'preset', value: filter });
 };
+
+const activeAgendaDateFilter = (api: OrgNoteApi): AgendaDateFilter =>
+  parseAgendaTaskBufferUri(api.core.usePane().activeBufferUri ?? AGENDA_TASKS_URI) ?? {
+    kind: 'preset',
+    value: 'all',
+  };
 
 interface AgendaFileFilterCommandData {
   readonly filePath?: string;
@@ -43,7 +41,7 @@ export const openAgendaFileFilterCommand: Command<AgendaFileFilterCommandData> =
     params: CommandHandlerParams<AgendaFileFilterCommandData>,
   ): Promise<void> => {
     useAgendaFilterStore().setFileFilter(params.data?.filePath);
-    await openAgendaTasks(api);
+    await showAgendaTaskBuffer(api, activeAgendaDateFilter(api));
   },
 };
 

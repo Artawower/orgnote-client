@@ -7,6 +7,7 @@ import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 
 const mocks = vi.hoisted(() => ({
   selectTargetFile: undefined as ((filePath: string) => void) | undefined,
+  resolveQuickAddDate: vi.fn(() => '2026-07-23'),
   setTargetFileAndFocus: vi.fn(),
   submitQuickAdd: vi.fn(),
   unsubscribe: vi.fn(),
@@ -37,7 +38,7 @@ vi.mock('../composables/use-agenda-quick-add-submit', () => ({
 }));
 
 vi.mock('../utils/agenda-date-selection', () => ({
-  resolveAgendaQuickAddDate: () => '2026-07-23',
+  resolveAgendaQuickAddDate: mocks.resolveQuickAddDate,
 }));
 
 const AgendaQuickAddStub = defineComponent({
@@ -55,10 +56,22 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+test('AgendaQuickAddContainer derives the default date from its buffer filter', () => {
+  const dateFilter = { kind: 'day', value: '2026-07-23' } as const;
+
+  mount(AgendaQuickAddContainer, {
+    props: { dateFilter },
+    global: { stubs: { AgendaQuickAdd: AgendaQuickAddStub } },
+  });
+
+  expect(mocks.resolveQuickAddDate).toHaveBeenCalledWith(dateFilter);
+});
+
 test('AgendaQuickAddContainer follows the selected file filter', async () => {
   const filterStore = useAgendaFilterStore();
   filterStore.setFileFilter('/agenda/work.org');
   const wrapper = mount(AgendaQuickAddContainer, {
+    props: { dateFilter: { kind: 'preset', value: 'all' } },
     global: { stubs: { AgendaQuickAdd: AgendaQuickAddStub } },
   });
 
@@ -74,6 +87,7 @@ test('AgendaQuickAddContainer follows the selected file filter', async () => {
 
 test('AgendaQuickAddContainer applies command targets to the input', async () => {
   mount(AgendaQuickAddContainer, {
+    props: { dateFilter: { kind: 'preset', value: 'all' } },
     global: { stubs: { AgendaQuickAdd: AgendaQuickAddStub } },
   });
 
@@ -85,6 +99,7 @@ test('AgendaQuickAddContainer applies command targets to the input', async () =>
 
 test('AgendaQuickAddContainer unsubscribes from commands when unmounted', () => {
   const wrapper = mount(AgendaQuickAddContainer, {
+    props: { dateFilter: { kind: 'preset', value: 'all' } },
     global: { stubs: { AgendaQuickAdd: AgendaQuickAddStub } },
   });
 

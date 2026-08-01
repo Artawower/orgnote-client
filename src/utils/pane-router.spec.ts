@@ -172,6 +172,21 @@ test('can navigate to file route', async () => {
   expect(router.currentRoute.value.params.path).toBe(testPath);
 });
 
+test('preserves a scoped Agenda buffer path', async () => {
+  const agendaPath = '/agenda-tasks/day/2026-05-14';
+
+  await router.push({
+    name: RouteNames.Builtin,
+    params: {
+      tabId: testTabId,
+      path: agendaPath,
+    },
+  });
+
+  expect(router.currentRoute.value.name).toBe(RouteNames.Builtin);
+  expect(router.currentRoute.value.params.path).toBe(agendaPath);
+});
+
 test('can navigate back to initial page', async () => {
   await router.push({
     name: RouteNames.File,

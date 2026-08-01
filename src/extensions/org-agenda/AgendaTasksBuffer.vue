@@ -3,8 +3,12 @@
     <container-layout class="agenda-buffer" :body-scroll="false" gap="sm">
       <template #header>
         <app-flex column align-stretch gap="sm">
-          <agenda-quick-add-container />
-          <agenda-task-query-bar :result-count="filteredTaskCount" />
+          <agenda-quick-add-container :date-filter="dateFilter" />
+          <agenda-task-query-bar
+            :date-filter="dateFilter"
+            :result-count="filteredTaskCount"
+            @select-date="selectDate"
+          />
         </app-flex>
       </template>
       <template #body>
@@ -44,6 +48,8 @@
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue';
+import type { Buffer as OrgBuffer } from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -70,13 +76,26 @@ import { changeTaskTags } from './mutations/task-tags';
 import { changeTaskScheduled } from './mutations/task-scheduled';
 import { changeTaskBody } from './mutations/task-body';
 import type { AgendaScheduleDraft, AgendaTaskDraft } from './types';
+import type { AgendaDateFilter } from './models/agenda-task-query';
+import type { DatePickerSelection } from 'src/models/date-picker';
+import { createAgendaDateFilter } from './utils/agenda-date-selection';
+import { parseAgendaTaskBufferUri } from './utils/agenda-task-buffer-uri';
+import { showAgendaTaskBuffer } from './services/show-agenda-task-buffer';
 import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
 } from 'src/utils/org-editor/org-title-parser';
 
+const DEFAULT_DATE_FILTER: AgendaDateFilter = { kind: 'preset', value: 'all' };
+const props = defineProps<{ buffer: OrgBuffer }>();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
-const { loading, groups, filteredTaskCount } = useAgendaTasks();
+const dateFilter = computed(
+  () => parseAgendaTaskBufferUri(props.buffer.uri) ?? DEFAULT_DATE_FILTER,
+);
+const { loading, groups, filteredTaskCount } = useAgendaTasks(dateFilter);
+const selectDate = async (selection: DatePickerSelection): Promise<void> => {
+  await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
+};
 const fileContent = api.core.useFileContent();
 const AGENDA_GROUP_ITEM_SIZE = 128;
 const AGENDA_GROUP_SLICE_SIZE = 12;

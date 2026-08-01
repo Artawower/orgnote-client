@@ -1,11 +1,19 @@
 import { buildBufferUri } from 'orgnote-api';
 
-export const AGENDA_TASKS_URI = buildBufferUri('builtin', '/agenda-tasks');
+export const AGENDA_TASKS_PATH = '/agenda-tasks';
+export const AGENDA_TASKS_URI = buildBufferUri('builtin', AGENDA_TASKS_PATH);
 export const AGENDA_HABITS_URI = buildBufferUri('builtin', '/agenda-habits');
 export const AGENDA_POMODORO_URI = buildBufferUri('builtin', '/agenda-pomodoro');
 export const AGENDA_POMODORO_STATS_URI = buildBufferUri('builtin', '/agenda-pomodoro-stats');
 
-export const AGENDA_TASKS_PATTERN = '^/agenda-tasks$';
+const AGENDA_DATE_PATH_PATTERN = '\\d{4}-\\d{2}-\\d{2}';
+const AGENDA_TASK_SCOPED_PATH_PATTERN = [
+  `/day/${AGENDA_DATE_PATH_PATTERN}`,
+  `/range/${AGENDA_DATE_PATH_PATTERN}/${AGENDA_DATE_PATH_PATTERN}`,
+  '/preset/(?:overdue|all)',
+].join('|');
+export const AGENDA_TASKS_PATTERN =
+  `^/agenda-tasks(?:${AGENDA_TASK_SCOPED_PATH_PATTERN})?$`;
 export const AGENDA_HABITS_PATTERN = '^/agenda-habits$';
 export const AGENDA_POMODORO_PATTERN = '^/agenda-pomodoro$';
 export const AGENDA_POMODORO_STATS_PATTERN = '^/agenda-pomodoro-stats$';
