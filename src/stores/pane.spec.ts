@@ -134,7 +134,7 @@ test('should not remove pane when closing last tab but reset route', async () =>
   const tab = Object.values(paneRef.value.tabs.value)[0];
   expect(tab?.router.push).toHaveBeenCalledWith({
     name: RouteNames.InitialPage,
-    params: { paneId },
+    params: { tabId },
   });
 });
 
@@ -214,6 +214,22 @@ test('should restore panes from snapshot', async () => {
   assertDefined(restoredSecondTab, 'secondTab is nullable');
   expect(restoredPaneValue.tabs.value).toHaveProperty(firstTab.id);
   expect(restoredPaneValue.tabs.value).toHaveProperty(restoredSecondTab.id);
+});
+
+test('restorePanesData restores an unnamed route by path', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  await paneStore.addTab(pane.id, { title: 'File' });
+  const snapshot = paneStore.getPanesData();
+  const tabSnapshot = snapshot[0]!.tabs[0]!;
+  tabSnapshot.routeLocation.name = undefined;
+  tabSnapshot.routeLocation.path = `/${tabSnapshot.id}/file/notes/example.org`;
+
+  await paneStore.restorePanesData(snapshot);
+
+  const restoredTab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0]!;
+  expect(restoredTab.router.push).toHaveBeenCalledWith(tabSnapshot.routeLocation.path);
 });
 
 test('restorePanesData selects a persisted tab when activeTabId is invalid', async () => {
@@ -424,7 +440,7 @@ test('closeTab should keep last pane and show InitialPage when its only tab is c
   const tab = Object.values(paneRef.value.tabs.value)[0];
   expect(tab?.router.push).toHaveBeenCalledWith({
     name: RouteNames.InitialPage,
-    params: { paneId },
+    params: { tabId },
   });
 });
 
@@ -787,7 +803,7 @@ test('navigate should call router push on active tab in active pane', async () =
   const tab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0];
   expect(tab?.router.push).toHaveBeenLastCalledWith({
     name: 'EditNote',
-    params: { path: 'test.org', paneId: pane.id },
+    params: { path: 'test.org', tabId: tab?.id },
   });
 });
 
@@ -805,7 +821,7 @@ test('navigate should call router push on specific pane', async () => {
   const tab = Object.values(getPaneValue(paneStore, pane.id).tabs.value)[0];
   expect(tab?.router.push).toHaveBeenLastCalledWith({
     name: 'EditNote',
-    params: { path: 'test.org', paneId: pane.id },
+    params: { path: 'test.org', tabId: tab?.id },
   });
 });
 
@@ -844,7 +860,7 @@ test('navigate should call router push on specific tab', async () => {
 
   expect(tab?.router.push).toHaveBeenCalledWith({
     name: 'EditNote',
-    params: { path: 'test.org', paneId: pane.id },
+    params: { path: 'test.org', tabId: tab?.id },
   });
 });
 
@@ -882,7 +898,7 @@ test('navigate should preserve existing params', async () => {
 
   expect(tab?.router.push).toHaveBeenCalledWith({
     name: 'EditNote',
-    params: { path: 'test.org', customParam: 'value', paneId: pane.id },
+    params: { path: 'test.org', customParam: 'value', tabId: tab?.id },
   });
 });
 
@@ -1033,7 +1049,7 @@ test('activeTabTitle should reflect file name after navigation to file route', a
 
   Object.assign(activeTab.router.currentRoute.value, {
     name: RouteNames.File,
-    params: { paneId: pane.id, path: 'notes/my-note.org' },
+    params: { tabId: activeTab.id, path: 'notes/my-note.org' },
     meta: {
       titleGenerator: (route: { params: { path: string } }) =>
         route.params.path.split('/').pop() ?? '',
@@ -1077,7 +1093,7 @@ test('afterBufferActivated emits when the active tab navigates to another buffer
   paneStore.afterBufferActivated(callback);
   Object.assign(tab.router.currentRoute.value, {
     name: RouteNames.File,
-    params: { paneId: pane.id, path: '/notes/today.org' },
+    params: { tabId: tab.id, path: '/notes/today.org' },
   });
   await nextTick();
 

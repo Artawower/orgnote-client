@@ -233,7 +233,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
       throw new Error(`Tab ${targetTabId} not found or has no router`);
     }
 
-    const routeParams = buildRouteParams(params, targetPaneId);
+    const routeParams = buildRouteParams(params, targetTabId);
     await tab.router.push(routeParams);
   };
 
@@ -296,7 +296,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     if (!pane?.value.tabs.value[tabId]) return false;
 
     if (shouldPreventTabDeletion(pane)) {
-      handleLastTabDeletion(pane, tabId, paneId);
+      handleLastTabDeletion(pane, tabId);
       return false;
     }
 
@@ -382,10 +382,10 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
 
   const shouldRemoveEmptyPane = (isEmpty: boolean): boolean => isEmpty && hasMultiplePanes.value;
 
-  const handleLastTabDeletion = (pane: ShallowRef<Pane>, tabId: string, paneId: string): void => {
+  const handleLastTabDeletion = (pane: ShallowRef<Pane>, tabId: string): void => {
     const tab = pane.value.tabs.value[tabId];
     if (!tab) return;
-    resetLastTabRoute(tab, paneId);
+    resetLastTabRoute(tab);
   };
 
   const handleRegularTabDeletion = (
@@ -471,9 +471,9 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     return isLastTab && isOnlyPane;
   };
 
-  const resetLastTabRoute = (tab: Tab, paneId: string): void => {
+  const resetLastTabRoute = (tab: Tab): void => {
     if (!tab?.router) return;
-    tab.router.push({ name: RouteNames.InitialPage, params: { paneId } });
+    tab.router.push({ name: RouteNames.InitialPage, params: { tabId: tab.id } });
   };
 
   const handleActiveTabDeletion = (
@@ -515,13 +515,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     router: Router,
     routeLocation: TabSnapshot['routeLocation'],
   ): Promise<void> => {
-    const hasMatchingRoute = routeLocation.name && router.hasRoute(routeLocation.name as string);
-
-    if (!hasMatchingRoute) {
-      return;
-    }
-
-    if (routeLocation.name) {
+    if (routeLocation.name && router.hasRoute(routeLocation.name)) {
       await router.push({
         name: routeLocation.name,
         params: routeLocation.params,
@@ -530,6 +524,7 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
       });
       return;
     }
+    if (!routeLocation.path) return;
     await router.push(routeLocation.path);
   };
 
@@ -599,13 +594,13 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
     pane.value = { ...pane.value };
   };
 
-  const buildRouteParams = (params: RouteLocationRaw, paneId: string): RouteLocationRaw => {
+  const buildRouteParams = (params: RouteLocationRaw, tabId: string): RouteLocationRaw => {
     if (typeof params === 'string') {
       return { path: params };
     }
 
     if ('name' in params) {
-      return { ...params, params: { ...('params' in params ? params.params : {}), paneId } };
+      return { ...params, params: { ...('params' in params ? params.params : {}), tabId } };
     }
 
     return params;

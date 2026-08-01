@@ -29,6 +29,7 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
   const initLayout = async (layoutParam?: LayoutNode): Promise<void> => {
     if (layoutParam) {
       layout.value = layoutParam;
+      return;
     }
 
     if (!activePaneId.value) {

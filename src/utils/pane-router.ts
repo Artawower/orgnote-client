@@ -20,7 +20,7 @@ interface EditorRouteConfig {
 }
 
 const createBufferRoute = (config: EditorRouteConfig): RouteRecordRaw => ({
-  path: `/:paneId/${config.basePath}`,
+  path: `/:tabId/${config.basePath}`,
   name: config.parentName,
   component: () => import('src/pages/AppBuffer.vue'),
   children: [
@@ -40,7 +40,7 @@ export const createPaneRouter = async (tabId: string): Promise<Router> => {
     history: createMemoryHistory(),
     routes: [
       {
-        path: '/:paneId',
+        path: '/:tabId',
         name: RouteNames.InitialPage,
         component: () => import('src/pages/InitialPage.vue'),
         meta: {
@@ -74,6 +74,6 @@ export const createPaneRouter = async (tabId: string): Promise<Router> => {
     ],
   });
 
-  await router.push({ name: RouteNames.InitialPage, params: { paneId: tabId } });
+  await router.push({ name: RouteNames.InitialPage, params: { tabId } });
   return router;
 };

@@ -27,9 +27,9 @@ test('creates router with memory history', () => {
   expect(router.options.history.location).toBeDefined();
 });
 
-test('initializes with correct initial route', () => {
+test('initializes with the owning tab scope', () => {
   expect(router.currentRoute.value.name).toBe(RouteNames.InitialPage);
-  expect(router.currentRoute.value.params.paneId).toBe(testTabId);
+  expect(router.currentRoute.value.params.tabId).toBe(testTabId);
 });
 
 test('has initial page route configured', () => {
@@ -38,7 +38,7 @@ test('has initial page route configured', () => {
     .find((route) => route.name === RouteNames.InitialPage);
 
   expect(initialPageRoute).toBeDefined();
-  expect(initialPageRoute?.path).toBe('/:paneId');
+  expect(initialPageRoute?.path).toBe('/:tabId');
   expect(initialPageRoute?.meta?.titleGenerator).toBeDefined();
 });
 
@@ -46,7 +46,7 @@ test('has file route configured', () => {
   const fileRoute = router.getRoutes().find((route) => route.name === RouteNames.File);
 
   expect(fileRoute).toBeDefined();
-  expect(fileRoute?.path).toBe('/:paneId/file/:path(.*)');
+  expect(fileRoute?.path).toBe('/:tabId/file/:path(.*)');
   expect(fileRoute?.meta?.titleGenerator).toBeDefined();
 });
 
@@ -54,7 +54,7 @@ test('has embedded route configured', () => {
   const embeddedRoute = router.getRoutes().find((route) => route.name === RouteNames.Embedded);
 
   expect(embeddedRoute).toBeDefined();
-  expect(embeddedRoute?.path).toBe('/:paneId/embedded/:path(.*)');
+  expect(embeddedRoute?.path).toBe('/:tabId/embedded/:path(.*)');
   expect(embeddedRoute?.meta?.titleGenerator).toBeDefined();
 });
 
@@ -162,13 +162,13 @@ test('can navigate to file route', async () => {
   await router.push({
     name: RouteNames.File,
     params: {
-      paneId: testTabId,
+      tabId: testTabId,
       path: testPath,
     },
   });
 
   expect(router.currentRoute.value.name).toBe(RouteNames.File);
-  expect(router.currentRoute.value.params.paneId).toBe(testTabId);
+  expect(router.currentRoute.value.params.tabId).toBe(testTabId);
   expect(router.currentRoute.value.params.path).toBe(testPath);
 });
 
@@ -176,7 +176,7 @@ test('can navigate back to initial page', async () => {
   await router.push({
     name: RouteNames.File,
     params: {
-      paneId: testTabId,
+      tabId: testTabId,
       path: 'test.org',
     },
   });
@@ -184,12 +184,12 @@ test('can navigate back to initial page', async () => {
   await router.push({
     name: RouteNames.InitialPage,
     params: {
-      paneId: testTabId,
+      tabId: testTabId,
     },
   });
 
   expect(router.currentRoute.value.name).toBe(RouteNames.InitialPage);
-  expect(router.currentRoute.value.params.paneId).toBe(testTabId);
+  expect(router.currentRoute.value.params.tabId).toBe(testTabId);
 });
 
 test('handles complex file paths correctly', () => {

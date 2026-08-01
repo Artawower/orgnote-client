@@ -78,6 +78,18 @@ test('ensureLayout preserves an existing split layout', async () => {
   expect(Object.keys(paneStore.panes)).toHaveLength(2);
 });
 
+test('initLayout preserves a provided layout', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  await paneStore.addTab(pane.id);
+  const providedLayout = { type: 'pane', id: 'provided-layout', paneId: pane.id } as const;
+
+  await layoutStore.initLayout(providedLayout);
+
+  expect(layoutStore.layout).toBe(providedLayout);
+});
+
 test('should initialize layout with existing activePaneId', async () => {
   const layoutStore = useLayoutStore();
   const paneStore = usePaneStore();
