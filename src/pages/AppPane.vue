@@ -78,6 +78,7 @@
 <script lang="ts" setup>
 import { DefaultCommands } from 'orgnote-api';
 import { type DropDirection, type DropZone, type Tab } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import NavTab from 'src/components/NavTab.vue';
@@ -85,9 +86,7 @@ import NavTabs from 'src/components/NavTabs.vue';
 import DropZoneOverlay from 'src/components/DropZoneOverlay.vue';
 import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { generateTabTitle } from 'src/utils/generate-tab-title';
-import { shallowRef, ref } from 'vue';
-import { provide } from 'vue';
-import { computed, watch } from 'vue';
+import { computed, onUnmounted, provide, ref, shallowRef, watch } from 'vue';
 import type { Router } from 'vue-router';
 
 import ScopedRouterView from 'src/components/ScopedRouterView.vue';
@@ -97,6 +96,7 @@ import ContainerLayout from 'src/components/ContainerLayout.vue';
 import { useTabHistory } from 'src/composables/use-tab-history';
 import ContextMenu from 'src/components/ContextMenu.vue';
 import { useTabContextMenu } from 'src/composables/use-tab-context-menu';
+import { reporter } from 'src/boot/report';
 
 const props = defineProps<{
   paneId: string;
@@ -183,13 +183,24 @@ provide(TAB_ROUTER_KEY, tabRouter);
 
 const { canGoBack, canGoForward, handleNavigation } = useTabHistory(tabRouter);
 
-const handleDragStart = (payload: { tabId: string; paneId: string }) => {
-  setTimeout(() => {
+let dragStartTimer: ReturnType<typeof setTimeout> | undefined;
+
+const clearDragStartTimer = (): void => {
+  if (dragStartTimer === undefined) return;
+  clearTimeout(dragStartTimer);
+  dragStartTimer = undefined;
+};
+
+const handleDragStart = (payload: { tabId: string; paneId: string }): void => {
+  clearDragStartTimer();
+  dragStartTimer = setTimeout(() => {
+    dragStartTimer = undefined;
     pane.startDraggingTab(payload.tabId, payload.paneId);
   }, 0);
 };
 
-const handleDragEnd = () => {
+const handleDragEnd = (): void => {
+  clearDragStartTimer();
   pane.stopDraggingTab();
   currentDropZone.value = undefined;
 };
@@ -228,7 +239,6 @@ const createNewPaneAndMoveTab = async (
 
 const handleCenterDrop = async (tabId: string, sourcePaneId: string): Promise<void> => {
   await moveTabToCenter(tabId, sourcePaneId);
-  handleDragEnd();
 };
 
 const handleDirectionDrop = async (
@@ -237,7 +247,6 @@ const handleDirectionDrop = async (
   sourcePaneId: string,
 ): Promise<void> => {
   await createNewPaneAndMoveTab(zone, tabId, sourcePaneId);
-  handleDragEnd();
 };
 
 const handleTabDrop = async (
@@ -254,12 +263,18 @@ const handleTabDrop = async (
 };
 
 const handleDrop = async (zone: DropZone): Promise<void> => {
-  if (pane.draggedTabData) {
-    const { tabId, paneId: sourcePaneId } = pane.draggedTabData;
-    await handleTabDrop(zone, tabId, sourcePaneId);
+  const draggedTab = pane.draggedTabData;
+  if (!draggedTab) {
+    handleDragEnd();
     return;
   }
+
+  const result = await to(() => handleTabDrop(zone, draggedTab.tabId, draggedTab.paneId))();
+  handleDragEnd();
+  if (result.isErr()) reporter.reportError(result.error);
 };
+
+onUnmounted(handleDragEnd);
 
 const { opened } = storeToRefs(api.ui.useRightSidebar());
 </script>
