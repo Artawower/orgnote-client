@@ -35,10 +35,21 @@ const cleanup = () => {
 
 watch(
   filePath,
-  async (next) => {
+  async (next, _previous, onCleanup) => {
     cleanup();
     if (!next) return;
-    activeBuffer.value = await buffers.getOrCreateBuffer(next);
+
+    let isInvalidated = false;
+    onCleanup(() => {
+      isInvalidated = true;
+    });
+
+    const buffer = await buffers.getOrCreateBuffer(next);
+    if (isInvalidated) {
+      buffers.releaseBuffer(buffer.uri);
+      return;
+    }
+    activeBuffer.value = buffer;
   },
   { immediate: true },
 );
