@@ -82,6 +82,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
   const allFiles = shallowRef<FileMeta[]>([]);
   const loading = ref(false);
   const taskSearchIndex = createAgendaTaskSearchIndex();
+  let initialLoad: Promise<void> | undefined;
   let watchersAttached = false;
 
   const agendaConfig = computed(() =>
@@ -123,7 +124,10 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
   const ensureLoaded = async (): Promise<void> => {
     attachWatchersOnce();
     if (allFiles.value.length > 0) return;
-    await loadFiles();
+    initialLoad ??= loadFiles().finally(() => {
+      initialLoad = undefined;
+    });
+    await initialLoad;
   };
 
   const resolveInboxPath = (targetFile?: string): string => {

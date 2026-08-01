@@ -107,7 +107,7 @@ const selectDate = (date: string): void => {
   selectedDate.value = date;
 };
 
-onMounted(() => tasksStore.loadFiles());
+onMounted(() => tasksStore.ensureLoaded());
 </script>
 
 <style lang="scss" scoped>

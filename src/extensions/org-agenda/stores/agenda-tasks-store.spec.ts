@@ -75,6 +75,22 @@ test('createTaskInFile_returnsFalse_whenWriteFails', async () => {
   expect(mockReportError).toHaveBeenCalledOnce();
 });
 
+test('ensureLoaded shares one metadata request between concurrent buffers', async () => {
+  let resolveFiles!: (files: []) => void;
+  const filesPromise = new Promise<[]>((resolve) => {
+    resolveFiles = resolve;
+  });
+  mockGetAll.mockReturnValue(filesPromise);
+  const store = useAgendaTasksStore();
+
+  const firstLoad = store.ensureLoaded();
+  const secondLoad = store.ensureLoaded();
+
+  expect(mockGetAll).toHaveBeenCalledOnce();
+  resolveFiles([]);
+  await Promise.all([firstLoad, secondLoad]);
+});
+
 test('Agenda reloads metadata after content indexing completes', async () => {
   const existingFile = {
     id: 'existing',

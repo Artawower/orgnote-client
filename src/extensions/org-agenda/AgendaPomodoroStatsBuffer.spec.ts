@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 const screen = vi.hoisted(() => ({ tabletBelow: { value: false } }));
 
 const tasksStore = vi.hoisted(() => ({
+  ensureLoaded: vi.fn(),
   loadFiles: vi.fn(),
   allFiles: [
     {
@@ -80,6 +81,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-07-29T12:00:00'));
   screen.tabletBelow.value = false;
+  tasksStore.ensureLoaded.mockClear();
   tasksStore.loadFiles.mockClear();
 });
 
@@ -105,7 +107,8 @@ test('focus statistics default every daily view to today', () => {
   );
   expect(wrapper.getComponent(TimeRangeStub).props('entries')).toHaveLength(2);
   expect(wrapper.getComponent(FocusRecordStub).props('intervals')).toHaveLength(2);
-  expect(tasksStore.loadFiles).toHaveBeenCalledOnce();
+  expect(tasksStore.ensureLoaded).toHaveBeenCalledOnce();
+  expect(tasksStore.loadFiles).not.toHaveBeenCalled();
 });
 
 test('focus statistics render one selected month on mobile', () => {

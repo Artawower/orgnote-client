@@ -1,6 +1,9 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import { defineComponent, ref, shallowRef } from 'vue';
+import { RouteNames } from 'orgnote-api';
+import { createPinia, setActivePinia } from 'pinia';
+import { defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { usePaneStore } from 'src/stores/pane';
 import AppPane from './AppPane.vue';
 
 const apiMocks = vi.hoisted(() => ({
@@ -28,6 +31,16 @@ vi.mock('src/boot/report', () => ({
   reporter: { reportError: apiMocks.reportError },
 }));
 
+const renderScopedRouter = vi.fn();
+
+const ScopedRouterViewStub = defineComponent({
+  props: { router: Object },
+  setup: () => () => {
+    renderScopedRouter();
+    return h('div');
+  },
+});
+
 const DropZoneOverlayStub = defineComponent({
   emits: ['drop'],
   template: '<button data-testid="drop-zone" @click="$emit(\'drop\', \'right\')" />',
@@ -53,11 +66,13 @@ const NavTabsStub = defineComponent({
 });
 
 const NavTabStub = defineComponent({
-  props: { paneId: String, tabId: String },
-  emits: ['dragstart', 'dragend'],
+  props: { active: Boolean, icon: String, paneId: String, tabId: String },
+  emits: ['click', 'close', 'dragstart', 'dragend'],
   template: `
-    <button data-testid="drag-start" @click="$emit('dragstart', { paneId, tabId })" />
-    <button data-testid="drag-end" @click="$emit('dragend')" />
+    <div>
+      <button data-testid="drag-start" @click="$emit('dragstart', { paneId, tabId })" />
+      <button data-testid="drag-end" @click="$emit('dragend')" />
+    </div>
   `,
 });
 
@@ -73,7 +88,7 @@ const mountAppPane = () =>
         DropZoneOverlay: DropZoneOverlayStub,
         NavTab: NavTabStub,
         NavTabs: NavTabsStub,
-        ScopedRouterView: true,
+        ScopedRouterView: ScopedRouterViewStub,
       },
     },
   });
@@ -156,6 +171,45 @@ test('AppPane cancels deferred drag activation when drag ends immediately', asyn
 
   expect(actions.startDraggingTab).not.toHaveBeenCalled();
   expect(actions.stopDraggingTab).toHaveBeenCalledOnce();
+});
+
+test('AppPane does not render a neighboring router view when the active pane navigates', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const sourcePane = await paneStore.createPane();
+  const sourceTab = await paneStore.addTab(sourcePane.id);
+  const targetPane = await paneStore.createPane();
+  await paneStore.addTab(targetPane.id);
+  paneStore.setActivePane(sourcePane.id);
+  apiMocks.usePane.mockReturnValue(paneStore);
+  apiMocks.useLayout.mockReturnValue({ getPanePosition: vi.fn() });
+  const wrapper = mount(AppPane, {
+    props: { paneId: targetPane.id },
+    global: {
+      stubs: {
+        ActionButton: true,
+        CommandActionButton: true,
+        ContainerLayout: ContainerLayoutStub,
+        ContextMenu: SlotStub,
+        DropZoneOverlay: DropZoneOverlayStub,
+        NavTab: NavTabStub,
+        NavTabs: NavTabsStub,
+        ScopedRouterView: ScopedRouterViewStub,
+      },
+    },
+  });
+  await nextTick();
+  renderScopedRouter.mockClear();
+
+  await paneStore.navigate(
+    { name: RouteNames.File, params: { path: 'notes/source.org' } },
+    sourcePane.id,
+    sourceTab!.id,
+  );
+  await nextTick();
+
+  expect(renderScopedRouter).not.toHaveBeenCalled();
+  wrapper.unmount();
 });
 
 test('AppPane clears drag state and reports a failed split', async () => {

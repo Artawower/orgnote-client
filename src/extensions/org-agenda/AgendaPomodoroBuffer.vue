@@ -28,7 +28,7 @@ const pomodoroStore = usePomodoroStore();
 const tasksStore = useAgendaTasksStore();
 
 onMounted(async () => {
-  await tasksStore.loadFiles();
+  await tasksStore.ensureLoaded();
   await pomodoroStore.restoreSession();
 });
 </script>
