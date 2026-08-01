@@ -61,7 +61,7 @@ const areUint8ArraysEqual = (a: Uint8Array, b: Uint8Array): boolean => {
 
 export const useBufferStore = defineStore<string, BufferStore>('buffers', (): BufferStore => {
   const buffers = ref<Map<string, OrgBuffer>>(new Map());
-  const debouncedSavers = new Map<string, () => void>();
+  const autoSaveDisposers = new Map<string, () => void>();
   const bufferUnwatchers = new Map<string, () => void>();
 
   const providerStore = api.core.useBufferProviders();
@@ -264,21 +264,30 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     validation.lastValidContent = buffer.text;
   };
 
+  const registerAutoSaveDisposer = (
+    uri: string,
+    stopWatcher: () => void,
+    cancelPending: () => void,
+  ): void => {
+    autoSaveDisposers.set(uri, () => {
+      stopWatcher();
+      cancelPending();
+    });
+  };
+
   const setupValidatedAutoSave = (buffer: OrgBuffer): void => {
     const debouncedValidateAndSave = debounce(
       () => validateAndSaveBuffer(buffer),
       getValidationDelayMs(),
     );
-    watch(() => buffer.base64, debouncedValidateAndSave);
+    const stopWatcher = watch(() => buffer.base64, debouncedValidateAndSave);
+    registerAutoSaveDisposer(buffer.uri, stopWatcher, debouncedValidateAndSave.cancel);
   };
 
   const setupRegularAutoSave = (buffer: OrgBuffer): void => {
     const debouncedSave = debounce(() => saveBuffer(buffer), getSaveDelayMs());
-    debouncedSavers.set(buffer.uri, debouncedSave);
-    watch(
-      () => buffer.base64,
-      () => debouncedSavers.get(buffer.uri)?.(),
-    );
+    const stopWatcher = watch(() => buffer.base64, debouncedSave);
+    registerAutoSaveDisposer(buffer.uri, stopWatcher, debouncedSave.cancel);
   };
 
   const setupAutoSave = (buffer: OrgBuffer): void => {
@@ -392,7 +401,16 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
     bufferUnwatchers.delete(uri);
   };
 
-  const closeBuffer = async (uri: string, force = false): Promise<boolean> => {
+  const stopAutoSave = (uri: string): void => {
+    autoSaveDisposers.get(uri)?.();
+    autoSaveDisposers.delete(uri);
+  };
+
+  const closeBuffer = async (
+    uri: string,
+    force = false,
+    requireUnused = false,
+  ): Promise<boolean> => {
     const { raw } = parseBufferUri(uri);
     const buffer = buffers.value.get(raw);
     if (!buffer) {
@@ -402,8 +420,9 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
       return false;
     }
     await saveBufferByUri(raw);
+    if (requireUnused && buffer.referenceCount > 0) return false;
     buffers.value.delete(raw);
-    debouncedSavers.delete(raw);
+    stopAutoSave(raw);
     stopWatch(raw);
     return true;
   };
@@ -415,7 +434,7 @@ export const useBufferStore = defineStore<string, BufferStore>('buffers', (): Bu
   const cleanupUnusedBuffers = (): void => {
     allBuffers.value
       .filter((b) => b.referenceCount === 0)
-      .forEach((b) => void closeBuffer(b.uri, true));
+      .forEach((b) => void closeBuffer(b.uri, false, true));
   };
 
   return {

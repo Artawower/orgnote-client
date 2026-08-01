@@ -1,5 +1,6 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
+import { nextTick } from 'vue';
 import { useBufferStore } from './buffer';
 import type { FileMeta } from 'orgnote-api';
 
@@ -291,6 +292,21 @@ test('closeBuffer with force closes dirty buffer', async () => {
   expect(store.getBufferByUri('/notes/force.org')).toBeUndefined();
 });
 
+test('closeBuffer cancels pending auto-save work', async () => {
+  const store = useBufferStore();
+  const path = '/notes/closing.org';
+  mockFileContents.set(path, textEncoder.encode('Original'));
+
+  const buffer = await store.getOrCreateBuffer(path);
+  buffer.setText('Saved before close');
+  await nextTick();
+  await store.closeBuffer(path, true);
+  buffer.setText('Stale after close');
+  await vi.runAllTimersAsync();
+
+  expect(textDecoder.decode(mockFileContents.get(path))).toBe('Saved before close');
+});
+
 test('closeBuffer returns true for non-existent path', async () => {
   const store = useBufferStore();
   const result = await store.closeBuffer('/nonexistent');
@@ -355,6 +371,36 @@ test('cleanup closes buffers with zero referenceCount', async () => {
   await vi.runAllTimersAsync();
 
   expect(store.getBufferByUri('/notes/unused.org')).toBeUndefined();
+});
+
+test('cleanup keeps dirty buffers with zero referenceCount', async () => {
+  const store = useBufferStore();
+  const path = '/notes/dirty-unused.org';
+  mockFileContents.set(path, textEncoder.encode('Original'));
+
+  const buffer = await store.getOrCreateBuffer(path);
+  buffer.setText('Unsaved');
+  store.releaseBuffer(path);
+  store.cleanup();
+  await vi.advanceTimersByTimeAsync(0);
+
+  expect(store.getBufferByUri(path)).toBe(buffer);
+});
+
+test('cleanup keeps a buffer that is reopened before disposal finishes', async () => {
+  const store = useBufferStore();
+  const path = '/notes/reopened.org';
+  mockFileContents.set(path, textEncoder.encode('Original'));
+
+  const buffer = await store.getOrCreateBuffer(path);
+  store.releaseBuffer(path);
+  store.cleanup();
+  const reopened = await store.getOrCreateBuffer(path);
+  await vi.advanceTimersByTimeAsync(0);
+
+  expect(reopened).toBe(buffer);
+  expect(store.getBufferByUri(path)).toBe(buffer);
+  expect(buffer.referenceCount).toBe(1);
 });
 
 test('cleanup keeps buffers with positive referenceCount', async () => {

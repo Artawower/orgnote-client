@@ -7,6 +7,7 @@ export default defineBoot(async () => {
 
   const cleanupHandler: CronTaskConfig['handler'] = async (api) => {
     api.core.useCommands().execute(DefaultCommands.CLEAR_OLD_QUEUE_TASKS);
+    api.core.useBuffers().cleanup();
   };
 
   cron.register({
