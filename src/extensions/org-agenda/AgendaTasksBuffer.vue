@@ -22,16 +22,22 @@
           />
           <q-virtual-scroll
             v-else
+            ref="virtualScroll"
             :items="groups"
             :virtual-scroll-item-size="AGENDA_GROUP_ITEM_SIZE"
             :virtual-scroll-slice-size="AGENDA_GROUP_SLICE_SIZE"
             class="groups-scroll"
             v-slot="{ item: group }"
+            @virtual-scroll="onVirtualScroll"
           >
             <div class="group-item">
               <agenda-task-group
                 :key="group.filePath"
                 :group="group"
+                :expanded="isGroupExpanded(group.filePath)"
+                :expanded-task-id="expandedTaskId(group.filePath)"
+                @update:expanded="setGroupExpanded(group.filePath, $event)"
+                @update:expanded-task-id="setExpandedTaskId(group.filePath, $event)"
                 @task-toggle="toggleTask"
                 @task-edit-title="editTaskTitle"
                 @task-edit-priority="editTaskPriority"
@@ -49,7 +55,10 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue';
-import type { Buffer as OrgBuffer } from 'orgnote-api';
+import type {
+  Buffer as OrgBuffer,
+  BufferViewStateHandle,
+} from 'orgnote-api';
 import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
@@ -85,14 +94,32 @@ import {
   extractPriorityFromTitle,
   removePriorityFromTitle,
 } from 'src/utils/org-editor/org-title-parser';
+import {
+  useAgendaTasksViewState,
+  type AgendaTasksViewState,
+} from './composables/use-agenda-tasks-view-state';
 
 const DEFAULT_DATE_FILTER: AgendaDateFilter = { kind: 'preset', value: 'all' };
-const props = defineProps<{ buffer: OrgBuffer }>();
+const props = defineProps<{
+  buffer: OrgBuffer;
+  viewState?: BufferViewStateHandle<AgendaTasksViewState>;
+}>();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const dateFilter = computed(
   () => parseAgendaTaskBufferUri(props.buffer.uri) ?? DEFAULT_DATE_FILTER,
 );
 const { loading, groups, filteredTaskCount } = useAgendaTasks(dateFilter);
+const {
+  virtualScroll,
+  isGroupExpanded,
+  setGroupExpanded,
+  expandedTaskId,
+  setExpandedTaskId,
+  onVirtualScroll,
+} = useAgendaTasksViewState({
+  groupsGetter: () => groups.value,
+  viewStateGetter: () => props.viewState,
+});
 const selectDate = async (selection: DatePickerSelection): Promise<void> => {
   await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
 };

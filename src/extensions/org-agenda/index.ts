@@ -58,6 +58,7 @@ interface AgendaView {
   pinned?: boolean;
   sidebarSection?: boolean;
   sectionNavCommand?: string;
+  viewState?: { readonly version: number };
 }
 
 const toggleTasksSidebar = (api: OrgNoteApi): void => {
@@ -86,6 +87,7 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     pinned: true,
     sidebarSection: true,
     sectionNavCommand: AGENDA_TASKS_NAV_COMMAND,
+    viewState: { version: 1 },
   },
   {
     viewerId: AGENDA_HABITS_VIEWER_ID,
@@ -166,7 +168,12 @@ const registerViews = (api: OrgNoteApi): void => {
     viewer.register({
       pattern: view.pattern,
       component: view.component,
-      meta: { id: view.viewerId, name: view.name, icon: view.icon },
+      meta: {
+        id: view.viewerId,
+        name: view.name,
+        icon: view.icon,
+        viewState: view.viewState,
+      },
     });
     commands.add(buildCommand(view));
     if (view.pinned) pinned.addCommand('sidebar', view.command);

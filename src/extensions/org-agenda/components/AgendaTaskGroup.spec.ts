@@ -32,6 +32,7 @@ const AppSpoilerStub = defineComponent({
   props: {
     variant: String,
     defaultExpanded: Boolean,
+    modelValue: { type: Boolean, default: undefined },
   },
   template:
     '<section><slot name="title" /><slot name="actions" /><slot name="body" /></section>',
@@ -49,6 +50,12 @@ const AgendaTaskRowStub = defineComponent({
   emits: ['edit-expand'],
   template:
     '<button class="agenda-task-row-stub" @click="$emit(\'edit-expand\')">{{ task.text }}</button>',
+});
+
+const AgendaTaskFormStub = defineComponent({
+  name: 'AgendaTaskForm',
+  props: { title: String },
+  template: '<div class="agenda-task-form-stub">{{ title }}</div>',
 });
 
 const group: AgendaTaskGroupView = {
@@ -74,14 +81,16 @@ const group: AgendaTaskGroupView = {
   ],
 };
 
-const mountTaskGroup = () =>
+const mountTaskGroup = (
+  props: { expanded?: boolean; expandedTaskId?: string | null } = {},
+) =>
   mount(AgendaTaskGroup, {
-    props: { group },
+    props: { group, ...props },
     global: {
       stubs: {
         AppSpoiler: AppSpoilerStub,
         AgendaTaskRow: AgendaTaskRowStub,
-        AgendaTaskForm: true,
+        AgendaTaskForm: AgendaTaskFormStub,
         CommandActionButton: CommandActionButtonStub,
       },
     },
@@ -117,4 +126,18 @@ test('AgendaTaskGroup combines an expanded task row and editor into one surface'
   expect(expandedTask.get('.agenda-task-row-stub').text()).toBe('First task');
   expect(expandedTask.find('.edit-form').exists()).toBe(true);
   expect(expandedTask.find('.card-wrapper').exists()).toBe(false);
+});
+
+test('AgendaTaskGroup restores controlled group visibility', () => {
+  const wrapper = mountTaskGroup({ expanded: false });
+
+  expect(wrapper.getComponent(AppSpoilerStub).props('modelValue')).toBe(false);
+});
+
+test('AgendaTaskGroup restores a controlled expanded task', () => {
+  const wrapper = mountTaskGroup({ expandedTaskId: 'second-task' });
+
+  const expandedTask = wrapper.get('.task-item.expanded');
+  expect(expandedTask.get('.agenda-task-row-stub').text()).toBe('Second task');
+  expect(expandedTask.get('.agenda-task-form-stub').text()).toBe('Second task');
 });

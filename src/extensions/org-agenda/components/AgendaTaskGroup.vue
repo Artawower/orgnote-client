@@ -1,5 +1,5 @@
 <template>
-  <app-spoiler default-expanded variant="flat">
+  <app-spoiler v-model="groupExpanded" variant="flat">
     <template #title>
       <app-title :level="5" no-margin>{{ group.fileTitle }}</app-title>
     </template>
@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue';
+import { reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAgendaMiniEditor } from '../composables/use-agenda-mini-editor';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
@@ -80,6 +80,8 @@ import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { AGENDA_QUICK_ADD_TO_FILE_COMMAND } from '../constants';
 
 const props = defineProps<{ group: AgendaTaskGroup }>();
+const groupExpanded = defineModel<boolean>('expanded', { default: true });
+const expandedTaskId = defineModel<string | null>('expandedTaskId', { default: null });
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const emit = defineEmits<{
   'task-toggle': [task: AgendaTaskView, filePath: string];
@@ -102,8 +104,6 @@ const onTaskOpen = (task: AgendaTaskView): void => {
   openEdit(task, props.group.filePath);
 };
 
-const expandedTaskId = ref<string | null>(null);
-
 const editDraft = reactive<AgendaTaskDraft>({
   title: '',
   body: '',
@@ -117,19 +117,7 @@ const onTaskToggle = (task: AgendaTaskView): void => {
   emit('task-toggle', task, props.group.filePath);
 };
 
-const onEditExpand = async (task: AgendaTaskView): Promise<void> => {
-  if (tabletBelow.value) {
-    openEdit(task, props.group.filePath);
-    return;
-  }
-
-  if (expandedTaskId.value === task.id) {
-    expandedTaskId.value = null;
-    return;
-  }
-
-  const targetId = task.id;
-  expandedTaskId.value = targetId;
+const initializeEditDraft = (task: AgendaTaskView): void => {
   editDraft.title = buildTaskEditorTitle(task.text, task.priority);
   editDraft.body = '';
   editDraft.scheduled = task.scheduled
@@ -141,19 +129,42 @@ const onEditExpand = async (task: AgendaTaskView): Promise<void> => {
       }
     : undefined;
   editDraft.isHabit = task.isHabit ?? false;
+};
 
-  if (task.start === undefined) return;
+const loadTaskBody = async (task: AgendaTaskView, targetId: string): Promise<void> => {
+  const headlineStart = task.start;
+  if (headlineStart === undefined) return;
   const result = await to(api.core.useFileContent().read)(props.group.filePath);
   if (expandedTaskId.value !== targetId) return;
   if (result.isErr()) {
     reporter.reportError(result.error);
     return;
   }
-  if (task.start === undefined) return;
   const content = uint8ArrayToText(result.value);
   editOrgDocument(content, (doc) => {
-    editDraft.body = doc.headlineAt(task.start!)?.body ?? '';
+    editDraft.body = doc.headlineAt(headlineStart)?.body ?? '';
   });
+};
+
+const restoreExpandedTask = (taskId: string | null): void => {
+  if (!taskId) return;
+  const task = props.group.tasks.find(({ id }) => id === taskId);
+  if (!task) {
+    expandedTaskId.value = null;
+    return;
+  }
+  initializeEditDraft(task);
+  void loadTaskBody(task, taskId);
+};
+
+watch(expandedTaskId, restoreExpandedTask, { immediate: true, flush: 'sync' });
+
+const onEditExpand = (task: AgendaTaskView): void => {
+  if (tabletBelow.value) {
+    openEdit(task, props.group.filePath);
+    return;
+  }
+  expandedTaskId.value = expandedTaskId.value === task.id ? null : task.id;
 };
 
 const onBodyBlur = (task: AgendaTaskView): void => {

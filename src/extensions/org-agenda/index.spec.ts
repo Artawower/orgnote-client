@@ -7,16 +7,18 @@ import {
   AGENDA_POMODORO_STATS_COMMAND,
   AGENDA_POMODORO_STATS_URI,
   AGENDA_POMODORO_URI,
+  AGENDA_TASKS_VIEWER_ID,
 } from './constants';
 import { orgAgendaExtension } from './index';
 
 const addedCommands: Command[] = [];
 const execute = vi.fn();
 const open = vi.fn();
+const register = vi.fn();
 
 const api = {
   core: {
-    useBufferViewer: () => ({ open, register: vi.fn() }),
+    useBufferViewer: () => ({ open, register }),
     useCommands: () => ({ add: (...commands: Command[]) => addedCommands.push(...commands), execute }),
     usePane: () => ({ afterBufferActivated: vi.fn(() => vi.fn()) }),
   },
@@ -30,6 +32,20 @@ beforeEach(() => {
   addedCommands.length = 0;
   execute.mockReset();
   open.mockReset();
+  register.mockReset();
+});
+
+test('Agenda Tasks viewer enables versioned view state', async () => {
+  await orgAgendaExtension.onMounted!(api);
+
+  expect(register).toHaveBeenCalledWith(
+    expect.objectContaining({
+      meta: expect.objectContaining({
+        id: AGENDA_TASKS_VIEWER_ID,
+        viewState: { version: 1 },
+      }),
+    }),
+  );
 });
 
 test.each([
