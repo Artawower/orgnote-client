@@ -367,9 +367,13 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
       tabs[tab.id] = tab;
     }
 
+    const activeTabId = tabs[paneSnapshot.activeTabId]
+      ? paneSnapshot.activeTabId
+      : (Object.keys(tabs)[0] ?? '');
+
     return shallowRef<Pane>({
       id: paneSnapshot.id,
-      activeTabId: paneSnapshot.activeTabId,
+      activeTabId,
       tabs: shallowRef(tabs),
     });
   };

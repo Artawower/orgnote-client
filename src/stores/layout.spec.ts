@@ -649,18 +649,61 @@ test('getPanePosition returns undefined when layout is undefined', () => {
   expect(layoutStore.getPanePosition('any-id')).toBeUndefined();
 });
 
-test('should return undefined snapshot if no valid panes exist', async () => {
+test('getLayoutSnapshot removes transient-only panes from the persisted workspace', async () => {
   const layoutStore = useLayoutStore();
   const paneStore = usePaneStore();
   await layoutStore.initLayout();
-  
+
+  const stablePaneId = paneStore.activePaneId!;
+  const transientPaneId = await layoutStore.splitPaneInLayout(stablePaneId, 'right');
+  const transientPane = paneStore.panes[transientPaneId!]!;
+  const transientTab = Object.values(transientPane.value.tabs.value)[0]!;
+  transientTab.router.currentRoute.value.name = RouteNames.Embedded;
+
+  const snapshot = layoutStore.getLayoutSnapshot();
+
+  expect(snapshot?.panes.map((pane) => pane.id)).toEqual([stablePaneId]);
+  expect(snapshot?.activePaneId).toBe(stablePaneId);
+  expect(snapshot?.layout).toMatchObject({ type: 'pane', paneId: stablePaneId });
+});
+
+test('restoreLayoutSnapshot removes orphan layout nodes and selects a persisted pane', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+  await layoutStore.initLayout();
+
+  const snapshot = layoutStore.getLayoutSnapshot()!;
+  const persistedPaneId = snapshot.panes[0]!.id;
+  const orphanPaneId = 'orphan-pane';
+  snapshot.activePaneId = orphanPaneId;
+  snapshot.layout = {
+    type: 'split',
+    id: 'split',
+    orientation: 'horizontal',
+    sizes: [50, 50],
+    children: [snapshot.layout!, { type: 'pane', id: orphanPaneId, paneId: orphanPaneId }],
+  };
+
+  await layoutStore.restoreLayoutSnapshot(snapshot);
+
+  expect(paneStore.activePaneId).toBe(persistedPaneId);
+  expect(layoutStore.layout).toMatchObject({ type: 'pane', paneId: persistedPaneId });
+});
+
+test('getLayoutSnapshot returns a reset snapshot when no persistent panes exist', async () => {
+  const layoutStore = useLayoutStore();
+  const paneStore = usePaneStore();
+  await layoutStore.initLayout();
+
   const paneId = paneStore.activePaneId!;
   const pane = paneStore.panes[paneId]!;
   const tab = Object.values(pane.value.tabs.value)[0]!;
   tab.router.currentRoute.value.name = RouteNames.Embedded;
 
   const snapshot = layoutStore.getLayoutSnapshot();
-  expect(snapshot).toBeUndefined();
+
+  expect(snapshot?.panes).toEqual([]);
+  expect(snapshot?.activePaneId).toBe('');
 });
 
 test('should auto-init layout during restore if snapshot has no panes', async () => {

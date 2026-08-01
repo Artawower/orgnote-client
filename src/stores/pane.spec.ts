@@ -216,6 +216,21 @@ test('should restore panes from snapshot', async () => {
   expect(restoredPaneValue.tabs.value).toHaveProperty(restoredSecondTab.id);
 });
 
+test('restorePanesData selects a persisted tab when activeTabId is invalid', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+  const pane = await paneStore.createPane();
+  const firstTab = await paneStore.addTab(pane.id, { title: 'First' });
+  await paneStore.addTab(pane.id, { title: 'Second' });
+  const snapshot = paneStore.getPanesData();
+  snapshot[0]!.activeTabId = 'missing-tab';
+
+  await paneStore.restorePanesData(snapshot);
+
+  assertDefined(firstTab, 'firstTab is nullable');
+  expect(getPaneValue(paneStore, pane.id).activeTabId).toBe(firstTab.id);
+});
+
 test('should create empty snapshot when no panes exist', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();

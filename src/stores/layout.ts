@@ -67,17 +67,34 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
     return Boolean(configStore.config?.ui.persistantPanes);
   };
 
+  const retainLayoutPanes = (node: LayoutNode, paneIds: ReadonlySet<string>): LayoutNode | undefined => {
+    if (node.type === 'pane') return paneIds.has(node.paneId) ? node : undefined;
+
+    const children = node.children
+      .map((child) => retainLayoutPanes(child, paneIds))
+      .filter((child): child is LayoutNode => !!child);
+    if (children.length === 0) return;
+    if (children.length === 1) return children[0];
+    return { ...node, children };
+  };
+
   const getLayoutSnapshot = (): LayoutSnapshot | undefined => {
     if (!layout.value) return;
 
     const panesData = paneStore.getPanesData();
-    if (panesData.length === 0) return;
+    if (panesData.length === 0) {
+      return { panes: [], activePaneId: '', timestamp: Date.now(), layout: layout.value };
+    }
+
+    const paneIds = new Set(panesData.map((pane) => pane.id));
+    const persistedLayout = retainLayoutPanes(layout.value, paneIds);
+    if (!persistedLayout) return;
 
     return {
       panes: panesData,
-      activePaneId: activePaneId.value || '',
+      activePaneId: paneIds.has(activePaneId.value || '') ? activePaneId.value! : panesData[0]!.id,
       timestamp: Date.now(),
-      layout: layout.value,
+      layout: persistedLayout,
     };
   };
 
@@ -132,10 +149,12 @@ export const useLayoutStore = defineStore<'layout', LayoutStore>('layout', () =>
 
     await paneStore.restorePanesData(snapshot.panes);
 
-    activePaneId.value = snapshot.activePaneId;
-    if (snapshot.layout) {
-      layout.value = snapshot.layout;
-    }
+    const paneIds = new Set(snapshot.panes.map((pane) => pane.id));
+    const fallbackPaneId = snapshot.panes[0]!.id;
+    activePaneId.value = paneIds.has(snapshot.activePaneId) ? snapshot.activePaneId : fallbackPaneId;
+    layout.value = snapshot.layout
+      ? (retainLayoutPanes(snapshot.layout, paneIds) ?? createPaneNode(fallbackPaneId))
+      : createPaneNode(fallbackPaneId);
   };
 
   const findPaneInLayout = (paneId: string, node?: LayoutNode): LayoutNode | undefined => {
