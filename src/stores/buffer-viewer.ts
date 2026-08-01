@@ -3,6 +3,8 @@ import {
   RouteNames,
   type BufferViewerStore,
   type BufferViewerEntry,
+  type Pane,
+  type Tab,
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
 import {
@@ -11,7 +13,8 @@ import {
   type AsyncComponentLoader,
   type Component,
 } from 'vue';
-import type { RouteLocationRaw } from 'vue-router';
+import type { RouteLocationRaw, RouteRecordNameGeneric } from 'vue-router';
+import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import { usePaneStore } from './pane';
 import { useConfigStore } from './config';
 
@@ -26,6 +29,16 @@ const getRouteNameForScheme = (scheme: string): string => {
   };
   return mapping[scheme] ?? RouteNames.File;
 };
+
+interface BufferRouteLocation {
+  name: RouteRecordNameGeneric;
+  params: { path: string };
+}
+
+interface OpenBufferLocation {
+  paneId: string;
+  tabId: string;
+}
 
 const DEFAULT_PRIORITY = 10;
 
@@ -49,6 +62,14 @@ const getExtensionCandidates = (path: string): string[] => {
   if (parts.length === 0) return [];
   return parts.map((_, index) => parts.slice(index).join('.'));
 };
+
+const prioritizeActive = <T extends { id: string }>(items: T[], activeId?: string): T[] => {
+  const active = items.find((item) => item.id === activeId);
+  return active ? [active, ...items.filter((item) => item.id !== activeId)] : items;
+};
+
+const tabMatchesUri = (tab: Tab, uri: string): boolean =>
+  extractPathFromRoute(tab.router.currentRoute.value) === uri;
 
 export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
   'buffer-viewer',
@@ -94,7 +115,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       return findPreferredViewer(matching, path) ?? matching[0];
     };
 
-    const buildRouteLocation = (uri: string): RouteLocationRaw => {
+    const buildRouteLocation = (uri: string): BufferRouteLocation => {
       const { scheme, path } = parseBufferUri(uri);
       return {
         name: getRouteNameForScheme(scheme),
@@ -111,8 +132,34 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       return true;
     };
 
-    const open = async (uri: string): Promise<void> => {
-      const route = buildRouteLocation(uri);
+    const orderedPanes = (): Pane[] =>
+      prioritizeActive(
+        Object.values(pane.panes).map((paneRef) => paneRef.value),
+        pane.activePaneId,
+      );
+
+    const findOpenBuffer = (uri: string): OpenBufferLocation | undefined => {
+      const match = orderedPanes()
+        .flatMap((currentPane) =>
+          prioritizeActive(Object.values(currentPane.tabs.value), currentPane.activeTabId).map(
+            (tab) => ({ paneId: currentPane.id, tab }),
+          ),
+        )
+        .find(({ tab }) => tabMatchesUri(tab, uri));
+      if (!match) return;
+      return { paneId: match.paneId, tabId: match.tab.id };
+    };
+
+    const focusOpenBuffer = (uri: string): boolean => {
+      const location = findOpenBuffer(uri);
+      if (!location) return false;
+      const isAlreadyActive =
+        pane.activePaneId === location.paneId && pane.activeTab?.id === location.tabId;
+      if (!isAlreadyActive) pane.selectTab(location.paneId, location.tabId);
+      return true;
+    };
+
+    const navigateToBuffer = async (route: BufferRouteLocation): Promise<void> => {
       if (pane.activeTab?.router) {
         await pane.navigate(route);
         return;
@@ -121,12 +168,27 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       if (!opened) throw new Error('buffer-viewer.open: no active pane available');
     };
 
+    const showOrOpen = async (uri: string): Promise<void> => {
+      const canonicalUri = parseBufferUri(uri).raw;
+      if (focusOpenBuffer(canonicalUri)) return;
+      await navigateToBuffer(buildRouteLocation(uri));
+    };
+
+    const open = async (uri: string): Promise<void> => {
+      if (configStore.config.ui.reuseExistingBuffers) {
+        await showOrOpen(uri);
+        return;
+      }
+      await navigateToBuffer(buildRouteLocation(uri));
+    };
+
     return {
       register,
       unregister,
       getViewers,
       getViewer,
       open,
+      showOrOpen,
     };
   },
 );

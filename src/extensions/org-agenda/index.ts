@@ -1,6 +1,6 @@
 import type { AsyncComponentLoader } from 'vue';
 import { getActivePinia } from 'pinia';
-import type { Command, Extension, OrgNoteApi } from 'orgnote-api';
+import { DefaultCommands, type Command, type Extension, type OrgNoteApi } from 'orgnote-api';
 import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
@@ -64,10 +64,11 @@ const toggleTasksSidebar = (api: OrgNoteApi): void => {
   api.ui.useSidebar().openComponent(AgendaSidebarRef);
 };
 
-const openBuffer =
+const showOrOpenBuffer =
   (uri: string) =>
-  (api: OrgNoteApi): Promise<void> =>
-    api.core.useBufferViewer().open(uri);
+  async (api: OrgNoteApi): Promise<void> => {
+    await api.core.useCommands().execute(DefaultCommands.SHOW_OR_OPEN_BUFFER, { uri });
+  };
 
 const AGENDA_VIEWS: readonly AgendaView[] = [
   {
@@ -93,7 +94,7 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     icon: 'sym_o_check_circle_unread',
     command: AGENDA_HABITS_COMMAND,
     component: () => import('./AgendaHabitsBuffer.vue'),
-    handler: openBuffer(AGENDA_HABITS_URI),
+    handler: showOrOpenBuffer(AGENDA_HABITS_URI),
   },
   {
     viewerId: AGENDA_POMODORO_VIEWER_ID,
@@ -102,7 +103,7 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     icon: 'sym_o_timer',
     command: AGENDA_POMODORO_COMMAND,
     component: () => import('./AgendaPomodoroBuffer.vue'),
-    handler: openBuffer(AGENDA_POMODORO_URI),
+    handler: showOrOpenBuffer(AGENDA_POMODORO_URI),
   },
   {
     viewerId: AGENDA_POMODORO_STATS_VIEWER_ID,
@@ -111,7 +112,7 @@ const AGENDA_VIEWS: readonly AgendaView[] = [
     icon: 'sym_o_bar_chart',
     command: AGENDA_POMODORO_STATS_COMMAND,
     component: () => import('./AgendaPomodoroStatsBuffer.vue'),
-    handler: openBuffer(AGENDA_POMODORO_STATS_URI),
+    handler: showOrOpenBuffer(AGENDA_POMODORO_STATS_URI),
   },
 ];
 

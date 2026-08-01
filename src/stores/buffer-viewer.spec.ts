@@ -1,14 +1,19 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { defineComponent } from 'vue';
+import { defineComponent, shallowRef } from 'vue';
 
 const mockNavigate = vi.fn();
 const mockAddTab = vi.fn();
+const mockSelectTab = vi.fn();
 let mockActivePaneId: string | undefined = 'pane-1';
-let mockActiveTab: { router: object } | undefined = { router: {} };
+let mockActiveTab: { id?: string; router: object } | undefined = { router: {} };
+let mockPanes: Record<string, ReturnType<typeof shallowRef>> = {};
 const mockConfig = {
   fileReaders: {
     preferredReaders: {} as Record<string, string>,
+  },
+  ui: {
+    reuseExistingBuffers: false,
   },
 };
 
@@ -16,6 +21,10 @@ vi.mock('./pane', () => ({
   usePaneStore: () => ({
     navigate: mockNavigate,
     addTab: mockAddTab,
+    selectTab: mockSelectTab,
+    get panes() {
+      return mockPanes;
+    },
     get activePaneId() {
       return mockActivePaneId;
     },
@@ -60,13 +69,35 @@ const { useBufferViewerStore } = await import('./buffer-viewer');
 
 const createMockComponent = (name: string) => defineComponent({ name, template: '<div />' });
 
+const POMODORO_URI = 'builtin:///agenda/pomodoro';
+
+const createPomodoroTab = (id: string, paneId: string) => ({
+  id,
+  paneId,
+  router: {
+    currentRoute: shallowRef({ name: 'Builtin', params: { path: '/agenda/pomodoro' } }),
+  },
+});
+
+const addMockPane = (paneId: string, tabs: ReturnType<typeof createPomodoroTab>[]): void => {
+  const activeTabId = tabs[0]?.id ?? '';
+  mockPanes[paneId] = shallowRef({
+    activeTabId,
+    id: paneId,
+    tabs: shallowRef(Object.fromEntries(tabs.map((tab) => [tab.id, tab]))),
+  });
+};
+
 beforeEach(() => {
   setActivePinia(createPinia());
   mockNavigate.mockReset();
   mockAddTab.mockReset();
+  mockSelectTab.mockReset();
   mockActivePaneId = 'pane-1';
   mockActiveTab = { router: {} };
+  mockPanes = {};
   mockConfig.fileReaders.preferredReaders = {};
+  mockConfig.ui.reuseExistingBuffers = false;
 });
 
 test('register reuses one async component wrapper for a viewer loader', () => {
@@ -197,6 +228,113 @@ test('unregister removes viewer by id', () => {
   store.unregister('test:remove');
 
   expect(store.getViewer('test.org')).toBeUndefined();
+});
+
+test('showOrOpen selects an existing buffer tab without navigating', async () => {
+  const existingTab = createPomodoroTab('pomodoro-tab', 'pane-2');
+  addMockPane('pane-1', []);
+  addMockPane('pane-2', [existingTab]);
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen(POMODORO_URI);
+
+  expect(mockSelectTab).toHaveBeenCalledWith('pane-2', existingTab.id);
+  expect(mockNavigate).not.toHaveBeenCalled();
+});
+
+test('showOrOpen keeps an already active buffer unchanged', async () => {
+  const existingTab = createPomodoroTab('pomodoro-tab', 'pane-1');
+  addMockPane('pane-1', [existingTab]);
+  mockActiveTab = existingTab;
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen(POMODORO_URI);
+
+  expect(mockSelectTab).not.toHaveBeenCalled();
+  expect(mockNavigate).not.toHaveBeenCalled();
+});
+
+test('showOrOpen treats an unqualified file path as its canonical file URI', async () => {
+  const existingTab = {
+    id: 'note-tab',
+    paneId: 'pane-2',
+    router: {
+      currentRoute: shallowRef({ name: 'File', params: { path: '/notes/example.org' } }),
+    },
+  };
+  addMockPane('pane-2', [existingTab]);
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen('/notes/example.org');
+
+  expect(mockSelectTab).toHaveBeenCalledWith('pane-2', existingTab.id);
+  expect(mockNavigate).not.toHaveBeenCalled();
+});
+
+test('showOrOpen does not conflate different buffer URI schemes', async () => {
+  const existingTab = {
+    id: 'file-tab',
+    paneId: 'pane-2',
+    router: {
+      currentRoute: shallowRef({ name: 'File', params: { path: '/notes/example.org' } }),
+    },
+  };
+  addMockPane('pane-2', [existingTab]);
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen('memory:///notes/example.org');
+
+  expect(mockSelectTab).not.toHaveBeenCalled();
+  expect(mockNavigate).toHaveBeenCalledWith({
+    name: 'File',
+    params: { path: '/notes/example.org' },
+  });
+});
+
+test('showOrOpen prefers a matching tab from the active pane', async () => {
+  const inactiveTab = createPomodoroTab('inactive-match', 'pane-2');
+  const activePaneTab = createPomodoroTab('active-pane-match', 'pane-1');
+  addMockPane('pane-2', [inactiveTab]);
+  addMockPane('pane-1', [activePaneTab]);
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen(POMODORO_URI);
+
+  expect(mockSelectTab).toHaveBeenCalledWith('pane-1', activePaneTab.id);
+});
+
+test('showOrOpen navigates when the buffer is not open', async () => {
+  const store = useBufferViewerStore();
+
+  await store.showOrOpen(POMODORO_URI);
+
+  expect(mockNavigate).toHaveBeenCalledWith({
+    name: 'Builtin',
+    params: { path: '/agenda/pomodoro' },
+  });
+});
+
+test('open selects an existing buffer when reuse is enabled', async () => {
+  const existingTab = createPomodoroTab('pomodoro-tab', 'pane-2');
+  addMockPane('pane-2', [existingTab]);
+  mockConfig.ui.reuseExistingBuffers = true;
+  const store = useBufferViewerStore();
+
+  await store.open(POMODORO_URI);
+
+  expect(mockSelectTab).toHaveBeenCalledWith('pane-2', existingTab.id);
+  expect(mockNavigate).not.toHaveBeenCalled();
+});
+
+test('open preserves duplicate navigation when reuse is disabled', async () => {
+  const existingTab = createPomodoroTab('pomodoro-tab', 'pane-2');
+  addMockPane('pane-2', [existingTab]);
+  const store = useBufferViewerStore();
+
+  await store.open(POMODORO_URI);
+
+  expect(mockSelectTab).not.toHaveBeenCalled();
+  expect(mockNavigate).toHaveBeenCalledOnce();
 });
 
 test('open navigates to remote route for remote scheme', async () => {

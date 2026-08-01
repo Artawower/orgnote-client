@@ -58,6 +58,7 @@ export const DEFAULT_CONFIG: OrgNoteConfig = {
     persistantPanes: true,
     persistantPanesSaveDelay: DEFAULT_PANE_PERSISTENCE_SAVE_DELAY,
     followActiveBufferInSidebar: false,
+    reuseExistingBuffers: false,
     dropZoneEdgeRatio: 0.25,
     graph: {
       ...DEFAULT_GRAPH_CONFIG,
