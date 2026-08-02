@@ -19,7 +19,9 @@ import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
 import { createAgendaTaskSearchId } from '../services/agenda-task-search-index';
 import type {
   AgendaDateFilter,
+  AgendaDayPreset,
   AgendaFilter,
+  AgendaRangePreset,
   AgendaTaskQuery,
 } from '../models/agenda-task-query';
 import {
@@ -88,11 +90,43 @@ const computePresetViewDate = (task: FileTask, filter: AgendaFilter, now: Date):
   return findNextOccurrenceInRange(task, now, 7) ?? todayForAgenda(now);
 };
 
+type RelativeAgendaPreset = AgendaDayPreset | AgendaRangePreset;
+
+interface RelativePresetContext {
+  readonly preset: RelativeAgendaPreset;
+  readonly now: Date;
+}
+
+const resolveRelativePresetContext = (
+  filter: AgendaDateFilter,
+): RelativePresetContext | undefined => {
+  if (filter.kind === 'day' && filter.relativePreset) {
+    const selectedDate = parseISO(filter.value);
+    const now =
+      filter.relativePreset === 'tomorrow' ? addDays(selectedDate, -1) : selectedDate;
+    return { preset: filter.relativePreset, now };
+  }
+  if (filter.kind === 'range' && filter.relativePreset) {
+    return { preset: filter.relativePreset, now: parseISO(filter.from) };
+  }
+  return;
+};
+
+const resolvePresetTaskViewDate = (
+  task: FileTask,
+  context: RelativePresetContext,
+): Date | undefined => {
+  if (!isPresetVisible(task, context.preset, context.now)) return;
+  return computePresetViewDate(task, context.preset, context.now);
+};
+
 const resolveTaskViewDate = (
   task: FileTask,
   filter: AgendaDateFilter,
   now: Date,
 ): Date | undefined => {
+  const relativePreset = resolveRelativePresetContext(filter);
+  if (relativePreset) return resolvePresetTaskViewDate(task, relativePreset);
   if (filter.kind === 'day') {
     const date = parseISO(filter.value);
     return findTaskDateInRange(task, date, date);

@@ -1,8 +1,23 @@
 import { expect, test } from 'vitest';
 import {
+  createAgendaDateFilter,
   resolveAgendaDateSelection,
   resolveAgendaQuickAddDate,
 } from './agenda-date-selection';
+
+test('createAgendaDateFilter restores Today semantics for the current local day', () => {
+  expect(createAgendaDateFilter('2026-05-18', '2026-05-18')).toEqual({
+    kind: 'preset',
+    value: 'today',
+  });
+});
+
+test('createAgendaDateFilter preserves another day as an exact selection', () => {
+  expect(createAgendaDateFilter('2026-05-20', '2026-05-18')).toEqual({
+    kind: 'day',
+    value: '2026-05-20',
+  });
+});
 
 test('resolveAgendaDateSelection preserves an exact day as a single selection', () => {
   expect(

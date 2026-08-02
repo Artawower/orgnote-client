@@ -46,7 +46,7 @@ test('Today opens one buffer for the concrete local date', async () => {
   await command.handler(api, { meta: command });
 
   expect(execute).toHaveBeenCalledWith(DefaultCommands.SHOW_OR_OPEN_BUFFER, {
-    uri: 'builtin:///agenda-tasks/day/2026-05-14',
+    uri: 'builtin:///agenda-tasks/day/2026-05-14/today',
   });
 });
 
@@ -58,7 +58,7 @@ test('Tomorrow opens a separate concrete day buffer', async () => {
   await command.handler(api, { meta: command });
 
   expect(execute).toHaveBeenCalledWith(DefaultCommands.SHOW_OR_OPEN_BUFFER, {
-    uri: 'builtin:///agenda-tasks/day/2026-05-15',
+    uri: 'builtin:///agenda-tasks/day/2026-05-15/tomorrow',
   });
 });
 
@@ -70,7 +70,7 @@ test('Next 7 days opens a concrete range buffer', async () => {
   await command.handler(api, { meta: command });
 
   expect(execute).toHaveBeenCalledWith(DefaultCommands.SHOW_OR_OPEN_BUFFER, {
-    uri: 'builtin:///agenda-tasks/range/2026-05-14/2026-05-21',
+    uri: 'builtin:///agenda-tasks/range/2026-05-14/2026-05-21/next7days',
   });
 });
 
@@ -103,13 +103,15 @@ test('date filter command initializes the picker from the active day buffer', as
   expect(execute).not.toHaveBeenCalled();
 });
 
-test('selected Today remains a concrete day buffer', async () => {
+test('selected Today preserves relative semantics in its concrete day buffer', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-05-18T12:00:00'));
   openModal.mockResolvedValue({ selection: '2026-05-18' });
 
   await openAgendaDateFilterCommand.handler(api, { meta: openAgendaDateFilterCommand });
 
   expect(execute).toHaveBeenCalledWith(DefaultCommands.SHOW_OR_OPEN_BUFFER, {
-    uri: 'builtin:///agenda-tasks/day/2026-05-18',
+    uri: 'builtin:///agenda-tasks/day/2026-05-18/today',
   });
 });
 

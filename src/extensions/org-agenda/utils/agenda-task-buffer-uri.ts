@@ -2,7 +2,12 @@ import { addDays, format, isValid, parseISO } from 'date-fns';
 import { buildBufferUri, parseBufferUri } from 'orgnote-api';
 import { ISO_DATE_FORMAT } from 'src/utils/org-date';
 import { AGENDA_TASKS_PATH, AGENDA_TASKS_PATTERN } from '../constants';
-import type { AgendaDateFilter, AgendaFilter } from '../models/agenda-task-query';
+import type {
+  AgendaDateFilter,
+  AgendaDayPreset,
+  AgendaFilter,
+  AgendaRangePreset,
+} from '../models/agenda-task-query';
 
 const ALL_FILTER: AgendaDateFilter = { kind: 'preset', value: 'all' };
 const TASKS_SEGMENT = AGENDA_TASKS_PATH.slice(1);
@@ -21,20 +26,36 @@ const isIsoDate = (value: string | undefined): value is string => {
   return isValid(parsed) && toIsoDate(parsed) === value;
 };
 
+type AgendaDayFilter = Extract<AgendaDateFilter, { kind: 'day' }>;
 type AgendaRangeFilter = Extract<AgendaDateFilter, { kind: 'range' }>;
 
-const normalizeRange = (from: string, to: string): AgendaRangeFilter =>
-  from <= to ? { kind: 'range', from, to } : { kind: 'range', from: to, to: from };
+const normalizeRange = (
+  from: string,
+  to: string,
+  relativePreset?: AgendaRangePreset,
+): AgendaRangeFilter => ({
+  kind: 'range',
+  from: from <= to ? from : to,
+  to: from <= to ? to : from,
+  ...(relativePreset ? { relativePreset } : {}),
+});
 
 export const resolveAgendaPresetFilter = (
   preset: AgendaFilter,
   now = new Date(),
 ): AgendaDateFilter => {
   const today = toIsoDate(now);
-  if (preset === 'today') return { kind: 'day', value: today };
-  if (preset === 'tomorrow') return { kind: 'day', value: toIsoDate(addDays(now, 1)) };
+  if (preset === 'today') return { kind: 'day', value: today, relativePreset: 'today' };
+  if (preset === 'tomorrow') {
+    return { kind: 'day', value: toIsoDate(addDays(now, 1)), relativePreset: 'tomorrow' };
+  }
   if (preset === 'next7days') {
-    return { kind: 'range', from: today, to: toIsoDate(addDays(now, NEXT_DAYS_OFFSET)) };
+    return {
+      kind: 'range',
+      from: today,
+      to: toIsoDate(addDays(now, NEXT_DAYS_OFFSET)),
+      relativePreset: 'next7days',
+    };
   }
   return { kind: 'preset', value: preset };
 };
@@ -42,38 +63,56 @@ export const resolveAgendaPresetFilter = (
 const resolveConcreteFilter = (filter: AgendaDateFilter, now: Date): AgendaDateFilter =>
   filter.kind === 'preset' ? resolveAgendaPresetFilter(filter.value, now) : filter;
 
+const buildDayBufferUri = (filter: AgendaDayFilter): string => {
+  const suffix = filter.relativePreset ? `/${filter.relativePreset}` : '';
+  return buildBufferUri(
+    'builtin',
+    `${AGENDA_TASKS_PATH}/${DAY_SEGMENT}/${filter.value}${suffix}`,
+  );
+};
+
+const buildRangeBufferUri = (filter: AgendaRangeFilter): string => {
+  const range = normalizeRange(filter.from, filter.to, filter.relativePreset);
+  const suffix = range.relativePreset ? `/${range.relativePreset}` : '';
+  return buildBufferUri(
+    'builtin',
+    `${AGENDA_TASKS_PATH}/${RANGE_SEGMENT}/${range.from}/${range.to}${suffix}`,
+  );
+};
+
 export const buildAgendaTaskBufferUri = (
   filter: AgendaDateFilter,
   now = new Date(),
 ): string => {
   const concreteFilter = resolveConcreteFilter(filter, now);
-  if (concreteFilter.kind === 'day') {
-    return buildBufferUri('builtin', `${AGENDA_TASKS_PATH}/${DAY_SEGMENT}/${concreteFilter.value}`);
-  }
-  if (concreteFilter.kind === 'range') {
-    const range = normalizeRange(concreteFilter.from, concreteFilter.to);
-    return buildBufferUri(
-      'builtin',
-      `${AGENDA_TASKS_PATH}/${RANGE_SEGMENT}/${range.from}/${range.to}`,
-    );
-  }
+  if (concreteFilter.kind === 'day') return buildDayBufferUri(concreteFilter);
+  if (concreteFilter.kind === 'range') return buildRangeBufferUri(concreteFilter);
   return buildBufferUri(
     'builtin',
     `${AGENDA_TASKS_PATH}/${PRESET_SEGMENT}/${concreteFilter.value}`,
   );
 };
 
+const isDayPreset = (value: string | undefined): value is AgendaDayPreset =>
+  value === 'today' || value === 'tomorrow';
+
 const parseDayFilter = (segments: string[]): AgendaDateFilter | undefined => {
   const value = segments[2];
-  if (segments.length !== 3 || !isIsoDate(value)) return;
-  return { kind: 'day', value };
+  if (!isIsoDate(value)) return;
+  if (segments.length === 3) return { kind: 'day', value };
+  const relativePreset = segments[3];
+  if (segments.length !== 4 || !isDayPreset(relativePreset)) return;
+  return { kind: 'day', value, relativePreset };
 };
 
 const parseRangeFilter = (segments: string[]): AgendaDateFilter | undefined => {
   const from = segments[2];
   const to = segments[3];
-  if (segments.length !== 4 || !isIsoDate(from) || !isIsoDate(to)) return;
-  return normalizeRange(from, to);
+  if (!isIsoDate(from) || !isIsoDate(to)) return;
+  if (segments.length === 4) return normalizeRange(from, to);
+  if (segments.length !== 5 || segments[4] !== 'next7days') return;
+  if (toIsoDate(addDays(parseISO(from), NEXT_DAYS_OFFSET)) !== to) return;
+  return normalizeRange(from, to, 'next7days');
 };
 
 const parsePresetFilter = (segments: string[]): AgendaDateFilter | undefined => {
@@ -94,6 +133,12 @@ export const parseAgendaTaskBufferUri = (uri: string): AgendaDateFilter | undefi
   return;
 };
 
+const hasSameConcreteDates = (left: AgendaDateFilter, right: AgendaDateFilter): boolean => {
+  if (left.kind === 'day' && right.kind === 'day') return left.value === right.value;
+  if (left.kind !== 'range' || right.kind !== 'range') return false;
+  return left.from === right.from && left.to === right.to;
+};
+
 export const resolveAgendaTaskBufferPreset = (
   uri: string,
   now = new Date(),
@@ -101,9 +146,7 @@ export const resolveAgendaTaskBufferPreset = (
   const filter = parseAgendaTaskBufferUri(uri);
   if (!filter) return;
   if (filter.kind === 'preset') return filter.value;
-  const concreteUri = buildAgendaTaskBufferUri(filter, now);
-  return DYNAMIC_PRESETS.find(
-    (preset) =>
-      buildAgendaTaskBufferUri({ kind: 'preset', value: preset }, now) === concreteUri,
+  return DYNAMIC_PRESETS.find((preset) =>
+    hasSameConcreteDates(filter, resolveAgendaPresetFilter(preset, now)),
   );
 };

@@ -7,9 +7,13 @@ export const AGENDA_POMODORO_URI = buildBufferUri('builtin', '/agenda-pomodoro')
 export const AGENDA_POMODORO_STATS_URI = buildBufferUri('builtin', '/agenda-pomodoro-stats');
 
 const AGENDA_DATE_PATH_PATTERN = '\\d{4}-\\d{2}-\\d{2}';
+const AGENDA_DAY_PATH_PATTERN =
+  `/day/${AGENDA_DATE_PATH_PATTERN}(?:/(?:today|tomorrow))?`;
+const AGENDA_RANGE_PATH_PATTERN =
+  `/range/${AGENDA_DATE_PATH_PATTERN}/${AGENDA_DATE_PATH_PATTERN}(?:/next7days)?`;
 const AGENDA_TASK_SCOPED_PATH_PATTERN = [
-  `/day/${AGENDA_DATE_PATH_PATTERN}`,
-  `/range/${AGENDA_DATE_PATH_PATTERN}/${AGENDA_DATE_PATH_PATTERN}`,
+  AGENDA_DAY_PATH_PATTERN,
+  AGENDA_RANGE_PATH_PATTERN,
   '/preset/(?:overdue|all)',
 ].join('|');
 export const AGENDA_TASKS_PATTERN =
