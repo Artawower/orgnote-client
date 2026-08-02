@@ -90,6 +90,12 @@ const DEFAULT_COMMANDS: Record<CommandContext, CommandName[]> = {
     DefaultCommands.DELETE_FILE,
     DefaultCommands.SELECT_FILE,
   ],
+  'context-menu-org-link': [
+    DefaultCommands.OPEN_LINK_IN_NEW_TAB,
+    DefaultCommands.OPEN_LINK_IN_ADJACENT_PANE,
+    DefaultCommands.COPY_LINK,
+  ],
+  'context-menu-external-link': [DefaultCommands.COPY_LINK],
 };
 
 export const usePinnedCommandsStore = defineStore<'pinnedCommands', PinnedCommandsStore>(

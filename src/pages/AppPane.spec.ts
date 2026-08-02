@@ -97,6 +97,7 @@ const configurePaneApi = (
   moveTab: ReturnType<typeof vi.fn>,
   splitPaneInLayout: ReturnType<typeof vi.fn>,
   targetTabs: Record<string, unknown> = {},
+  activePaneId = 'target-pane',
 ) => {
   const paneActions = {
     closePane: vi.fn(),
@@ -107,7 +108,7 @@ const configurePaneApi = (
   };
   apiMocks.usePane.mockReturnValue({
     ...paneActions,
-    activePaneId: 'target-pane',
+    activePaneId,
     draggedTabData: { paneId: 'source-pane', tabId: 'dragged-tab' },
     isDraggingTab: true,
     moveTab,
@@ -133,6 +134,15 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+});
+
+test('AppPane activates itself on pointer down before a context menu opens', async () => {
+  const actions = configurePaneApi(vi.fn(), vi.fn(), {}, 'source-pane');
+  const wrapper = mountAppPane();
+
+  await wrapper.get('.pane-container').trigger('pointerdown', { button: 2 });
+
+  expect(actions.setActivePane).toHaveBeenCalledWith('target-pane');
 });
 
 test('AppPane rolls back a newly split pane when moving the dragged tab fails', async () => {

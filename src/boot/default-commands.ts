@@ -20,6 +20,7 @@ import { getSearchCommands } from 'src/commands/search-commands';
 import { getGraphCommands } from 'src/commands/graph-commands';
 import { useKeybindingsStore } from 'src/stores/keybindings';
 import { getUpdateCommands } from 'src/commands/update-commands';
+import { getLinkCommands } from 'src/commands/link-commands';
 
 export default defineBoot(async ({ router }) => {
   const commandsStore = useCommandsStore();
@@ -44,6 +45,7 @@ export default defineBoot(async ({ router }) => {
     ...createAuthCommands(router),
     ...getGraphCommands(),
     ...getUpdateCommands(),
+    ...getLinkCommands(),
   );
 
   useKeybindingsStore();

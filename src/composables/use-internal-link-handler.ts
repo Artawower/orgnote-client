@@ -3,11 +3,10 @@ import { reporter } from 'src/boot/report';
 import {
   resolveInternalNoteUri,
   resolveRelativeOrgFilePath,
-  buildContextualBufferUri,
   resolveBufferSchemeFromRouteName,
 } from 'src/utils/org-link';
 import { buildNoteContent } from 'src/utils/create-note-from-link';
-import { buildBufferUri, type BufferScheme } from 'orgnote-api';
+import { buildBufferUri, type BufferScheme, type BufferViewerStore } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { createLinkedNote, persistLinkedNote } from 'src/composables/create-linked-note';
@@ -36,9 +35,23 @@ const createMissingNoteByPath = (filePath: string) => {
   return persistLinkedNote(api, { id, title, filePath, content });
 };
 
-const openBufferUri = async (uri: string): Promise<void> => {
+export type OpenLinkTarget = 'current' | 'new-tab' | 'adjacent-pane';
+
+type BufferOpenMethod = keyof Pick<
+  BufferViewerStore,
+  'open' | 'openInNewTab' | 'openInAdjacentPane'
+>;
+
+const BUFFER_OPEN_METHODS: Record<OpenLinkTarget, BufferOpenMethod> = {
+  current: 'open',
+  'new-tab': 'openInNewTab',
+  'adjacent-pane': 'openInAdjacentPane',
+};
+
+const openBufferUri = async (uri: string, target: OpenLinkTarget): Promise<void> => {
   const bufferViewer = api.core.useBufferViewer();
-  const openResult = await to(bufferViewer.open.bind(bufferViewer))(uri);
+  const openMethod = bufferViewer[BUFFER_OPEN_METHODS[target]];
+  const openResult = await to(openMethod.bind(bufferViewer))(uri);
   if (openResult.isErr()) {
     reporter.reportError(openResult.error);
   }
@@ -70,14 +83,18 @@ const ensureLocalLinkFileExists = async (scheme: BufferScheme, path: string): Pr
 };
 
 export const useInternalLinkHandler = () => {
-  const handleClick = async (noteId: string, title: string): Promise<void> => {
+  const handleClick = async (
+    noteId: string,
+    title: string,
+    target: OpenLinkTarget = 'current',
+  ): Promise<void> => {
     const result = await resolveInternalNoteUri(noteId, api.core.useFileMeta().getById);
     if (result.isErr()) {
       reporter.reportError(result.error);
       return;
     }
     if (result.value) {
-      api.core.useBufferViewer().open(result.value);
+      await openBufferUri(result.value, target);
       return;
     }
     if (!shouldAutoCreateMissingNotes()) {
@@ -93,10 +110,13 @@ export const useInternalLinkHandler = () => {
       reporter.reportError(createResult.error);
       return;
     }
-    api.core.useBufferViewer().open(createResult._unsafeUnwrap());
+    await openBufferUri(createResult.value, target);
   };
 
-  const handleFileLink = async (rawLink: string): Promise<void> => {
+  const handleFileLink = async (
+    rawLink: string,
+    target: OpenLinkTarget = 'current',
+  ): Promise<void> => {
     const currentFilePath = getCurrentFilePath();
     if (!currentFilePath) {
       reporter.reportError(new Error('Cannot open link: current file path unknown'));
@@ -105,14 +125,14 @@ export const useInternalLinkHandler = () => {
 
     const scheme = resolveActiveScheme();
     const path = resolveRelativeOrgFilePath(rawLink, currentFilePath);
-    const uri = buildContextualBufferUri(rawLink, { scheme, currentFilePath });
+    const uri = buildBufferUri(scheme, path);
 
     const isFileReady = await ensureLocalLinkFileExists(scheme, path);
     if (!isFileReady) {
       return;
     }
 
-    await openBufferUri(uri);
+    await openBufferUri(uri, target);
   };
 
   return { handleClick, handleFileLink };

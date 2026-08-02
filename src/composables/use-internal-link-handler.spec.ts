@@ -6,6 +6,8 @@ const {
   mockFileInfo,
   mockSave,
   mockOpen,
+  mockOpenInNewTab,
+  mockOpenInAdjacentPane,
   mockReportError,
 } = vi.hoisted(() => ({
   mockGetById: vi.fn(),
@@ -13,6 +15,8 @@ const {
   mockFileInfo: vi.fn(),
   mockSave: vi.fn(),
   mockOpen: vi.fn(),
+  mockOpenInNewTab: vi.fn(),
+  mockOpenInAdjacentPane: vi.fn(),
   mockReportError: vi.fn(),
 }));
 
@@ -33,6 +37,8 @@ vi.mock('src/boot/api', () => ({
       }),
       useBufferViewer: () => ({
         open: mockOpen,
+        openInNewTab: mockOpenInNewTab,
+        openInAdjacentPane: mockOpenInAdjacentPane,
       }),
       usePane: () => ({
         activeRoute: {
@@ -77,6 +83,22 @@ test('useInternalLinkHandler handleClick opens existing note when found', async 
   await handleClick('abc-123', 'My Note');
   expect(mockOpen).toHaveBeenCalledWith('file://notes/existing.org');
   expect(mockWriteFile).not.toHaveBeenCalled();
+});
+
+test('useInternalLinkHandler handleClick opens existing note in a new tab', async () => {
+  const { handleClick } = useInternalLinkHandler();
+  await handleClick('abc-123', 'My Note', 'new-tab');
+
+  expect(mockOpenInNewTab).toHaveBeenCalledWith('file://notes/existing.org');
+  expect(mockOpen).not.toHaveBeenCalled();
+});
+
+test('useInternalLinkHandler handleClick opens existing note in an adjacent pane', async () => {
+  const { handleClick } = useInternalLinkHandler();
+  await handleClick('abc-123', 'My Note', 'adjacent-pane');
+
+  expect(mockOpenInAdjacentPane).toHaveBeenCalledWith('file://notes/existing.org');
+  expect(mockOpen).not.toHaveBeenCalled();
 });
 
 test('useInternalLinkHandler handleClick creates and opens note when not found', async () => {

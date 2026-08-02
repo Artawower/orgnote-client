@@ -42,7 +42,7 @@ export const useDynamicComponent = () => {
 
     app.config.warnHandler = (msg, _instance, trace) => {
       if (destroyed) return;
-      logger.warn('[Widget Runtime Warn]', { msg, trace });
+      logger.warn(`[Widget Runtime Warn] ${msg}`, { msg, trace });
     };
 
     const [err] = to(() => app!.mount(wrap))();

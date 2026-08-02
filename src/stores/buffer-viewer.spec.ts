@@ -1,10 +1,13 @@
 import { test, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { defineComponent, shallowRef } from 'vue';
+import type { LayoutNode } from 'orgnote-api';
 
 const mockNavigate = vi.fn();
 const mockAddTab = vi.fn();
 const mockSelectTab = vi.fn();
+const mockSetActivePane = vi.fn();
+const mockLayout = { value: undefined as LayoutNode | undefined };
 let mockActivePaneId: string | undefined = 'pane-1';
 let mockActiveTab: { id?: string; router: object } | undefined = { router: {} };
 let mockPanes: Record<string, ReturnType<typeof shallowRef>> = {};
@@ -22,6 +25,7 @@ vi.mock('./pane', () => ({
     navigate: mockNavigate,
     addTab: mockAddTab,
     selectTab: mockSelectTab,
+    setActivePane: mockSetActivePane,
     get panes() {
       return mockPanes;
     },
@@ -37,6 +41,14 @@ vi.mock('./pane', () => ({
 vi.mock('./config', () => ({
   useConfigStore: () => ({
     config: mockConfig,
+  }),
+}));
+
+vi.mock('./layout', () => ({
+  useLayoutStore: () => ({
+    get layout() {
+      return mockLayout.value;
+    },
   }),
 }));
 
@@ -94,9 +106,14 @@ beforeEach(() => {
   mockNavigate.mockReset();
   mockAddTab.mockReset();
   mockSelectTab.mockReset();
+  mockSetActivePane.mockReset();
+  mockSetActivePane.mockImplementation((paneId: string) => {
+    mockActivePaneId = paneId;
+  });
   mockActivePaneId = 'pane-1';
   mockActiveTab = { router: {} };
   mockPanes = {};
+  mockLayout.value = undefined;
   mockConfig.fileReaders.preferredReaders = {};
   mockConfig.ui.reuseExistingBuffers = false;
 });
@@ -251,6 +268,65 @@ test('unregister clears state owned by the removed viewer', () => {
   });
 
   expect(currentHandle.get()).toBeUndefined();
+});
+
+test('openInNewTab always creates a tab in the active pane', async () => {
+  mockAddTab.mockResolvedValueOnce({ id: 'tab-2', paneId: 'pane-1' });
+  const store = useBufferViewerStore();
+
+  await store.openInNewTab(POMODORO_URI);
+
+  expect(mockAddTab).toHaveBeenCalledWith('pane-1');
+  expect(mockNavigate).toHaveBeenCalledWith(
+    { name: 'Builtin', params: { path: '/agenda/pomodoro' } },
+    'pane-1',
+    'tab-2',
+  );
+});
+
+test('openInNewTab rejects without an active pane', async () => {
+  mockActivePaneId = undefined;
+  const store = useBufferViewerStore();
+
+  await expect(store.openInNewTab(POMODORO_URI)).rejects.toThrow(
+    'buffer-viewer.openInNewTab: no active pane available',
+  );
+});
+
+test('openInAdjacentPane opens a new tab in the next pane', async () => {
+  mockLayout.value = {
+    type: 'split',
+    id: 'split-1',
+    orientation: 'horizontal',
+    children: [
+      { type: 'pane', id: 'node-1', paneId: 'pane-1' },
+      { type: 'pane', id: 'node-2', paneId: 'pane-2' },
+    ],
+  };
+  mockAddTab.mockResolvedValueOnce({ id: 'tab-2', paneId: 'pane-2' });
+  const store = useBufferViewerStore();
+
+  await store.openInAdjacentPane(POMODORO_URI);
+
+  expect(mockAddTab).toHaveBeenCalledWith('pane-2');
+  expect(mockNavigate).toHaveBeenCalledWith(
+    { name: 'Builtin', params: { path: '/agenda/pomodoro' } },
+    'pane-2',
+    'tab-2',
+  );
+  expect(mockSetActivePane).toHaveBeenCalledWith('pane-2');
+});
+
+test('openInAdjacentPane falls back to the current pane', async () => {
+  const store = useBufferViewerStore();
+
+  await store.openInAdjacentPane(POMODORO_URI);
+
+  expect(mockNavigate).toHaveBeenCalledWith({
+    name: 'Builtin',
+    params: { path: '/agenda/pomodoro' },
+  });
+  expect(mockAddTab).not.toHaveBeenCalled();
 });
 
 test('showOrOpen selects an existing buffer tab without navigating', async () => {

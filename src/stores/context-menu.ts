@@ -55,6 +55,8 @@ export const useContextMenuStore = defineStore<'contextMenu', ContextMenuStore>(
     registerGroup('file', { commandContext: 'context-menu-file' });
     registerGroup('dir', { commandContext: 'context-menu-dir' });
     registerGroup('tab', { commandContext: 'file-actions' });
+    registerGroup('org-link', { commandContext: 'context-menu-org-link' });
+    registerGroup('external-link', { commandContext: 'context-menu-external-link' });
 
     const store: ContextMenuStore = {
       registerGroup,

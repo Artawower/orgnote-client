@@ -45,6 +45,25 @@ test('useContextMenuStore dir group derives actions from context-menu-dir pinned
   );
 });
 
+test('useContextMenuStore org link group exposes open and copy actions', () => {
+  const store = useContextMenuStore();
+  const actions = store.getContextMenuActions('org-link');
+
+  expect(actions).toEqual([
+    { command: DefaultCommands.OPEN_LINK_IN_NEW_TAB },
+    { command: DefaultCommands.OPEN_LINK_IN_ADJACENT_PANE },
+    { command: DefaultCommands.COPY_LINK },
+  ]);
+});
+
+test('useContextMenuStore external link group exposes only copy action', () => {
+  const store = useContextMenuStore();
+
+  expect(store.getContextMenuActions('external-link')).toEqual([
+    { command: DefaultCommands.COPY_LINK },
+  ]);
+});
+
 test('useContextMenuStore reacts to pinned commands changes', () => {
   const contextMenu = useContextMenuStore();
   const pinnedCommands = usePinnedCommandsStore();

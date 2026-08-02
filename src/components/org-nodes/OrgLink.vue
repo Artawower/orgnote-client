@@ -1,17 +1,15 @@
 <template>
-  <app-link
-    :href="href"
-    :external="!handledByApp"
-    class="org-link"
-    @click="handleClick"
-  >
-    {{ displayText }}
-  </app-link>
+  <context-menu :group="contextMenuGroup" :data="contextMenuData">
+    <app-link :href="href" :external="!handledByApp" class="org-link" @click="handleClick">
+      {{ displayText }}
+    </app-link>
+  </context-menu>
 </template>
 
 <script setup lang="ts">
 import type { OrgNode } from 'org-mode-ast';
 import AppLink from 'src/components/AppLink.vue';
+import ContextMenu from 'src/components/ContextMenu.vue';
 import { computed, toRef } from 'vue';
 import {
   isInternalLink,
@@ -21,6 +19,7 @@ import {
   normalizeOrgResourcePath,
 } from 'src/utils/org-link';
 import { useInternalLinkHandler } from 'src/composables/use-internal-link-handler';
+import type { LinkMenuData } from 'src/models/link-menu-data';
 
 const props = defineProps<{
   node: OrgNode;
@@ -49,7 +48,18 @@ const linkNameNode = computed(() =>
 );
 
 const displayText = computed(
-  () => linkNameNode.value?.children?.get(1).rawValue ?? linkAddress.value,
+  () => linkNameNode.value?.children?.get(1)?.rawValue ?? linkAddress.value,
+);
+
+const contextMenuGroup = computed(() => (handledByApp.value ? 'org-link' : 'external-link'));
+const contextMenuData = computed<LinkMenuData>(() =>
+  handledByApp.value
+    ? {
+        kind: 'org',
+        target: linkAddress.value,
+        title: displayText.value,
+      }
+    : { kind: 'external', url: linkAddress.value },
 );
 
 const { handleClick: handleInternalLink, handleFileLink } = useInternalLinkHandler();

@@ -7,17 +7,14 @@ import {
   type Tab,
 } from 'orgnote-api';
 import { defineStore } from 'pinia';
-import {
-  defineAsyncComponent,
-  shallowRef,
-  type AsyncComponentLoader,
-  type Component,
-} from 'vue';
+import { defineAsyncComponent, shallowRef, type AsyncComponentLoader, type Component } from 'vue';
 import type { RouteLocationRaw, RouteRecordNameGeneric } from 'vue-router';
 import { extractPathFromRoute } from 'src/utils/extract-path-from-route';
 import { usePaneStore } from './pane';
 import { useConfigStore } from './config';
+import { useLayoutStore } from './layout';
 import { useBufferViewStateStore } from './buffer-view-state';
+import { getAdjacentPaneId } from 'src/utils/layout-adjacency';
 
 const getRouteNameForScheme = (scheme: string): string => {
   const mapping: Record<string, string> = {
@@ -79,6 +76,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
 
     const pane = usePaneStore();
     const configStore = useConfigStore();
+    const layoutStore = useLayoutStore();
     const viewStateStore = useBufferViewStateStore();
 
     const getPreferredViewerId = (path: string): string | undefined => {
@@ -126,8 +124,10 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       };
     };
 
-    const openInNewTab = async (route: RouteLocationRaw): Promise<boolean> => {
-      const paneId = pane.activePaneId;
+    const createBufferTab = async (
+      route: RouteLocationRaw,
+      paneId = pane.activePaneId,
+    ): Promise<boolean> => {
       if (!paneId) return false;
       const tab = await pane.addTab(paneId);
       if (!tab) return false;
@@ -167,7 +167,7 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
         await pane.navigate(route);
         return;
       }
-      const opened = await openInNewTab(route);
+      const opened = await createBufferTab(route);
       if (!opened) throw new Error('buffer-viewer.open: no active pane available');
     };
 
@@ -185,12 +185,35 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       await navigateToBuffer(buildRouteLocation(uri));
     };
 
+    const openInNewTab = async (uri: string): Promise<void> => {
+      const opened = await createBufferTab(buildRouteLocation(uri));
+      if (!opened) throw new Error('buffer-viewer.openInNewTab: no active pane available');
+    };
+
+    const openInAdjacentPane = async (uri: string): Promise<void> => {
+      const adjacentPaneId = getAdjacentPaneId(layoutStore.layout, pane.activePaneId);
+      if (!adjacentPaneId) {
+        await open(uri);
+        return;
+      }
+
+      const opened = await createBufferTab(buildRouteLocation(uri), adjacentPaneId);
+      if (!opened) {
+        await open(uri);
+        return;
+      }
+
+      pane.setActivePane(adjacentPaneId);
+    };
+
     return {
       register,
       unregister,
       getViewers,
       getViewer,
       open,
+      openInNewTab,
+      openInAdjacentPane,
       showOrOpen,
     };
   },

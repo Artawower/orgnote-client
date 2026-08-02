@@ -3,6 +3,7 @@
     v-if="currentPane"
     class="pane-container"
     :body-scroll="false"
+    @pointerdown.capture="handlePaneClick"
     @click="handlePaneClick"
   >
     <template #header>
