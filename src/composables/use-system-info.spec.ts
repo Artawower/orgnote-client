@@ -35,6 +35,10 @@ vi.mock('src/boot/api', () => ({
           encryption: {
             type: 'disabled',
           },
+          network: {
+            apiUrl: 'https://runtime.example.com/v1',
+            wsUrl: '',
+          },
         },
       })),
     },
@@ -42,6 +46,7 @@ vi.mock('src/boot/api', () => ({
 }));
 
 vi.mock('src/utils/server-endpoints', () => ({
+  getApiBaseUrl: vi.fn((configured?: string) => configured || '/v1'),
   getWebSocketUrl: vi.fn(() => 'ws://localhost:3000/ws/events'),
 }));
 
@@ -124,6 +129,7 @@ test('getSystemInfo includes environment information', async () => {
   const info = await systemInfo.getSystemInfo();
 
   expect(info.environment.apiUrl).toBe('https://api.example.com');
+  expect(info.environment.runtimeApiUrl).toBe('https://runtime.example.com/v1');
   expect(info.environment.authUrl).toBe('https://auth.example.com');
   expect(info.environment.buildMode).toBe('test');
   expect(info.environment.deploymentTarget).toBe('dev');
@@ -157,6 +163,9 @@ test('getTextSystemInfo includes encryption type disabled', async () => {
   const systemInfo = useSystemInfo();
   const formatted = await systemInfo.getTextSystemInfo();
 
+  expect(formatted).toContain('Build API URL: https://api.example.com');
+  expect(formatted).toContain('Runtime API URL: https://runtime.example.com/v1');
+  expect(formatted).toContain('Build AUTH URL: https://auth.example.com');
   expect(formatted).toContain('Build mode: test');
   expect(formatted).toContain('Deployment target: dev');
 });

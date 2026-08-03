@@ -239,6 +239,26 @@ test('search with limit option after processFile', async () => {
   expect(result.length).toBeLessThanOrEqual(5);
 });
 
+test('search keeps the exact total stable across result pages', async () => {
+  const store = useFileSearchStore();
+  useActualParsedMeta = true;
+  const matchingNotes = Array.from({ length: 10 }, (_, index) => ({
+    path: `/meeting-${index}.org`,
+    content: `:PROPERTIES:\n:ID: meeting-${index}\n:END:\n#+TITLE: Meeting ${index}\nMeeting notes`,
+  }));
+  matchingNotes.forEach(({ path, content }) => mockFileContents.set(path, content));
+  await Promise.all(matchingNotes.map(({ path }) => store.processFile(path)));
+
+  const firstPage = await store.search('Meeting', { limit: 2, offset: 0 });
+  const firstTotal = store.lastSearchResult?.total;
+  const secondPage = await store.search('Meeting', { limit: 2, offset: 2 });
+
+  expect(firstPage).toHaveLength(2);
+  expect(secondPage).toHaveLength(2);
+  expect(firstTotal).toBe(matchingNotes.length);
+  expect(store.lastSearchResult?.total).toBe(firstTotal);
+});
+
 test('search updates lastSearchResult after processFile', async () => {
   const store = useFileSearchStore();
 

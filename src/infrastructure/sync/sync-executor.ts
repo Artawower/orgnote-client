@@ -51,9 +51,10 @@ const fetchFileContent = async (file: RemoteFile): Promise<Uint8Array> => {
 
 const downloadFile =
   (fs: FileSystem) =>
-  async (file: RemoteFile): Promise<void> => {
+  async (file: RemoteFile): Promise<Uint8Array> => {
     const content = await fetchFileContent(file);
     await fs.writeFile(file.path, content);
+    return content;
   };
 
 const deleteLocalFile =

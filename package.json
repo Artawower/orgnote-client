@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.65.2",
+  "version": "0.65.4",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -96,7 +96,7 @@
     "neverthrow": "8.2.0",
     "notiwind": "2.1.0",
     "org-mode-ast": "0.13.5",
-    "orgnote-api": "0.64.9",
+    "orgnote-api": "0.64.12",
     "partysocket": "1.1.6",
     "pinia": "3.0.2",
     "pinia-plugin-persistedstate": "4.2.0",

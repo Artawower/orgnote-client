@@ -11,7 +11,7 @@ import type {
 import { to } from 'orgnote-api/utils';
 import { version } from '../../package.json';
 import { api } from 'src/boot/api';
-import { getWebSocketUrl } from 'src/utils/server-endpoints';
+import { getApiBaseUrl, getWebSocketUrl } from 'src/utils/server-endpoints';
 import { hasWindow } from 'src/utils/platform-specific';
 import { wsClient } from 'src/infrastructure/websocket-client';
 import { useFileMetaStore } from 'src/stores/file-meta';
@@ -86,8 +86,14 @@ const getPlatformInfo = (): PlatformInfo => {
   };
 };
 
+const getRuntimeApiUrl = (): string => {
+  const configuredUrl = api?.core?.useConfig?.().config.network.apiUrl;
+  return getApiBaseUrl(configuredUrl);
+};
+
 const getEnvironmentInfo = (): EnvironmentInfo => ({
   apiUrl: process.env.API_URL || '',
+  runtimeApiUrl: getRuntimeApiUrl(),
   authUrl: process.env.AUTH_URL || '',
   buildMode: process.env.NODE_ENV || '',
   deploymentTarget: process.env.DEPLOYMENT_ENV || '',
@@ -189,8 +195,9 @@ const formatWebSocket = (info: WebSocketInfo): string[] => [
 const formatEnvironment = (env: EnvironmentInfo): string[] => [
   '',
   'Environment:',
-  `  API URL: ${env.apiUrl}`,
-  `  AUTH URL: ${env.authUrl}`,
+  `  Build API URL: ${env.apiUrl}`,
+  `  Runtime API URL: ${env.runtimeApiUrl}`,
+  `  Build AUTH URL: ${env.authUrl}`,
   `  Build mode: ${env.buildMode}`,
   `  Deployment target: ${env.deploymentTarget}`,
 ];

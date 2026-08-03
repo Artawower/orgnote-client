@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { Document, type EnrichedDocumentSearchResults } from 'flexsearch';
+import { Document, type DefaultDocumentSearchResults } from 'flexsearch';
 import type {
   DiskFile,
   FileMeta,
@@ -106,12 +106,10 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     indexMetaMap.set(fileId, meta);
   };
 
-  const extractIdsFromResults = (results: EnrichedDocumentSearchResults<IndexedFile>): string[] => {
+  const extractIdsFromResults = (results: DefaultDocumentSearchResults): string[] => {
     const fileIds = new Set<string>();
     results.forEach((fieldResult) => {
-      fieldResult.result.forEach((doc) => {
-        fileIds.add(String(doc.id));
-      });
+      fieldResult.result.forEach((fileId) => fileIds.add(String(fileId)));
     });
     return [...fileIds];
   };
@@ -121,11 +119,7 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     limit: number,
     offset: number,
   ): Promise<FileMeta[]> => {
-    const results = index.search<false, false, true, true>(query, {
-      limit: limit + offset,
-      enrich: true,
-    });
-
+    const results = index.search(query, { limit: indexedIds.size });
     const allIds = extractIdsFromResults(results);
     const paginatedIds = allIds.slice(offset, offset + limit);
     const files = await repositories.fileRepository.getByIds(paginatedIds);

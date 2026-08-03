@@ -125,7 +125,8 @@ test('createSyncExecutor writes validated remote content', async () => {
   mocks.syncFilesGet.mockResolvedValue(await createDownloadResponse(content));
   const executor = createSyncExecutor(fs);
 
-  await executor.download(remoteFile);
+  const result = await executor.download(remoteFile);
 
+  expect(result).toEqual(content);
   expect(writeFile).toHaveBeenCalledWith(remoteFile.path, content);
 });
