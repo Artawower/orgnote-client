@@ -23,7 +23,7 @@ export default defineConfig({
   //   },
   // },
   test: {
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'src-electron/**/*.spec.ts'],
     exclude: ['node_modules', 'dist'],
     environment: 'happy-dom',
     globals: true,

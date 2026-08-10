@@ -1,7 +1,11 @@
 import type { BrowserWindow, IpcMainEvent } from 'electron';
-import { BrowserWindow as ElectronBrowserWindow, ipcMain } from 'electron';
+import { BrowserWindow as ElectronBrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
-import { ELECTRON_KEYBINDING_CHANNELS, type ResolvedElectronHotkey } from './electron-keybinding-channels';
+import {
+  ELECTRON_KEYBINDING_CHANNELS,
+  type ResolvedElectronHotkey,
+} from './electron-keybinding-channels';
+import { configureExternalNavigation } from './external-navigation';
 
 const TRAFFIC_LIGHT_POSITION = { x: 10, y: 10 };
 
@@ -107,10 +111,10 @@ export async function createMainWindow(options: CreateMainWindowOptions): Promis
     },
   });
 
+  configureExternalNavigation(window.webContents, (url) => shell.openExternal(url));
   configureDevTools(window);
   configureMenuShortcutPassthrough(window);
   window.on('closed', options.onClosed);
   await loadInitialUrl(window, options.protocolScheme);
   return window;
 }
-
