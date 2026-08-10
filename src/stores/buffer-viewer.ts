@@ -39,6 +39,8 @@ interface OpenBufferLocation {
 }
 
 const DEFAULT_PRIORITY = 10;
+const ADJACENT_PANE_SPLIT_DIRECTION = 'right';
+const CREATE_INITIAL_ADJACENT_TAB = false;
 
 const sortByPriority = (a: BufferViewerEntry, b: BufferViewerEntry): number =>
   (b.meta.priority ?? DEFAULT_PRIORITY) - (a.meta.priority ?? DEFAULT_PRIORITY);
@@ -190,8 +192,21 @@ export const useBufferViewerStore = defineStore<string, BufferViewerStore>(
       if (!opened) throw new Error('buffer-viewer.openInNewTab: no active pane available');
     };
 
-    const openInAdjacentPane = async (uri: string): Promise<void> => {
+    const resolveOrCreateAdjacentPaneId = async (): Promise<string | undefined> => {
       const adjacentPaneId = getAdjacentPaneId(layoutStore.layout, pane.activePaneId);
+      if (adjacentPaneId) return adjacentPaneId;
+
+      const activePaneId = pane.activePaneId;
+      if (!layoutStore.layout || !activePaneId) return undefined;
+      return layoutStore.splitPaneInLayout(
+        activePaneId,
+        ADJACENT_PANE_SPLIT_DIRECTION,
+        CREATE_INITIAL_ADJACENT_TAB,
+      );
+    };
+
+    const openInAdjacentPane = async (uri: string): Promise<void> => {
+      const adjacentPaneId = await resolveOrCreateAdjacentPaneId();
       if (!adjacentPaneId) {
         await open(uri);
         return;

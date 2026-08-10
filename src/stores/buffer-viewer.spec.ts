@@ -7,6 +7,7 @@ const mockNavigate = vi.fn();
 const mockAddTab = vi.fn();
 const mockSelectTab = vi.fn();
 const mockSetActivePane = vi.fn();
+const mockSplitPaneInLayout = vi.fn();
 const mockLayout = { value: undefined as LayoutNode | undefined };
 let mockActivePaneId: string | undefined = 'pane-1';
 let mockActiveTab: { id?: string; router: object } | undefined = { router: {} };
@@ -49,6 +50,7 @@ vi.mock('./layout', () => ({
     get layout() {
       return mockLayout.value;
     },
+    splitPaneInLayout: mockSplitPaneInLayout,
   }),
 }));
 
@@ -107,6 +109,7 @@ beforeEach(() => {
   mockAddTab.mockReset();
   mockSelectTab.mockReset();
   mockSetActivePane.mockReset();
+  mockSplitPaneInLayout.mockReset();
   mockSetActivePane.mockImplementation((paneId: string) => {
     mockActivePaneId = paneId;
   });
@@ -315,13 +318,33 @@ test('openInAdjacentPane opens a new tab in the next pane', async () => {
     'tab-2',
   );
   expect(mockSetActivePane).toHaveBeenCalledWith('pane-2');
+  expect(mockSplitPaneInLayout).not.toHaveBeenCalled();
 });
 
-test('openInAdjacentPane falls back to the current pane', async () => {
+test('openInAdjacentPane creates a pane when the layout has no adjacent pane', async () => {
+  mockLayout.value = { type: 'pane', id: 'node-1', paneId: 'pane-1' };
+  mockSplitPaneInLayout.mockResolvedValueOnce('pane-2');
+  mockAddTab.mockResolvedValueOnce({ id: 'tab-2', paneId: 'pane-2' });
   const store = useBufferViewerStore();
 
   await store.openInAdjacentPane(POMODORO_URI);
 
+  expect(mockSplitPaneInLayout).toHaveBeenCalledWith('pane-1', 'right', false);
+  expect(mockAddTab).toHaveBeenCalledWith('pane-2');
+  expect(mockNavigate).toHaveBeenCalledWith(
+    { name: 'Builtin', params: { path: '/agenda/pomodoro' } },
+    'pane-2',
+    'tab-2',
+  );
+  expect(mockSetActivePane).toHaveBeenCalledWith('pane-2');
+});
+
+test('openInAdjacentPane falls back to the current pane when the layout is unavailable', async () => {
+  const store = useBufferViewerStore();
+
+  await store.openInAdjacentPane(POMODORO_URI);
+
+  expect(mockSplitPaneInLayout).not.toHaveBeenCalled();
   expect(mockNavigate).toHaveBeenCalledWith({
     name: 'Builtin',
     params: { path: '/agenda/pomodoro' },
