@@ -4,6 +4,7 @@ import type { DiskFile, FileSystem, FileSystemInfo } from 'orgnote-api';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { useFileSystemStore } from './file-system';
 import { useSettingsStore } from './settings';
+import { useFileWatcherStore } from './file-watcher';
 
 const createDiskFile = (path: string, mtime: number): DiskFile => ({
   path,
@@ -26,6 +27,39 @@ const createReadFile = (utf8Content: string): FileSystem['readFile'] => {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+});
+
+test('writeFile does not emit changes for extension runtime files', async () => {
+  const mockFs: FileSystem = {
+    readFile: createReadFile(''),
+    writeFile: vi.fn(async () => undefined),
+    readDir: vi.fn(async () => []),
+    fileInfo: vi.fn(async (path: string) => createDiskFile(path, 100)),
+    rename: vi.fn(async () => undefined),
+    deleteFile: vi.fn(async () => undefined),
+    rmdir: vi.fn(async () => undefined),
+    mkdir: vi.fn(async () => undefined),
+    isDirExist: vi.fn(async () => true),
+    isFileExist: vi.fn(async () => true),
+    utimeSync: vi.fn(async () => undefined),
+  };
+  const fsInfo: FileSystemInfo = {
+    name: 'mock-fs',
+    fs: () => mockFs,
+    type: 'web',
+    initialVault: '/',
+  };
+  useSettingsStore().settings.vault = '/';
+  const fsManager = useFileSystemManagerStore();
+  fsManager.register(fsInfo);
+  fsManager.currentFsName = 'mock-fs';
+  const emitChange = vi.spyOn(useFileWatcherStore(), 'emitChange');
+
+  await useFileSystemStore().writeFile('.orgnote/extensions/excalidraw/0.1.1/index.js', '');
+
+  expect(mockFs.writeFile).toHaveBeenCalledOnce();
+  expect(mockFs.fileInfo).not.toHaveBeenCalled();
+  expect(emitChange).not.toHaveBeenCalled();
 });
 
 test('syncFile returns disk content when disk is newer', async () => {

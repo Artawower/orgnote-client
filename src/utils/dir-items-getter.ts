@@ -1,5 +1,7 @@
 import Fuse from 'fuse.js';
 import type { DiskFile, OrgNoteApi, CompletionSearchResult } from 'orgnote-api';
+import { isPathInsideRoot } from './is-path-inside-root';
+import { ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH } from 'src/constants/system-file-paths';
 import { matchesAllowedExtension } from './matches-allowed-extension';
 
 export type ReadDirFn = (path: string) => Promise<DiskFile[]>;
@@ -11,11 +13,15 @@ export interface DirItemsGetterOptions {
   recursive?: boolean;
 }
 
+const isExtensionRuntimeItem = (item: DiskFile): boolean =>
+  isPathInsideRoot(item.path, `/${ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH}`);
+
 const shouldIncludeItem = (
   item: DiskFile,
   includeFiles: boolean,
   allowedExtensions?: string[],
 ): boolean => {
+  if (isExtensionRuntimeItem(item)) return false;
   if (item.type === 'directory') return true;
   return includeFiles && matchesAllowedExtension(item.path, allowedExtensions);
 };
@@ -34,7 +40,7 @@ export const walkDir = async (
 
   const nestedGroups = await Promise.all(
     items
-      .filter((item) => item.type === 'directory')
+      .filter((item) => item.type === 'directory' && !isExtensionRuntimeItem(item))
       .map((item) => walkDir(readDir, item.path, includeFiles, allowedExtensions, recursive)),
   );
 

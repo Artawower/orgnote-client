@@ -13,6 +13,10 @@ import { useSettingsStore } from './settings';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
 import { isNullable } from 'orgnote-api/utils';
+import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
+import { ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH } from 'src/constants/system-file-paths';
+
+const EXTENSION_RUNTIME_ROOT = `/${ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH}`;
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
   'file-system',
@@ -82,6 +86,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       const isEncrypted = isOrgGpgFile(realPath);
       const format = isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
       await safeFs.value.writeFile(realPath, content, format);
+      if (isPathInsideRoot(realPath, EXTENSION_RUNTIME_ROOT)) return;
       const info = await safeFs.value.fileInfo(realPath);
       await fileWatcher.emitChange({
         path: realPath,

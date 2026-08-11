@@ -5,6 +5,8 @@ import { reporter } from 'src/boot/report';
 import { useFileSystemStore } from 'src/stores/file-system';
 import { useSyncStore } from 'src/stores/sync';
 import { debounce } from 'src/utils/debounce';
+import { getExtensionRuntimeRootPath, toAbsolutePath } from 'orgnote-api';
+import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
 // TODO: dev mvoe to config
 const FS_SYNC_DEBOUNCE_MS = 1200;
@@ -28,12 +30,17 @@ const changesConflictArtifact = (
   typeof args[0] === 'string' &&
   isSyncConflictPath(args[0]);
 
+const changesExtensionRuntime = (args: unknown[]): boolean =>
+  typeof args[0] === 'string' &&
+  isPathInsideRoot(toAbsolutePath(args[0]), toAbsolutePath(getExtensionRuntimeRootPath()));
+
 export const shouldTriggerSyncForAction = (
   actionName: string,
   args: unknown[] = []
 ): boolean =>
   SYNC_TRIGGER_FS_ACTIONS.has(actionName) &&
-  !changesConflictArtifact(actionName, args);
+  !changesConflictArtifact(actionName, args) &&
+  !changesExtensionRuntime(args);
 
 export default defineBoot(({ store }) => {
   const syncStore = useSyncStore(store);

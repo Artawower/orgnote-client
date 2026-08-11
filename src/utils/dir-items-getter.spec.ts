@@ -25,6 +25,21 @@ test('walkDir keeps all directories and filters files by allowedExtensions', asy
   expect(readDir).not.toHaveBeenCalledWith('/root/sub');
 });
 
+test('walkDir excludes extension runtime directories', async () => {
+  const readDir = vi.fn(async (path: string): Promise<DiskFile[]> => {
+    if (path === '/') return [dir('/.orgnote'), dir('/notes')];
+    if (path === '/.orgnote') return [dir('/.orgnote/extensions'), file('/.orgnote/config.toml')];
+    if (path === '/notes') return [file('/notes/note.org')];
+    return [];
+  });
+
+  const result = await walkDir(readDir, '/', true);
+
+  expect(result).not.toContainEqual(dir('/.orgnote/extensions'));
+  expect(readDir).not.toHaveBeenCalledWith('/.orgnote/extensions');
+  expect(result).toContainEqual(file('/notes/note.org'));
+});
+
 test('walkDir with recursive false returns only the immediate level', async () => {
   const readDir = vi.fn(async (path: string): Promise<DiskFile[]> => {
     if (path !== '/root') return [];

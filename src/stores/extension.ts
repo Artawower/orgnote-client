@@ -14,7 +14,11 @@ import {
 import { ref, computed, type ComputedRef } from 'vue';
 import { api } from 'src/boot/api';
 import { extensionTimer } from 'src/boot/perf-timer';
-import { compileExtension, parseExtensionFromFile } from 'src/utils/read-extension';
+import {
+  compileExtension,
+  parseExtension,
+  parseExtensionFromFile,
+} from 'src/utils/read-extension';
 import { validateManifest } from 'src/utils/validate-manifest';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
@@ -27,6 +31,11 @@ import { useConfigStore } from './config';
 import { Dark } from 'quasar';
 import { ORGNOTE_EXTENSIONS_FILE_PATH } from 'src/constants/system-file-paths';
 import { BUILTIN_LOADERS, BUILTIN_META } from 'src/extensions';
+import {
+  useExtensionRuntimeFiles,
+  type ExtensionRuntimeAsset,
+} from 'src/composables/use-extension-runtime-files';
+import { fetchExtensionRuntimeAssets } from 'src/extensions/runtime-assets';
 
 interface ActiveExtension extends ExtensionMeta {
   module: Extension;
@@ -38,8 +47,8 @@ interface ExtensionsFile {
 
 interface FetchedExtension {
   manifest: ExtensionManifest;
-  module: string;
   rawContent: string;
+  assets: readonly ExtensionRuntimeAsset[];
 }
 
 type SourceFetcher = (source: ExtensionSourceInfo) => Promise<FetchedExtension>;
@@ -56,6 +65,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const extensions = ref<ExtensionMeta[]>([]);
   const activeExtensions = ref<ActiveExtension[]>([]);
   const fileSystem = useFileSystemStore();
+  const runtimeFiles = useExtensionRuntimeFiles();
 
   const loading = ref<number>(0);
   const ready = computed(() => loading.value <= 0);
@@ -140,25 +150,39 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     await Promise.allSettled(mountPromises);
   };
 
-  const compileFromRepository = async (name: string): Promise<Extension | undefined> => {
-    const source = await api.infrastructure.extensionSourceRepository.get(name);
+  const restoreGitRuntime = async (meta: ExtensionMeta): Promise<Extension | undefined> => {
+    if (meta.manifest.source.type !== 'git') return undefined;
+    const fetched = await fetchFromGit(meta.manifest.source);
+    await runtimeFiles.write(fetched.manifest, fetched.rawContent, fetched.assets);
+    return compileExtension(fetched.rawContent);
+  };
+
+  const compileFromRepository = async (meta: ExtensionMeta): Promise<Extension | undefined> => {
+    const runtimeContent = await runtimeFiles.readEntry(meta.manifest);
+    if (runtimeContent) return compileExtension(runtimeContent);
+
+    const restoredModule = await restoreGitRuntime(meta);
+    if (restoredModule) return restoredModule;
+
+    const source = await api.infrastructure.extensionSourceRepository.get(meta.manifest.name);
     if (!source) {
       return undefined;
     }
 
     const safeCompile = to(compileExtension, 'Failed to load extension');
-    const compileResult = await safeCompile(source.module);
-
+    const moduleContent = decodeURIComponent(source.module);
+    const compileResult = await safeCompile(moduleContent);
     if (compileResult.isErr()) {
       reporter.reportError(compileResult.error);
       return undefined;
     }
 
+    await runtimeFiles.write(meta.manifest, moduleContent, []);
     return compileResult.value;
   };
 
-  const getExtensionModule = (name: string): Promise<Extension | undefined> =>
-    BUILTIN_LOADERS[name]?.() ?? compileFromRepository(name);
+  const getExtensionModule = (meta: ExtensionMeta): Promise<Extension | undefined> =>
+    BUILTIN_LOADERS[meta.manifest.name]?.() ?? compileFromRepository(meta);
 
   const syncExtensionConfig = async (meta: ExtensionMeta, module: Extension): Promise<void> => {
     if (!module.defaultSettings) return;
@@ -183,7 +207,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
       const existing = activeExtensions.value.find((e) => e.manifest.name === meta.manifest.name);
       if (existing) return existing;
 
-      const module = await getExtensionModule(meta.manifest.name);
+      const module = await getExtensionModule(meta);
       if (!module) return undefined;
 
       await syncExtensionConfig(meta, module);
@@ -306,26 +330,46 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const isExtensionExist = (extensionName: string): boolean =>
     extensions.value.some((e) => e.manifest.name === extensionName);
 
-  const addExtension = async (meta: ExtensionMeta, source: ExtensionSource): Promise<void> => {
+  const restorePreviousExtension = async (previous?: ExtensionMeta): Promise<void> => {
+    if (!previous) return;
+    extensions.value = extensions.value.filter(
+      (extension) => extension.manifest.name !== previous.manifest.name,
+    );
+    extensions.value.push(previous);
+    if (previous.active) await mountExtension(previous);
+  };
+
+  const activateExtensionMeta = async (meta: ExtensionMeta): Promise<boolean> => {
+    const previous = extensions.value.find((e) => e.manifest.name === meta.manifest.name);
+    const shouldActivate = meta.active === true;
+    if (previous?.active) await unmountExtension(previous.manifest.name);
     extensions.value = extensions.value.filter((e) => e.manifest.name !== meta.manifest.name);
     extensions.value.push(meta);
+    if (shouldActivate) {
+      meta.active = false;
+      const mountResult = await to(
+        mountExtension,
+        `Failed to activate extension ${meta.manifest.name}`,
+      )(meta);
+      if (mountResult.isErr()) reporter.reportError(mountResult.error);
+      meta.active = mountResult.isOk() && mountResult.value !== undefined;
+    }
+    if (shouldActivate && !meta.active) await restorePreviousExtension(previous);
+    await writeToDisk();
+    return !shouldActivate || meta.active === true;
+  };
 
+  const addExtension = async (meta: ExtensionMeta, source: ExtensionSource): Promise<void> => {
     const safeUpsert = to(
       api.infrastructure.extensionSourceRepository.upsert,
       'Failed to save extension source',
     );
     const upsertResult = await safeUpsert(source);
-
     if (upsertResult.isErr()) {
       reporter.reportError(upsertResult.error);
       return;
     }
-
-    await writeToDisk();
-
-    if (meta.active) {
-      await enableExtension(meta.manifest.name);
-    }
+    await activateExtensionMeta(meta);
   };
 
   const resolveExtensionPaths = async (
@@ -339,19 +383,8 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     };
   };
 
-  const extractManifestFromModule = async (moduleContent: string): Promise<ExtensionManifest> => {
-    const encodedModule = encodeURIComponent(moduleContent);
-    const moduleUrl = `data:text/javascript,${encodedModule}`;
-    const m = (await import(/* @vite-ignore */ moduleUrl)) as {
-      manifest?: ExtensionManifest;
-    };
-
-    if (!m.manifest) {
-      throw new Error('Extension manifest not found in module exports');
-    }
-
-    return m.manifest;
-  };
+  const extractManifestFromModule = async (moduleContent: string): Promise<ExtensionManifest> =>
+    (await parseExtension(moduleContent)).manifest;
 
   const parseManifestJson = (content: string): ExtensionManifest => JSON.parse(content);
 
@@ -392,10 +425,13 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     const manifest = await resolveManifest(repoHandle, paths.manifestPath, moduleContent);
     manifest.source = source;
 
+    const baseDirectory = paths.entryPath.slice(0, -'index.js'.length);
+    const assets = await fetchExtensionRuntimeAssets(repoHandle, manifest, baseDirectory);
+
     return {
       manifest,
-      module: encodeURIComponent(moduleContent),
       rawContent: moduleContent,
+      assets,
     };
   };
 
@@ -409,37 +445,60 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     },
   };
 
+  const isSameRuntimeVersion = (
+    current: ExtensionMeta | undefined,
+    manifest: ExtensionManifest,
+  ): boolean => current?.manifest.version === manifest.version;
+
+  const removeRuntimeSafely = async (manifest: ExtensionManifest): Promise<void> => {
+    const removeResult = await to(
+      runtimeFiles.remove,
+      `Failed to remove extension runtime ${manifest.name}@${manifest.version}`,
+    )(manifest);
+    if (removeResult.isErr()) reporter.reportError(removeResult.error);
+  };
+
+  const activateFetchedExtension = async (
+    fetched: FetchedExtension,
+    previous?: ExtensionMeta,
+  ): Promise<boolean> => {
+    await runtimeFiles.write(fetched.manifest, fetched.rawContent, fetched.assets);
+    const activated = await activateExtensionMeta({ manifest: fetched.manifest, active: true });
+    if (activated && previous) await removeRuntimeSafely(previous.manifest);
+    return activated;
+  };
+
+  const installFetchedExtension = async (fetched: FetchedExtension): Promise<void> => {
+    const previous = extensions.value.find(
+      (extension) => extension.manifest.name === fetched.manifest.name,
+    );
+    if (isSameRuntimeVersion(previous, fetched.manifest)) return;
+
+    const installResult = await to(
+      () => activateFetchedExtension(fetched, previous),
+      `Failed to install extension ${fetched.manifest.name}`,
+    )();
+
+    if (installResult.isOk() && installResult.value) return;
+    if (installResult.isErr()) reporter.reportError(installResult.error);
+    await removeRuntimeSafely(fetched.manifest);
+  };
+
   const installExtension = async (source: ExtensionSourceInfo): Promise<void> => {
     const fetcher = sourceFetchers[source.type];
-
-    const safeFetch = to(fetcher, 'Failed to fetch extension');
-    const fetchResult = await safeFetch(source);
+    const fetchResult = await to(fetcher, 'Failed to fetch extension')(source);
 
     if (fetchResult.isErr()) {
       reporter.reportError(fetchResult.error);
       return;
     }
 
-    const fetched = fetchResult.value;
-
-    const meta: ExtensionMeta = {
-      manifest: fetched.manifest,
-      active: true,
-    };
-
-    const extensionSource: ExtensionSource = {
-      name: fetched.manifest.name,
-      version: fetched.manifest.version,
-      source: source.type === 'git' ? (source as GitSource).repo : 'local',
-      module: fetched.module,
-      docFiles: [],
-    };
-
-    await addExtension(meta, extensionSource);
+    await installFetchedExtension(fetchResult.value);
   };
 
   const deleteExtension = async (extensionName: string): Promise<void> => {
     await unmountExtension(extensionName);
+    await runtimeFiles.removeAll(extensionName);
 
     const safeDelete = to(
       api.infrastructure.extensionSourceRepository.delete,
@@ -468,6 +527,12 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     }
 
     const { manifest, rawContent } = parseResult.value;
+    if (manifest.assets?.length) {
+      reporter.reportError(
+        new Error('Extensions with package assets must be installed from a Git source'),
+      );
+      return;
+    }
 
     const localSource: LocalSource = { type: 'local' };
     manifest.source = localSource;
@@ -479,15 +544,9 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
       uploaded: true,
     };
 
-    const extensionSource: ExtensionSource = {
-      name: manifest.name,
-      version: manifest.version,
-      source: 'local',
-      module: rawContent,
-      docFiles: [],
-    };
-
-    await addExtension(meta, extensionSource);
+    await runtimeFiles.write(manifest, rawContent, []);
+    const activated = await activateExtensionMeta(meta);
+    if (!activated) await runtimeFiles.remove(manifest);
   };
 
   const enableSafeMode = async (): Promise<void> => {

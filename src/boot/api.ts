@@ -37,7 +37,15 @@ import { usePinnedCommandsStore } from 'src/stores/pinned-commands';
 import { useModalStore } from 'src/stores/modal';
 import { useSettingsStore } from 'src/stores/settings';
 import { useSettingsUiStore } from 'src/stores/settings-ui';
-import type { App } from 'vue';
+import {
+  defineComponent,
+  h,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type App,
+} from 'vue';
 import { copyToClipboard } from 'src/utils/clipboard';
 import { uploadFile, uploadFiles } from 'src/utils/file-upload';
 import { useConfirmationModal } from 'src/composables/use-confirmation-modal';
@@ -175,6 +183,12 @@ async function initApi(app: App, router: Router): Promise<void> {
     },
     vue: {
       router,
+      defineComponent,
+      h,
+      onBeforeUnmount,
+      onMounted,
+      ref,
+      watch,
     },
   };
 }

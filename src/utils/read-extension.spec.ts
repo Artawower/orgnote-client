@@ -1,4 +1,4 @@
-import { test, expect, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import {
   parseExtensionFromFile,
   parseExtension,
@@ -15,9 +15,7 @@ const manifestExample = {
 
 const validExtensionScript = `
   export default {
-    execute() {
-      console.log('Executing extension');
-    },
+    execute() {},
   };
   export const manifest = ${JSON.stringify(manifestExample)};
 `;
@@ -29,43 +27,26 @@ const invalidExtensionScript = `
   };
 `;
 
-const mockModuleLoader = vi.fn(async (modulePath: string) => {
-  if (modulePath.startsWith('data:text/javascript,')) {
-    const content = decodeURIComponent(modulePath.replace('data:text/javascript,', ''));
-    return eval(content);
-  }
-  throw new Error('Invalid module');
-});
-
-Object.defineProperty(global, 'import', {
-  value: mockModuleLoader,
-  writable: true,
-});
-
 test('parses extension from file', async () => {
   const file = new File([validExtensionScript], 'extension.js', { type: 'text/javascript' });
   const result = await parseExtensionFromFile(file);
 
   expect(result.manifest).toMatchObject(manifestExample);
-  expect(result.module).toBeDefined();
   expect(typeof result.module.execute).toBe('function');
-  expect(result.rawContent).toBe(encodeURIComponent(validExtensionScript));
+  expect(result.rawContent).toBe(validExtensionScript);
 });
 
 test('parses extension from string', async () => {
   const result = await parseExtension(validExtensionScript);
 
   expect(result.manifest).toMatchObject(manifestExample);
-  expect(result.module).toBeDefined();
   expect(typeof result.module.execute).toBe('function');
-  expect(result.rawContent).toBe(encodeURIComponent(validExtensionScript));
+  expect(result.rawContent).toBe(validExtensionScript);
 });
 
-test('compiles encoded extension content', async () => {
-  const encoded = encodeURIComponent(validExtensionScript);
-  const result = await compileExtension(encoded);
+test('compiles extension source without percent encoding', async () => {
+  const result = await compileExtension(validExtensionScript);
 
-  expect(result).toBeDefined();
   expect(typeof result.execute).toBe('function');
 });
 
@@ -75,6 +56,5 @@ test('throws error for invalid script in parseExtension', async () => {
 
 test('throws error for syntactically invalid script in compileExtension', async () => {
   const invalidSyntaxScript = 'export default { invalid syntax here';
-  const encoded = encodeURIComponent(invalidSyntaxScript);
-  await expect(compileExtension(encoded)).rejects.toThrow();
+  await expect(compileExtension(invalidSyntaxScript)).rejects.toThrow();
 });

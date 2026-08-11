@@ -48,6 +48,7 @@ storybook-static
 .aider*
 .serena
 plans/review
+plans/*
 node-compile-cache/
 .pi
 .pi-lens

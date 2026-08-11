@@ -5,7 +5,7 @@ import {
   ExtensionInvalidManifestError,
 } from 'orgnote-api';
 import { validateManifest } from './validate-manifest';
-import { to } from 'orgnote-api/utils';
+import { textToUint8Array, to, uint8ArrayToBase64 } from 'orgnote-api/utils';
 
 export interface CompiledExtension {
   module: Extension;
@@ -13,60 +13,45 @@ export interface CompiledExtension {
   rawContent: string;
 }
 
-export async function parseExtensionFromFile(file: File): Promise<CompiledExtension> {
-  const rawExt = await file.text();
-  return await parseExtension(rawExt);
-}
-
 interface ImportedModule {
   default?: Extension;
   manifest?: ExtensionManifest;
 }
 
-function getModuleUrl(content: string): string {
-  return `data:text/javascript,${content}`;
-}
-
-const importModule = to(async (rawContent: string): Promise<ImportedModule> => {
-  const moduleUrl = getModuleUrl(rawContent);
+const importModuleSource = async (source: string): Promise<ImportedModule> => {
+  const encodedSource = uint8ArrayToBase64(textToUint8Array(source));
+  const moduleUrl = `data:text/javascript;base64,${encodedSource}`;
   return (await import(/* @vite-ignore */ moduleUrl)) as ImportedModule;
-}, 'Module import failed');
-
-const validateModuleStructure = (m: ImportedModule): void => {
-  if (!m.default) {
-    throw new ExtensionMissingDefaultExportError();
-  }
-  if (!m.manifest) {
-    throw new ExtensionInvalidManifestError();
-  }
 };
 
-export async function parseExtension(rawExt: string): Promise<CompiledExtension> {
-  const rawContent = encodeURIComponent(rawExt);
+const importModule = to(importModuleSource, 'Module import failed');
 
-  const moduleRes = await importModule(rawContent);
-  if (moduleRes.isErr()) {
-    throw moduleRes.error;
-  }
-  const m = moduleRes.value;
-  validateModuleStructure(m);
-  validateManifest(m.manifest!);
+const validateModuleStructure = (module: ImportedModule): void => {
+  if (!module.default) throw new ExtensionMissingDefaultExportError();
+  if (!module.manifest) throw new ExtensionInvalidManifestError();
+};
+
+export async function parseExtensionFromFile(file: File): Promise<CompiledExtension> {
+  return parseExtension(await file.text());
+}
+
+export async function parseExtension(rawContent: string): Promise<CompiledExtension> {
+  const moduleResult = await importModule(rawContent);
+  if (moduleResult.isErr()) throw moduleResult.error;
+
+  const module = moduleResult.value;
+  validateModuleStructure(module);
+  validateManifest(module.manifest!);
 
   return {
-    module: m.default!,
-    manifest: m.manifest!,
+    module: module.default!,
+    manifest: module.manifest!,
     rawContent,
   };
 }
 
-export async function compileExtension(encodedContent: string): Promise<Extension> {
-  const moduleUrl = getModuleUrl(encodedContent);
-
-  const m = (await import(/* @vite-ignore */ moduleUrl)) as {
-    default: Extension;
-  };
-
-  return m.default;
+export async function compileExtension(source: string): Promise<Extension> {
+  const module = await importModuleSource(source);
+  if (!module.default) throw new ExtensionMissingDefaultExportError();
+  return module.default;
 }
-
-

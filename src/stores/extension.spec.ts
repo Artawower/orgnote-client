@@ -23,16 +23,22 @@ vi.mock('src/boot/report', () => ({
   },
 }));
 
+const mockReadFile = vi.fn().mockResolvedValue(null);
+const mockWriteFile = vi.fn().mockResolvedValue(undefined);
+const mockRemoveDirectory = vi.fn().mockResolvedValue(undefined);
+const mockOpenRepo = vi.fn();
+
 vi.mock('./file-system', () => ({
   useFileSystemStore: () => ({
-    readFile: vi.fn().mockResolvedValue(null),
-    writeFile: vi.fn().mockResolvedValue(undefined),
+    readFile: mockReadFile,
+    writeFile: mockWriteFile,
+    rmdir: mockRemoveDirectory,
   }),
 }));
 
 vi.mock('./git', () => ({
   useGitStore: () => ({
-    openRepo: vi.fn(),
+    openRepo: mockOpenRepo,
   }),
 }));
 
@@ -154,6 +160,16 @@ test('addExtension replaces existing extension with same name', async () => {
   expect(store.extensions[0]?.manifest.version).toBe('2.0.0');
 });
 
+test('deleteExtension removes extension runtime files', async () => {
+  const store = useExtensionsStore();
+  const meta = createMockExtensionMeta('runtime-delete');
+
+  await store.addExtension(meta, createMockExtensionSource('runtime-delete'));
+  await store.deleteExtension('runtime-delete');
+
+  expect(mockRemoveDirectory).toHaveBeenCalledWith('.orgnote/extensions/runtime-delete');
+});
+
 test('deleteExtension removes extension from list', async () => {
   const store = useExtensionsStore();
   const meta = createMockExtensionMeta('to-delete');
@@ -259,6 +275,51 @@ test('deleteExtension removes only specified extension', async () => {
   expect(store.extensions.map((e) => e.manifest.name)).toEqual(['ext-1', 'ext-3']);
 });
 
+test('importExtension stores local module in the runtime filesystem', async () => {
+  const { parseExtensionFromFile } = await import('src/utils/read-extension');
+  const manifest = createMockManifest('local-runtime');
+  const moduleContent = 'export default { onMounted() {} };';
+  vi.mocked(parseExtensionFromFile).mockResolvedValue({
+    manifest,
+    module: { onMounted: vi.fn() },
+    rawContent: moduleContent,
+  });
+
+  await useExtensionsStore().importExtension(new File([moduleContent], 'extension.js'));
+
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/local-runtime/1.0.0/index.js',
+    moduleContent,
+  );
+});
+
+test('importExtension rejects packages with external assets', async () => {
+  const { parseExtensionFromFile } = await import('src/utils/read-extension');
+  const { reporter } = await import('src/boot/report');
+  const manifest = createMockManifest('local-assets', {
+    assets: [
+      {
+        path: 'runtime.js',
+        mediaType: 'text/javascript',
+        size: 1,
+        integrity: 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+      },
+    ],
+  });
+  vi.mocked(parseExtensionFromFile).mockResolvedValue({
+    manifest,
+    module: { onMounted: vi.fn() },
+    rawContent: 'export default {};',
+  });
+
+  await useExtensionsStore().importExtension(new File([''], 'extension.js'));
+
+  expect(reporter.reportError).toHaveBeenCalledWith(
+    expect.objectContaining({ message: expect.stringContaining('Git source') }),
+  );
+  expect(mockWriteFile).not.toHaveBeenCalled();
+});
+
 test('installExtension throws for local source type', async () => {
   const { reporter } = await import('src/boot/report');
   const store = useExtensionsStore();
@@ -275,6 +336,258 @@ test('installExtension throws for builtin source type', async () => {
   await store.installExtension({ type: 'builtin' });
 
   expect(reporter.reportError).toHaveBeenCalled();
+});
+
+test('installExtension stores the module in the runtime filesystem', async () => {
+  const moduleContent = 'export default { onMounted() {} };';
+  const manifest = createMockManifest('runtime-extension', {
+    source: { type: 'git', repo: 'https://example.com/runtime-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json') ? JSON.stringify(manifest) : moduleContent,
+    ),
+  });
+
+  await useExtensionsStore().installExtension(manifest.source);
+
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/runtime-extension/1.0.0/index.js',
+    moduleContent,
+  );
+});
+
+test('installExtension stores declared assets beside the module', async () => {
+  const moduleContent = 'export default { onMounted() {} };';
+  const assetContent = new Uint8Array([1, 2, 3]);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', assetContent));
+  const { uint8ArrayToBase64 } = await import('orgnote-api');
+  const manifest = createMockManifest('asset-extension', {
+    source: { type: 'git', repo: 'https://example.com/asset-extension' },
+    assets: [
+      {
+        path: 'fonts/font.woff2',
+        mediaType: 'font/woff2',
+        size: assetContent.byteLength,
+        integrity: `sha256-${uint8ArrayToBase64(digest)}`,
+      },
+    ],
+  });
+  const readRepoFile = vi.fn(async (path: string, encoding?: string) => {
+    if (path.endsWith('manifest.json')) return JSON.stringify(manifest);
+    if (encoding === 'binary') return assetContent;
+    return moduleContent;
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: readRepoFile,
+  });
+
+  await useExtensionsStore().installExtension(manifest.source);
+
+  expect(readRepoFile).toHaveBeenCalledWith(
+    'dist/assets/fonts/font.woff2',
+    'binary',
+  );
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/asset-extension/1.0.0/assets/fonts/font.woff2',
+    assetContent,
+  );
+});
+
+test('installExtension restores the active version when an update fails to mount', async () => {
+  const { api } = await import('src/boot/api');
+  const { compileExtension } = await import('src/utils/read-extension');
+  const previousModule = { onMounted: vi.fn(), onUnmounted: vi.fn() };
+  vi.mocked(compileExtension).mockResolvedValue(previousModule);
+  vi.mocked(api.infrastructure.extensionSourceRepository.get).mockResolvedValue(
+    createMockExtensionSource('rollback-extension'),
+  );
+  const store = useExtensionsStore();
+  const previousMeta = createMockExtensionMeta('rollback-extension', {
+    manifest: createMockManifest('rollback-extension', { version: '1.0.0' }),
+    active: true,
+  });
+  await store.addExtension(previousMeta, createMockExtensionSource('rollback-extension'));
+
+  const nextManifest = createMockManifest('rollback-extension', {
+    version: '2.0.0',
+    source: { type: 'git', repo: 'https://example.com/rollback-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json')
+        ? JSON.stringify(nextManifest)
+        : 'export default { onMounted() {} };',
+    ),
+  });
+  vi.mocked(compileExtension).mockResolvedValueOnce({
+    onMounted: vi.fn(() => {
+      throw new Error('mount failed');
+    }),
+  });
+
+  await store.installExtension(nextManifest.source);
+
+  expect(store.extensions[0]?.manifest.version).toBe('1.0.0');
+  expect(store.extensions[0]?.active).toBe(true);
+  expect(previousModule.onMounted).toHaveBeenCalledTimes(2);
+  expect(mockRemoveDirectory).toHaveBeenCalledWith(
+    '.orgnote/extensions/rollback-extension/2.0.0',
+  );
+});
+
+test('installExtension removes the previous runtime after a successful update', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  vi.mocked(compileExtension).mockResolvedValue({ onMounted: vi.fn(), onUnmounted: vi.fn() });
+  const store = useExtensionsStore();
+  const previousMeta = createMockExtensionMeta('updated-extension', {
+    manifest: createMockManifest('updated-extension', { version: '1.0.0' }),
+    active: true,
+  });
+  await store.addExtension(previousMeta, createMockExtensionSource('updated-extension'));
+
+  const nextManifest = createMockManifest('updated-extension', {
+    version: '2.0.0',
+    source: { type: 'git', repo: 'https://example.com/updated-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json')
+        ? JSON.stringify(nextManifest)
+        : 'export default { onMounted() {} };',
+    ),
+  });
+
+  await store.installExtension(nextManifest.source);
+
+  expect(store.extensions[0]?.manifest.version).toBe('2.0.0');
+  expect(mockRemoveDirectory).toHaveBeenCalledWith(
+    '.orgnote/extensions/updated-extension/1.0.0',
+  );
+});
+
+test('installExtension preserves the active version when runtime writing fails', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  vi.mocked(compileExtension).mockResolvedValue({ onMounted: vi.fn(), onUnmounted: vi.fn() });
+  const store = useExtensionsStore();
+  const previousMeta = createMockExtensionMeta('write-failure-extension', {
+    manifest: createMockManifest('write-failure-extension', { version: '1.0.0' }),
+    active: true,
+  });
+  await store.addExtension(previousMeta, createMockExtensionSource('write-failure-extension'));
+
+  const nextManifest = createMockManifest('write-failure-extension', {
+    version: '2.0.0',
+    source: { type: 'git', repo: 'https://example.com/write-failure-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json')
+        ? JSON.stringify(nextManifest)
+        : 'export default { onMounted() {} };',
+    ),
+  });
+  mockWriteFile.mockRejectedValueOnce(new Error('write failed'));
+  previousMeta.active = true;
+
+  await store.installExtension(nextManifest.source);
+
+  expect(store.extensions[0]?.manifest.version).toBe('1.0.0');
+  expect(store.extensions[0]?.active).toBe(true);
+  expect(mockRemoveDirectory).toHaveBeenCalledWith(
+    '.orgnote/extensions/write-failure-extension/2.0.0',
+  );
+});
+
+test('installExtension restores the active version when compilation fails', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  const previousModule = { onMounted: vi.fn(), onUnmounted: vi.fn() };
+  vi.mocked(compileExtension).mockResolvedValue(previousModule);
+  const store = useExtensionsStore();
+  const previousMeta = createMockExtensionMeta('compile-failure-extension', {
+    manifest: createMockManifest('compile-failure-extension', { version: '1.0.0' }),
+    active: true,
+  });
+  await store.addExtension(previousMeta, createMockExtensionSource('compile-failure-extension'));
+
+  const nextManifest = createMockManifest('compile-failure-extension', {
+    version: '2.0.0',
+    source: { type: 'git', repo: 'https://example.com/compile-failure-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json')
+        ? JSON.stringify(nextManifest)
+        : 'export default { onMounted() {} };',
+    ),
+  });
+  vi.mocked(compileExtension)
+    .mockRejectedValueOnce(new SyntaxError('compile failed'))
+    .mockResolvedValue(previousModule);
+  previousMeta.active = true;
+
+  await store.installExtension(nextManifest.source);
+
+  expect(store.extensions[0]?.manifest.version).toBe('1.0.0');
+  expect(store.extensions[0]?.active).toBe(true);
+  expect(previousMeta.active).toBe(true);
+  expect(mockRemoveDirectory).toHaveBeenCalledWith(
+    '.orgnote/extensions/compile-failure-extension/2.0.0',
+  );
+});
+
+test('installExtension keeps an active same-version runtime unchanged', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  vi.mocked(compileExtension).mockResolvedValue({ onMounted: vi.fn(), onUnmounted: vi.fn() });
+  const store = useExtensionsStore();
+  const manifest = createMockManifest('immutable-extension', {
+    source: { type: 'git', repo: 'https://example.com/immutable-extension' },
+  });
+  const previousMeta = createMockExtensionMeta('immutable-extension', {
+    manifest,
+    active: true,
+  });
+  await store.addExtension(previousMeta, createMockExtensionSource('immutable-extension'));
+  previousMeta.active = true;
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json')
+        ? JSON.stringify(manifest)
+        : 'export default { onMounted() { throw new Error("changed"); } };',
+    ),
+  });
+  vi.clearAllMocks();
+
+  await store.installExtension(manifest.source);
+
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockRemoveDirectory).not.toHaveBeenCalled();
+  expect(store.extensions[0]?.active).toBe(true);
+});
+
+test('installExtension does not duplicate runtime source in the legacy repository', async () => {
+  const { api } = await import('src/boot/api');
+  const moduleContent = 'export default { onMounted() {} };';
+  const manifest = createMockManifest('filesystem-extension', {
+    source: { type: 'git', repo: 'https://example.com/filesystem-extension' },
+  });
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json') ? JSON.stringify(manifest) : moduleContent,
+    ),
+  });
+
+  await useExtensionsStore().installExtension(manifest.source);
+
+  expect(api.infrastructure.extensionSourceRepository.upsert).not.toHaveBeenCalled();
 });
 
 test('enable and disable cycle works correctly', async () => {
@@ -296,14 +609,37 @@ test('enable and disable cycle works correctly', async () => {
   expect(store.extensions[0]?.active).toBe(true);
 });
 
-test('addExtension with active true enables extension', async () => {
+test('addExtension with active true mounts before marking extension active', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  const module = { onMounted: vi.fn() };
+  vi.mocked(compileExtension).mockResolvedValue(module);
+  const { api } = await import('src/boot/api');
+  vi.mocked(api.infrastructure.extensionSourceRepository.get).mockResolvedValue(
+    createMockExtensionSource('auto-enable'),
+  );
   const store = useExtensionsStore();
   const meta = createMockExtensionMeta('auto-enable', { active: true });
   const source = createMockExtensionSource('auto-enable');
 
   await store.addExtension(meta, source);
 
+  expect(module.onMounted).toHaveBeenCalledOnce();
   expect(store.extensions[0]?.active).toBe(true);
+});
+
+test('addExtension leaves extension inactive when mount fails', async () => {
+  const { compileExtension } = await import('src/utils/read-extension');
+  vi.mocked(compileExtension).mockResolvedValue({
+    onMounted: vi.fn(() => {
+      throw new Error('mount failed');
+    }),
+  });
+  const store = useExtensionsStore();
+  const meta = createMockExtensionMeta('broken-extension', { active: true });
+
+  await store.addExtension(meta, createMockExtensionSource('broken-extension'));
+
+  expect(store.extensions[0]?.active).toBe(false);
 });
 
 test('isExtensionExist handles empty string', () => {
@@ -458,6 +794,8 @@ test('theme extension disables other themes when enabled', async () => {
 });
 
 test('non-theme extension does not affect other extensions', async () => {
+  const module = createMockModuleWithSettings({}, {});
+  await setupModuleCompile('ext-1', module);
   const store = useExtensionsStore();
 
   const ext1 = createMockExtensionMeta('ext-1', { active: true });
@@ -489,6 +827,8 @@ test('enableSafeMode keeps local extensions active', async () => {
 });
 
 test('disableSafeMode remounts active extensions', async () => {
+  const module = createMockModuleWithSettings({}, {});
+  await setupModuleCompile('safe-mode-ext', module);
   const store = useExtensionsStore();
   const meta = createMockExtensionMeta('safe-mode-ext', { active: true });
   const source = createMockExtensionSource('safe-mode-ext');
@@ -599,6 +939,56 @@ const createMockModuleWithSettings = (
   defaultSettings,
   onMounted: vi.fn().mockResolvedValue(undefined),
   onUnmounted: vi.fn().mockResolvedValue(undefined),
+});
+
+test('sync restores missing Git runtime files from the extension source', async () => {
+  const { stringifyToml } = await import('orgnote-api/utils');
+  const moduleContent = 'export default { onMounted() {} };';
+  const manifest = createMockManifest('restored-extension', {
+    source: { type: 'git', repo: 'https://example.com/restored-extension' },
+  });
+  mockReadFile.mockResolvedValueOnce(
+    stringifyToml({ extensions: [{ manifest, active: true }] }),
+  );
+  mockOpenRepo.mockResolvedValue({
+    fileExists: vi.fn().mockResolvedValue(true),
+    readFile: vi.fn(async (path: string) =>
+      path.endsWith('manifest.json') ? JSON.stringify(manifest) : moduleContent,
+    ),
+  });
+
+  await useExtensionsStore().sync();
+
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/restored-extension/1.0.0/index.js',
+    moduleContent,
+  );
+  expect(useExtensionsStore().extensions[0]?.active).toBe(true);
+});
+
+test('sync migrates legacy extension source into runtime files', async () => {
+  const { api } = await import('src/boot/api');
+  const { compileExtension } = await import('src/utils/read-extension');
+  const { stringifyToml } = await import('orgnote-api/utils');
+  const manifest = createMockManifest('legacy-extension');
+  mockReadFile.mockResolvedValueOnce(
+    stringifyToml({ extensions: [{ manifest, active: true }] }),
+  );
+  vi.mocked(api.infrastructure.extensionSourceRepository.get).mockResolvedValue({
+    name: manifest.name,
+    version: manifest.version,
+    source: 'local',
+    module: encodeURIComponent('export default { onMounted() {} };'),
+    docFiles: [],
+  });
+  vi.mocked(compileExtension).mockResolvedValue({ onMounted: vi.fn() });
+
+  await useExtensionsStore().sync();
+
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/legacy-extension/1.0.0/index.js',
+    'export default { onMounted() {} };',
+  );
 });
 
 const setupModuleCompile = async (name: string, module: unknown) => {
