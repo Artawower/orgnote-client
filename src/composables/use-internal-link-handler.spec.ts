@@ -228,6 +228,19 @@ test('useInternalLinkHandler handleFileLink auto-creates missing local file', as
   expect(mockOpen).toHaveBeenCalledWith('file:///notes/simple-note.org');
 });
 
+test('useInternalLinkHandler handleFileLink creates missing non-org files without Org content', async () => {
+  mockActiveContext = { filePath: '/notes/current.org' };
+  mockCurrentRouteName = 'File';
+  mockFileInfo.mockResolvedValue(undefined);
+  const { handleFileLink } = useInternalLinkHandler();
+
+  await handleFileLink('./drawing.excalidraw');
+
+  expect(mockWriteFile).toHaveBeenCalledWith('/notes/drawing.excalidraw', '');
+  expect(mockSave).not.toHaveBeenCalled();
+  expect(mockOpen).toHaveBeenCalledWith('file:///notes/drawing.excalidraw');
+});
+
 test('useInternalLinkHandler handleFileLink does not auto-create when disabled', async () => {
   mockActiveContext = { filePath: '/notes/current.org' };
   mockCurrentRouteName = 'File';

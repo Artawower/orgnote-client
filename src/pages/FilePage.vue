@@ -5,6 +5,7 @@
       class="file-page-content"
       v-if="showReader"
       :is="viewerComponent"
+      :key="viewerInstanceKey"
       :buffer="buffer"
       :readonly="buffer!.guard?.readonly"
       v-bind="viewStateBinding"
@@ -82,6 +83,12 @@ const viewStateBinding = computed(() => {
       version: config.version,
     }),
   };
+});
+
+const viewerInstanceKey = computed(() => {
+  const bufferUri = buffer.value?.uri;
+  const viewerId = viewerEntry.value?.meta.id;
+  return bufferUri && viewerId ? `${bufferUri}:${viewerId}` : undefined;
 });
 
 const showReader = computed(() => viewerComponent.value && buffer.value);

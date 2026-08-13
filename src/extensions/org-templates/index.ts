@@ -1,5 +1,6 @@
 import {
   DefaultCommands,
+  isOrgFile,
   type CompletionSearchResult,
   type Command,
   type Extension,
@@ -190,6 +191,7 @@ const createDefaultTemplateNote = async (
 
   const notePath = await pickNewOrgFilePath(api);
   if (!notePath) return;
+  if (!isOrgFile(notePath)) return await createNoteFromContent(api, notePath, '');
 
   return await createNoteFromContent(api, notePath, renderOrgTemplate(templateContent, notePath));
 };

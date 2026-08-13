@@ -6,7 +6,7 @@ import {
   resolveBufferSchemeFromRouteName,
 } from 'src/utils/org-link';
 import { buildNoteContent } from 'src/utils/create-note-from-link';
-import { buildBufferUri, type BufferScheme, type BufferViewerStore } from 'orgnote-api';
+import { buildBufferUri, isOrgFile, type BufferScheme, type BufferViewerStore } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { createLinkedNote, persistLinkedNote } from 'src/composables/create-linked-note';
@@ -27,13 +27,17 @@ const createMissingNote = (noteId: string, title: string, currentFilePath: strin
     buildBufferUri(DEFAULT_SCHEME, note.filePath),
   );
 
-const createMissingNoteByPath = (filePath: string) => {
+const createMissingOrgNoteByPath = (filePath: string) => {
   const id = crypto.randomUUID();
   const title = extractOrgTitleFromPath(filePath);
   const content = buildNoteContent(id, title);
-
   return persistLinkedNote(api, { id, title, filePath, content });
 };
+
+const createMissingFileByPath = (filePath: string) =>
+  isOrgFile(filePath)
+    ? createMissingOrgNoteByPath(filePath)
+    : to(api.core.useFileSystem().writeFile, `Failed to create file: ${filePath}`)(filePath, '');
 
 export type OpenLinkTarget = 'current' | 'new-tab' | 'adjacent-pane';
 
@@ -73,7 +77,7 @@ const ensureLocalLinkFileExists = async (scheme: BufferScheme, path: string): Pr
     return true;
   }
 
-  const createResult = await createMissingNoteByPath(path);
+  const createResult = await createMissingFileByPath(path);
   if (createResult.isErr()) {
     reporter.reportError(createResult.error);
     return false;
