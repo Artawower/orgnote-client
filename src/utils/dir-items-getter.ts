@@ -1,67 +1,83 @@
 import Fuse from 'fuse.js';
 import type { DiskFile, OrgNoteApi, CompletionSearchResult } from 'orgnote-api';
-import { isPathInsideRoot } from './is-path-inside-root';
-import { ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH } from 'src/constants/system-file-paths';
 import { matchesAllowedExtension } from './matches-allowed-extension';
+import {
+  createFileSearchTraversalPolicy,
+  FILE_VISIT_DECISIONS,
+  includeAllFilesTraversalPolicy,
+  type FileTraversalPolicy,
+  type FileVisitDecision,
+} from './file-traversal-policy';
 
 export type ReadDirFn = (path: string) => Promise<DiskFile[]>;
+
+export interface WalkDirOptions {
+  includeFiles: boolean;
+  allowedExtensions?: string[];
+  recursive?: boolean;
+  traversalPolicy?: FileTraversalPolicy;
+}
 
 export interface DirItemsGetterOptions {
   includeFiles?: boolean;
   rootPath?: string;
   allowedExtensions?: string[];
   recursive?: boolean;
+  traversalPolicy?: FileTraversalPolicy;
 }
 
-const isExtensionRuntimeItem = (item: DiskFile): boolean =>
-  isPathInsideRoot(item.path, `/${ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH}`);
+interface EvaluatedEntry {
+  readonly file: DiskFile;
+  readonly decision: FileVisitDecision;
+}
 
-const shouldIncludeItem = (
-  item: DiskFile,
-  includeFiles: boolean,
-  allowedExtensions?: string[],
+const evaluateEntries = (
+  files: DiskFile[],
+  policy: FileTraversalPolicy,
+): EvaluatedEntry[] => files.map((file) => ({ file, decision: policy(file) }));
+
+const shouldIncludeEntry = (
+  entry: EvaluatedEntry,
+  options: WalkDirOptions,
 ): boolean => {
-  if (isExtensionRuntimeItem(item)) return false;
-  if (item.type === 'directory') return true;
-  return includeFiles && matchesAllowedExtension(item.path, allowedExtensions);
+  if (entry.decision !== FILE_VISIT_DECISIONS.INCLUDE) return false;
+  if (entry.file.type === 'directory') return true;
+  return options.includeFiles && matchesAllowedExtension(entry.file.path, options.allowedExtensions);
 };
+
+const shouldTraverseEntry = (entry: EvaluatedEntry): boolean =>
+  entry.file.type === 'directory' && entry.decision !== FILE_VISIT_DECISIONS.PRUNE;
 
 export const walkDir = async (
   readDir: ReadDirFn,
   path: string,
-  includeFiles: boolean,
-  allowedExtensions?: string[],
-  recursive = true,
+  options: WalkDirOptions,
 ): Promise<DiskFile[]> => {
-  const items = await readDir(path);
-  const included = items.filter((item) => shouldIncludeItem(item, includeFiles, allowedExtensions));
-
-  if (!recursive) return included;
+  const traversalPolicy = options.traversalPolicy ?? includeAllFilesTraversalPolicy;
+  const entries = evaluateEntries(await readDir(path), traversalPolicy);
+  const included = entries.filter((entry) => shouldIncludeEntry(entry, options)).map(({ file }) => file);
+  if (options.recursive === false) return included;
 
   const nestedGroups = await Promise.all(
-    items
-      .filter((item) => item.type === 'directory' && !isExtensionRuntimeItem(item))
-      .map((item) => walkDir(readDir, item.path, includeFiles, allowedExtensions, recursive)),
+    entries
+      .filter(shouldTraverseEntry)
+      .map(({ file }) => walkDir(readDir, file.path, options)),
   );
-
   return [...included, ...nestedGroups.flat()];
 };
 
-const resolveOptions = (options: boolean | DirItemsGetterOptions): Required<DirItemsGetterOptions> => {
-  if (typeof options === 'boolean') {
-    return {
-      includeFiles: options,
-      rootPath: '/',
-      allowedExtensions: [],
-      recursive: true,
-    };
-  }
-
+const resolveOptions = (
+  options: boolean | DirItemsGetterOptions,
+): Required<DirItemsGetterOptions> => {
+  const resolved = typeof options === 'boolean' ? { includeFiles: options } : options;
+  const rootPath = resolved.rootPath ?? '/';
   return {
-    includeFiles: options.includeFiles ?? false,
-    rootPath: options.rootPath ?? '/',
-    allowedExtensions: options.allowedExtensions ?? [],
-    recursive: options.recursive ?? true,
+    includeFiles: resolved.includeFiles ?? false,
+    rootPath,
+    allowedExtensions: resolved.allowedExtensions ?? [],
+    recursive: resolved.recursive ?? true,
+    traversalPolicy:
+      resolved.traversalPolicy ?? createFileSearchTraversalPolicy(rootPath),
   };
 };
 
@@ -78,18 +94,17 @@ export const createDirItemsGetter = (
     const fs = api.core.useFileSystem();
 
     if (!allFiles) {
-      allFiles = await walkDir(
-        fs.readDir,
-        resolvedOptions.rootPath,
-        resolvedOptions.includeFiles,
-        resolvedOptions.allowedExtensions,
-        resolvedOptions.recursive,
-      );
+      allFiles = await walkDir(fs.readDir, resolvedOptions.rootPath, {
+        includeFiles: resolvedOptions.includeFiles,
+        allowedExtensions: resolvedOptions.allowedExtensions,
+        recursive: resolvedOptions.recursive,
+        traversalPolicy: resolvedOptions.traversalPolicy,
+      });
       const threshold = api.core.useConfig().config.completion.fuseThreshold;
       fuse = new Fuse(allFiles, { threshold, keys: ['name', 'path'] });
     }
 
-    const results = filter ? fuse!.search(filter).map((r) => r.item) : allFiles;
+    const results = filter ? fuse!.search(filter).map((result) => result.item) : allFiles;
 
     return {
       total: results.length,

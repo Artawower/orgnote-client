@@ -18,6 +18,7 @@ import { useFileWatcherStore } from 'src/stores/file-watcher';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 import { affectsOrgIndex } from 'src/utils/org-fs-change';
 import { walkDir } from 'src/utils/dir-items-getter';
+import { userContentTraversalPolicy } from 'src/utils/file-traversal-policy';
 
 export const useFileIndexing = (pinia: Pinia): void => {
   const commands = useCommandsStore(pinia);
@@ -35,7 +36,10 @@ export const useFileIndexing = (pinia: Pinia): void => {
   };
 
   const listOrgFiles = async (path: string): Promise<DiskFile[]> => {
-    const entries = await walkDir(fileSystem.readDir, path, true);
+    const entries = await walkDir(fileSystem.readDir, path, {
+      includeFiles: true,
+      traversalPolicy: userContentTraversalPolicy,
+    });
     return entries.filter((entry) => entry.type === 'file' && isOrgFile(entry.name));
   };
 
