@@ -3,9 +3,31 @@ import { setActivePinia, createPinia } from 'pinia';
 import { test, expect, beforeEach, vi } from 'vitest';
 import { useExtensionsStore } from './extension';
 import type { ExtensionManifest, ExtensionMeta, ExtensionSource } from 'orgnote-api';
+import { fetchExtensionPackageFromRepo } from 'src/extensions/fetch-extension-package';
+import type { ExtensionInstallerRequest } from 'src/extensions/extension-installer-contract';
+
+const installerMocks = vi.hoisted(() => ({
+  fetchPackage: vi.fn(),
+}));
+
+vi.mock('src/extensions/extension-installer-client', () => ({
+  fetchExtensionPackageInWorker: installerMocks.fetchPackage,
+}));
+
+const workerLifecycleMocks = vi.hoisted(() => ({
+  register: vi.fn(),
+  release: vi.fn(),
+}));
+
+vi.mock('src/extensions/extension-workers', () => ({
+  registerExtensionWorkers: workerLifecycleMocks.register,
+}));
 
 vi.mock('src/boot/api', () => ({
   api: {
+    core: {
+      useWorkers: vi.fn(() => ({})),
+    },
     infrastructure: {
       extensionSourceRepository: {
         get: vi.fn(),
@@ -49,6 +71,9 @@ vi.mock('./config', () => ({
         darkThemeName: null,
         lightThemeName: null,
       },
+      developer: {
+        corsProxy: 'https://proxy.example/',
+      },
     },
   }),
 }));
@@ -64,6 +89,7 @@ vi.mock('src/extensions', () => ({
 
 vi.mock('src/utils/read-extension', () => ({
   compileExtension: vi.fn(),
+  parseExtension: vi.fn(),
   parseExtensionFromFile: vi.fn(),
 }));
 
@@ -102,6 +128,17 @@ const createMockExtensionSource = (name: string): ExtensionSource => ({
 beforeEach(() => {
   setActivePinia(createPinia());
   vi.clearAllMocks();
+  workerLifecycleMocks.register.mockReturnValue(workerLifecycleMocks.release);
+  installerMocks.fetchPackage.mockImplementation(async (
+    _workers: unknown,
+    request: ExtensionInstallerRequest,
+  ) => {
+    const repo = await mockOpenRepo({
+      url: request.source.repo,
+      branch: request.source.branch ?? request.source.tag,
+    });
+    return await fetchExtensionPackageFromRepo(repo, request);
+  });
 });
 
 test('extensions list is empty initially', () => {
@@ -356,6 +393,50 @@ test('installExtension stores the module in the runtime filesystem', async () =>
     '.orgnote/extensions/runtime-extension/1.0.0/index.js',
     moduleContent,
   );
+});
+
+test('installExtension delegates Git package loading to the worker', async () => {
+  const { api } = await import('src/boot/api');
+  const source = { type: 'git' as const, repo: 'https://example.com/worker-loaded' };
+  const manifest = Object.freeze(createMockManifest('worker-loaded', { source }));
+  installerMocks.fetchPackage.mockResolvedValue({
+    manifest,
+    rawContent: 'export default { onMounted() {} };',
+    assets: [],
+  });
+
+  await useExtensionsStore().installExtension(source);
+
+  expect(installerMocks.fetchPackage).toHaveBeenCalledWith(
+    api.core.useWorkers(),
+    { source, corsProxy: 'https://proxy.example/' },
+  );
+  expect(mockOpenRepo).not.toHaveBeenCalled();
+  expect(mockWriteFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/worker-loaded/1.0.0/index.js',
+    'export default { onMounted() {} };',
+  );
+});
+
+test('installExtension adds source to a legacy package manifest', async () => {
+  const { compileExtension, parseExtension } = await import('src/utils/read-extension');
+  const source = { type: 'git' as const, repo: 'https://example.com/legacy-package' };
+  const rawContent = 'export default { onMounted() {} };';
+  const legacyManifest = createMockManifest('legacy-package', {
+    source: { type: 'local' },
+  });
+  installerMocks.fetchPackage.mockResolvedValue({ rawContent, assets: [] });
+  vi.mocked(parseExtension).mockResolvedValue({
+    manifest: legacyManifest,
+    module: { onMounted: vi.fn() },
+    rawContent,
+  });
+  vi.mocked(compileExtension).mockResolvedValue({ onMounted: vi.fn() });
+  const store = useExtensionsStore();
+
+  await store.installExtension(source);
+
+  expect(store.extensions[0]?.manifest.source).toEqual(source);
 });
 
 test('installExtension stores declared assets beside the module', async () => {
@@ -624,11 +705,20 @@ test('addExtension with active true mounts before marking extension active', asy
   await store.addExtension(meta, source);
 
   expect(module.onMounted).toHaveBeenCalledOnce();
+  expect(workerLifecycleMocks.register).toHaveBeenCalledWith(meta.manifest);
   expect(store.extensions[0]?.active).toBe(true);
+
+  await store.disableExtension('auto-enable');
+
+  expect(workerLifecycleMocks.release).toHaveBeenCalledOnce();
 });
 
 test('addExtension leaves extension inactive when mount fails', async () => {
   const { compileExtension } = await import('src/utils/read-extension');
+  const { api } = await import('src/boot/api');
+  vi.mocked(api.infrastructure.extensionSourceRepository.get).mockResolvedValue(
+    createMockExtensionSource('broken-extension'),
+  );
   vi.mocked(compileExtension).mockResolvedValue({
     onMounted: vi.fn(() => {
       throw new Error('mount failed');
@@ -640,6 +730,8 @@ test('addExtension leaves extension inactive when mount fails', async () => {
   await store.addExtension(meta, createMockExtensionSource('broken-extension'));
 
   expect(store.extensions[0]?.active).toBe(false);
+  expect(workerLifecycleMocks.register).toHaveBeenCalledWith(meta.manifest);
+  expect(workerLifecycleMocks.release).toHaveBeenCalledOnce();
 });
 
 test('isExtensionExist handles empty string', () => {

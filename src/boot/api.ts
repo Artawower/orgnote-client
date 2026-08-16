@@ -88,10 +88,13 @@ import { useFileContent } from 'src/composables/use-file-content';
 import { useAppResume } from 'src/composables/use-app-resume';
 import { hasWindow } from 'src/utils/platform-specific';
 import { useKeybindingsStore } from 'src/stores/keybindings';
+import { useWorkerStore } from 'src/stores/worker';
+import { orgNoteCoreApi } from 'src/api/orgnote-core-api';
 
 let api: OrgNoteApi;
 async function initApi(app: App, router: Router): Promise<void> {
   api = {
+    ...orgNoteCoreApi,
     infrastructure: {
       ...repositories,
       websocket: wsClient,
@@ -100,6 +103,7 @@ async function initApi(app: App, router: Router): Promise<void> {
       useCommands: useCommandsStore,
       useCommandsGroup: useCommandsGroupStore,
       useExtensions: useExtensionsStore,
+      useWorkers: useWorkerStore,
       useFileSystem: useFileSystemStore,
       useFileWatcher: useFileWatcherStore,
       useEncryption: useEncryptionStore,

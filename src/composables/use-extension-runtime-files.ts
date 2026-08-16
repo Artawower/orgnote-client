@@ -17,7 +17,10 @@ export interface ExtensionRuntimeAsset {
 }
 
 export interface ExtensionRuntimeFileSystem {
-  readFile(path: string, encoding: 'utf8'): Promise<string | undefined>;
+  readFile<TEncoding extends 'utf8' | 'binary'>(
+    path: string,
+    encoding: TEncoding,
+  ): Promise<(TEncoding extends 'utf8' ? string : Uint8Array) | undefined>;
   writeFile(path: string, content: string | Uint8Array): Promise<void>;
   rmdir(path: string): Promise<void>;
 }
@@ -29,6 +32,7 @@ export interface ExtensionRuntimeFiles {
     assets: readonly ExtensionRuntimeAsset[],
   ): Promise<void>;
   readEntry(manifest: ExtensionManifest): Promise<string | undefined>;
+  readAsset(manifest: ExtensionManifest, path: string): Promise<Uint8Array | undefined>;
   remove(manifest: ExtensionManifest): Promise<void>;
   removeAll(extensionName: string): Promise<void>;
 }
@@ -43,6 +47,8 @@ export const useExtensionRuntimeFiles = (
     );
   },
   readEntry: (manifest) => fileSystem.readFile(getExtensionEntryPath(manifest), 'utf8'),
+  readAsset: (manifest, path) =>
+    fileSystem.readFile(getExtensionAssetPath(manifest, path), 'binary'),
   remove: (manifest) => fileSystem.rmdir(getExtensionRuntimePath(manifest)),
   removeAll: (extensionName) => fileSystem.rmdir(getExtensionRootPath(extensionName)),
 });

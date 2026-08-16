@@ -7,7 +7,6 @@ import {
   type ExtensionSource,
   type ExtensionSourceInfo,
   type ExtensionStore,
-  type GitRepoHandle,
   type GitSource,
   type LocalSource,
 } from 'orgnote-api';
@@ -19,12 +18,10 @@ import {
   parseExtension,
   parseExtensionFromFile,
 } from 'src/utils/read-extension';
-import { validateManifest } from 'src/utils/validate-manifest';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
 import { useFileSystemStore } from './file-system';
 import { parseToml, stringifyToml } from 'orgnote-api/utils';
-import { useGitStore } from './git';
 import { resetCSSVariables } from 'src/utils/css-utils';
 import { THEME_VARIABLES } from 'orgnote-api';
 import { useConfigStore } from './config';
@@ -35,10 +32,13 @@ import {
   useExtensionRuntimeFiles,
   type ExtensionRuntimeAsset,
 } from 'src/composables/use-extension-runtime-files';
-import { fetchExtensionRuntimeAssets } from 'src/extensions/runtime-assets';
+import { registerExtensionWorkers } from 'src/extensions/extension-workers';
+import { fetchExtensionPackageInWorker } from 'src/extensions/extension-installer-client';
+import type { FetchedExtensionPackage } from 'src/extensions/extension-installer-contract';
 
 interface ActiveExtension extends ExtensionMeta {
   module: Extension;
+  releaseWorkers: () => void;
 }
 
 interface ExtensionsFile {
@@ -54,7 +54,6 @@ interface FetchedExtension {
 type SourceFetcher = (source: ExtensionSourceInfo) => Promise<FetchedExtension>;
 
 const extensionsFilePath = ORGNOTE_EXTENSIONS_FILE_PATH;
-const distFolder = 'dist';
 
 const applyMissingDefaults = (
   stored: Record<string, unknown>,
@@ -212,14 +211,19 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
 
       await syncExtensionConfig(meta, module);
 
+      const releaseWorkers = registerExtensionWorkers(meta.manifest);
       const mounted = await callOnMounted(module, meta.manifest.name);
-      if (!mounted) return undefined;
+      if (!mounted) {
+        releaseWorkers();
+        return undefined;
+      }
 
       const activeExt: ActiveExtension = {
         manifest: meta.manifest,
         active: true,
         config: meta.config,
         module,
+        releaseWorkers,
       };
       activeExtensions.value.push(activeExt);
       return activeExt;
@@ -243,6 +247,8 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
           reporter.reportError(result.error);
         }
       }
+
+      ext.releaseWorkers();
 
       activeExtensions.value = activeExtensions.value.filter(
         (e) => e.manifest.name !== extensionName,
@@ -372,67 +378,25 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     await activateExtensionMeta(meta);
   };
 
-  const resolveExtensionPaths = async (
-    repoHandle: GitRepoHandle,
-  ): Promise<{ entryPath: string; manifestPath: string }> => {
-    const hasDist = await repoHandle.fileExists(distFolder);
-    const baseDir = hasDist ? `${distFolder}/` : '';
-    return {
-      entryPath: `${baseDir}index.js`,
-      manifestPath: `${baseDir}manifest.json`,
-    };
-  };
-
   const extractManifestFromModule = async (moduleContent: string): Promise<ExtensionManifest> =>
     (await parseExtension(moduleContent)).manifest;
 
-  const parseManifestJson = (content: string): ExtensionManifest => JSON.parse(content);
-
-  const resolveManifest = async (
-    repoHandle: GitRepoHandle,
-    manifestPath: string,
-    moduleContent: string,
-  ): Promise<ExtensionManifest> => {
-    const hasManifest = await repoHandle.fileExists(manifestPath);
-
-    if (!hasManifest) {
-      const manifest = await extractManifestFromModule(moduleContent);
-      validateManifest(manifest);
-      return manifest;
-    }
-
-    const content = await repoHandle.readFile(manifestPath, 'utf8');
-    const safeParse = to(parseManifestJson, `Invalid manifest JSON in ${manifestPath}`);
-    const parseResult = safeParse(content);
-
-    if (parseResult.isErr()) {
-      throw parseResult.error;
-    }
-
-    validateManifest(parseResult.value);
-    return parseResult.value;
+  const resolveFetchedPackage = async (
+    source: GitSource,
+    fetched: FetchedExtensionPackage,
+  ): Promise<FetchedExtension> => {
+    if (fetched.manifest) return { ...fetched, manifest: fetched.manifest };
+    const legacyManifest = await extractManifestFromModule(fetched.rawContent);
+    return { ...fetched, manifest: { ...legacyManifest, source } };
   };
 
   const fetchFromGit = async (source: GitSource): Promise<FetchedExtension> => {
-    const gitStore = useGitStore();
-    const repoHandle = await gitStore.openRepo({
-      url: source.repo,
-      branch: source.branch ?? source.tag,
+    const configStore = useConfigStore();
+    const fetched = await fetchExtensionPackageInWorker(api.core.useWorkers(), {
+      source,
+      corsProxy: configStore.config.developer.corsProxy,
     });
-
-    const paths = await resolveExtensionPaths(repoHandle);
-    const moduleContent = await repoHandle.readFile(paths.entryPath, 'utf8');
-    const manifest = await resolveManifest(repoHandle, paths.manifestPath, moduleContent);
-    manifest.source = source;
-
-    const baseDirectory = paths.entryPath.slice(0, -'index.js'.length);
-    const assets = await fetchExtensionRuntimeAssets(repoHandle, manifest, baseDirectory);
-
-    return {
-      manifest,
-      rawContent: moduleContent,
-      assets,
-    };
+    return await resolveFetchedPackage(source, fetched);
   };
 
   const sourceFetchers: Record<ExtensionSourceInfo['type'], SourceFetcher> = {

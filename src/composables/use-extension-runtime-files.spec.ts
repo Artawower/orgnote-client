@@ -84,6 +84,21 @@ test('readEntry reads the versioned entry file', async () => {
   );
 });
 
+test('readAsset reads a declared binary runtime asset', async () => {
+  const fileSystem = createFileSystem();
+  const runtimeFiles = useExtensionRuntimeFiles(fileSystem);
+  const content = new Uint8Array([1, 2, 3]);
+  vi.mocked(fileSystem.readFile).mockResolvedValue(content);
+
+  const result = await runtimeFiles.readAsset(manifest, manifest.assets![0]!.path);
+
+  expect(result).toEqual(content);
+  expect(fileSystem.readFile).toHaveBeenCalledWith(
+    '.orgnote/extensions/drawing-viewer/1.0.0/assets/fonts/Excalifont.woff2',
+    'binary',
+  );
+});
+
 test('removeAll removes every installed version', async () => {
   const fileSystem = createFileSystem();
   const runtimeFiles = useExtensionRuntimeFiles(fileSystem);
