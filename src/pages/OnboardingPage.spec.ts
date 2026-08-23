@@ -58,7 +58,10 @@ vi.mock('vue-i18n', async () => {
   return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
 });
 
-vi.mock('orgnote-api', () => ({ I18N: {}, RouteNames: { Home: 'Home' } }));
+vi.mock('orgnote-api', async () => {
+  const actual = await vi.importActual('orgnote-api');
+  return { ...actual, I18N: {}, RouteNames: { Home: 'Home' } };
+});
 vi.mock('orgnote-api/constants', () => ({ RouteNames: { Home: 'Home' } }));
 vi.mock('orgnote-api/utils', () => ({
   to: (fn: () => Promise<unknown>) => fn(),

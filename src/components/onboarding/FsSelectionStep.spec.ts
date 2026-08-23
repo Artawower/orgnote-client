@@ -32,7 +32,10 @@ vi.mock('vue-i18n', async () => {
   return { ...actual, useI18n: () => ({ t: (key: string) => key }) };
 });
 
-vi.mock('orgnote-api', () => ({ I18N: { CHOOSE_FILE_SYSTEM: 'choose file system' } }));
+vi.mock('orgnote-api', async () => {
+  const actual = await vi.importActual('orgnote-api');
+  return { ...actual, I18N: { CHOOSE_FILE_SYSTEM: 'choose file system' } };
+});
 
 const stubs = {
   PageWrapper: { template: '<div><slot /></div>' },

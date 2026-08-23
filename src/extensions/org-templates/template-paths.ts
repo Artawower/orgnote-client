@@ -1,6 +1,7 @@
 import type { DiskFile, OrgNoteApi } from 'orgnote-api';
+import { ORGNOTE_SYSTEM_ROOT_PATH } from 'orgnote-api';
 
-export const TEMPLATE_ROOT_PATH = '/.orgnote/templates';
+export const TEMPLATE_ROOT_PATH = `/${ORGNOTE_SYSTEM_ROOT_PATH}/templates`;
 export const TEMPLATE_EXTENSION = '.org.tmpl';
 export const DEFAULT_TEMPLATE_PATH = `${TEMPLATE_ROOT_PATH}/default${TEMPLATE_EXTENSION}`;
 export const DEFAULT_TEMPLATE_CONTENT = `:PROPERTIES:
