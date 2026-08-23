@@ -1,9 +1,5 @@
 import { defineBoot } from '#q-app/wrappers';
-import {
-  getExtensionRuntimeRootPath,
-  isSyncConflictPath,
-  toAbsolutePath,
-} from 'orgnote-api';
+import { getExtensionRuntimeRootPath, isSyncConflictPath, toAbsolutePath } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import {
@@ -16,6 +12,7 @@ import { useSyncStore } from 'src/stores/sync';
 import { debounce } from 'src/utils/debounce';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
+// TODO: move to config
 const FS_SYNC_DEBOUNCE_MS = 1200;
 const CONFLICT_ARTIFACT_OPERATIONS = new Set<FileMutationOperation>([
   FILE_MUTATION_OPERATION.WRITE,
@@ -23,17 +20,14 @@ const CONFLICT_ARTIFACT_OPERATIONS = new Set<FileMutationOperation>([
 ]);
 
 const isExtensionRuntimePath = (path: string): boolean =>
-  isPathInsideRoot(
-    toAbsolutePath(path),
-    toAbsolutePath(getExtensionRuntimeRootPath()),
-  );
+  isPathInsideRoot(toAbsolutePath(path), toAbsolutePath(getExtensionRuntimeRootPath()));
 
 const isConflictArtifactPath = (mutation: FileMutation, path: string): boolean =>
   CONFLICT_ARTIFACT_OPERATIONS.has(mutation.operation) && isSyncConflictPath(path);
 
 export const shouldTriggerSyncForMutation = (mutation: FileMutation): boolean =>
-  mutation.paths.some((path) =>
-    !isExtensionRuntimePath(path) && !isConflictArtifactPath(mutation, path),
+  mutation.paths.some(
+    (path) => !isExtensionRuntimePath(path) && !isConflictArtifactPath(mutation, path),
   );
 
 export default defineBoot(({ store }) => {

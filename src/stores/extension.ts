@@ -336,12 +336,16 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
   const isExtensionExist = (extensionName: string): boolean =>
     extensions.value.some((e) => e.manifest.name === extensionName);
 
-  const restorePreviousExtension = async (previous?: ExtensionMeta): Promise<void> => {
-    if (!previous) return;
-    extensions.value = extensions.value.filter(
-      (extension) => extension.manifest.name !== previous.manifest.name,
+  const replaceExtensionMeta = (replacement: ExtensionMeta): void => {
+    const otherExtensions = extensions.value.filter(
+      (extension) => extension.manifest.name !== replacement.manifest.name,
     );
-    extensions.value.push(previous);
+    extensions.value = [...otherExtensions, replacement];
+  };
+
+  const rollbackFailedActivation = async (previous?: ExtensionMeta): Promise<void> => {
+    if (!previous) return;
+    replaceExtensionMeta(previous);
     if (previous.active) await mountExtension(previous);
   };
 
@@ -349,8 +353,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
     const previous = extensions.value.find((e) => e.manifest.name === meta.manifest.name);
     const shouldActivate = meta.active === true;
     if (previous?.active) await unmountExtension(previous.manifest.name);
-    extensions.value = extensions.value.filter((e) => e.manifest.name !== meta.manifest.name);
-    extensions.value.push(meta);
+    replaceExtensionMeta(meta);
     if (shouldActivate) {
       meta.active = false;
       const mountResult = await to(
@@ -360,7 +363,7 @@ export const useExtensionsStore = defineStore<'extension', ExtensionStore>('exte
       if (mountResult.isErr()) reporter.reportError(mountResult.error);
       meta.active = mountResult.isOk() && mountResult.value !== undefined;
     }
-    if (shouldActivate && !meta.active) await restorePreviousExtension(previous);
+    if (shouldActivate && !meta.active) await rollbackFailedActivation(previous);
     await writeToDisk();
     return !shouldActivate || meta.active === true;
   };
