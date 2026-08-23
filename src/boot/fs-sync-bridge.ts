@@ -1,63 +1,50 @@
 import { defineBoot } from '#q-app/wrappers';
-import { isSyncConflictPath } from 'orgnote-api';
+import {
+  getExtensionRuntimeRootPath,
+  isSyncConflictPath,
+  toAbsolutePath,
+} from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
-import { useFileSystemStore } from 'src/stores/file-system';
+import {
+  FILE_MUTATION_OPERATION,
+  type FileMutation,
+  type FileMutationOperation,
+} from 'src/models/file-mutation';
+import { onFileMutation } from 'src/stores/file-mutation-events';
 import { useSyncStore } from 'src/stores/sync';
 import { debounce } from 'src/utils/debounce';
-import { getExtensionRuntimeRootPath, toAbsolutePath } from 'orgnote-api';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
-// TODO: dev mvoe to config
 const FS_SYNC_DEBOUNCE_MS = 1200;
-
-export const SYNC_TRIGGER_FS_ACTIONS = new Set<string>([
-  'writeFile',
-  'rename',
-  'deleteFile',
-  'mkdir',
-  'rmdir',
-  'copyFile',
+const CONFLICT_ARTIFACT_OPERATIONS = new Set<FileMutationOperation>([
+  FILE_MUTATION_OPERATION.WRITE,
+  FILE_MUTATION_OPERATION.DELETE,
 ]);
 
-const CONFLICT_ARTIFACT_ACTIONS = new Set<string>(['writeFile', 'deleteFile']);
+const isExtensionRuntimePath = (path: string): boolean =>
+  isPathInsideRoot(
+    toAbsolutePath(path),
+    toAbsolutePath(getExtensionRuntimeRootPath()),
+  );
 
-const changesConflictArtifact = (
-  actionName: string,
-  args: unknown[]
-): boolean =>
-  CONFLICT_ARTIFACT_ACTIONS.has(actionName) &&
-  typeof args[0] === 'string' &&
-  isSyncConflictPath(args[0]);
+const isConflictArtifactPath = (mutation: FileMutation, path: string): boolean =>
+  CONFLICT_ARTIFACT_OPERATIONS.has(mutation.operation) && isSyncConflictPath(path);
 
-const changesExtensionRuntime = (args: unknown[]): boolean =>
-  typeof args[0] === 'string' &&
-  isPathInsideRoot(toAbsolutePath(args[0]), toAbsolutePath(getExtensionRuntimeRootPath()));
-
-export const shouldTriggerSyncForAction = (
-  actionName: string,
-  args: unknown[] = []
-): boolean =>
-  SYNC_TRIGGER_FS_ACTIONS.has(actionName) &&
-  !changesConflictArtifact(actionName, args) &&
-  !changesExtensionRuntime(args);
+export const shouldTriggerSyncForMutation = (mutation: FileMutation): boolean =>
+  mutation.paths.some((path) =>
+    !isExtensionRuntimePath(path) && !isConflictArtifactPath(mutation, path),
+  );
 
 export default defineBoot(({ store }) => {
   const syncStore = useSyncStore(store);
-  const fileSystemStore = useFileSystemStore(store);
-
   const runDebouncedSync = debounce(async () => {
     const result = await to(() => syncStore.sync(), 'Failed to sync after fs action')();
-    if (result.isErr()) {
-      reporter.reportWarning(result.error);
-    }
+    if (result.isErr()) reporter.reportWarning(result.error);
   }, FS_SYNC_DEBOUNCE_MS);
 
-  fileSystemStore.$onAction(({ name, args, after }) => {
-    if (!shouldTriggerSyncForAction(name, args)) {
-      return;
-    }
-
-    after(runDebouncedSync);
+  onFileMutation((mutation) => {
+    if (!shouldTriggerSyncForMutation(mutation)) return;
+    runDebouncedSync();
   });
 });

@@ -15,6 +15,8 @@ import { to } from 'orgnote-api/utils';
 import { isNullable } from 'orgnote-api/utils';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 import { ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH } from 'src/constants/system-file-paths';
+import { FILE_MUTATION_OPERATION } from 'src/models/file-mutation';
+import { emitFileMutation } from './file-mutation-events';
 
 const EXTENSION_RUNTIME_ROOT = `/${ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH}`;
 
@@ -81,18 +83,30 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       return await safeFs.value.readFile(normalizedPath, encoding);
     };
 
-    const writeFile = async (path: string | string[], content: string | Uint8Array) => {
+    const persistFile = async (
+      path: string | string[],
+      content: string | Uint8Array,
+      shouldEmitMutation: boolean,
+    ): Promise<void> => {
       const realPath = normalizePath(path);
       const isEncrypted = isOrgGpgFile(realPath);
       const format = isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
       await safeFs.value.writeFile(realPath, content, format);
-      if (isPathInsideRoot(realPath, EXTENSION_RUNTIME_ROOT)) return;
+      if (isPathInsideRoot(realPath, EXTENSION_RUNTIME_ROOT)) {
+        if (shouldEmitMutation) {
+          emitFileMutation({ operation: FILE_MUTATION_OPERATION.WRITE, paths: [realPath] });
+        }
+        return;
+      }
       const info = await safeFs.value.fileInfo(realPath);
       await fileWatcher.emitChange({
         path: realPath,
         type: 'modify',
         mtime: info?.mtime,
       });
+      if (shouldEmitMutation) {
+        emitFileMutation({ operation: FILE_MUTATION_OPERATION.WRITE, paths: [realPath] });
+      }
     };
 
     const syncFile = async <T extends string | Uint8Array>(
@@ -120,7 +134,7 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
         await currentFs.value!.mkdir(getFileDirPath(realPath));
       }
 
-      await writeFile(realPath, content);
+      await persistFile(realPath, content, false);
     };
 
     const rename = async (path: string | string[], newPath: string | string[]): Promise<void> => {
@@ -134,12 +148,17 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
         previousPath,
         mtime: info?.mtime,
       });
+      emitFileMutation({
+        operation: FILE_MUTATION_OPERATION.RENAME,
+        paths: [previousPath, realPath],
+      });
     };
 
     const deleteFile = async (path: string | string[]) => {
       const realPath = normalizePath(path);
       await currentFs.value!.deleteFile(realPath);
       await fileWatcher.emitChange({ path: realPath, type: 'delete' });
+      emitFileMutation({ operation: FILE_MUTATION_OPERATION.DELETE, paths: [realPath] });
     };
 
     const removeAllFiles = async () => {
@@ -166,11 +185,21 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
     };
 
     const mkdir = async (path: string | string[]): Promise<void> => {
-      await safeFs.value.mkdir(normalizePath(path));
+      const realPath = normalizePath(path);
+      await safeFs.value.mkdir(realPath);
+      emitFileMutation({
+        operation: FILE_MUTATION_OPERATION.CREATE_DIRECTORY,
+        paths: [realPath],
+      });
     };
 
     const rmdir = async (path: string | string[]): Promise<void> => {
-      await safeFs.value.rmdir(normalizePath(path));
+      const realPath = normalizePath(path);
+      await safeFs.value.rmdir(realPath);
+      emitFileMutation({
+        operation: FILE_MUTATION_OPERATION.REMOVE_DIRECTORY,
+        paths: [realPath],
+      });
     };
 
     const fileInfo = async (path: string | string[]): Promise<DiskFile | undefined> => {
@@ -199,15 +228,19 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       const srcInfo = await safeFs.value.fileInfo(srcPath);
       if (srcInfo?.type === 'directory') {
         await copyDir(srcPath, destPath);
+        emitFileMutation({ operation: FILE_MUTATION_OPERATION.COPY, paths: [destPath] });
         return;
       }
 
       if (safeFs.value.copyFile) {
-        return await safeFs.value.copyFile(srcPath, destPath);
+        await safeFs.value.copyFile(srcPath, destPath);
+        emitFileMutation({ operation: FILE_MUTATION_OPERATION.COPY, paths: [destPath] });
+        return;
       }
 
       const content = await safeFs.value.readFile(srcPath, 'binary');
       await safeFs.value.writeFile(destPath, content, 'binary');
+      emitFileMutation({ operation: FILE_MUTATION_OPERATION.COPY, paths: [destPath] });
     };
 
     const copyDir = async (srcDir: string, destDir: string): Promise<void> => {
@@ -270,6 +303,10 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
         return;
       }
       await currentFs.value?.rmdir('/');
+    };
+
+    const writeFile: FileSystemStore['writeFile'] = async (path, content) => {
+      await persistFile(path, content, true);
     };
 
     const store: FileSystemStore = {
