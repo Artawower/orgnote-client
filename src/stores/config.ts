@@ -1,4 +1,4 @@
-import { type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
+import { ORGNOTE_SYSTEM_ROOT_PATH, type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
 import { defineStore, storeToRefs } from 'pinia';
 import { DEFAULT_CONFIG, DEFAULT_CONFIG_CONTENT } from 'src/constants/config';
 import { computed, reactive, ref, watch } from 'vue';
@@ -14,7 +14,6 @@ import { stringifyToml } from 'orgnote-api/utils';
 import { toAbsolutePath, type FileSystemChange } from 'orgnote-api';
 import { useFileWatcherStore } from './file-watcher';
 import { ORGNOTE_CONFIG_FILE_PATH } from 'src/constants/system-file-paths';
-import { ROOT_SYSTEM_FILE_PATH } from 'src/constants/root-system-file-path';
 import { withDeferredFlagReset, withFlag } from 'src/utils/with-flag';
 import { getNextBrokenConfigIndex } from 'src/utils/get-next-broken-config-index';
 import {
@@ -26,7 +25,7 @@ export const useConfigStore = defineStore<'config', ConfigStore>('config', () =>
   const fileSystem = useFileSystemStore();
   const diskConfigPath = ORGNOTE_CONFIG_FILE_PATH;
   const diskConfigWatchPath = toAbsolutePath(diskConfigPath);
-  const configSystemDir = ROOT_SYSTEM_FILE_PATH;
+  const configSystemDir = ORGNOTE_SYSTEM_ROOT_PATH;
   const lastSyncedMtime = ref<number>(0);
   const isInitialized = ref(false);
   const isApplyingDiskConfig = ref(false);

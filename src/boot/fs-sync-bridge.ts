@@ -1,44 +1,68 @@
 import { defineBoot } from '#q-app/wrappers';
-import { getExtensionRuntimeRootPath, isSyncConflictPath, toAbsolutePath } from 'orgnote-api';
+import {
+  getExtensionRuntimeRootPath,
+  hookStoreActions,
+  isSyncConflictPath,
+  join,
+  toAbsolutePath,
+  type StoreActionHooks,
+} from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
-import {
-  FILE_MUTATION_OPERATION,
-  type FileMutation,
-  type FileMutationOperation,
-} from 'src/models/file-mutation';
-import { onFileMutation } from 'src/stores/file-mutation-events';
+import { useFileSystemStore } from 'src/stores/file-system';
 import { useSyncStore } from 'src/stores/sync';
 import { debounce } from 'src/utils/debounce';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
 
-// TODO: move to config
 const FS_SYNC_DEBOUNCE_MS = 1200;
-const CONFLICT_ARTIFACT_OPERATIONS = new Set<FileMutationOperation>([
-  FILE_MUTATION_OPERATION.WRITE,
-  FILE_MUTATION_OPERATION.DELETE,
-]);
+
+type FileSystemPiniaStore = ReturnType<typeof useFileSystemStore>;
+type FilePath = Parameters<FileSystemPiniaStore['writeFile']>[0];
+type ScheduleSync = (paths: readonly FilePath[], ignoreConflictArtifacts?: boolean) => void;
+
+const normalizeActionPath = (path: FilePath): string =>
+  toAbsolutePath(typeof path === 'string' ? path : join(...path));
 
 const isExtensionRuntimePath = (path: string): boolean =>
-  isPathInsideRoot(toAbsolutePath(path), toAbsolutePath(getExtensionRuntimeRootPath()));
+  isPathInsideRoot(path, toAbsolutePath(getExtensionRuntimeRootPath()));
 
-const isConflictArtifactPath = (mutation: FileMutation, path: string): boolean =>
-  CONFLICT_ARTIFACT_OPERATIONS.has(mutation.operation) && isSyncConflictPath(path);
+const shouldTriggerSyncForPaths = (
+  paths: readonly FilePath[],
+  ignoreConflictArtifacts = false,
+): boolean =>
+  paths
+    .map(normalizeActionPath)
+    .some(
+      (path) =>
+        !isExtensionRuntimePath(path) && (!ignoreConflictArtifacts || !isSyncConflictPath(path)),
+    );
 
-export const shouldTriggerSyncForMutation = (mutation: FileMutation): boolean =>
-  mutation.paths.some(
-    (path) => !isExtensionRuntimePath(path) && !isConflictArtifactPath(mutation, path),
-  );
+const createFileSyncHooks = (
+  scheduleSync: ScheduleSync,
+): StoreActionHooks<FileSystemPiniaStore> => ({
+  writeFile: { after: ({ args: [path] }) => scheduleSync([path], true) },
+  rename: {
+    after: ({ args: [sourcePath, destinationPath] }) => scheduleSync([sourcePath, destinationPath]),
+  },
+  deleteFile: { after: ({ args: [path] }) => scheduleSync([path], true) },
+  mkdir: { after: ({ args: [path] }) => scheduleSync([path]) },
+  rmdir: { after: ({ args: [path] }) => scheduleSync([path]) },
+  copyFile: {
+    after: ({ args: [, destinationPath] }) => scheduleSync([destinationPath]),
+  },
+});
 
 export default defineBoot(({ store }) => {
   const syncStore = useSyncStore(store);
+  const fileSystemStore = useFileSystemStore(store);
   const runDebouncedSync = debounce(async () => {
     const result = await to(() => syncStore.sync(), 'Failed to sync after fs action')();
     if (result.isErr()) reporter.reportWarning(result.error);
   }, FS_SYNC_DEBOUNCE_MS);
-
-  onFileMutation((mutation) => {
-    if (!shouldTriggerSyncForMutation(mutation)) return;
+  const scheduleSync: ScheduleSync = (paths, ignoreConflictArtifacts) => {
+    if (!shouldTriggerSyncForPaths(paths, ignoreConflictArtifacts)) return;
     runDebouncedSync();
-  });
+  };
+
+  hookStoreActions(fileSystemStore, createFileSyncHooks(scheduleSync));
 });

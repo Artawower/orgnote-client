@@ -5,8 +5,6 @@ import { useFileSystemManagerStore } from './file-system-manager';
 import { useFileSystemStore } from './file-system';
 import { useSettingsStore } from './settings';
 import { useFileWatcherStore } from './file-watcher';
-import { FILE_MUTATION_OPERATION } from 'src/models/file-mutation';
-import { onFileMutation } from './file-mutation-events';
 
 const createDiskFile = (path: string, mtime: number): DiskFile => ({
   path,
@@ -57,17 +55,10 @@ test('writeFile does not emit changes for extension runtime files', async () => 
   fsManager.currentFsName = 'mock-fs';
   const emitChange = vi.spyOn(useFileWatcherStore(), 'emitChange');
   const store = useFileSystemStore();
-  const mutationListener = vi.fn();
-  const stopListening = onFileMutation(mutationListener);
 
   await store.writeFile('.orgnote/extensions/excalidraw/0.1.1/index.js', '');
-  stopListening();
 
   expect(mockFs.writeFile).toHaveBeenCalledOnce();
-  expect(mutationListener).toHaveBeenCalledWith({
-    operation: FILE_MUTATION_OPERATION.WRITE,
-    paths: ['/.orgnote/extensions/excalidraw/0.1.1/index.js'],
-  });
   expect(mockFs.fileInfo).not.toHaveBeenCalled();
   expect(emitChange).not.toHaveBeenCalled();
 });
@@ -141,15 +132,11 @@ test('syncFile writes when disk is missing', async () => {
   fsManager.currentFsName = 'mock-fs';
 
   const store = useFileSystemStore();
-  const mutationListener = vi.fn();
-  const stopListening = onFileMutation(mutationListener);
 
   const result = await store.syncFile('test.txt', 'store-content', 100);
-  stopListening();
 
   expect(result).toBeUndefined();
   expect(mockFs.writeFile).toHaveBeenCalledWith('/test.txt', 'store-content', 'utf8');
-  expect(mutationListener).not.toHaveBeenCalled();
 });
 
 test('syncFile does nothing when disk mtime equals time', async () => {

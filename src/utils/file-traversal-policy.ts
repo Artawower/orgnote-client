@@ -1,5 +1,4 @@
-import type { DiskFile } from 'orgnote-api';
-import { ROOT_SYSTEM_FILE_PATH } from 'src/constants/root-system-file-path';
+import { ORGNOTE_SYSTEM_ROOT_PATH, type DiskFile } from 'orgnote-api';
 import { isPathInsideRoot } from './is-path-inside-root';
 
 export const FILE_VISIT_DECISIONS = {
@@ -13,7 +12,7 @@ export type FileVisitDecision =
 
 export type FileTraversalPolicy = (file: DiskFile) => FileVisitDecision;
 
-const SYSTEM_ROOT_PATH = `/${ROOT_SYSTEM_FILE_PATH}`;
+const SYSTEM_ROOT_PATH = `/${ORGNOTE_SYSTEM_ROOT_PATH}`;
 
 export const includeAllFilesTraversalPolicy: FileTraversalPolicy = () =>
   FILE_VISIT_DECISIONS.INCLUDE;

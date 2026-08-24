@@ -1,59 +1,124 @@
-import { expect, test } from 'vitest';
-import {
-  FILE_MUTATION_OPERATION,
-  type FileMutation,
-  type FileMutationOperation,
-} from 'src/models/file-mutation';
-import { shouldTriggerSyncForMutation } from './fs-sync-bridge';
+import { beforeEach, expect, test, vi } from 'vitest';
+import boot from './fs-sync-bridge';
 
-const mutation = (
-  operation: FileMutationOperation,
-  paths: readonly string[],
-): FileMutation => ({ operation, paths });
+type ActionAfter = (callback: (result: unknown) => void) => void;
+type ActionError = (callback: (error: unknown) => void) => void;
+type ActionListener = (context: {
+  readonly name: string;
+  readonly args: unknown[];
+  readonly after: ActionAfter;
+  readonly onError: ActionError;
+}) => void;
 
-test('file mutation triggers sync for user content writes', () => {
-  expect(shouldTriggerSyncForMutation(
-    mutation(FILE_MUTATION_OPERATION.WRITE, ['/notes/a.org']),
-  )).toBe(true);
+class MissingActionListenerError extends Error {}
+
+const mocks = vi.hoisted(() => ({
+  actionListener: undefined as ActionListener | undefined,
+  reportWarning: vi.fn(),
+  sync: vi.fn(),
+}));
+
+vi.mock('src/stores/file-system', () => ({
+  useFileSystemStore: vi.fn(() => ({
+    $onAction: (listener: ActionListener) => {
+      mocks.actionListener = listener;
+      return vi.fn();
+    },
+  })),
+}));
+
+vi.mock('src/stores/sync', () => ({
+  useSyncStore: vi.fn(() => ({ sync: mocks.sync })),
+}));
+
+vi.mock('src/utils/debounce', () => ({
+  debounce: (callback: (...args: unknown[]) => unknown) => callback,
+}));
+
+vi.mock('src/boot/report', () => ({
+  reporter: { reportWarning: mocks.reportWarning },
+}));
+
+const dispatchAction = (name: string, args: unknown[]): void => {
+  const listener = mocks.actionListener;
+  if (!listener) throw new MissingActionListenerError();
+  listener({
+    name,
+    args,
+    after: (callback) => callback(undefined),
+    onError: vi.fn(),
+  });
+};
+
+beforeEach(async () => {
+  vi.clearAllMocks();
+  mocks.actionListener = undefined;
+  mocks.sync.mockResolvedValue(undefined);
+  await boot({ store: {} } as never);
 });
 
-test('file mutation ignores extension runtime writes', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.WRITE, [
+test('filesystem write action schedules sync for user content', () => {
+  dispatchAction('writeFile', ['/notes/a.org', 'content']);
+
+  expect(mocks.sync).toHaveBeenCalledOnce();
+});
+
+test('filesystem write action ignores extension runtime paths', () => {
+  dispatchAction('writeFile', [
     '/.orgnote/extensions/drawing-viewer/1.0.0/index.js',
-  ]))).toBe(false);
+    'content',
+  ]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
 });
 
-test('file mutation ignores extension runtime directory changes', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.CREATE_DIRECTORY, [
-    '/.orgnote/extensions/drawing-viewer',
-  ]))).toBe(false);
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.REMOVE_DIRECTORY, [
-    '/.orgnote/extensions/drawing-viewer',
-  ]))).toBe(false);
+test('filesystem write action supports path arrays', () => {
+  dispatchAction('writeFile', [
+    ['.orgnote', 'extensions', 'drawing-viewer', 'index.js'],
+    'content',
+  ]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
 });
 
-test('file mutation ignores conflict artifact writes', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.WRITE, [
+test('filesystem write action ignores conflict artifacts', () => {
+  dispatchAction('writeFile', [
     '/.orgnote/config.sync-conflict-100-device-remote.toml',
-  ]))).toBe(false);
+    'content',
+  ]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
 });
 
-test('file mutation triggers sync when rename leaves extension runtime', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.RENAME, [
-    '/.orgnote/extensions/example/1.0.0/index.js',
+test('filesystem rename action schedules sync when a path leaves runtime', () => {
+  dispatchAction('rename', [
+    '/.orgnote/extensions/example/index.js',
     '/notes/example.js',
-  ]))).toBe(true);
+  ]);
+
+  expect(mocks.sync).toHaveBeenCalledOnce();
 });
 
-test('file mutation ignores rename contained in extension runtime', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.RENAME, [
+test('filesystem rename action ignores changes contained in runtime', () => {
+  dispatchAction('rename', [
     '/.orgnote/extensions/example/index.js.tmp',
     '/.orgnote/extensions/example/index.js',
-  ]))).toBe(false);
+  ]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
 });
 
-test('file mutation checks only changed copy destination', () => {
-  expect(shouldTriggerSyncForMutation(mutation(FILE_MUTATION_OPERATION.COPY, [
-    '/notes/copied.org',
-  ]))).toBe(true);
+test('filesystem copy action checks only its destination', () => {
+  dispatchAction('copyFile', [
+    '/notes/source.org',
+    '/.orgnote/extensions/example/index.js',
+  ]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
+});
+
+test('filesystem syncFile action does not schedule another sync', () => {
+  dispatchAction('syncFile', ['/notes/remote.org', 'content', 100]);
+
+  expect(mocks.sync).not.toHaveBeenCalled();
 });
