@@ -38,6 +38,6 @@ export const createStartSessionHandler =
       await store.stopSession();
     }
 
-    await api.core.useBufferViewer().open(AGENDA_POMODORO_URI);
+    await api.core.useBufferViewer().showOrOpen(AGENDA_POMODORO_URI);
     await store.startSession(task, resolveType(store));
   };

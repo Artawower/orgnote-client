@@ -18,6 +18,7 @@ import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
+import { DefaultCommands } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import AgendaTasksFilter from './components/AgendaTasksFilter.vue';
@@ -61,7 +62,9 @@ const FILTER_COMMAND: Record<AgendaFilter, string> = {
 };
 
 const onViewNavigate = async (uri: string): Promise<void> => {
-  const result = await to(() => api.core.useBufferViewer().open(uri))();
+  const result = await to(() =>
+    api.core.useCommands().execute(DefaultCommands.SHOW_OR_OPEN_BUFFER, { uri }),
+  )();
   if (result.isErr()) {
     reporter.reportError(new Error('Failed to open agenda view', { cause: result.error }));
     return;
