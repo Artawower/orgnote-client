@@ -7,6 +7,8 @@ import {
   AGENDA_POMODORO_STATS_COMMAND,
   AGENDA_POMODORO_STATS_URI,
   AGENDA_POMODORO_URI,
+  AGENDA_TASK_ADD_TIME_COMMAND,
+  AGENDA_TASK_CONTEXT_MENU_GROUP,
   AGENDA_TASKS_VIEWER_ID,
 } from './constants';
 import { orgAgendaExtension } from './index';
@@ -15,6 +17,8 @@ const addedCommands: Command[] = [];
 const execute = vi.fn();
 const open = vi.fn();
 const register = vi.fn();
+const addContextMenuAction = vi.fn();
+const registerContextMenuGroup = vi.fn();
 
 const api = {
   core: {
@@ -23,7 +27,10 @@ const api = {
     usePane: () => ({ afterBufferActivated: vi.fn(() => vi.fn()) }),
   },
   ui: {
-    useContextMenu: () => ({ addContextMenuAction: vi.fn(), registerGroup: vi.fn() }),
+    useContextMenu: () => ({
+      addContextMenuAction,
+      registerGroup: registerContextMenuGroup,
+    }),
     usePinnedCommands: () => ({ addCommand: vi.fn() }),
   },
 } as unknown as OrgNoteApi;
@@ -33,6 +40,8 @@ beforeEach(() => {
   execute.mockReset();
   open.mockReset();
   register.mockReset();
+  addContextMenuAction.mockReset();
+  registerContextMenuGroup.mockReset();
 });
 
 test('Agenda Tasks viewer enables versioned view state', async () => {
@@ -46,6 +55,17 @@ test('Agenda Tasks viewer enables versioned view state', async () => {
       }),
     }),
   );
+});
+
+test('manual time command is registered in the task context menu', async () => {
+  await orgAgendaExtension.onMounted!(api);
+
+  expect(addedCommands).toContainEqual(
+    expect.objectContaining({ command: AGENDA_TASK_ADD_TIME_COMMAND }),
+  );
+  expect(addContextMenuAction).toHaveBeenCalledWith(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    command: AGENDA_TASK_ADD_TIME_COMMAND,
+  });
 });
 
 test.each([

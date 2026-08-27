@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { FileTask } from 'orgnote-api';
-import { to, uint8ArrayToText, textToUint8Array, isPresent } from 'orgnote-api/utils';
+import { isPresent, to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
-import { reporter } from 'src/boot/report';
 import { i18n } from 'src/boot/i18n';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { appendClock } from '../mutations/clock';
@@ -20,6 +19,7 @@ import {
   completePomodoroTaskAfterConfirmation,
   type PomodoroTaskCompletionResult,
 } from '../services/pomodoro-task-completion';
+import { applyAgendaFileMutation } from '../services/apply-agenda-file-mutation';
 
 export interface PomodoroTask {
   taskId: string;
@@ -63,28 +63,11 @@ const playBeep = (): void => {
   osc.onended = () => void ctx.close();
 };
 
-const applyFileMutation = async (
-  filePath: string,
-  mutation: (content: string) => string,
-): Promise<void> => {
-  const fileContent = api.core.useFileContent();
-  const readResult = await to(fileContent.read)(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-  const content = uint8ArrayToText(readResult.value);
-  const next = mutation(content);
-  if (next === content) return;
-  const writeResult = await to(fileContent.write)(filePath, textToUint8Array(next));
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
-};
-
 const segmentElapsedSec = (s: ActiveSession): number =>
   Math.floor((Date.now() - new Date(s.segmentStartedAt).getTime()) / 1000);
 
 const writeSegmentClock = async (s: ActiveSession, endedAt: Date): Promise<void> =>
-  applyFileMutation(s.filePath, (content) =>
+  applyAgendaFileMutation(api, s.filePath, (content) =>
     appendClock(content, s.taskStart, new Date(s.segmentStartedAt), endedAt),
   );
 

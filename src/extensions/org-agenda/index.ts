@@ -7,6 +7,7 @@ import { startPomodoroCommand } from './commands/start-pomodoro-command';
 import { startStopwatchCommand } from './commands/start-stopwatch-command';
 import { stopPomodoroCommand } from './commands/stop-pomodoro-command';
 import { deleteTaskCommand } from './commands/delete-task-command';
+import { addTaskTimeCommand } from './commands/add-task-time-command';
 import { setTaskPriorityCommand } from './commands/set-task-priority-command';
 import { openTaskCommand } from './commands/open-task-command';
 import { quickAddToFileCommand } from './commands/quick-add-to-file-command';
@@ -19,6 +20,7 @@ import {
   AGENDA_TASK_CONTEXT_MENU_GROUP,
   AGENDA_POMODORO_START_COMMAND,
   AGENDA_POMODORO_START_STOPWATCH_COMMAND,
+  AGENDA_TASK_ADD_TIME_COMMAND,
   AGENDA_TASK_DELETE_COMMAND,
   AGENDA_TASK_SET_PRIORITY_COMMAND,
   AGENDA_TASK_OPEN_COMMAND,
@@ -147,6 +149,9 @@ const registerTaskContextMenu = (api: OrgNoteApi): void => {
     command: AGENDA_TASK_SET_PRIORITY_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
+    command: AGENDA_TASK_ADD_TIME_COMMAND,
+  });
+  contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
     command: AGENDA_POMODORO_START_COMMAND,
   });
   contextMenu.addContextMenuAction(AGENDA_TASK_CONTEXT_MENU_GROUP, {
@@ -189,6 +194,7 @@ const registerViews = (api: OrgNoteApi): void => {
   commands.add(startStopwatchCommand);
   commands.add(stopPomodoroCommand);
   commands.add(deleteTaskCommand);
+  commands.add(addTaskTimeCommand);
   commands.add(setTaskPriorityCommand);
   commands.add(openTaskCommand);
   commands.add(quickAddToFileCommand);
