@@ -28,9 +28,17 @@
 
     <app-flex class="ring-content" column align-center center gap="xxs" @click="emit('click')">
       <span v-if="hasSession" class="display-time">{{ displayTime }}</span>
-      <app-flex v-else-if="sessionType === 'pomo'" row align-end gap="xs" class="duration-row">
+      <app-flex
+        v-if="sessionType === 'pomo'"
+        row
+        align-end
+        gap="xs"
+        class="duration-row"
+        :class="{ active: hasSession }"
+      >
         <app-input
           :model-value="durationMin"
+          :disabled="disabled"
           class="duration-input"
           type="number"
           @click.stop
@@ -38,7 +46,7 @@
         />
         <span class="duration-unit">min</span>
       </app-flex>
-      <span v-else class="display-time muted">00:00</span>
+      <span v-else-if="!hasSession" class="display-time muted">00:00</span>
       <span class="phase-label">{{ phaseLabel }}</span>
     </app-flex>
   </div>
@@ -55,6 +63,7 @@ const props = defineProps<{
   sessionType: 'pomo' | 'stopwatch';
   isRunning: boolean;
   hasSession: boolean;
+  disabled: boolean;
   phaseLabel: string;
   durationMin: number;
 }>();
@@ -152,6 +161,18 @@ const onInputChange = (e: Event): void => {
 
 .duration-row {
   line-height: 1;
+
+  &.active {
+    .duration-input {
+      width: 48px;
+      font-size: var(--font-size-md);
+    }
+
+    .duration-unit {
+      padding-bottom: 0;
+      font-size: var(--font-size-xs);
+    }
+  }
 }
 
 .duration-input {

@@ -1,124 +1,30 @@
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { createPinia, setActivePinia } from 'pinia';
+import { expect, test, vi } from 'vitest';
+import {
+  mockFileRead,
+  mockFileWrite,
+  mockKvSet,
+  NEXT_TASK,
+  TASK,
+  tickSec,
+  usePomodoroStore,
+} from './pomodoro-store.test-fixture';
 
-const mockKvGet = vi.fn();
-const mockKvSet = vi.fn();
-const mockKvDelete = vi.fn();
-const mockFileRead = vi.fn();
-const mockFileWrite = vi.fn();
-const mockConfirm = vi.fn();
-const mockLoadFiles = vi.fn();
-const mockAgendaTasksStore = {
-  allFiles: [] as Array<{ filePath: string[]; tasks?: unknown[] }>,
-  loadFiles: mockLoadFiles,
-};
-const mockGetExtensionConfig = vi.fn(() => ({ value: {} as Record<string, unknown> }));
+test('startSession_keepsOnlyOneIntervalAcrossConcurrentStarts', async () => {
+  let resolvePersist: (() => void) | undefined;
+  mockKvSet.mockReturnValueOnce(
+    new Promise<void>((resolve) => {
+      resolvePersist = resolve;
+    }),
+  );
+  const store = usePomodoroStore();
 
-vi.mock('src/boot/api', () => ({
-  api: {
-    core: {
-      useFileContent: () => ({ read: mockFileRead, write: mockFileWrite }),
-      useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
-      useNotifications: () => ({ notify: vi.fn() }),
-    },
-    infrastructure: {
-      keyValueRepository: { get: mockKvGet, set: mockKvSet, delete: mockKvDelete },
-    },
-    ui: {
-      useConfirmationModal: () => ({ confirm: mockConfirm }),
-    },
-  },
-}));
+  const firstStart = store.startSession(TASK, 'pomo');
+  await store.startSession(NEXT_TASK, 'stopwatch');
+  resolvePersist!();
+  await firstStart;
 
-vi.mock('src/extensions/org-agenda/stores/agenda-tasks-store', () => ({
-  useAgendaTasksStore: () => mockAgendaTasksStore,
-}));
-
-vi.mock('src/boot/report', () => ({
-  reporter: { reportError: vi.fn() },
-}));
-
-vi.mock('src/boot/i18n', () => ({
-  i18n: { global: { t: (key: string) => key } },
-}));
-
-vi.mock('src/extensions/org-agenda/manifest', () => ({
-  orgAgendaManifest: { name: 'org-agenda' },
-}));
-
-vi.mock('src/extensions/org-agenda/mutations/clock', () => ({
-  appendClock: vi.fn((content: string) => content),
-}));
-
-vi.stubGlobal(
-  'AudioContext',
-  class {
-    createOscillator() {
-      return { connect: vi.fn(), frequency: { value: 0 }, start: vi.fn(), stop: vi.fn() };
-    }
-    createGain() {
-      return {
-        connect: vi.fn(),
-        gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
-      };
-    }
-    get currentTime() {
-      return 0;
-    }
-    destination = {};
-  },
-);
-
-const { usePomodoroStore } = await import('./pomodoro-store');
-const { POMODORO_ACTIVE_SESSION_KEY } = await import('../constants');
-
-const TASK = {
-  id: 't1',
-  text: 'Test task',
-  filePath: '/test.org',
-  start: 0,
-  end: 100,
-  kind: 'headline-todo' as const,
-  state: 'todo' as const,
-};
-
-const mockUint8 = new Uint8Array([104, 101, 108, 108, 111]);
-const orgTaskContent = new TextEncoder().encode('* TODO Test task\n');
-
-const setAgendaTask = (): void => {
-  mockAgendaTasksStore.allFiles = [{ filePath: ['test.org'], tasks: [TASK] }];
-};
-
-beforeEach(() => {
-  setActivePinia(createPinia());
-  vi.useFakeTimers();
-  vi.clearAllMocks();
-  mockKvGet.mockResolvedValue(null);
-  mockKvSet.mockResolvedValue(undefined);
-  mockKvDelete.mockResolvedValue(undefined);
-  mockFileRead.mockResolvedValue(mockUint8);
-  mockFileWrite.mockResolvedValue(undefined);
-  mockConfirm.mockResolvedValue(false);
-  mockLoadFiles.mockResolvedValue(undefined);
-  mockAgendaTasksStore.allFiles = [];
-  mockGetExtensionConfig.mockReturnValue({ value: {} });
+  expect(vi.getTimerCount()).toBe(1);
 });
-
-afterEach(() => {
-  vi.useRealTimers();
-});
-
-const tickSec = (seconds: number): void => {
-  vi.advanceTimersByTime(seconds * 1000);
-};
-
-const getActiveSessionPayload = (): string => {
-  const activeCall = mockKvSet.mock.calls.find(
-    ([key]) => key === POMODORO_ACTIVE_SESSION_KEY,
-  ) as [string, string] | undefined;
-  if (!activeCall) throw new Error('active session payload missing');
-  return activeCall[1];
-};
 
 test('pauseSession_setsIsPaused_true', async () => {
   const store = usePomodoroStore();
@@ -184,156 +90,171 @@ test('pauseSession_accumulatesSeconds_acrossSegments', async () => {
   expect(store.elapsed).toBeGreaterThanOrEqual(15);
 });
 
-test('restoreSession_running_noDuplicateInterval_afterPause', async () => {
+test('changeTask_keepsRunningSessionElapsedAndClocksPreviousTask', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  vi.mocked(appendClock).mockImplementationOnce((content) => `${content}CLOCK`);
   const store = usePomodoroStore();
   await store.startSession(TASK, 'pomo');
+  tickSec(10);
 
-  tickSec(5);
-  expect(store.elapsed).toBe(5);
+  await store.changeTask(NEXT_TASK);
 
-  const kvSnapshot = (mockKvSet.mock.calls.at(-1) as [string, string])[1];
-  mockKvGet.mockResolvedValue(kvSnapshot);
-
-  await store.restoreSession();
-
-  await store.pauseSession();
-  const frozen = store.elapsed;
-
-  tickSec(5);
-
-  expect(store.elapsed).toBe(frozen);
+  expect(vi.mocked(appendClock)).toHaveBeenCalledOnce();
+  expect(store.session?.taskId).toBe(NEXT_TASK.id);
+  expect(store.elapsed).toBeGreaterThanOrEqual(10);
+  tickSec(2);
+  expect(store.elapsed).toBeGreaterThanOrEqual(12);
 });
 
-test('stopSession_resetsSessionAndKeepsTaskSelectedBeforeClockWriteFinishes', async () => {
+test('changeTask_blocksPauseUntilTaskTransitionCompletes', async () => {
+  const { appendClock } = await import('../mutations/clock');
   let resolveRead: ((value: Uint8Array) => void) | undefined;
-  const store = usePomodoroStore();
-  await store.startSession(TASK, 'pomo');
-  mockKvGet.mockResolvedValue(getActiveSessionPayload());
   mockFileRead.mockReturnValueOnce(
     new Promise<Uint8Array>((resolve) => {
       resolveRead = resolve;
     }),
   );
-
-  const stopPromise = store.stopSession();
-
-  expect(store.hasSession).toBe(false);
-  expect(store.elapsed).toBe(0);
-  expect(store.selectedTask?.id).toBe(TASK.id);
-  if (!resolveRead) throw new Error('read resolver missing');
-  resolveRead(mockUint8);
-  await stopPromise;
-});
-
-test('stopSession_clearsPersistedSession_whenStoredSessionMatches', async () => {
+  vi.mocked(appendClock)
+    .mockImplementationOnce((content) => `${content}CLOCK`)
+    .mockImplementationOnce((content) => `${content}CLOCK`);
   const store = usePomodoroStore();
-  await store.startSession(TASK, 'pomo');
-  mockKvGet.mockResolvedValue(getActiveSessionPayload());
-
-  await store.stopSession();
-
-  expect(mockKvDelete).toHaveBeenCalledWith(POMODORO_ACTIVE_SESSION_KEY);
-});
-
-test('stopSession_keepsNewSessionStartedDuringClockWrite', async () => {
-  const store = usePomodoroStore();
-  await store.startSession(TASK, 'pomo');
-  mockKvGet.mockResolvedValue(getActiveSessionPayload());
-  mockFileRead.mockImplementationOnce(async () => {
-    await store.startSession({ ...TASK, id: 't2', text: 'Next task' }, 'pomo');
-    return mockUint8;
-  });
-
-  await store.stopSession();
-
-  expect(mockKvDelete).not.toHaveBeenCalledWith(POMODORO_ACTIVE_SESSION_KEY);
-  expect(store.session?.taskId).toBe('t2');
-});
-
-test('stopSession_whenPaused_doesNotWriteExtraClock', async () => {
-  const { appendClock } = await import('../mutations/clock');
-  const store = usePomodoroStore();
-
   await store.startSession(TASK, 'pomo');
   tickSec(5);
 
+  const changePromise = store.changeTask(NEXT_TASK);
   await store.pauseSession();
-  const clockCallsAfterPause = vi.mocked(appendClock).mock.calls.length;
+  resolveRead!(new TextEncoder().encode('task'));
+  await changePromise;
 
-  await store.stopSession();
-
-  expect(vi.mocked(appendClock).mock.calls.length).toBe(clockCallsAfterPause);
+  expect(vi.mocked(appendClock)).toHaveBeenCalledOnce();
+  expect(store.session?.taskId).toBe(NEXT_TASK.id);
+  expect(store.elapsed).toBe(5);
+  expect(store.isPaused).toBe(false);
 });
 
-test('restoreSession_paused_doesNotStartTick', async () => {
+test('changeTask_blocksStopUntilTaskTransitionCompletes', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  let resolveRead: ((value: Uint8Array) => void) | undefined;
+  mockFileRead.mockReturnValueOnce(
+    new Promise<Uint8Array>((resolve) => {
+      resolveRead = resolve;
+    }),
+  );
+  vi.mocked(appendClock)
+    .mockImplementationOnce((content) => `${content}CLOCK`)
+    .mockImplementationOnce((content) => `${content}CLOCK`);
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+
+  const changePromise = store.changeTask(NEXT_TASK);
+  await store.stopSession();
+  resolveRead!(new TextEncoder().encode('task'));
+  await changePromise;
+
+  expect(vi.mocked(appendClock)).toHaveBeenCalledOnce();
+  expect(store.session?.taskId).toBe(NEXT_TASK.id);
+});
+
+test('changeTask_whilePausedDoesNotWriteAnotherClock', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+  tickSec(5);
+  await store.pauseSession();
+  const clockCount = vi.mocked(appendClock).mock.calls.length;
+
+  await store.changeTask(NEXT_TASK);
+
+  expect(vi.mocked(appendClock)).toHaveBeenCalledTimes(clockCount);
+  expect(store.session?.taskId).toBe(NEXT_TASK.id);
+  expect(store.isPaused).toBe(true);
+});
+
+test('changeTask_adjustsLaterTaskPositionAfterClockInsertion', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  const fileContent = 'x'.repeat(400);
+  mockFileRead.mockResolvedValueOnce(new TextEncoder().encode(fileContent));
+  vi.mocked(appendClock).mockImplementationOnce(
+    (content) => `${content.slice(0, 100)}CLOCK${content.slice(100)}`,
+  );
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+
+  await store.changeTask(NEXT_TASK);
+
+  expect(store.session?.taskStart).toBe(NEXT_TASK.start + 'CLOCK'.length);
+});
+
+test('changeTask_recoversTransitionStateWhenClockMutationThrows', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  vi.mocked(appendClock).mockImplementationOnce(() => {
+    throw new Error('clock mutation failed');
+  });
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+
+  await expect(store.changeTask(NEXT_TASK)).resolves.not.toThrow();
+
+  expect(store.isTransitioning).toBe(false);
+  expect(store.session?.taskId).toBe(TASK.id);
+  tickSec(2);
+  expect(store.elapsed).toBeGreaterThanOrEqual(2);
+});
+
+test('changeTask_keepsCurrentTaskWhenClockWriteFails', async () => {
+  const { appendClock } = await import('../mutations/clock');
+  const fileContent = 'x'.repeat(400);
+  mockFileRead.mockResolvedValueOnce(new TextEncoder().encode(fileContent));
+  mockFileWrite.mockRejectedValueOnce(new Error('write failed'));
+  vi.mocked(appendClock).mockImplementationOnce(
+    (content) => `${content.slice(0, 100)}CLOCK${content.slice(100)}`,
+  );
+  const store = usePomodoroStore();
+  await store.startSession(TASK, 'pomo');
+
+  await store.changeTask(NEXT_TASK);
+
+  expect(store.session?.taskId).toBe(TASK.id);
+  tickSec(2);
+  expect(store.elapsed).toBeGreaterThanOrEqual(2);
+});
+
+test('changeSessionType_preservesElapsedAndPersistsActiveSession', async () => {
   const store = usePomodoroStore();
   await store.startSession(TASK, 'pomo');
   tickSec(10);
-  await store.pauseSession();
+  const elapsedBeforeChange = store.elapsed;
 
-  const pausedKv = (mockKvSet.mock.calls.at(-1) as [string, string])[1];
-  mockKvGet.mockResolvedValue(pausedKv);
-  setActivePinia(createPinia());
-  const freshStore = usePomodoroStore();
+  await store.changeSessionType('stopwatch');
 
-  await freshStore.restoreSession();
-  const frozen = freshStore.elapsed;
-
-  tickSec(5);
-
-  expect(freshStore.elapsed).toBe(frozen);
-  expect(freshStore.isPaused).toBe(true);
+  expect(store.sessionType).toBe('stopwatch');
+  expect(store.session?.type).toBe('stopwatch');
+  expect(store.elapsed).toBe(elapsedBeforeChange);
+  expect(mockKvSet.mock.calls.at(-1)?.[1]).toContain('"type":"stopwatch"');
 });
 
-test('restoreSession_corruptJson_doesNotThrowAndClearsKv', async () => {
-  mockKvGet.mockResolvedValue('{invalid json{');
+test('changeDuration_updatesAndPersistsActivePomodoroDuration', async () => {
   const store = usePomodoroStore();
-
-  await expect(store.restoreSession()).resolves.not.toThrow();
-  expect(store.hasSession).toBe(false);
-  expect(mockKvDelete).toHaveBeenCalled();
-});
-
-test('loadLastTask_corruptJson_returnsNull', async () => {
-  mockKvGet.mockResolvedValue('{invalid json{');
-  const store = usePomodoroStore();
-
-  const result = await store.loadLastTask();
-
-  expect(result).toBeNull();
-});
-
-test('durationMin_initializesFromAgendaConfig_pomoDuration', () => {
-  mockGetExtensionConfig.mockReturnValue({ value: { pomoDuration: 42 } });
-  const store = usePomodoroStore();
-
-  expect(store.durationMin).toBe(42);
-});
-
-test('elapsedPomodoro_keepsSelectedTask_whenCompletionDeclined', async () => {
-  setAgendaTask();
-  mockFileRead.mockResolvedValue(orgTaskContent);
-  mockConfirm.mockResolvedValue(false);
-  const store = usePomodoroStore();
-  store.durationMin = 1;
-
   await store.startSession(TASK, 'pomo');
-  await vi.advanceTimersByTimeAsync(60_000);
 
-  expect(store.hasSession).toBe(false);
-  expect(store.selectedTask?.id).toBe(TASK.id);
+  await store.changeDuration(45);
+
+  expect(store.durationMin).toBe(45);
+  expect(store.session?.duration).toBe(45);
+  expect(mockKvSet.mock.calls.at(-1)?.[1]).toContain('"duration":45');
 });
 
-test('elapsedPomodoro_clearsSelectedTask_whenCompletionConfirmed', async () => {
-  setAgendaTask();
-  mockFileRead.mockResolvedValue(orgTaskContent);
-  mockConfirm.mockResolvedValue(true);
+test('shorteningElapsedPomodoro_closesClockAtCurrentTime', async () => {
+  const { appendClock } = await import('../mutations/clock');
   const store = usePomodoroStore();
-  store.durationMin = 1;
-
   await store.startSession(TASK, 'pomo');
-  await vi.advanceTimersByTimeAsync(60_000);
+  await vi.advanceTimersByTimeAsync(120_000);
+  await store.changeDuration(1);
+  const changedAt = Date.now();
 
-  expect(store.selectedTask).toBeNull();
-  expect(mockFileWrite).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(1_000);
+
+  const endedAt = vi.mocked(appendClock).mock.calls.at(-1)?.[3];
+  expect(endedAt?.getTime()).toBeGreaterThanOrEqual(changedAt);
 });
+

@@ -1,89 +1,41 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import type { FileTask } from 'orgnote-api';
 import { isPresent, to } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
-import { i18n } from 'src/boot/i18n';
-import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
-import { appendClock } from '../mutations/clock';
-import {
-  STOPWATCH_MAX_SECONDS,
-  POMODORO_ACTIVE_SESSION_KEY,
-  POMODORO_LAST_TASK_KEY,
-  SECONDS_PER_MINUTE,
-} from '../constants';
-import { useAgendaTasksStore } from './agenda-tasks-store';
+import { reporter } from 'src/boot/report';
+import { STOPWATCH_MAX_SECONDS, SECONDS_PER_MINUTE } from '../constants';
 import { orgAgendaManifest } from '../manifest';
-import { resolveAgendaConfig } from '../index';
+import { resolveAgendaConfig } from '../agenda-config';
+import type { AgendaTask } from '../types';
 import {
   completePomodoroTaskAfterConfirmation,
   type PomodoroTaskCompletionResult,
 } from '../services/pomodoro-task-completion';
-import { applyAgendaFileMutation } from '../services/apply-agenda-file-mutation';
+import { writeSessionClock, type ClockWriteResult } from '../services/pomodoro-clock';
+import { notifyPomodoroComplete } from '../services/pomodoro-notifications';
+import {
+  adjustTaskForInsertion,
+  calculateSegmentElapsed,
+  formatSessionTime,
+  resolvePomodoroEnd,
+  toPomodoroTask,
+  toSelectedTask,
+  type ActiveSession,
+  type PomodoroTask,
+} from '../services/pomodoro-session';
+import {
+  clearPersistedPomodoroSession,
+  clearStoppedPomodoroSession,
+  loadPersistedPomodoroSession,
+  loadPersistedPomodoroTask,
+  persistPomodoroSession,
+  persistPomodoroTask,
+} from '../services/pomodoro-session-storage';
+import { openPomodoroTaskCompletion } from '../services/pomodoro-task-selection';
 
-export interface PomodoroTask {
-  taskId: string;
-  taskText: string;
-  filePath: string;
-  taskStart: number;
-}
-
-interface ActiveSession extends PomodoroTask {
-  segmentStartedAt: string;
-  accumulatedSeconds: number;
-  duration: number;
-  type: 'pomo' | 'stopwatch';
-  paused: boolean;
-}
+export type { PomodoroTask } from '../services/pomodoro-session';
 
 const TIMER_INTERVAL_MS = 1000;
-const t = i18n.global.t;
-
-const serializeSession = (s: ActiveSession): string => JSON.stringify(s);
-
-const formatTwoDigits = (n: number): string => String(Math.floor(n)).padStart(2, '0');
-
-const toDisplay = (totalSeconds: number): string => {
-  const mins = Math.floor(totalSeconds / SECONDS_PER_MINUTE);
-  const secs = totalSeconds % SECONDS_PER_MINUTE;
-  return `${formatTwoDigits(mins)}:${formatTwoDigits(secs)}`;
-};
-
-const playBeep = (): void => {
-  const ctx = new AudioContext();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.frequency.value = 880;
-  gain.gain.setValueAtTime(0.3, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.8);
-  osc.onended = () => void ctx.close();
-};
-
-const segmentElapsedSec = (s: ActiveSession): number =>
-  Math.floor((Date.now() - new Date(s.segmentStartedAt).getTime()) / 1000);
-
-const writeSegmentClock = async (s: ActiveSession, endedAt: Date): Promise<void> =>
-  applyAgendaFileMutation(api, s.filePath, (content) =>
-    appendClock(content, s.taskStart, new Date(s.segmentStartedAt), endedAt),
-  );
-
-const toSelectedTask = (task: PomodoroTask): FileTask & { filePath: string } => ({
-  id: task.taskId,
-  kind: 'headline-todo',
-  state: 'todo',
-  text: task.taskText,
-  filePath: task.filePath,
-  start: task.taskStart,
-});
-
-const resolveElapsedPomodoroEnd = (s: ActiveSession): Date => {
-  const remaining = s.duration * SECONDS_PER_MINUTE - s.accumulatedSeconds;
-  return new Date(new Date(s.segmentStartedAt).getTime() + remaining * 1000);
-};
 
 export const usePomodoroStore = defineStore('pomodoro', () => {
   const agendaConfig = computed(() =>
@@ -95,10 +47,10 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   const isPaused = ref(false);
   const durationMin = ref(agendaConfig.value.pomoDuration);
   const sessionType = ref<'pomo' | 'stopwatch'>('pomo');
-  const selectedTask = ref<(FileTask & { filePath: string }) | null>(null);
+  const selectedTask = ref<AgendaTask | null>(null);
+  const isTransitioning = ref(false);
   let intervalHandle: ReturnType<typeof setInterval> | null = null;
 
-  const kvRepo = computed(() => api.infrastructure.keyValueRepository);
   const durationSeconds = computed(() => durationMin.value * SECONDS_PER_MINUTE);
   const isRunning = computed(() => isPresent(session.value) && !isPaused.value);
   const hasSession = computed(() => isPresent(session.value));
@@ -110,44 +62,14 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
 
   const displayTime = computed(() => {
     if (sessionType.value === 'stopwatch')
-      return toDisplay(Math.min(elapsed.value, STOPWATCH_MAX_SECONDS));
-    return toDisplay(Math.max(0, durationSeconds.value - elapsed.value));
+      return formatSessionTime(Math.min(elapsed.value, STOPWATCH_MAX_SECONDS));
+    return formatSessionTime(Math.max(0, durationSeconds.value - elapsed.value));
   });
-
-  const persistSession = async (s: ActiveSession): Promise<void> => {
-    await to(kvRepo.value.set)(POMODORO_ACTIVE_SESSION_KEY, serializeSession(s));
-  };
-
-  const clearPersistedSession = async (): Promise<void> => {
-    await to(kvRepo.value.delete)(POMODORO_ACTIVE_SESSION_KEY);
-  };
-
-  const clearStoppedSession = async (stoppedSession: ActiveSession): Promise<void> => {
-    if (isPresent(session.value)) return;
-    const raw = await to(kvRepo.value.get)(POMODORO_ACTIVE_SESSION_KEY);
-    const sessionChangedDuringRead = isPresent(session.value);
-    const storedMatchesStopped = raw.isOk() && raw.value === serializeSession(stoppedSession);
-    if (sessionChangedDuringRead || !storedMatchesStopped) return;
-    await clearPersistedSession();
-  };
-
-  const persistLastTask = async (task: PomodoroTask): Promise<void> => {
-    await to(kvRepo.value.set)(POMODORO_LAST_TASK_KEY, JSON.stringify(task));
-  };
 
   const resetState = (): void => {
     session.value = null;
     elapsed.value = 0;
     isPaused.value = false;
-  };
-
-  const notifyComplete = (): void => {
-    api.core.useNotifications().notify({
-      message: t(i18nKeys.orgAgendaPomodoroComplete),
-      level: 'info',
-      timeout: 5000,
-    });
-    if (agendaConfig.value.soundEnabled) playBeep();
   };
 
   const applyTaskCompletionResult = (result: PomodoroTaskCompletionResult): void => {
@@ -156,11 +78,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   };
 
   const finishElapsedPomodoroSession = async (s: ActiveSession): Promise<void> => {
-    const completedAt = resolveElapsedPomodoroEnd(s);
+    const completedAt = resolvePomodoroEnd(s);
     resetState();
-    notifyComplete();
-    await writeSegmentClock(s, completedAt);
-    await clearPersistedSession();
+    notifyPomodoroComplete(agendaConfig.value.soundEnabled);
+    await writeSessionClock(s, completedAt);
+    await clearPersistedPomodoroSession();
     const result = await completePomodoroTaskAfterConfirmation(api, s, completedAt);
     applyTaskCompletionResult(result);
   };
@@ -172,10 +94,11 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   };
 
   const startTick = (): void => {
+    if (intervalHandle) return;
     intervalHandle = setInterval(async () => {
       const s = session.value;
       if (!s || isPaused.value) return;
-      elapsed.value = s.accumulatedSeconds + segmentElapsedSec(s);
+      elapsed.value = s.accumulatedSeconds + calculateSegmentElapsed(s);
       if (s.type !== 'pomo' || elapsed.value < durationSeconds.value) return;
       stopTick();
       await finishElapsedPomodoroSession(s);
@@ -183,16 +106,12 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
   };
 
   const startSession = async (
-    task: FileTask & { filePath: string },
+    task: AgendaTask,
     type: 'pomo' | 'stopwatch',
   ): Promise<void> => {
+    if (isTransitioning.value) return;
     stopTick();
-    const pomodoroTask: PomodoroTask = {
-      taskId: task.id,
-      taskText: task.text,
-      filePath: task.filePath,
-      taskStart: task.start ?? 0,
-    };
+    const pomodoroTask = toPomodoroTask(task);
     const s: ActiveSession = {
       ...pomodoroTask,
       segmentStartedAt: new Date().toISOString(),
@@ -206,54 +125,119 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     sessionType.value = type;
     elapsed.value = 0;
     isPaused.value = false;
-    await persistSession(s);
-    await persistLastTask(pomodoroTask);
+    await persistPomodoroSession(s);
+    await persistPomodoroTask(pomodoroTask);
     startTick();
   };
 
+  const settleRunningSegment = async (
+    activeSession: ActiveSession,
+    endedAt: Date,
+  ): Promise<ClockWriteResult | null> => {
+    if (activeSession.paused) return null;
+    const writeResult = await writeSessionClock(activeSession, endedAt);
+    if (!writeResult.wasWritten) return writeResult;
+    activeSession.accumulatedSeconds += calculateSegmentElapsed(activeSession, endedAt);
+    elapsed.value = activeSession.accumulatedSeconds;
+    return writeResult;
+  };
+
+  const changeTaskTransition = async (task: AgendaTask): Promise<void> => {
+    const activeSession = session.value;
+    if (!activeSession) {
+      selectedTask.value = task;
+      return;
+    }
+    stopTick();
+    const changedAt = new Date();
+    const writeResult = await settleRunningSegment(activeSession, changedAt);
+    if (session.value !== activeSession) return;
+    if (writeResult && !writeResult.wasWritten) {
+      startTick();
+      return;
+    }
+    const nextTask = adjustTaskForInsertion(task, activeSession, writeResult?.insertion ?? null);
+    const nextSession = {
+      ...activeSession,
+      ...toPomodoroTask(nextTask),
+      segmentStartedAt: changedAt.toISOString(),
+    };
+    selectedTask.value = nextTask;
+    session.value = nextSession;
+    await persistPomodoroSession(nextSession);
+    await persistPomodoroTask(nextSession);
+    if (!nextSession.paused) startTick();
+  };
+
+  const changeTask = async (task: AgendaTask): Promise<void> => {
+    if (isTransitioning.value) return;
+    isTransitioning.value = true;
+    const result = await to(changeTaskTransition, 'Failed to change Pomodoro task')(task);
+    isTransitioning.value = false;
+    if (result.isOk()) return;
+    if (isRunning.value) startTick();
+    reporter.reportError(result.error);
+  };
+
+  const changeSessionType = async (type: ActiveSession['type']): Promise<void> => {
+    if (isTransitioning.value) return;
+    sessionType.value = type;
+    const activeSession = session.value;
+    if (!activeSession || activeSession.type === type) return;
+    activeSession.type = type;
+    await persistPomodoroSession(activeSession);
+  };
+
+  const changeDuration = async (duration: number): Promise<void> => {
+    if (isTransitioning.value) return;
+    durationMin.value = duration;
+    const activeSession = session.value;
+    if (!activeSession) return;
+    activeSession.duration = duration;
+    await persistPomodoroSession(activeSession);
+  };
+
   const pauseSession = async (): Promise<void> => {
+    if (isTransitioning.value) return;
     const s = session.value;
     if (!s || isPaused.value) return;
     stopTick();
     const pausedAt = new Date();
-    const segSec = segmentElapsedSec(s);
+    const segSec = calculateSegmentElapsed(s);
     s.accumulatedSeconds += segSec;
     s.paused = true;
     elapsed.value = s.accumulatedSeconds;
     isPaused.value = true;
-    await writeSegmentClock(s, pausedAt);
-    await persistSession(s);
+    await writeSessionClock(s, pausedAt);
+    await persistPomodoroSession(s);
   };
 
   const resumeSession = async (): Promise<void> => {
+    if (isTransitioning.value) return;
     const s = session.value;
     if (!s || !isPaused.value) return;
     s.segmentStartedAt = new Date().toISOString();
     s.paused = false;
     isPaused.value = false;
-    await persistSession(s);
+    await persistPomodoroSession(s);
     startTick();
   };
 
   const stopSession = async (): Promise<void> => {
+    if (isTransitioning.value) return;
     const s = session.value;
     if (!s) return;
     const shouldWriteClock = !isPaused.value;
     stopTick();
     resetState();
-    if (shouldWriteClock) await writeSegmentClock(s, new Date());
-    await clearStoppedSession(s);
+    if (shouldWriteClock) await writeSessionClock(s, new Date());
+    await clearStoppedPomodoroSession(s, () => session.value);
   };
 
   const restoreSession = async (): Promise<void> => {
-    const raw = await to(kvRepo.value.get)(POMODORO_ACTIVE_SESSION_KEY);
-    if (raw.isErr() || !raw.value) return;
-    const parseResult = to(JSON.parse)(raw.value);
-    if (parseResult.isErr()) {
-      await clearPersistedSession();
-      return;
-    }
-    const s = parseResult.value as ActiveSession;
+    if (isTransitioning.value) return;
+    const s = await loadPersistedPomodoroSession();
+    if (!s) return;
     selectedTask.value = toSelectedTask(s);
 
     if (s.paused) {
@@ -265,7 +249,7 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
       return;
     }
 
-    const totalElapsed = s.accumulatedSeconds + segmentElapsedSec(s);
+    const totalElapsed = s.accumulatedSeconds + calculateSegmentElapsed(s);
 
     if (s.type === 'pomo' && totalElapsed >= s.duration * SECONDS_PER_MINUTE) {
       await finishElapsedPomodoroSession(s);
@@ -281,47 +265,13 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     startTick();
   };
 
-  const loadLastTask = async (): Promise<PomodoroTask | null> => {
-    const raw = await to(kvRepo.value.get)(POMODORO_LAST_TASK_KEY);
-    if (raw.isErr() || !raw.value) return null;
-    const parseResult = to(JSON.parse)(raw.value);
-    if (parseResult.isErr()) return null;
-    return parseResult.value as PomodoroTask;
-  };
-
-  const openTaskCompletion = async (): Promise<(FileTask & { filePath: string }) | null> => {
-    const store = useAgendaTasksStore();
-    const tasks = store.allFiles.flatMap((file) =>
-      (file.tasks ?? [])
-        .filter((task) => task.kind !== 'list-checkbox' && task.state !== 'done')
-        .map((task) => ({ ...task, filePath: file.filePath.join('/') })),
-    );
-    const completion = api.core.useCompletion();
-    return completion.open({
-      type: 'choice',
-      placeholder: t(i18nKeys.orgAgendaPomodoroSelectTask),
-      itemsGetter: async (search: string) => {
-        const filtered = search
-          ? tasks.filter((task) => task.text.toLowerCase().includes(search.toLowerCase()))
-          : tasks;
-        return {
-          total: filtered.length,
-          result: filtered.map((task) => ({
-            icon: 'sym_o_task_alt',
-            title: task.text,
-            description: task.filePath,
-            data: task,
-            commandHandler: (tk: typeof task) => completion.close(tk),
-          })),
-        };
-      },
-    });
-  };
+  const loadLastTask = (): Promise<PomodoroTask | null> => loadPersistedPomodoroTask();
 
   return {
     session,
     elapsed,
     isPaused,
+    isTransitioning,
     durationMin,
     sessionType,
     isRunning,
@@ -329,12 +279,15 @@ export const usePomodoroStore = defineStore('pomodoro', () => {
     progress,
     displayTime,
     startSession,
+    changeTask,
+    changeSessionType,
+    changeDuration,
     pauseSession,
     resumeSession,
     stopSession,
     restoreSession,
     loadLastTask,
-    openTaskCompletion,
+    openTaskCompletion: openPomodoroTaskCompletion,
     applyTaskCompletionResult,
     selectedTask,
   };

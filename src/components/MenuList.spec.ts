@@ -10,7 +10,7 @@ const CardWrapper = {
 };
 const MenuItem = {
   template: '<div class="menu-item" @click="$emit(\'click\')"><slot /></div>',
-  props: ['icon'],
+  props: ['icon', 'disabled'],
 };
 
 beforeEach(() => {
@@ -134,4 +134,75 @@ test('executes manual action and emits close', async () => {
 
   expect(handler).toHaveBeenCalledWith({ some: 'data' });
   expect(wrapper.emitted('close')).toBeTruthy();
+});
+
+test('hides command actions marked as hidden', () => {
+  const wrapper = mount(MenuList, {
+    props: {
+      actions: [{ command: 'hidden-command' }] as MenuAction[],
+    },
+    global: {
+      plugins: [
+        createTestingPinia({
+          createSpy: vi.fn,
+          stubActions: false,
+          initialState: {
+            commands: {
+              commands: [
+                {
+                  command: 'hidden-command',
+                  hide: () => true,
+                },
+              ],
+            },
+          },
+        }),
+      ],
+      stubs: {
+        CardWrapper,
+        MenuItem,
+      },
+    },
+  });
+
+  expect(wrapper.findAllComponents(MenuItem)).toHaveLength(0);
+});
+
+test('renders disabled commands without executing or closing the menu', async () => {
+  const wrapper = mount(MenuList, {
+    props: {
+      actions: [{ command: 'disabled-command' }] as MenuAction[],
+    },
+    global: {
+      plugins: [
+        createTestingPinia({
+          createSpy: vi.fn,
+          stubActions: false,
+          initialState: {
+            commands: {
+              commands: [
+                {
+                  command: 'disabled-command',
+                  disabled: () => true,
+                },
+              ],
+            },
+          },
+        }),
+      ],
+      stubs: {
+        CardWrapper,
+        MenuItem,
+      },
+    },
+  });
+  const commandsStore = useCommandsStore();
+  commandsStore.execute = vi.fn();
+  const item = wrapper.findComponent(MenuItem);
+
+  expect(item.props('disabled')).toBe(true);
+  await item.trigger('click');
+
+  expect(commandsStore.execute).not.toHaveBeenCalled();
+  expect(wrapper.emitted('close')).toBeUndefined();
 });

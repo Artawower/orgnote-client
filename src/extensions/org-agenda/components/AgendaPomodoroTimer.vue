@@ -1,17 +1,18 @@
 <template>
   <app-flex column align-center center full-width full-height gap="lg" class="pomodoro-timer">
     <app-segmented-control
-      v-model="sessionType"
+      :model-value="sessionType"
       :options="modeOptions"
-      :disabled="hasSession"
+      :disabled="isTransitioning"
       size="md"
+      @update:model-value="onSessionTypeChange"
     />
 
     <app-button
       class="task-eyebrow"
       type="plain"
       size="sm"
-      :disabled="hasSession"
+      :disabled="isTransitioning"
       @click="onSelectTask"
     >
       <app-flex row align-center gap="xs">
@@ -26,6 +27,7 @@
       :session-type="sessionType"
       :is-running="isRunning"
       :has-session="hasSession"
+      :disabled="isTransitioning"
       :phase-label="phaseLabel"
       :duration-min="localDuration"
       @click="onRingClick"
@@ -35,7 +37,11 @@
     <app-flex column align-center gap="sm" class="actions">
       <command-action-button
         v-if="!hasSession"
-        :command="AGENDA_POMODORO_START_COMMAND"
+        :command="
+          sessionType === 'pomo'
+            ? AGENDA_POMODORO_START_COMMAND
+            : AGENDA_POMODORO_START_STOPWATCH_COMMAND
+        "
         :text="t(i18nKeys.orgAgendaPomodoroStart)"
         size="md"
         alignment="left"
@@ -83,6 +89,7 @@ import CommandActionButton from 'src/containers/CommandActionButton.vue';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import {
   AGENDA_POMODORO_START_COMMAND,
+  AGENDA_POMODORO_START_STOPWATCH_COMMAND,
   AGENDA_POMODORO_PAUSE_COMMAND,
   AGENDA_POMODORO_RESUME_COMMAND,
   AGENDA_POMODORO_STOP_COMMAND,
@@ -97,6 +104,7 @@ const {
   isRunning,
   isPaused,
   hasSession,
+  isTransitioning,
   sessionType,
   localDuration,
   taskLabel,
@@ -105,6 +113,7 @@ const {
   todayPomoCount,
   onDurationChange,
   onSelectTask,
+  onSessionTypeChange,
   onRingClick,
 } = usePomodoroTimer();
 </script>

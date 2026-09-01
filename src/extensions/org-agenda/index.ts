@@ -1,7 +1,5 @@
 import type { AsyncComponentLoader } from 'vue';
-import { getActivePinia } from 'pinia';
 import { DefaultCommands, type Command, type Extension, type OrgNoteApi } from 'orgnote-api';
-import { object, optional, string, pipe, metadata, number, boolean } from 'valibot';
 import { createTaskCommand } from './commands/create-task-command';
 import { startPomodoroCommand } from './commands/start-pomodoro-command';
 import { startStopwatchCommand } from './commands/start-stopwatch-command';
@@ -43,10 +41,10 @@ import {
   AGENDA_TASKS_VIEWER_ID,
   AGENDA_POMODORO_SET_POMO_COMMAND,
   AGENDA_POMODORO_SET_STOPWATCH_COMMAND,
-  AGENDA_DEFAULT_INBOX_FILENAME,
-  POMODORO_DEFAULT_DURATION_MIN,
   AGENDA_TASKS_NAV_COMMAND,
 } from './constants';
+import { agendaSettingsSchema, defaultAgendaSettings } from './agenda-config';
+import { usePomodoroStore } from './stores/pomodoro-store';
 
 interface AgendaView {
   viewerId: string;
@@ -203,8 +201,11 @@ const registerViews = (api: OrgNoteApi): void => {
     command: AGENDA_POMODORO_PAUSE_COMMAND,
     group: 'agenda',
     icon: 'sym_o_pause',
+    disabled: () => {
+      const store = usePomodoroStore();
+      return store.isTransitioning || !store.hasSession || !store.isRunning;
+    },
     handler: async () => {
-      const { usePomodoroStore } = await import('./stores/pomodoro-store');
       await usePomodoroStore().pauseSession();
     },
   });
@@ -212,34 +213,36 @@ const registerViews = (api: OrgNoteApi): void => {
     command: AGENDA_POMODORO_RESUME_COMMAND,
     group: 'agenda',
     icon: 'sym_o_play_arrow',
+    disabled: () => {
+      const store = usePomodoroStore();
+      return store.isTransitioning || !store.hasSession || !store.isPaused;
+    },
     handler: async () => {
-      const { usePomodoroStore } = await import('./stores/pomodoro-store');
       await usePomodoroStore().resumeSession();
     },
   });
-  const isPomodoroRunning = (): boolean =>
-    !!(getActivePinia()?.state.value['pomodoro'] as { session?: unknown } | undefined)?.session;
-
   commands.add({
     command: AGENDA_POMODORO_SET_POMO_COMMAND,
     group: 'agenda',
     icon: 'sym_o_timer',
-    disabled: isPomodoroRunning,
-    handler: async () => {
-      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+    disabled: () => {
       const store = usePomodoroStore();
-      if (!store.hasSession) store.sessionType = 'pomo';
+      return store.isTransitioning || store.sessionType === 'pomo';
+    },
+    handler: async () => {
+      await usePomodoroStore().changeSessionType('pomo');
     },
   });
   commands.add({
     command: AGENDA_POMODORO_SET_STOPWATCH_COMMAND,
     group: 'agenda',
     icon: 'sym_o_hourglass_empty',
-    disabled: isPomodoroRunning,
-    handler: async () => {
-      const { usePomodoroStore } = await import('./stores/pomodoro-store');
+    disabled: () => {
       const store = usePomodoroStore();
-      if (!store.hasSession) store.sessionType = 'stopwatch';
+      return store.isTransitioning || store.sessionType === 'stopwatch';
+    },
+    handler: async () => {
+      await usePomodoroStore().changeSessionType('stopwatch');
     },
   });
   registerTaskContextMenu(api);
@@ -272,41 +275,9 @@ const unregisterViews = (api: OrgNoteApi): void => {
   });
 };
 
-const settingsSchema = object({
-  agendaFilesPath: pipe(optional(string()), metadata({ directoryPicker: true })),
-  inboxFilePath: pipe(
-    optional(string()),
-    metadata({ filePicker: true, defaultValue: AGENDA_DEFAULT_INBOX_FILENAME }),
-  ),
-  pomoDuration: pipe(optional(number()), metadata({ defaultValue: POMODORO_DEFAULT_DURATION_MIN })),
-  soundEnabled: pipe(optional(boolean()), metadata({ defaultValue: true })),
-});
-
-export type AgendaConfig = {
-  agendaFilesPath?: string;
-  inboxFilePath?: string;
-  pomoDuration: number;
-  soundEnabled: boolean;
-};
-
-const defaultSettings: AgendaConfig = {
-  agendaFilesPath: undefined,
-  inboxFilePath: undefined,
-  pomoDuration: 25,
-  soundEnabled: true,
-};
-
-export const resolveAgendaConfig = (rawConfig: Record<string, unknown>): AgendaConfig => ({
-  agendaFilesPath:
-    (rawConfig.agendaFilesPath as string | undefined) ?? defaultSettings.agendaFilesPath,
-  inboxFilePath: (rawConfig.inboxFilePath as string | undefined) ?? defaultSettings.inboxFilePath,
-  pomoDuration: (rawConfig.pomoDuration as number | undefined) ?? defaultSettings.pomoDuration,
-  soundEnabled: (rawConfig.soundEnabled as boolean | undefined) ?? defaultSettings.soundEnabled,
-});
-
 export const orgAgendaExtension: Extension = {
-  settingsSchema,
-  defaultSettings,
+  settingsSchema: agendaSettingsSchema,
+  defaultSettings: defaultAgendaSettings,
   onMounted: async (api) => {
     registerViews(api);
     registerAgendaBufferFollow(api);
@@ -318,3 +289,4 @@ export const orgAgendaExtension: Extension = {
 };
 
 export { orgAgendaManifest } from './manifest';
+export { resolveAgendaConfig, type AgendaConfig } from './agenda-config';

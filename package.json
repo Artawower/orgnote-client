@@ -1,6 +1,6 @@
 {
   "name": "orgnote-client",
-  "version": "0.67.2",
+  "version": "0.68.0",
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
@@ -134,6 +134,7 @@
     "@storybook/vue3-vite": "^10.1.2",
     "@types/better-queue": "3.8.6",
     "@types/bun": "1.2.10",
+    "@types/diff-match-patch": "^1.0.36",
     "@types/dompurify": "3.2.0",
     "@types/fast-redact": "3.0.4",
     "@types/node": "22.14.1",
@@ -181,8 +182,13 @@
   },
   "jscpd": {
     "threshold": 1.65,
-    "reporters": ["html", "console"],
-    "format": ["typescript"],
+    "reporters": [
+      "html",
+      "console"
+    ],
+    "format": [
+      "typescript"
+    ],
     "ignore": [
       "**/__snapshots__/**",
       "**/.git/**",
@@ -193,7 +199,10 @@
     ],
     "minLines": 3,
     "minTokens": 50,
-    "ignorePattern": ["import.*from\\s*'.*'", "export.*from\\s*'.*'"],
+    "ignorePattern": [
+      "import.*from\\s*'.*'",
+      "export.*from\\s*'.*'"
+    ],
     "output": "./dist/duplication-report/",
     "absolute": true,
     "blame": true,
@@ -205,6 +214,8 @@
     "yarn": ">= 1.21.1"
   },
   "eslintConfig": {
-    "extends": ["plugin:storybook/recommended"]
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }

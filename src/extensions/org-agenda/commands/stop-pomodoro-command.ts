@@ -23,6 +23,10 @@ export const stopPomodoroCommand: Command = {
   command: AGENDA_POMODORO_STOP_COMMAND,
   group: 'agenda',
   icon: 'sym_o_stop',
+  disabled: () => {
+    const store = usePomodoroStore();
+    return store.isTransitioning || !store.hasSession;
+  },
   handler: async (api) => {
     const store = usePomodoroStore();
     const snapshot = createSessionSnapshot(store);

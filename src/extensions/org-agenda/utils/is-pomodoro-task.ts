@@ -1,6 +1,6 @@
-import type { FileTask } from 'orgnote-api';
+import type { AgendaTask } from '../types';
 
-export type PomodoroTaskData = FileTask & { filePath: string };
+export type PomodoroTaskData = AgendaTask;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object';

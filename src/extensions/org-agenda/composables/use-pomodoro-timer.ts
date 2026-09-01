@@ -18,6 +18,7 @@ export const usePomodoroTimer = () => {
     isRunning,
     isPaused,
     hasSession,
+    isTransitioning,
     session,
     durationMin,
     sessionType,
@@ -56,19 +57,22 @@ export const usePomodoroTimer = () => {
         .filter((c) => new Date(c.to!).getTime() - new Date(c.date!).getTime() > 0).length,
   );
 
-  const onDurationChange = (value: number): void => {
+  const onDurationChange = async (value: number): Promise<void> => {
     const clamped = Math.max(
       POMODORO_MIN_DURATION_MIN,
       Math.min(POMODORO_MAX_DURATION_MIN, value || POMODORO_MIN_DURATION_MIN),
     );
-    store.durationMin = clamped;
     localDuration.value = clamped;
+    await store.changeDuration(clamped);
   };
 
   const onSelectTask = async (): Promise<void> => {
-    if (hasSession.value) return;
     const task = await store.openTaskCompletion();
-    if (task) selectedTask.value = task;
+    if (task) await store.changeTask(task);
+  };
+
+  const onSessionTypeChange = async (type: 'pomo' | 'stopwatch'): Promise<void> => {
+    await store.changeSessionType(type);
   };
 
   const onRingClick = (): void => {
@@ -83,6 +87,7 @@ export const usePomodoroTimer = () => {
     isRunning,
     isPaused,
     hasSession,
+    isTransitioning,
     durationMin,
     sessionType,
     localDuration,
@@ -92,6 +97,7 @@ export const usePomodoroTimer = () => {
     todayPomoCount,
     onDurationChange,
     onSelectTask,
+    onSessionTypeChange,
     onRingClick,
   };
 };

@@ -17,6 +17,7 @@ import { debounce } from 'src/utils/debounce';
 import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import { useAgendaTasksStore } from '../stores/agenda-tasks-store';
 import { createAgendaTaskSearchId } from '../services/agenda-task-search-index';
+import type { AgendaTask } from '../types';
 import type {
   AgendaDateFilter,
   AgendaDayPreset,
@@ -34,9 +35,8 @@ import {
 
 export type { AgendaDateFilter, AgendaFilter, AgendaTaskQuery } from '../models/agenda-task-query';
 
-export interface AgendaTaskView extends FileTask {
+export interface AgendaTaskView extends AgendaTask {
   viewDate: Date;
-  filePath: string;
 }
 
 export interface AgendaTaskGroup {

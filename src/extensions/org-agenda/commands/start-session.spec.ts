@@ -2,6 +2,8 @@ import type { CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { AGENDA_POMODORO_URI } from '../constants';
 import { createStartSessionHandler } from './start-session';
+import { startPomodoroCommand } from './start-pomodoro-command';
+import { startStopwatchCommand } from './start-stopwatch-command';
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn(),
@@ -11,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   stopSession: vi.fn(),
   store: {
     hasSession: false,
+    isTransitioning: false,
     selectedTask: null as unknown,
     sessionType: 'pomo' as 'pomo' | 'stopwatch',
   },
@@ -36,6 +39,7 @@ vi.mock('src/boot/i18n', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.store.hasSession = false;
+  mocks.store.isTransitioning = false;
   mocks.store.selectedTask = null;
   mocks.store.sessionType = 'pomo';
   mocks.showOrOpen.mockResolvedValue(undefined);
@@ -56,4 +60,26 @@ test('start session focuses an open Pomodoro buffer before starting', async () =
   expect(mocks.showOrOpen.mock.invocationCallOrder[0]!).toBeLessThan(
     mocks.startSession.mock.invocationCallOrder[0]!,
   );
+});
+
+test('start commands are disabled during a task transition', () => {
+  mocks.store.isTransitioning = true;
+  const api = {} as OrgNoteApi;
+
+  expect(startPomodoroCommand.disabled?.(api)).toBe(true);
+  expect(startStopwatchCommand.disabled?.(api)).toBe(true);
+});
+
+test('start commands always use the mode named by their action', async () => {
+  const task = { id: 'task-1', filePath: '/notes/tasks.org' };
+  const api = {
+    core: { useBufferViewer: () => ({ showOrOpen: mocks.showOrOpen }) },
+  } as unknown as OrgNoteApi;
+  mocks.store.sessionType = 'stopwatch';
+
+  await startPomodoroCommand.handler(api, { data: task, meta: startPomodoroCommand });
+  await startStopwatchCommand.handler(api, { data: task, meta: startStopwatchCommand });
+
+  expect(mocks.startSession).toHaveBeenNthCalledWith(1, task, 'pomo');
+  expect(mocks.startSession).toHaveBeenNthCalledWith(2, task, 'stopwatch');
 });

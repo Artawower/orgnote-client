@@ -6,7 +6,7 @@ import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { createDirPath } from 'src/utils/create-dir-path';
 import { findNextOccurrenceInRange, isOverdue, isToday, isTomorrow } from '../utils/agenda-filters';
-import { resolveAgendaConfig } from '../index';
+import { resolveAgendaConfig } from '../agenda-config';
 import { AGENDA_DEFAULT_INBOX_FILENAME } from '../constants';
 import { orgAgendaManifest } from '../manifest';
 import type { AgendaFilter } from '../composables/use-agenda-tasks';
