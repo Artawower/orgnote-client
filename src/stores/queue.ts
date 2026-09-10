@@ -1,4 +1,3 @@
-import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type {
   QueueCreationOptions,
@@ -10,6 +9,7 @@ import type {
   QueueTask,
   QueueTaskOptions,
 } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
 import { logger } from 'src/boot/logger';
 import { repositories } from 'src/boot/repositories';
 import {
@@ -17,6 +17,8 @@ import {
   type QueueRuntime,
 } from 'src/infrastructure/queue/better-queue-runtime';
 import { executeBatchTasks as executeQueueBatchTasks } from 'src/infrastructure/queue/execute-batch-tasks';
+import { INDEX_QUEUE_ID, SYNC_QUEUE_ID } from 'src/constants/queue-ids';
+import { defineStorageBoundStore } from 'src/infrastructure/stores/storage-bound-store';
 
 class QueueNotRegisteredError extends Error {
   constructor(queueId: string) {
@@ -25,7 +27,7 @@ class QueueNotRegisteredError extends Error {
   }
 }
 
-export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
+export const useQueueStore = defineStorageBoundStore<'queue', QueueStore>('queue', () => {
   const runtimes = new Map<string, QueueRuntime>();
   const queueIds = ref<string[]>([]);
 
@@ -108,7 +110,7 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
       await runtime.clear();
       return;
     }
-    await repositories.queueRepository.clear(queueId);
+    await repositories?.queueRepository?.clear(queueId);
   };
 
   const getStats = async (queueId: string): Promise<QueueStats> =>
@@ -124,15 +126,19 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     await runtime.runAndWaitForIdle(operation, options);
   };
 
+  const clearStoredBatchTasks = async (queueId: string): Promise<void> => {
+    const result = await to(() => repositories.queueRepository.clear(queueId))();
+    if (result.isOk()) return;
+    logger.error('Failed to clear batch queue tasks', { error: result.error, queueId });
+  };
+
   const executeBatchTasks = <TPayload = unknown, TResult = unknown>(
     options: QueueCreationOptions<TPayload, TResult>,
     data: TPayload[],
   ): Promise<TResult[]> =>
     executeQueueBatchTasks(options, data, {
       clearStoredTasks: (queueId) => {
-        void repositories.queueRepository.clear(queueId).catch((error: unknown) => {
-          logger.error('Failed to clear batch queue tasks', { error, queueId });
-        });
+        void clearStoredBatchTasks(queueId);
       },
       create: (queueId, queueOptions) => {
         destroy(queueId);
@@ -141,6 +147,10 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
       },
       destroy,
     });
+
+  const $resetStorage = async (): Promise<void> => {
+    await Promise.all([clear(INDEX_QUEUE_ID), clear(SYNC_QUEUE_ID)]);
+  };
 
   return {
     register,
@@ -158,5 +168,6 @@ export const useQueueStore = defineStore<'queue', QueueStore>('queue', () => {
     runAndWaitForIdle,
     queueIds,
     executeBatchTasks,
+    $resetStorage,
   };
 });

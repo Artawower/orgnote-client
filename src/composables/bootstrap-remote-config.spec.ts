@@ -7,7 +7,6 @@ import { reporter } from 'src/boot/report';
 import { DEFAULT_CONFIG } from 'src/constants/config';
 import { useConfigStore } from 'src/stores/config';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
-import { useSettingsStore } from 'src/stores/settings';
 import { bootstrapRemoteConfig } from './bootstrap-remote-config';
 
 const { syncFilesGetMock } = vi.hoisted(() => ({
@@ -100,7 +99,7 @@ const createMockFs = (
   return { fs, files };
 };
 
-const setupFs = (fs: FileSystem): void => {
+const setupFs = async (fs: FileSystem): Promise<void> => {
   const fsInfo: FileSystemInfo = {
     name: 'mock-fs',
     fs: () => fs,
@@ -108,12 +107,9 @@ const setupFs = (fs: FileSystem): void => {
     initialVault: '/',
   };
 
-  const settingsStore = useSettingsStore();
-  settingsStore.settings.vault = '/';
-
   const fsManager = useFileSystemManagerStore();
   fsManager.register(fsInfo);
-  fsManager.currentFsName = 'mock-fs';
+  await fsManager.useFs('mock-fs', '/');
 };
 
 beforeEach(() => {
@@ -129,7 +125,7 @@ test('bootstrapRemoteConfig replaces default config with remote config', async (
 
   syncFilesGetMock.mockResolvedValue(await createRemoteResponse(stringifyToml(remoteConfig)));
 
-  setupFs(fs);
+  await setupFs(fs);
   useConfigStore();
 
   await bootstrapRemoteConfig();
@@ -151,7 +147,7 @@ test('bootstrapRemoteConfig rejects response without content hash', async () => 
     ),
   );
 
-  setupFs(fs);
+  await setupFs(fs);
   useConfigStore();
 
   await bootstrapRemoteConfig();
@@ -171,7 +167,7 @@ test('bootstrapRemoteConfig keeps local default config when remote config is mis
 
   syncFilesGetMock.mockRejectedValue(notFoundError);
 
-  setupFs(fs);
+  await setupFs(fs);
   useConfigStore();
 
   await bootstrapRemoteConfig();
@@ -195,7 +191,7 @@ test('bootstrapRemoteConfig preserves config edited while remote config loads', 
       }),
   );
 
-  setupFs(fs);
+  await setupFs(fs);
   const configStore = useConfigStore();
   const bootstrapPromise = bootstrapRemoteConfig();
   await vi.waitFor(() => expect(syncFilesGetMock).toHaveBeenCalledTimes(1));
@@ -224,7 +220,7 @@ test('bootstrapRemoteConfig preserves config changed externally during remote fe
       }),
   );
 
-  setupFs(fs);
+  await setupFs(fs);
   useConfigStore();
   const bootstrapPromise = bootstrapRemoteConfig();
   await vi.waitFor(() => expect(syncFilesGetMock).toHaveBeenCalledTimes(1));
@@ -243,7 +239,7 @@ test('bootstrapRemoteConfig preserves user-modified local config', async () => {
 
   const { fs, files } = createMockFs(stringifyToml(diskConfig));
 
-  setupFs(fs);
+  await setupFs(fs);
   useConfigStore();
 
   await bootstrapRemoteConfig();

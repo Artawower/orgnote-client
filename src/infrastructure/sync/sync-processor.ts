@@ -7,7 +7,9 @@ import {
   SyncOperationType,
 } from 'orgnote-api';
 import { reporter } from 'src/boot/report';
+import { to } from 'orgnote-api/utils';
 import type { SyncQueueTask } from 'src/models/sync-queue-task';
+import { recordConfigSyncOperationEvent } from 'src/infrastructure/config/config-lifecycle-record';
 
 const getTaskPath = (task: SyncQueueTask): string => {
   if (typeof task.data === 'string') return task.data;
@@ -30,6 +32,43 @@ export interface SyncContextProvider {
   getContext: (serverTime: string) => SyncContext | null;
 }
 
+const handleSyncTaskSuccess = (
+  path: string,
+  type: SyncOperationType,
+  cb: ProcessCallback,
+): void => {
+  recordConfigSyncOperationEvent('config-sync-operation-completed', path, type);
+  cb(null);
+};
+
+const handleSyncTaskFailure = (
+  path: string,
+  type: SyncOperationType,
+  error: unknown,
+  cb: ProcessCallback,
+): void => {
+  recordConfigSyncOperationEvent('config-sync-operation-failed', path, type, {
+    errorName: error instanceof Error ? error.name : 'unknown',
+  });
+  reporter.reportWarning(`${type} failed: ${path} - ${error}`);
+  cb(error);
+};
+
+const executeSyncQueueTask = async (
+  payload: SyncQueueTask,
+  ctx: SyncContext,
+  cb: ProcessCallback,
+): Promise<void> => {
+  const path = getTaskPath(payload);
+  recordConfigSyncOperationEvent('config-sync-operation-started', path, payload.type);
+  const result = await to(processSyncTask)(payload, ctx);
+  if (result.isErr()) {
+    handleSyncTaskFailure(path, payload.type, result.error, cb);
+    return;
+  }
+  handleSyncTaskSuccess(path, payload.type, cb);
+};
+
 export const createQueueTaskProcessor = (provider: SyncContextProvider) => {
   return (rawTask: unknown, cb: ProcessCallback): void => {
     const { payload } = rawTask as { payload: SyncQueueTask };
@@ -40,11 +79,6 @@ export const createQueueTaskProcessor = (provider: SyncContextProvider) => {
       return;
     }
 
-    processSyncTask(payload, ctx)
-      .then(() => cb(null))
-      .catch((err) => {
-        reporter.reportWarning(`${payload.type} failed: ${getTaskPath(payload)} - ${err}`);
-        cb(err);
-      });
+    void executeSyncQueueTask(payload, ctx, cb);
   };
 };

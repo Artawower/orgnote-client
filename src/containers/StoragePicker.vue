@@ -49,10 +49,8 @@ import { api } from 'src/boot/api';
 import { storeToRefs } from 'pinia';
 import { I18N } from 'orgnote-api';
 import AppFlex from 'src/components/AppFlex.vue';
-import {
-  useFileSystemManagerStore,
-  useFileSystemRootConfigurator,
-} from 'src/stores/file-system-manager';
+import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
+import { useFileSystemRootConfigurator } from 'src/composables/file-system-root-configurator';
 
 withDefaults(defineProps<{ hideWarning?: boolean }>(), { hideWarning: false });
 

@@ -1,287 +1,263 @@
-import { ORGNOTE_SYSTEM_ROOT_PATH, type OrgNoteConfig, type ConfigStore } from 'orgnote-api';
-import { defineStore, storeToRefs } from 'pinia';
-import { DEFAULT_CONFIG, DEFAULT_CONFIG_CONTENT } from 'src/constants/config';
+import {
+  ORGNOTE_SYSTEM_ROOT_PATH,
+  type ConfigStore,
+  type OrgNoteConfig,
+  toAbsolutePath,
+  type FileSystemChange,
+  type FileSystemSession,
+} from 'orgnote-api';
+import { defineStore } from 'pinia';
+import { DEFAULT_CONFIG } from 'src/constants/config';
 import { computed, reactive, ref, watch } from 'vue';
 import clone from 'rfdc';
-import { useFileSystemStore } from './file-system';
 import { debounce } from 'src/utils/debounce';
-import { useSettingsStore } from './settings';
 import { useFileSystemManagerStore } from './file-system-manager';
-import { to } from 'orgnote-api/utils';
-import { reporter } from 'src/boot/report';
-import type { Result } from 'neverthrow';
-import { stringifyToml } from 'orgnote-api/utils';
-import { toAbsolutePath, type FileSystemChange } from 'orgnote-api';
+import { err, ok, type Result } from 'neverthrow';
+import { isPresent, to } from 'orgnote-api/utils';
 import { useFileWatcherStore } from './file-watcher';
 import { ORGNOTE_CONFIG_FILE_PATH } from 'src/constants/system-file-paths';
-import { withDeferredFlagReset, withFlag } from 'src/utils/with-flag';
-import { getNextBrokenConfigIndex } from 'src/utils/get-next-broken-config-index';
+import { withDeferredFlagReset } from 'src/utils/with-flag';
+import { recordConfigLifecycleEvent } from 'src/infrastructure/config/config-lifecycle-record';
 import {
-  InvalidOrgNoteConfigSchemaError,
-  parseOrgNoteConfigToml,
-} from 'src/utils/parse-orgnote-config-toml';
+  ensureConfigFile,
+  persistConfigSnapshot,
+  type ConfigStorageContext,
+} from 'src/infrastructure/config/config-storage';
+import { applyDiskConfig } from 'src/infrastructure/config/config-merge';
+import { handleDiskConfigChange } from 'src/infrastructure/config/config-watcher';
+import {
+  buildStorageKey,
+  clearUserMutationIfClean,
+  createInitialMutationState,
+  discardForeignMutation,
+  recordUserMutation,
+} from 'src/infrastructure/config/config-state';
+import { loadDiskConfig } from 'src/infrastructure/config/config-disk';
 
 export const useConfigStore = defineStore<'config', ConfigStore>('config', () => {
-  const fileSystem = useFileSystemStore();
-  const diskConfigPath = ORGNOTE_CONFIG_FILE_PATH;
-  const diskConfigWatchPath = toAbsolutePath(diskConfigPath);
-  const configSystemDir = ORGNOTE_SYSTEM_ROOT_PATH;
-  const lastSyncedMtime = ref<number>(0);
+  const fileWatcher = useFileWatcherStore();
+  const fsManager = useFileSystemManagerStore();
+  const diskConfigPath = toAbsolutePath(ORGNOTE_CONFIG_FILE_PATH);
+  const configSystemDir = toAbsolutePath(ORGNOTE_SYSTEM_ROOT_PATH);
+  const lastDiskMtime = ref<number>(0);
   const isInitialized = ref(false);
   const isApplyingDiskConfig = ref(false);
   const isSavingDiskConfig = ref(false);
-  const { settings } = storeToRefs(useSettingsStore());
-  const vault = computed(() => settings.value.vault);
+  let inFlightLoad: { sessionId: number; promise: Promise<void> } | null = null;
+  let baselineConfig: OrgNoteConfig = clone()(DEFAULT_CONFIG);
+  const mutations = createInitialMutationState();
 
+  const currentSession = computed<FileSystemSession | null>(() => fsManager.currentSession);
+  const isStorageReady = computed(() => isPresent(currentSession.value));
   const config = reactive<OrgNoteConfig>(clone()(DEFAULT_CONFIG));
-
   const configErrors = ref<string[]>([]);
+  let currentStorageKey = currentSession.value?.storageKey ?? buildStorageKey();
 
-  const { currentFsInfo, currentFs } = storeToRefs(useFileSystemManagerStore());
-
-  const isVaultRequired = computed(() => Boolean(currentFs.value?.pickFolder));
-
-  const isReadyForDiskSync = computed(() => {
-    if (!currentFsInfo.value) {
-      return false;
-    }
-    if (!isVaultRequired.value) {
-      return true;
-    }
-    return !!vault.value;
-  });
-
-  const getConfigFileMtime = async (): Promise<number> => {
-    const safeInfo = to(fileSystem.fileInfo, 'Failed to read config.toml metadata');
-    const res = await safeInfo(diskConfigPath);
-    if (res.isErr()) {
-      reporter.reportError(res.error);
-      return 0;
-    }
-    return res.value?.mtime ?? 0;
+  const captureContext = (): ConfigStorageContext | null => {
+    const session = currentSession.value;
+    if (!session) return null;
+    return {
+      session,
+      isActive: () => currentSession.value?.id === session.id,
+      run: (operation) => fsManager.runWithMountedFileSystem(session, operation),
+    };
   };
 
-  const writeDiskConfigContent = async (content: string): Promise<void> => {
-    const safeWrite = to(fileSystem.writeFile, 'Failed to write config.toml');
-    const writeResult = await safeWrite(diskConfigPath, content);
-    if (writeResult.isErr()) {
-      reporter.reportError(writeResult.error);
-      return;
-    }
+  const hasPendingUserMutation = (): boolean =>
+    mutations.dirtyKey === currentStorageKey && mutations.dirtyRevision > 0;
 
-    lastSyncedMtime.value = await getConfigFileMtime();
+  const ensureConfigFileExists = async (ctx: ConfigStorageContext): Promise<boolean> => {
+    const mtime = await ensureConfigFile(ctx, fileWatcher, diskConfigPath, isSavingDiskConfig);
+    if (mtime === undefined || !ctx.isActive()) return false;
+    lastDiskMtime.value = mtime;
+    return true;
   };
 
-  const ensureConfigFileExists = async (): Promise<void> => {
-    const mtime = await getConfigFileMtime();
-    if (mtime > 0) {
-      lastSyncedMtime.value = mtime;
-      return;
-    }
-
-    await withFlag(isSavingDiskConfig, async () => {
-      await writeDiskConfigContent(DEFAULT_CONFIG_CONTENT);
-    });
-  };
-
-  const applyDefaultConfig = (): void => {
+  const applyDefaultConfig = (source: string): void => {
     withDeferredFlagReset(isApplyingDiskConfig, () => {
       Object.assign(config, clone()(DEFAULT_CONFIG));
+      baselineConfig = clone()(DEFAULT_CONFIG);
+      mutations.dirtyKey = null;
+      mutations.dirtyRevision = 0;
+      recordConfigLifecycleEvent('default-config-applied', config, { source });
     });
   };
 
   const applyConfigFromDisk = (rawConfigContent: string): Result<void, Error> => {
     configErrors.value = [];
-    return withDeferredFlagReset(isApplyingDiskConfig, () =>
-      parseOrgNoteConfigToml(rawConfigContent)
-        .map((validated) => {
-          Object.assign(config, validated);
-        })
-        .mapErr((error) => {
-          configErrors.value =
-            error instanceof InvalidOrgNoteConfigSchemaError ? [...error.errors] : [];
-          return error;
-        }),
-    );
-  };
-
-  const getNextBrokenConfigPath = async (): Promise<string> => {
-    const safeReadDir = to(fileSystem.readDir, 'Failed to list system files directory');
-    const res = await safeReadDir(configSystemDir);
-    const files = res.isOk() ? res.value : [];
-    const index = getNextBrokenConfigIndex(files);
-    return `${configSystemDir}/config-broken-${index}.toml`;
-  };
-
-  const resetDiskConfigToDefault = async (): Promise<void> => {
-    await writeDiskConfigContent(DEFAULT_CONFIG_CONTENT);
-  };
-
-  const quarantineBrokenConfig = async (cause: Error, rawContent: string): Promise<void> => {
-    const brokenPath = await getNextBrokenConfigPath();
-    const safeRename = to(fileSystem.rename, 'Failed to move broken config.toml');
-    const safeWrite = to(fileSystem.writeFile, 'Failed to persist broken config content');
-
-    const persistBrokenCopy = async (): Promise<void> => {
-      const persistResult = await safeWrite(brokenPath, rawContent);
-      if (persistResult.isOk()) {
-        return;
+    return withDeferredFlagReset(isApplyingDiskConfig, () => {
+      const parsed = applyDiskConfig(rawConfigContent, config, baselineConfig, hasPendingUserMutation());
+      if (parsed.isErr()) {
+        configErrors.value = parsed.error.errors;
+        return err(parsed.error.cause);
       }
-      reporter.reportError(persistResult.error);
-    };
-
-    applyDefaultConfig();
-
-    await withFlag(isSavingDiskConfig, async () => {
-      const moveResult = await safeRename(diskConfigPath, brokenPath);
-      if (moveResult.isErr()) {
-        await persistBrokenCopy();
-      }
-
-      await resetDiskConfigToDefault();
+      Object.assign(config, parsed.value.finalConfig);
+      baselineConfig = clone()(parsed.value.validated);
+      recordConfigLifecycleEvent('disk-config-applied', parsed.value.finalConfig, { source: 'disk-read' });
+      return ok(undefined);
     });
-
-    reporter.reportError(
-      new Error(`Invalid config.toml was moved to ${brokenPath} and reset to defaults`, {
-        cause,
-      }),
-    );
   };
 
-  const loadFromDisk = async (force = false): Promise<void> => {
+  const loadFromDisk = async (ctx: ConfigStorageContext, force = false): Promise<boolean> => {
     configErrors.value = [];
-
-    const mtime = await getConfigFileMtime();
-    if (!force && mtime <= lastSyncedMtime.value) {
-      return;
-    }
-
-    const safeRead = to(fileSystem.readFile, 'Failed to read config.toml');
-    const readResult = await safeRead(diskConfigPath, 'utf8');
-    if (readResult.isErr()) {
-      reporter.reportError(readResult.error);
-      return;
-    }
-
-    const content = readResult.value;
-    if (!content) {
-      return;
-    }
-
-    const result = applyConfigFromDisk(content);
-    if (result.isErr()) {
-      await quarantineBrokenConfig(result.error, content);
-      lastSyncedMtime.value = await getConfigFileMtime();
-      return;
-    }
-
-    lastSyncedMtime.value = mtime;
+    const mtime = await loadDiskConfig({
+      ctx,
+      watcher: fileWatcher,
+      diskConfigPath,
+      configSystemDir,
+      isSavingDiskConfig,
+      lastDiskMtime: lastDiskMtime.value,
+      force,
+      onApplyDefault: applyDefaultConfig,
+      applyContent: applyConfigFromDisk,
+    });
+    if (mtime === undefined || !ctx.isActive()) return false;
+    lastDiskMtime.value = mtime;
+    return true;
   };
 
   const saveToDisk = async (): Promise<void> => {
-    await withFlag(isSavingDiskConfig, async () => {
-      await writeDiskConfigContent(stringifyToml(config));
-    });
+    if (!isInitialized.value || !isStorageReady.value) return;
+    const ctx = captureContext();
+    if (!ctx) return;
+    recordConfigLifecycleEvent('memory-config-write-requested', config, { source: 'reactive-save' });
+
+    const snapshot = clone()(config);
+    const capturedRevision = mutations.dirtyRevision;
+    const mtime = await persistConfigSnapshot(
+      ctx,
+      fileWatcher,
+      diskConfigPath,
+      snapshot,
+      isSavingDiskConfig,
+    );
+    if (!ctx.isActive()) return;
+    if (mtime === undefined) {
+      saveToDiskDebounced();
+      return;
+    }
+
+    lastDiskMtime.value = mtime;
+    baselineConfig = clone()(snapshot);
+    if (!clearUserMutationIfClean(mutations, ctx.session.storageKey, capturedRevision)) {
+      saveToDiskDebounced();
+    }
   };
 
   const saveToDiskDebounced = debounce(saveToDisk, 1000);
 
   let stopDiskConfigWatch: (() => void) | null = null;
 
-  const shouldIgnoreDiskChange = (change: FileSystemChange): boolean => {
-    if (isSavingDiskConfig.value) {
-      return true;
-    }
-
-    if (change.type === 'delete') {
-      return true;
-    }
-
-    if (typeof change.mtime !== 'number') {
-      return false;
-    }
-
-    return change.mtime <= lastSyncedMtime.value;
-  };
-
   const onDiskConfigChange = (change: FileSystemChange): void => {
-    if (change.type === 'delete') {
-      applyDefaultConfig();
-      void ensureConfigFileExists();
-      return;
-    }
-
-    if (shouldIgnoreDiskChange(change)) {
-      return;
-    }
-    void loadFromDisk(true);
+    handleDiskConfigChange({
+      change,
+      isSaving: isSavingDiskConfig.value,
+      lastDiskMtime: lastDiskMtime.value,
+      config,
+      onDelete: () => {
+        applyDefaultConfig('disk-delete-event');
+        const ctx = captureContext();
+        if (ctx) void ensureConfigFileExists(ctx);
+      },
+      onReload: () => {
+        const ctx = captureContext();
+        if (ctx) void loadFromDisk(ctx, true);
+      },
+    });
   };
 
   const startDiskConfigWatch = (): void => {
-    if (stopDiskConfigWatch) {
-      return;
-    }
-
-    const fileWatcher = useFileWatcherStore();
-    stopDiskConfigWatch = fileWatcher.watch(diskConfigWatchPath, onDiskConfigChange);
+    stopDiskConfigWatch ??= fileWatcher.watch(diskConfigPath, onDiskConfigChange);
   };
 
-  const sync = async (): Promise<void> => {
-    if (isInitialized.value) {
-      return;
-    }
+  const resetDiskPersistence = (): void => {
+    saveToDiskDebounced.cancel();
+    stopDiskConfigWatch?.();
+    stopDiskConfigWatch = null;
+    lastDiskMtime.value = 0;
+    isInitialized.value = false;
+  };
 
-    if (!isReadyForDiskSync.value) {
-      return;
-    }
+  const executeInitialLoad = async (ctx: ConfigStorageContext): Promise<void> => {
+    if (!ctx.isActive()) return;
+    if (!(await ensureConfigFileExists(ctx)) || !ctx.isActive()) return;
+    if (!(await loadFromDisk(ctx, true)) || !ctx.isActive()) return;
 
-    await ensureConfigFileExists();
-    await loadFromDisk(true);
     startDiskConfigWatch();
     isInitialized.value = true;
+    recordConfigLifecycleEvent('config-store-load-completed', config);
+    if (hasPendingUserMutation()) saveToDiskDebounced();
   };
 
-  watch(
-    [vault, currentFsInfo],
-    async () => {
-      if (!isReadyForDiskSync.value) {
-        return;
-      }
+  const continueSessionLoadIfNeeded = async (loadedSessionId: number): Promise<void> => {
+    const session = currentSession.value;
+    if (!session || session.id === loadedSessionId || isInitialized.value) return;
+    if (inFlightLoad?.sessionId === session.id) {
+      await inFlightLoad.promise;
+      return;
+    }
+    await load();
+  };
 
-      if (!isInitialized.value) {
-        await sync();
-        return;
-      }
+  const load = async (): Promise<void> => {
+    recordConfigLifecycleEvent('config-store-load-requested', config, {
+      isInitialized: isInitialized.value,
+      isReady: isStorageReady.value,
+    });
+    if (isInitialized.value || !currentSession.value) return;
+    if (inFlightLoad?.sessionId === currentSession.value.id) return inFlightLoad.promise;
 
-      stopDiskConfigWatch?.();
-      stopDiskConfigWatch = null;
-      lastSyncedMtime.value = 0;
-      await ensureConfigFileExists();
-      await loadFromDisk(true);
-      startDiskConfigWatch();
-    },
-    { deep: false },
-  );
+    const ctx = captureContext();
+    if (!ctx) return;
 
-  watch(
-    config,
-    () => {
-      if (!isInitialized.value) {
-        return;
-      }
+    const runFlight = async (): Promise<void> => {
+      const result = await to(executeInitialLoad)(ctx);
+      if (inFlightLoad?.sessionId === ctx.session.id) inFlightLoad = null;
+      if (result.isErr()) throw result.error;
+    };
+    const currentFlight = runFlight();
+    inFlightLoad = { sessionId: ctx.session.id, promise: currentFlight };
+    await currentFlight;
+    await continueSessionLoadIfNeeded(ctx.session.id);
+  };
 
-      if (isApplyingDiskConfig.value) {
-        return;
-      }
+  const traceContextChange = (): void => {
+    recordConfigLifecycleEvent('config-storage-context-changed', config, {
+      hasSession: Boolean(currentSession.value),
+      isInitialized: isInitialized.value,
+      isReady: isStorageReady.value,
+    });
+  };
 
-      saveToDiskDebounced();
-    },
-    { deep: true, flush: 'post' },
-  );
+  const handleSessionChange = (newSession: FileSystemSession | null): void => {
+    traceContextChange();
+    if (newSession && newSession.storageKey !== currentStorageKey) {
+      currentStorageKey = newSession.storageKey;
+      discardForeignMutation(mutations, currentStorageKey);
+      baselineConfig = clone()(config);
+    }
+    resetDiskPersistence();
+    if (newSession) void load();
+  };
+
+  const handleConfigMutation = (): void => {
+    recordConfigLifecycleEvent('memory-config-changed', config, {
+      isApplyingDiskConfig: isApplyingDiskConfig.value,
+      isInitialized: isInitialized.value,
+    });
+    if (isApplyingDiskConfig.value) return;
+
+    recordUserMutation(mutations, currentStorageKey);
+    if (isInitialized.value) saveToDiskDebounced();
+  };
+
+  watch(currentSession, handleSessionChange, { deep: false, flush: 'sync' });
+  watch(config, handleConfigMutation, { deep: true, flush: 'sync' });
 
   return {
     config,
-    sync,
+    sync: load,
+    load,
     configErrors,
   };
 });

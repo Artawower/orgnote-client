@@ -1,16 +1,8 @@
-import { defineStore } from 'pinia';
+import { defineStorageBoundStore } from 'src/infrastructure/stores/storage-bound-store';
 import { ref, computed } from 'vue';
-import { Document, type DefaultDocumentSearchResults } from 'flexsearch';
-import type {
-  DiskFile,
-  FileMeta,
-  FileSearchStore,
-  FileIndexMeta,
-  StoredIndex,
-  QueueStatus,
-} from 'orgnote-api';
-import { isOrgFile, to } from 'orgnote-api';
-import { runWithConcurrency, uint8ArrayToText } from 'orgnote-api/utils';
+import type { FileMeta, FileSearchStore } from 'orgnote-api';
+import { to } from 'orgnote-api';
+import { uint8ArrayToText } from 'orgnote-api/utils';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { repositories } from 'src/boot/repositories';
 import { invalidateCountCache } from 'src/stores/file-meta';
@@ -19,118 +11,44 @@ import { useFileSystemStore } from 'src/stores/file-system';
 import { api } from 'src/boot/api';
 import { extractOrgTitleFromPath } from 'src/utils/extract-org-title-from-path';
 import { extractFileTasks } from 'src/utils/extract-file-tasks';
-import { INDEX_QUEUE_ID } from 'src/constants/queue-ids';
 import { logger } from 'src/boot/logger';
-const FILE_INDEX_KEY = 'file-index';
-const INDEX_VERSION = 4;
+import { createFileSearchIndex } from 'src/infrastructure/search/file-search-index';
+import { createFileSearchScanner } from 'src/infrastructure/search/file-search-scanner';
+
 const SAVE_INDEX_EVERY_N = 10;
-const INDEX_SCAN_CONCURRENCY = 4;
-const INDEX_QUEUE_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-const ACTIVE_TASK_STATUSES: Set<QueueStatus> = new Set(['pending', 'processing']);
 
-interface IndexedFile {
-  [key: string]: string;
-  id: string;
-  title: string;
-  description: string;
-  content: string;
-  tags: string;
-}
-
-type ExistingFileSnapshot = Map<string, FileMeta>;
-
-interface IndexScanContext {
-  existingFiles: ExistingFileSnapshot;
-  queue: ReturnType<typeof useQueueStore>;
-  signal: AbortSignal;
-}
-
-export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fileSearch', () => {
+export const useFileSearchStore = defineStorageBoundStore<'fileSearch', FileSearchStore>('fileSearch', () => {
   let processedCount = 0;
-  const index = new Document<IndexedFile>({
-    document: {
-      id: 'id',
-      index: ['title', 'description', 'content', 'tags'],
-      store: ['id'],
-    },
-    tokenize: 'forward',
-    cache: true,
-    context: true,
+  const searchIndex = createFileSearchIndex();
+  const fs = useFileSystemStore();
+
+  const scanner = createFileSearchScanner({
+    hasIndexedId: (id) => searchIndex.hasId(id),
+    getIndexMeta: (id) => searchIndex.getMeta(id),
+    ensureIndexLoaded: () => searchIndex.ensureLoaded(),
+    getFileInfo: (path) => fs.fileInfo(path),
+    readDir: (path) => fs.readDir(path),
+    getQueueStore: () => useQueueStore(),
   });
 
-  const indexedIds = new Set<string>();
-  const indexMetaMap = new Map<string, FileIndexMeta>();
   const isSearching = ref(false);
   const isIndexing = ref(false);
   const lastSearchResult = ref<FileSearchStore['lastSearchResult']['value']>(null);
 
-  const indexStats = computed(() => ({
-    indexed: indexedIds.size,
-    total: indexedIds.size,
-  }));
-
-  const addToIndex = (file: FileMeta, content: string): void => {
-    if (!file.id) return;
-
-    if (indexedIds.has(file.id)) {
-      index.remove(file.id);
-    }
-
-    index.add({
-      id: file.id,
-      title: file.title ?? '',
-      description: file.description ?? '',
-      content,
-      tags: file.tags?.join(' ') ?? '',
-    });
-
-    indexedIds.add(file.id);
-  };
-
-  const removeFromIndex = (id: string): void => {
-    index.remove(id);
-    indexedIds.delete(id);
-    indexMetaMap.delete(id);
-  };
-
-  const updateIndexMeta = async (fileId: string, filePath: string): Promise<void> => {
-    const mtime = await getFileMtime(filePath);
-    if (!mtime) return;
-
-    const meta: FileIndexMeta = {
-      id: fileId,
-      indexedAt: new Date().toISOString(),
-      fileModifiedAt: mtime.toISOString(),
-    };
-
-    indexMetaMap.set(fileId, meta);
-  };
-
-  const extractIdsFromResults = (results: DefaultDocumentSearchResults): string[] => {
-    const fileIds = new Set<string>();
-    results.forEach((fieldResult) => {
-      fieldResult.result.forEach((fileId) => fileIds.add(String(fileId)));
-    });
-    return [...fileIds];
-  };
+  const indexStats = computed(() => searchIndex.getStats());
 
   const performSearch = async (
     query: string,
     limit: number,
     offset: number,
   ): Promise<FileMeta[]> => {
-    const results = index.search(query, { limit: indexedIds.size });
-    const allIds = extractIdsFromResults(results);
-    const paginatedIds = allIds.slice(offset, offset + limit);
-    const files = await repositories.fileRepository.getByIds(paginatedIds);
-
+    const { files, total } = await searchIndex.search(query, limit, offset);
     lastSearchResult.value = {
       files,
-      total: allIds.length,
+      total,
       query,
       searchedAt: Date.now(),
     };
-
     return files;
   };
 
@@ -184,18 +102,11 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     updatedAt: new Date().toISOString(),
   });
 
-  const toFilePathKey = (filePath: string[]): string => `/${filePath.join('/')}`;
-
-  const buildExistingFileSnapshot = async (): Promise<ExistingFileSnapshot> => {
-    const files = await repositories.fileRepository.getAll();
-    return new Map(files.map((file) => [toFilePathKey(file.filePath), file]));
-  };
-
   const removeStaleRecord = async (meta: FileMeta): Promise<void> => {
     const existingByPath = await repositories.fileRepository.getByPath(meta.filePath);
     if (!existingByPath || existingByPath.id === meta.id) return;
 
-    removeFromIndex(existingByPath.id);
+    searchIndex.remove(existingByPath.id);
     invalidateCountCache();
     await repositories.fileRepository.delete(existingByPath.id);
   };
@@ -211,12 +122,14 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
 
     invalidateCountCache();
     await repositories.fileRepository.save(meta);
-    addToIndex(meta, content);
-    await updateIndexMeta(meta.id, filePath);
+    searchIndex.add(meta, content);
+
+    const mtime = await scanner.getFileMtime(filePath);
+    if (mtime) searchIndex.updateMeta(meta.id, mtime);
 
     processedCount++;
     if (processedCount % SAVE_INDEX_EVERY_N !== 0) return;
-    await saveIndex();
+    await searchIndex.save();
   };
 
   const resolveFileId = async (
@@ -231,274 +144,19 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     const id = await resolveFileId(target);
     if (!id) return;
 
-    removeFromIndex(id);
+    searchIndex.remove(id);
     invalidateCountCache();
     await repositories.fileRepository.delete(id);
   };
 
-  const buildIndexTaskId = (filePath: string): string => `file:${filePath}`;
-
-  const hasQueuedIndexTask = async (taskId: string): Promise<boolean> => {
-    const queueRepository = repositories.queueRepository;
-    if (!queueRepository) return false;
-
-    const existing = await queueRepository.get(taskId);
-    if (!existing) return false;
-    if (existing.queueId !== INDEX_QUEUE_ID) return false;
-    if (existing.deletedAt) return false;
-    if (!existing.status || !ACTIVE_TASK_STATUSES.has(existing.status)) return false;
-    return true;
-  };
-
-  const enqueueIndexTask = async (
-    queue: ReturnType<typeof useQueueStore>,
-    filePath: string,
-    signal?: AbortSignal,
-  ): Promise<void> => {
-    signal?.throwIfAborted();
-    const taskId = buildIndexTaskId(filePath);
-    const alreadyQueued = await hasQueuedIndexTask(taskId);
-    signal?.throwIfAborted();
-
-    if (alreadyQueued) {
-      logger.debug('search index skip existing queued task', { filePath, taskId });
-      return;
-    }
-
-    await queue.add(INDEX_QUEUE_ID, { filePath }, { id: taskId });
-  };
-
-  const indexFile = async (filePath: string): Promise<void> => {
-    const shouldIndexResult = await to(() => shouldIndexFile(filePath))();
-    if (shouldIndexResult.isErr()) {
-      logger.error('search index failed to check if file needs indexing', {
-        filePath,
-        error: shouldIndexResult.error,
-      });
-      return;
-    }
-    if (!shouldIndexResult.value) return;
-
-    const queue = useQueueStore();
-    await enqueueIndexTask(queue, filePath);
-  };
-
-  const buildEntryPath = (dirPath: string, name: string): string =>
-    dirPath === '/' ? `/${name}` : `${dirPath}/${name}`;
-
-  const getFileMtime = async (entryPath: string): Promise<Date | null> => {
-    const fs = useFileSystemStore();
-    const fileInfo = await fs.fileInfo(entryPath);
-    if (!fileInfo) return null;
-    return new Date(fileInfo.mtime);
-  };
-
-  const shouldIndexFile = async (
-    entryPath: string,
-    currentMtime?: Date,
-    existingFile?: FileMeta | null,
-  ): Promise<boolean> => {
-    const filePath = entryPath.split('/').filter(Boolean);
-    const existing =
-      existingFile === undefined
-        ? await repositories.fileRepository.getByPath(filePath)
-        : existingFile;
-
-    if (!existing) return true;
-    if (!indexedIds.has(existing.id)) return true;
-
-    const meta = indexMetaMap.get(existing.id);
-    if (!meta) return true;
-
-    const resolvedMtime = currentMtime ?? (await getFileMtime(entryPath));
-    if (!resolvedMtime) return false;
-
-    const storedMtime = new Date(meta.fileModifiedAt).getTime();
-    const needsIndex = resolvedMtime.getTime() > storedMtime;
-
-    if (!needsIndex) {
-      logger.debug('search index skip unchanged file', {
-        filePath: entryPath,
-        fileId: existing.id,
-        fileModifiedAt: meta.fileModifiedAt,
-      });
-    }
-
-    return needsIndex;
-  };
-
-  const readDirectoryEntries = async (
-    dirPath: string,
-    signal: AbortSignal,
-  ): Promise<DiskFile[] | null> => {
-    signal.throwIfAborted();
-    const fs = useFileSystemStore();
-    const readResult = await to(() => fs.readDir(dirPath))();
-    signal.throwIfAborted();
-
-    if (readResult.isErr()) {
-      logger.error('search index failed to read directory', { dirPath, error: readResult.error });
-      return null;
-    }
-
-    return readResult.value ?? null;
-  };
-
-  const scanSubdirectory = async (
-    entryPath: string,
-    context: IndexScanContext,
-  ): Promise<void> => {
-    const scanResult = await to(() => scanDirectory(entryPath, context))();
-    if (scanResult.isOk()) return;
-    context.signal.throwIfAborted();
-
-    logger.error('search index failed to scan directory', {
-      dirPath: entryPath,
-      error: scanResult.error,
-    });
-  };
-
-  const scanFileEntry = async (
-    entryPath: string,
-    entry: DiskFile,
-    context: IndexScanContext,
-  ): Promise<void> => {
-    context.signal.throwIfAborted();
-    if (!isOrgFile(entry.name)) return;
-
-    const shouldIndexResult = await to(() =>
-      shouldIndexFile(
-        entryPath,
-        new Date(entry.mtime),
-        context.existingFiles.get(entryPath) ?? null,
-      ),
-    )();
-    if (shouldIndexResult.isErr()) {
-      logger.error('search index failed to check if file needs indexing', {
-        filePath: entryPath,
-        error: shouldIndexResult.error,
-      });
-      return;
-    }
-
-    if (!shouldIndexResult.value) return;
-
-    await enqueueIndexTask(context.queue, entryPath, context.signal);
-  };
-
-  const scanEntry = async (
-    dirPath: string,
-    entry: DiskFile,
-    context: IndexScanContext,
-  ): Promise<void> => {
-    context.signal.throwIfAborted();
-    const entryPath = buildEntryPath(dirPath, entry.name);
-    if (entry.type === 'directory') {
-      await scanSubdirectory(entryPath, context);
-      return;
-    }
-    await scanFileEntry(entryPath, entry, context);
-  };
-
-  const scanDirectory = async (dirPath: string, context: IndexScanContext): Promise<void> => {
-    const entries = await readDirectoryEntries(dirPath, context.signal);
-    if (!entries) return;
-    await runWithConcurrency(entries, INDEX_SCAN_CONCURRENCY, (entry) =>
-      scanEntry(dirPath, entry, context),
-    );
-  };
-
-  const ensureIndexLoaded = async (): Promise<void> => {
-    if (indexedIds.size > 0) return;
-    const loaded = await loadIndex();
-    if (loaded) return;
-    indexMetaMap.clear();
-  };
-
-  const performIndexing = async (
-    queue: ReturnType<typeof useQueueStore>,
-    signal: AbortSignal,
-  ): Promise<void> => {
-    signal.throwIfAborted();
-    await ensureIndexLoaded();
-    const existingFiles = await buildExistingFileSnapshot();
-    signal.throwIfAborted();
-    await scanDirectory('/', { queue, existingFiles, signal });
-    logger.info(`File indexing scan completed, added files to queue`);
-  };
-
-  const performIndexingUntilQueueDrain = async (): Promise<void> => {
-    const queueStore = useQueueStore();
-    await queueStore.runAndWaitForIdle(
-      INDEX_QUEUE_ID,
-      (signal) => performIndexing(queueStore, signal),
-      { timeoutMs: INDEX_QUEUE_IDLE_TIMEOUT_MS },
-    );
-  };
-
   const indexFiles = async (): Promise<void> => {
     isIndexing.value = true;
-    const result = await to(performIndexingUntilQueueDrain)();
+    const result = await to(scanner.scanAllFilesUntilQueueDrain)();
     isIndexing.value = false;
     processedCount = 0;
     if (result.isErr() && result.error.name !== 'AbortError') {
       logger.error('File indexing failed before the queue became idle', { error: result.error });
     }
-  };
-
-  const saveIndex = async (): Promise<void> => {
-    const keyValueRepo = repositories.keyValueRepository;
-    if (!keyValueRepo) return;
-
-    const files: Record<string, FileIndexMeta> = {};
-    indexMetaMap.forEach((meta, id) => {
-      if (indexedIds.has(id)) files[id] = meta;
-    });
-
-    const indexData: Record<string, unknown> = {};
-    index.export((key: string | number, data: unknown) => {
-      if (data !== undefined) indexData[String(key)] = data;
-    });
-
-    await keyValueRepo.set(
-      FILE_INDEX_KEY,
-      JSON.stringify({ version: INDEX_VERSION, files, indexData }),
-    );
-  };
-
-  const loadIndex = async (): Promise<boolean> => {
-    const keyValueRepo = repositories.keyValueRepository;
-    if (!keyValueRepo) return false;
-
-    const stored = await keyValueRepo.get(FILE_INDEX_KEY);
-    if (!stored) return false;
-
-    const result = to(JSON.parse)(stored);
-    if (result.isErr()) return false;
-
-    const parsed = result.value as StoredIndex;
-    if (parsed.version !== INDEX_VERSION || !parsed.indexData) return false;
-    if (Object.keys(parsed.indexData).length === 0) return false;
-
-    Object.entries(parsed.indexData).forEach(([key, data]) => index.import(key, data as string));
-
-    Object.entries(parsed.files).forEach(([id, meta]) => {
-      indexMetaMap.set(id, meta);
-      indexedIds.add(id);
-    });
-
-    return indexedIds.size > 0;
-  };
-
-  const clearIndex = async (): Promise<void> => {
-    const keyValueRepo = repositories.keyValueRepository;
-    if (keyValueRepo) {
-      await keyValueRepo.delete(FILE_INDEX_KEY);
-    }
-
-    [...indexedIds].forEach((id) => index.remove(id));
-    indexedIds.clear();
-    indexMetaMap.clear();
   };
 
   return {
@@ -507,12 +165,13 @@ export const useFileSearchStore = defineStore<'fileSearch', FileSearchStore>('fi
     lastSearchResult,
     indexStats,
     search,
-    indexFile,
+    indexFile: scanner.indexFile,
     indexFiles,
     processFile,
     removeFile,
-    loadIndex,
-    saveIndex,
-    clearIndex,
+    loadIndex: searchIndex.load,
+    saveIndex: searchIndex.save,
+    clearIndex: searchIndex.clear,
+    $resetStorage: searchIndex.clear,
   };
 });

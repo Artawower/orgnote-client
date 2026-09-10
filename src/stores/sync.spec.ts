@@ -37,7 +37,9 @@ vi.mock('src/infrastructure/sync', () => ({
   isPlanEmpty: mockIsPlanEmpty,
 }));
 
-vi.mock('orgnote-api', async () => {
+vi.mock('orgnote-api', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+
   class InvalidSyncResponseError extends Error {
     details: unknown;
 
@@ -60,6 +62,7 @@ vi.mock('orgnote-api', async () => {
   }
 
   return {
+    ...actual,
     recoverState: mockRecoverState,
     createSyncPlan: mockCreateSyncPlan,
     I18N: { SYNC_INVALID_API_RESPONSE: 'sync invalid API response' },

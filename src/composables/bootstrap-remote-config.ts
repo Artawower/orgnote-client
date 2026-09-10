@@ -8,11 +8,17 @@ import { ORGNOTE_CONFIG_FILE_PATH } from 'src/constants/system-file-paths';
 import { useConfigStore } from 'src/stores/config';
 import { useFileSystemManagerStore } from 'src/stores/file-system-manager';
 import { parseOrgNoteConfigToml } from 'src/utils/parse-orgnote-config-toml';
+import { recordConfigLifecycleEvent } from 'src/infrastructure/config/config-lifecycle-record';
 
 const absoluteConfigPath = toAbsolutePath(ORGNOTE_CONFIG_FILE_PATH);
 
 const isRemoteConfigMissing = (error: unknown): boolean => {
   return axios.isAxiosError(error) && error.response?.status === 404;
+};
+
+const reportRemoteConfigFetchError = (error: Error): void => {
+  if (isRemoteConfigMissing(error)) return;
+  reporter.reportError(error);
 };
 
 const readLocalConfigContent = async (): Promise<string | undefined> => {
@@ -39,7 +45,7 @@ const fetchRemoteConfigContent = async (): Promise<string | undefined> => {
   )();
 
   if (result.isErr()) {
-    if (!isRemoteConfigMissing(result.error)) reporter.reportError(result.error);
+    reportRemoteConfigFetchError(result.error);
     return;
   }
 
@@ -88,6 +94,7 @@ const updateConfigStore = (content: ReturnType<typeof parseRemoteConfig>): void 
   const configStore = useConfigStore();
   configStore.configErrors = [];
   Object.assign(configStore.config, content);
+  recordConfigLifecycleEvent('bootstrap-remote-config-applied', configStore.config);
 };
 
 type ConfigStore = ReturnType<typeof useConfigStore>;
@@ -106,6 +113,7 @@ const applyRemoteConfig = async (content: string): Promise<void> => {
   if (!parsedRemoteConfig) {
     return;
   }
+  recordConfigLifecycleEvent('bootstrap-remote-config-received', parsedRemoteConfig);
 
   if (!(await persistRemoteConfig(content))) {
     return;
@@ -116,11 +124,17 @@ const applyRemoteConfig = async (content: string): Promise<void> => {
 
 export const bootstrapRemoteConfig = async (): Promise<void> => {
   const configStore = useConfigStore();
+  recordConfigLifecycleEvent('bootstrap-started', configStore.config);
 
   await configStore.sync();
 
   const localConfigContent = await readLocalConfigContent();
-  if (localConfigContent !== DEFAULT_CONFIG_CONTENT) return;
+  const isGeneratedConfig = localConfigContent === DEFAULT_CONFIG_CONTENT;
+  recordConfigLifecycleEvent('bootstrap-local-config-classified', configStore.config, {
+    hasLocalConfig: typeof localConfigContent === 'string',
+    isGeneratedConfig,
+  });
+  if (!isGeneratedConfig) return;
   const configStoreContent = stringifyToml(configStore.config);
 
   const remoteConfigContent = await fetchRemoteConfigContent();

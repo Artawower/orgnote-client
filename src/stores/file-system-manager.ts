@@ -1,72 +1,31 @@
-import { type FileSystem, type FileSystemInfo, type FileSystemManagerStore } from 'orgnote-api';
+import type { FileSystem, FileSystemInfo, FileSystemManagerStore, FileSystemSession } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { defineStore } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useSettingsStore } from './settings';
 import { reporter } from 'src/boot/report';
+import { withFsRootGate } from 'src/infrastructure/file-systems/fs-root-gate';
+import { resetStorageBoundStores } from 'src/infrastructure/stores/storage-bound-store';
+import { createFileSystemSessionState } from 'src/infrastructure/file-systems/file-system-session';
+import {
+  createFileSystemTransitionRunner,
+  type TargetSelection,
+} from 'src/infrastructure/file-systems/file-system-transition-runner';
 
-interface DesiredStorageSnapshot {
-  fsName: string;
-  root?: string;
-}
-
+type DesiredStorageSnapshot = { fsName: string; root?: string };
 interface ReconcileContext {
   fs: FileSystem;
   snapshot: DesiredStorageSnapshot;
 }
 
-const resetFileManagerState = async (): Promise<void> => {
-  const { useFileManagerStore } = await import('./file-manager');
-  const fileManager = useFileManagerStore();
-  fileManager.path = '/';
-  fileManager.focusFile = undefined;
-  fileManager.searchQuery = '';
-  fileManager.mobileFileSearchActive = false;
-  fileManager.files = [];
-  fileManager.clearSelection();
-  fileManager.cancelPending();
-};
+export interface ClientFileSystemManagerStore extends FileSystemManagerStore {
+  useFs: (fsName: string, targetVault?: string) => Promise<void>;
+}
 
-const resetSearchState = async (): Promise<void> => {
-  const [{ useFileSearchStore }, { useFileMetaStore }] = await Promise.all([
-    import('./file-search'),
-    import('./file-meta'),
-  ]);
-  await useFileSearchStore().clearIndex();
-  await useFileMetaStore().clear();
-};
-
-const resetQueueState = async (): Promise<void> => {
-  const [{ useQueueStore }, { INDEX_QUEUE_ID, SYNC_QUEUE_ID }] = await Promise.all([
-    import('./queue'),
-    import('src/constants/queue-ids'),
-  ]);
-  const queue = useQueueStore();
-  await Promise.all([queue.clear(INDEX_QUEUE_ID), queue.clear(SYNC_QUEUE_ID)]);
-};
-
-const resetSyncState = async (): Promise<void> => {
-  const { useSyncStore } = await import('./sync');
-  await useSyncStore().reset();
-};
-
-const resetStorageBoundState = async (): Promise<void> => {
-  const result = await to(async () => {
-    await Promise.all([
-      resetFileManagerState(),
-      resetSearchState(),
-      resetQueueState(),
-      resetSyncState(),
-    ]);
-  })();
-
-  if (result.isErr()) {
-    reporter.reportError(result.error);
-  }
-};
-
-export const useFileSystemManagerStore = defineStore<string, FileSystemManagerStore>('file-system-manager',
+export const useFileSystemManagerStore = defineStore<string, ClientFileSystemManagerStore>(
+  'file-system-manager',
   () => {
+    const sessionState = createFileSystemSessionState();
     const currentFsName = ref<string>('');
     const registeredFileSystems = ref<Record<string, FileSystemInfo>>({});
     const currentFsInfo = computed(() => registeredFileSystems.value[currentFsName.value]);
@@ -81,48 +40,78 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
 
     const settings = useSettingsStore();
 
+    const isSessionMounted = (): boolean => fsMounted.value && !isReconciling.value;
+
+    const currentVault = (): string | undefined =>
+      settings.settings.vault ?? currentFsInfo.value?.initialVault;
+
+    const isVaultConfigured = (fs: FileSystem, vault?: string): boolean =>
+      !fs.pickFolder || Boolean(vault);
+
+    const checkStorageDiverged = (): boolean =>
+      !fsMounted.value ||
+      currentFsInfo.value?.name !== mountedFsName.value ||
+      currentVault() !== mountedVault.value;
+
     const getOrCreateFs = (info: FileSystemInfo): FileSystem => {
       const existing = fsInstances.value[info.name];
-      if (existing) {
-        return existing;
-      }
+      if (existing) return existing;
       const created = info.fs();
-      fsInstances.value = {
-        ...fsInstances.value,
-        [info.name]: created,
-      };
+      fsInstances.value = { ...fsInstances.value, [info.name]: created };
       return created;
     };
 
-    const currentFs = computed(() => {
-      if (!currentFsInfo.value) {
+    const publishSession = (): void => {
+      if (!isSessionMounted() || checkStorageDiverged()) {
+        sessionState.clear();
         return;
       }
-      return getOrCreateFs(currentFsInfo.value);
-    });
+      const confirmedInfo = registeredFileSystems.value[mountedFsName.value];
+      if (!confirmedInfo) {
+        sessionState.clear();
+        return;
+      }
+      const confirmedFs = getOrCreateFs(confirmedInfo);
+      if (!isVaultConfigured(confirmedFs, mountedVault.value)) {
+        sessionState.clear();
+        return;
+      }
+      sessionState.publishIfChanged(confirmedFs, mountedFsName.value, mountedVault.value);
+    };
+
+    const currentSession = computed<FileSystemSession | null>(
+      () => sessionState.currentSession.value,
+    );
+
+    const runWithMountedFileSystem = async <T>(
+      session: FileSystemSession,
+      operation: (fs: FileSystem) => Promise<T>,
+    ): Promise<T | undefined> => {
+      if (!sessionState.isActive(session)) return undefined;
+      return withFsRootGate(session.fs, async () => {
+        if (!sessionState.isActive(session)) return undefined;
+        return operation(session.fs);
+      });
+    };
+
+    const currentFs = computed(() => (currentFsInfo.value ? fsInstances.value[currentFsInfo.value.name] : undefined));
 
     const fileSystems = computed(() => Object.values(registeredFileSystems.value));
 
-    const register = (fs: FileSystemInfo) => {
-      registeredFileSystems.value = {
-        ...registeredFileSystems.value,
-        [fs.name]: fs,
-      };
+    const register = (fs: FileSystemInfo): void => {
+      registeredFileSystems.value = { ...registeredFileSystems.value, [fs.name]: fs };
+      publishSession();
     };
-
-    const currentVault = (): string | undefined => settings.settings.vault;
 
     const resetMountedState = (): void => {
       fsMounted.value = false;
       mountedFsName.value = '';
       mountedVault.value = undefined;
+      sessionState.clear();
     };
 
     const applyParams = (params?: { root?: string } | void): void => {
-      if (!params || !('root' in params)) {
-        return;
-      }
-      settings.settings.vault = params.root;
+      if (params && 'root' in params) settings.settings.vault = params.root;
     };
 
     const createDesiredSnapshot = (fsName: string): DesiredStorageSnapshot => ({
@@ -130,8 +119,12 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       root: currentVault(),
     });
 
-    const isCurrentDesired = (snapshot: DesiredStorageSnapshot): boolean =>
-      currentFsInfo.value?.name === snapshot.fsName && currentVault() === snapshot.root;
+    const isCurrentDesired = (snapshot: DesiredStorageSnapshot): boolean => {
+      const pending = transitionRunner?.getPendingTarget();
+      const desiredFs = pending?.fsName ?? currentFsInfo.value?.name;
+      const desiredRoot = pending?.targetVault !== undefined ? pending.targetVault : currentVault();
+      return desiredFs === snapshot.fsName && desiredRoot === snapshot.root;
+    };
 
     const isDesiredRuntimeMounted = (fsName: string, root?: string): boolean =>
       fsMounted.value && mountedFsName.value === fsName && mountedVault.value === root;
@@ -140,6 +133,7 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       fsMounted.value = mounted;
       mountedFsName.value = mounted ? fsName : '';
       mountedVault.value = mounted ? root : undefined;
+      publishSession();
     };
 
     const createReconcileContext = (): ReconcileContext | undefined => {
@@ -148,62 +142,46 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
         resetMountedState();
         return;
       }
-
       const snapshot = createDesiredSnapshot(info.name);
-      if (isDesiredRuntimeMounted(snapshot.fsName, snapshot.root)) {
-        return;
-      }
-
-      return {
-        fs: getOrCreateFs(info),
-        snapshot,
-      };
+      if (isDesiredRuntimeMounted(snapshot.fsName, snapshot.root)) return;
+      return { fs: getOrCreateFs(info), snapshot };
     };
 
     const initializeDesiredFs = async (context: ReconcileContext): Promise<boolean> => {
       const { fs, snapshot } = context;
-      const params = await fs.init?.({ root: snapshot.root });
-      if (!isCurrentDesired(snapshot)) {
-        return false;
-      }
-
-      applyParams(params);
-      return true;
+      return withFsRootGate(fs, async () => {
+        if (!isCurrentDesired(snapshot)) return false;
+        const params = await fs.init?.({ root: snapshot.root });
+        if (!isCurrentDesired(snapshot)) return false;
+        applyParams(params);
+        return true;
+      });
     };
 
-    const mountDesiredFs = async (context: ReconcileContext): Promise<void> => {
-      const mountSnapshot = createDesiredSnapshot(context.snapshot.fsName);
-      const mounted = await context.fs.mount?.({ root: mountSnapshot.root });
-      if (!isCurrentDesired(mountSnapshot)) {
-        return;
-      }
-
-      applyMountedState(mountSnapshot.fsName, mountSnapshot.root, mounted ?? true);
-    };
+    const mountDesiredFs = async (context: ReconcileContext): Promise<void> =>
+      withFsRootGate(context.fs, async () => {
+        const mountSnapshot = createDesiredSnapshot(context.snapshot.fsName);
+        if (!isCurrentDesired(mountSnapshot)) return;
+        const mounted = await context.fs.mount?.({ root: mountSnapshot.root });
+        if (!isCurrentDesired(mountSnapshot)) return;
+        applyMountedState(mountSnapshot.fsName, mountSnapshot.root, mounted ?? true);
+      });
 
     const reconcileContext = async (context: ReconcileContext): Promise<void> => {
-      const initialized = await initializeDesiredFs(context);
-      if (!initialized) {
-        return;
-      }
-
-      await mountDesiredFs(context);
+      if (await initializeDesiredFs(context)) await mountDesiredFs(context);
     };
 
     const runReconcile = async (): Promise<void> => {
       const context = createReconcileContext();
       if (!context) {
+        publishSession();
         return;
       }
-
       isReconciling.value = true;
       resetMountedState();
       const result = await to(() => reconcileContext(context))();
       isReconciling.value = false;
-
-      if (result.isErr()) {
-        throw result.error;
-      }
+      if (result.isErr()) throw result.error;
     };
 
     const runQueuedReconcile = async (): Promise<void> => {
@@ -214,12 +192,10 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
         hasPendingReconcile = false;
         throw result.error;
       }
-
       if (!hasPendingReconcile) {
         activeReconcile = null;
         return;
       }
-
       activeReconcile = runQueuedReconcile();
       await activeReconcile;
     };
@@ -230,39 +206,76 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       await activeReconcile;
     };
 
-    const requestReconcile = (): void => {
-      void reconcileStorageRuntime().catch((error) => {
-        reporter.reportError(error instanceof Error ? error : new Error('storage reconcile failed'));
-      });
+    const restoreConfirmedSession = (): void => {
+      settings.settings.vault = mountedVault.value;
+      publishSession();
     };
 
-    const useFs = async (fsName: string): Promise<void> => {
-      const info = registeredFileSystems.value[fsName];
-      if (!info) {
-        return;
-      }
-
-      const isChangingFs = currentFsName.value !== fsName;
-
-      if (isChangingFs) {
+    const applyTargetSelection = (target: TargetSelection): void => {
+      const isSelectingDifferentFs = Boolean(currentFsName.value) && currentFsName.value !== target.fsName;
+      const isChangingConfirmedFs = Boolean(mountedFsName.value) && mountedFsName.value !== target.fsName;
+      if (isSelectingDifferentFs || isChangingConfirmedFs) {
         resetMountedState();
         settings.settings.vault = undefined;
       }
-
-      currentFsName.value = fsName;
-
-      if (isChangingFs) {
-        await resetStorageBoundState();
-      }
-
-      await reconcileStorageRuntime();
+      if (target.targetVault !== undefined) settings.settings.vault = target.targetVault;
+      currentFsName.value = target.fsName;
     };
 
-    watch(
-      () => [currentFsInfo.value?.name, settings.settings.vault] as const,
-      requestReconcile,
-      { immediate: true },
-    );
+    const checkShouldReset = (target: TargetSelection): boolean => {
+      if (!mountedFsName.value) return false;
+      if (mountedFsName.value !== target.fsName) return true;
+      const targetRoot = target.targetVault !== undefined ? target.targetVault : currentVault();
+      return mountedVault.value !== targetRoot;
+    };
+
+    const resetStorageState = async (): Promise<void> => {
+      const resetResult = await to(resetStorageBoundStores)();
+      if (resetResult.isOk()) return;
+      reporter.reportError(resetResult.error);
+      throw resetResult.error;
+    };
+
+    const transitionRunner = createFileSystemTransitionRunner({
+      checkShouldReset,
+      onResetRevoke: () => sessionState.clear(),
+      resetStorage: resetStorageState,
+      onResetFailure: restoreConfirmedSession,
+      applyAndReconcile: async (target) => {
+        applyTargetSelection(target);
+        await reconcileStorageRuntime();
+        publishSession();
+      },
+    });
+
+    const reconcileStorageRuntimeSafely = async (): Promise<void> => {
+      const result = await to(
+        reconcileStorageRuntime,
+        (error) => error instanceof Error ? error : new Error('storage reconcile failed'),
+      )();
+      if (result.isErr()) reporter.reportError(result.error);
+    };
+
+    const requestReconcile = (): void => {
+      if (transitionRunner.isActive()) return;
+      void reconcileStorageRuntimeSafely();
+    };
+
+    const useFs = (fsName: string, targetVault?: string): Promise<void> => {
+      const info = registeredFileSystems.value[fsName];
+      if (!info) return Promise.resolve();
+      return transitionRunner.requestTransition({ fsName, targetVault });
+    };
+
+    watch(currentFsInfo, (info) => info && getOrCreateFs(info), { flush: 'sync' });
+
+    const sessionTrigger = () =>
+      [fsMounted.value, isReconciling.value, currentFsInfo.value?.name, settings.settings.vault] as const;
+    watch(sessionTrigger, publishSession, { flush: 'sync' });
+
+    watch(() => [currentFsInfo.value?.name, settings.settings.vault] as const, requestReconcile, {
+      immediate: true,
+    });
 
     return {
       register,
@@ -273,29 +286,9 @@ export const useFileSystemManagerStore = defineStore<string, FileSystemManagerSt
       fsMounted,
       isReconciling,
       useFs,
+      currentSession,
+      runWithMountedFileSystem,
     };
   },
-  {
-    persist: {
-      pick: ['currentFsName'],
-    },
-  },
+  { persist: { pick: ['currentFsName'] } },
 );
-
-export const useFileSystemRootConfigurator = () => {
-  const fsManager = useFileSystemManagerStore();
-  const settings = useSettingsStore();
-
-  const reconfigureCurrentFs = async (): Promise<void> => {
-    const root = await fsManager.currentFs?.pickFolder?.();
-    if (root === undefined) {
-      return;
-    }
-
-    settings.settings.vault = root;
-    await resetStorageBoundState();
-    await fsManager.useFs(fsManager.currentFsName);
-  };
-
-  return { reconfigureCurrentFs };
-};

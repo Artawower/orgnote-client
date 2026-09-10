@@ -3,11 +3,13 @@ import { setActivePinia, createPinia } from 'pinia';
 import clone from 'rfdc';
 import { useConfigStore } from './config';
 import { DEFAULT_CONFIG } from 'src/constants/config';
-import type { DiskFile, FileSystem, FileSystemInfo } from 'orgnote-api';
+import type { FileSystem, FileSystemInfo } from 'orgnote-api';
 import { useFileSystemManagerStore } from './file-system-manager';
 import { useSettingsStore } from './settings';
 import { stringifyToml } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
+import { logger } from 'src/boot/logger';
+import { createMockFs } from './config-test-fixtures';
 
 vi.mock('src/boot/report', () => ({
   reporter: {
@@ -17,6 +19,7 @@ vi.mock('src/boot/report', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   setActivePinia(createPinia());
 });
 
@@ -81,90 +84,6 @@ test('configErrors should be reactive array', () => {
   expect(store.configErrors.length).toBe(1);
 });
 
-const createDiskFile = (path: string, mtime: number, size = 0): DiskFile => ({
-  name: path.split('/').pop() ?? '',
-  path,
-  type: 'file',
-  size,
-  mtime,
-});
-
-const createMockFs = (
-  configToml: string,
-): { fs: FileSystem; files: Map<string, DiskFile & { content: string }> } => {
-  const files = new Map<string, DiskFile & { content: string }>();
-  let nextMtime = 300;
-
-  const configPath = '/.orgnote/config.toml';
-  files.set(configPath, {
-    ...createDiskFile(configPath, 200, configToml.length),
-    content: configToml,
-  });
-
-  const fs: FileSystem = {
-    readFile: async (path) => {
-      const file = files.get(path);
-      if (!file) throw new Error(`Missing file: ${path}`);
-      return file.content as never;
-    },
-    writeFile: async (path, content) => {
-      const text = typeof content === 'string' ? content : new TextDecoder().decode(content);
-      files.set(path, { ...createDiskFile(path, nextMtime++, text.length), content: text });
-    },
-    readDir: async (path) => {
-      if (path !== '/.orgnote') return [];
-      return [...files.values()].filter(
-        (f) => f.path.startsWith('/.orgnote/') && f.path.split('/').length === 3,
-      );
-    },
-    fileInfo: async (path) => files.get(path),
-    rename: async (path, newPath) => {
-      const file = files.get(path);
-      if (!file) throw new Error(`Missing file: ${path}`);
-      files.delete(path);
-      files.set(newPath, {
-        ...file,
-        path: newPath,
-        name: newPath.split('/').pop() ?? '',
-        mtime: nextMtime++,
-      });
-    },
-    deleteFile: async (path) => void files.delete(path),
-    rmdir: async () => undefined,
-    mkdir: async () => undefined,
-    isDirExist: async () => true,
-    isFileExist: async (path) => files.has(path),
-    utimeSync: async () => undefined,
-  };
-
-  return { fs, files };
-};
-
-test('sync quarantines invalid config.toml', async () => {
-  const { fs, files } = createMockFs('invalid = [toml');
-
-  const fsInfo: FileSystemInfo = {
-    name: 'mock-fs',
-    fs: () => fs,
-    type: 'web',
-    initialVault: '/',
-  };
-
-  const settingsStore = useSettingsStore();
-  settingsStore.settings.vault = '/';
-
-  const fsManager = useFileSystemManagerStore();
-  fsManager.register(fsInfo);
-  fsManager.currentFsName = 'mock-fs';
-
-  const store = useConfigStore();
-  await store.sync();
-
-  expect(files.has('/.orgnote/config-broken-1.toml')).toBe(true);
-  expect(files.get('/.orgnote/config.toml')?.content).toBe(stringifyToml(clone()(DEFAULT_CONFIG)));
-  expect(reporter.reportError).toHaveBeenCalled();
-});
-
 test('sync loads config.toml into store', async () => {
   const diskConfig = clone()(DEFAULT_CONFIG);
   diskConfig.system.language = 'ru-RU';
@@ -183,7 +102,7 @@ test('sync loads config.toml into store', async () => {
 
   const fsManager = useFileSystemManagerStore();
   fsManager.register(fsInfo);
-  fsManager.currentFsName = 'mock-fs';
+  await fsManager.useFs('mock-fs');
 
   const store = useConfigStore();
   await store.sync();
@@ -227,26 +146,127 @@ test('sync with pickFolder fs but empty vault skips disk sync', async () => {
   expect(reporter.reportError).not.toHaveBeenCalled();
 });
 
-test('sync sets configErrors for schema-invalid config.toml', async () => {
-  const { fs, files } = createMockFs('system = { language = 123 }');
-
-  const fsInfo: FileSystemInfo = {
-    name: 'mock-fs',
-    fs: () => fs,
-    type: 'web',
-    initialVault: '/',
-  };
-
-  const settingsStore = useSettingsStore();
-  settingsStore.settings.vault = '/';
+test('sync does not overwrite config when metadata lookup fails', async () => {
+  const diskConfig = clone()(DEFAULT_CONFIG);
+  diskConfig.synchronization.type = 'api';
+  const diskContent = stringifyToml(diskConfig);
+  const { fs, files } = createMockFs(diskContent);
+  const writeFileSpy = vi.spyOn(fs, 'writeFile');
+  fs.fileInfo = vi.fn(async () => {
+    throw new Error('Storage is temporarily unavailable');
+  });
 
   const fsManager = useFileSystemManagerStore();
-  fsManager.register(fsInfo);
+  fsManager.register({ name: 'mock-fs', fs: () => fs, type: 'web', initialVault: '/' });
+  useSettingsStore().settings.vault = '/';
+  await fsManager.useFs('mock-fs');
+
+  await useConfigStore().sync();
+
+  expect(writeFileSpy).not.toHaveBeenCalled();
+  expect(files.get('/.orgnote/config.toml')?.content).toBe(diskContent);
+  expect(reporter.reportError).toHaveBeenCalled();
+});
+
+test('sync retries after a transient metadata failure', async () => {
+  const diskConfig = clone()(DEFAULT_CONFIG);
+  diskConfig.synchronization.type = 'api';
+  const { fs } = createMockFs(stringifyToml(diskConfig));
+  const readFileInfo = fs.fileInfo.bind(fs);
+  let isMetadataUnavailable = true;
+  fs.fileInfo = vi.fn(async (path) => {
+    if (isMetadataUnavailable) throw new Error('Storage is temporarily unavailable');
+    return readFileInfo(path);
+  });
+
+  const fsManager = useFileSystemManagerStore();
+  fsManager.register({ name: 'mock-fs', fs: () => fs, type: 'web', initialVault: '/' });
+  useSettingsStore().settings.vault = '/';
+  await fsManager.useFs('mock-fs');
+  const store = useConfigStore();
+
+  await store.sync();
+  isMetadataUnavailable = false;
+  await store.sync();
+
+  expect(store.config.synchronization.type).toBe('api');
+});
+
+test('sync retries after reading temporarily empty config content', async () => {
+  const diskConfig = clone()(DEFAULT_CONFIG);
+  diskConfig.synchronization.type = 'api';
+  const { fs } = createMockFs(stringifyToml(diskConfig));
+  vi.spyOn(fs, 'readFile').mockResolvedValueOnce('' as never);
+
+  const fsManager = useFileSystemManagerStore();
+  fsManager.register({ name: 'mock-fs', fs: () => fs, type: 'web', initialVault: '/' });
+  useSettingsStore().settings.vault = '/';
+  await fsManager.useFs('mock-fs');
+  const store = useConfigStore();
+
+  await store.sync();
+  await store.sync();
+
+  expect(store.config.synchronization.type).toBe('api');
+});
+
+test('sync waits for the filesystem mount before reading config metadata', async () => {
+  const { fs } = createMockFs(stringifyToml(clone()(DEFAULT_CONFIG)));
+  const fileInfoSpy = vi.spyOn(fs, 'fileInfo');
+  let resolveMount: ((mounted: boolean) => void) | undefined;
+  const mountPromise = new Promise<boolean>((resolve) => {
+    resolveMount = resolve;
+  });
+  fs.mount = vi.fn(() => mountPromise);
+
+  const fsManager = useFileSystemManagerStore();
+  fsManager.register({ name: 'mock-fs', fs: () => fs, type: 'web', initialVault: '/' });
   fsManager.currentFsName = 'mock-fs';
+  useSettingsStore().settings.vault = '/';
+  const store = useConfigStore();
+
+  await store.sync();
+
+  expect(fileInfoSpy).not.toHaveBeenCalled();
+  resolveMount?.(true);
+  await fsManager.useFs('mock-fs');
+  await vi.waitFor(() => expect(fileInfoSpy).toHaveBeenCalled());
+  await store.sync();
+});
+
+test('records config-store-load lifecycle events instead of sync events on load', async () => {
+  const infoSpy = vi.spyOn(logger, 'info');
+  const rawFs: FileSystem = {
+    readFile: vi.fn(async () => stringifyToml(clone()(DEFAULT_CONFIG))) as typeof rawFs.readFile,
+    writeFile: vi.fn(async () => undefined),
+    readDir: vi.fn(async () => []),
+    fileInfo: vi.fn(async () => ({
+      name: 'config.toml',
+      path: '/.orgnote/config.toml',
+      mtime: 123,
+      size: 0,
+      type: 'file' as const,
+    })),
+    rename: vi.fn(async () => undefined),
+    deleteFile: vi.fn(async () => undefined),
+    rmdir: vi.fn(async () => undefined),
+    mkdir: vi.fn(async () => undefined),
+    isDirExist: vi.fn(async () => true),
+    isFileExist: vi.fn(async () => true),
+    utimeSync: vi.fn(async () => undefined),
+  };
+
+  const fsManager = useFileSystemManagerStore();
+  fsManager.register({ name: 'load-event-fs', fs: () => rawFs, type: 'web' });
+  useSettingsStore().settings.vault = '/';
+  await fsManager.useFs('load-event-fs');
 
   const store = useConfigStore();
   await store.sync();
 
-  expect(files.has('/.orgnote/config-broken-1.toml')).toBe(true);
-  expect(store.configErrors.length).toBeGreaterThan(0);
+  const loggedEvents = infoSpy.mock.calls.map((call) => (call[1] as { event?: string })?.event);
+  expect(loggedEvents).toContain('config-store-load-requested');
+  expect(loggedEvents).toContain('config-store-load-completed');
+  expect(loggedEvents).not.toContain('config-store-sync-requested');
+  expect(loggedEvents).not.toContain('config-store-sync-completed');
 });

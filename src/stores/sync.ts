@@ -1,6 +1,5 @@
-import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { SyncStore, SyncPlan, SyncStateData, FileSystem } from 'orgnote-api';
+import type { SyncPlan, SyncStateData, FileSystem, SyncStore } from 'orgnote-api';
 import {
   createSyncPlan,
   I18N,
@@ -17,15 +16,17 @@ import { api } from 'src/boot/api';
 import { withCoalescing } from 'src/utils/with-coalescing';
 import axios from 'axios';
 import { i18n } from 'src/boot/i18n';
+import { recordConfigPlanEvent } from 'src/infrastructure/config/config-lifecycle-record';
+import { defineStorageBoundStore } from 'src/infrastructure/stores/storage-bound-store';
 
 const httpUpgradeRequired = 426;
 const rootPath = '/';
 const contentHashCheckEnabled = true;
 const invalidSyncResponseNotificationId = 'sync-invalid-api-response';
 
-export const useSyncStore = defineStore<'sync', SyncStore>(
+export const useSyncStore = defineStorageBoundStore<'sync', SyncStore>(
   'sync',
-  (): SyncStore => {
+  () => {
     const currentPlan = ref<SyncPlan | null>(null);
     const stateData = ref<SyncStateData | null>({ files: {} });
     const isVersionIncompatible = ref(false);
@@ -83,14 +84,15 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       });
       if (planResult.isErr()) return handleSyncError(planResult.error);
 
+      recordConfigPlanEvent(planResult.value);
       currentPlan.value = planResult.value;
       return planResult.value;
     };
 
     const executePlan = async (plan: SyncPlan): Promise<void> => {
-      await Promise.resolve(enqueuePlanOperations(plan)).finally(() => {
-        currentPlan.value = null;
-      });
+      const result = await to(enqueuePlanOperations)(plan);
+      currentPlan.value = null;
+      if (result.isErr()) throw result.error;
     };
 
     const getInvalidatedPaths = (): Set<string> =>
@@ -132,6 +134,7 @@ export const useSyncStore = defineStore<'sync', SyncStore>(
       executePlan,
       sync,
       reset,
+      $resetStorage: reset,
     };
   },
   {

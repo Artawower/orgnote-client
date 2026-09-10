@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStorageBoundStore } from 'src/infrastructure/stores/storage-bound-store';
 import type { FileMeta, FileMetaStore } from 'orgnote-api';
 import { isPresent } from 'orgnote-api/utils';
 import { repositories } from 'src/boot/repositories';
@@ -9,7 +9,7 @@ export const invalidateCountCache = (): void => {
   countCache = null;
 };
 
-export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-meta', () => {
+export const useFileMetaStore = defineStorageBoundStore<'file-meta', FileMetaStore>('file-meta', () => {
   const getById = async (id: string): Promise<FileMeta | undefined> => {
     return repositories.fileRepository.getById(id);
   };
@@ -68,7 +68,7 @@ export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-me
 
   const clear = async (): Promise<void> => {
     invalidateCountCache();
-    await repositories.fileRepository.clear();
+    await repositories?.fileRepository?.clear();
   };
 
   return {
@@ -82,5 +82,6 @@ export const useFileMetaStore = defineStore<'file-meta', FileMetaStore>('file-me
     saveBulk,
     delete: deleteFile,
     clear,
+    $resetStorage: clear,
   };
 });
