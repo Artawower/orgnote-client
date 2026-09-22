@@ -63,6 +63,8 @@ jobs:
 
       - name: Setup android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
       - name: Setup minimal android version
         run: ./deploy/setup-minimal-android-version.sh
