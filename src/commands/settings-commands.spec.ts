@@ -24,6 +24,7 @@ const mockNotifications = {
 
 const mockCopyToClipboard = vi.fn(async () => undefined);
 const mockReportError = vi.fn();
+let mockIsSelfHosted = false;
 
 const mockBuildLocalSyncProfileToml = vi.fn(() => '[profile]\nname = "default"');
 const mockCreateObjectURL = vi.fn(() => 'blob:mock-url');
@@ -51,6 +52,10 @@ const mockApi = {
 
 vi.mock('src/boot/api', () => ({
   api: mockApi,
+}));
+
+vi.mock('./command-guards', () => ({
+  isSelfHostedServer: () => mockIsSelfHosted,
 }));
 
 vi.mock('src/composables/use-route-active', () => ({
@@ -87,6 +92,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockModal.component = null;
   mockModal.config = undefined;
+  mockIsSelfHosted = false;
   vi.stubGlobal('URL', {
     createObjectURL: mockCreateObjectURL,
     revokeObjectURL: mockRevokeObjectURL,
@@ -138,6 +144,19 @@ test('openSettingsRoute reuses existing modal without reopening', async () => {
   expect(mockSettingsRouter.push).toHaveBeenCalledWith({
     name: RouteNames.SettingsPage,
   });
+});
+
+test('subscription settings command is hidden and guarded on self-hosted servers', async () => {
+  mockIsSelfHosted = true;
+  const { getSettingsCommands } = await import('./settings-commands');
+  const command = getSettingsCommands().find(
+    (candidate) => candidate.command === DefaultCommands.SUBSCRIPTION_SETTINGS,
+  );
+
+  expect(command?.hide?.(mockApi as never)).toBe(true);
+  command?.handler(mockApi as never, { data: {}, meta: {} });
+
+  expect(mockModal.open).not.toHaveBeenCalled();
 });
 
 test('getSettingsCommands export available', async () => {

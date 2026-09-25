@@ -4,13 +4,17 @@ import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
 import { runPostActivationSync } from './post-activation-sync';
+import { useServerEnvironmentStore } from 'src/stores/server-environment';
+import {
+  canUseRemoteAccountFeatures,
+  type CapabilityUser,
+} from 'src/utils/server-capabilities';
 
-type User = { active?: string } | null | undefined;
-
-const isActiveUser = (user: User): boolean => !!user?.active;
+type User = CapabilityUser | null | undefined;
 
 export interface UseAutoSyncDeps {
   userRef: Ref<User>;
+  isSelfHostedRef: Ref<boolean>;
   sync: () => Promise<void>;
   onError: (error: unknown) => void;
 }
@@ -18,28 +22,26 @@ export interface UseAutoSyncDeps {
 const getDefaultDeps = (): UseAutoSyncDeps => {
   const authStore = api.core.useAuth();
   const { user } = storeToRefs(authStore);
+  const { isSelfHosted } = storeToRefs(useServerEnvironmentStore());
 
   return {
     userRef: user as Ref<User>,
+    isSelfHostedRef: isSelfHosted,
     sync: runPostActivationSync,
     onError: reporter.reportWarning,
   };
 };
 
 export const useAutoSync = (deps?: UseAutoSyncDeps): WatchStopHandle => {
-  const { userRef, sync, onError } = deps ?? getDefaultDeps();
+  const { userRef, isSelfHostedRef, sync, onError } = deps ?? getDefaultDeps();
 
   return watch(
-    () => userRef.value,
-    async (currUser, prevUser) => {
-      const becameActive = !isActiveUser(prevUser) && isActiveUser(currUser);
-
-      if (!becameActive) return;
+    () => canUseRemoteAccountFeatures(userRef.value, isSelfHostedRef.value),
+    async (canUseRemoteFeatures, couldUseRemoteFeatures) => {
+      if (couldUseRemoteFeatures || !canUseRemoteFeatures) return;
 
       const result = await to(sync)();
-      if (result.isErr()) {
-        onError(result.error);
-      }
+      if (result.isErr()) onError(result.error);
     },
   );
 };

@@ -9,6 +9,9 @@ const mockCreateSyncPlan = vi.fn();
 const mockReportError = vi.fn();
 
 let mockUserActive: string | undefined = 'pro';
+let mockUserExists = true;
+let mockUserAnonymous = false;
+let mockIsSelfHosted = false;
 let mockSyncType: string = 'api';
 let mockApiUrl = '/v1';
 
@@ -17,7 +20,9 @@ vi.mock('src/boot/api', () => ({
     core: {
       useAuth: vi.fn(() => ({
         get user() {
-          return mockUserActive !== undefined ? { active: mockUserActive } : undefined;
+          return mockUserExists
+            ? { active: mockUserActive, isAnonymous: mockUserAnonymous }
+            : undefined;
         },
       })),
       useConfig: vi.fn(() => ({
@@ -30,6 +35,14 @@ vi.mock('src/boot/api', () => ({
       })),
     },
   },
+}));
+
+vi.mock('./server-environment', () => ({
+  useServerEnvironmentStore: () => ({
+    get isSelfHosted() {
+      return mockIsSelfHosted;
+    },
+  }),
 }));
 
 vi.mock('src/infrastructure/sync', () => ({
@@ -112,6 +125,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   setActivePinia(createPinia());
   mockUserActive = 'pro';
+  mockUserExists = true;
+  mockUserAnonymous = false;
+  mockIsSelfHosted = false;
   mockSyncType = 'api';
   mockApiUrl = '/v1';
 });
@@ -125,6 +141,44 @@ test('sync does not create plan when user is not active', async () => {
 
   expect(mockRecoverState).not.toHaveBeenCalled();
   expect(mockEnqueuePlanOperations).not.toHaveBeenCalled();
+});
+
+test('sync blocks unauthenticated self-hosted users', async () => {
+  mockUserExists = false;
+  mockIsSelfHosted = true;
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+
+  expect(mockRecoverState).not.toHaveBeenCalled();
+});
+
+test('sync creates a plan for an inactive self-hosted user', async () => {
+  mockUserActive = undefined;
+  mockIsSelfHosted = true;
+  mockRecoverState.mockResolvedValueOnce(undefined);
+  mockCreateSyncPlan.mockResolvedValueOnce(createNonEmptyPlan());
+  mockIsPlanEmpty.mockReturnValueOnce(false);
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+
+  expect(mockRecoverState).toHaveBeenCalled();
+  expect(mockEnqueuePlanOperations).toHaveBeenCalled();
+});
+
+test('sync blocks anonymous self-hosted users', async () => {
+  mockUserActive = undefined;
+  mockUserAnonymous = true;
+  mockIsSelfHosted = true;
+  const { useSyncStore } = await import('./sync');
+  const store = useSyncStore();
+
+  await store.sync();
+
+  expect(mockRecoverState).not.toHaveBeenCalled();
 });
 
 test('sync does not create plan when sync type is none', async () => {

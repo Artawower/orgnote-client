@@ -1,6 +1,13 @@
 import type { RouteRecordRaw, Router } from 'vue-router';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import { RouteNames } from 'orgnote-api';
+import { useServerEnvironmentStore } from 'src/stores/server-environment';
+
+const guardSubscriptionSettings = async () => {
+  const serverEnvironment = useServerEnvironmentStore();
+  await serverEnvironment.load();
+  return serverEnvironment.isSelfHosted ? { name: RouteNames.SettingsPage } : true;
+};
 
 const settingsMenuRoute: RouteRecordRaw = {
   path: '/',
@@ -47,6 +54,7 @@ export function createSettingsRouter(): Router {
         name: RouteNames.SubscriptionSettings,
         path: '/settings/subscription',
         component: () => import('./SubscriptionSettings.vue'),
+        beforeEnter: guardSubscriptionSettings,
       },
       {
         name: RouteNames.KeybindingSettings,

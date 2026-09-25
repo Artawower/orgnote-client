@@ -18,6 +18,8 @@ import axios from 'axios';
 import { i18n } from 'src/boot/i18n';
 import { recordConfigPlanEvent } from 'src/infrastructure/config/config-lifecycle-record';
 import { defineStorageBoundStore } from 'src/infrastructure/stores/storage-bound-store';
+import { canUseRemoteAccountFeatures } from 'src/utils/server-capabilities';
+import { useServerEnvironmentStore } from './server-environment';
 
 const httpUpgradeRequired = 426;
 const rootPath = '/';
@@ -37,9 +39,10 @@ export const useSyncStore = defineStorageBoundStore<'sync', SyncStore>(
     const isSyncProhibited = (): boolean => {
       const authStore = api.core.useAuth();
       const configStore = api.core.useConfig();
+      const serverEnvironment = useServerEnvironmentStore();
       return (
         isVersionIncompatible.value ||
-        !authStore.user?.active ||
+        !canUseRemoteAccountFeatures(authStore.user, serverEnvironment.isSelfHosted) ||
         configStore.config.synchronization.type === 'none'
       );
     };

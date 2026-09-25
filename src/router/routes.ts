@@ -1,6 +1,7 @@
 import { RouteNames, RoutePaths } from 'orgnote-api';
 import { api } from 'src/boot/api';
 import type { RouteRecordRaw } from 'vue-router';
+import { guardActivationRoute } from 'src/utils/activation-route-guard';
 
 const isServer = (): boolean => !!process.env.SERVER;
 
@@ -44,15 +45,11 @@ const routes: RouteRecordRaw[] = [
     meta: {
       programmaticalNavigation: false,
     },
-    beforeEnter: () => {
+    beforeEnter: async () => {
       if (isServer()) {
         return true;
       }
-      const user = api.core.useAuth().user;
-      if (user?.active) {
-        return { name: RouteNames.Home };
-      }
-      return true;
+      return guardActivationRoute();
     },
   },
   {

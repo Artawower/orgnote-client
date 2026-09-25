@@ -47,13 +47,18 @@ import { api } from 'src/boot/api';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { computed } from 'vue';
+import { useServerEnvironmentStore } from 'src/stores/server-environment';
+import { canUseRemoteAccountFeatures } from 'src/utils/server-capabilities';
 
 const settingsStore = api.core.useSettings();
 const authStore = api.core.useAuth();
 const { tokens } = storeToRefs(settingsStore);
 const { user } = storeToRefs(authStore);
+const { isSelfHosted } = storeToRefs(useServerEnvironmentStore());
 
-const canManageTokens = computed(() => !!user.value?.active);
+const canManageTokens = computed(() =>
+  canUseRemoteAccountFeatures(user.value, isSelfHosted.value),
+);
 
 const { t } = useI18n({
   useScope: 'global',

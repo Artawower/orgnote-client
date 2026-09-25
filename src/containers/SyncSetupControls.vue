@@ -45,6 +45,8 @@ import { getCliInstallInstructions } from 'src/constants/cli-install-scripts';
 import { valibotScheme } from 'src/models/valibot-scheme';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useServerEnvironmentStore } from 'src/stores/server-environment';
+import { canUseRemoteAccountFeatures } from 'src/utils/server-capabilities';
 
 const props = withDefaults(
   defineProps<{
@@ -63,6 +65,7 @@ settings.loadApiTokens();
 
 const authStore = api.core.useAuth();
 const { user } = storeToRefs(authStore);
+const { isSelfHosted } = storeToRefs(useServerEnvironmentStore());
 const { tokens } = storeToRefs(settings);
 const { config } = storeToRefs(api.core.useConfig());
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -73,8 +76,11 @@ const syncAvailable = computed(
 );
 
 const canCopySyncProfile = computed(() => syncAvailable.value && tokens.value.length > 0);
+const canUseRemoteFeatures = computed(() =>
+  canUseRemoteAccountFeatures(user.value, isSelfHosted.value),
+);
 const showUnavailable = computed(
-  () => !props.requireActiveUserForUnavailable || Boolean(user.value?.active),
+  () => !props.requireActiveUserForUnavailable || canUseRemoteFeatures.value,
 );
 </script>
 

@@ -16,6 +16,16 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+test('useAppResume handles browser reconnect events', () => {
+  const onResume = vi.fn();
+  const stop = useAppResume(onResume);
+
+  window.dispatchEvent(new Event('online'));
+
+  expect(onResume).toHaveBeenCalledTimes(1);
+  stop();
+});
+
 test('useAppResume calls onResume once when triggered multiple times within debounce window', async () => {
   const onResume = vi.fn();
   let capturedTrigger!: () => void;

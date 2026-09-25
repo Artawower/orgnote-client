@@ -4,6 +4,7 @@ import { flushPromises, shallowMount } from '@vue/test-utils';
 
 const mockUser = ref<Record<string, unknown> | null>(null);
 const mockOnboardingCompleted = ref(false);
+const mockIsSelfHosted = ref(false);
 const mockOnboardingCurrentStep = ref(0);
 const mockPush = vi.fn();
 
@@ -28,6 +29,7 @@ vi.mock('pinia', async () => {
       onboardingCompleted: mockOnboardingCompleted,
       onboardingCurrentStep: mockOnboardingCurrentStep,
       currentFsName: ref(''),
+      isSelfHosted: mockIsSelfHosted,
     }),
   };
 });
@@ -47,6 +49,10 @@ vi.mock('src/boot/api', () => ({
       }),
     },
   },
+}));
+
+vi.mock('src/stores/server-environment', () => ({
+  useServerEnvironmentStore: () => ({ isSelfHosted: mockIsSelfHosted.value }),
 }));
 
 vi.mock('src/boot/report', () => ({
@@ -97,6 +103,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockUser.value = null;
   mockOnboardingCompleted.value = false;
+  mockIsSelfHosted.value = false;
   mockOnboardingCurrentStep.value = 0;
 });
 
@@ -129,6 +136,29 @@ test('OnboardingPage shows SyncSetupStep when user has active subscription', asy
   expect(asVm(wrapper).currentStep).toBe(4);
   expect(mockOnboardingCompleted.value).toBe(false);
   expect(mockPush).not.toHaveBeenCalled();
+});
+
+test('OnboardingPage shows SyncSetupStep for inactive self-hosted users', async () => {
+  mockOnboardingCurrentStep.value = 4;
+  mockUser.value = { email: 'test@example.com' };
+  mockIsSelfHosted.value = true;
+
+  const wrapper = await mountPage();
+
+  expect(asVm(wrapper).currentStep).toBe(4);
+  expect(wrapper.findComponent(stubs.SyncSetupStep).exists()).toBe(true);
+  expect(wrapper.findComponent(stubs.ActivationStep).exists()).toBe(false);
+});
+
+test('OnboardingPage keeps anonymous self-hosted users on ActivationStep', async () => {
+  mockOnboardingCurrentStep.value = 4;
+  mockUser.value = { isAnonymous: true };
+  mockIsSelfHosted.value = true;
+
+  const wrapper = await mountPage();
+
+  expect(asVm(wrapper).currentStep).toBe(4);
+  expect(wrapper.findComponent(stubs.ActivationStep).exists()).toBe(true);
 });
 
 test('OnboardingPage stays on ActivationStep when user is logged in but not active', async () => {

@@ -67,6 +67,8 @@ import { I18N } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import type { Component } from 'vue';
+import { useServerEnvironmentStore } from 'src/stores/server-environment';
+import { canUseRemoteAccountFeatures } from 'src/utils/server-capabilities';
 
 interface StepConfig {
   component: Component;
@@ -78,12 +80,18 @@ interface StepInstance {
 }
 
 const authStore = api.core.useAuth();
+const { isSelfHosted } = storeToRefs(useServerEnvironmentStore());
+const canUseRemoteFeatures = (): boolean =>
+  canUseRemoteAccountFeatures(authStore.user, isSelfHosted.value);
 
-const activationStep = { component: ActivationStep, isCompleted: () => !authStore.user || !!authStore.user.active };
+const activationStep = {
+  component: ActivationStep,
+  isCompleted: () => !authStore.user || canUseRemoteFeatures(),
+};
 const syncSetupStep = { component: SyncSetupStep };
 
 const subscriptionStep = computed<StepConfig>(() =>
-  authStore.user?.active ? syncSetupStep : activationStep,
+  canUseRemoteFeatures() ? syncSetupStep : activationStep,
 );
 
 const steps = computed<StepConfig[]>(() => [
@@ -92,7 +100,7 @@ const steps = computed<StepConfig[]>(() => [
   { component: ServerStep },
   { component: AuthStep, isCompleted: () => !!authStore.user },
   subscriptionStep.value,
-  { component: EmacsStep, isCompleted: () => !authStore.user || !!authStore.user.active },
+  { component: EmacsStep, isCompleted: () => !authStore.user || canUseRemoteFeatures() },
 ]);
 
 const router = useRouter();

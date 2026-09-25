@@ -1,13 +1,29 @@
-import { test, expect } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { isNotAuthenticated, isNotActiveUser, isAuthenticated } from './command-guards';
 import type { OrgNoteApi } from 'orgnote-api';
 
-const createMockApi = (user: { active?: boolean } | null): OrgNoteApi =>
+let isSelfHosted = false;
+
+vi.mock('src/stores/server-environment', () => ({
+  useServerEnvironmentStore: () => ({
+    get isSelfHosted() {
+      return isSelfHosted;
+    },
+  }),
+}));
+
+const createMockApi = (
+  user: { active?: boolean; isAnonymous?: boolean } | null,
+): OrgNoteApi =>
   ({
     core: {
       useAuth: () => ({ user }),
     },
   }) as unknown as OrgNoteApi;
+
+beforeEach(() => {
+  isSelfHosted = false;
+});
 
 test('isNotAuthenticated returns true when user is null', () => {
   const api = createMockApi(null);
@@ -51,6 +67,18 @@ test('isNotActiveUser returns true when user exists but inactive', () => {
 
 test('isNotActiveUser returns true when user.active is undefined', () => {
   const api = createMockApi({});
+  expect(isNotActiveUser(api)).toBe(true);
+});
+
+test('isNotActiveUser returns false for inactive self-hosted users', () => {
+  isSelfHosted = true;
+  const api = createMockApi({});
+  expect(isNotActiveUser(api)).toBe(false);
+});
+
+test('isNotActiveUser returns true for anonymous self-hosted users', () => {
+  isSelfHosted = true;
+  const api = createMockApi({ isAnonymous: true });
   expect(isNotActiveUser(api)).toBe(true);
 });
 

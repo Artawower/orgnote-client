@@ -44,10 +44,12 @@ const createWebResumeListener = (onResume: () => void): StopHandle => {
   };
 
   window.addEventListener('pageshow', onResume);
+  window.addEventListener('online', onResume);
   document.addEventListener('visibilitychange', onVisibilityChange);
 
   return () => {
     window.removeEventListener('pageshow', onResume);
+    window.removeEventListener('online', onResume);
     document.removeEventListener('visibilitychange', onVisibilityChange);
   };
 };

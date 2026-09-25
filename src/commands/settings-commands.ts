@@ -16,6 +16,7 @@ import type { Router } from 'vue-router';
 import { buildLocalSyncProfileToml } from 'src/utils/local-sync-profile-config';
 import { getUsePackageInstructions } from 'src/constants/install-scripts';
 import { getCliInstallInstructions } from 'src/constants/cli-install-scripts';
+import { isSelfHostedServer } from './command-guards';
 
 type TheSettingsModalProps = {
   initialRoute?: RouteNames;
@@ -316,7 +317,12 @@ export function getSettingsCommands(): Command[] {
       command: DefaultCommands.SUBSCRIPTION_SETTINGS,
       group: 'settings',
       icon: 'sym_o_loyalty',
-      handler: () => openSettingsRoute(RouteNames.SubscriptionSettings),
+      hide: isSelfHostedServer,
+      disabled: isSelfHostedServer,
+      handler: () => {
+        if (isSelfHostedServer()) return;
+        openSettingsRoute(RouteNames.SubscriptionSettings);
+      },
       isActive: () => isActiveRoute(RouteNames.SubscriptionSettings),
       context: {
         narrow: true,

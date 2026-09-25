@@ -2,7 +2,7 @@ import { expect, test, vi, beforeEach } from 'vitest';
 import { ref, nextTick, type Ref } from 'vue';
 import { useAutoSync, type UseAutoSyncDeps } from './use-auto-sync';
 
-type User = { active?: string } | null | undefined;
+type User = { active?: string; isAnonymous?: boolean } | null | undefined;
 
 const createUser = (active?: string): User => ({ active });
 
@@ -13,16 +13,19 @@ const flushWatchers = async () => {
 };
 
 let userRef: Ref<User>;
+let isSelfHostedRef: Ref<boolean>;
 let runPostActivationSyncMock: ReturnType<typeof vi.fn>;
 let onErrorMock: ReturnType<typeof vi.fn>;
 let deps: UseAutoSyncDeps;
 
 beforeEach(() => {
   userRef = ref<User>(null);
+  isSelfHostedRef = ref(false);
   runPostActivationSyncMock = vi.fn().mockResolvedValue(undefined);
   onErrorMock = vi.fn();
   deps = {
     userRef,
+    isSelfHostedRef,
     sync: runPostActivationSyncMock as UseAutoSyncDeps['sync'],
     onError: onErrorMock as UseAutoSyncDeps['onError'],
   };
@@ -52,6 +55,36 @@ test('useAutoSync: does not trigger sync when user was already active', async ()
   useAutoSync(deps);
 
   userRef.value = createUser('yes');
+  await flushWatchers();
+
+  expect(runPostActivationSyncMock).not.toHaveBeenCalled();
+});
+
+test('useAutoSync: triggers sync when an inactive user signs in to a self-hosted server', async () => {
+  isSelfHostedRef.value = true;
+  useAutoSync(deps);
+
+  userRef.value = createUser(undefined);
+  await flushWatchers();
+
+  expect(runPostActivationSyncMock).toHaveBeenCalledTimes(1);
+});
+
+test('useAutoSync: triggers sync when self-hosted detection completes', async () => {
+  userRef.value = createUser(undefined);
+  useAutoSync(deps);
+
+  isSelfHostedRef.value = true;
+  await flushWatchers();
+
+  expect(runPostActivationSyncMock).toHaveBeenCalledTimes(1);
+});
+
+test('useAutoSync: does not trigger sync for anonymous self-hosted users', async () => {
+  userRef.value = { isAnonymous: true };
+  useAutoSync(deps);
+
+  isSelfHostedRef.value = true;
   await flushWatchers();
 
   expect(runPostActivationSyncMock).not.toHaveBeenCalled();
