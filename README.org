@@ -28,6 +28,9 @@
 #+html: <a href="https://play.google.com/store/apps/details?id=org.note.app" target="_blank">
 #+html: <img src="./images/google-play.svg" width="140px" height="auto">
 #+html: </a>
+#+html: <a href="https://apt.izzysoft.de/packages/org.note.app" target="_blank">
+#+html: <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidButtonGreyBorder_nofont.png" width="140px" height="auto">
+#+html: </a>
 #+html: </div>
 
 
