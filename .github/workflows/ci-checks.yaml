@@ -47,6 +47,27 @@ jobs:
       - name: Run linters
         run: bun run lint
 
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [install_dependencies]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Run type checks
+        run: ./node_modules/.bin/vue-tsc --noEmit
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -79,7 +100,7 @@ jobs:
     name: SSR Health Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [lint, test]
+    needs: [lint, typecheck, test]
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1

@@ -35,6 +35,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate required secrets
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}
+          WS_URL: ${{ secrets.WS_URL }}
+        run: |
+          REQUIRED_SECRETS=(API_URL AUTH_URL WS_URL)
+          for SECRET_NAME in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${!SECRET_NAME}" ]; then
+              echo "::error::Missing required secret: $SECRET_NAME"
+              exit 1
+            fi
+          done
+
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
@@ -55,20 +69,16 @@ jobs:
           bun install --frozen-lockfile
           bun add -g @quasar/cli
 
-      - name: Init environment
-        run: |
-          cat <<EOT > .env.build
-          DEBUG=${{ inputs.prerelease && 'true' || 'false' }}
-          VITE_API_URL=${{ secrets.API_URL }}
-          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
-          VITE_WS_URL=${{ secrets.WS_URL }}
-          VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
-          ORGNOTE_UPDATE_CHANNEL=${{ inputs.update_channel }}
-          ORGNOTE_ENABLE_DEVTOOLS=${{ inputs.enable_devtools && 'true' || 'false' }}
-          EOT
-
       - name: Build Electron
-        run: bunx env-cmd -f ./.env.build quasar build -m electron -P never
+        env:
+          DEBUG: ${{ inputs.prerelease && 'true' || 'false' }}
+          ORGNOTE_ENABLE_DEVTOOLS: ${{ inputs.enable_devtools && 'true' || 'false' }}
+          ORGNOTE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
+          VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_AUTH_URL: ${{ secrets.AUTH_URL }}
+          VITE_DEPLOYMENT_ENV: ${{ inputs.environment }}
+          VITE_WS_URL: ${{ secrets.WS_URL }}
+        run: bunx quasar build -m electron -P never
 
       - name: Collect Linux artifacts
         run: |

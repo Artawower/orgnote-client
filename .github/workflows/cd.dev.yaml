@@ -14,75 +14,6 @@ jobs:
   ci-checks:
     uses: ./.github/workflows/ci-checks.yaml
 
-  check-version-changed:
-    name: Check version changed
-    runs-on: ubuntu-latest
-    needs: [ci-checks]
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      changed: ${{ steps.check.outputs.changed }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Get current version
-        id: version
-        run: |
-          VERSION=$(jq -r '.version' package.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $VERSION"
-
-      - name: Check if version changed
-        id: check
-        run: |
-          PREV_VERSION=$(git show HEAD~1:package.json | jq -r '.version')
-          CURR_VERSION=$(jq -r '.version' package.json)
-          if [ "$PREV_VERSION" != "$CURR_VERSION" ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Version changed: $PREV_VERSION → $CURR_VERSION"
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-            echo "Version not changed"
-          fi
-
-  build-android:
-    name: Build Android APK
-    needs: [check-version-changed]
-    if: needs.check-version-changed.outputs.changed == 'true'
-    uses: ./.github/workflows/build-android.yaml
-    with:
-      environment: dev
-      version: ${{ needs.check-version-changed.outputs.version }}-dev
-      prerelease: true
-    secrets: inherit
-
-  build-electron:
-    name: Build Electron macOS
-    needs: [check-version-changed]
-    if: needs.check-version-changed.outputs.changed == 'true'
-    uses: ./.github/workflows/build-electron.yaml
-    with:
-      environment: dev
-      version: ${{ needs.check-version-changed.outputs.version }}-dev
-      prerelease: true
-      update_channel: dev
-      enable_devtools: true
-    secrets: inherit
-
-  build-electron-linux:
-    name: Build Electron Linux
-    needs: [check-version-changed]
-    if: needs.check-version-changed.outputs.changed == 'true'
-    uses: ./.github/workflows/build-electron-linux.yaml
-    with:
-      environment: dev
-      version: ${{ needs.check-version-changed.outputs.version }}-dev
-      prerelease: true
-      update_channel: dev
-      enable_devtools: true
-    secrets: inherit
-
   docker-deploy:
     name: Docker Build and Deploy
     needs: [ci-checks]
@@ -93,117 +24,19 @@ jobs:
       trigger_event: trigger-deploy-dev
     secrets: inherit
 
-  create-prerelease:
-    name: Create Pre-release
-    needs: [build-android, build-electron, build-electron-linux, check-version-changed]
-    runs-on: ubuntu-latest
-    environment: dev
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download APK artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
-          path: ./release-assets
-
-      - name: Download Electron macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: orgnote-macos-${{ needs.check-version-changed.outputs.version }}-dev
-          path: ./release-assets/macos
-
-      - name: Download Electron Linux artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: orgnote-linux-${{ needs.check-version-changed.outputs.version }}-dev
-          path: ./release-assets/linux
-
-      - name: Generate release body
-        id: release-body
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ needs.check-version-changed.outputs.version }}"
-          CURRENT_TAG="v${VERSION}-dev"
-          COMMIT_FULL="${{ github.sha }}"
-
-          find_valid_base() {
-            local prev_tag
-            prev_tag="$(git tag -l 'v*-dev' | grep -v "^${CURRENT_TAG}$" | sort -V -r | head -n1)"
-            if [ -n "${prev_tag}" ] && git merge-base --is-ancestor "${prev_tag}" HEAD 2>/dev/null; then
-              echo "${prev_tag}"
-              return
-            fi
-
-            local prev_sha
-            local prev_release_tag
-            prev_release_tag="$(gh release list --limit 20 --json tagName,isPrerelease --jq ".[] | select(.isPrerelease == true and (.tagName | test(\"^v[0-9].*-dev$\"))) | .tagName" 2>/dev/null \
-              | grep -v "^${CURRENT_TAG}$" | head -n1)"
-            if [ -n "${prev_release_tag}" ]; then
-              prev_sha="$(gh release view "${prev_release_tag}" --json body --jq '.body' 2>/dev/null \
-                | grep -oE '\*\*Commit:\*\* [a-f0-9]{7,}' | grep -oE '[a-f0-9]{7,}$' || true)"
-            fi
-            if [ -n "${prev_sha}" ] \
-              && git cat-file -e "${prev_sha}^{commit}" 2>/dev/null \
-              && git merge-base --is-ancestor "${prev_sha}" HEAD 2>/dev/null; then
-              echo "${prev_sha}"
-              return
-            fi
-          }
-
-          BASE_REF="$(find_valid_base)"
-
-          {
-            echo "Dev Build v${VERSION} Pre-release"
-            echo ""
-
-            if [ -n "${BASE_REF}" ]; then
-              echo "### Changes since ${BASE_REF:0:7}"
-              echo ""
-              CHANGES="$(git log --no-merges --pretty=format:'- %s' "${BASE_REF}..HEAD")"
-            else
-              echo "> ⚠ No valid previous dev build found for comparison."
-              echo ""
-              CHANGES=""
-            fi
-
-            if [ -z "${CHANGES}" ]; then
-              echo "- No changes generated."
-            else
-              echo "${CHANGES}"
-            fi
-
-            echo ""
-            echo "---"
-            echo ""
-            echo "- **Version:** ${VERSION}"
-            echo "- **Branch:** dev"
-            echo "- **Commit:** ${COMMIT_FULL}"
-          } > release-body.md
-
-      - name: Create or update pre-release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.check-version-changed.outputs.version }}-dev
-          target_commitish: ${{ github.sha }}
-          name: 'Dev Build v${{ needs.check-version-changed.outputs.version }}'
-          body_path: release-body.md
-          prerelease: true
-          files: |
-            ./release-assets/orgnote-${{ needs.check-version-changed.outputs.version }}-dev.apk
-            ./release-assets/macos/*
-            ./release-assets/linux/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete old dev releases
-        uses: dev-drprasad/delete-older-releases@v0.3.2
-        with:
-          keep_latest: 5
-          delete_tag_pattern: -dev
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  dev-release:
+    name: Build and publish dev prerelease
+    needs: [ci-checks]
+    uses: ./.github/workflows/release.yaml
+    with:
+      ci_checks_passed: true
+      environment: dev
+      tag_prefix: v
+      version_suffix: -dev
+      release_name_prefix: 'Dev Build v'
+      prerelease: true
+      update_channel: dev
+      enable_devtools: true
+      cleanup_old_dev_releases: true
+      skip_existing: false
+    secrets: inherit
