@@ -1,4 +1,18 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.github.triplet.play'
+
+
+def releaseSigningValues = [
+    keystorePath: System.getenv('ANDROID_KEYSTORE_PATH'),
+    keystorePassword: System.getenv('ANDROID_KEYSTORE_PASSWORD'),
+    keyAlias: System.getenv('ANDROID_KEY_ALIAS'),
+    keyPassword: System.getenv('ANDROID_KEY_PASSWORD')
+]
+def configuredSigningValues = releaseSigningValues.values().findAll { value -> value != null && !value.isEmpty() }
+if (!configuredSigningValues.isEmpty() && configuredSigningValues.size() != releaseSigningValues.size()) {
+    throw new GradleException('Android release signing environment is partially configured')
+}
+def hasReleaseSigning = configuredSigningValues.size() == releaseSigningValues.size()
 
 
 android {
@@ -17,8 +31,21 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseSigningValues.keystorePath)
+                storePassword releaseSigningValues.keystorePassword
+                keyAlias releaseSigningValues.keyAlias
+                keyPassword releaseSigningValues.keyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

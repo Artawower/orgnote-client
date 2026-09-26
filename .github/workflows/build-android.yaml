@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android artifacts
 
 on:
   workflow_call:
@@ -10,7 +10,7 @@ on:
       version:
         required: true
         type: string
-        description: 'Version string for the APK filename'
+        description: 'Version string for Android artifact filenames'
       prerelease:
         required: false
         type: boolean
@@ -19,7 +19,7 @@ on:
 
 jobs:
   build-android:
-    name: Build Android APK
+    name: Build Android APK and AAB
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -58,8 +58,11 @@ jobs:
 
       - name: Decode keystore
         env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/org-note-release.keystore
           KEYSTORE: ${{ secrets.KEYSTORE }}
-        run: printf '%s' "$KEYSTORE" | base64 -d > deploy/org-note-release.keystore
+        run: |
+          printf '%s' "$KEYSTORE" | base64 -d > "$ANDROID_KEYSTORE_PATH"
+          chmod 600 "$ANDROID_KEYSTORE_PATH"
 
       - name: Setup java
         uses: actions/setup-java@v4
@@ -70,7 +73,7 @@ jobs:
       - name: Setup android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools'
+          packages: 'platform-tools build-tools;34.0.0'
 
       - name: Setup minimal android version
         run: ./deploy/setup-minimal-android-version.sh
@@ -81,36 +84,54 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: ./deploy/sync-capaticor-version.sh
 
-      - name: Build Android
+      - name: Build signed Android artifacts
         env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/org-note-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.STOREPASS }}
+          ANDROID_KEY_ALIAS: sb
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEYPASS }}
           DEBUG: ${{ inputs.prerelease && 'true' || 'false' }}
-          KEYPASS: ${{ secrets.KEYPASS }}
-          STOREPASS: ${{ secrets.STOREPASS }}
           VITE_API_URL: ${{ secrets.API_URL }}
           VITE_AUTH_URL: ${{ secrets.AUTH_URL }}
           VITE_DEPLOYMENT_ENV: ${{ inputs.environment }}
           VITE_WS_URL: ${{ secrets.WS_URL }}
-        run: bunx quasar build -m capacitor -T android -- bundleRelease
+        run: bunx quasar build -m capacitor -T android -- assembleRelease bundleRelease
 
-      - name: Sign APK
+      - name: Verify and collect Android artifacts
         env:
-          KEYPASS: ${{ secrets.KEYPASS }}
-          STOREPASS: ${{ secrets.STOREPASS }}
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/org-note-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.STOREPASS }}
           VERSION: ${{ inputs.version }}
         run: |
+          APK_PATH='./dist/capacitor/android/apk/release/app-release.apk'
+          AAB_PATH='./dist/capacitor/android/bundle/release/app-release.aab'
+          test -f "$APK_PATH"
+          test -f "$AAB_PATH"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK_PATH"
+          jarsigner -verify -strict \
+            -keystore "$ANDROID_KEYSTORE_PATH" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD \
+            "$AAB_PATH"
           mkdir -p ./dist/build
-          cd ./dist/capacitor/android/apk/release
-          "$ANDROID_HOME/build-tools/34.0.0/zipalign" -v 4 app-release-unsigned.apk "orgnote-${VERSION}.apk"
-          "$ANDROID_HOME/build-tools/34.0.0/apksigner" sign \
-            --ks ../../../../../deploy/org-note-release.keystore \
-            --ks-pass "pass:$STOREPASS" \
-            --key-pass "pass:$KEYPASS" \
-            --ks-key-alias sb "orgnote-${VERSION}.apk"
-          cd -
+          cp "$APK_PATH" "./dist/build/orgnote-${VERSION}.apk"
+          cp "$AAB_PATH" "./dist/build/orgnote-${VERSION}.aab"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: orgnote-${{ inputs.version }}.apk
-          path: ./dist/capacitor/android/apk/release/orgnote-${{ inputs.version }}.apk
+          path: ./dist/build/orgnote-${{ inputs.version }}.apk
           retention-days: ${{ inputs.prerelease && 7 || 30 }}
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: orgnote-${{ inputs.version }}.aab
+          path: ./dist/build/orgnote-${{ inputs.version }}.aab
+          retention-days: ${{ inputs.prerelease && 7 || 30 }}
+
+      - name: Cleanup Android keystore
+        if: always()
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/org-note-release.keystore
+        run: rm -f "$ANDROID_KEYSTORE_PATH"

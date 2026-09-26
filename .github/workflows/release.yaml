@@ -27,6 +27,11 @@ on:
         required: false
         type: boolean
         default: false
+      publish_google_play:
+        required: false
+        type: boolean
+        default: false
+        description: 'Publish the stable Android bundle to Google Play production'
       update_channel:
         required: false
         type: string
@@ -74,6 +79,11 @@ on:
         default: 'OrgNote '
       prerelease:
         description: Publish as a prerelease
+        required: false
+        type: boolean
+        default: false
+      publish_google_play:
+        description: 'PRODUCTION WARNING: publish the stable Android bundle directly to Google Play production'
         required: false
         type: boolean
         default: false
@@ -204,7 +214,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   build-android:
-    name: Build Android APK
+    name: Build Android artifacts
     needs: [prepare, ci-checks]
     if: >-
       always() &&
@@ -265,6 +275,12 @@ jobs:
           name: orgnote-${{ needs.prepare.outputs.artifact_version }}.apk
           path: ./release-assets
 
+      - name: Download Android App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-${{ needs.prepare.outputs.artifact_version }}.aab
+          path: ./release-assets
+
       - name: Download Electron macOS artifacts
         uses: actions/download-artifact@v4
         with:
@@ -290,6 +306,7 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             ./release-assets/orgnote-${{ needs.prepare.outputs.artifact_version }}.apk
+            ./release-assets/orgnote-${{ needs.prepare.outputs.artifact_version }}.aab
             ./release-assets/macos/*
             ./release-assets/linux/*
         env:
@@ -304,3 +321,18 @@ jobs:
           delete_tags: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-google-play:
+    name: Publish Android to Google Play
+    needs: [prepare, build-android, publish]
+    if: >-
+      needs.prepare.outputs.should_release == 'true' &&
+      inputs.publish_google_play &&
+      !inputs.prerelease &&
+      inputs.environment == 'deploy' &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/publish-google-play.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      artifact_version: ${{ needs.prepare.outputs.artifact_version }}
+    secrets: inherit
