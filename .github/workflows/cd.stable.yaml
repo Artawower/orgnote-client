@@ -20,6 +20,7 @@ jobs:
       version_suffix: ''
       release_name_prefix: 'OrgNote '
       prerelease: false
+      publish_google_play: true
       update_channel: latest
       enable_devtools: false
       cleanup_old_dev_releases: false
