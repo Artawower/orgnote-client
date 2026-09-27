@@ -73,7 +73,7 @@ jobs:
       - name: Setup android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: 'platform-tools build-tools;34.0.0'
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
 
       - name: Setup minimal android version
         run: ./deploy/setup-minimal-android-version.sh
@@ -107,7 +107,7 @@ jobs:
           AAB_PATH='./dist/capacitor/android/bundle/release/app-release.aab'
           test -f "$APK_PATH"
           test -f "$AAB_PATH"
-          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK_PATH"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK_PATH"
           jarsigner -verify -strict \
             -keystore "$ANDROID_KEYSTORE_PATH" \
             -storepass:env ANDROID_KEYSTORE_PASSWORD \
